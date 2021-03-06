@@ -394,7 +394,7 @@ public class ViewerGalleryFragment extends Fragment {
      * Move the list to make the currently viewed image visible
      */
     private void moveToCurrent() {
-        if (!firstMoveDone) {
+        if (!firstMoveDone && recyclerView != null) {
             if (itemAdapter.getAdapterItemCount() > startIndex)
                 recyclerView.scrollToPosition(startIndex);
             else recyclerView.scrollToPosition(0);
