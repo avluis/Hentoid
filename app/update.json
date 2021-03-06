@@ -21,6 +21,7 @@
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"257"},
 	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"284"},
 	  {"sourceName":"NEXUS", "status":"BLACK"},
+	  {"sourceName":"IMHENTAI", "status":"BLACK"},
 	  {"sourceName":"TSUMINO", "status":"RED", "fixedByBuild":"309"},
 	  {"sourceName":"NEXUS", "status":"RED", "fixedByBuild":"329"}
   ],
