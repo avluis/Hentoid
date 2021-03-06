@@ -144,6 +144,7 @@ public class ViewerGalleryFragment extends Fragment {
 
         // Item click listeners
         fastAdapter.setOnPreClickListener((v, a, i, p) -> {
+            if (null == selectExtension) return false;
             Set<Integer> selectedPositions = selectExtension.getSelections();
             if (0 == selectedPositions.size()) { // No selection -> normal click
                 return false;
@@ -156,6 +157,7 @@ public class ViewerGalleryFragment extends Fragment {
         });
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
         fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
+            if (null == selectExtension) return false;
             mDragSelectTouchListener.startDragSelection(p);
             Set<Integer> selectedPositions = selectExtension.getSelections();
             if (0 == selectedPositions.size()) { // No selection -> select things
