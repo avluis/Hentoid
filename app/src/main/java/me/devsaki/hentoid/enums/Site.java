@@ -41,6 +41,15 @@ public enum Site {
     PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_menu_panda); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
 
+    private static final Site[] INVISIBLE_SITES = {
+            HENTAICAFE, // Removed as per Fakku request
+            FAKKU, // Old Fakku; kept for retrocompatibility
+            ASMHENTAI_COMICS, // Does not work directly
+            PANDA, // Dropped; kept for retrocompatibility
+            NONE // Technical fallback
+    };
+
+
     private final int code;
     private final String description;
     private final String url;
@@ -142,6 +151,11 @@ public enum Site {
 
     public boolean hasBackupURLs() {
         return hasBackupURLs;
+    }
+
+    public boolean isVisible() {
+        for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;
+        return true;
     }
 
     public String getFolder() {

@@ -11,7 +11,6 @@ import me.devsaki.hentoid.parsers.content.ExhentaiContent;
 import me.devsaki.hentoid.parsers.content.FakkuContent;
 import me.devsaki.hentoid.parsers.content.HbrowseContent;
 import me.devsaki.hentoid.parsers.content.Hentai2ReadContent;
-import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
 import me.devsaki.hentoid.parsers.content.HentaifoxContent;
 import me.devsaki.hentoid.parsers.content.HitomiContent;
 import me.devsaki.hentoid.parsers.content.ImhentaiContent;
@@ -33,7 +32,6 @@ import me.devsaki.hentoid.parsers.images.ExHentaiParser;
 import me.devsaki.hentoid.parsers.images.FakkuParser;
 import me.devsaki.hentoid.parsers.images.HbrowseParser;
 import me.devsaki.hentoid.parsers.images.Hentai2ReadParser;
-import me.devsaki.hentoid.parsers.images.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.images.HentaifoxParser;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
@@ -68,8 +66,6 @@ public class ContentParserFactory {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
                 return ASMHentaiContent.class;
-            case HENTAICAFE:
-                return HentaiCafeContent.class;
             case HITOMI:
                 return HitomiContent.class;
             case TSUMINO:
@@ -120,8 +116,6 @@ public class ContentParserFactory {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
                 return new ASMHentaiParser();
-            case HENTAICAFE:
-                return new HentaiCafeParser();
             case HITOMI:
                 return new HitomiParser();
             case TSUMINO:

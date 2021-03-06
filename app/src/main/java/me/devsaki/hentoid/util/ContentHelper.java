@@ -524,26 +524,42 @@ public final class ContentHelper {
         DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
         if (null == siteDownloadDir) return null;
 
-        String bookFolderName = formatBookFolderName(content);
-        DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName);
-        if (null == bookFolder) { // Create
-            return siteDownloadDir.createDirectory(bookFolderName);
-        } else return bookFolder;
+        ImmutablePair<String, String> bookFolderName = formatBookFolderName(content);
+
+        // First try finding the folder with new naming...
+        DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.left);
+        if (null == bookFolder) { // ...then with old (sanitized) naming...
+            bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.right);
+            if (null == bookFolder) { // ...if not, create a new folder with the new naming...
+                DocumentFile result = siteDownloadDir.createDirectory(bookFolderName.left);
+                if (null == result) { // ...if it fails, create a new folder with the old naming
+                    return siteDownloadDir.createDirectory(bookFolderName.right);
+                } else return result;
+            }
+        }
+        return bookFolder;
     }
 
     /**
      * Format the download directory path of the given content according to current user preferences
+     * TODO update
      *
      * @param content Content to get the path from
      * @return Canonical download directory path of the given content, according to current user preferences
      */
-    public static String formatBookFolderName(@NonNull final Content content) {
-        String result = "";
-
+    public static ImmutablePair<String, String> formatBookFolderName(@NonNull final Content content) {
         String title = content.getTitle();
-        title = (null == title) ? "" : title.replaceAll(UNAUTHORIZED_CHARS, "_");
-        String author = content.getAuthor().toLowerCase().replaceAll(UNAUTHORIZED_CHARS, "_");
+        title = (null == title) ? "" : title;
+        String author = content.getAuthor().toLowerCase();
 
+        return new ImmutablePair<>(
+                formatBookFolderName(content, title, author),
+                formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_"))
+        );
+    }
+
+    private static String formatBookFolderName(@NonNull final Content content, @NonNull final String title, @NonNull final String author) {
+        String result = "";
         switch (Preferences.getFolderNameFormat()) {
             case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_ID:
                 result += title;

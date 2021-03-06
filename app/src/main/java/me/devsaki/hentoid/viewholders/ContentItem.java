@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -122,7 +121,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         content = null;
         this.viewType = viewType;
         touchHelper = null;
-        setIdentifier(generateIdForPlaceholder());
+        setIdentifier(Helper.generateIdForPlaceholder());
     }
 
     // Constructor for library and error item
@@ -134,7 +133,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         isEmpty = (null == content);
         isSwipeable = (content != null && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
         if (content != null) setIdentifier(content.hash64());
-        else setIdentifier(generateIdForPlaceholder());
+        else setIdentifier(Helper.generateIdForPlaceholder());
     }
 
     // Constructor for queued item
@@ -146,7 +145,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         isEmpty = (null == content);
 //        setIdentifier(record.id);
         if (content != null) setIdentifier(content.hash64());
-        else setIdentifier(generateIdForPlaceholder());
+        else setIdentifier(Helper.generateIdForPlaceholder());
     }
 
     @Nullable
@@ -194,13 +193,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         if (viewHolder instanceof ContentViewHolder)
             return ((ContentViewHolder) viewHolder).ivReorder;
         else return null;
-    }
-
-    private long generateIdForPlaceholder() {
-        long result = new Random().nextLong();
-        // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
-        while (result < 1e6) result = new Random().nextLong();
-        return result;
     }
 
 

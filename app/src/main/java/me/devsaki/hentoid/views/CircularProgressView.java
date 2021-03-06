@@ -22,9 +22,11 @@ public class CircularProgressView extends View {
     private final Paint totalPaint;
     private final Paint progress1Paint;
     private final Paint progress2Paint;
-    private double progress1 = 0;
-    private double progress2 = 0;
-    private double total = 360;
+    private final Paint progress3Paint;
+    private float progress1 = 0;
+    private float progress2 = 0;
+    private float progress3 = 0;
+    private float total = 360;
     private TextView textView;
 
     public CircularProgressView(Context context, @Nullable AttributeSet attrs) {
@@ -46,6 +48,11 @@ public class CircularProgressView extends View {
         progress2Paint.setStyle(Paint.Style.STROKE);
         progress2Paint.setColor(ThemeHelper.getColor(context, R.color.secondary_variant_light));
         progress2Paint.setStrokeWidth(strokeWidth);
+
+        progress3Paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        progress3Paint.setStyle(Paint.Style.STROKE);
+        progress3Paint.setColor(ThemeHelper.getColor(context, R.color.primary_light));
+        progress3Paint.setStrokeWidth(strokeWidth);
     }
 
     @Override
@@ -54,18 +61,26 @@ public class CircularProgressView extends View {
 
         canvas.save();
 
-        drawProgress(canvas, (int) 360f, totalPaint);
+        drawProgress(canvas, totalPaint, 0, 360);
         if (total != 0 && progress1 != 0)
-            drawProgress(canvas, total <= progress1 ? 360 : (int) ((360f / total) * progress1), progress1Paint);
+            drawProgress(canvas, progress1Paint, 0, progress1);
         if (total != 0 && progress2 != 0)
-            drawProgress(canvas, total <= progress2 ? 360 : (int) ((360f / total) * progress2), progress2Paint);
+            drawProgress(canvas, progress2Paint, progress1, progress2);
+        if (total != 0 && progress3 != 0)
+            drawProgress(canvas, progress3Paint, progress1 + progress2, progress3);
 
         canvas.restore();
     }
 
-    private void drawProgress(Canvas canvas, int total, Paint paint) {
+    private void drawProgress(Canvas canvas, Paint paint, float previousValue, float value) {
+        previousValue = Math.min(360, previousValue);
+        value = Math.min(360, value);
+
+        float startAngle = -90 + (360f / total * previousValue);
+        float sweepAngle = (360f / total * value);
+
         //noinspection SuspiciousNameCombination
-        canvas.drawArc(new RectF(strokeWidth, strokeWidth, getWidth() - strokeWidth, getHeight() - strokeWidth), -90, total, false, paint);
+        canvas.drawArc(new RectF(strokeWidth, strokeWidth, getWidth() - strokeWidth, getHeight() - strokeWidth), startAngle, sweepAngle, false, paint);
     }
 
     public void setProgress1Color(Context context, @ColorRes int color) {
@@ -73,17 +88,17 @@ public class CircularProgressView extends View {
         invalidate();
     }
 
-    public void setProgress1(long progress) {
+    public void setProgress1(float progress) {
         setProgress1Internal(progress);
     }
 
-    public void setProgress1(double progress) {
-        setProgress1Internal(progress);
-    }
-
-    private void setProgress1Internal(double progress) {
+    private void setProgress1Internal(float progress) {
         this.progress1 = progress;
         invalidate();
+    }
+
+    public void setProgress2(float progress) {
+        setProgress2Internal(progress);
     }
 
     public void setProgress2Color(Context context, @ColorRes int color) {
@@ -91,16 +106,22 @@ public class CircularProgressView extends View {
         invalidate();
     }
 
-    public void setProgress2(long progress) {
-        setProgress2Internal(progress);
-    }
-
-    public void setProgress2(double progress) {
-        setProgress2Internal(progress);
-    }
-
-    private void setProgress2Internal(double progress) {
+    private void setProgress2Internal(float progress) {
         this.progress2 = progress;
+        invalidate();
+    }
+
+    public void setProgress3(float progress) {
+        setProgress3Internal(progress);
+    }
+
+    public void setProgress3Color(Context context, @ColorRes int color) {
+        progress3Paint.setColor(ThemeHelper.getColor(context, color));
+        invalidate();
+    }
+
+    private void setProgress3Internal(float progress) {
+        this.progress3 = progress;
         invalidate();
     }
 
@@ -113,11 +134,11 @@ public class CircularProgressView extends View {
         setTotalInternal(total);
     }
 
-    public void setTotal(double total) {
+    public void setTotal(float total) {
         setTotalInternal(total);
     }
 
-    private void setTotalInternal(double total) {
+    private void setTotalInternal(float total) {
         this.total = total;
         if (textView != null)
             textView.setText(String.valueOf(total));

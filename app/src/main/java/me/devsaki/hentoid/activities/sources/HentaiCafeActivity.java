@@ -1,13 +1,5 @@
 package me.devsaki.hentoid.activities.sources;
 
-import android.net.Uri;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import me.devsaki.hentoid.enums.Site;
 
 /**
@@ -30,25 +22,6 @@ public class HentaiCafeActivity extends BaseWebActivity {
         CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.setResultsUrlPatterns(RESULTS_FILTER);
-        client.setResultUrlRewriter(this::rewriteResultsUrl);
         return client;
-    }
-
-    private String rewriteResultsUrl(@NonNull Uri resultsUri, int page) {
-        List<String> pathSegments = new ArrayList<>(resultsUri.getPathSegments());
-        Uri.Builder builder = resultsUri.buildUpon();
-        if (pathSegments.contains("page")) { // Page already set
-            int index = pathSegments.lastIndexOf("page");
-            if (pathSegments.size() > index + 1) {
-                pathSegments.set(index + 1, page + "");
-                builder.path(TextUtils.join("/", pathSegments));
-            } else {
-                builder.appendPath(page + "");
-            }
-        } else { // Page not set
-            builder.appendPath("page");
-            builder.appendPath(page + "");
-        }
-        return builder.toString();
     }
 }

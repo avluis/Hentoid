@@ -964,10 +964,18 @@ public class ObjectBoxDB {
         return result;
     }
 
-    Map<Site, ImmutablePair<Integer, Long>> selectMemoryUsagePerSource() {
+    Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource() {
+        return selectMemoryUsagePerSource(new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()});
+    }
+
+    Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource() {
+        return selectMemoryUsagePerSource(new int[]{StatusContent.EXTERNAL.getCode()});
+    }
+
+    Map<Site, ImmutablePair<Integer, Long>> selectMemoryUsagePerSource(int[] statusCodes) {
         // Get all downloaded images regardless of the book's status
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode()});
+        query.in(Content_.status, statusCodes);
         List<Content> books = query.build().find();
 
         Map<Site, ImmutablePair<Integer, Long>> result = new EnumMap<>(Site.class);

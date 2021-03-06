@@ -175,7 +175,9 @@ public interface CollectionDAO {
 
     Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId);
 
-    Map<Site, ImmutablePair<Integer, Long>> selectMemoryUsagePerSource();
+    Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource();
+
+    Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource();
 
 
     // QUEUE

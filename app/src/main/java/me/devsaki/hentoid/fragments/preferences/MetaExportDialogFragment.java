@@ -46,8 +46,8 @@ import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 /**
- * Created by Robb on 05/2020
- * Dialog for the library metadata export feature
+ * Created by Robb on 03/2021
+ * Dialog for the settings metadata export feature
  */
 public class MetaExportDialogFragment extends DialogFragment {
 

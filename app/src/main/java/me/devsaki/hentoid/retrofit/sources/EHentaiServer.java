@@ -20,14 +20,14 @@ public class EHentaiServer {
     public static final EHentaiServer.Api EHENTAI_API = new Retrofit.Builder()
             .baseUrl(EHENTAI_URL)
             .client(OkHttpClientSingleton.getInstance())
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create().asLenient())
             .build()
             .create(EHentaiServer.Api.class);
 
     public static final EHentaiServer.Api EXHENTAI_API = new Retrofit.Builder()
             .baseUrl(EXHENTAI_URL)
             .client(OkHttpClientSingleton.getInstance())
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create().asLenient())
             .build()
             .create(EHentaiServer.Api.class);
 

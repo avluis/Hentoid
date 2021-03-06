@@ -32,12 +32,7 @@ public class SourcesIntroFragment extends Fragment {
         // Recycler
         List<SiteItem> items = new ArrayList<>();
         for (Site s : Site.values())
-            // We don't want to show these
-            if (s != Site.FAKKU                     // Old Fakku; kept for retrocompatibility
-                    && s != Site.ASMHENTAI_COMICS   // Does not work directly
-                    && s != Site.PANDA              // Dropped; kept for retrocompatibility
-                    && s != Site.NONE               // Technical fallback
-            ) items.add(new SiteItem(s, true, false));
+            if (s.isVisible()) items.add(new SiteItem(s, true, false));
         itemAdapter.add(items);
 
         FastAdapter<SiteItem> fastAdapter = FastAdapter.with(itemAdapter);
