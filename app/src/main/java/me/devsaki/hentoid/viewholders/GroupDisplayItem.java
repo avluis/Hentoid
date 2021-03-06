@@ -85,6 +85,8 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
         this.viewType = viewType;
         this.touchHelper = touchHelper;
         isEmpty = (null == group);
+        if (group != null) setIdentifier(group.hash64());
+        else setIdentifier(Helper.generateIdForPlaceholder());
     }
 
 

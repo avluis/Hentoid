@@ -15,6 +15,7 @@ import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.Grouping;
+import me.devsaki.hentoid.util.Helper;
 
 @Entity
 public class Group {
@@ -108,10 +109,14 @@ public class Group {
     }
 
     @Override
+    // Must be an int32, so we're bound to use Objects.hash
     public int hashCode() {
         return Objects.hash(grouping, name);
     }
 
+    public long hash64() {
+        return Helper.hash64((grouping + "." + name).getBytes());
+    }
 
     public static class GroupingConverter implements PropertyConverter<Grouping, Integer> {
         @Override

@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -393,5 +394,13 @@ public final class Helper {
         private void onDestroy() {
             disposable.dispose();
         }
+    }
+
+    // TODO doc
+    public static long generateIdForPlaceholder() {
+        long result = new Random().nextLong();
+        // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
+        while (result < 1e6) result = new Random().nextLong();
+        return result;
     }
 }

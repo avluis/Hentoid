@@ -856,13 +856,13 @@ public class Content implements Serializable {
                 Objects.equals(getUniqueSiteId(), content.getUniqueSiteId());
     }
 
-    public long hash64() {
-        return Helper.hash64((id + "." + uniqueSiteId).getBytes());
-    }
-
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
         return Objects.hash(id, uniqueSiteId);
+    }
+
+    public long hash64() {
+        return Helper.hash64((id + "." + uniqueSiteId).getBytes());
     }
 }
