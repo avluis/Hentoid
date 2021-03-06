@@ -62,6 +62,16 @@ public class ImportHelper {
 
     private static final int RQST_STORAGE_PERMISSION_HENTOID = 3;
     private static final int RQST_STORAGE_PERMISSION_EXTERNAL = 4;
+    public static final int RQST_PICK_IMPORT_FILE = 5;
+
+    @IntDef({UiResult.OK, UiResult.CANCELED, UiResult.INVALID_FOLDER, UiResult.OTHER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface UiResult {
+        int OK = 0;
+        int CANCELED = 1;
+        int INVALID_FOLDER = 2;
+        int OTHER = 3;
+    }
 
     @IntDef({Result.OK_EMPTY_FOLDER, Result.OK_LIBRARY_DETECTED, Result.OK_LIBRARY_DETECTED_ASK, Result.CANCELED, Result.INVALID_FOLDER, Result.DOWNLOAD_FOLDER, Result.APP_FOLDER, Result.CREATE_FAIL, Result.OTHER})
     @Retention(RetentionPolicy.SOURCE)
@@ -143,6 +153,32 @@ public class ImportHelper {
         }
 
         HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
+        return intent;
+    }
+
+    /**
+     * Open the SAF file picker
+     *
+     * @param caller Caller fragment
+     */
+    public static void openFilePicker(@NonNull final Fragment caller) {
+        Intent intent = getFilePickerIntent();
+
+        HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
+        caller.startActivityForResult(intent, RQST_PICK_IMPORT_FILE);
+    }
+
+    /**
+     * Get the intent for the SAF file picker properly set up
+     *
+     * @return Intent for the SAF folder picker
+     */
+    private static Intent getFilePickerIntent() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("*/*");
+        // http://stackoverflow.com/a/31334967/1615876
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
         return intent;
     }
 
