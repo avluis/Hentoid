@@ -43,6 +43,7 @@ import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.DragSelectTouchListener;
+import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
@@ -140,33 +141,18 @@ public class ViewerGalleryFragment extends Fragment {
             selectExtension.setSelectOnLongClick(true);
             selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+
+            FastAdapterPreClickSelectHelper<ImageFileItem> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
+            fastAdapter.setOnPreClickListener(helper::onPreClickListener);
+            fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
+                // Warning : specific code for drag selection
+                mDragSelectTouchListener.startDragSelection(p);
+                return helper.onPreLongClickListener(v, a, i, p);
+            });
         }
 
-        // Item click listeners
-        fastAdapter.setOnPreClickListener((v, a, i, p) -> {
-            if (null == selectExtension) return false;
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> normal click
-                return false;
-            } else { // Existing selection -> toggle selection
-                if (selectedPositions.contains(p) && 1 == selectedPositions.size())
-                    selectExtension.setSelectOnLongClick(true);
-                selectExtension.toggleSelection(p);
-                return true;
-            }
-        });
+        // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
-        fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
-            if (null == selectExtension) return false;
-            mDragSelectTouchListener.startDragSelection(p);
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> select things
-                selectExtension.select(p);
-                selectExtension.setSelectOnLongClick(false);
-                return true;
-            }
-            return false;
-        });
 
         // Filtering
         itemAdapter.getItemFilter().setFilterPredicate((imageFileItem, charSequence) -> !charSequence.equals("true") || imageFileItem.isFavourite());

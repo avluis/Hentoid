@@ -96,6 +96,7 @@ import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
+import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
@@ -922,28 +923,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
 
-        // Item click listeners
-        fastAdapter.setOnPreClickListener((v, a, i, p) -> {
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> normal click
-                return false;
-            } else { // Existing selection -> toggle selection
-                if (selectedPositions.contains(p) && 1 == selectedPositions.size())
-                    selectExtension.setSelectOnLongClick(true);
-                selectExtension.toggleSelection(p);
-                return true;
-            }
-        });
+        // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
-        fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> select things
-                selectExtension.select(p);
-                selectExtension.setSelectOnLongClick(false);
-                return true;
-            }
-            return false;
-        });
 
         // Favourite button click listener
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
@@ -1004,6 +985,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             selectExtension.setSelectOnLongClick(true);
             selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((item, b) -> this.onSelectionChanged());
+
+            FastAdapterPreClickSelectHelper<ContentItem> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
+            fastAdapter.setOnPreClickListener(helper::onPreClickListener);
+            fastAdapter.setOnPreLongClickListener(helper::onPreLongClickListener);
         }
 
         // Drag, drop & swiping

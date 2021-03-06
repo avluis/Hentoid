@@ -88,6 +88,7 @@ import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.CircularProgressView;
+import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
@@ -213,6 +214,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             selectExtension.setSelectOnLongClick(true);
             selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+
+            FastAdapterPreClickSelectHelper<ContentItem> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
+            fastAdapter.setOnPreClickListener(helper::onPreClickListener);
+            fastAdapter.setOnPreLongClickListener(helper::onPreLongClickListener);
         }
 
         recyclerView.setAdapter(fastAdapter);
@@ -233,30 +238,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         touchHelper = new ItemTouchHelper(dragSwipeCallback);
         touchHelper.attachToRecyclerView(recyclerView);
 
-        // Item click listeners
-        fastAdapter.setOnPreClickListener((v, a, i, p) -> {
-            if (null == selectExtension) return false;
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> normal click
-                return false;
-            } else { // Existing selection -> toggle selection
-                if (selectedPositions.contains(p) && 1 == selectedPositions.size())
-                    selectExtension.setSelectOnLongClick(true);
-                selectExtension.toggleSelection(p);
-                return true;
-            }
-        });
+        // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
-        fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
-            if (null == selectExtension) return false;
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> select things
-                selectExtension.select(p);
-                selectExtension.setSelectOnLongClick(false);
-                return true;
-            }
-            return false;
-        });
 
         initToolbar();
         initSelectionToolbar();
