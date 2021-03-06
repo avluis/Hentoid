@@ -18,7 +18,7 @@ public class LusciousServer {
     public static final Api API = new Retrofit.Builder()
             .baseUrl(API_URL)
             .client(OkHttpClientSingleton.getInstance())
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create().asLenient())
             .build()
             .create(Api.class);
 
