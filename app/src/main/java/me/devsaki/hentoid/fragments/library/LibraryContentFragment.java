@@ -172,7 +172,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
-
+    private boolean excludeClicked = false;
 
     /**
      * Diff calculation rules for contents
@@ -855,6 +855,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (group != null)
             builder.setGroup(group.id);
 
+        builder.setExcludeMode(excludeClicked);
         search.putExtras(builder.getBundle());
 
         startActivityForResult(search, 999);
@@ -871,9 +872,11 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (requestCode == 999
                 && resultCode == Activity.RESULT_OK
                 && data != null && data.getExtras() != null) {
-            Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
+            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(data.getExtras());
+            Uri searchUri = parser.getUri();
 
             if (searchUri != null) {
+                excludeClicked = parser.getExcludeMode();
                 setQuery(searchUri.getPath());
                 setMetadata(SearchActivityBundle.Parser.parseSearchUri(searchUri));
                 viewModel.searchContent(getQuery(), getMetadata());

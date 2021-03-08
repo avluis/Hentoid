@@ -95,11 +95,13 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // ======== CONSTANTS
     private static final int ATTRS_PER_PAGE = 40;
 
+    private boolean excludeAttr = false;
 
-    public static void invoke(@NonNull Context context, @NonNull FragmentManager fragmentManager, AttributeType[] types) {
+    public static void invoke(@NonNull Context context, @NonNull FragmentManager fragmentManager, AttributeType[] types, boolean excludeClicked) {
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
 
         builder.setAttributeTypes(types);
+        builder.setExcludeMode(excludeClicked);
 
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
         searchBottomSheetFragment.setArguments(builder.getBundle());
@@ -115,6 +117,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         if (bundle != null) {
             SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(bundle);
             selectedAttributeTypes = parser.getAttributeTypes();
+            excludeAttr = parser.getExcludeMode();
             long groupId = parser.getGroupId();
             currentPage = 1;
 
@@ -270,6 +273,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
+            a.setExcluded(excludeAttr);
             viewModel.addSelectedAttribute(a);
             // Empty query and display all attributes again
             tagSearchView.setQuery("", false);

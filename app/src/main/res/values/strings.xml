@@ -415,6 +415,7 @@
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
     <string name="category_tag">Tag (%1$d)</string>
+    <string name="exclude">Exclude</string>
     <string name="category_character">Character (%1$d)</string>
     <string name="category_artist">Artist (%1$d)</string>
     <string name="category_series">Series (%1$d)</string>
