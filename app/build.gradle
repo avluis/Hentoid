@@ -11,19 +11,6 @@ if (file('signing.gradle').exists()) {
     apply from: 'signing.gradle'
 }
 
-repositories {
-    exclusiveContent {
-        forRepository {
-            maven {
-                url 'https://dl.bintray.com/omicronapps/7-Zip-JBinding-4Android'
-            }
-        }
-        filter {
-            includeGroup "net.sf.sevenzipjbinding"
-        }
-    }
-}
-
 android {
     compileSdkVersion 30
     compileOptions {
