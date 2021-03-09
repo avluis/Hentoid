@@ -34,7 +34,7 @@ public class MrmParser extends BaseImageListParser {
         // NB : We can't just guess the URLs by starting to 1 and increment them
         // because the site provides "subchapters" (e.g. 4.6, 2.5)
         List<String> chapterUrls = new ArrayList<>();
-        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MRM.useHentoidAgent());
+        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MRM.useHentoidAgent(), Site.MRM.useWebviewAgent());
         if (doc != null) {
             List<Element> chapters = doc.select("a.post-page-numbers");
             for (Element e : chapters) chapterUrls.add(e.attr("href"));
@@ -45,7 +45,7 @@ public class MrmParser extends BaseImageListParser {
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {
             if (processHalted) break;
-            doc = getOnlineDocument(url, headers, Site.MRM.useHentoidAgent());
+            doc = getOnlineDocument(url, headers, Site.MRM.useHentoidAgent(), Site.MRM.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".entry-content img");
                 for (Element e : images) result.add(e.attr("data-src"));

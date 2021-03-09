@@ -90,7 +90,7 @@ public class HitomiActivity extends BaseWebActivity {
         // 4- For the others (gray list), block them if they _contain_ keywords
         Timber.d(">> examining grey file %s", url);
         try {
-            Response response = HttpHelper.getOnlineResource(url, null, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
+            Response response = HttpHelper.getOnlineResource(url, null, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent(), getStartSite().useWebviewAgent());
             ResponseBody body = response.body();
             if (null == body) throw new IOException("Empty body");
 

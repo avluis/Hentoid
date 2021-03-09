@@ -85,16 +85,17 @@ public class EHentaiParser implements ImageListParser {
              *    B.2- Call the API to get the pictures URL
              */
             boolean useHentoidAgent = Site.EHENTAI.useHentoidAgent();
-            Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent);
+            boolean useWebviewAgent = Site.EHENTAI.useWebviewAgent();
+            Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent, useWebviewAgent);
             if (galleryDoc != null) {
                 // Detect if multipage viewer is on
 //                result = loadMpv("https://e-hentai.org/mpv/530350/8b3c7e4a21/", headers, useHentoidAgent);
                 Elements elements = galleryDoc.select(".gm a[href*='/mpv/']");
                 if (!elements.isEmpty()) {
                     String mpvUrl = elements.get(0).attr("href");
-                    result = loadMpv(content, mpvUrl, headers, useHentoidAgent);
+                    result = loadMpv(content, mpvUrl, headers, useHentoidAgent, useWebviewAgent);
                 } else {
-                    result = loadClassic(content, galleryDoc, headers, useHentoidAgent);
+                    result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
                 }
             }
 
@@ -113,11 +114,12 @@ public class EHentaiParser implements ImageListParser {
             @NonNull Content content,
             @NonNull final String mpvUrl,
             @NonNull final List<Pair<String, String>> headers,
-            boolean useHentoidAgent) throws IOException, EmptyResultException {
+            boolean useHentoidAgent,
+            boolean useWebviewAgent) throws IOException, EmptyResultException {
         List<ImageFile> result = new ArrayList<>();
 
         // B.1- Open the MPV and parse gallery metadata
-        MpvInfo mpvInfo = parseMpvPage(mpvUrl, headers, useHentoidAgent);
+        MpvInfo mpvInfo = parseMpvPage(mpvUrl, headers, useHentoidAgent, useWebviewAgent);
         if (null == mpvInfo)
             throw new EmptyResultException("No exploitable data has been found on the multiple page viewer");
 
@@ -128,7 +130,7 @@ public class EHentaiParser implements ImageListParser {
         for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
             EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum - 1).getKey(), mpvInfo.mpvkey, pageNum);
             String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
-            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
+            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
             ResponseBody body = response.body();
             if (null == body)
                 throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body");
@@ -159,7 +161,8 @@ public class EHentaiParser implements ImageListParser {
             @NonNull Content content,
             @NonNull final Document galleryDoc,
             @NonNull final List<Pair<String, String>> headers,
-            boolean useHentoidAgent) throws IOException, LimitReachedException {
+            boolean useHentoidAgent,
+            boolean useWebviewAgent) throws IOException, LimitReachedException {
         List<ImageFile> result = new ArrayList<>();
 
         // A.1- Detect the number of pages of the gallery
@@ -178,7 +181,7 @@ public class EHentaiParser implements ImageListParser {
 
         if (nbGalleryPages > 1) {
             for (int i = 1; i < nbGalleryPages && !processHalted; i++) {
-                Document pageDoc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent);
+                Document pageDoc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent, useWebviewAgent);
                 if (pageDoc != null) fetchPageUrls(pageDoc, pageUrls);
                 progress.advance();
             }
@@ -191,7 +194,7 @@ public class EHentaiParser implements ImageListParser {
         int order = 1;
         for (String pageUrl : pageUrls) {
             if (processHalted) break;
-            ImageFile img = parsePicturePage(pageUrl, headers, useHentoidAgent, order++, pageUrls.size());
+            ImageFile img = parsePicturePage(pageUrl, headers, useHentoidAgent, useWebviewAgent, order++, pageUrls.size());
             if (img != null) result.add(img);
             progress.advance();
         }
@@ -222,11 +225,12 @@ public class EHentaiParser implements ImageListParser {
             @NonNull final String url,
             @NonNull final List<Pair<String, String>> headers,
             boolean useHentoidAgent,
+            boolean useWebviewAgent,
             int order,
             int nbPages
     ) throws IOException, LimitReachedException {
         ImageFile img = null;
-        Document doc = getOnlineDocument(url, headers, useHentoidAgent);
+        Document doc = getOnlineDocument(url, headers, useHentoidAgent, useWebviewAgent);
         if (doc != null) {
             // Displayed image
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
@@ -267,9 +271,10 @@ public class EHentaiParser implements ImageListParser {
     @Nullable
     static MpvInfo parseMpvPage(@NonNull final String url,
                                 @NonNull final List<Pair<String, String>> headers,
-                                boolean useHentoidAgent) throws IOException {
+                                boolean useHentoidAgent,
+                                boolean useWebviewAgent) throws IOException {
         MpvInfo result = null;
-        Document doc = getOnlineDocument(url, headers, useHentoidAgent);
+        Document doc = getOnlineDocument(url, headers, useHentoidAgent, useWebviewAgent);
         if (doc != null) {
             List<Element> scripts = doc.select("script");
             for (Element script : scripts) {
@@ -303,7 +308,7 @@ public class EHentaiParser implements ImageListParser {
     @Nullable
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) throws Exception {
         List<Pair<String, String>> reqHeaders = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
-        Document doc = getOnlineDocument(url, reqHeaders, Site.EHENTAI.useHentoidAgent());
+        Document doc = getOnlineDocument(url, reqHeaders, Site.EHENTAI.useHentoidAgent(), Site.EHENTAI.useWebviewAgent());
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached

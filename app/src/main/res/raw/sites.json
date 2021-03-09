@@ -1,0 +1,13 @@
+{
+  "sites": {
+    "HITOMI": {
+      "url": "https://hitomi.la",
+      "useMobileAgent": false,
+      "comment": "Hitomi needs a desktop agent to properly display gallery images on some devices"
+    },
+    "NHENTAI": {
+      "url": "https://nhentai.net",
+      "useHentoidAgent": true
+    }
+  }
+}

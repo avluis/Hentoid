@@ -742,6 +742,7 @@ public class ContentDownloadWorker extends Worker {
                 HttpHelper.fixUrl(img.getUrl(), site.getUrl()),
                 requestHeaders,
                 site.useHentoidAgent(),
+                site.useWebviewAgent(),
                 result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
                 error -> onRequestError(error, img, dir, backupUrlFinal, requestHeaders));
     }
