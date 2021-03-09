@@ -222,10 +222,12 @@ public class CustomSubsamplingScaleImageView extends View {
     // Image orientation setting
     private int orientation = ORIENTATION_0;
 
-    // Max scale allowed (prevent infinite zoom)
+    // Max scale allowed (factor of source resolution)
+    // Used to prevent infinite zoom
     private float maxScale = 2F;
 
-    // Min scale allowed (prevent infinite zoom)
+    // Min scale allowed (factor of source resolution)
+    // Used to prevent infinite zoom
     private float minScale = minScale();
 
     // Density to reach before loading higher resolution tiles
@@ -388,8 +390,8 @@ public class CustomSubsamplingScaleImageView extends View {
         screenWidth = context.getResources().getDisplayMetrics().widthPixels;
         screenHeight = context.getResources().getDisplayMetrics().heightPixels;
 
-        setMinimumDpi(120);
-        setDoubleTapZoomDpi(120);
+        setMinimumDpi(160);
+        setDoubleTapZoomDpi(160);
         setMinimumTileDpi(320);
         setGestureDetector(context);
         this.handler = new Handler(Looper.getMainLooper(), message -> {
@@ -2746,6 +2748,7 @@ public class CustomSubsamplingScaleImageView extends View {
         float averageDpi = (metrics.xdpi + metrics.ydpi) / 2;
         setMinScale(averageDpi / dpi);
     }
+
 
     /**
      * Returns the maximum allowed scale.

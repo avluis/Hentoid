@@ -323,6 +323,9 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssView.setOnImageEventListener(this);
                 ssView.setLongTapZoomEnabled(longTapZoomEnabled);
                 ssView.setAutoRotate(autoRotate);
+                // 120 dpi = equivalent to the web browser's max zoom level
+                ssView.setMinimumDpi(120);
+                ssView.setDoubleTapZoomDpi(120);
                 if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
                 if (isSmoothRendering)
                     ssView.setRenderScript(rs);
