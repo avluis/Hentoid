@@ -222,6 +222,10 @@ public class CustomSubsamplingScaleImageView extends View {
     // Image orientation setting
     private int orientation = ORIENTATION_0;
 
+    // Zoom cap for double-tap zoom
+    // (factor of default scaling)
+    private float doubleTapZoomCap = -1;
+
     // Max scale allowed (factor of source resolution)
     // Used to prevent infinite zoom
     private float maxScale = 2F;
@@ -260,8 +264,11 @@ public class CustomSubsamplingScaleImageView extends View {
     private int doubleTapZoomStyle = ZOOM_FOCUS_FIXED;
     private int doubleTapZoomDuration = 500;
 
-    // Current scale and scale at start of zoom
+    // Initial scale, according to panLimit and minimumScaleType
+    private float initialScale = -1;
+    // Current scale
     private float scale;
+    // Scale at start of zoom (transitional)
     private float scaleStart;
 
     // Screen coordinate of top-left corner of source image (image offset relative to screen)
@@ -618,6 +625,7 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     private void reset(boolean newImage) {
         debug("reset newImage=" + newImage);
+        initialScale = -1;
         scale = 0f;
         scaleStart = 0f;
         vTranslate = null;
@@ -1164,6 +1172,11 @@ public class CustomSubsamplingScaleImageView extends View {
             }
         }
         float targetDoubleTapZoomScale = Math.min(maxScale, doubleTapZoomScale);
+        if (doubleTapZoomCap > -1) {
+            targetDoubleTapZoomScale = Math.min(targetDoubleTapZoomScale, initialScale * doubleTapZoomCap);
+            Timber.i(">> doubleTapZoomCap %s -> %s", initialScale, targetDoubleTapZoomScale);
+        }
+
         boolean zoomIn = (scale <= targetDoubleTapZoomScale * 0.9) || scale == minScale;
         float targetScale = zoomIn ? targetDoubleTapZoomScale : minScale();
         if (doubleTapZoomStyle == ZOOM_FOCUS_CENTER_IMMEDIATE) {
@@ -1771,6 +1784,10 @@ public class CustomSubsamplingScaleImageView extends View {
         satTemp.vTranslate.set(vTranslate);
         fitToBounds(center, satTemp, sSize);
         scale = satTemp.scale;
+        if (-1 == initialScale) {
+            initialScale = scale;
+            Timber.i(">> initialScale : %s", initialScale);
+        }
         vTranslate.set(satTemp.vTranslate);
 
         // Recenter images if their dimensions are lower than the view's dimensions after the above call to fitToBounds
@@ -2119,10 +2136,11 @@ public class CustomSubsamplingScaleImageView extends View {
     private static class SingleImage {
         //        private int sampleSize;
 //        private Bitmap bitmap;
-        private boolean loading;
         private float scale = 1;
         private int rawWidth = -1;
         private int rawHeight = -1;
+
+        private boolean loading;
     }
 
     private static class Tile {
@@ -3120,6 +3138,11 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     public final void setDoubleTapZoomDuration(int durationMs) {
         this.doubleTapZoomDuration = Math.max(0, durationMs);
+    }
+
+    // TODO doc
+    public void setDoubleTapZoomCap(float cap) {
+        this.doubleTapZoomCap = cap;
     }
 
 

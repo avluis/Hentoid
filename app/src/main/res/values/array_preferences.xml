@@ -249,6 +249,19 @@
         <item>1</item>
     </string-array>
 
+    <string-array name="pref_viewer_cap_tap_zoom_entries">
+        <item>No capping</item>
+        <item>2x</item>
+        <item>4x</item>
+        <item>6x</item>
+    </string-array>
+    <string-array name="pref_viewer_cap_tap_zoom_values">
+        <item>0</item>
+        <item>2</item>
+        <item>4</item>
+        <item>6</item>
+    </string-array>
+
     <string-array name="pref_lock_timer_entries">
         <item>No delay</item>
         <item>10s</item>

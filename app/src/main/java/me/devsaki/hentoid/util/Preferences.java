@@ -482,6 +482,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.VIEWER_HOLD_TO_ZOOM, Default.VIEWER_HOLD_TO_ZOOM);
     }
 
+    public static int getViewerCapTapZoom() {
+        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_CAP_TAP_ZOOM, Integer.toString(Default.VIEWER_CAP_TAP_ZOOM)) + "");
+    }
+
     public static boolean isViewerAutoRotate() {
         return sharedPreferences.getBoolean(Key.VIEWER_AUTO_ROTATE, Default.VIEWER_AUTO_ROTATE);
     }
@@ -696,6 +700,7 @@ public final class Preferences {
         static final String VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
         static final String VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
         public static final String VIEWER_HOLD_TO_ZOOM = "pref_viewer_zoom_holding";
+        public static final String VIEWER_CAP_TAP_ZOOM = "pref_viewer_cap_tap_zoom";
         public static final String VIEWER_AUTO_ROTATE = "pref_viewer_auto_rotate";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
         public static final String COLOR_THEME = "pref_color_theme";
@@ -776,6 +781,7 @@ public final class Preferences {
         static final int VIEWER_READ_THRESHOLD = Constant.VIEWER_READ_THRESHOLD_1;
         static final int VIEWER_SLIDESHOW_DELAY = Constant.VIEWER_SLIDESHOW_DELAY_2;
         static final boolean VIEWER_HOLD_TO_ZOOM = false;
+        static final int VIEWER_CAP_TAP_ZOOM = Constant.VIEWER_CAP_TAP_ZOOM_NONE;
         static final boolean VIEWER_AUTO_ROTATE = false;
         public static final int COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean QUEUE_AUTOSTART = true;
@@ -897,6 +903,11 @@ public final class Preferences {
 
         public static final int VIEWER_DELETE_TARGET_BOOK = 0;
         public static final int VIEWER_DELETE_TARGET_PAGE = 1;
+
+        public static final int VIEWER_CAP_TAP_ZOOM_NONE = 0;
+        public static final int VIEWER_CAP_TAP_ZOOM_2x = 2;
+        public static final int VIEWER_CAP_TAP_ZOOM_4x = 4;
+        public static final int VIEWER_CAP_TAP_ZOOM_6x = 6;
 
         // Deprecated values kept for housekeeping/migration
         @Deprecated
