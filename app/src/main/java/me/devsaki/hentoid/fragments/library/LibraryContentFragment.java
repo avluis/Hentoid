@@ -436,6 +436,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 return Preferences.Constant.ORDER_FIELD_READS;
             case (R.id.sort_size):
                 return Preferences.Constant.ORDER_FIELD_SIZE;
+            case (R.id.sort_reading_progress):
+                return Preferences.Constant.ORDER_FIELD_READ_PROGRESS;
             case (R.id.sort_custom):
                 return Preferences.Constant.ORDER_FIELD_CUSTOM;
             case (R.id.sort_random):
@@ -461,6 +463,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 return R.string.sort_reads;
             case (Preferences.Constant.ORDER_FIELD_SIZE):
                 return R.string.sort_size;
+            case (Preferences.Constant.ORDER_FIELD_READ_PROGRESS):
+                return R.string.sort_reading_progress;
             case (Preferences.Constant.ORDER_FIELD_CUSTOM):
                 return R.string.sort_custom;
             case (Preferences.Constant.ORDER_FIELD_RANDOM):

@@ -454,6 +454,8 @@ public class ObjectBoxDB {
                 return Content_.reads;
             case Preferences.Constant.ORDER_FIELD_SIZE:
                 return Content_.size;
+            case Preferences.Constant.ORDER_FIELD_READ_PROGRESS:
+                return Content_.readProgress;
             default:
                 return null;
         }
@@ -1262,6 +1264,10 @@ public class ObjectBoxDB {
 
     List<Content> selectDownloadedContentWithNoSize() {
         return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.size).build().find();
+    }
+
+    List<Content> selectDownloadedContentWithNoReadProgress() {
+        return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.readProgress).build().find();
     }
 
     public Query<Content> selectOldStoredContentQ() {

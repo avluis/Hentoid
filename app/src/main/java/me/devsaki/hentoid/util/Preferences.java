@@ -829,6 +829,7 @@ public final class Preferences {
         public static final int ORDER_FIELD_READS = 6;
         public static final int ORDER_FIELD_SIZE = 7;
         public static final int ORDER_FIELD_CHILDREN = 8; // Groups only
+        public static final int ORDER_FIELD_READ_PROGRESS = 9;
         public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 

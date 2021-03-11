@@ -41,7 +41,7 @@
     },
     {
       "id": "2:5880334030341287801",
-      "lastPropertyId": "24:6637631044428919138",
+      "lastPropertyId": "25:515620137730542700",
       "name": "Content",
       "properties": [
         {
@@ -170,6 +170,12 @@
           "id": "24:6637631044428919138",
           "name": "isFlaggedForDeletion",
           "type": 1,
+          "flags": 4
+        },
+        {
+          "id": "25:515620137730542700",
+          "name": "readProgress",
+          "type": 7,
           "flags": 4
         }
       ],

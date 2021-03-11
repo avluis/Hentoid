@@ -25,6 +25,9 @@
         android:id="@+id/sort_size"
         android:title="@string/sort_size" />
     <item
+        android:id="@+id/sort_reading_progress"
+        android:title="@string/sort_reading_progress" />
+    <item
         android:id="@+id/sort_custom"
         android:title="@string/sort_custom"
         android:visible="false" />

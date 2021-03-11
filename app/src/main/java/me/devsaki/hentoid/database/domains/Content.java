@@ -95,11 +95,16 @@ public class Content implements Serializable {
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite;
     private long reads = 0;
-    private long size = 0; // Yes, it _is_ redundant with the contained images' size. ObjectBox can't do thesum in a single Query, so here it is !
     private long lastReadDate;
     private int lastReadPageIndex = 0;
     @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
     private Map<String, String> bookPreferences = new HashMap<>();
+
+    // Aggregated data redundant with the sum of individual data contained in ImageFile
+    // ObjectBox can't do the sum in a single Query, so here it is !
+    private long size = 0;
+    private float readProgress = 0f;
+
     // Temporary during SAVED state only
     private String downloadParams;
     // Temporary during ERROR state only
@@ -651,6 +656,14 @@ public class Content implements Serializable {
 
     public void computeSize() {
         size = getDownloadedPagesSize();
+    }
+
+    public void computeReadProgress() {
+        readProgress = getReadPagesCount() * 1f / Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
+    }
+
+    public float getReadProgress() {
+        return readProgress;
     }
 
     public Site getSite() {
