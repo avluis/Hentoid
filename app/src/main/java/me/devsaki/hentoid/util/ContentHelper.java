@@ -76,6 +76,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 public final class ContentHelper {
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
+    private static final String ILLEGAL_CHARS = "[/\\\\]";
     private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
     private static final int[] queueStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode()};
     private static final int[] queueTabStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode()};
@@ -553,7 +554,7 @@ public final class ContentHelper {
         String author = content.getAuthor().toLowerCase();
 
         return new ImmutablePair<>(
-                formatBookFolderName(content, title, author),
+                formatBookFolderName(content, title.replaceAll(ILLEGAL_CHARS, ""), author.replaceAll(ILLEGAL_CHARS, "")),
                 formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_"))
         );
     }
