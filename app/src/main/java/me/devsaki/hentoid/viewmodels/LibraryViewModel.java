@@ -15,6 +15,8 @@ import androidx.paging.PagedList;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
@@ -438,10 +440,22 @@ public class LibraryViewModel extends AndroidViewModel {
         List<DocumentFile> files = FileHelper.listFiles(getApplication(), bookFolder, null); // Everything (incl. JSON and thumb) gets into the archive
         if (!files.isEmpty()) {
             // Build destination file
-            String destName = ContentHelper.formatBookFolderName(content) + ".zip";
-            OutputStream destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
-            Timber.d("Destination file: %s", destName);
-            ArchiveHelper.zipFiles(getApplication(), files, destFile);
+            ImmutablePair<String, String> bookFolderName = ContentHelper.formatBookFolderName(content);
+            // First try creating the file with the new naming...
+            String destName = bookFolderName.left + ".zip";
+            OutputStream destFile = null;
+            try {
+                try {
+                    destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
+                } catch (IOException e) { // ...if it fails, try creating the file with the old sanitized naming
+                    destName = bookFolderName.right + ".zip";
+                    destFile = FileHelper.openNewDownloadOutputStream(getApplication(), destName, ArchiveHelper.ZIP_MIME_TYPE);
+                }
+                Timber.d("Destination file: %s", destName);
+                ArchiveHelper.zipFiles(getApplication(), files, destFile);
+            } finally {
+                if (destFile != null) destFile.close();
+            }
             return content;
         }
         return null;
