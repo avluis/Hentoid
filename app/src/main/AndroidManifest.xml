@@ -20,7 +20,7 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <permission
-        android:name="me.devsaki.hentoid.INTENT_PERMISSION"
+        android:name="me.devsaki.hentoid.DEFAULT_PERMISSION"
         android:description="Intent permission"
         android:label="Intent permission"
         android:protectionLevel="normal" />
