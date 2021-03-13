@@ -168,7 +168,7 @@ public class SearchActivity extends BaseActivity {
         updateAttributeTypeButton(sourceTypeButton, attrCount, AttributeType.SOURCE);
     }
 
-    public void OnExcludeClick(View view){
+    public void onExcludeClick(View view){
          excludeClicked = ((CheckBox) view).isChecked();
     }
 
