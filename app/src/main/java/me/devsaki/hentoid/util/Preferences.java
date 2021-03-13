@@ -906,9 +906,9 @@ public final class Preferences {
         public static final int VIEWER_DELETE_TARGET_PAGE = 1;
 
         public static final int VIEWER_CAP_TAP_ZOOM_NONE = 0;
-        public static final int VIEWER_CAP_TAP_ZOOM_2x = 2;
-        public static final int VIEWER_CAP_TAP_ZOOM_4x = 4;
-        public static final int VIEWER_CAP_TAP_ZOOM_6x = 6;
+        public static final int VIEWER_CAP_TAP_ZOOM_2X = 2;
+        public static final int VIEWER_CAP_TAP_ZOOM_4X = 4;
+        public static final int VIEWER_CAP_TAP_ZOOM_6X = 6;
 
         // Deprecated values kept for housekeeping/migration
         @Deprecated
