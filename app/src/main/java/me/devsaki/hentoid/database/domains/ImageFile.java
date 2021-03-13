@@ -65,7 +65,7 @@ public class ImageFile {
         this.favourite = img.favourite;
         this.isCover = img.isCover;
         this.status = img.status;
-        this.content = img.content;
+//        this.content = img.content; ObjectBox doesn't like that
         this.mimeType = img.mimeType;
         this.size = img.size;
         this.downloadParams = img.downloadParams;
