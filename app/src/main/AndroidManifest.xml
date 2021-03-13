@@ -19,6 +19,12 @@
     <!-- Required to install update packages when targeting API 29 or higher -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
+    <permission
+        android:name="me.devsaki.hentoid.INTENT_PERMISSION"
+        android:description="Intent permission"
+        android:label="Intent permission"
+        android:protectionLevel="normal" />
+
 
     <application
         android:name=".HentoidApp"
@@ -35,6 +41,7 @@
         <activity
             android:name=".activities.SplashActivity"
             android:noHistory="true"
+            android:permission="me.devsaki.hentoid.DEFAULT_PERMISSION"
             android:theme="@style/Theme.Light.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -168,6 +175,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activities.IntentActivity"
+            android:permission="me.devsaki.hentoid.DEFAULT_PERMISSION"
             android:theme="@style/Theme.Invisible">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -482,8 +490,8 @@
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider.FileProvider"
-            android:exported="false"
             android:enabled="true"
+            android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
