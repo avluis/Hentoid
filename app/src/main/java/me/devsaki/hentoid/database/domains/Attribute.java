@@ -94,11 +94,14 @@ public class Attribute {
         return type;
     }
 
-    public Attribute setExcluded(boolean toExclude){
+    public Attribute setExcluded(boolean toExclude) {
         excluded = toExclude;
         return this;
     }
-    public boolean isExcluded(){return excluded; };
+
+    public boolean isExcluded() {
+        return excluded;
+    }
 
     public void setType(@Nonnull AttributeType type) {
         this.type = type;
