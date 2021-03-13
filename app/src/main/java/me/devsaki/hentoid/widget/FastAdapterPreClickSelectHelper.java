@@ -11,7 +11,7 @@ import com.mikepenz.fastadapter.select.SelectExtension;
 
 import java.util.Set;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "java:S1172"})
 public class FastAdapterPreClickSelectHelper<T extends IItem<? extends RecyclerView.ViewHolder>> {
 
     private final SelectExtension<T> selectExtension;
