@@ -27,13 +27,12 @@
         android:id="@+id/checked_indicator"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/ic_check"
+        android:src="@drawable/ic_checked_circle"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@id/viewer_gallery_image"
         app:layout_constraintTop_toTopOf="@id/viewer_gallery_image"
         app:layout_constraintVertical_bias="1.0"
-        app:tint="@color/white_opacity_87"
-        android:background="@color/black_opacity_87"
+        app:tint="?colorSecondary"
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
 

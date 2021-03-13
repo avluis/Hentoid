@@ -48,6 +48,7 @@ public class DatabaseMaintenance {
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanBookmarksOneShot));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
         result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
+        result.add(createObservableFrom(context, DatabaseMaintenance::computeReadingProgress));
         return result;
     }
 
@@ -270,6 +271,27 @@ public class DatabaseMaintenance {
                 }
             }
             Timber.i("Create non-existing groupings : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void computeReadingProgress(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Compute missing downloaded Content size according to underlying ImageFile sizes
+            Timber.i("Computing downloaded content read progress : start");
+            List<Content> contents = db.selectDownloadedContentWithNoReadProgress();
+            Timber.i("Computing downloaded content read progress : %s books detected", contents.size());
+            int max = contents.size();
+            float pos = 1;
+            for (Content c : contents) {
+                c.computeReadProgress();
+                db.insertContent(c);
+                emitter.onNext(pos++ / max);
+            }
+            Timber.i("Computing downloaded content read progress : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

@@ -38,6 +38,7 @@ public class SearchViewModel extends ViewModel {
     private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
 
 
+
     // Currently active attribute types
     private List<AttributeType> attributeTypes;
 
@@ -183,9 +184,13 @@ public class SearchViewModel extends ViewModel {
                     List<Attribute> selectedAttrs = selectedAttributes.getValue();
                     if (selectedAttrs != null) {
                         for (Attribute a : selectedAttrs) {
-                            int countForType = results.get(a.getType().getCode());
-                            if (countForType > 0)
-                                results.put(a.getType().getCode(), --countForType);
+                            // if attribute is excluded already, there's no need to reduce attrPerType value,
+                            // since attr is no longer amongst results
+                            if(!a.isExcluded()) {
+                                int countForType = results.get(a.getType().getCode());
+                                if (countForType > 0)
+                                    results.put(a.getType().getCode(), --countForType);
+                            }
                         }
                     }
 

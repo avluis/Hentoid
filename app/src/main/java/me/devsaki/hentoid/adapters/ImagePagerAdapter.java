@@ -91,7 +91,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private boolean longTapZoomEnabled;
     private boolean autoRotate;
     private boolean isSmoothRendering;
-
+    private float doubleTapZoomCap;
 
     public ImagePagerAdapter(Context context) {
         super(DIFF_CALLBACK);
@@ -120,6 +120,10 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         displayMode = Preferences.getContentDisplayMode(bookPreferences);
         viewerOrientation = Preferences.getContentOrientation(bookPreferences);
         isSmoothRendering = Preferences.isContentSmoothRendering(bookPreferences);
+        int doubleTapZoomCapCode = Preferences.getViewerCapTapZoom();
+        if (Preferences.Constant.VIEWER_CAP_TAP_ZOOM_NONE == doubleTapZoomCapCode)
+            doubleTapZoomCap = -1;
+        else doubleTapZoomCap = doubleTapZoomCapCode;
     }
 
     public void setRecyclerView(RecyclerView v) {
@@ -322,7 +326,11 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 ssView.setMinimumScaleType(getScaleType());
                 ssView.setOnImageEventListener(this);
                 ssView.setLongTapZoomEnabled(longTapZoomEnabled);
+                ssView.setDoubleTapZoomCap(doubleTapZoomCap);
                 ssView.setAutoRotate(autoRotate);
+                // 120 dpi = equivalent to the web browser's max zoom level
+                ssView.setMinimumDpi(120);
+                ssView.setDoubleTapZoomDpi(120);
                 if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
                 if (isSmoothRendering)
                     ssView.setRenderScript(rs);

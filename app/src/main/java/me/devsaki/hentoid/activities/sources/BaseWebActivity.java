@@ -273,6 +273,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         // Top toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setOnMenuItemClickListener(this::onMenuItemSelected);
+        toolbar.setTitle(getStartSite().getDescription());
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
         bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
 
@@ -698,7 +699,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         else if (ActionMode.DOWNLOAD_PLUS == actionButtonMode) processDownload(false, true);
         else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
         else if (ActionMode.READ == actionButtonMode && currentContent != null) {
-            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), currentContent.getCoverImageUrl());
+            String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
+            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
             if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()
                     || StatusContent.MIGRATED == currentContent.getStatus()))
@@ -844,7 +846,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (content.getUrl().isEmpty()) return result;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
-        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), content.getCoverImageUrl());
+        String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? content.getCoverImageUrl() : "";
+        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), searchUrl);
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));

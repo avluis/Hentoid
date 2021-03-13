@@ -140,7 +140,12 @@ public class SettingsImportDialogFragment extends DialogFragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         c -> onFileDeserialized(c, jsonFile),
-                        Timber::w
+                        t -> {
+                            TextView errorTxt = requireViewById(rootView, R.id.import_file_invalid_text);
+                            errorTxt.setText(getResources().getString(R.string.import_file_invalid, jsonFile.getName()));
+                            errorTxt.setVisibility(View.VISIBLE);
+                            Timber.w(t);
+                        }
                 );
     }
 
@@ -148,7 +153,7 @@ public class SettingsImportDialogFragment extends DialogFragment {
         importDisposable.dispose();
 
         TextView errorTxt = requireViewById(rootView, R.id.import_file_invalid_text);
-        if (collectionOptional.isEmpty()) {
+        if (collectionOptional.isEmpty() || collectionOptional.get().getSettings().isEmpty()) {
             errorTxt.setText(getResources().getString(R.string.import_file_invalid, jsonFile.getName()));
             errorTxt.setVisibility(View.VISIBLE);
         } else {

@@ -477,6 +477,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             if (readPageNumbers.size() > previousReadPagesCount) {
                 for (ImageFile img : theImages)
                     if (readPageNumbers.contains(img.getOrder())) img.setRead(true);
+                savedContent.computeReadProgress();
             }
 
             if (indexToSet != savedContent.getLastReadPageIndex() || updateReads || readPageNumbers.size() > previousReadPagesCount)

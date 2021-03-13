@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import io.kotlintest.matchers.numerics.shouldBeGreaterThanOrEqual
 import io.kotlintest.matchers.types.shouldNotBeNull
 import io.kotlintest.shouldBe
@@ -18,7 +20,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import timber.log.Timber
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 
 
 @RunWith(RobolectricTestRunner::class)
@@ -37,6 +41,7 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
         @JvmStatic
         fun prepareDB() {
             println(">> Preparing DB...")
+
             val attrs1 = ArrayList<Attribute>()
             attrs1.add(Attribute(AttributeType.ARTIST, "artist1"))
             attrs1.add(Attribute(AttributeType.LANGUAGE, "english"))
@@ -56,6 +61,55 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
             mockObjectBoxDAO.insertContent(Content().setTitle("").setStatus(StatusContent.ONLINE).setSite(Site.HITOMI).addAttributes(attrs3))
             println(">> DB prepared")
         }
+    }
+
+    fun lookForAttr(type: AttributeType, name: String): Attribute? {
+        val result = mockObjectBoxDAO.selectAttributeMasterDataPaged(listOf(type), name, null, false, 1, 40, 0).blockingGet()
+        return result.attributes[0]
+    }
+
+    fun <T> LiveData<T>.observeForTesting(block: () -> Unit) {
+        val observer = Observer<T> { }
+        try {
+            observeForever(observer)
+            block()
+        } finally {
+            removeObserver(observer)
+        }
+    }
+
+    /**
+     * Gets the value of a [LiveData] or waits for it to have one, with a timeout.
+     *
+     * Use this extension from host-side (JVM) tests. It's recommended to use it alongside
+     * `InstantTaskExecutorRule` or a similar mechanism to execute tasks synchronously.
+     */
+    fun <T> LiveData<T>.getOrAwaitValue(
+            time: Long = 2,
+            timeUnit: TimeUnit = TimeUnit.SECONDS,
+            afterObserve: () -> Unit = {}
+    ): T {
+        var data: T? = null
+        val latch = CountDownLatch(1)
+        val observer = object : Observer<T> {
+            override fun onChanged(o: T?) {
+                data = o
+                latch.countDown()
+                this@getOrAwaitValue.removeObserver(this)
+            }
+        }
+        this.observeForever(observer)
+
+        afterObserve.invoke()
+
+        // Don't wait indefinitely if the LiveData is not set.
+        if (!latch.await(time, timeUnit)) {
+            this.removeObserver(observer)
+            throw TimeoutException("LiveData value was never set.")
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        return data as T
     }
 
     @Test
@@ -115,6 +169,58 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
 
     @Test
     fun `count category attributes filtered`() {
-        // TODO
+        println(">> count category attributes filtered START")
+        val viewModel = SearchViewModel(mockObjectBoxDAO, 1)
+        val searchAttr = lookForAttr(AttributeType.ARTIST, "artist1")
+        searchAttr.shouldNotBeNull()
+        viewModel.addSelectedAttribute(searchAttr)
+
+        val attrs = viewModel.attributesCountData.value
+        attrs.shouldNotBeNull()
+
+        // General attributes
+        attrs.size().shouldBe(3)
+        attrs.indexOfKey(AttributeType.ARTIST.code).shouldBeGreaterThanOrEqual(0)
+        attrs.indexOfKey(AttributeType.LANGUAGE.code).shouldBeGreaterThanOrEqual(0)
+        attrs.indexOfKey(AttributeType.SOURCE.code).shouldBeGreaterThanOrEqual(0)
+
+        // Details
+        attrs[AttributeType.ARTIST.code].shouldBe(0) // Once we select one artist, any other artist is unavailable
+        attrs[AttributeType.LANGUAGE.code].shouldBe(1)
+        attrs[AttributeType.SOURCE.code].shouldBe(2)
+
+        println(">> count category attributes filtered END")
+    }
+
+    @Test
+    fun `count books unfiltered`() {
+        println(">> count books unfiltered START")
+        val viewModel = SearchViewModel(mockObjectBoxDAO, 1)
+        viewModel.update()
+
+        val typeList = ArrayList<AttributeType>()
+        typeList.add(AttributeType.ARTIST)
+        viewModel.setAttributeTypes(typeList)
+        viewModel.setAttributeQuery("", 1, 40)
+
+        val books = viewModel.selectedContentCount.getOrAwaitValue {}
+        books.shouldBe(3) // One of the books is not in the DOWNLOADED state
+
+        println(">> count books unfiltered END")
+    }
+
+    @Test
+    fun `count books filtered`() {
+        println(">> count books filtered START")
+        val viewModel = SearchViewModel(mockObjectBoxDAO, 1)
+
+        val searchAttr = lookForAttr(AttributeType.ARTIST, "artist1")
+        searchAttr.shouldNotBeNull()
+        viewModel.addSelectedAttribute(searchAttr)
+
+        val books = viewModel.selectedContentCount.getOrAwaitValue {}
+        books.shouldBe(2)
+
+        println(">> count books filtered END")
     }
 }
