@@ -186,7 +186,7 @@ public class MetaImportDialogFragment extends DialogFragment {
         importDisposable.dispose();
 
         TextView errorTxt = requireViewById(rootView, R.id.import_file_invalid_text);
-        if (collectionOptional.isEmpty()) {
+        if (collectionOptional.isEmpty() || collectionOptional.get().isEmpty()) {
             errorTxt.setText(getResources().getString(R.string.import_file_invalid, jsonFile.getName()));
             errorTxt.setVisibility(View.VISIBLE);
         } else {
