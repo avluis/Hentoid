@@ -888,6 +888,7 @@ public final class ContentHelper {
         return reparseFromScratch(content, content.getGalleryUrl());
     }
 
+    // TODO visual feedback to warn the user about redownload "from scratch" having failed (whenever the original content is returned)
     private static Content reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
         Helper.assertNonUiThread();
 
