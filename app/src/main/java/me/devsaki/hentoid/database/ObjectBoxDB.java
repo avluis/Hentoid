@@ -734,7 +734,7 @@ public class ObjectBoxDB {
         // If first tag is to be excluded, start shrinking the whole database
         List<Long> idsFull = attrs.get(0).isExcluded()
                 ? Helper.getListFromPrimitiveArray(contentFromAttributesQueryBuilder.build().findIds())
-                : null;
+                : Collections.emptyList();
 
         contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
         contentFromAttributesQueryBuilder.in(Content_.status, libraryStatus);
@@ -762,7 +762,6 @@ public class ObjectBoxDB {
 
                 // If first tag is to be excluded, start trimming results
                 if (attr.isExcluded()) {
-
                     idsFull.removeAll(results);
                     results = idsFull;
                 }
