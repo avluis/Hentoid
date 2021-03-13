@@ -21,8 +21,8 @@
 
     <permission
         android:name="me.devsaki.hentoid.DEFAULT_PERMISSION"
-        android:description="Intent permission"
-        android:label="Intent permission"
+        android:description="@string/default_permission"
+        android:label="@string/default_permission"
         android:protectionLevel="normal" />
 
 
