@@ -937,15 +937,13 @@ public final class ContentHelper {
     }
 
     // TODO doc
-    public static Content purgeFiles(@NonNull final Context context, @NonNull final Content content) {
+    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content) {
         DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
-        if (null == bookFolder) return null;
-
-        List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, null); // Remove everything (incl. JSON and thumb)
-        if (!files.isEmpty())
-            for (DocumentFile file : files) file.delete();
-
-        return content;
+        if (bookFolder != null) {
+            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, null); // Remove everything (incl. JSON and thumb)
+            if (!files.isEmpty())
+                for (DocumentFile file : files) file.delete();
+        }
     }
 
     /**

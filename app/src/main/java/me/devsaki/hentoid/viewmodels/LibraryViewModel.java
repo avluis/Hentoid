@@ -314,7 +314,10 @@ public class LibraryViewModel extends AndroidViewModel {
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
                         .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : c)
-                        .map(c -> ContentHelper.purgeFiles(getApplication(), c))
+                        .map(c -> {
+                            if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
+                            return c;
+                        })
                         .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus))
                         .doOnComplete(() -> {
                             // TODO is there stuff to do on the IO thread ?
