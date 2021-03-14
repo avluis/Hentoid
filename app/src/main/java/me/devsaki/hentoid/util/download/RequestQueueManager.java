@@ -178,9 +178,8 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
     @Override
     public void onRequestEvent(Request<?> request, int event) {
-        // No need to listen to any other event
         if (event == RequestQueue.RequestEvent.REQUEST_FINISHED) {
-            onRequestFinished((Request<T>)request);
+            onRequestFinished((Request<T>)request); // https://github.com/google/volley/issues/403
         }
     }
 }
