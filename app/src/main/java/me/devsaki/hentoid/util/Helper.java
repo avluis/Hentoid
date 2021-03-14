@@ -18,6 +18,7 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.annimon.stream.Stream;
+import com.skydoves.submarine.SubmarineView;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -25,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +39,7 @@ import javax.annotation.Nonnull;
 
 import io.reactivex.disposables.Disposable;
 import io.whitfin.siphash.SipHasher;
+import timber.log.Timber;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 

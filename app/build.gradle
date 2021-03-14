@@ -182,6 +182,9 @@ dependencies {
     // Popup menus with icons
     implementation 'com.github.skydoves:powermenu:2.1.9'
 
+    // Micro menu
+    implementation "com.github.skydoves:submarine:1.0.5"
+
     // Fast scroller
     implementation "me.zhanghai.android.fastscroll:library:1.1.5"
 

@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
@@ -30,6 +31,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.skydoves.submarine.SubmarineItem;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -135,9 +137,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             switch (clickedMenuItem.getItemId()) {
                 case R.id.action_show_favorite_pages:
                     onShowFavouriteClick();
-                    break;
-                case R.id.action_page_menu:
-                    onPageMenuClick();
                     break;
                 case R.id.action_book_settings:
                     onBookSettingsClick();
@@ -249,7 +248,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (Preferences.Constant.VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             ViewerBrowseModeDialogFragment.invoke(this);
         updatePageDisplay();
-        updateFavouritesGalleryButtonDisplay();
     }
 
     // Make sure position is saved when app is closed by the user
@@ -374,9 +372,23 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             }
         });
 
+        // Information micro menu
+        binding.controlsOverlay.informationMicroMenu.setSubmarineItemClickListener((p, i) -> onInfoMicroMenuClick(p));
+        binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book)));
+        binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page)));
+        binding.controlsOverlay.viewerInfoBtn.setOnClickListener(v -> binding.controlsOverlay.informationMicroMenu.floats());
+        binding.controlsOverlay.informationMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.informationMicroMenu.dips());
+
+        // Favourite micro menu
+        binding.controlsOverlay.favouriteMicroMenu.setSubmarineItemClickListener((p, i) -> onFavouriteMicroMenuClick(p));
+        // TODO change item colour according to current fav state
+        binding.controlsOverlay.favouriteMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book)));
+        binding.controlsOverlay.favouriteMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page)));
+        binding.controlsOverlay.viewerFavouriteActionBtn.setOnClickListener(v -> binding.controlsOverlay.favouriteMicroMenu.floats());
+        binding.controlsOverlay.favouriteMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.favouriteMicroMenu.dips());
+
         // Gallery
         binding.controlsOverlay.viewerGalleryBtn.setOnClickListener(v -> displayGallery(false));
-        binding.controlsOverlay.viewerFavouritesBtn.setOnClickListener(v -> displayGallery(true));
     }
 
     /**
@@ -409,11 +421,25 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     }
 
     /**
-     * Handle click on "Page menu" action button
+     * Handle click on "Information" micro menu
      */
-    private void onPageMenuClick() {
+    private void onInfoMicroMenuClick(int position) {
+        Timber.i(">> pos %s", position);
+        // TODO 0 = book; 1 = page
         float currentScale = adapter.getScaleAtPosition(imageIndex);
         ViewerBottomSheetFragment.show(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+        binding.controlsOverlay.informationMicroMenu.dips();
+    }
+
+    /**
+     * Handle click on "Favourite" micro menu
+     */
+    private void onFavouriteMicroMenuClick(int position) {
+        Timber.i(">> pos %s", position);
+        // TODO 0 = book; 1 = page
+        // TODO change item colour
+
+        binding.controlsOverlay.favouriteMicroMenu.dips();
     }
 
     /**
@@ -563,7 +589,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             adapter.resetScaleAtPosition(scrollPosition);
 
         updatePageDisplay();
-        updateFavouritesGalleryButtonDisplay();
     }
 
     /**
@@ -601,18 +626,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         maxPageNumber = content.getQtyPages();
         updatePageDisplay();
-    }
-
-    /**
-     * Update the display of the favourites gallery launcher
-     */
-    private void updateFavouritesGalleryButtonDisplay() {
-        if (binding != null)
-            if (adapter.isFavouritePresent()) {
-                binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.VISIBLE);
-            } else {
-                binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.INVISIBLE);
-            }
     }
 
     /**

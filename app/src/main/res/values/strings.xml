@@ -455,6 +455,7 @@
     <string name="copy_download_folder_fail">Could not write to Downloads folder</string>
     <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
     <string name="viewer_ask_delete_page">Are you sure you wish to delete this page?</string>
+    <string name="information_help">Information</string>
     <string name="previous_book_help">Previous book</string>
     <string name="next_book_help">Next book</string>
     <string name="gallery_help">Book gallery</string>
