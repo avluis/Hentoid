@@ -203,7 +203,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
 
     // For downloading images : github.com/google/volley
-    implementation 'com.android.volley:volley:1.1.1'
+    implementation 'com.android.volley:volley:1.2.0'
     // <-- if this evolves, please examine RequestQueueManager.getRequestQueue for evolutions
 
     // Retrofit-ready-ready HTML parser with CSS selectors : https://github.com/DroidsOnRoids/jspoon; uses JSOUP
