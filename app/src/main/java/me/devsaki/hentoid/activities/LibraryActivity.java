@@ -825,6 +825,7 @@ public class LibraryActivity extends BaseActivity {
             alertIcon.setVisibility(View.GONE);
             alertFixBtn.setVisibility(View.GONE);
         } // Don't show rationales here; the alert still displayed on screen should be enough
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     public void closeNavigationDrawer() {
