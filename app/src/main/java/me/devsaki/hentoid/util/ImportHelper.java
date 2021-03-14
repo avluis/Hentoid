@@ -62,10 +62,6 @@ public class ImportHelper {
 
     private static final String EXTERNAL_LIB_TAG = "external-library";
 
-    private static final int RQST_STORAGE_PERMISSION_HENTOID = 3;
-    private static final int RQST_STORAGE_PERMISSION_EXTERNAL = 4;
-    public static final int RQST_PICK_IMPORT_FILE = 5;
-
     @IntDef({PickerResult.OK, PickerResult.KO_NO_URI, PickerResult.KO_CANCELED, PickerResult.KO_OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PickerResult {
@@ -156,34 +152,6 @@ public class ImportHelper {
         return new ImmutablePair<>(PickerResult.KO_OTHER, null);
     }
 
-
-    /**
-     * Open the SAF folder picker
-     *
-     * @param caller     Caller fragment
-     * @param isExternal True if the picker is used to import the external library; false if not TODO this parameter is weirdly designed
-     */
-        /*
-    public static void openFolderPicker(@NonNull final Fragment caller, boolean isExternal) {
-        Intent intent = getFolderPickerIntent(caller.requireContext());
-        caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
-    }
-         */
-
-    /**
-     * Open the SAF folder picker
-     *
-     * @param caller     Caller activity
-     * @param isExternal True if the picker is used to import the external library; false if not TODO this parameter is weirdly designed
-     */
-    /*
-    public static void openFolderPicker(@NonNull final Activity caller, boolean isExternal) {
-        Intent intent = getFolderPickerIntent(caller.getParent());
-        caller.startActivityForResult(intent, isExternal ? RQST_STORAGE_PERMISSION_EXTERNAL : RQST_STORAGE_PERMISSION_HENTOID);
-    }
-
-     */
-
     /**
      * Get the intent for the SAF folder picker properly set up, positioned on the Hentoid primary folder
      *
@@ -209,21 +177,6 @@ public class ImportHelper {
     }
 
     /**
-     * Open the SAF file picker
-     *
-     * @param caller Caller fragment
-     */
-    /*
-    public static void openFilePicker(@NonNull final Fragment caller) {
-        Intent intent = getFilePickerIntent();
-
-
-        caller.startActivityForResult(intent, RQST_PICK_IMPORT_FILE);
-    }
-
-     */
-
-    /**
      * Get the intent for the SAF file picker properly set up
      *
      * @return Intent for the SAF folder picker
@@ -237,41 +190,6 @@ public class ImportHelper {
         HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
         return intent;
     }
-
-    /**
-     * Process the result of the SAF picker
-     *
-     * @param context     Context to be used
-     * @param requestCode Request code transmitted by the picker
-     * @param resultCode  Result code transmitted by the picker
-     * @param data        Intent data transmitted by the picker
-     * @return Standardized result - see ImportHelper.Result
-     */
-    /*
-    public static @Result
-    int processPickerResult(
-            @NonNull final Context context,
-            int requestCode,
-            int resultCode,
-            final Intent data) {
-        HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
-
-        // Return from the SAF picker
-        if ((requestCode == RQST_STORAGE_PERMISSION_HENTOID || requestCode == RQST_STORAGE_PERMISSION_EXTERNAL) && resultCode == Activity.RESULT_OK) {
-            // Get Uri from Storage Access Framework
-            Uri treeUri = data.getData();
-            if (treeUri != null) {
-                if (requestCode == RQST_STORAGE_PERMISSION_EXTERNAL)
-                    return setAndScanExternalFolder(context, treeUri);
-                else
-                    return setAndScanHentoidFolder(context, treeUri, true, null);
-            } else return Result.KO_INVALID_FOLDER;
-        } else if (resultCode == Activity.RESULT_CANCELED) {
-            return Result.KO_CANCELED;
-        } else return Result.KO_OTHER;
-    }
-
-     */
 
     /**
      * Scan the given tree URI for a Hentoid folder

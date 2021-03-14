@@ -102,27 +102,6 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         }
     }
 
-    /*
-    // Callback from the directory chooser
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data)) {
-            ImportHelper.Result.OK_EMPTY_FOLDER -> nextStep()
-            ImportHelper.Result.OK_LIBRARY_DETECTED -> updateOnSelectFolder() // Import service is already launched by the Helper; nothing else to do
-            ImportHelper.Result.OK_LIBRARY_DETECTED_ASK -> {
-                updateOnSelectFolder()
-                ImportHelper.showExistingLibraryDialog(requireContext()) { onCancelExistingLibraryDialog() }
-            }
-            ImportHelper.Result.KO_CANCELED -> Snackbar.make(binding.main, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.KO_INVALID_FOLDER -> Snackbar.make(binding.main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.KO_APP_FOLDER -> Snackbar.make(binding.main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.KO_DOWNLOAD_FOLDER -> Snackbar.make(binding.main, R.string.import_download_folder, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.KO_CREATE_FAIL -> Snackbar.make(binding.main, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.KO_OTHER -> Snackbar.make(binding.main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
-        }
-    }
-     */
-
     private fun updateOnSelectFolder() {
         mergedBinding.importStep1Button.visibility = View.INVISIBLE
         mergedBinding.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true)

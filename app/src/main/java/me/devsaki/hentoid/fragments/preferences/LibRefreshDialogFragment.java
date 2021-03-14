@@ -302,64 +302,6 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 // Nothing should happen here
         }
     }
-/*
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        compositeDisposable.add(Single.fromCallable(() -> ImportHelper.processPickerResult(requireActivity(), requestCode, resultCode, data))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        this::processPickerResult,
-                        Timber::w
-                )
-        );
-    }
-
-    public void processPickerResult(@ImportHelper.Result int result) {
-        switch (result) {
-            case ImportHelper.Result.OK_EMPTY_FOLDER:
-                dismiss();
-                break;
-            case ImportHelper.Result.OK_LIBRARY_DETECTED:
-                // Hentoid folder is finally selected at this point -> Update UI
-                updateOnSelectFolder();
-                // Import service is already launched by the Helper; nothing else to do
-                break;
-            case ImportHelper.Result.OK_LIBRARY_DETECTED_ASK:
-                updateOnSelectFolder();
-                ImportHelper.showExistingLibraryDialog(requireContext(), this::onCancelExistingLibraryDialog);
-                break;
-            case ImportHelper.Result.KO_CANCELED:
-                Snackbar.make(rootView, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show();
-                break;
-            case ImportHelper.Result.KO_INVALID_FOLDER:
-                Snackbar.make(rootView, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
-                setCancelable(true);
-                break;
-            case ImportHelper.Result.KO_APP_FOLDER:
-                Snackbar.make(rootView, R.string.import_app_folder, BaseTransientBottomBar.LENGTH_LONG).show();
-                setCancelable(true);
-                break;
-            case ImportHelper.Result.KO_DOWNLOAD_FOLDER:
-                Snackbar.make(rootView, R.string.import_download_folder, BaseTransientBottomBar.LENGTH_LONG).show();
-                setCancelable(true);
-                break;
-            case ImportHelper.Result.KO_CREATE_FAIL:
-                Snackbar.make(rootView, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show();
-                setCancelable(true);
-                break;
-            case ImportHelper.Result.KO_OTHER:
-                Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
-                setCancelable(true);
-                break;
-            default:
-                // Nothing should happen here
-        }
-    }
-
- */
 
     private void onCancelExistingLibraryDialog() {
         // Revert back to initial state where only the "Select folder" button is visible
