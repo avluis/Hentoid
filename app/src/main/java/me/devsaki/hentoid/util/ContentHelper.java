@@ -10,7 +10,6 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -130,7 +129,7 @@ public final class ContentHelper {
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         if (content.getSite().equals(Site.NONE)) return;
 
-        Intent intent = new Intent(context, content.getWebActivityClass(content.getSite()));
+        Intent intent = new Intent(context, Content.getWebActivityClass(content.getSite()));
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(content.getGalleryUrl());
         intent.putExtras(builder.getBundle());
@@ -429,15 +428,9 @@ public final class ContentHelper {
                                     },
                                     Timber::e
                             );
-                    /*
-                    if (context instanceof LifecycleOwner) {
-                        Helper.LifecycleRxCleaner cleaner = new Helper.LifecycleRxCleaner(unarchiveDisposable);
-                        ((LifecycleOwner) context).getLifecycle().addObserver(cleaner);
-                    }
-                     */
-                    // Not ideal, but better than attaching it to the calling service that has not enough longevity
-                    Helper.LifecycleRxCleaner cleaner = new Helper.LifecycleRxCleaner(unarchiveDisposable);
-                    ProcessLifecycleOwner.get().getLifecycle().addObserver(cleaner);
+
+                    // Not ideal, but better than attaching it to the calling service that may not have enough longevity
+                    new Helper.LifecycleRxCleaner(unarchiveDisposable).publish();
                 } catch (IOException e) {
                     Timber.w(e);
                 }
@@ -883,7 +876,6 @@ public final class ContentHelper {
     }
 
     // TODO doc
-    @Nullable
     public static Content reparseFromScratch(@NonNull final Content content) throws IOException {
         return reparseFromScratch(content, content.getGalleryUrl());
     }

@@ -136,9 +136,9 @@ dependencies {
     implementation "androidx.work:work-runtime:2.5.0"
 
     // For ViewModel to work
-    def android_lifecycle_version = "2.2.0"
-    implementation "androidx.lifecycle:lifecycle-extensions:$android_lifecycle_version"
+    def android_lifecycle_version = "2.3.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel:$android_lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
     kapt("androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_version")
 

@@ -5,6 +5,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 
@@ -14,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.annimon.stream.Stream;
 
@@ -385,7 +387,6 @@ public final class Helper {
 
         private final Disposable disposable;
 
-
         public LifecycleRxCleaner(Disposable disposable) {
             this.disposable = disposable;
         }
@@ -393,6 +394,11 @@ public final class Helper {
         @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
         private void onDestroy() {
             disposable.dispose();
+        }
+
+        public void publish() {
+            Handler autoCleanHandler = new Handler(Looper.getMainLooper());
+            autoCleanHandler.post(() -> ProcessLifecycleOwner.get().getLifecycle().addObserver(this));
         }
     }
 
