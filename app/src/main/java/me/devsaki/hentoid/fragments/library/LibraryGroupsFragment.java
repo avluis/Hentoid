@@ -151,7 +151,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         public @org.jetbrains.annotations.Nullable Object getChangePayload(GroupDisplayItem oldItem, int oldPos, GroupDisplayItem newItem, int newPos) {
             GroupItemBundle.Builder diffBundleBuilder = new GroupItemBundle.Builder();
 
-            if (oldItem.getGroup().picture.getTargetId() != newItem.getGroup().picture.getTargetId()) {
+            if (!newItem.getGroup().picture.isNull() && oldItem.getGroup().picture.getTargetId() != newItem.getGroup().picture.getTargetId()) {
                 diffBundleBuilder.setCoverUri(newItem.getGroup().picture.getTarget().getUsableUri());
             }
 
