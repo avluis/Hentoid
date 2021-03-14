@@ -61,7 +61,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Collection DAO
     private final CollectionDAO collectionDao;
-    private ContentSearchManager searchManager;
+    private final ContentSearchManager searchManager;
 
     // Collection data
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
@@ -96,6 +96,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
         collectionDao = collectionDAO;
+        searchManager = new ContentSearchManager(collectionDao);
+
         showFavouritesOnly.postValue(false);
         shuffled.postValue(false);
     }
@@ -142,7 +144,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void loadFromSearchParams(long contentId, @NonNull Bundle bundle) {
-        searchManager = new ContentSearchManager(collectionDao);
         searchManager.loadFromBundle(bundle);
         applySearchParams(contentId);
     }
