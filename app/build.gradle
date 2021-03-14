@@ -174,13 +174,13 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.0.0'
 
     // Tooltips
-    implementation 'com.github.skydoves:balloon:1.2.5'
+    implementation 'com.github.skydoves:balloon:1.3.3'
 
     // Dropdown lists
     implementation "com.github.skydoves:powerspinner:1.1.7"
 
     // Popup menus with icons
-    implementation 'com.github.skydoves:powermenu:2.1.8'
+    implementation 'com.github.skydoves:powermenu:2.1.9'
 
     // Fast scroller
     implementation "me.zhanghai.android.fastscroll:library:1.1.5"

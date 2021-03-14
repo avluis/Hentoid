@@ -56,7 +56,7 @@ public class TooltipUtil {
         Balloon.Builder balloonBuilder = new Balloon.Builder(context)
                 .setArrowSize(10)
                 .setArrowOrientation(orientation)
-                .setArrowVisible(true)
+                .setIsVisibleArrow(true)
                 .setPadding(4)
                 .setTextSize(15f)
                 .setArrowPosition(0.5f)
