@@ -122,6 +122,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private TextView pageMaxNumber;
 
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    }
+
     @SuppressLint("NonConstantResourceId")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -228,12 +234,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
 
@@ -283,15 +283,15 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
             // Prevent switching books when archive extraction is in progress (may trigger multiple extractions at the same time)
             // TODO make that possible in the future when unarchival is done on demand
-            binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.INVISIBLE);
-            binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.INVISIBLE);
+            binding.controlsOverlay.viewerPrevBookBtn.setEnabled(false);
+            binding.controlsOverlay.viewerNextBookBtn.setEnabled(false);
 
             binding.viewerLoadingTxt.setText(getResources().getString(R.string.loading_images, event.elementsKO + event.elementsOK, event.elementsTotal));
             binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             binding.viewerLoadingTxt.setVisibility(View.GONE);
-            binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.VISIBLE);
-            binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.VISIBLE);
+            binding.controlsOverlay.viewerPrevBookBtn.setEnabled(true);
+            binding.controlsOverlay.viewerNextBookBtn.setEnabled(true);
         }
     }
 
