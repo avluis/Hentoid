@@ -380,7 +380,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.informationMicroMenu.setSubmarineItemClickListener((p, i) -> onInfoMicroMenuClick(p));
         binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book)));
         binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page)));
-        binding.controlsOverlay.viewerInfoBtn.setOnClickListener(v -> binding.controlsOverlay.informationMicroMenu.floats());
+        binding.controlsOverlay.viewerInfoBtn.setOnClickListener(v -> {
+            binding.controlsOverlay.favouriteMicroMenu.dips();
+            binding.controlsOverlay.informationMicroMenu.floats();
+        });
         binding.controlsOverlay.informationMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.informationMicroMenu.dips());
 
         // Favourite micro menu
@@ -435,11 +438,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     }
 
     private void onFavouriteMicroMenuOpen() {
+        binding.controlsOverlay.informationMicroMenu.dips();
+
         SubmarineView favMenu = binding.controlsOverlay.favouriteMicroMenu;
         favMenu.clearAllSubmarineItems();
         favMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), isContentFavourite ? R.drawable.ic_book_fav : R.drawable.ic_book)));
         favMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), isPageFavourite ? R.drawable.ic_page_fav : R.drawable.ic_page)));
-
         favMenu.floats();
     }
 
@@ -455,6 +459,11 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             isPageFavourite = !isPageFavourite;
         }
 
+        binding.controlsOverlay.favouriteMicroMenu.dips();
+    }
+
+    private void hidePendingMicroMenus() {
+        binding.controlsOverlay.informationMicroMenu.dips();
         binding.controlsOverlay.favouriteMicroMenu.dips();
     }
 
@@ -859,6 +868,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * @param position Position to go to (0-indexed)
      */
     private void seekToPosition(int position) {
+        // Hide pending micro-menus
+        hidePendingMicroMenus();
+
         if (View.VISIBLE == binding.controlsOverlay.imagePreviewCenter.getVisibility()) {
             ImageView previousImageView;
             ImageView nextImageView;
@@ -922,6 +934,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void onLeftTap() {
         if (null == binding) return;
 
+        // Hide pending micro-menus
+        hidePendingMicroMenus();
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
@@ -945,6 +960,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void onRightTap() {
         if (null == binding) return;
 
+        // Hide pending micro-menus
+        hidePendingMicroMenus();
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
@@ -967,6 +985,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onMiddleTap() {
         if (null == binding) return;
+
+        // Hide pending micro-menus
+        hidePendingMicroMenus();
 
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
