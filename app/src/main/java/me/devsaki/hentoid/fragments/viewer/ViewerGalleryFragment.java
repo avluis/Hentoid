@@ -174,7 +174,7 @@ public class ViewerGalleryFragment extends Fragment {
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
-                viewModel.toggleFilterFavouritePages();
+                viewModel.toggleFilterFavouriteImages();
             }
             return true;
         });
@@ -200,7 +200,7 @@ public class ViewerGalleryFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
 
         if (filterFavouritesLaunchRequest && filterFavouritesLaunchRequest != filterFavouritesLaunchState)
-            viewModel.toggleFilterFavouritePages();
+            viewModel.toggleFilterFavouriteImages();
 
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
@@ -214,7 +214,7 @@ public class ViewerGalleryFragment extends Fragment {
         recyclerView = null;
 
         if (filterFavouritesLaunchState != filterFavouritesState)
-            viewModel.toggleFilterFavouritePages();
+            viewModel.toggleFilterFavouriteImages();
 
         super.onDestroy();
     }
@@ -264,7 +264,7 @@ public class ViewerGalleryFragment extends Fragment {
             case R.id.action_toggle_favorite_pages:
                 if (!selectedItems.isEmpty()) {
                     List<ImageFile> selectedContent = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
-                    viewModel.togglePageFavourite(selectedContent, this::onFavouriteSuccess);
+                    viewModel.toggleImageFavourite(selectedContent, this::onFavouriteSuccess);
                 }
                 break;
             default:

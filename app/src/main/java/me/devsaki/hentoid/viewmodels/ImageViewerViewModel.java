@@ -488,7 +488,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    public void toggleFilterFavouritePages() {
+    public void toggleFilterFavouriteImages() {
         if (loadedContentId > -1) {
             boolean showFavourites = showFavouritesOnly.getValue();
             showFavourites = !showFavourites;
@@ -498,9 +498,18 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    public void togglePageFavourite(List<ImageFile> images, Runnable successCallback) {
+    public void toggleImageFavourite(int imageIndex, @NonNull Consumer<Boolean> successCallback) {
+        List<ImageFile> list = getImages().getValue();
+        if (list != null) {
+            ImageFile file = list.get(imageIndex);
+            boolean newState = !file.isFavourite();
+            toggleImageFavourite(Stream.of(file).toList(), () -> successCallback.accept(newState));
+        }
+    }
+
+    public void toggleImageFavourite(List<ImageFile> images, @NonNull Runnable successCallback) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doTogglePageFavourite(images))
+                Completable.fromRunnable(() -> doToggleImageFavourite(images))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -511,11 +520,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     /**
-     * Toggles favourite flag in DB and in the content JSON
+     * Toggles page favourite flag in DB and in the content JSON
      *
      * @param images images whose flag to toggle
      */
-    private void doTogglePageFavourite(@NonNull final List<ImageFile> images) {
+    private void doToggleImageFavourite(@NonNull final List<ImageFile> images) {
         Helper.assertNonUiThread();
 
         if (images.isEmpty()) return;
@@ -533,6 +542,42 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (!theContent.getJsonUri().isEmpty())
             ContentHelper.updateContentJson(context, theContent);
         else ContentHelper.createContentJson(context, theContent);
+    }
+
+    public void toggleContentFavourite(@NonNull Consumer<Boolean> successCallback) {
+        Content c = getContent().getValue();
+        if (null == c) return;
+        boolean newState = !c.isFavourite();
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doToggleContentFavourite(c))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> successCallback.accept(newState),
+                                Timber::e
+                        )
+        );
+    }
+
+    /**
+     * Toggles content favourite flag in DB and in the content JSON
+     *
+     * @param content content whose flag to toggle
+     */
+    private void doToggleContentFavourite(@NonNull final Content content) {
+        Helper.assertNonUiThread();
+
+        content.setFavourite(!content.isFavourite());
+
+        // Persist in DB
+        collectionDao.insertContent(content);
+
+        // Persist new values in JSON
+        Context context = getApplication().getApplicationContext();
+        if (!content.getJsonUri().isEmpty())
+            ContentHelper.updateContentJson(context, content);
+        else ContentHelper.createContentJson(context, content);
     }
 
     public void deleteBook(Consumer<Throwable> onError) {

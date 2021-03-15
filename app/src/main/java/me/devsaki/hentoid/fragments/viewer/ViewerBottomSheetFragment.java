@@ -178,7 +178,7 @@ public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Favourite" action button
      */
     private void onFavouriteClick() {
-        viewModel.togglePageFavourite(Stream.of(image).toList(), this::onToggleFavouriteSuccess);
+        viewModel.toggleImageFavourite(Stream.of(image).toList(), this::onToggleFavouriteSuccess);
     }
 
     /**

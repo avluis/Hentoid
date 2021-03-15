@@ -389,7 +389,7 @@
     <string name="about_app_version">Hentoid ver: %1$s (%2$d)</string>
     <string name="about_chrome_version">Chrome v%1$d</string>
 
-    <!-- Web viewer -->
+    <!-- Web browser -->
     <string name="web_gallery">Back to latest gallery page</string>
     <string name="web_home">Back to library</string>
     <string name="web_back">Back</string>
@@ -474,6 +474,8 @@
     <string name="book_prefs">Book settings</string>
     <string name="goto_app_prefs">App settings</string>
     <string name="use_app_prefs">Use app settings (%s)</string>
+    <string name="favourite_success">Favourited</string>
+    <string name="unfavourite_success">Unfavourited</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

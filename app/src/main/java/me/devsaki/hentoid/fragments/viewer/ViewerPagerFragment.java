@@ -32,6 +32,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.skydoves.submarine.SubmarineItem;
+import com.skydoves.submarine.SubmarineView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -96,8 +97,11 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
     private Disposable slideshowTimer = null;
 
+    // Properties
     private Map<String, String> bookPreferences; // Preferences of current book; to feed the book prefs dialog
     private boolean isContentArchive; // True if current content is an archive
+    private boolean isPageFavourite; // True if current page is favourited
+    private boolean isContentFavourite; // True if current content is favourited
 
     private Debouncer<Integer> indexRefreshDebouncer;
 
@@ -381,10 +385,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         // Favourite micro menu
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineItemClickListener((p, i) -> onFavouriteMicroMenuClick(p));
-        // TODO change item colour according to current fav state
-        binding.controlsOverlay.favouriteMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book)));
-        binding.controlsOverlay.favouriteMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page)));
-        binding.controlsOverlay.viewerFavouriteActionBtn.setOnClickListener(v -> binding.controlsOverlay.favouriteMicroMenu.floats());
+        binding.controlsOverlay.viewerFavouriteActionBtn.setOnClickListener(v -> onFavouriteMicroMenuOpen());
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.favouriteMicroMenu.dips());
 
         // Gallery
@@ -417,7 +418,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handle click on "Show favourite pages" action button
      */
     private void onShowFavouriteClick() {
-        viewModel.toggleFilterFavouritePages();
+        viewModel.toggleFilterFavouriteImages();
     }
 
     /**
@@ -431,15 +432,35 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.informationMicroMenu.dips();
     }
 
+    private void onFavouriteMicroMenuOpen() {
+        SubmarineView favMenu = binding.controlsOverlay.favouriteMicroMenu;
+        favMenu.clearAllSubmarineItems();
+        favMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), isContentFavourite ? R.drawable.ic_book_fav : R.drawable.ic_book)));
+        favMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), isPageFavourite ? R.drawable.ic_page_fav : R.drawable.ic_page)));
+
+        favMenu.floats();
+    }
+
     /**
-     * Handle click on "Favourite" micro menu
+     * Handle click on one of the "Favourite" micro menu items
      */
     private void onFavouriteMicroMenuClick(int position) {
         Timber.i(">> pos %s", position);
-        // TODO 0 = book; 1 = page
-        // TODO change item colour
+
+        if (0 == position) {
+            viewModel.toggleContentFavourite(this::onFavouriteSuccess);
+            isContentFavourite = !isContentFavourite;
+        } else if (1 == position) {
+            viewModel.toggleImageFavourite(this.imageIndex, this::onFavouriteSuccess);
+            isPageFavourite = !isPageFavourite;
+        }
 
         binding.controlsOverlay.favouriteMicroMenu.dips();
+    }
+
+    private void onFavouriteSuccess(Boolean newState) {
+        // TODO display something more graphical (heart / heartbreak)
+        ToastUtil.toast(newState ? R.string.favourite_success : R.string.unfavourite_success);
     }
 
     /**
@@ -520,6 +541,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         }
         bookPreferences = content.getBookPreferences();
         isContentArchive = content.isArchive();
+        isContentFavourite = content.isFavourite();
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
         updateNavigationUi(content);
@@ -582,7 +604,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         imageIndex = scrollPosition;
         ImageFile currentImage = adapter.getImageAt(imageIndex);
-        if (currentImage != null) viewModel.markPageAsRead(currentImage.getOrder());
+        if (currentImage != null) {
+            viewModel.markPageAsRead(currentImage.getOrder());
+            isPageFavourite = currentImage.isFavourite();
+        }
 
         // Resets zoom if we're using horizontal (independent pages) mode
         if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
