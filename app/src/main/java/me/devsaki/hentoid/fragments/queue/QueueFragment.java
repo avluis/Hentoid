@@ -163,8 +163,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
     }
 
