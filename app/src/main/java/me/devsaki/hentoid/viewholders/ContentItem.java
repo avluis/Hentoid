@@ -99,7 +99,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     static {
         Context context = HentoidApp.getInstance();
-        int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
 
         int screenWidthPx = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels - (2 * (int) context.getResources().getDimension(R.dimen.default_cardview_margin));
         int gridHorizontalWidthPx = (int) context.getResources().getDimension(R.dimen.card_grid_width);
@@ -108,6 +107,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         ITEM_HORIZONTAL_MARGIN_PX = remainingSpacePx / (nbItems * 2);
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
+        int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
 
         glideRequestOptions = new RequestOptions()

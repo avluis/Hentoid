@@ -425,10 +425,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handle click on "Information" micro menu
      */
     private void onInfoMicroMenuClick(int position) {
-        Timber.i(">> pos %s", position);
-        // TODO 0 = book; 1 = page
-        float currentScale = adapter.getScaleAtPosition(imageIndex);
-        ViewerBottomSheetFragment.show(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+        if (0 == position) { // Content
+            ViewerBottomContentFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager());
+        } else { // Image
+            float currentScale = adapter.getScaleAtPosition(imageIndex);
+            ViewerBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+        }
         binding.controlsOverlay.informationMicroMenu.dips();
     }
 
@@ -445,12 +447,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handle click on one of the "Favourite" micro menu items
      */
     private void onFavouriteMicroMenuClick(int position) {
-        Timber.i(">> pos %s", position);
-
-        if (0 == position) {
+        if (0 == position) { // Content
             viewModel.toggleContentFavourite(this::onFavouriteSuccess);
             isContentFavourite = !isContentFavourite;
-        } else if (1 == position) {
+        } else if (1 == position) { // Image
             viewModel.toggleImageFavourite(this.imageIndex, this::onFavouriteSuccess);
             isPageFavourite = !isPageFavourite;
         }
