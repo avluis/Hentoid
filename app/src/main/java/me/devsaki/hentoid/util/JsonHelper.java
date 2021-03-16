@@ -19,6 +19,7 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.enums.AttributeType;
 import timber.log.Timber;
 

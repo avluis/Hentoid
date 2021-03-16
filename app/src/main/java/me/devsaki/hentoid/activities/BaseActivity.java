@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.threeten.bp.Instant;
 
-import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 

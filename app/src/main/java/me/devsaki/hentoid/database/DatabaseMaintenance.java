@@ -32,23 +32,25 @@ public class DatabaseMaintenance {
         throw new IllegalStateException("Utility class");
     }
 
-    // TODO separate pre-processing actions that _need_ to happen before the library screen is displayed
-    // versus general cleanup actions that may be processed in the background as the app starts (e.g. cleanBookmarksOneShot)
-
     /**
      * Clean up and upgrade database
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup
      */
-    public static List<Observable<Float>> getCleanupTasks(@NonNull final Context context) {
+    public static List<Observable<Float>> getPreLaunchCleanupTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
-        result.add(createObservableFrom(context, DatabaseMaintenance::cleanBookmarksOneShot));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
         result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeReadingProgress));
+        return result;
+    }
+
+    public static List<Observable<Float>> getPostLaunchCleanupTasks(@NonNull final Context context) {
+        List<Observable<Float>> result = new ArrayList<>();
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanBookmarksOneShot));
         return result;
     }
 

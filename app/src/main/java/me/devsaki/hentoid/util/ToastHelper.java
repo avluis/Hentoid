@@ -10,12 +10,12 @@ import androidx.annotation.StringRes;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.core.HentoidApp;
 import timber.log.Timber;
 
-public class ToastUtil {
+public class ToastHelper {
 
-    private ToastUtil() {
+    private ToastHelper() {
         throw new IllegalStateException("Utility class");
     }
 

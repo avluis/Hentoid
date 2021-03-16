@@ -32,14 +32,14 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ArchiveHelper;
-import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LogUtil;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import me.devsaki.hentoid.workers.ImportWorker;
@@ -112,11 +112,11 @@ public class ExternalImportService extends IntentService {
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, int chapter, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
+    private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, String... t) {
         s = String.format(s, (Object[]) t);
         Timber.log(priority, s);
         boolean isError = (priority > Log.INFO);
-        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s, chapter, isError));
+        if (null != memoryLog) memoryLog.add(new LogHelper.LogEntry(s, chapter, isError));
     }
 
 
@@ -126,7 +126,7 @@ public class ExternalImportService extends IntentService {
     private void startImport() {
         int booksOK = 0;                        // Number of books imported
         int booksKO = 0;                        // Number of folders found with no valid book inside
-        List<LogUtil.LogEntry> log = new ArrayList<>();
+        List<LogHelper.LogEntry> log = new ArrayList<>();
 
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getExternalLibraryUri());
         if (null == rootFolder) {
@@ -195,7 +195,7 @@ public class ExternalImportService extends IntentService {
             eventComplete(ImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO, null);
 
             // Write log in root folder
-            logFile = LogUtil.writeLog(this, buildLogInfo(log));
+            logFile = LogHelper.writeLog(this, buildLogInfo(log));
         } finally {
             // ContentProviderClient.close only available on API level 24+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -212,8 +212,8 @@ public class ExternalImportService extends IntentService {
         stopSelf();
     }
 
-    private LogUtil.LogInfo buildLogInfo(@NonNull List<LogUtil.LogEntry> log) {
-        LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
+    private LogHelper.LogInfo buildLogInfo(@NonNull List<LogHelper.LogEntry> log) {
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
         logInfo.setLogName("Import external");
         logInfo.setFileName("import_external_log");
         logInfo.setNoDataMessage("No content detected.");

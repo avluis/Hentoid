@@ -46,12 +46,12 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ArchiveHelper;
-import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
@@ -157,7 +157,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 },
                 throwable -> {
                     Timber.w(throwable);
-                    ToastUtil.toast("Book list loading failed");
+                    ToastHelper.toast("Book list loading failed");
                 }
         );
     }

@@ -61,7 +61,7 @@ import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -469,7 +469,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     private void onFavouriteSuccess(Boolean newState) {
         // TODO display something more graphical (heart / heartbreak)
-        ToastUtil.toast(newState ? R.string.favourite_success : R.string.unfavourite_success);
+        ToastHelper.toast(newState ? R.string.favourite_success : R.string.unfavourite_success);
     }
 
     /**
@@ -1118,7 +1118,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         }
 
         if (showToast)
-            ToastUtil.toast(String.format(Locale.ENGLISH, "Starting slideshow (delay %.1fs)", delayMs / 1000f));
+            ToastHelper.toast(String.format(Locale.ENGLISH, "Starting slideshow (delay %.1fs)", delayMs / 1000f));
         scrollListener.disableScroll();
 
         slideshowTimer = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
@@ -1133,7 +1133,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             slideshowTimer.dispose();
             slideshowTimer = null;
             scrollListener.enableScroll();
-            ToastUtil.toast("Slideshow stopped");
+            ToastHelper.toast("Slideshow stopped");
         }
     }
 }

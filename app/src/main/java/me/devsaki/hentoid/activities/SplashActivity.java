@@ -1,36 +1,24 @@
 package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.greenrobot.eventbus.EventBus;
-
-import java.io.File;
 import java.util.List;
 import java.util.Random;
 
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.AppStartup;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.events.AppUpdatedEvent;
-import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.views.NestedScrollWebView;
 import timber.log.Timber;
 
 /**
@@ -40,7 +28,7 @@ import timber.log.Timber;
  */
 public class SplashActivity extends BaseActivity {
 
-    private List<Observable<Float>> maintenanceTasks;
+    private List<Observable<Float>> launchTasks;
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private ProgressBar mainPb;
@@ -62,46 +50,39 @@ public class SplashActivity extends BaseActivity {
 
         Timber.d("Splash / Init");
 
-        // Wait until database maintenance is completed
-        maintenanceTasks = DatabaseMaintenance.getCleanupTasks(this);
-        doMaintenanceTask(0);
+        // Wait until launch tasks are completed
+        launchTasks = AppStartup.getPreLaunchTasks(this);
+        launchTasks.addAll(DatabaseMaintenance.getPreLaunchCleanupTasks(this));
+        // TODO execute post-launch tasks in another runner (background worker ?)
+        launchTasks.addAll(AppStartup.getPostLaunchTasks(this));
+        launchTasks.addAll(DatabaseMaintenance.getPostLaunchCleanupTasks(this));
+        doLaunchTask(0);
     }
 
-    private void doMaintenanceTask(int taskIndex) {
-        mainPb.setProgress(Math.round(100 * (taskIndex * 1f / maintenanceTasks.size())));
-        // Continue executing maintenance tasks
-        if (taskIndex < maintenanceTasks.size()) {
-            Timber.i("Splash / Maintenance task %s/%s", taskIndex + 1, maintenanceTasks.size());
+    private void doLaunchTask(int taskIndex) {
+        mainPb.setProgress(Math.round(100 * (taskIndex * 1f / launchTasks.size())));
+        // Continue executing launch tasks
+        if (taskIndex < launchTasks.size()) {
+            Timber.i("Splash / Launch task %s/%s", taskIndex + 1, launchTasks.size());
             compositeDisposable.add(
-                    maintenanceTasks.get(taskIndex)
+                    launchTasks.get(taskIndex)
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
                                     this::displaySecondaryProgress,
                                     Timber::e,
-                                    () -> doMaintenanceTask(taskIndex + 1)
+                                    () -> doLaunchTask(taskIndex + 1)
                             )
             );
         } else {
             mainPb.setVisibility(View.GONE);
             secondaryPb.setVisibility(View.GONE);
-            detectAppUpdate(); // Go on with startup activities
+            followStartupFlow();
         }
     }
 
     private void displaySecondaryProgress(Float progress) {
         secondaryPb.setProgress(Math.round(progress * 100));
-    }
-
-    private void detectAppUpdate() {
-        // Pre-processing on app update
-        if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
-            Timber.d("Splash / Update detected");
-            onAppUpdated();
-            Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
-        } else {
-            followStartupFlow();
-        }
     }
 
     private void followStartupFlow() {
@@ -134,7 +115,7 @@ public class SplashActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        if (maintenanceTasks != null) maintenanceTasks.clear();
+        if (launchTasks != null) launchTasks.clear();
         compositeDisposable.clear();
 
         super.onDestroy();
@@ -169,55 +150,5 @@ public class SplashActivity extends BaseActivity {
         Intent intent = new Intent(this, LibraryActivity.class);
         intent = UnlockActivity.wrapIntent(this, intent);
         goToActivity(intent);
-    }
-
-    /**
-     * Perform cleanup activities and follow the standard startup flow
-     * once these activities are done
-     */
-    private void onAppUpdated() {
-        compositeDisposable.add(
-                Completable.fromRunnable(this::doOnAppUpdated)
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                this::followStartupFlow,
-                                Timber::e)
-        );
-    }
-
-    /**
-     * Perform cleanup activities when the app has been updated
-     * - Clear webview cache
-     * - Clear app cache
-     */
-    private void doOnAppUpdated() {
-        Timber.d("Splash / Start update pre-processing");
-        // Clear webview cache (needs to execute inside the activity's Looper)
-        Timber.d("Splash / Clearing webview cache");
-        Handler h = new Handler(Looper.getMainLooper());
-        h.post(() -> {
-            WebView webView;
-            try {
-                webView = new NestedScrollWebView(this);
-            } catch (Resources.NotFoundException e) {
-                // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
-                // Creating with the application Context fixes this, but is not generally recommended for view creation
-                webView = new NestedScrollWebView(Helper.getFixedContext(this));
-            }
-            webView.clearCache(true);
-        });
-
-        // Clear app cache
-        Timber.d("Splash / Clearing app cache");
-        try {
-            File dir = this.getCacheDir();
-            FileHelper.removeFile(dir);
-        } catch (Exception e) {
-            Timber.e(e, "Error when clearing app cache upon update");
-        }
-
-        EventBus.getDefault().postSticky(new AppUpdatedEvent());
-        Timber.d("Splash / Update pre-processing complete");
     }
 }

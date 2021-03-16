@@ -21,7 +21,7 @@
 
 
     <application
-        android:name=".HentoidApp"
+        android:name=".core.HentoidApp"
         android:allowBackup="false"
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"

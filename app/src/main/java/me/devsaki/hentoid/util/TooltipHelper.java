@@ -15,9 +15,9 @@ import com.skydoves.balloon.BalloonAnimation;
 
 import me.devsaki.hentoid.R;
 
-public class TooltipUtil {
+public class TooltipHelper {
 
-    private TooltipUtil() {
+    private TooltipHelper() {
         throw new IllegalStateException("Utility class");
     }
 

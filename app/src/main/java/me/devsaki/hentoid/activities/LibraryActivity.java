@@ -67,9 +67,9 @@ import me.devsaki.hentoid.notification.delete.DeleteProgressNotification;
 import me.devsaki.hentoid.notification.delete.DeleteStartNotification;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.PermissionUtil;
+import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.util.notification.NotificationManager;
@@ -339,10 +339,10 @@ public class LibraryActivity extends BaseActivity {
     private void onCreated() {
         // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
         if (Preferences.isFirstRunProcessComplete())
-            TooltipUtil.showTooltip(this, R.string.help_search, ArrowOrientation.TOP, toolbar, this);
+            TooltipHelper.showTooltip(this, R.string.help_search, ArrowOrientation.TOP, toolbar, this);
 
         // Display permissions alert if required
-        if (!PermissionUtil.checkExternalStorageReadWritePermission(this)) {
+        if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) {
             ((TextView) findViewById(R.id.library_alert_txt)).setText(R.string.permissions_lost);
             findViewById(R.id.library_alert_fix_btn).setOnClickListener(v -> fixPermissions());
             alertTxt.setVisibility(View.VISIBLE);
@@ -803,7 +803,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void fixPermissions() {
-        PermissionUtil.requestExternalStorageReadWritePermission(this, PermissionUtil.RQST_STORAGE_PERMISSION);
+        PermissionHelper.requestExternalStorageReadWritePermission(this, PermissionHelper.RQST_STORAGE_PERMISSION);
     }
 
     private boolean isLowOnSpace() {
@@ -817,7 +817,7 @@ public class LibraryActivity extends BaseActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (requestCode != PermissionUtil.RQST_STORAGE_PERMISSION) return;
+        if (requestCode != PermissionHelper.RQST_STORAGE_PERMISSION) return;
         if (permissions.length < 2) return;
         if (grantResults.length == 0) return;
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {

@@ -32,8 +32,8 @@ import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.LogUtil;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.util.ToastHelper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -143,7 +143,7 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         }
     }
 
-    private LogUtil.LogInfo createLog() {
+    private LogHelper.LogInfo createLog() {
         Content content;
         CollectionDAO dao = new ObjectBoxDAO(getContext());
         try {
@@ -155,12 +155,12 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         if (null == content) {
             Snackbar snackbar = Snackbar.make(rootView, R.string.content_not_found, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.show();
-            return new LogUtil.LogInfo();
+            return new LogHelper.LogInfo();
         }
 
-        List<LogUtil.LogEntry> log = new ArrayList<>();
+        List<LogHelper.LogEntry> log = new ArrayList<>();
 
-        LogUtil.LogInfo errorLogInfo = new LogUtil.LogInfo();
+        LogHelper.LogInfo errorLogInfo = new LogHelper.LogInfo();
         errorLogInfo.setLogName("Error");
         errorLogInfo.setFileName("error_log" + content.getId());
         errorLogInfo.setNoDataMessage("No error detected.");
@@ -170,23 +170,23 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         if (errorLog != null) {
             errorLogInfo.setHeader("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
             for (ErrorRecord e : errorLog)
-                log.add(new LogUtil.LogEntry(e.getTimestamp(), e.toString()));
+                log.add(new LogHelper.LogEntry(e.getTimestamp(), e.toString()));
         }
 
         return errorLogInfo;
     }
 
     private void showErrorLog() {
-        ToastUtil.toast(R.string.redownload_generating_log_file);
+        ToastHelper.toast(R.string.redownload_generating_log_file);
 
-        LogUtil.LogInfo logInfo = createLog();
-        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
+        LogHelper.LogInfo logInfo = createLog();
+        DocumentFile logFile = LogHelper.writeLog(requireContext(), logInfo);
         if (logFile != null) FileHelper.openFile(requireContext(), logFile);
     }
 
     private void shareErrorLog() {
-        LogUtil.LogInfo logInfo = createLog();
-        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
+        LogHelper.LogInfo logInfo = createLog();
+        DocumentFile logFile = LogHelper.writeLog(requireContext(), logInfo);
         if (logFile != null)
             FileHelper.shareFile(requireContext(), logFile.getUri(), "Error log for queue");
     }

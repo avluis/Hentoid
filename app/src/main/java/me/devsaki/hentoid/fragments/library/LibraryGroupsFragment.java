@@ -67,7 +67,7 @@ import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewholders.GroupDisplayItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
@@ -377,7 +377,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     private void onNewGroupNameExists() {
-        ToastUtil.toast(R.string.group_name_exists);
+        ToastHelper.toast(R.string.group_name_exists);
         newGroupPrompt();
     }
 
@@ -445,7 +445,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         Group g = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().findFirst().get();
         viewModel.renameGroup(g, newName, () -> {
-            ToastUtil.toast(R.string.group_name_exists);
+            ToastHelper.toast(R.string.group_name_exists);
             LibraryGroupsFragment.this.editSelectedItemName();
         });
     }
@@ -537,7 +537,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 requireActivity().onBackPressed();
             } else {
                 backButtonPressed = SystemClock.elapsedRealtime();
-                ToastUtil.toast(R.string.press_back_again);
+                ToastHelper.toast(R.string.press_back_again);
 
                 llm.scrollToPositionWithOffset(0, 0);
             }

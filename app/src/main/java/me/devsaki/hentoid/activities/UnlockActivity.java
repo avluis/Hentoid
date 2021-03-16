@@ -7,7 +7,7 @@ import android.os.Parcelable;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;

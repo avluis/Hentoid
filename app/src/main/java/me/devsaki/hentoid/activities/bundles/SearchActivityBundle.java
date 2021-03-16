@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.database.domains.AttributeMap;
 
 /**
  * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.SearchActivity}

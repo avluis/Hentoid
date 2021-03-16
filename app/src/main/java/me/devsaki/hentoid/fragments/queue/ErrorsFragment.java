@@ -49,7 +49,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
@@ -365,7 +365,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         if (null == selectExtension || selectExtension.getSelections().isEmpty()) {
             Content c = item.getContent();
             if (c != null && !ContentHelper.openHentoidViewer(requireContext(), c, null))
-                ToastUtil.toast(R.string.err_no_content);
+                ToastHelper.toast(R.string.err_no_content);
 
             return true;
         }

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.core;
 
 /**
  * Created by DevSaki on 10/05/2015.

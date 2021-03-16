@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;

@@ -20,7 +20,7 @@ fun Context.startBrowserActivity(url: String) {
         startActivity(intent)
     } catch (e: ActivityNotFoundException) {
         Timber.e(e, "No activity found to open $url")
-        ToastUtil.toast(this, R.string.error_browser, Toast.LENGTH_LONG)
+        ToastHelper.toast(this, R.string.error_browser, Toast.LENGTH_LONG)
     }
 }
 

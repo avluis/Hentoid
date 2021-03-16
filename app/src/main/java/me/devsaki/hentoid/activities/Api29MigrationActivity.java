@@ -24,7 +24,7 @@ import me.devsaki.hentoid.services.API29MigrationService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.workers.ImportWorker;
 import timber.log.Timber;
 
@@ -142,7 +142,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
         // If no existing hentoid folder is detected, tell the user to select it again
         if (null == selectedFolder || null == selectedFolder.getName() || !ImportHelper.isHentoidFolderName(selectedFolder.getName())) {
-            ToastUtil.toast("Please select an existing Hentoid folder. Its location is displayed on screen.");
+            ToastHelper.toast("Please select an existing Hentoid folder. Its location is displayed on screen.");
             return;
         }
         scanLibrary(selectedFolder);
@@ -153,8 +153,8 @@ public class Api29MigrationActivity extends AppCompatActivity {
         int result = FileHelper.checkAndSetRootFolder(this, root);
         if (result < 0) {
             step1button.setVisibility(View.VISIBLE);
-            if (-1 == result) ToastUtil.toast(this, R.string.error_creating_folder);
-            else if (-2 == result) ToastUtil.toast(this, R.string.error_write_permission);
+            if (-1 == result) ToastHelper.toast(this, R.string.error_creating_folder);
+            else if (-2 == result) ToastHelper.toast(this, R.string.error_write_permission);
             return;
         }
 

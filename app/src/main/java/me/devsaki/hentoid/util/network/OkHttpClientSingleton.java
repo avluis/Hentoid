@@ -5,7 +5,7 @@ import android.util.SparseArray;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.core.HentoidApp;
 import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;

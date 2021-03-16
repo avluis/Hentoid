@@ -22,7 +22,7 @@ import com.google.android.material.snackbar.Snackbar;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.IntroActivity;
-import me.devsaki.hentoid.util.PermissionUtil;
+import me.devsaki.hentoid.util.PermissionHelper;
 
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
@@ -59,12 +59,12 @@ public class PermissionIntroFragment extends Fragment implements SlidePolicy {
 
     private void invokeAskPermission() {
         if (parentActivity != null)
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PermissionUtil.RQST_STORAGE_PERMISSION);
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PermissionHelper.RQST_STORAGE_PERMISSION);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode != PermissionUtil.RQST_STORAGE_PERMISSION) return;
+        if (requestCode != PermissionHelper.RQST_STORAGE_PERMISSION) return;
         if (permissions.length == 0) return;
         if (!permissions[0].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) return;
         if (grantResults.length == 0) return;

@@ -89,7 +89,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ThemeHelper;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
@@ -617,7 +617,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
             if (c != null) {
                 if (c.getStorageUri().isEmpty()) {
-                    ToastUtil.toast(R.string.folder_undefined);
+                    ToastHelper.toast(R.string.folder_undefined);
                     return;
                 }
 
@@ -808,7 +808,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 requireActivity().onBackPressed();
             } else {
                 backButtonPressed = SystemClock.elapsedRealtime();
-                ToastUtil.toast(R.string.press_back_again);
+                ToastHelper.toast(R.string.press_back_again);
 
                 llm.scrollToPositionWithOffset(0, 0);
             }

@@ -11,7 +11,7 @@ import com.skydoves.balloon.ArrowOrientation;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.ui.CarouselDecorator;
 import me.devsaki.hentoid.ui.InputDialog;
-import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.TooltipHelper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -151,6 +151,6 @@ public class LibraryPager {
     }
 
     public void showTooltip(@NonNull final LifecycleOwner lifecycleOwner) {
-        TooltipUtil.showTooltip(pageCarousel.getContext(), R.string.help_page_slider, ArrowOrientation.BOTTOM, pageCarousel, lifecycleOwner);
+        TooltipHelper.showTooltip(pageCarousel.getContext(), R.string.help_page_slider, ArrowOrientation.BOTTOM, pageCarousel, lifecycleOwner);
     }
 }

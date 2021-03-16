@@ -35,13 +35,13 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
-import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
-import me.devsaki.hentoid.util.LogUtil;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
@@ -107,11 +107,11 @@ public class API29MigrationService extends IntentService {
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, int chapter, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
+    private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, String... t) {
         s = String.format(s, (Object[]) t);
         Timber.log(priority, s);
         boolean isError = (priority > Log.INFO);
-        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s, chapter, isError));
+        if (null != memoryLog) memoryLog.add(new LogHelper.LogEntry(s, chapter, isError));
     }
 
 
@@ -119,7 +119,7 @@ public class API29MigrationService extends IntentService {
      * Import books from known source folders
      */
     private void performMigration() throws InterruptedException {
-        List<LogUtil.LogEntry> log = new ArrayList<>();
+        List<LogHelper.LogEntry> log = new ArrayList<>();
 
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
         if (null == rootFolder) {
@@ -160,14 +160,14 @@ public class API29MigrationService extends IntentService {
                         },
                         throwable -> {
                             Timber.w(throwable);
-                            ToastUtil.toast("Book list loading failed");
+                            ToastHelper.toast("Book list loading failed");
                         }
                 );
 
         tasks.take().run();
     }
 
-    private void migrateLibrary(@NonNull final List<LogUtil.LogEntry> log, @NonNull final List<Long> contentIds) {
+    private void migrateLibrary(@NonNull final List<LogHelper.LogEntry> log, @NonNull final List<Long> contentIds) {
         int booksOK = 0;                        // Number of books imported
         int booksKO = 0;                        // Number of folders found with no valid book inside
 
@@ -264,7 +264,7 @@ public class API29MigrationService extends IntentService {
         trace(Log.INFO, 2, log, "Migration complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", contentIds.size() + "");
 
         // Write cleanup log in root folder
-        DocumentFile migrationLogFile = LogUtil.writeLog(this, buildLogInfo(log));
+        DocumentFile migrationLogFile = LogHelper.writeLog(this, buildLogInfo(log));
 
         eventComplete(3, contentIds.size(), booksOK, booksKO, migrationLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -273,8 +273,8 @@ public class API29MigrationService extends IntentService {
         stopSelf();
     }
 
-    private LogUtil.LogInfo buildLogInfo(@NonNull List<LogUtil.LogEntry> log) {
-        LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
+    private LogHelper.LogInfo buildLogInfo(@NonNull List<LogHelper.LogEntry> log) {
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
         logInfo.setLogName("API29Migration");
         logInfo.setFileName("API29_migration_log");
         logInfo.setNoDataMessage("No content detected.");

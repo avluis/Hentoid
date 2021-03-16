@@ -16,7 +16,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.HbrowseParser;
-import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HbrowseContent extends BaseContentParser {

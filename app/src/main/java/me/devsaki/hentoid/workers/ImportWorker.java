@@ -46,13 +46,13 @@ import me.devsaki.hentoid.json.URLBuilder;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
-import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LogUtil;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.notification.NotificationManager;
@@ -146,11 +146,11 @@ public class ImportWorker extends Worker {
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, int chapter, List<LogUtil.LogEntry> memoryLog, String s, String... t) {
+    private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, String... t) {
         s = String.format(s, (Object[]) t);
         Timber.log(priority, s);
         boolean isError = (priority > Log.INFO);
-        if (null != memoryLog) memoryLog.add(new LogUtil.LogEntry(s, chapter, isError));
+        if (null != memoryLog) memoryLog.add(new LogHelper.LogEntry(s, chapter, isError));
     }
 
 
@@ -166,7 +166,7 @@ public class ImportWorker extends Worker {
         int booksKO = 0;                        // Number of folders found with no valid book inside
         int nbFolders = 0;                      // Number of folders found with no content but subfolders
         Content content = null;
-        List<LogUtil.LogEntry> log = new ArrayList<>();
+        List<LogHelper.LogEntry> log = new ArrayList<>();
         Context context = getApplicationContext();
 
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
@@ -376,7 +376,7 @@ public class ImportWorker extends Worker {
             else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
         } finally {
             // Write log in root folder
-            DocumentFile logFile = LogUtil.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
+            DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
 
             // ContentProviderClient.close only available on API level 24+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -393,8 +393,8 @@ public class ImportWorker extends Worker {
         }
     }
 
-    private LogUtil.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogUtil.LogEntry> log) {
-        LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
+    private LogHelper.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogHelper.LogEntry> log) {
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
         logInfo.setLogName(cleanup ? "Cleanup" : "Import");
         logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
         logInfo.setNoDataMessage("No content detected.");
@@ -419,7 +419,7 @@ public class ImportWorker extends Worker {
         return false;
     }
 
-    private void importQueue(@NonNull final Context context, @NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogUtil.LogEntry> log) {
+    private void importQueue(@NonNull final Context context, @NonNull DocumentFile queueFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
         trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Queue JSON found");
         eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseCollectionJson(context, queueFile);
@@ -452,7 +452,7 @@ public class ImportWorker extends Worker {
         }
     }
 
-    private void importGroups(@NonNull final Context context, @NonNull DocumentFile groupsFile, @NonNull CollectionDAO dao, @NonNull List<LogUtil.LogEntry> log) {
+    private void importGroups(@NonNull final Context context, @NonNull DocumentFile groupsFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
         trace(Log.INFO, STEP_GROUPS, log, "Custom groups JSON found");
         eventProgress(STEP_GROUPS, -1, 0, 0);
         JsonContentCollection contentCollection = deserialiseCollectionJson(context, groupsFile);

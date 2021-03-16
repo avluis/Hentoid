@@ -411,7 +411,7 @@ public class FileHelper {
                     try {
                         openFileWithIntent(context, uri, "resource/folder");
                     } catch (ActivityNotFoundException e2) {
-                        ToastUtil.toast(R.string.select_file_manager);
+                        ToastHelper.toast(R.string.select_file_manager);
                         openFileWithIntent(context, uri, "*/*");
                         // TODO if it also crashes after this call, tell the user to get DocumentsUI.apk ? (see #670)
                     }
@@ -420,7 +420,7 @@ public class FileHelper {
                 openFileWithIntent(context, uri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(fileName)));
         } catch (ActivityNotFoundException e) {
             Timber.e(e, "No activity found to open %s", uri.toString());
-            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
+            ToastHelper.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
 
@@ -1014,13 +1014,22 @@ public class FileHelper {
      *
      * @param context Context to be used
      * @param f       File to read from
-     * @return Content of the given file as a string
+     * @return Content of the given file as a string; empty string if an error occurred
      */
     static String readFileAsString(@NonNull final Context context, @NonNull DocumentFile f) {
+        try {
+            return readStreamAsString(FileHelper.getInputStream(context, f));
+        } catch (IOException | IllegalArgumentException e) {
+            Timber.e(e, "Error while reading %s", f.getUri().toString());
+        }
+        return "";
+    }
+
+    public static String readStreamAsString(@NonNull final InputStream str) throws IOException, IllegalArgumentException {
         StringBuilder result = new StringBuilder();
         String sCurrentLine;
         boolean isFirst = true;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(FileHelper.getInputStream(context, f)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(str))) {
             while ((sCurrentLine = br.readLine()) != null) {
                 if (isFirst) {
                     // Strip UTF-8 BOMs if any
@@ -1030,8 +1039,6 @@ public class FileHelper {
                 }
                 result.append(sCurrentLine);
             }
-        } catch (IOException | IllegalArgumentException e) {
-            Timber.e(e, "Error while reading %s", f.getUri().toString());
         }
         return result.toString();
     }
