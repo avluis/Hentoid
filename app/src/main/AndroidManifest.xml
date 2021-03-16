@@ -357,6 +357,10 @@
                     android:host="luscious.net"
                     android:pathPattern="..*/..*"
                     android:scheme="https" />
+                <data
+                    android:host="members.luscious.net"
+                    android:pathPattern="..*/..*"
+                    android:scheme="https" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
