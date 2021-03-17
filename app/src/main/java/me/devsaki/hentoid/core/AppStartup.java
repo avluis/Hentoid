@@ -114,7 +114,7 @@ public class AppStartup {
     private static void processAppUpdate(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         Timber.i("Process app update : start");
         try {
-            if (true /*Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE*/) { // TODO
+            if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
                 Timber.d("Process app update : update detected from %s to %s", Preferences.getLastKnownAppVersionCode(), BuildConfig.VERSION_CODE);
 
                 // Clear webview cache (needs to execute inside the activity's Looper)
