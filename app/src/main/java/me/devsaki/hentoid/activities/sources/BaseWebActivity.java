@@ -1279,7 +1279,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             String url = request.getUrl().toString();
 
             // Data fetched with POST is out of scope of analysis and adblock
-            if (!request.getMethod().equalsIgnoreCase("get") && !getStartSite().analyzePostRequests()) {
+            if (!request.getMethod().equalsIgnoreCase("get")) {
                 Timber.v("[%s] ignored by interceptor; method = %s", url, request.getMethod());
                 return super.shouldInterceptRequest(view, request);
             }

@@ -62,7 +62,6 @@ public enum Site {
     private boolean hasImageProcessing = false;
     private boolean hasBackupURLs = false;
     private boolean hasCoverBasedPageUpdates = false;
-    private boolean analyzePostRequests = false;
 
     Site(int code,
          String description,
@@ -140,10 +139,6 @@ public enum Site {
         return hasCoverBasedPageUpdates;
     }
 
-    public boolean analyzePostRequests() {
-        return analyzePostRequests;
-    }
-
     public boolean isVisible() {
         for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;
         return true;
@@ -170,8 +165,6 @@ public enum Site {
         if (jsonSite.hasBackupURLs != null) hasBackupURLs = jsonSite.hasBackupURLs;
         if (jsonSite.hasCoverBasedPageUpdates != null)
             hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates;
-        if (jsonSite.analyzePostRequests != null)
-            analyzePostRequests = jsonSite.analyzePostRequests;
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {

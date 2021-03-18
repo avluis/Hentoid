@@ -29,9 +29,6 @@
     "FAKKU2": {
       "hasImageProcessing": true
     },
-    "LUSCIOUS": {
-      "analyzePostRequests": true
-    },
     "MANHWA": {
       "hasCoverBasedPageUpdates": true
     },
