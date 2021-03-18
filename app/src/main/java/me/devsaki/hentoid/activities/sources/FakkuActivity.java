@@ -6,7 +6,7 @@ import me.devsaki.hentoid.enums.Site;
 public class FakkuActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "fakku.net";
-    private static final String[] GALLERY_FILTER = {"fakku.net/hentai/[A-Za-z0-9\\-_]+$"};
+    private static final String[] GALLERY_FILTER = {"fakku.net/hentai/[\\w\\-]+$"};
 
     Site getStartSite() {
         return Site.FAKKU2;
