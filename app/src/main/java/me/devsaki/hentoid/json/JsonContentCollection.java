@@ -58,4 +58,8 @@ public class JsonContentCollection {
     public void setBookmarks(@NonNull List<SiteBookmark> bookmarks) {
         this.bookmarks = Stream.of(bookmarks).map(JsonBookmark::fromEntity).toList();
     }
+
+    public boolean isEmpty() {
+        return library.isEmpty() && queue.isEmpty() && groupings.isEmpty() && bookmarks.isEmpty();
+    }
 }

@@ -508,6 +508,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.VIEWER_HOLD_TO_ZOOM, Default.VIEWER_HOLD_TO_ZOOM);
     }
 
+    public static int getViewerCapTapZoom() {
+        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_CAP_TAP_ZOOM, Integer.toString(Default.VIEWER_CAP_TAP_ZOOM)) + "");
+    }
+
     public static boolean isViewerAutoRotate() {
         return sharedPreferences.getBoolean(Key.VIEWER_AUTO_ROTATE, Default.VIEWER_AUTO_ROTATE);
     }
@@ -724,6 +728,7 @@ public final class Preferences {
         static final String VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
         static final String VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
         public static final String VIEWER_HOLD_TO_ZOOM = "pref_viewer_zoom_holding";
+        public static final String VIEWER_CAP_TAP_ZOOM = "pref_viewer_cap_tap_zoom";
         public static final String VIEWER_AUTO_ROTATE = "pref_viewer_auto_rotate";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
         public static final String COLOR_THEME = "pref_color_theme";
@@ -806,6 +811,7 @@ public final class Preferences {
         static final int VIEWER_READ_THRESHOLD = Constant.VIEWER_READ_THRESHOLD_1;
         static final int VIEWER_SLIDESHOW_DELAY = Constant.VIEWER_SLIDESHOW_DELAY_2;
         static final boolean VIEWER_HOLD_TO_ZOOM = false;
+        static final int VIEWER_CAP_TAP_ZOOM = Constant.VIEWER_CAP_TAP_ZOOM_NONE;
         static final boolean VIEWER_AUTO_ROTATE = false;
         public static final int COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean QUEUE_AUTOSTART = true;
@@ -824,7 +830,7 @@ public final class Preferences {
 
         //static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         // Default menu in v1.9.x
-        static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HENTAICAFE, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, /*Site.NEXUS,*/ Site.MUSES, Site.DOUJINS};
+        static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, /*Site.FAKKU2, Site.NEXUS,*/ Site.MUSES, Site.DOUJINS};
         static final String ACTIVE_SITES = TextUtils.join(",", Stream.of(DEFAULT_SITES).map(Site::getCode).toList());
 
         static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
@@ -859,6 +865,7 @@ public final class Preferences {
         public static final int ORDER_FIELD_READS = 6;
         public static final int ORDER_FIELD_SIZE = 7;
         public static final int ORDER_FIELD_CHILDREN = 8; // Groups only
+        public static final int ORDER_FIELD_READ_PROGRESS = 9;
         public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 
@@ -935,6 +942,11 @@ public final class Preferences {
 
         public static final int VIEWER_DELETE_TARGET_BOOK = 0;
         public static final int VIEWER_DELETE_TARGET_PAGE = 1;
+
+        public static final int VIEWER_CAP_TAP_ZOOM_NONE = 0;
+        public static final int VIEWER_CAP_TAP_ZOOM_2X = 2;
+        public static final int VIEWER_CAP_TAP_ZOOM_4X = 4;
+        public static final int VIEWER_CAP_TAP_ZOOM_6X = 6;
 
         // Deprecated values kept for housekeeping/migration
         @Deprecated

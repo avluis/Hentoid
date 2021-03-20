@@ -22,7 +22,7 @@ import me.devsaki.hentoid.json.JsonContentCollection;
 import timber.log.Timber;
 
 /**
- * Utility class for Content-related operations
+ * Utility class for Group-related operations
  */
 public final class GroupHelper {
 

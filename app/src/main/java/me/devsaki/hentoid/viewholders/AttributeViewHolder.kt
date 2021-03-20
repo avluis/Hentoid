@@ -14,6 +14,9 @@ class AttributeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     fun bindTo(attribute: Attribute, useNamespace: Boolean) {
         view.text = attribute.formatLabel(useNamespace)
+        if (attribute.isExcluded) {
+           view.text = "[x]" + view.text;
+        }
         view.tag = attribute
     }
 }

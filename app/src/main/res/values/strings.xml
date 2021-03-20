@@ -211,9 +211,10 @@
     <string name="memory_title">Memory usage</string>
     <string name="memory_total">Total : %.2f GB</string>
     <string name="memory_free">Free : %.2f GB</string>
-    <string name="memory_hentoid">Hentoid : %.2f GB</string>
+    <string name="memory_hentoid_main">Hentoid (primary) : %.2f GB</string>
+    <string name="memory_hentoid_ext">Hentoid (external) : %.2f GB</string>
     <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
-    <string name="memory_details">View details</string>
+    <string name="memory_details">View details (primary)</string>
 
     <!-- Logs -->
     <string name="logs_title">Latest logs</string>
@@ -326,6 +327,7 @@
     <string name="sort_read_date">Read date</string>
     <string name="sort_reads">Reads</string>
     <string name="sort_size">Size</string>
+    <string name="sort_reading_progress">Read progress</string>
     <string name="sort_random">Random</string>
     <string name="sort_custom">Custom</string>
     <string name="sort_invalid">-invalid-</string>
@@ -368,7 +370,6 @@
 
     <!-- About Activity -->
     <string name="about1"><b>Hendroid</b> is a Doujinshi &amp; H-Manga archiving app. Hendroid is a fork of the app <b>Hentoid</b>, which was originally created by <b>Cesar Arasaki</b>.</string>
-    <string name="about2">In regards to Tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
     <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHendroid is a free and open-source software maintained by the Hendroid Community</string>
     <string name="personalDataStatement2">No personal data is collected nor sent to any party.</string>
     <string name="about_licenses">Display Licenses</string>
@@ -403,6 +404,7 @@
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
     <string name="category_tag">Tag (%1$d)</string>
+    <string name="exclude">Exclude</string>
     <string name="category_character">Character (%1$d)</string>
     <string name="category_artist">Artist (%1$d)</string>
     <string name="category_series">Series (%1$d)</string>
@@ -473,4 +475,5 @@
 
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
+    <string name="default_permission">Default permission</string>
 </resources>

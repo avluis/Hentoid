@@ -78,26 +78,15 @@
                 app:layout_constraintTop_toBottomOf="@id/tv_chrome_version_name" />
 
             <TextView
-                android:id="@+id/aboutText2"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/about2"
-                android:textSize="@dimen/about_textSize"
-                app:layout_constraintEnd_toEndOf="@id/aboutText1"
-                app:layout_constraintStart_toStartOf="@id/aboutText1"
-                app:layout_constraintTop_toBottomOf="@id/aboutText1" />
-
-            <TextView
                 android:id="@+id/personalDataStatement1"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="@string/personalDataStatement1"
                 android:textSize="@dimen/about_textSize"
-                app:layout_constraintEnd_toEndOf="@id/aboutText2"
-                app:layout_constraintStart_toStartOf="@id/aboutText2"
-                app:layout_constraintTop_toBottomOf="@id/aboutText2" />
+                app:layout_constraintEnd_toEndOf="@id/aboutText1"
+                app:layout_constraintStart_toStartOf="@id/aboutText1"
+                app:layout_constraintTop_toBottomOf="@id/aboutText1" />
 
             <TextView
                 android:id="@+id/personalDataStatement2"

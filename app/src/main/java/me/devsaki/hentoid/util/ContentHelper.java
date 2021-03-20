@@ -81,6 +81,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 public final class ContentHelper {
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
+    private static final String ILLEGAL_CHARS = "[/\\\\]";
     private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
     private static final int[] queueStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode()};
     private static final int[] queueTabStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode()};
@@ -557,26 +558,42 @@ public final class ContentHelper {
         DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
         if (null == siteDownloadDir) return null;
 
-        String bookFolderName = formatBookFolderName(content);
-        DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName);
-        if (null == bookFolder) { // Create
-            return siteDownloadDir.createDirectory(bookFolderName);
-        } else return bookFolder;
+        ImmutablePair<String, String> bookFolderName = formatBookFolderName(content);
+
+        // First try finding the folder with new naming...
+        DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.left);
+        if (null == bookFolder) { // ...then with old (sanitized) naming...
+            bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.right);
+            if (null == bookFolder) { // ...if not, create a new folder with the new naming...
+                DocumentFile result = siteDownloadDir.createDirectory(bookFolderName.left);
+                if (null == result) { // ...if it fails, create a new folder with the old naming
+                    return siteDownloadDir.createDirectory(bookFolderName.right);
+                } else return result;
+            }
+        }
+        return bookFolder;
     }
 
     /**
      * Format the download directory path of the given content according to current user preferences
+     * TODO update
      *
      * @param content Content to get the path from
      * @return Canonical download directory path of the given content, according to current user preferences
      */
-    public static String formatBookFolderName(@NonNull final Content content) {
-        String result = "";
-
+    public static ImmutablePair<String, String> formatBookFolderName(@NonNull final Content content) {
         String title = content.getTitle();
-        title = (null == title) ? "" : title.replaceAll(UNAUTHORIZED_CHARS, "_");
-        String author = content.getAuthor().toLowerCase().replaceAll(UNAUTHORIZED_CHARS, "_");
+        title = (null == title) ? "" : title;
+        String author = content.getAuthor().toLowerCase();
 
+        return new ImmutablePair<>(
+                formatBookFolderName(content, title.replaceAll(ILLEGAL_CHARS, ""), author.replaceAll(ILLEGAL_CHARS, "")),
+                formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_"))
+        );
+    }
+
+    private static String formatBookFolderName(@NonNull final Content content, @NonNull final String title, @NonNull final String author) {
+        String result = "";
         switch (Preferences.getFolderNameFormat()) {
             case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_ID:
                 result += title;
@@ -904,6 +921,7 @@ public final class ContentHelper {
         return reparseFromScratch(content, content.getGalleryUrl());
     }
 
+    // TODO visual feedback to warn the user about redownload "from scratch" having failed (whenever the original content is returned)
     private static Content reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
         Helper.assertNonUiThread();
 
@@ -950,6 +968,16 @@ public final class ContentHelper {
 
         newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
         return newContent;
+    }
+
+    // TODO doc
+    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content) {
+        DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
+        if (bookFolder != null) {
+            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, null); // Remove everything (incl. JSON and thumb)
+            if (!files.isEmpty())
+                for (DocumentFile file : files) file.delete();
+        }
     }
 
     /**

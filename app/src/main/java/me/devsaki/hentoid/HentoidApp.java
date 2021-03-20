@@ -16,6 +16,7 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 //import com.google.android.gms.security.ProviderInstaller;
 //import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jakewharton.threetenabp.AndroidThreeTen;
+import com.thin.downloadmanager.util.Log;
 
 import org.threeten.bp.Instant;
 //import io.fabric.sdk.android.Fabric;
@@ -139,7 +140,11 @@ public class HentoidApp extends Application {
         //int darkMode = Preferences.getDarkMode();
         //AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(darkMode));
 
-        //FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
+        try {
+            //FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
+        } catch (IllegalStateException e) { // Happens during unit tests
+            Log.e("fail@init Crashlytics", e);
+        }
         // Plug the lifecycle listener to handle locking
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
 

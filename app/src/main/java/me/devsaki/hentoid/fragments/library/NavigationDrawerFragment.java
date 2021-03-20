@@ -108,7 +108,8 @@ public final class NavigationDrawerFragment extends Fragment {
         List<DrawerItem> drawerItems = new ArrayList<>();
 
         List<Site> activeSites = Preferences.getActiveSites();
-        for (Site s : activeSites) drawerItems.add(new DrawerItem(s));
+        for (Site s : activeSites)
+            if (s.isVisible()) drawerItems.add(new DrawerItem(s));
 
         drawerAdapter.clear();
         drawerAdapter.add(0, drawerItems);

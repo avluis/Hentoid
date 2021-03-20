@@ -39,6 +39,8 @@ public class Attribute {
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
+    private boolean excluded = false;
+    @Transient
     private int count;
     @Transient
     private int externalId = 0;
@@ -52,6 +54,7 @@ public class Attribute {
     public Attribute(@Nonnull AttributeType type, @Nonnull String name) {
         this.type = type;
         this.name = name;
+
     }
 
     public Attribute(@Nonnull AttributeType type, @Nonnull String name, @Nonnull String url, @Nonnull Site site) {
@@ -89,6 +92,15 @@ public class Attribute {
 
     public AttributeType getType() {
         return type;
+    }
+
+    public Attribute setExcluded(boolean toExclude) {
+        excluded = toExclude;
+        return this;
+    }
+
+    public boolean isExcluded() {
+        return excluded;
     }
 
     public void setType(@Nonnull AttributeType type) {

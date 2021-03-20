@@ -412,6 +412,14 @@
                     android:key="pref_viewer_zoom_holding"
                     android:title="@string/pref_viewer_zoom_holding"
                     app:iconSpaceReserved="false" />
+                <ListPreference
+                    android:defaultValue="@string/pref_viewer_cap_tap_zoom_default"
+                    android:entries="@array/pref_viewer_cap_tap_zoom_entries"
+                    android:entryValues="@array/pref_viewer_cap_tap_zoom_values"
+                    android:key="pref_viewer_cap_tap_zoom"
+                    android:summary="@string/pref_generic_summary"
+                    android:title="@string/pref_viewer_cap_tap_zoom"
+                    app:iconSpaceReserved="false" />
             </PreferenceCategory>
         </PreferenceScreen>
 

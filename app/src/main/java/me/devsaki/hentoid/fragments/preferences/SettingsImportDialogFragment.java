@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
@@ -23,8 +22,6 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.IOException;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -34,29 +31,20 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.json.JsonSettings;
+import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
+import static me.devsaki.hentoid.util.ImportHelper.RQST_PICK_IMPORT_FILE;
 
 /**
- * Created by Robb on 05/2020
- * Dialog for the library metadata import feature
+ * Created by Robb on 03/2021
+ * Dialog for the settings metadata import feature
  */
 public class SettingsImportDialogFragment extends DialogFragment {
-
-    private static final int RQST_PICK_IMPORT_FILE = 4;
-
-    @IntDef({Result.OK, Result.CANCELED, Result.INVALID_FOLDER, Result.OTHER})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface Result {
-        int OK = 0;
-        int CANCELED = 1;
-        int INVALID_FOLDER = 2;
-        int OTHER = 3;
-    }
 
     // UI
     private ViewGroup rootView;
@@ -88,7 +76,7 @@ public class SettingsImportDialogFragment extends DialogFragment {
         if (rootView instanceof ViewGroup) this.rootView = (ViewGroup) rootView;
 
         selectFileBtn = requireViewById(rootView, R.id.import_select_file_btn);
-        selectFileBtn.setOnClickListener(v -> askFile());
+        selectFileBtn.setOnClickListener(v -> ImportHelper.openFilePicker(this));
     }
 
     @Override
@@ -98,37 +86,27 @@ public class SettingsImportDialogFragment extends DialogFragment {
         super.onDestroyView();
     }
 
-    private void askFile() {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
-        // http://stackoverflow.com/a/31334967/1615876
-        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-        HentoidApp.LifeCycleListener.disable(); // Prevents the app from displaying the PIN lock when returning from the SAF dialog
-        startActivityForResult(intent, RQST_PICK_IMPORT_FILE);
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
 
-        @Result int result = processPickerResult(requestCode, resultCode, data);
+        @ImportHelper.UiResult int result = processPickerResult(requestCode, resultCode, data);
         switch (result) {
-            case Result.OK:
+            case ImportHelper.UiResult.OK:
                 // File selected
                 DocumentFile doc = DocumentFile.fromSingleUri(requireContext(), selectedFileUri);
                 if (null == doc) return;
                 selectFileBtn.setVisibility(View.GONE);
                 checkFile(doc);
                 break;
-            case Result.CANCELED:
+            case ImportHelper.UiResult.CANCELED:
                 Snackbar.make(rootView, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
-            case Result.INVALID_FOLDER:
+            case ImportHelper.UiResult.INVALID_FOLDER:
                 Snackbar.make(rootView, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
-            case Result.OTHER:
+            case ImportHelper.UiResult.OTHER:
                 Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
             default:
@@ -136,7 +114,7 @@ public class SettingsImportDialogFragment extends DialogFragment {
         }
     }
 
-    private @Result
+    private @ImportHelper.UiResult
     int processPickerResult(
             int requestCode,
             int resultCode,
@@ -149,11 +127,11 @@ public class SettingsImportDialogFragment extends DialogFragment {
             Uri fileUri = data.getData();
             if (fileUri != null) {
                 selectedFileUri = fileUri;
-                return Result.OK;
-            } else return Result.INVALID_FOLDER;
+                return ImportHelper.UiResult.OK;
+            } else return ImportHelper.UiResult.INVALID_FOLDER;
         } else if (resultCode == Activity.RESULT_CANCELED) {
-            return Result.CANCELED;
-        } else return Result.OTHER;
+            return ImportHelper.UiResult.CANCELED;
+        } else return ImportHelper.UiResult.OTHER;
     }
 
     private void checkFile(@NonNull DocumentFile jsonFile) {
@@ -162,7 +140,12 @@ public class SettingsImportDialogFragment extends DialogFragment {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         c -> onFileDeserialized(c, jsonFile),
-                        Timber::w
+                        t -> {
+                            TextView errorTxt = requireViewById(rootView, R.id.import_file_invalid_text);
+                            errorTxt.setText(getResources().getString(R.string.import_file_invalid, jsonFile.getName()));
+                            errorTxt.setVisibility(View.VISIBLE);
+                            Timber.w(t);
+                        }
                 );
     }
 
@@ -170,7 +153,7 @@ public class SettingsImportDialogFragment extends DialogFragment {
         importDisposable.dispose();
 
         TextView errorTxt = requireViewById(rootView, R.id.import_file_invalid_text);
-        if (collectionOptional.isEmpty()) {
+        if (collectionOptional.isEmpty() || collectionOptional.get().getSettings().isEmpty()) {
             errorTxt.setText(getResources().getString(R.string.import_file_invalid, jsonFile.getName()));
             errorTxt.setVisibility(View.VISIBLE);
         } else {

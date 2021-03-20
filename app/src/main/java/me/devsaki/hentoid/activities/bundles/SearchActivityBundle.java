@@ -25,6 +25,7 @@ public class SearchActivityBundle {
     private static final String KEY_MODE = "mode";
     private static final String KEY_URI = "uri";
     private static final String KEY_GROUP = "group";
+    private static final String EXCLUDE_MODE = "exclude";
 
     private SearchActivityBundle() {
         throw new UnsupportedOperationException();
@@ -39,6 +40,9 @@ public class SearchActivityBundle {
             for (AttributeType type : attributeTypes) attrTypes.add(type.getCode());
 
             bundle.putIntegerArrayList(KEY_ATTRIBUTE_TYPES, attrTypes);
+        }
+        public void setExcludeMode(boolean excludeMode){
+            bundle.putBoolean(EXCLUDE_MODE, excludeMode);
         }
 
         public void setMode(int mode) {
@@ -68,7 +72,7 @@ public class SearchActivityBundle {
                 List<Attribute> attrs = entry.getValue();
                 if (attrs != null)
                     for (Attribute attr : attrs)
-                        searchUri.appendQueryParameter(attrType.name(), attr.getId() + ";" + attr.getName());
+                        searchUri.appendQueryParameter(attrType.name(), attr.getId() + ";" + attr.getName() + ";" + attr.isExcluded());
             }
 
             return searchUri.build();
@@ -96,7 +100,7 @@ public class SearchActivityBundle {
 
             return result;
         }
-
+        public boolean getExcludeMode(){return bundle.getBoolean(EXCLUDE_MODE, false);}
         public int getMode() {
             return bundle.getInt(KEY_MODE, -1);
         }
@@ -124,8 +128,8 @@ public class SearchActivityBundle {
                     if (type != null)
                         for (String attrStr : uri.getQueryParameters(typeStr)) {
                             String[] attrParams = attrStr.split(";");
-                            if (2 == attrParams.length) {
-                                result.add(new Attribute(type, attrParams[1]).setId(Long.parseLong(attrParams[0])));
+                            if (3 == attrParams.length) {
+                                result.add(new Attribute(type, attrParams[1]).setId(Long.parseLong(attrParams[0])).setExcluded(Boolean.parseBoolean(attrParams[2])));
                             }
                         }
                 }

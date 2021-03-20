@@ -21,7 +21,7 @@ import me.devsaki.hentoid.util.ImageHelper;
  * Image File builder
  */
 @Entity
-public class ImageFile implements Cloneable {
+public class ImageFile {
 
     @Id
     private long id;
@@ -55,6 +55,24 @@ public class ImageFile implements Cloneable {
     public ImageFile() {
     }
 
+    public ImageFile(@NonNull final ImageFile img) {
+        this.id = img.id;
+        this.order = img.order;
+        this.url = img.url;
+        this.name = img.name;
+        this.fileUri = img.fileUri;
+        this.read = img.read;
+        this.favourite = img.favourite;
+        this.isCover = img.isCover;
+        this.status = img.status;
+//        this.content = img.content; ObjectBox doesn't like that
+        this.mimeType = img.mimeType;
+        this.size = img.size;
+        this.downloadParams = img.downloadParams;
+        this.displayOrder = img.displayOrder;
+        this.isBackup = img.isBackup;
+    }
+
     public ImageFile(int order, String url, StatusContent status, int maxPages) {
         this.order = order;
 
@@ -63,16 +81,6 @@ public class ImageFile implements Cloneable {
 
         this.url = url;
         this.status = status;
-    }
-
-    @NonNull
-    @Override
-    public ImageFile clone() {
-        try {
-            return (ImageFile) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
     }
 
     public static ImageFile newCover(String url, StatusContent status) {

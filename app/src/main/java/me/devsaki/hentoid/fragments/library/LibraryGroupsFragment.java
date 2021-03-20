@@ -73,6 +73,7 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
+import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
@@ -563,6 +564,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             selectExtension.setSelectOnLongClick(true);
             selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+
+            FastAdapterPreClickSelectHelper<GroupDisplayItem> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
+            fastAdapter.setOnPreClickListener(helper::onPreClickListener);
+            fastAdapter.setOnPreLongClickListener(helper::onPreLongClickListener);
         }
 
         // Drag, drop & swiping
@@ -578,28 +583,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             touchHelper.attachToRecyclerView(recyclerView);
         }
 
-        // Item click listeners
-        fastAdapter.setOnPreClickListener((v, a, i, p) -> {
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> normal click
-                return false;
-            } else { // Existing selection -> toggle selection
-                if (selectedPositions.contains(p) && 1 == selectedPositions.size())
-                    selectExtension.setSelectOnLongClick(true);
-                selectExtension.toggleSelection(p);
-                return true;
-            }
-        });
+        // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
-        fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> select things
-                selectExtension.select(p);
-                selectExtension.setSelectOnLongClick(false);
-                return true;
-            }
-            return false;
-        });
 
         recyclerView.setAdapter(fastAdapter);
     }

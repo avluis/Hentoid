@@ -447,8 +447,6 @@
         </activity>
 
 
-        <service android:name=".services.ImportService" />
-
         <service android:name=".services.ExternalImportService" />
 
         <service android:name=".services.API29MigrationService" />
@@ -466,8 +464,8 @@
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider.FileProvider"
-            android:exported="false"
             android:enabled="true"
+            android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"

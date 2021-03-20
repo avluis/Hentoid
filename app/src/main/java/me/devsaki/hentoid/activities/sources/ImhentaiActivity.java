@@ -4,8 +4,8 @@ import me.devsaki.hentoid.enums.Site;
 
 public class ImhentaiActivity extends BaseWebActivity {
 
-    private static final String DOMAIN_FILTER = "imhentai.com";
-    private static final String[] GALLERY_FILTER = {"//imhentai.com/gallery/"};
+    private static final String DOMAIN_FILTER = "imhentai.xxx";
+    private static final String[] GALLERY_FILTER = {"//imhentai.xxx/gallery/"};
 //    private static final String[] DIRTY_ELEMENTS = {".bblocktop"}; <-- fucks up the CSS when removed
 
     Site getStartSite() {

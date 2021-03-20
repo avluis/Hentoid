@@ -26,8 +26,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
-        versionCode 165
-        versionName '1.14.0'
+        versionCode 166
+        versionName '1.14.3'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -144,7 +144,7 @@ dependencies {
      * UI
      */
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = "5.3.4"
+    def fastadapter_version = "5.3.5"
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"

@@ -55,38 +55,30 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
 
+
     <TextView
         android:id="@+id/textCategoryAny"
         style="@style/SearchCategoryButton"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
         android:text="@string/category_any"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/search_tags" />
+        app:layout_constraintTop_toBottomOf="@id/textCategoryTag" />
 
     <TextView
-        android:id="@+id/textCategoryTag"
+        android:id="@+id/textCategorySeries"
         style="@style/SearchCategoryButton"
         android:layout_marginStart="4dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:text="@string/category_tag"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
-        app:layout_constraintTop_toBottomOf="@id/search_tags" />
-
-    <TextView
-        android:id="@+id/textCategoryCharacter"
-        style="@style/SearchCategoryButton"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
-        android:text="@string/category_character"
-        app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textCategoryAny" />
+        android:text="@string/category_series"
+        app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textCategoryLanguage" />
 
     <TextView
         android:id="@+id/textCategoryArtist"
@@ -96,19 +88,9 @@
         android:layout_marginEnd="8dp"
         android:text="@string/category_artist"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
         app:layout_constraintTop_toBottomOf="@id/textCategoryTag" />
-
-    <TextView
-        android:id="@+id/textCategorySeries"
-        style="@style/SearchCategoryButton"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="4dp"
-        android:text="@string/category_series"
-        app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textCategoryCharacter" />
 
     <TextView
         android:id="@+id/textCategoryLanguage"
@@ -118,6 +100,7 @@
         android:layout_marginEnd="8dp"
         android:text="@string/category_language"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
         app:layout_constraintTop_toBottomOf="@id/textCategoryArtist" />
 
@@ -129,8 +112,33 @@
         android:layout_marginEnd="4dp"
         android:text="@string/category_source"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textCategorySeries" />
+        app:layout_constraintTop_toBottomOf="@id/textCategoryCharacter" />
+
+    <TextView
+        android:id="@+id/textCategoryCharacter"
+        style="@style/SearchCategoryButton"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="4dp"
+        android:text="@string/category_character"
+        app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textCategoryAny" />
+
+    <TextView
+        android:id="@+id/textCategoryTag"
+        style="@style/SearchCategoryButton"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/category_tag"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
+        app:layout_constraintTop_toBottomOf="@id/search_tags" />
 
     <TextView
         android:id="@+id/search_fab"
@@ -145,8 +153,19 @@
         android:paddingEnd="20dp"
         android:text="@plurals/search_button"
         android:visibility="gone"
-        tools:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible" />
+
+    <CheckBox
+        android:id="@+id/checkBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:onClick="onExcludeClick"
+        android:text="@string/exclude"
+        app:layout_constraintBottom_toTopOf="@id/textCategoryAny"
+        app:layout_constraintEnd_toEndOf="@id/guidelineMiddle"
+        app:layout_constraintStart_toStartOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

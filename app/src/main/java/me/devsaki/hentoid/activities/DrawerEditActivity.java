@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
 
@@ -33,6 +34,7 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
     private final ItemAdapter<SiteItem> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<SiteItem> fastAdapter = FastAdapter.with(itemAdapter);
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,15 +69,12 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
         List<Site> activeSites = Preferences.getActiveSites();
 
         // First add active sites
-        for (Site s : activeSites) items.add(new SiteItem(s, true, touchHelper));
+        for (Site s : activeSites)
+            if (s.isVisible()) items.add(new SiteItem(s, true, touchHelper));
         // Then add the others
         for (Site s : Site.values())
             // We don't want to show these
-            if (s != Site.ASMHENTAI_COMICS   // Does not work directly
-                    && s != Site.PANDA              // Dropped; kept for retrocompatibility
-                    && s != Site.NONE               // Technical fallback
-                    && !activeSites.contains(s)
-            )
+            if (s.isVisible() && !activeSites.contains(s))
                 items.add(new SiteItem(s, false, touchHelper));
 
         itemAdapter.add(items);

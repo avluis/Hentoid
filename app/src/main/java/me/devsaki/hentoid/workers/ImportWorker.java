@@ -15,6 +15,7 @@ import androidx.work.WorkerParameters;
 
 import com.squareup.moshi.JsonDataException;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
@@ -259,18 +260,18 @@ public class ImportWorker extends Worker {
                         else contentImages = new ArrayList<>();
 
                         if (rename) {
-                            String canonicalBookFolderName = ContentHelper.formatBookFolderName(content);
+                            ImmutablePair<String, String> canonicalBookFolderName = ContentHelper.formatBookFolderName(content);
 
                             List<String> currentPathParts = bookFolder.getUri().getPathSegments();
                             String[] bookUriParts = currentPathParts.get(currentPathParts.size() - 1).split(":");
                             String[] bookPathParts = bookUriParts[bookUriParts.length - 1].split("/");
                             String bookFolderName = bookPathParts[bookPathParts.length - 1];
 
-                            if (!canonicalBookFolderName.equalsIgnoreCase(bookFolderName)) {
-                                if (renameFolder(context, bookFolder, content, client, canonicalBookFolderName)) {
-                                    trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName);
+                            if (!canonicalBookFolderName.left.equalsIgnoreCase(bookFolderName)) {
+                                if (renameFolder(context, bookFolder, content, client, canonicalBookFolderName.left)) {
+                                    trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName.left);
                                 } else {
-                                    trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName);
+                                    trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName.left);
                                 }
                             }
                         }

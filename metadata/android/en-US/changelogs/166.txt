@@ -1,0 +1,34 @@
+New
+
+    Downloader : non-western characters are now used when naming download folders - no more _'s everywhere !
+    Settings : External library figures are now shown on the memory usage chart
+    Library screen : It is now possible to sort by read progress
+    Advanced search : It is now possible to search with negative filters
+    Picture viewer : New option to set max zoom level when double tapping
+
+
+Changed
+
+    Removed support for downloading from Hentai Cafe, as per FAKKU request 
+    Web browser : Site name is now displayed on the top bar
+    Gallery : Selection uses a more contrasted icon
+    Import metadata / settings : An error is displayed when trying to import the wrong data (e.g. import metadata as settings)
+    Redownload from scratch now removes all previously downloaded files before queuing the book
+
+
+Fixed
+
+    Exhentai : Attempt at preventing tags from dropping when downloading certain books
+    Queue : Prevent dragged items from sometimes floating in mid-air after being dropped
+    Library : All groups are visible again
+    A couple stability fixes
+    Imhentai : Switched to their new host
+    Hentai2Read : Removed ads
+    E-hentai / ExHentai : Downloading updates to existing artists collections is now possible again
+    (duplicate detection based on cover URL now only works for Manwha Hentai and Toonily)
+    Archives : Prevent duplicating the book's name when generating archives
+    Folder & archive naming : Don't use /'s and 's when trying to format the folder or file names
+    Redownload feature works again (!)
+
+
+

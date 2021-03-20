@@ -170,6 +170,8 @@ public class JsonContent {
 
         result.populateAuthor();
         result.populateUniqueSiteId();
+        result.computeSize();
+        result.computeReadProgress();
         return result;
     }
 }

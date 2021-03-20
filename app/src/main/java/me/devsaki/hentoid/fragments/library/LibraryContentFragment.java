@@ -99,6 +99,7 @@ import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
+import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
@@ -174,7 +175,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
-
+    private boolean excludeClicked = false;
 
     /**
      * Diff calculation rules for contents
@@ -438,6 +439,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 return Preferences.Constant.ORDER_FIELD_READS;
             case (R.id.sort_size):
                 return Preferences.Constant.ORDER_FIELD_SIZE;
+            case (R.id.sort_reading_progress):
+                return Preferences.Constant.ORDER_FIELD_READ_PROGRESS;
             case (R.id.sort_custom):
                 return Preferences.Constant.ORDER_FIELD_CUSTOM;
             case (R.id.sort_random):
@@ -463,6 +466,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 return R.string.sort_reads;
             case (Preferences.Constant.ORDER_FIELD_SIZE):
                 return R.string.sort_size;
+            case (Preferences.Constant.ORDER_FIELD_READ_PROGRESS):
+                return R.string.sort_reading_progress;
             case (Preferences.Constant.ORDER_FIELD_CUSTOM):
                 return R.string.sort_custom;
             case (Preferences.Constant.ORDER_FIELD_RANDOM):
@@ -860,6 +865,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (group != null)
             builder.setGroup(group.id);
 
+        builder.setExcludeMode(excludeClicked);
         search.putExtras(builder.getBundle());
 
         startActivityForResult(search, 999);
@@ -876,9 +882,11 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         if (requestCode == 999
                 && resultCode == Activity.RESULT_OK
                 && data != null && data.getExtras() != null) {
-            Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
+            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(data.getExtras());
+            Uri searchUri = parser.getUri();
 
             if (searchUri != null) {
+                excludeClicked = parser.getExcludeMode();
                 setQuery(searchUri.getPath());
                 setMetadata(SearchActivityBundle.Parser.parseSearchUri(searchUri));
                 viewModel.searchContent(getQuery(), getMetadata());
@@ -928,28 +936,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
 
         if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
 
-        // Item click listeners
-        fastAdapter.setOnPreClickListener((v, a, i, p) -> {
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> normal click
-                return false;
-            } else { // Existing selection -> toggle selection
-                if (selectedPositions.contains(p) && 1 == selectedPositions.size())
-                    selectExtension.setSelectOnLongClick(true);
-                selectExtension.toggleSelection(p);
-                return true;
-            }
-        });
+        // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
-        fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
-            Set<Integer> selectedPositions = selectExtension.getSelections();
-            if (0 == selectedPositions.size()) { // No selection -> select things
-                selectExtension.select(p);
-                selectExtension.setSelectOnLongClick(false);
-                return true;
-            }
-            return false;
-        });
 
         // Favourite button click listener
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
@@ -1010,6 +998,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             selectExtension.setSelectOnLongClick(true);
             selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((item, b) -> this.onSelectionChanged());
+
+            FastAdapterPreClickSelectHelper<ContentItem> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
+            fastAdapter.setOnPreClickListener(helper::onPreClickListener);
+            fastAdapter.setOnPreLongClickListener(helper::onPreLongClickListener);
         }
 
         // Drag, drop & swiping
@@ -1077,7 +1069,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
      * @param shelfNumber Number of the shelf to display
      */
     private void populateBookshelf(@NonNull final PagedList<Content> iLibrary, int shelfNumber) {
-        if (Preferences.getEndlessScroll()) return;
+        if (Preferences.getEndlessScroll() || null == itemAdapter) return;
 
         ImmutablePair<Integer, Integer> bounds = getShelfBound(shelfNumber, iLibrary.size());
         int minIndex = bounds.getLeft();
@@ -1096,6 +1088,8 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
     }
 
     private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
+        if (Preferences.getEndlessScroll() || null == itemAdapter) return;
+
         List<ContentItem> contentItems;
         if (iLibrary.isEmpty()) {
             contentItems = Collections.emptyList();
