@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
@@ -70,6 +71,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // === COMMUNICATION
+    private OnBackPressedCallback callback;
     private QueueViewModel viewModel;
     // Activity
     private WeakReference<QueueActivity> activity;
@@ -157,7 +159,31 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         initSelectionToolbar();
         attachButtons(fastAdapter);
 
+        addCustomBackControl();
+
         return rootView;
+    }
+
+    private void addCustomBackControl() {
+        if (callback != null) callback.remove();
+        callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                customBackPress();
+            }
+        };
+        activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
+    }
+
+    private void customBackPress() {
+        // If content is selected, deselect it
+        if (!selectExtension.getSelections().isEmpty()) {
+            selectExtension.deselect();
+            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+        } else {
+            callback.remove();
+            requireActivity().onBackPressed();
+        }
     }
 
     @Override

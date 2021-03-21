@@ -189,6 +189,4 @@ public class QueueActivity extends BaseActivity {
                     snackbar.show();
                 });
     }
-
-    // TODO deselect on back button
 }

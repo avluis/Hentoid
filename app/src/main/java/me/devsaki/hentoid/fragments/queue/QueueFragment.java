@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -103,6 +104,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // COMMUNICATION
+    private OnBackPressedCallback callback;
     // Viewmodel
     private QueueViewModel viewModel;
     // Activity
@@ -254,7 +256,31 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::updateNetworkUsage));
 
+        addCustomBackControl();
+
         return rootView;
+    }
+
+    private void addCustomBackControl() {
+        if (callback != null) callback.remove();
+        callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                customBackPress();
+            }
+        };
+        activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
+    }
+
+    private void customBackPress() {
+        // If content is selected, deselect it
+        if (!selectExtension.getSelections().isEmpty()) {
+            selectExtension.deselect();
+            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+        } else {
+            callback.remove();
+            requireActivity().onBackPressed();
+        }
     }
 
     private void initToolbar() {
