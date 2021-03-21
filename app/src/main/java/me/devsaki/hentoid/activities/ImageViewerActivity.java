@@ -45,6 +45,8 @@ public class ImageViewerActivity extends BaseActivity {
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(ImageViewerViewModel.class);
 
+        viewModel.observeDbImages(this);
+
         if (null == viewModel.getContent().getValue()) { // ViewModel hasn't loaded anything yet (fresh start)
             Bundle searchParams = parser.getSearchParams();
             if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);

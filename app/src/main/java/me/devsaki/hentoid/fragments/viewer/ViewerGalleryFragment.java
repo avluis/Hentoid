@@ -203,7 +203,7 @@ public class ViewerGalleryFragment extends Fragment {
             viewModel.toggleFilterFavouriteImages();
 
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
-        viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
+        viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
         viewModel.getShowFavouritesOnly().observe(getViewLifecycleOwner(), this::onShowFavouriteChanged);
     }
 

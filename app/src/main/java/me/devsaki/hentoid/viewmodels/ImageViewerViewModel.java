@@ -7,6 +7,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -40,13 +41,13 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ArchiveHelper;
-import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -71,7 +72,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Pictures data
     private LiveData<List<ImageFile>> currentImageSource;
-    private final MediatorLiveData<List<ImageFile>> images = new MediatorLiveData<>();  // Currently displayed set of images
+    private final MediatorLiveData<List<ImageFile>> databaseImages = new MediatorLiveData<>();  // Set of image of current content
+    private final MutableLiveData<List<ImageFile>> viewerImages = new MutableLiveData<>();     // Currently displayed set of images (reprocessed from databaseImages)
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
     private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // Shuffle state of the current book
     private final MutableLiveData<Boolean> showFavouritesOnly = new MutableLiveData<>();// True if viewer only shows favourite images; false if shows all pages
@@ -116,8 +118,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<List<ImageFile>> getImages() {
-        return images;
+    public LiveData<List<ImageFile>> getViewerImages() {
+        return viewerImages;
     }
 
     @NonNull
@@ -133,6 +135,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
     @NonNull
     public LiveData<Boolean> getShowFavouritesOnly() {
         return showFavouritesOnly;
+    }
+
+    // Artificial observer bound to the activity's lifecycle to ensure DB images are pushed to the ViewModel
+    public void observeDbImages(AppCompatActivity activity) {
+        databaseImages.observe(activity, v -> {
+        });
     }
 
     public void loadFromContent(long contentId) {
@@ -279,7 +287,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (isArchiveExtracting) return;
 
         List<ImageFile> newImageFiles = new ArrayList<>(newImages);
-        List<ImageFile> currentImages = images.getValue();
+        List<ImageFile> currentImages = databaseImages.getValue();
         if ((!newImages.isEmpty() && loadedContentId != newImages.get(0).getContent().getTargetId()) || null == currentImages) { // Load a new book
             // TODO create a smarter cache that works with a window of a given size
             File cachePicFolder = getOrCreatePictureCacheFolder();
@@ -395,7 +403,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         isShuffled = !isShuffled;
         shuffled.postValue(isShuffled);
 
-        List<ImageFile> imgs = getImages().getValue();
+        List<ImageFile> imgs = databaseImages.getValue();
         if (imgs != null) sortAndSetImages(imgs, isShuffled);
     }
 
@@ -414,7 +422,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
 
-        images.setValue(imgs);
+        viewerImages.postValue(imgs);
     }
 
     public void onLeaveBook(int readerIndex) {
@@ -424,7 +432,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Don't do anything if the Content hasn't even been loaded
         if (-1 == loadedContentId) return;
 
-        List<ImageFile> theImages = images.getValue();
+        List<ImageFile> theImages = databaseImages.getValue();
         Content theContent = collectionDao.selectContent(loadedContentId);
         if (null == theImages || null == theContent) return;
 
@@ -498,10 +506,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    public void toggleImageFavourite(int imageIndex, @NonNull Consumer<Boolean> successCallback) {
-        List<ImageFile> list = getImages().getValue();
+    public void toggleImageFavourite(int viewerIndex, @NonNull Consumer<Boolean> successCallback) {
+        List<ImageFile> list = viewerImages.getValue();
         if (list != null) {
-            ImageFile file = list.get(imageIndex);
+            ImageFile file = list.get(viewerIndex);
             boolean newState = !file.isFavourite();
             toggleImageFavourite(Stream.of(file).toList(), () -> successCallback.accept(newState));
         }
@@ -585,7 +593,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (null == targetContent) return;
 
         // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
-        if (currentImageSource != null) images.removeSource(currentImageSource);
+        if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
 
         compositeDisposable.add(
                 Completable.fromAction(() -> doDeleteBook(targetContent))
@@ -608,7 +616,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                 e -> {
                                     onError.accept(e);
                                     // Restore image source listener on error
-                                    images.addSource(currentImageSource, imgs -> setImages(targetContent, imgs));
+                                    databaseImages.addSource(currentImageSource, imgs -> setImages(targetContent, imgs));
                                 }
                         )
         );
@@ -619,10 +627,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
         ContentHelper.removeQueuedContent(getApplication(), collectionDao, targetContent);
     }
 
-    public void deletePage(int pageIndex, Consumer<Throwable> onError) {
-        List<ImageFile> imageFiles = images.getValue();
-        if (imageFiles != null && imageFiles.size() > pageIndex && pageIndex > -1)
-            deletePages(Stream.of(imageFiles.get(pageIndex)).toList(), onError);
+    public void deletePage(int pageViewerIndex, Consumer<Throwable> onError) {
+        List<ImageFile> imageFiles = viewerImages.getValue();
+        if (imageFiles != null && imageFiles.size() > pageViewerIndex && pageViewerIndex > -1)
+            deletePages(Stream.of(imageFiles.get(pageViewerIndex)).toList(), onError);
     }
 
     public void deletePages(List<ImageFile> pages, Consumer<Throwable> onError) {
@@ -696,9 +704,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
-        if (currentImageSource != null) images.removeSource(currentImageSource);
+        if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
         currentImageSource = collectionDao.selectDownloadedImagesFromContent(theContent.getId());
-        images.addSource(currentImageSource, imgs -> setImages(theContent, imgs));
+        databaseImages.addSource(currentImageSource, imgs -> setImages(theContent, imgs));
     }
 
     private void postLoadProcessing(@NonNull Context context, @NonNull Content content) {

@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.annimon.stream.Stream;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -113,9 +112,8 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
+        viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
     }
-
 
 
     /**
@@ -180,15 +178,15 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
      * Handle click on "Favourite" action button
      */
     private void onFavouriteClick() {
-        viewModel.toggleImageFavourite(Stream.of(image).toList(), this::onToggleFavouriteSuccess);
+        viewModel.toggleImageFavourite(imageIndex, this::onToggleFavouriteSuccess);
     }
 
     /**
      * Success callback when the new favourite'd state has been successfully persisted
      */
-    private void onToggleFavouriteSuccess() {
-        image.setFavourite(!image.isFavourite());
-        updateFavouriteDisplay(image.isFavourite());
+    private void onToggleFavouriteSuccess(Boolean newState) {
+        image.setFavourite(newState);
+        updateFavouriteDisplay(newState);
     }
 
     /**

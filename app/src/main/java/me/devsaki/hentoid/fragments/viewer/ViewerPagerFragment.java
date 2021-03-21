@@ -196,7 +196,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         viewModel.getContent()
                 .observe(getViewLifecycleOwner(), this::onContentChanged);
 
-        viewModel.getImages()
+        viewModel.getViewerImages()
                 .observe(getViewLifecycleOwner(), this::onImagesChanged);
 
         viewModel.getStartingIndex()
@@ -484,7 +484,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (images.isEmpty()) {
             setSystemBarsVisible(true);
             binding.viewerNoImgTxt.setVisibility(View.VISIBLE);
-        } else {
+        } else if (imageIndex > -1 && imageIndex < images.size()) {
+            isPageFavourite = images.get(imageIndex).isFavourite();
             binding.viewerNoImgTxt.setVisibility(View.GONE);
         }
     }
