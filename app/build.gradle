@@ -189,7 +189,7 @@ dependencies {
     implementation "me.zhanghai.android.fastscroll:library:1.1.5"
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
-    implementation 'com.google.android:flexbox:2.0.0'
+    implementation 'com.google.android:flexbox:2.0.1'
 
     /**
      * NETWORKING
