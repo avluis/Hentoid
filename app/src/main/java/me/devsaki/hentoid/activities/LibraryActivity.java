@@ -183,6 +183,8 @@ public class LibraryActivity extends BaseActivity {
     private boolean isCustomGroupingAvailable;
     // Titles of each of the Viewpager2's tabs
     private final Map<Integer, String> titles = new HashMap<>();
+    // TODO doc
+    private boolean isGroupFavsChecked = false;
 
 
     // Used to auto-hide the sort controls bar when no activity is detected
@@ -230,6 +232,10 @@ public class LibraryActivity extends BaseActivity {
 
     public void toggleEditMode() {
         setEditMode(!editMode);
+    }
+
+    public boolean isGroupFavsChecked() {
+        return isGroupFavsChecked;
     }
 
 
@@ -528,7 +534,11 @@ public class LibraryActivity extends BaseActivity {
             case R.id.action_favourites:
                 menuItem.setChecked(!menuItem.isChecked());
                 updateFavouriteFilter();
-                viewModel.toggleFavouriteFilter();
+                if (isGroupDisplayed()) {
+                    isGroupFavsChecked = menuItem.isChecked();
+                    viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
+                } else
+                    viewModel.toggleContentFavouriteFilter();
                 break;
             case R.id.action_order:
                 showSearchSortBar(null, null, true);
@@ -685,7 +695,7 @@ public class LibraryActivity extends BaseActivity {
                 break;
             case Preferences.Key.GROUPING_DISPLAY:
             case Preferences.Key.ARTIST_GROUP_VISIBILITY:
-                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
                 break;
             default:
                 // Nothing to handle there
@@ -721,6 +731,9 @@ public class LibraryActivity extends BaseActivity {
             if (currentGrouping.equals(selectedGrouping)) return false;
 
             Preferences.setGroupingDisplay(selectedGrouping.getId());
+            isGroupFavsChecked = false;
+            favsMenu.setChecked(false);
+            updateFavouriteFilter();
 
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
             if (!selectedGrouping.canReorderBooks()
@@ -846,7 +859,7 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) return;
 
         enableFragment(0);
-        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
     }
@@ -862,7 +875,7 @@ public class LibraryActivity extends BaseActivity {
 
         searchMenu.setVisible(!editMode);
         newGroupMenu.setVisible(!editMode && isGroupDisplayed() && currentGrouping.canReorderGroups());
-        favsMenu.setVisible(!editMode && !isGroupDisplayed());
+        favsMenu.setVisible(!editMode);
         reorderMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_reorder_lines);
         reorderCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);

@@ -36,6 +36,7 @@ import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.extensions.ExtensionsFactories;
+import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.select.SelectExtensionFactory;
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
@@ -144,7 +145,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         @Override
         public boolean areContentsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
-            return oldItem.getGroup().picture.getTargetId() == newItem.getGroup().picture.getTargetId();
+            return oldItem.getGroup().picture.getTargetId() == newItem.getGroup().picture.getTargetId()
+                    && oldItem.getGroup().isFavourite() == newItem.getGroup().isFavourite();
         }
 
         @Override
@@ -153,6 +155,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
             if (!newItem.getGroup().picture.isNull() && oldItem.getGroup().picture.getTargetId() != newItem.getGroup().picture.getTargetId()) {
                 diffBundleBuilder.setCoverUri(newItem.getGroup().picture.getTarget().getUsableUri());
+            }
+            if (oldItem.getGroup().isFavourite() != newItem.getGroup().isFavourite()) {
+                diffBundleBuilder.setFavourite(newItem.getGroup().isFavourite());
             }
 
             if (diffBundleBuilder.isEmpty()) return null;
@@ -204,7 +209,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         // Trigger a blank search
         // TODO when group is reached from FLAT through the "group by" menu, this triggers a double-load and a screen blink
-        viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility()); // Trigger a blank search
+        viewModel.setGrouping(
+                Preferences.getGroupingDisplay(),
+                Preferences.getGroupSortField(),
+                Preferences.isGroupSortDesc(),
+                Preferences.getArtistGroupVisibility(),
+                activity.get().isGroupFavsChecked());
     }
 
     public void onEnable() {
@@ -263,7 +273,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             // Update icon
             sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
             // Run a new search
-            viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), Preferences.getGroupSortField(), sortDesc, Preferences.getArtistGroupVisibility());
+            viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), Preferences.getGroupSortField(), sortDesc, Preferences.getArtistGroupVisibility(), activity.get().isGroupFavsChecked());
             activity.get().sortCommandsAutoHide(true, null);
         });
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getGroupSortField()));
@@ -280,7 +290,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
                 Preferences.setGroupSortField(fieldCode);
                 // Run a new search
-                viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), fieldCode, Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+                viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), fieldCode, Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), activity.get().isGroupFavsChecked());
                 activity.get().sortCommandsAutoHide(true, popup);
                 return true;
             });
@@ -379,6 +389,15 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void onNewGroupNameExists() {
         ToastHelper.toast(R.string.group_name_exists);
         newGroupPrompt();
+    }
+
+    /**
+     * Callback for the "favourite" button of the group holder
+     *
+     * @param group Group whose "favourite" button has been clicked on
+     */
+    private void onGroupFavouriteClick(@NonNull Group group) {
+        viewModel.toggleGroupFavourite(group);
     }
 
     /**
@@ -584,6 +603,23 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         // Item click listener
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
 
+        // Favourite button click listener
+        fastAdapter.addEventHook(new ClickEventHook<GroupDisplayItem>() {
+            @Override
+            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<GroupDisplayItem> fastAdapter, @NotNull GroupDisplayItem item) {
+                if (item.getGroup() != null) onGroupFavouriteClick(item.getGroup());
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof GroupDisplayItem.GroupViewHolder) {
+                    return ((GroupDisplayItem.GroupViewHolder) viewHolder).getFavouriteButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
         recyclerView.setAdapter(fastAdapter);
     }
 
@@ -633,7 +669,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         // Refresh groups (new content -> updated book count or new groups)
         // TODO do we really want to do that, especially when deleting content ?
         if (!firstLibraryLoad)
-            viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+            viewModel.setGrouping(
+                    Preferences.getGroupingDisplay(),
+                    Preferences.getGroupSortField(),
+                    Preferences.isGroupSortDesc(),
+                    Preferences.getArtistGroupVisibility(),
+                    activity.get().isGroupFavsChecked());
         else {
             Timber.i(">>Library changed (groups) : ignored");
             firstLibraryLoad = false;
@@ -651,7 +692,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             else
                 ContentHelper.launchBrowserFor(requireContext(), s, query);
         } else {
-            viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+            viewModel.searchGroup(
+                    Preferences.getGroupingDisplay(),
+                    query, Preferences.getGroupSortField(),
+                    Preferences.isGroupSortDesc(),
+                    Preferences.getArtistGroupVisibility(),
+                    activity.get().isGroupFavsChecked());
         }
     }
 

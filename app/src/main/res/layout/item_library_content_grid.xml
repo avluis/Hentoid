@@ -112,7 +112,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_fav_empty"
-            android:tooltipText="@string/book_fav_help"
+            android:tooltipText="@string/fav_help"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="1.0"

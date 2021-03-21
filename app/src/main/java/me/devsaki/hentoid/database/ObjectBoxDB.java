@@ -33,6 +33,7 @@ import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
@@ -55,7 +56,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -1185,12 +1185,20 @@ public class ObjectBoxDB {
         return (int) store.boxFor(GroupItem.class).query().equal(GroupItem_.groupId, groupid).build().property(GroupItem_.order).max();
     }
 
-    Query<Group> selectGroupsQ(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility) {
+    Query<Group> selectGroupsQ(
+            int grouping,
+            @Nullable String query,
+            int orderField,
+            boolean orderDesc,
+            int artistGroupVisibility,
+            boolean groupFavouritesOnly) {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
         if (query != null) qb.contains(Group_.name, query);
 
         if (grouping == Grouping.ARTIST.getId() && artistGroupVisibility != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS)
             qb.equal(Group_.subtype, artistGroupVisibility);
+
+        if (groupFavouritesOnly) qb.equal(Group_.favourite, true);
 
         Property<Group> property = Group_.name;
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.getId())

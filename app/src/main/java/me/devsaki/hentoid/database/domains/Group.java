@@ -33,6 +33,7 @@ public class Group {
     public boolean hasCustomBookOrder = false;
     public int propertyMin;
     public int propertyMax;
+    public boolean favourite = false;
 
     // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON
@@ -97,6 +98,14 @@ public class Group {
 
     public void setFlaggedForDeletion(boolean flaggedForDeletion) {
         isFlaggedForDeletion = flaggedForDeletion;
+    }
+
+    public boolean isFavourite() {
+        return favourite;
+    }
+
+    public void setFavourite(boolean favourite) {
+        this.favourite = favourite;
     }
 
     @Override

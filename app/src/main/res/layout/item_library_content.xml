@@ -70,7 +70,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_fav_empty"
-            android:tooltipText="@string/book_fav_help"
+            android:tooltipText="@string/fav_help"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvTags"
