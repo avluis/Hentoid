@@ -174,7 +174,7 @@ public class ViewerGalleryFragment extends Fragment {
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
-                viewModel.toggleFilterFavouriteImages();
+                viewModel.filterFavouriteImages(!filterFavouritesState);
             }
             return true;
         });
@@ -200,7 +200,7 @@ public class ViewerGalleryFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
 
         if (filterFavouritesLaunchRequest && filterFavouritesLaunchRequest != filterFavouritesLaunchState)
-            viewModel.toggleFilterFavouriteImages();
+            viewModel.filterFavouriteImages(filterFavouritesLaunchRequest);
 
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
@@ -214,7 +214,7 @@ public class ViewerGalleryFragment extends Fragment {
         recyclerView = null;
 
         if (filterFavouritesLaunchState != filterFavouritesState)
-            viewModel.toggleFilterFavouriteImages();
+            viewModel.filterFavouriteImages(filterFavouritesLaunchState);
 
         super.onDestroy();
     }
@@ -251,20 +251,20 @@ public class ViewerGalleryFragment extends Fragment {
         switch (menuItem.getItemId()) {
             case R.id.action_delete:
                 if (!selectedItems.isEmpty()) {
-                    List<ImageFile> selectedContent = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
-                    askDeleteSelected(selectedContent);
+                    List<ImageFile> selectedImages = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
+                    askDeleteSelected(selectedImages);
                 }
                 break;
             case R.id.action_set_cover:
                 if (!selectedItems.isEmpty()) {
-                    Optional<ImageFile> selectedContent = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().findFirst();
-                    if (selectedContent.isPresent()) askSetSelectedCover(selectedContent.get());
+                    Optional<ImageFile> selectedImages = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().findFirst();
+                    if (selectedImages.isPresent()) askSetSelectedCover(selectedImages.get());
                 }
                 break;
             case R.id.action_toggle_favorite_pages:
                 if (!selectedItems.isEmpty()) {
-                    List<ImageFile> selectedContent = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
-                    viewModel.toggleImageFavourite(selectedContent, this::onFavouriteSuccess);
+                    List<ImageFile> selectedImages = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
+                    viewModel.toggleImageFavourite(selectedImages, this::onFavouriteSuccess);
                 }
                 break;
             default:

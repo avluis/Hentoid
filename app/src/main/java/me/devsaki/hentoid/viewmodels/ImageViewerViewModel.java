@@ -356,7 +356,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private void initViewer(@NonNull Content theContent, @NonNull List<ImageFile> imageFiles) {
-        sortAndSetImages(imageFiles, shuffled.getValue());
+        Boolean shuffledVal = getShuffled().getValue();
+        sortAndSetViewerImages(imageFiles, (null == shuffledVal) ? false : shuffledVal);
 
         if (theContent.getId() != loadedContentId) { // To be done once per book only
             int collectionStartingIndex = 0;
@@ -399,15 +400,16 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void onShuffleClick() {
-        boolean isShuffled = shuffled.getValue();
+        Boolean shuffledVal = getShuffled().getValue();
+        boolean isShuffled = (null == shuffledVal) ? false : shuffledVal;
         isShuffled = !isShuffled;
         shuffled.postValue(isShuffled);
 
         List<ImageFile> imgs = databaseImages.getValue();
-        if (imgs != null) sortAndSetImages(imgs, isShuffled);
+        if (imgs != null) sortAndSetViewerImages(imgs, isShuffled);
     }
 
-    private void sortAndSetImages(@NonNull List<ImageFile> imgs, boolean shuffle) {
+    private void sortAndSetViewerImages(@NonNull List<ImageFile> imgs, boolean shuffle) {
         if (shuffle) {
             Collections.shuffle(imgs);
             // Don't keep the cover thumb
@@ -417,7 +419,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
             imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).filter(ImageFile::isReadable).toList();
         }
 
-        if (showFavouritesOnly.getValue())
+        Boolean showFavouritesOnlyVal = getShowFavouritesOnly().getValue();
+        if (showFavouritesOnlyVal != null && showFavouritesOnlyVal)
             imgs = Stream.of(imgs).filter(ImageFile::isFavourite).toList();
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
@@ -496,12 +499,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    public void toggleFilterFavouriteImages() {
+    public void filterFavouriteImages(boolean targetState) {
         if (loadedContentId > -1) {
-            boolean showFavourites = showFavouritesOnly.getValue();
-            showFavourites = !showFavourites;
-            showFavouritesOnly.postValue(showFavourites);
-            if (searchManager != null) searchManager.setFilterPageFavourites(showFavourites);
+            showFavouritesOnly.postValue(targetState);
+            if (searchManager != null) searchManager.setFilterPageFavourites(targetState);
             applySearchParams(loadedContentId);
         }
     }
@@ -536,16 +537,25 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
 
         if (images.isEmpty()) return;
+        Content theContent = collectionDao.selectContent(images.get(0).getContent().getTargetId());
+        if (null == theContent) return;
 
-        // Toggle the value on a copy, not on the original instance that is contained inside the ViewHolder
-        for (ImageFile img : images) img.setFavourite(!img.isFavourite());
+        // We can't work on the given objects as they are tied to the UI (part of ImageFileItem)
+        List<ImageFile> dbImages = theContent.getImageFiles();
+        if (null == dbImages) return;
+
+        for (ImageFile img : images)
+            for (ImageFile dbImg : dbImages)
+                if (img.getId() == dbImg.getId()) {
+                    dbImg.setFavourite(!dbImg.isFavourite());
+                    break;
+                }
 
         // Persist in DB
-        collectionDao.insertImageFiles(images);
+        collectionDao.insertImageFiles(dbImages);
 
         // Persist new values in JSON
-        Content theContent = images.get(0).getContent().getTarget();
-        theContent.setImageFiles(images);
+        theContent.setImageFiles(dbImages);
         Context context = getApplication().getApplicationContext();
         if (!theContent.getJsonUri().isEmpty())
             ContentHelper.updateContentJson(context, theContent);

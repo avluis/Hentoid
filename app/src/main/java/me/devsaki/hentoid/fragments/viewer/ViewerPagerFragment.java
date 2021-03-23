@@ -418,10 +418,26 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     }
 
     /**
-     * Handle click on "Show favourite pages" action button
+     * Handle click on "Show favourite pages" toggle action button
      */
     private void onShowFavouriteClick() {
-        viewModel.toggleFilterFavouriteImages();
+        viewModel.filterFavouriteImages(!showFavoritePagesButton.isChecked());
+    }
+
+    /**
+     * Update the display of the "favourite page" action button
+     *
+     * @param showFavouritePages True if the button has to represent a favourite page; false instead
+     */
+    private void updateShowFavouriteDisplay(boolean showFavouritePages) {
+        showFavoritePagesButton.setChecked(showFavouritePages);
+        if (showFavouritePages) {
+            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_on);
+            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_on);
+        } else {
+            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_off);
+            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_off);
+        }
     }
 
     /**
@@ -661,21 +677,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         maxPageNumber = content.getQtyPages();
         updatePageDisplay();
-    }
-
-    /**
-     * Update the display of the "favourite page" action button
-     *
-     * @param showFavouritePages True if the button has to represent a favourite page; false instead
-     */
-    private void updateShowFavouriteDisplay(boolean showFavouritePages) {
-        if (showFavouritePages) {
-            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_on);
-            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_on);
-        } else {
-            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_off);
-            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_off);
-        }
     }
 
     /**

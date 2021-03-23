@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.database.domains;
 
-import androidx.annotation.NonNull;
-
 import java.util.Locale;
 import java.util.Objects;
 
@@ -10,8 +8,8 @@ import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.core.Consts;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
@@ -53,24 +51,6 @@ public class ImageFile {
 
 
     public ImageFile() {
-    }
-
-    public ImageFile(@NonNull final ImageFile img) {
-        this.id = img.id;
-        this.order = img.order;
-        this.url = img.url;
-        this.name = img.name;
-        this.fileUri = img.fileUri;
-        this.read = img.read;
-        this.favourite = img.favourite;
-        this.isCover = img.isCover;
-        this.status = img.status;
-//        this.content = img.content; ObjectBox doesn't like that
-        this.mimeType = img.mimeType;
-        this.size = img.size;
-        this.downloadParams = img.downloadParams;
-        this.displayOrder = img.displayOrder;
-        this.isBackup = img.isBackup;
     }
 
     public ImageFile(int order, String url, StatusContent status, int maxPages) {
