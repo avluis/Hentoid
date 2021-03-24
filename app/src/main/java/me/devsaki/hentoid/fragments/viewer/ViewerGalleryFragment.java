@@ -407,6 +407,7 @@ public class ViewerGalleryFragment extends Fragment {
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
+                .setOnCancelListener(dialog -> selectExtension.deselect())
                 .create().show();
     }
 }
