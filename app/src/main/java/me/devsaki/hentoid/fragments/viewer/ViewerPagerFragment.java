@@ -122,12 +122,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private TextView pageMaxNumber;
 
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
-    }
-
     @SuppressLint("NonConstantResourceId")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -237,6 +231,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     public void onStart() {
         super.onStart();
 
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+
         ((ImageViewerActivity) requireActivity()).registerKeyListener(
                 new VolumeKeyListener()
                         .setOnVolumeDownListener(this::previousPage)
@@ -257,6 +253,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     // Make sure position is saved when app is closed by the user
     @Override
     public void onStop() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         viewModel.onLeaveBook(imageIndex);
         if (slideshowTimer != null) slideshowTimer.dispose();
         ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
@@ -265,7 +262,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     @Override
     public void onDestroy() {
-        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         Preferences.unregisterPrefsChangedListener(listener);
         if (adapter != null) {
             adapter.setRecyclerView(null);

@@ -106,10 +106,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     @Override
     protected void onCleared() {
-        super.onCleared();
         collectionDao.cleanup();
         searchDisposable.dispose();
         compositeDisposable.clear();
+        super.onCleared();
     }
 
     @NonNull
