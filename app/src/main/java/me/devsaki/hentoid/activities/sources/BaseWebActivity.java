@@ -124,6 +124,7 @@ import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
+import me.devsaki.hentoid.widget.AddQueueMenu;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
@@ -131,6 +132,9 @@ import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
 import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
 
@@ -787,10 +791,18 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             return;
         }
 
+        // No reason to block or ignore -> actually add to the queue
+        if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK)
+            AddQueueMenu.show(this, webView, this, (position, item) -> addToQueue((0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM));
+        else
+            addToQueue(Preferences.getQueueNewDownloadPosition());
+    }
+
+    private void addToQueue(int addMode) {
         animatedCheck.setVisibility(View.VISIBLE);
         ((Animatable) animatedCheck.getDrawable()).start();
         new Handler(getMainLooper()).postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
-        objectBoxDAO.addContentToQueue(currentContent, null);
+        objectBoxDAO.addContentToQueue(currentContent, null, addMode, ContentQueueManager.getInstance().isQueueActive());
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
         changeActionMode(ActionMode.VIEW_QUEUE);
     }

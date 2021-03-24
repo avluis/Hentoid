@@ -104,6 +104,8 @@
         <item quantity="one">Item cleared for redownloading</item>
         <item quantity="other">%d items cleared for redownloading</item>
     </plurals>
+    <string name="queue_add_top">Add on top</string>
+    <string name="queue_add_bottom">Add to bottom</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>

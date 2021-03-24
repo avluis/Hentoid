@@ -304,7 +304,12 @@ public class LibraryViewModel extends AndroidViewModel {
         throw new InvalidParameterException("Invalid ContentId : " + contentId);
     }
 
-    public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, @NonNull final Runnable onSuccess) {
+    public void redownloadContent(
+            @NonNull final List<Content> contentList,
+            boolean reparseContent,
+            boolean reparseImages,
+            int addMode,
+            @NonNull final Runnable onSuccess) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
 
@@ -318,7 +323,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
                             return c;
                         })
-                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus))
+                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus, addMode, ContentQueueManager.getInstance().isQueueActive()))
                         .doOnComplete(() -> {
                             // TODO is there stuff to do on the IO thread ?
                         })

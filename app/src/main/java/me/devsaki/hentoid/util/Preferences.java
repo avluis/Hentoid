@@ -504,6 +504,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.QUEUE_AUTOSTART, Default.QUEUE_AUTOSTART);
     }
 
+    public static int getQueueNewDownloadPosition() {
+        return Integer.parseInt(sharedPreferences.getString(Key.QUEUE_NEW_DOWNLOADS_POSITION, Integer.toString(Default.QUEUE_NEW_DOWNLOADS_POSITION)) + "");
+    }
+
     public static boolean isQueueWifiOnly() {
         return sharedPreferences.getBoolean(Key.QUEUE_WIFI_ONLY, Default.QUEUE_WIFI_ONLY);
     }
@@ -705,6 +709,7 @@ public final class Preferences {
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
         public static final String COLOR_THEME = "pref_color_theme";
         static final String QUEUE_AUTOSTART = "pref_queue_autostart";
+        static final String QUEUE_NEW_DOWNLOADS_POSITION = "pref_queue_new_position";
         static final String QUEUE_WIFI_ONLY = "pref_queue_wifi_only";
         static final String DL_SIZE_WIFI = "pref_dl_size_wifi";
         static final String DL_SIZE_WIFI_THRESHOLD = "pref_dl_size_wifi_threshold";
@@ -785,6 +790,7 @@ public final class Preferences {
         static final boolean VIEWER_AUTO_ROTATE = false;
         public static final int COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean QUEUE_AUTOSTART = true;
+        static final int QUEUE_NEW_DOWNLOADS_POSITION = Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
         static final boolean QUEUE_WIFI_ONLY = false;
         static final boolean DL_SIZE_WIFI = false;
         static final int DL_SIZE_WIFI_THRESHOLD = 40;
@@ -843,6 +849,10 @@ public final class Preferences {
         static final int FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
         static final int FOLDER_NAMING_CONTENT_TITLE_AUTH_ID = 3;
+
+        public static final int QUEUE_NEW_DOWNLOADS_POSITION_TOP = 0;
+        public static final int QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM = 1;
+        public static final int QUEUE_NEW_DOWNLOADS_POSITION_ASK = 2;
 
         public static final int DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE = 0;
         public static final int DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1;

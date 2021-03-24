@@ -32,6 +32,11 @@ import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.devsaki.hentoid.widget.AddQueueMenu;
+
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
 
 /**
  * Handles hosting of QueueFragment for a single screen.
@@ -182,7 +187,16 @@ public class QueueActivity extends BaseActivity {
     }
 
     public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages) {
-        viewModel.redownloadContent(contentList, reparseContent, reparseImages,
+        if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+            AddQueueMenu.show(this, tabLayout, this, (position, item) ->
+                    redownloadContent(contentList, reparseContent, reparseImages, (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM)
+            );
+        } else
+            redownloadContent(contentList, reparseContent, reparseImages, Preferences.getQueueNewDownloadPosition());
+    }
+
+    private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, int addMode) {
+        viewModel.redownloadContent(contentList, reparseContent, reparseImages, addMode,
                 () -> {
                     String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, contentList.size(), contentList.size());
                     Snackbar snackbar = Snackbar.make(tabLayout, message, BaseTransientBottomBar.LENGTH_LONG);

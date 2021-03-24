@@ -105,6 +105,10 @@
     <string name="pref_queue_wifi_only_default" translatable="false">false</string>
     <string name="pref_queue_wifi_only_on">Download queue will only start if connected to WiFi</string>
     <string name="pref_queue_wifi_only_off">Download queue will start if the device is connected to any network</string>
+
+    <string name="pref_queue_new_position_title">New downloads position</string>
+    <string name="pref_queue_new_position_default" translatable="false">1</string>
+
     <string name="download_size_wifi_title">Skip large downloads on mobile data</string>
     <string name="pref_dl_size_wifi_default" translatable="false">false</string>
     <string name="pref_dl_size_wifi_on">Large downloads will be skipped if not connected to WiFi</string>

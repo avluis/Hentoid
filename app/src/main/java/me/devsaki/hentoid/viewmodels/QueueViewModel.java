@@ -27,6 +27,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import timber.log.Timber;
@@ -234,7 +235,12 @@ public class QueueViewModel extends AndroidViewModel {
         return true;
     }
 
-    public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, @NonNull final Runnable onSuccess) {
+    public void redownloadContent(
+            @NonNull final List<Content> contentList,
+            boolean reparseContent,
+            boolean reparseImages,
+            int addMode,
+            @NonNull final Runnable onSuccess) {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
         compositeDisposable.add(
@@ -245,7 +251,7 @@ public class QueueViewModel extends AndroidViewModel {
                             if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
                             return c;
                         })
-                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus))
+                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus, addMode, ContentQueueManager.getInstance().isQueueActive()))
                         .doOnComplete(() -> {
                             // TODO is there stuff to do on the IO thread ?
                         })

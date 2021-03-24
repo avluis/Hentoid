@@ -218,6 +218,14 @@
             android:summaryOn="@string/pref_queue_autostart_on"
             android:title="@string/pref_queue_autostart_title"
             app:iconSpaceReserved="false" />
+        <ListPreference
+            android:defaultValue="@string/pref_queue_new_position_default"
+            android:entries="@array/pref_queue_new_position_entries"
+            android:entryValues="@array/pref_queue_new_position_values"
+            android:key="pref_queue_new_position"
+            android:summary="@string/pref_attributes_list_order_summary"
+            android:title="@string/pref_queue_new_position_title"
+            app:iconSpaceReserved="false" />
         <CheckBoxPreference
             android:defaultValue="@string/pref_queue_wifi_only_default"
             android:key="pref_queue_wifi_only"

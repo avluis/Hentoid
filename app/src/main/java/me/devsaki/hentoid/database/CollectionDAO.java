@@ -186,7 +186,7 @@ public interface CollectionDAO {
 
     LiveData<List<QueueRecord>> selectQueueContent();
 
-    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
+    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int mode, boolean isQueueActive);
 
     void updateQueue(@NonNull List<QueueRecord> queue);
 

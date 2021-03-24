@@ -547,8 +547,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectExternalMemoryUsagePerSource();
     }
 
-
-    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus) {
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int mode, boolean isQueueActive) {
         if (targetImageStatus != null)
             db.updateImageContentStatus(content.getId(), null, targetImageStatus);
 
@@ -557,9 +556,28 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.insertContent(content);
 
         if (!db.isContentInQueue(content)) {
-            int maxQueueOrder = (int) db.selectMaxQueueOrder();
-            db.insertQueue(content.getId(), maxQueueOrder + 1);
+            int targetPosition;
+            if (mode == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM) {
+                targetPosition = (int) db.selectMaxQueueOrder() + 1;
+            } else { // Top - don't put #1 if queue is active not to interrupt current download
+                targetPosition = (isQueueActive) ? 2 : 1;
+            }
+            insertQueueAndRenumber(content.getId(), targetPosition);
         }
+    }
+
+    private void insertQueueAndRenumber(long contentId, int order) {
+        List<QueueRecord> queue = db.selectQueue();
+        // Put in the right place
+        if (order > queue.size()) queue.add(new QueueRecord(contentId, order));
+        else {
+            int newOrder = Math.min(queue.size() + 1, order);
+            queue.add(newOrder - 1, new QueueRecord(contentId, newOrder));
+        }
+        // Renumber everything and save
+        int index = 1;
+        for (QueueRecord qr : queue) qr.setRank(index++);
+        db.updateQueue(queue);
     }
 
     private List<Long> contentIdSearch(

@@ -95,6 +95,7 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.devsaki.hentoid.widget.AddQueueMenu;
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
@@ -109,9 +110,12 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
 
 @SuppressLint("NonConstantResourceId")
-public class LibraryContentFragment extends Fragment implements ErrorsDialogFragment.Parent, ChangeGroupDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
+public class LibraryContentFragment extends Fragment implements ChangeGroupDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -661,7 +665,7 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            redownloadContent(contents, true);
+                            redownloadFromScratch(contents);
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
                             selectExtension.deselect();
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
@@ -967,23 +971,6 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
             }
         });
 
-        // Error button click listener
-        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
-            @Override
-            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                if (item.getContent() != null) onBookErrorClick(item.getContent());
-            }
-
-            @org.jetbrains.annotations.Nullable
-            @Override
-            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
-                if (viewHolder instanceof ContentItem.ContentViewHolder) {
-                    return ((ContentItem.ContentViewHolder) viewHolder).getErrorButton();
-                }
-                return super.onBind(viewHolder);
-            }
-        });
-
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
         if (selectExtension != null) {
@@ -1224,26 +1211,17 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         viewModel.toggleContentFavourite(content, this::refreshIfNeeded);
     }
 
-    /**
-     * Callback for the "error" button of the book holder
-     *
-     * @param content Content whose "error" button has been clicked on
-     */
-    private void onBookErrorClick(@NonNull Content content) {
-        ErrorsDialogFragment.invoke(this, content.getId());
+    private void redownloadFromScratch(@NonNull final List<Content> contentList) {
+        if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+            AddQueueMenu.show(activity.get(), recyclerView, this, (position, item) ->
+                    redownloadFromScratch(contentList, (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM)
+            );
+        } else
+            redownloadFromScratch(contentList, Preferences.getQueueNewDownloadPosition());
     }
 
-    /**
-     * Add the given content back to the download queue
-     *
-     * @param content Content to add back to the download queue
-     */
-    public void redownloadContent(@NonNull final Content content) {
-        redownloadContent(Stream.of(content).toList(), false);
-    }
-
-    private void redownloadContent(@NonNull final List<Content> contentList, boolean fromScratch) {
-        viewModel.redownloadContent(contentList, fromScratch, fromScratch,
+    private void redownloadFromScratch(@NonNull final List<Content> contentList, int addMode) {
+        viewModel.redownloadContent(contentList, true, true, addMode,
                 () -> {
                     String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);

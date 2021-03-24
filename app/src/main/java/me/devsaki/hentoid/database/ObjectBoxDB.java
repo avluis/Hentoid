@@ -315,8 +315,8 @@ public class ObjectBoxDB {
         return store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.rank).max();
     }
 
-    void insertQueue(long id, int order) {
-        store.boxFor(QueueRecord.class).put(new QueueRecord(id, order));
+    void insertQueue(long contentId, int order) {
+        store.boxFor(QueueRecord.class).put(new QueueRecord(contentId, order));
     }
 
     void updateQueue(@NonNull final List<QueueRecord> queue) {
