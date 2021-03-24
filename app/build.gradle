@@ -38,7 +38,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.14.3'
+        versionName '1.14.4-beta1'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
