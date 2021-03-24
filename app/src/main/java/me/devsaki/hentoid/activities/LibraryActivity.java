@@ -117,6 +117,8 @@ public class LibraryActivity extends BaseActivity {
     private View searchClearButton;
     // Sort direction button
     private ImageView sortDirectionButton;
+    // Sort reshuffle button
+    private ImageView sortReshuffleButton;
     // Sort field button
     private TextView sortFieldButton;
 
@@ -199,6 +201,10 @@ public class LibraryActivity extends BaseActivity {
 
     public ImageView getSortDirectionButton() {
         return sortDirectionButton;
+    }
+
+    public View getSortReshuffleButton() {
+        return sortReshuffleButton;
     }
 
     public TextView getSortFieldButton() {
@@ -399,6 +405,7 @@ public class LibraryActivity extends BaseActivity {
 
         // Sort controls
         sortDirectionButton = findViewById(R.id.sort_direction_btn);
+        sortReshuffleButton = findViewById(R.id.sort_reshuffle_btn);
         sortFieldButton = findViewById(R.id.sort_field_btn);
 
         // Main tabs
@@ -564,9 +571,16 @@ public class LibraryActivity extends BaseActivity {
             searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
 
         if (showSort != null) {
-            if (showSort) searchClearButton.setVisibility(View.GONE);
-            sortDirectionButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
             sortFieldButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
+            if (showSort) {
+                boolean isRandom = (!isGroupDisplayed() && Preferences.Constant.ORDER_FIELD_RANDOM == Preferences.getContentSortField());
+                sortDirectionButton.setVisibility(isRandom ? View.GONE : View.VISIBLE);
+                sortReshuffleButton.setVisibility(isRandom ? View.VISIBLE : View.GONE);
+                searchClearButton.setVisibility(View.GONE);
+            } else {
+                sortDirectionButton.setVisibility(View.GONE);
+                sortReshuffleButton.setVisibility(View.GONE);
+            }
         }
 
         if (isGroupDisplayed() && Preferences.getGroupingDisplay().equals(Grouping.ARTIST)) {

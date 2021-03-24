@@ -145,6 +145,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     // === SORT TOOLBAR
     // Sort direction button
     private ImageView sortDirectionButton;
+    // Sort reshuffle button
+    private View sortReshuffleButton;
     // Sort field button
     private TextView sortFieldButton;
 
@@ -340,6 +342,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
 
         sortDirectionButton = activity.get().getSortDirectionButton();
+        sortReshuffleButton = activity.get().getSortReshuffleButton();
         sortFieldButton = activity.get().getSortFieldButton();
 
         // RecyclerView
@@ -382,6 +385,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             viewModel.updateContentOrder();
             activity.get().sortCommandsAutoHide(true, null);
         });
+        sortReshuffleButton.setOnClickListener( v-> {
+            RandomSeedSingleton.getInstance().renewSeed();
+            viewModel.updateContentOrder();
+            activity.get().sortCommandsAutoHide(true, null);
+        });
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
@@ -394,8 +402,14 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 sortFieldButton.setText(item.getTitle());
                 item.setChecked(true);
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
-                if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM)
+                if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM) {
                     RandomSeedSingleton.getInstance().renewSeed();
+                    sortDirectionButton.setVisibility(View.GONE);
+                    sortReshuffleButton.setVisibility(View.VISIBLE);
+                } else {
+                    sortReshuffleButton.setVisibility(View.GONE);
+                    sortDirectionButton.setVisibility(View.VISIBLE);
+                }
 
                 Preferences.setContentSortField(fieldCode);
                 // Run a new search

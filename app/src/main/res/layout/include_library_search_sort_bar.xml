@@ -57,16 +57,16 @@
         android:id="@+id/search_clear_btn"
         android:layout_width="32dp"
         android:layout_height="32dp"
+        android:layout_marginEnd="8dp"
         android:adjustViewBounds="true"
         android:clickable="true"
         android:focusable="true"
         android:padding="4dp"
-        android:layout_marginEnd="8dp"
         android:src="@drawable/ic_cancel"
         android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/advanced_search_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/advanced_search_background"
-        app:layout_constraintBottom_toBottomOf="@id/advanced_search_background"
         tools:ignore="ContentDescription"
         tools:visibility="gone" />
 
@@ -85,6 +85,21 @@
         app:layout_constraintTop_toTopOf="@id/advanced_search_background"
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/sort_reshuffle_btn"
+        android:layout_width="32dp"
+        android:layout_height="0dp"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="4dp"
+        android:src="@drawable/ic_menu_sort_random"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/advanced_search_background"
+        app:layout_constraintEnd_toStartOf="@id/sort_field_btn"
+        app:layout_constraintTop_toTopOf="@id/advanced_search_background"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/sort_field_btn"
