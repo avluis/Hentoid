@@ -274,6 +274,11 @@ dependencies {
     // Efficient hashing
     implementation 'io.whitfin:siphash:2.0.0'
 
+    // Sentence similarity detection
+    implementation 'info.debatty:java-string-similarity:2.0.0'
+
+
+
 
     /**
      * ANALYTICS
