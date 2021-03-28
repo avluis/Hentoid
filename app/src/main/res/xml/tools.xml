@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <Preference
+        android:icon="@drawable/ic_action_copy"
+        android:key="tools_duplicate_detector"
+        android:summary="@string/tools_duplicate_detector_desc"
+        android:title="@string/tools_duplicate_detector" />
+</PreferenceScreen>

@@ -490,6 +490,9 @@
     <!-- Edit drawer -->
     <string name="title_activity_drawer_edit">Edit menu</string>
 
+    <!-- Duplicate detector -->
+    <string name="title_activity_duplicate_detector">Duplicate detector</string>
+
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>
