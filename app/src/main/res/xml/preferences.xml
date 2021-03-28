@@ -173,20 +173,6 @@
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
-            android:title="@string/pref_cat_metadata"
-            app:iconSpaceReserved="false">
-            <Preference
-                android:key="pref_export_library"
-                android:summary="@string/pref_export_library_summary"
-                android:title="@string/pref_export_library_title"
-                app:iconSpaceReserved="false" />
-            <Preference
-                android:key="pref_import_library"
-                android:summary="@string/pref_import_library_summary"
-                android:title="@string/pref_import_library_title"
-                app:iconSpaceReserved="false" />
-        </PreferenceCategory>
-        <PreferenceCategory
             android:title="@string/pref_cat_advanced"
             app:iconSpaceReserved="false">
             <Preference
@@ -549,15 +535,12 @@
         </PreferenceCategory>
     </PreferenceScreen>
 
-    <Preference
-        android:key="export_settings"
-        android:summary="@string/pref_export_settings_summary"
-        android:title="@string/pref_export_settings_title"
-        app:iconSpaceReserved="false" />
-    <Preference
-        android:key="import_settings"
-        android:summary="@string/pref_import_settings_summary"
-        android:title="@string/pref_import_settings_title"
+    <CheckBoxPreference
+        android:defaultValue="@string/pref_app_preview_default"
+        android:key="pref_app_preview"
+        android:summaryOff="@string/pref_screenshot_summary_off"
+        android:summaryOn="@string/pref_screenshot_summary_on"
+        android:title="@string/pref_screenshot_title"
         app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

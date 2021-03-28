@@ -13,6 +13,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
+import me.devsaki.hentoid.fragments.preferences.MetaExportDialogFragment
+import me.devsaki.hentoid.fragments.preferences.MetaImportDialogFragment
+import me.devsaki.hentoid.fragments.preferences.SettingsImportDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.*
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
@@ -27,6 +30,11 @@ import java.util.*
 class ToolsFragment : PreferenceFragmentCompat() {
 
     private val DUPLICATE_DETECTOR_KEY = "tools_duplicate_detector"
+    private val EXPORT_LIBRARY = "export_library"
+    private val IMPORT_LIBRARY = "import_library"
+    private val EXPORT_SETTINGS = "export_settings"
+    private val IMPORT_SETTINGS = "import_settings"
+
 
     lateinit var viewModel: PreferencesViewModel
     lateinit var exportDisposable: Disposable
@@ -60,9 +68,20 @@ class ToolsFragment : PreferenceFragmentCompat() {
                     requireContext().startLocalActivity<DuplicateDetectorActivity>()
                     true
                 }
-                // TODO cleanup
-                Preferences.Key.EXPORT_SETTINGS -> {
+                EXPORT_LIBRARY -> {
+                    MetaExportDialogFragment.invoke(parentFragmentManager)
+                    true
+                }
+                IMPORT_LIBRARY -> {
+                    MetaImportDialogFragment.invoke(parentFragmentManager)
+                    true
+                }
+                EXPORT_SETTINGS -> {
                     onExportSettings()
+                    true
+                }
+                IMPORT_SETTINGS -> {
+                    SettingsImportDialogFragment.invoke(parentFragmentManager)
                     true
                 }
                 else -> super.onPreferenceTreeClick(preference)

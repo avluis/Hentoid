@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceScreen
+        android:icon="@drawable/ic_import_export"
+        android:key="interface"
+        android:title="@string/tools_screen_import_export">
+        <PreferenceCategory
+            android:title="@string/pref_cat_library"
+            app:iconSpaceReserved="false">
+            <Preference
+                android:key="export_library"
+                android:summary="@string/tools_export_library_summary"
+                android:title="@string/tools_export_library_title"
+                app:iconSpaceReserved="false" />
+            <Preference
+                android:key="import_library"
+                android:summary="@string/tools_import_library_summary"
+                android:title="@string/tools_import_library_title"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/tools_screen_cat_settings"
+            app:iconSpaceReserved="false">
+            <Preference
+                android:key="export_settings"
+                android:summary="@string/tools_export_settings_summary"
+                android:title="@string/tools_export_settings_title"
+                app:iconSpaceReserved="false" />
+            <Preference
+                android:key="import_settings"
+                android:summary="@string/tools_import_settings_summary"
+                android:title="@string/tools_import_settings_title"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
+    </PreferenceScreen>
     <Preference
         android:icon="@drawable/ic_action_copy"
         android:key="tools_duplicate_detector"

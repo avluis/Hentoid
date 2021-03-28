@@ -655,8 +655,6 @@ public final class Preferences {
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         public static final String REFRESH_LIBRARY = "pref_refresh_bookshelf";
         public static final String DELETE_ALL_EXCEPT_FAVS = "pref_delete_all_except_favs";
-        public static final String EXPORT_LIBRARY = "pref_export_library";
-        public static final String IMPORT_LIBRARY = "pref_import_library";
         static final String WELCOME_DONE = "pref_welcome_done";
         static final String VERSION_KEY = "prefs_version";
         public static final String LIBRARY_DISPLAY = "pref_library_display";
@@ -727,8 +725,6 @@ public final class Preferences {
         static final String DB_MAX_SIZE = "db_max_size";
         public static final String GROUPING_DISPLAY = "grouping_display";
         public static final String ARTIST_GROUP_VISIBILITY = "artist_group_visibility";
-        public static final String EXPORT_SETTINGS = "export_settings";
-        public static final String IMPORT_SETTINGS = "import_settings";
         public static final String VIEWER_DELETE_ASK_MODE = "viewer_delete_ask";
         public static final String VIEWER_DELETE_TARGET = "viewer_delete_target";
 

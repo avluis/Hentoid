@@ -13,10 +13,6 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.BaseTransientBottomBar
-import com.google.android.material.snackbar.Snackbar
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import io.reactivex.disposables.Disposables
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
@@ -24,7 +20,6 @@ import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
-import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.services.UpdateDownloadService
@@ -32,18 +27,12 @@ import me.devsaki.hentoid.util.*
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ImportWorker
-import org.apache.commons.io.IOUtils
-import timber.log.Timber
-import java.io.IOException
-import java.nio.charset.StandardCharsets
-import java.util.*
 
 
 class PreferenceFragment : PreferenceFragmentCompat(),
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var viewModel: PreferencesViewModel
-    lateinit var exportDisposable: Disposable
     private var rootView: View? = null
 
     companion object {
@@ -154,14 +143,6 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     onDeleteAllExceptFavourites()
                     true
                 }
-                Preferences.Key.EXPORT_LIBRARY -> {
-                    MetaExportDialogFragment.invoke(parentFragmentManager)
-                    true
-                }
-                Preferences.Key.IMPORT_LIBRARY -> {
-                    MetaImportDialogFragment.invoke(parentFragmentManager)
-                    true
-                }
                 Preferences.Key.VIEWER_RENDERING -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
                         ToastHelper.toast(getString(R.string.pref_viewer_rendering_no_android5))
@@ -189,14 +170,6 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.CHECK_UPDATE_MANUAL -> {
                     onCheckUpdatePrefClick()
-                    true
-                }
-                Preferences.Key.EXPORT_SETTINGS -> {
-                    onExportSettings()
-                    true
-                }
-                Preferences.Key.IMPORT_SETTINGS -> {
-                    SettingsImportDialogFragment.invoke(parentFragmentManager)
                     true
                 }
                 else -> super.onPreferenceTreeClick(preference)
@@ -278,46 +251,6 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     }
                     .create()
                     .show()
-        }
-    }
-
-    private fun onExportSettings() {
-        exportDisposable = io.reactivex.Single.fromCallable { getExportedSettings() }
-                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                .observeOn(io.reactivex.schedulers.Schedulers.io())
-                .map { c: JsonSettings? -> JsonHelper.serializeToJson<JsonSettings?>(c, JsonSettings::class.java) }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        { s: String -> onJsonSerialized(s) }, { t: Throwable? -> Timber.w(t) }
-                )
-    }
-
-    private fun getExportedSettings(): JsonSettings {
-        val jsonSettings = JsonSettings()
-
-        jsonSettings.settings = Preferences.extractPortableInformation()
-
-        return jsonSettings
-    }
-
-    private fun onJsonSerialized(json: String) {
-        exportDisposable.dispose()
-
-        // Use a random number to avoid erasing older exports by mistake
-        var targetFileName = Random().nextInt(9999).toString() + ".json"
-        targetFileName = "settings-$targetFileName"
-
-        rootView?.let {
-            try {
-                FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, JsonHelper.JSON_MIME_TYPE).use { newDownload -> IOUtils.toInputStream(json, StandardCharsets.UTF_8).use { input -> FileHelper.copy(input, newDownload) } }
-                Snackbar.make(it, R.string.copy_download_folder_success, BaseTransientBottomBar.LENGTH_LONG)
-                        .setAction("OPEN FOLDER") { FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()) }
-                        .show()
-            } catch (e: IOException) {
-                Snackbar.make(it, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
-            } catch (e: IllegalArgumentException) {
-                Snackbar.make(it, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
-            }
         }
     }
 }

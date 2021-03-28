@@ -28,7 +28,7 @@ class ToolsActivity : BaseActivity() {
         super.onStart()
         EventBus.getDefault().register(this)
         // Replace the default "preferences" toolbar title
-        supportActionBar?.title = getText(R.string.tools_duplicate_detector)
+        supportActionBar?.title = getText(R.string.tools_title)
     }
 
     override fun onStop() {

@@ -79,12 +79,6 @@
     <string name="pref_external_library_detach_title">Detach external library</string>
     <string name="pref_external_library_detach_summary">Don\'t include the external library into Hentoid anymore</string>
 
-    <string name="pref_cat_metadata">Metadata</string>
-    <string name="pref_export_library_title">Export metadata</string>
-    <string name="pref_export_library_summary">Export Hentoid books to a JSON file</string>
-    <string name="pref_import_library_title">Import metadata</string>
-    <string name="pref_import_library_summary">Restore exported Hentoid books from a JSON file</string>
-
     <string name="pref_cat_advanced">Advanced</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
@@ -148,6 +142,9 @@
     <string name="pref_app_preview_title">App preview on Recent Apps</string>
     <string name="pref_app_preview_summary_off">App preview in Recent Apps disabled.\nEnable if you need to take a screen shot.</string>
     <string name="pref_app_preview_summary_on">App preview in Recent Apps enabled.</string>
+    <string name="pref_screenshot_title">Enable screenshots</string>
+    <string name="pref_screenshot_summary_off">App preview in Recent Apps + screenshots disabled.</string>
+    <string name="pref_screenshot_summary_on">Screenshots enabled.</string>
     <string name="pref_app_preview_default" translatable="false">false</string>
     <string name="pref_analytics_preference_title">Firebase Analytics</string>
     <string name="pref_analytics_preference_summary_off">Analytics Tracking is currently disabled.\nEnabling it will help us improve the app by tracking crashes &amp; exceptions.</string>
@@ -228,9 +225,4 @@
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
-
-    <string name="pref_export_settings_title">Export settings</string>
-    <string name="pref_export_settings_summary">Export settings to a JSON file</string>
-    <string name="pref_import_settings_title">Import settings</string>
-    <string name="pref_import_settings_summary">Restore exported settings from a JSON file</string>
 </resources>
