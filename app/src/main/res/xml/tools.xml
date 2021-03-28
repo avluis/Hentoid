@@ -37,6 +37,11 @@
     <Preference
         android:icon="@drawable/ic_action_copy"
         android:key="tools_duplicate_detector"
-        android:summary="@string/tools_duplicate_detector_desc"
-        android:title="@string/tools_duplicate_detector" />
+        android:summary="@string/tools_duplicate_detector_summary"
+        android:title="@string/tools_duplicate_detector_title" />
+    <Preference
+        android:icon="@drawable/ic_logs"
+        android:key="tools_latest_logs"
+        android:summary="@string/tools_latest_logs_summary"
+        android:title="@string/tools_latest_logs_title" />
 </PreferenceScreen>

@@ -15,7 +15,7 @@
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="@string/tools_duplicate_detector"
+        app:title="@string/tools_duplicate_detector_title"
         tools:ignore="UnusedAttribute" />
 
 

@@ -13,9 +13,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
-import me.devsaki.hentoid.fragments.preferences.MetaExportDialogFragment
-import me.devsaki.hentoid.fragments.preferences.MetaImportDialogFragment
-import me.devsaki.hentoid.fragments.preferences.SettingsImportDialogFragment
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.*
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
@@ -34,6 +31,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
     private val IMPORT_LIBRARY = "import_library"
     private val EXPORT_SETTINGS = "export_settings"
     private val IMPORT_SETTINGS = "import_settings"
+    private val ACCESS_LATEST_LOGS = "tools_latest_logs"
 
 
     lateinit var viewModel: PreferencesViewModel
@@ -82,6 +80,10 @@ class ToolsFragment : PreferenceFragmentCompat() {
                 }
                 IMPORT_SETTINGS -> {
                     SettingsImportDialogFragment.invoke(parentFragmentManager)
+                    true
+                }
+                ACCESS_LATEST_LOGS -> {
+                    LogsDialogFragment.invoke(parentFragmentManager)
                     true
                 }
                 else -> super.onPreferenceTreeClick(preference)

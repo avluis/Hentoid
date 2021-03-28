@@ -13,7 +13,9 @@
     <string name="tools_import_settings_title">Import settings</string>
     <string name="tools_import_settings_summary">Restore exported settings from a JSON file</string>
 
+    <string name="tools_duplicate_detector_title">Duplicate detector</string>
+    <string name="tools_duplicate_detector_summary">Identify and remove duplicate books</string>
 
-    <string name="tools_duplicate_detector">Duplicate detector</string>
-    <string name="tools_duplicate_detector_desc">Identify and remove duplicate books</string>
+    <string name="tools_latest_logs_title">App logs</string>
+    <string name="tools_latest_logs_summary">View the app\'s latest logs</string>
 </resources>

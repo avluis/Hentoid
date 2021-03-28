@@ -160,10 +160,6 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     MemoryUsageDialogFragment.invoke(parentFragmentManager)
                     true
                 }
-                Preferences.Key.ACCESS_LATEST_LOGS -> {
-                    LogsDialogFragment.invoke(parentFragmentManager)
-                    true
-                }
                 Preferences.Key.APP_LOCK -> {
                     requireContext().startLocalActivity<PinPreferenceActivity>()
                     true

@@ -185,11 +185,6 @@
                 android:summary="@string/pref_delete_all_except_favs_summary"
                 android:title="@string/pref_delete_all_except_favs_title"
                 app:iconSpaceReserved="false" />
-            <Preference
-                android:key="pref_latest_logs"
-                android:summary="@string/pref_latest_logs_summary"
-                android:title="@string/pref_latest_logs_title"
-                app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
 

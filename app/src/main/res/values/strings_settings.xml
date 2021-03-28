@@ -85,8 +85,6 @@
     <string name="pref_delete_all_except_favs_title">Delete all books except favourites</string>
     <string name="pref_delete_all_except_favs_summary">Purge the library; keep favourite books only\nNB : Does not apply to the external library</string>
     <string name="pref_ask_delete_all_except_favs">Are you sure you wish to delete %d books ?</string>
-    <string name="pref_latest_logs_summary">View the app\'s latest logs</string>
-    <string name="pref_latest_logs_title">App logs</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>
