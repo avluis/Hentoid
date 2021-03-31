@@ -177,6 +177,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void setImages(@NonNull Content theContent, @NonNull List<ImageFile> newImages) {
         Observable<ImageFile> observable;
 
+        databaseImages.postValue(newImages);
+
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
         if (imageLocations.isEmpty() || newImages.size() != imageLocations.size()) {
