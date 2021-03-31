@@ -26,9 +26,14 @@ import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiConsumer;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.json.JsonSiteSettings;
@@ -45,8 +50,52 @@ import timber.log.Timber;
 
 public class AppStartup {
 
-    private AppStartup() {
-        throw new IllegalStateException("Utility class");
+    private List<Observable<Float>> launchTasks;
+    private Disposable launchDisposable = null;
+
+    public void initApp(
+            @NonNull final Context context,
+            @NonNull Consumer<Float> onMainProgress,
+            @NonNull Consumer<Float> onSecondaryProgress,
+            @NonNull Runnable onComplete
+    ) {
+        // Wait until launch tasks are completed
+        launchTasks = getPreLaunchTasks(context);
+        launchTasks.addAll(DatabaseMaintenance.getPreLaunchCleanupTasks(context));
+        // TODO execute post-launch tasks in another runner (background worker ?)
+        launchTasks.addAll(getPostLaunchTasks(context));
+        launchTasks.addAll(DatabaseMaintenance.getPostLaunchCleanupTasks(context));
+        // TODO switch from a recursive function to a full RxJava-powered chain + clear the disposable elsewhere (as the chain will finish in a worker)
+        doRunTask(0, onMainProgress, onSecondaryProgress, onComplete);
+    }
+
+    private void doRunTask(
+            int taskIndex,
+            @NonNull Consumer<Float> onMainProgress,
+            @NonNull Consumer<Float> onSecondaryProgress,
+            @NonNull Runnable onComplete
+    ) {
+        if (launchDisposable != null) launchDisposable.dispose();
+        try {
+            onMainProgress.accept(taskIndex * 1f / launchTasks.size());
+        } catch (Exception e) {
+            Timber.w(e);
+        }
+        // Continue executing launch tasks
+        if (taskIndex < launchTasks.size()) {
+            Timber.i("Splash / Launch task %s/%s", taskIndex + 1, launchTasks.size());
+            launchDisposable = launchTasks.get(taskIndex)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            onSecondaryProgress,
+                            Timber::e,
+                            () -> doRunTask(taskIndex + 1, onMainProgress, onSecondaryProgress, onComplete)
+                    );
+        } else {
+            if (launchDisposable != null) launchDisposable.dispose();
+            onComplete.run();
+        }
     }
 
     /**
