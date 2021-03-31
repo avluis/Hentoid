@@ -536,7 +536,15 @@ public class FileHelper {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("text/*");
         sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-        sharingIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+        if (fileUri.toString().startsWith("file")) {
+            Uri legitUri = FileProvider.getUriForFile(
+                    context,
+                    AUTHORITY,
+                    new File(fileUri.toString()));
+            sharingIntent.putExtra(Intent.EXTRA_STREAM, legitUri);
+        } else {
+            sharingIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+        }
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
     }
 
