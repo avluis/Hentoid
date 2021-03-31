@@ -44,6 +44,7 @@ public enum Site {
 
 
     private static final Site[] INVISIBLE_SITES = {
+            NEXUS, // Dead
             HENTAICAFE, // Removed as per Fakku request
             FAKKU, // Old Fakku; kept for retrocompatibility
             ASMHENTAI_COMICS, // Does not work directly
