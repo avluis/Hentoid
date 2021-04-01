@@ -70,9 +70,10 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         binding.skipBtn.setOnClickListener { askSkip() }
     }
 
-    private fun onFolderPickerResult(resultCode: Int, treeUri: Uri) {
+    private fun onFolderPickerResult(resultCode: Int, treeUri: Uri?) {
         when (resultCode) {
             ImportHelper.PickerResult.OK -> {
+                if (null == treeUri) return
                 importDisposable = io.reactivex.Single.fromCallable { setAndScanHentoidFolder(requireContext(), treeUri, true, null) }
                         .subscribeOn(io.reactivex.schedulers.Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
