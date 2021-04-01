@@ -53,12 +53,16 @@ public class AppStartup {
     private List<Observable<Float>> launchTasks;
     private Disposable launchDisposable = null;
 
+    private static boolean isInitialized = false;
+
     public void initApp(
             @NonNull final Context context,
             @NonNull Consumer<Float> onMainProgress,
             @NonNull Consumer<Float> onSecondaryProgress,
             @NonNull Runnable onComplete
     ) {
+        if (isInitialized) onComplete.run();
+
         // Wait until launch tasks are completed
         launchTasks = getPreLaunchTasks(context);
         launchTasks.addAll(DatabaseMaintenance.getPreLaunchCleanupTasks(context));
@@ -94,6 +98,7 @@ public class AppStartup {
                     );
         } else {
             if (launchDisposable != null) launchDisposable.dispose();
+            isInitialized = true;
             onComplete.run();
         }
     }
