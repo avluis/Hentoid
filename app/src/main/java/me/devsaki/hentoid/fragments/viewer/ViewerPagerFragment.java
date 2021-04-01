@@ -1007,8 +1007,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (binding != null)
+                        if (binding != null) {
                             binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
+                            binding.viewerPagenumberText.setVisibility(View.GONE);
+                        }
                         setSystemBarsVisible(true);
                     }
                 });
@@ -1022,8 +1024,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (binding != null)
+                        if (binding != null) {
                             binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
+                            onUpdatePageNumDisplay();
+                        }
                     }
                 });
         setSystemBarsVisible(false);
