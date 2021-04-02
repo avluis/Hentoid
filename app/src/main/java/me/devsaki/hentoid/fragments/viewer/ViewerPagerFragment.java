@@ -410,7 +410,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onShuffleClick() {
         goToPage(1);
-        viewModel.onShuffleClick();
+        viewModel.toggleShuffle();
     }
 
     /**

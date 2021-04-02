@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -52,6 +53,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
@@ -401,10 +403,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         loadedContentId = theContent.getId();
     }
 
-    public void onShuffleClick() {
+    public void toggleShuffle() {
         Boolean shuffledVal = getShuffled().getValue();
         boolean isShuffled = (null == shuffledVal) ? false : shuffledVal;
         isShuffled = !isShuffled;
+        if (isShuffled) RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_PAGES);
         shuffled.postValue(isShuffled);
 
         List<ImageFile> imgs = databaseImages.getValue();
@@ -413,7 +416,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void sortAndSetViewerImages(@NonNull List<ImageFile> imgs, boolean shuffle) {
         if (shuffle) {
-            Collections.shuffle(imgs);
+            Collections.shuffle(imgs, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_PAGES)));
             // Don't keep the cover thumb
             imgs = Stream.of(imgs).filter(ImageFile::isReadable).toList();
         } else {

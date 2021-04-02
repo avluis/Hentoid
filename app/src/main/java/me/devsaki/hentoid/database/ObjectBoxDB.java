@@ -31,6 +31,7 @@ import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.database.domains.AttributeMap;
@@ -671,7 +672,7 @@ public class ObjectBoxDB {
         LazyList<Content> lazyList = query.findLazy();
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < lazyList.size(); i++) order.add(i);
-        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed()));
+        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
 
         List<Long> result = new ArrayList<>();
         for (int i = 0; i < order.size(); i++) {
