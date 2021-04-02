@@ -622,6 +622,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             else if (Constant.VIEWER_DIRECTION_RTL == direction && imageIndex < scrollPosition)
                 isScrollLTR = false;
             adapter.setScrollLTR(isScrollLTR);
+            hidePendingMicroMenus();
         }
 
         imageIndex = scrollPosition;
