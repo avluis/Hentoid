@@ -33,6 +33,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.SplashActivity;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
@@ -62,6 +63,9 @@ public class AppStartup {
             @NonNull Runnable onComplete
     ) {
         if (isInitialized) onComplete.run();
+
+        // Make sure the app restarts with the splash screen in case of any unhandled issue
+        Thread.setDefaultUncaughtExceptionHandler(new EmergencyRestartHandler(context.getApplicationContext(), SplashActivity.class));
 
         // Wait until launch tasks are completed
         launchTasks = getPreLaunchTasks(context);
