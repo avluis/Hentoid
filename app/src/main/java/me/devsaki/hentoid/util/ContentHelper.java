@@ -4,6 +4,7 @@ import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Pair;
 
@@ -939,6 +940,20 @@ public final class ContentHelper {
             if (!files.isEmpty())
                 for (DocumentFile file : files) file.delete();
         }
+    }
+
+    public static String formatTags(@NonNull final Content content) {
+        List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
+        if (tagsAttributes == null) return "";
+
+        List<String> allTags = new ArrayList<>();
+        for (Attribute attribute : tagsAttributes) {
+            allTags.add(attribute.getName());
+        }
+        if (Build.VERSION.SDK_INT >= 24) {
+            allTags.sort(null);
+        }
+        return android.text.TextUtils.join(", ", allTags);
     }
 
     /**

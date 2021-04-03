@@ -20,11 +20,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.databinding.IncludeViewerContentInfoBinding;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -107,5 +108,13 @@ public class ViewerBottomContentFragment extends BottomSheetDialogFragment {
 
         binding.contentTitle.setText(content.getTitle());
         binding.contentArtist.setText(String.format("Artist : %s", content.getAuthor()));
+
+        String tagTxt = ContentHelper.formatTags(content);
+        if (tagTxt.isEmpty()) {
+            binding.contentTags.setVisibility(View.GONE);
+        } else {
+            binding.contentTags.setVisibility(View.VISIBLE);
+            binding.contentTags.setText(tagTxt);
+        }
     }
 }
