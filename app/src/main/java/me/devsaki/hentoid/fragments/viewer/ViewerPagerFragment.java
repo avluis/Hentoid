@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -383,6 +384,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.informationMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.informationMicroMenu.dips());
 
         // Favourite micro menu
+        updateFavouriteButtonIcon();
+
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineItemClickListener((p, i) -> onFavouriteMicroMenuClick(p));
         binding.controlsOverlay.viewerFavouriteActionBtn.setOnClickListener(v -> onFavouriteMicroMenuOpen());
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.favouriteMicroMenu.dips());
@@ -474,6 +477,15 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.favouriteMicroMenu.dips();
     }
 
+    private void updateFavouriteButtonIcon() {
+        @DrawableRes int iconRes = R.drawable.ic_fav_empty;
+        if (isPageFavourite) {
+            if (isContentFavourite) iconRes = R.drawable.ic_fav_full;
+            else iconRes = R.drawable.ic_fav_bottom_half;
+        } else if (isContentFavourite) iconRes = R.drawable.ic_fav_top_half;
+        binding.controlsOverlay.viewerFavouriteActionBtn.setImageResource(iconRes);
+    }
+
     private void hidePendingMicroMenus() {
         binding.controlsOverlay.informationMicroMenu.dips();
         binding.controlsOverlay.favouriteMicroMenu.dips();
@@ -482,6 +494,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void onFavouriteSuccess(Boolean newState) {
         // TODO display something more graphical (heart / heartbreak)
         ToastHelper.toast(newState ? R.string.favourite_success : R.string.unfavourite_success);
+        updateFavouriteButtonIcon();
     }
 
     /**
@@ -498,6 +511,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             binding.viewerNoImgTxt.setVisibility(View.VISIBLE);
         } else if (imageIndex > -1 && imageIndex < images.size()) {
             isPageFavourite = images.get(imageIndex).isFavourite();
+            updateFavouriteButtonIcon();
             binding.viewerNoImgTxt.setVisibility(View.GONE);
         }
     }
@@ -567,6 +581,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
         updateNavigationUi(content);
+        updateFavouriteButtonIcon();
     }
 
     /**
@@ -637,6 +652,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             adapter.resetScaleAtPosition(scrollPosition);
 
         updatePageDisplay();
+        updateFavouriteButtonIcon();
     }
 
     /**
