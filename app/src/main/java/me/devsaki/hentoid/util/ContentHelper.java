@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -297,11 +296,11 @@ public final class ContentHelper {
      * @param content Content to be removed
      * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
      */
-    public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content, boolean removeAttrs) throws ContentNotRemovedException {
+    public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
-        dao.deleteContent(content, removeAttrs);
+        dao.deleteContent(content);
 
         if (content.isArchive()) { // Remove an archive
             DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
@@ -341,7 +340,7 @@ public final class ContentHelper {
      * @param content Content to be removed
      * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
      */
-    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content, boolean removeAttrs) throws ContentNotRemovedException {
+    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
 
         // Check if the content is on top of the queue; if so, send a CANCEL event
@@ -355,7 +354,7 @@ public final class ContentHelper {
         }
 
         // Remove content itself
-        removeContent(context, dao, content, removeAttrs);
+        removeContent(context, dao, content);
     }
 
     /**
@@ -611,7 +610,7 @@ public final class ContentHelper {
      * @return Download directory of the given Site
      */
     @Nullable
-    static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @Nullable ContentProviderClient client, @NonNull Site site) {
+    static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @Nullable FileExplorer explorer, @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri();
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for the app");
@@ -626,10 +625,10 @@ public final class ContentHelper {
 
         String siteFolderName = site.getFolder();
         DocumentFile siteFolder;
-        if (null == client)
+        if (null == explorer)
             siteFolder = FileHelper.findFolder(context, appFolder, siteFolderName);
         else
-            siteFolder = FileHelper.findFolder(context, appFolder, client, siteFolderName);
+            siteFolder = explorer.findFolder(context, appFolder, siteFolderName);
 
         if (null == siteFolder) // Create
             return appFolder.createDirectory(siteFolderName);

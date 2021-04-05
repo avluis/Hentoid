@@ -1,11 +1,9 @@
 package me.devsaki.hentoid.services;
 
 import android.app.IntentService;
-import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -18,6 +16,7 @@ import com.annimon.stream.Stream;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +26,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -35,8 +35,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
-import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.FileExplorer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -173,9 +173,7 @@ public class API29MigrationService extends IntentService {
 
         trace(Log.DEBUG, 0, log, "Library migration starting - books to process : %s", contentIds.size() + "");
 
-        ContentProviderClient client = this.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
-        if (null == client) return;
-        try {
+        try (FileExplorer fe = new FileExplorer(this, Uri.parse(Preferences.getStorageUri()))) {
             for (long contentId : contentIds) {
                 Content content = dao.selectContent(contentId);
                 if (content != null) {
@@ -217,7 +215,7 @@ public class API29MigrationService extends IntentService {
                         else contentImages = new ArrayList<>();
 
                         // Attach file Uri's to the book's images
-                        List<DocumentFile> imageFiles = FileHelper.listFiles(this, bookFolder, client, ImageHelper.getImageNamesFilter());
+                        List<DocumentFile> imageFiles = fe.listFiles(this, bookFolder, ImageHelper.getImageNamesFilter());
                         if (!imageFiles.isEmpty()) {
                             if (contentImages.isEmpty()) { // No images described in the content (e.g. unread import from old JSON) -> recreate them
                                 contentImages = ContentHelper.createImageListFromFiles(imageFiles);
@@ -254,12 +252,8 @@ public class API29MigrationService extends IntentService {
 
                 eventProgress(3, contentIds.size(), booksOK, booksKO);
             }
-        } finally {
-            // ContentProviderClient.close only available on API level 24+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                client.close();
-            else
-                client.release();
+        } catch (IOException e) {
+            Timber.w(e);
         }
         trace(Log.INFO, 2, log, "Migration complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", contentIds.size() + "");
 

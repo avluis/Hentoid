@@ -490,6 +490,10 @@
     <!-- Edit drawer -->
     <string name="title_activity_drawer_edit">Edit menu</string>
 
+    <!-- Startup -->
+    <string name="title_startup_progress">Startup in progress…</string>
+    <string name="title_startup_complete">Startup complete</string>
+
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>

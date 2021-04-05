@@ -226,7 +226,7 @@ public class QueueViewModel extends AndroidViewModel {
         Content content = dao.selectContent(contentId);
         if (null == content) return true;
         try {
-            ContentHelper.removeQueuedContent(getApplication(), dao, content, false);
+            ContentHelper.removeQueuedContent(getApplication(), dao, content);
         } catch (ContentNotRemovedException e) {
             // Don't throw the exception if we can't remove something that isn't there
             if (!(e instanceof FileNotRemovedException && content.getStorageUri().isEmpty()))
@@ -268,7 +268,6 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     private void onRemoveComplete() {
-        dao.cleanupOrphanAttributes();
         if (ContentHelper.updateQueueJson(getApplication().getApplicationContext(), dao))
             Timber.i("Queue JSON successfully saved");
         else Timber.w("Queue JSON saving failed");

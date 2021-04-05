@@ -52,7 +52,7 @@ public interface CollectionDAO {
 
     void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo);
 
-    void deleteContent(@NonNull final Content content, boolean removeAttrs);
+    void deleteContent(@NonNull final Content content);
 
     List<ErrorRecord> selectErrorRecordByContentId(long contentId);
 
@@ -207,8 +207,6 @@ public interface CollectionDAO {
             int orderStyle);
 
     Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
-
-    void cleanupOrphanAttributes(); // Costly operations on big collections
 
 
     // SITE HISTORY

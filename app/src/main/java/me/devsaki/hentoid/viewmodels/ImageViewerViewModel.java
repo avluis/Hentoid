@@ -639,7 +639,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doDeleteBook(@NonNull Content targetContent) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
-        ContentHelper.removeQueuedContent(getApplication(), collectionDao, targetContent, true);
+        ContentHelper.removeQueuedContent(getApplication(), collectionDao, targetContent);
     }
 
     public void deletePage(int pageViewerIndex, Consumer<Throwable> onError) {

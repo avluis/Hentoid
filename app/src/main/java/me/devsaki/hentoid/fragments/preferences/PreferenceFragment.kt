@@ -273,7 +273,6 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     }
                     .setNegativeButton(R.string.no
                     ) { dialog12: DialogInterface, _: Int ->
-                        dao.cleanupOrphanAttributes()
                         dao.cleanup()
                         dialog12.dismiss()
                     }

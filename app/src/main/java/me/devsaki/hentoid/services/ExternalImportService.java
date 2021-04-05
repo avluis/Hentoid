@@ -1,11 +1,9 @@
 package me.devsaki.hentoid.services;
 
 import android.app.IntentService;
-import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -22,6 +20,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -32,8 +31,8 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ArchiveHelper;
-import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.FileExplorer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
@@ -134,18 +133,15 @@ public class ExternalImportService extends IntentService {
             return;
         }
 
-        ContentProviderClient client = this.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getExternalLibraryUri()));
-        if (null == client) return;
-
         DocumentFile logFile = null;
         CollectionDAO dao = new ObjectBoxDAO(this);
 
-        try {
+        try (FileExplorer explorer = new FileExplorer(this, Uri.parse(Preferences.getExternalLibraryUri()))) {
             notificationManager.startForeground(new ImportProgressNotification(this.getResources().getString(R.string.starting_import), 0, 0));
 
             List<Content> library = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
-            scanFolderRecursive(rootFolder, client, new ArrayList<>(), library, dao);
+            scanFolderRecursive(rootFolder, explorer, new ArrayList<>(), library, dao);
             eventComplete(ImportWorker.STEP_2_BOOK_FOLDERS, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
@@ -178,7 +174,7 @@ public class ExternalImportService extends IntentService {
                 if (content.getJsonUri().isEmpty()) {
                     Uri jsonUri = null;
                     try {
-                        jsonUri = createJsonFileFor(content, client);
+                        jsonUri = createJsonFileFor(content, explorer);
                     } catch (IOException ioe) {
                         Timber.w(ioe); // Not blocking
                         trace(Log.WARN, 1, log, "Could not create JSON in %s", content.getStorageUri());
@@ -196,16 +192,11 @@ public class ExternalImportService extends IntentService {
 
             // Write log in root folder
             logFile = LogHelper.writeLog(this, buildLogInfo(log));
+        } catch (IOException e) {
+            Timber.w(e);
         } finally {
-            // ContentProviderClient.close only available on API level 24+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                client.close();
-            else
-                client.release();
-
             eventComplete(ImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
-            dao.cleanupOrphanAttributes();
             dao.cleanup();
         }
 
@@ -224,7 +215,7 @@ public class ExternalImportService extends IntentService {
 
     private void scanFolderRecursive(
             @NonNull final DocumentFile root,
-            @NonNull final ContentProviderClient client,
+            @NonNull final FileExplorer explorer,
             @NonNull final List<String> parentNames,
             @NonNull final List<Content> library,
             @NonNull final CollectionDAO dao) {
@@ -234,7 +225,7 @@ public class ExternalImportService extends IntentService {
         eventProcessed(2, rootName);
 
         Timber.d(">>>> scan root %s", root.getUri());
-        List<DocumentFile> files = FileHelper.listDocumentFiles(this, root, client);
+        List<DocumentFile> files = explorer.listDocumentFiles(this, root);
         List<DocumentFile> subFolders = new ArrayList<>();
         List<DocumentFile> images = new ArrayList<>();
         List<DocumentFile> archives = new ArrayList<>();
@@ -255,15 +246,15 @@ public class ExternalImportService extends IntentService {
             boolean allSubfoldersEndWithNumber = Stream.of(subFolders).map(DocumentFile::getName).withoutNulls().allMatch(n -> ENDS_WITH_NUMBER.matcher(n).matches());
             if (allSubfoldersEndWithNumber) {
                 // Make certain folders contain actual books by peeking the 1st one (could be a false positive, i.e. folders per year '1990-2000')
-                int nbPicturesInside = FileHelper.countFiles(subFolders.get(0), client, ImageHelper.getImageNamesFilter());
+                int nbPicturesInside = explorer.countFiles(subFolders.get(0), ImageHelper.getImageNamesFilter());
                 if (nbPicturesInside > 1) {
                     DocumentFile json = ImportHelper.getFileWithName(jsons, Consts.JSON_FILE_NAME_V2);
-                    library.add(scanChapterFolders(this, root, subFolders, client, parentNames, dao, json));
+                    library.add(scanChapterFolders(this, root, subFolders, explorer, parentNames, dao, json));
                 }
                 // Look for archives inside
-                int nbArchivesInside = FileHelper.countFiles(subFolders.get(0), client, ArchiveHelper.getArchiveNamesFilter());
+                int nbArchivesInside = explorer.countFiles(subFolders.get(0), ArchiveHelper.getArchiveNamesFilter());
                 if (nbArchivesInside > 0) {
-                    List<Content> c = scanForArchives(this, subFolders, client, parentNames, dao);
+                    List<Content> c = scanForArchives(this, subFolders, explorer, parentNames, dao);
                     library.addAll(c);
                 }
             }
@@ -277,18 +268,18 @@ public class ExternalImportService extends IntentService {
         }
         if (images.size() > 2) { // We've got a book
             DocumentFile json = ImportHelper.getFileWithName(jsons, Consts.JSON_FILE_NAME_V2);
-            library.add(scanBookFolder(this, root, client, parentNames, StatusContent.EXTERNAL, dao, images, json));
+            library.add(scanBookFolder(this, root, explorer, parentNames, StatusContent.EXTERNAL, dao, images, json));
         }
 
         // Go down one level
         List<String> newParentNames = new ArrayList<>(parentNames);
         newParentNames.add(rootName);
         for (DocumentFile subfolder : subFolders)
-            scanFolderRecursive(subfolder, client, newParentNames, library, dao);
+            scanFolderRecursive(subfolder, explorer, newParentNames, library, dao);
     }
 
     @Nullable
-    private Uri createJsonFileFor(@NonNull final Content c, @NonNull final ContentProviderClient client) throws IOException {
+    private Uri createJsonFileFor(@NonNull final Content c, @NonNull final FileExplorer explorer) throws IOException {
         if (null == c.getStorageUri() || c.getStorageUri().isEmpty()) return null;
 
         // Check if the storage URI is valid
@@ -308,7 +299,7 @@ public class ExternalImportService extends IntentService {
         } else {
             jsonName = Consts.JSON_FILE_NAME_V2;
         }
-        DocumentFile jsonFile = FileHelper.findFile(this, contentFolder, client, jsonName);
+        DocumentFile jsonFile = explorer.findFile(this, contentFolder, jsonName);
         if (jsonFile != null && jsonFile.exists()) return jsonFile.getUri();
 
         return JsonHelper.jsonToFile(this, JsonContent.fromEntity(c), JsonContent.class, contentFolder, jsonName).getUri();

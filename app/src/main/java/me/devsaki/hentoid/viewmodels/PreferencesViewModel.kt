@@ -61,7 +61,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) : A
 
     @Throws(ContentNotRemovedException::class)
     private fun deleteItem(context: Context, c: Content) {
-        ContentHelper.removeContent(context, dao, c, false)
+        ContentHelper.removeContent(context, dao, c)
     }
 
     private fun onDeleteProgress(num: Int, max: Int) {

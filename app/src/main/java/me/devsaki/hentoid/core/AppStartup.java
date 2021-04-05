@@ -10,6 +10,8 @@ import android.os.Looper;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -33,7 +35,6 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.SplashActivity;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
@@ -47,6 +48,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
+import me.devsaki.hentoid.workers.StartupWorker;
 import timber.log.Timber;
 
 public class AppStartup {
@@ -64,17 +66,20 @@ public class AppStartup {
     ) {
         if (isInitialized) onComplete.run();
 
-        // Make sure the app restarts with the splash screen in case of any unhandled issue
-        Thread.setDefaultUncaughtExceptionHandler(new EmergencyRestartHandler(context.getApplicationContext(), SplashActivity.class));
-
-        // Wait until launch tasks are completed
+        // Wait until pre-launch tasks are completed
         launchTasks = getPreLaunchTasks(context);
         launchTasks.addAll(DatabaseMaintenance.getPreLaunchCleanupTasks(context));
-        // TODO execute post-launch tasks in another runner (background worker ?)
-        launchTasks.addAll(getPostLaunchTasks(context));
-        launchTasks.addAll(DatabaseMaintenance.getPostLaunchCleanupTasks(context));
-        // TODO switch from a recursive function to a full RxJava-powered chain + clear the disposable elsewhere (as the chain will finish in a worker)
-        doRunTask(0, onMainProgress, onSecondaryProgress, onComplete);
+
+        // TODO switch from a recursive function to a full RxJava-powered chain
+        doRunTask(0, onMainProgress, onSecondaryProgress, () -> {
+            if (launchDisposable != null) launchDisposable.dispose();
+            isInitialized = true;
+
+            onComplete.run();
+            // Run post-launch tasks on a worker
+            WorkManager workManager = WorkManager.getInstance(context);
+            workManager.enqueue(new OneTimeWorkRequest.Builder(StartupWorker.class).build());
+        });
     }
 
     private void doRunTask(
@@ -91,7 +96,7 @@ public class AppStartup {
         }
         // Continue executing launch tasks
         if (taskIndex < launchTasks.size()) {
-            Timber.i("Splash / Launch task %s/%s", taskIndex + 1, launchTasks.size());
+            Timber.i("Pre-launch task %s/%s", taskIndex + 1, launchTasks.size());
             launchDisposable = launchTasks.get(taskIndex)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -101,8 +106,6 @@ public class AppStartup {
                             () -> doRunTask(taskIndex + 1, onMainProgress, onSecondaryProgress, onComplete)
                     );
         } else {
-            if (launchDisposable != null) launchDisposable.dispose();
-            isInitialized = true;
             onComplete.run();
         }
     }

@@ -227,8 +227,8 @@ public class ObjectBoxDB {
         }
     }
 
-    void deleteContentById(long contentId, boolean removeAttrs) {
-        deleteContentById(new long[]{contentId}, removeAttrs);
+    void deleteContentById(long contentId) {
+        deleteContentById(new long[]{contentId});
     }
 
     /**
@@ -237,7 +237,7 @@ public class ObjectBoxDB {
      *
      * @param contentId IDs of the contents to be removed from the DB
      */
-    void deleteContentById(long[] contentId, boolean removeAttrs) {
+    void deleteContentById(long[] contentId) {
         Box<ErrorRecord> errorBox = store.boxFor(ErrorRecord.class);
         Box<ImageFile> imageFileBox = store.boxFor(ImageFile.class);
         Box<Attribute> attributeBox = store.boxFor(Attribute.class);
@@ -249,41 +249,35 @@ public class ObjectBoxDB {
         for (long id : contentId) {
             Content c = contentBox.get(id);
             if (c != null) {
-//                store.runInTx(() -> {
-                if (c.getImageFiles() != null) {
-                    imageFileBox.remove(c.getImageFiles());
-                    c.getImageFiles().clear();                                      // Clear links to all imageFiles
-                }
+                store.runInTx(() -> {
+                    if (c.getImageFiles() != null) {
+                        imageFileBox.remove(c.getImageFiles());
+                        c.getImageFiles().clear();                                      // Clear links to all imageFiles
+                    }
 
-                if (c.getErrorLog() != null) {
-                    errorBox.remove(c.getErrorLog());
-                    c.getErrorLog().clear();                                    // Clear links to all errorRecords
-                }
+                    if (c.getErrorLog() != null) {
+                        errorBox.remove(c.getErrorLog());
+                        c.getErrorLog().clear();                                    // Clear links to all errorRecords
+                    }
 
-                // Delete attribute when current content is the only content left on the attribute
-                if (removeAttrs) {
-                    for (Attribute a : c.getAttributes())
-                        if (1 == a.contents.size()) { // This call is super costly; never use removeAttrs when mass-deleting
-                            locationBox.remove(a.getLocations());
-                            a.getLocations().clear();                                           // Clear location links
-                            attributeBox.remove(a);                                             // Delete the attribute itself
-                        }
-                }
-                c.getAttributes().clear();                                      // Clear links to all attributes
+                    // Clear links to all attributes
+                    // NB : Properly removing all attributes here would be too costly
+                    // It's done by calling cleanupOrphanAttributes
+                    c.getAttributes().clear();
 
-                // Delete corresponding groupItem
-                List<GroupItem> groupItems = groupItemBox.query().equal(GroupItem_.contentId, id).build().find();
-                for (GroupItem groupItem : groupItems) {
-                    // If we're not in the Custom grouping and it's the only item of its group, delete the group
-                    Group g = groupItem.group.getTarget();
-                    if (g != null && !g.grouping.equals(Grouping.CUSTOM) && g.items.size() < 2)
-                        groupBox.remove(g);
-                    // Delete the item
-                    groupItemBox.remove(groupItem);
-                }
+                    // Delete corresponding groupItem
+                    List<GroupItem> groupItems = groupItemBox.query().equal(GroupItem_.contentId, id).build().find();
+                    for (GroupItem groupItem : groupItems) {
+                        // If we're not in the Custom grouping and it's the only item of its group, delete the group
+                        Group g = groupItem.group.getTarget();
+                        if (g != null && !g.grouping.equals(Grouping.CUSTOM) && g.items.size() < 2)
+                            groupBox.remove(g);
+                        // Delete the item
+                        groupItemBox.remove(groupItem);
+                    }
 
-                contentBox.remove(c);                                           // Remove the content itself
-//                });
+                    contentBox.remove(c);                                           // Remove the content itself
+                });
             }
         }
     }
