@@ -466,13 +466,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handle click on one of the "Favourite" micro menu items
      */
     private void onFavouriteMicroMenuClick(int position) {
-        if (0 == position) { // Content
-            viewModel.toggleContentFavourite(this::onFavouriteSuccess);
-            isContentFavourite = !isContentFavourite;
-        } else if (1 == position) { // Image
-            viewModel.toggleImageFavourite(this.imageIndex, this::onFavouriteSuccess);
-            isPageFavourite = !isPageFavourite;
-        }
+        if (0 == position) viewModel.toggleContentFavourite(this::onBookFavouriteSuccess);
+        else if (1 == position)
+            viewModel.toggleImageFavourite(this.imageIndex, this::onPageFavouriteSuccess);
 
         binding.controlsOverlay.favouriteMicroMenu.dips();
     }
@@ -491,9 +487,17 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.favouriteMicroMenu.dips();
     }
 
-    private void onFavouriteSuccess(Boolean newState) {
+    private void onPageFavouriteSuccess(Boolean newState) {
         // TODO display something more graphical (heart / heartbreak)
-        ToastHelper.toast(newState ? R.string.favourite_success : R.string.unfavourite_success);
+        ToastHelper.toast(newState ? R.string.page_favourite_success : R.string.page_unfavourite_success);
+        isPageFavourite = !isPageFavourite;
+        updateFavouriteButtonIcon();
+    }
+
+    private void onBookFavouriteSuccess(Boolean newState) {
+        // TODO display something more graphical (heart / heartbreak)
+        ToastHelper.toast(newState ? R.string.book_favourite_success : R.string.book_unfavourite_success);
+        isContentFavourite = !isContentFavourite;
         updateFavouriteButtonIcon();
     }
 
