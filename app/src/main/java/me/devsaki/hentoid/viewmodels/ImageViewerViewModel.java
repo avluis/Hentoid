@@ -454,7 +454,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 readThresholdPosition = 5;
                 break;
             case Preferences.Constant.VIEWER_READ_THRESHOLD_ALL:
-                readThresholdPosition = theImages.size();
+                readThresholdPosition = (int) Stream.of(theImages).filter(ImageFile::isReadable).count();
                 break;
             default:
                 readThresholdPosition = 1;
