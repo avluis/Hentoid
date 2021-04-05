@@ -252,6 +252,7 @@ public class ImportHelper {
             CollectionDAO dao = new ObjectBoxDAO(context);
             try {
                 dao.deleteAllInternalBooks(true);
+                dao.cleanupOrphanAttributes();
             } finally {
                 dao.cleanup();
             }

@@ -205,6 +205,7 @@ public class ExternalImportService extends IntentService {
 
             eventComplete(ImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
+            dao.cleanupOrphanAttributes();
             dao.cleanup();
         }
 

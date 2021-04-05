@@ -41,6 +41,7 @@ class FileUtil {
     private static final String DOCPROVIDER_PATH_TREE = "tree";
 
     private static final Map<String, Boolean> providersCache = new HashMap<>();
+    private static final Map<String, String> documentIdCache = new HashMap<>();
 
 
     /**
@@ -142,11 +143,12 @@ class FileUtil {
 
     /**
      * Count the children of a given folder (non recursive) matching the given criteria
-     * @param parent Folder containing the document to count
-     * @param client ContentProviderClient to use for the query
-     * @param nameFilter NameFilter defining which documents to include
+     *
+     * @param parent       Folder containing the document to count
+     * @param client       ContentProviderClient to use for the query
+     * @param nameFilter   NameFilter defining which documents to include
      * @param countFolders true if matching folders have to be counted in the results
-     * @param countFiles true if matching files have to be counted in the results
+     * @param countFiles   true if matching files have to be counted in the results
      * @return Number of documents inside the given folder, matching the given criteria
      */
     static int countDocumentFiles(
@@ -155,18 +157,19 @@ class FileUtil {
             final FileHelper.NameFilter nameFilter,
             boolean countFolders,
             boolean countFiles) {
-        final List<DocumentProperties> results = queryDocumentFiles( parent, client, nameFilter, countFolders, countFiles);
+        final List<DocumentProperties> results = queryDocumentFiles(parent, client, nameFilter, countFolders, countFiles);
         return results.size();
     }
 
     /**
      * List the children of a given folder (non recursive) matching the given criteria
-     * @param context Context to use for the query
-     * @param parent Folder containing the document to count
-     * @param client ContentProviderClient to use for the query
-     * @param nameFilter NameFilter defining which documents to include
+     *
+     * @param context     Context to use for the query
+     * @param parent      Folder containing the document to count
+     * @param client      ContentProviderClient to use for the query
+     * @param nameFilter  NameFilter defining which documents to include
      * @param listFolders true if matching folders have to be listed in the results
-     * @param listFiles true if matching files have to be listed in the results
+     * @param listFiles   true if matching files have to be listed in the results
      * @return List of documents inside the given folder, matching the given criteria
      */
     static List<DocumentFile> listDocumentFiles(
@@ -176,17 +179,18 @@ class FileUtil {
             final FileHelper.NameFilter nameFilter,
             boolean listFolders,
             boolean listFiles) {
-        final List<DocumentProperties> results = queryDocumentFiles( parent, client, nameFilter, listFolders, listFiles);
+        final List<DocumentProperties> results = queryDocumentFiles(parent, client, nameFilter, listFolders, listFiles);
         return convertFromProperties(context, results);
     }
 
     /**
      * List the properties of the children of the given folder (non recursive) matching the given criteria
-     * @param parent Folder containing the document to count
-     * @param client ContentProviderClient to use for the query
-     * @param nameFilter NameFilter defining which documents to include
+     *
+     * @param parent      Folder containing the document to count
+     * @param client      ContentProviderClient to use for the query
+     * @param nameFilter  NameFilter defining which documents to include
      * @param listFolders true if matching folders have to be listed in the results
-     * @param listFiles true if matching files have to be listed in the results
+     * @param listFiles   true if matching files have to be listed in the results
      * @return List of properties of the children of the given folder, matching the given criteria
      */
     private static List<DocumentProperties> queryDocumentFiles(
@@ -212,7 +216,7 @@ class FileUtil {
 
                     // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                     if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
-                        results.add(new DocumentProperties(DocumentsContract.buildDocumentUriUsingTree(parent.getUri(), documentId), documentName, documentSize, isFolder));
+                        results.add(new DocumentProperties(buildDocumentUriUsingTreeCached(parent.getUri(), documentId), documentName, documentSize, isFolder));
                 }
         } catch (Exception e) {
             Timber.w(e, "Failed query");
@@ -222,7 +226,8 @@ class FileUtil {
 
     /**
      * Convert the given document properties to DocumentFile's
-     * @param context Context to use for the conversion
+     *
+     * @param context    Context to use for the conversion
      * @param properties Properties to convert
      * @return List of DocumentFile's built from the given properties
      */
@@ -238,21 +243,43 @@ class FileUtil {
         return resultFiles;
     }
 
-
     /**
      * WARNING Following methods are tweaks of internal Android code to make it faster by caching calls to queryIntentContentProviders
      */
 
+    // Original (uncached) is DocumentsContract.buildDocumentUriUsingTree
+    // NB : appendPath got costly because of encoding operations
+    public static Uri buildDocumentUriUsingTreeCached(Uri treeUri, String documentId) {
+        return new Uri.Builder().scheme(ContentResolver.SCHEME_CONTENT)
+                .authority(treeUri.getAuthority()).appendPath("tree") // Risky; this value is supposed to be hidden
+                .appendPath(getTreeDocumentIdCached(treeUri)).appendPath("document") // Risky; this value is supposed to be hidden
+                .appendPath(documentId).build();
+    }
+
+
     // Original (uncached) is DocumentFile.fromTreeUri
     @Nullable
     private static DocumentFile fromTreeUriCached(@NonNull final Context context, @NonNull final Uri treeUri) {
-        String documentId = DocumentsContract.getTreeDocumentId(treeUri);
+        String documentId = getTreeDocumentIdCached(treeUri);
         if (isDocumentUriCached(context, treeUri)) {
             documentId = DocumentsContract.getDocumentId(treeUri);
         }
         return newTreeDocumentFile(null, context,
-                DocumentsContract.buildDocumentUriUsingTree(treeUri,
-                        documentId));
+                buildDocumentUriUsingTreeCached(treeUri, documentId));
+        //DocumentsContract.buildDocumentUriUsingTree(treeUri, documentId));
+    }
+
+    // Original (uncached) is DocumentsContract.getTreeDocumentId
+    private static String getTreeDocumentIdCached(@NonNull final Uri uri) {
+        String uriStr = uri.toString();
+        // First look into cache
+        String result = documentIdCache.get(uri.toString());
+        // If nothing found, try the long way
+        if (null == result) {
+            result = DocumentsContract.getTreeDocumentId(uri);
+            documentIdCache.put(uriStr, result);
+        }
+        return result;
     }
 
     // Original (uncached) : DocumentsContract.isDocumentUri
@@ -270,10 +297,10 @@ class FileUtil {
 
     // Original (uncached) : DocumentsContract.isDocumentsProvider
     private static boolean isDocumentsProviderCached(Context context, String authority) {
-        if (providersCache.containsKey(authority)) {
-            Boolean b = providersCache.get(authority);
-            if (b != null) return b;
-        }
+        // First look into cache
+        Boolean b = providersCache.get(authority);
+        if (b != null) return b;
+        // If nothing found, try the long way
         final Intent intent = new Intent(DocumentsContract.PROVIDER_INTERFACE);
         final List<ResolveInfo> infos = context.getPackageManager()
                 .queryIntentContentProviders(intent, 0);

@@ -227,12 +227,8 @@ public class ObjectBoxDB {
         }
     }
 
-    void deleteContent(Content content) {
-        deleteContentById(content.getId());
-    }
-
-    private void deleteContentById(long contentId) {
-        deleteContentById(new long[]{contentId});
+    void deleteContentById(long contentId, boolean removeAttrs) {
+        deleteContentById(new long[]{contentId}, removeAttrs);
     }
 
     /**
@@ -241,7 +237,7 @@ public class ObjectBoxDB {
      *
      * @param contentId IDs of the contents to be removed from the DB
      */
-    void deleteContentById(long[] contentId) {
+    void deleteContentById(long[] contentId, boolean removeAttrs) {
         Box<ErrorRecord> errorBox = store.boxFor(ErrorRecord.class);
         Box<ImageFile> imageFileBox = store.boxFor(ImageFile.class);
         Box<Attribute> attributeBox = store.boxFor(Attribute.class);
@@ -253,42 +249,59 @@ public class ObjectBoxDB {
         for (long id : contentId) {
             Content c = contentBox.get(id);
             if (c != null) {
-                store.runInTx(() -> {
-                    if (c.getImageFiles() != null) {
-                        for (ImageFile i : c.getImageFiles())
-                            imageFileBox.remove(i);   // Delete imageFiles
-                        c.getImageFiles().clear();                                      // Clear links to all imageFiles
-                    }
+//                store.runInTx(() -> {
+                if (c.getImageFiles() != null) {
+                    imageFileBox.remove(c.getImageFiles());
+                    c.getImageFiles().clear();                                      // Clear links to all imageFiles
+                }
 
-                    if (c.getErrorLog() != null) {
-                        for (ErrorRecord e : c.getErrorLog())
-                            errorBox.remove(e);   // Delete error records
-                        c.getErrorLog().clear();                                    // Clear links to all errorRecords
-                    }
+                if (c.getErrorLog() != null) {
+                    errorBox.remove(c.getErrorLog());
+                    c.getErrorLog().clear();                                    // Clear links to all errorRecords
+                }
 
-                    // Delete attribute when current content is the only content left on the attribute
+                // Delete attribute when current content is the only content left on the attribute
+                if (removeAttrs) {
                     for (Attribute a : c.getAttributes())
-                        if (1 == a.contents.size()) {
-                            for (AttributeLocation l : a.getLocations())
-                                locationBox.remove(l); // Delete all locations
+                        if (1 == a.contents.size()) { // This call is super costly; never use removeAttrs when mass-deleting
+                            locationBox.remove(a.getLocations());
                             a.getLocations().clear();                                           // Clear location links
                             attributeBox.remove(a);                                             // Delete the attribute itself
                         }
-                    c.getAttributes().clear();                                      // Clear links to all attributes
+                }
+                c.getAttributes().clear();                                      // Clear links to all attributes
 
-                    // Delete corresponding groupItem
-                    List<GroupItem> groupItems = groupItemBox.query().equal(GroupItem_.contentId, id).build().find();
-                    for (GroupItem groupItem : groupItems) {
-                        // If we're not in the Custom grouping and it's the only item of its group, delete the group
-                        Group g = groupItem.group.getTarget();
-                        if (g != null && !g.grouping.equals(Grouping.CUSTOM) && g.items.size() < 2)
-                            groupBox.remove(g);
-                        // Delete the item
-                        groupItemBox.remove(groupItem);
-                    }
+                // Delete corresponding groupItem
+                List<GroupItem> groupItems = groupItemBox.query().equal(GroupItem_.contentId, id).build().find();
+                for (GroupItem groupItem : groupItems) {
+                    // If we're not in the Custom grouping and it's the only item of its group, delete the group
+                    Group g = groupItem.group.getTarget();
+                    if (g != null && !g.grouping.equals(Grouping.CUSTOM) && g.items.size() < 2)
+                        groupBox.remove(g);
+                    // Delete the item
+                    groupItemBox.remove(groupItem);
+                }
 
-                    contentBox.remove(c);                                           // Remove the content itself
-                });
+                contentBox.remove(c);                                           // Remove the content itself
+//                });
+            }
+        }
+    }
+
+    /**
+     * Cleanup all Attributes that don't have any backlink among content
+     */
+    public void cleanupOrphanAttributes() {
+        Box<Attribute> attributeBox = store.boxFor(Attribute.class);
+        Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
+
+        List<Attribute> attrs = attributeBox.getAll();
+        for (Attribute attr : attrs) {
+            if (attr.contents.isEmpty()) {
+                Timber.i(">> Found empty attr : %s", attr.getName());
+                locationBox.remove(attr.getLocations());
+                attr.getLocations().clear();                                           // Clear location links
+                attributeBox.remove(attr);                                             // Delete the attribute itself
             }
         }
     }
@@ -979,6 +992,7 @@ public class ObjectBoxDB {
         QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
         if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.getCode());
         List<ImageFile> imgs = query.equal(ImageFile_.contentId, contentId).build().find();
+
 
         if (imgs.isEmpty()) return;
 

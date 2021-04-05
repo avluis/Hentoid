@@ -22,6 +22,7 @@ import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
@@ -69,6 +70,7 @@ public class Content implements Serializable {
 
     @Id
     private long id;
+    @Index
     private String url;
     private String uniqueSiteId; // Has to be queryable in DB, hence has to be a field
     private String title;
@@ -78,12 +80,14 @@ public class Content implements Serializable {
     private Integer qtyPages; // Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
     private long uploadDate;
     private long downloadDate = 0;
+    @Index
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
     @Backlink(to = "content")
     private ToMany<ImageFile> imageFiles;
     @Backlink(to = "content")
     public ToMany<GroupItem> groupItems;
+    @Index
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
     /**

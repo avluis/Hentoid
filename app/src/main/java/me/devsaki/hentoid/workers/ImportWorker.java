@@ -13,6 +13,8 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.squareup.moshi.JsonDataException;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -46,7 +49,6 @@ import me.devsaki.hentoid.json.URLBuilder;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
-import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
@@ -238,11 +240,12 @@ public class ImportWorker extends Worker {
 
                 // Detect JSON and try to parse it
                 try {
-                    content = importJson(context, bookFolder, client, dao);
+                    List<DocumentFile> bookFiles = FileHelper.listFiles(context, bookFolder, client, null);
+                    content = importJson(context, bookFolder, bookFiles, dao);
                     if (content != null) {
                         // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
                         if (existingFlaggedContent != null)
-                            dao.deleteContent(existingFlaggedContent);
+                            dao.deleteContent(existingFlaggedContent, false);
 
                         // If the very same book still exists in the DB at this point, it means it's present in the queue
                         // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
@@ -277,7 +280,8 @@ public class ImportWorker extends Worker {
                         }
 
                         // Attach image file Uri's to the book's images
-                        List<DocumentFile> imageFiles = FileHelper.listFiles(context, bookFolder, client, imageNames);
+//                        List<DocumentFile> imageFiles = FileHelper.listFiles(context, bookFolder, client, imageNames);
+                        List<DocumentFile> imageFiles = Stream.of(bookFiles).filter(f -> imageNames.accept(f.getName())).toList();
                         if (!imageFiles.isEmpty()) {
                             // No images described in the JSON -> recreate them
                             if (contentImages.isEmpty()) {
@@ -386,6 +390,7 @@ public class ImportWorker extends Worker {
 
             dao.deleteAllFlaggedBooks(true);
             dao.deleteAllFlaggedGroups();
+            dao.cleanupOrphanAttributes();
             dao.cleanup();
 
             eventComplete(STEP_4_QUEUE_FINAL, bookFolders.size(), booksOK, booksKO, logFile);
@@ -493,16 +498,19 @@ public class ImportWorker extends Worker {
     private Content importJson(
             @NonNull final Context context,
             @NonNull DocumentFile folder,
-            @NonNull ContentProviderClient client,
+            @NonNull List<DocumentFile> bookFiles,
             @NonNull CollectionDAO dao) throws ParseException {
-        DocumentFile file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_V2);
-        if (file != null) return importJsonV2(context, file, folder, dao);
+//        DocumentFile file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_V2);
+        Optional<DocumentFile> file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_V2)).findFirst();
+        if (file.isPresent()) return importJsonV2(context, file.get(), folder, dao);
 
-        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME);
-        if (file != null) return importJsonV1(context, file, folder);
+//        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME);
+        file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME)).findFirst();
+        if (file.isPresent()) return importJsonV1(context, file.get(), folder);
 
-        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_OLD);
-        if (file != null) return importJsonLegacy(context, file, folder);
+//        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_OLD);
+        file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_OLD)).findFirst();
+        if (file.isPresent()) return importJsonLegacy(context, file.get(), folder);
 
         return null;
     }

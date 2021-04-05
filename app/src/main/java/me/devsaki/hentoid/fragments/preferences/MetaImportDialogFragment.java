@@ -280,6 +280,7 @@ public class MetaImportDialogFragment extends DialogFragment {
                 .observeOn(Schedulers.io())
                 .map(c -> importItem(c, dao))
                 .doOnComplete(() -> {
+                    dao.cleanupOrphanAttributes();
                     if (isGroup) GroupHelper.updateGroupsJson(requireContext(), dao);
                 })
                 .observeOn(AndroidSchedulers.mainThread())

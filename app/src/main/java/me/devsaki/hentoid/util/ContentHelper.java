@@ -297,11 +297,11 @@ public final class ContentHelper {
      * @param content Content to be removed
      * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
      */
-    public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
+    public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content, boolean removeAttrs) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
-        dao.deleteContent(content);
+        dao.deleteContent(content, removeAttrs);
 
         if (content.isArchive()) { // Remove an archive
             DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
@@ -341,7 +341,7 @@ public final class ContentHelper {
      * @param content Content to be removed
      * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
      */
-    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
+    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content, boolean removeAttrs) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
 
         // Check if the content is on top of the queue; if so, send a CANCEL event
@@ -355,7 +355,7 @@ public final class ContentHelper {
         }
 
         // Remove content itself
-        removeContent(context, dao, content);
+        removeContent(context, dao, content, removeAttrs);
     }
 
     /**
@@ -395,7 +395,7 @@ public final class ContentHelper {
                             Group group = GroupHelper.getOrCreateNoArtistGroup(context, dao);
                             GroupItem item = new GroupItem(content, group, -1);
                             dao.insertGroupItem(item);
-                        } else
+                        } else {
                             for (Attribute a : artists) { // Add to the artist groups attached to the artists attributes
                                 Group group = a.getGroup().getTarget();
                                 if (null == group) {
@@ -406,6 +406,7 @@ public final class ContentHelper {
                                 }
                                 GroupHelper.addContentToAttributeGroup(dao, group, a, content);
                             }
+                        }
                     }
                 }
         }

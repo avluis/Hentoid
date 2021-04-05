@@ -123,6 +123,11 @@ public class ObjectBoxDAO implements CollectionDAO {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    @Override
+    public void cleanupOrphanAttributes() {
+        db.cleanupOrphanAttributes();
+    }
+
     public LiveData<List<Content>> selectErrorContent() {
         return new ObjectBoxLiveData<>(db.selectErrorContentQ());
     }
@@ -269,8 +274,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.updateContentStatus(updateFrom, updateTo);
     }
 
-    public void deleteContent(@NonNull final Content content) {
-        db.deleteContent(content);
+    public void deleteContent(@NonNull final Content content, boolean removeAttrs) {
+        db.deleteContentById(content.getId(), removeAttrs);
     }
 
     public List<ErrorRecord> selectErrorRecordByContentId(long contentId) {
@@ -304,7 +309,8 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public void deleteAllExternalBooks() {
-        db.deleteContentById(db.selectAllExternalBooksQ().findIds());
+        db.deleteContentById(db.selectAllExternalBooksQ().findIds(), false);
+        db.cleanupOrphanAttributes();
     }
 
     @Override
@@ -457,7 +463,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void deleteAllInternalBooks(boolean resetRemainingImagesStatus) {
-        db.deleteContentById(db.selectAllInternalBooksQ(false).findIds());
+        db.deleteContentById(db.selectAllInternalBooksQ(false).findIds(), false);
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
         if (resetRemainingImagesStatus) {
@@ -468,7 +474,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void deleteAllFlaggedBooks(boolean resetRemainingImagesStatus) {
-        db.deleteContentById(db.selectAllFlaggedBooksQ().findIds());
+        db.deleteContentById(db.selectAllFlaggedBooksQ().findIds(), false);
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
         if (resetRemainingImagesStatus) {
@@ -484,7 +490,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteAllQueuedBooks() {
         Timber.i("Cleaning up queue");
-        db.deleteContentById(db.selectAllQueueBooksQ().findIds());
+        db.deleteContentById(db.selectAllQueueBooksQ().findIds(), false);
         db.deleteQueue();
     }
 
