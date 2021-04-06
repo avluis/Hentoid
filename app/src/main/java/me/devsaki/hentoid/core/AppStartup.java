@@ -46,7 +46,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import me.devsaki.hentoid.workers.StartupWorker;
 import timber.log.Timber;
@@ -154,10 +153,6 @@ public class AppStartup {
 
     private static void initUtils(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         try {
-            Timber.i("Init user agents : start");
-            HttpHelper.initUserAgents(context);
-            Timber.i("Init user agents : done");
-
             Timber.i("Init notifications : start");
             // Init notification channels
             UpdateNotificationChannel.init(context);

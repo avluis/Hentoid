@@ -22,6 +22,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.SplashActivity;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 /**
@@ -122,6 +123,11 @@ public class HentoidApp extends Application {
             }
             Timber.w(e, "Undeliverable exception received, not sure what to do");
         });
+
+        // Init user agents (must be done here as some users seem not to complete AppStartup properly)
+        Timber.i("Init user agents : start");
+        HttpHelper.initUserAgents(this);
+        Timber.i("Init user agents : done");
     }
 
     /**
