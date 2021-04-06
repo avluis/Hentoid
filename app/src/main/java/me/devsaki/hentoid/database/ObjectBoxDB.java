@@ -31,6 +31,7 @@ import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.database.domains.AttributeMap;
@@ -226,11 +227,7 @@ public class ObjectBoxDB {
         }
     }
 
-    void deleteContent(Content content) {
-        deleteContentById(content.getId());
-    }
-
-    private void deleteContentById(long contentId) {
+    void deleteContentById(long contentId) {
         deleteContentById(new long[]{contentId});
     }
 
@@ -254,26 +251,19 @@ public class ObjectBoxDB {
             if (c != null) {
                 store.runInTx(() -> {
                     if (c.getImageFiles() != null) {
-                        for (ImageFile i : c.getImageFiles())
-                            imageFileBox.remove(i);   // Delete imageFiles
+                        imageFileBox.remove(c.getImageFiles());
                         c.getImageFiles().clear();                                      // Clear links to all imageFiles
                     }
 
                     if (c.getErrorLog() != null) {
-                        for (ErrorRecord e : c.getErrorLog())
-                            errorBox.remove(e);   // Delete error records
+                        errorBox.remove(c.getErrorLog());
                         c.getErrorLog().clear();                                    // Clear links to all errorRecords
                     }
 
-                    // Delete attribute when current content is the only content left on the attribute
-                    for (Attribute a : c.getAttributes())
-                        if (1 == a.contents.size()) {
-                            for (AttributeLocation l : a.getLocations())
-                                locationBox.remove(l); // Delete all locations
-                            a.getLocations().clear();                                           // Clear location links
-                            attributeBox.remove(a);                                             // Delete the attribute itself
-                        }
-                    c.getAttributes().clear();                                      // Clear links to all attributes
+                    // Clear links to all attributes
+                    // NB : Properly removing all attributes here would be too costly
+                    // It's done by calling cleanupOrphanAttributes
+                    c.getAttributes().clear();
 
                     // Delete corresponding groupItem
                     List<GroupItem> groupItems = groupItemBox.query().equal(GroupItem_.contentId, id).build().find();
@@ -288,6 +278,24 @@ public class ObjectBoxDB {
 
                     contentBox.remove(c);                                           // Remove the content itself
                 });
+            }
+        }
+    }
+
+    /**
+     * Cleanup all Attributes that don't have any backlink among content
+     */
+    public void cleanupOrphanAttributes() {
+        Box<Attribute> attributeBox = store.boxFor(Attribute.class);
+        Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
+
+        List<Attribute> attrs = attributeBox.getAll();
+        for (Attribute attr : attrs) {
+            if (attr.contents.isEmpty()) {
+                Timber.i(">> Found empty attr : %s", attr.getName());
+                locationBox.remove(attr.getLocations());
+                attr.getLocations().clear();                                           // Clear location links
+                attributeBox.remove(attr);                                             // Delete the attribute itself
             }
         }
     }
@@ -671,7 +679,7 @@ public class ObjectBoxDB {
         LazyList<Content> lazyList = query.findLazy();
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < lazyList.size(); i++) order.add(i);
-        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed()));
+        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
 
         List<Long> result = new ArrayList<>();
         for (int i = 0; i < order.size(); i++) {
@@ -978,6 +986,7 @@ public class ObjectBoxDB {
         QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
         if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.getCode());
         List<ImageFile> imgs = query.equal(ImageFile_.contentId, contentId).build().find();
+
 
         if (imgs.isEmpty()) return;
 

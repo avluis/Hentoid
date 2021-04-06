@@ -32,9 +32,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -339,24 +339,18 @@ public class ImportHelper {
     private static boolean hasBooks(@NonNull final Context context) {
         List<DocumentFile> downloadDirs = new ArrayList<>();
 
-        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
-        if (null == client) return false;
-        try {
+        try (FileExplorer fe = new FileExplorer(context, Uri.parse(Preferences.getStorageUri()))) {
             for (Site s : Site.values()) {
-                DocumentFile downloadDir = ContentHelper.getOrCreateSiteDownloadDir(context, client, s);
+                DocumentFile downloadDir = ContentHelper.getOrCreateSiteDownloadDir(context, fe, s);
                 if (downloadDir != null) downloadDirs.add(downloadDir);
             }
 
             for (DocumentFile downloadDir : downloadDirs) {
-                List<DocumentFile> contentFiles = FileHelper.listFolders(context, downloadDir, client);
+                List<DocumentFile> contentFiles = fe.listFolders(context, downloadDir);
                 if (!contentFiles.isEmpty()) return true;
             }
-        } finally {
-            // ContentProviderClient.close only available on API level 24+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                client.close();
-            else
-                client.release();
+        } catch (IOException e) {
+            Timber.w(e);
         }
 
         return false;
@@ -429,7 +423,7 @@ public class ImportHelper {
     public static Content scanBookFolder(
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
-            @NonNull final ContentProviderClient client,
+            @NonNull final FileExplorer explorer,
             @NonNull final List<String> parentNames,
             @NonNull final StatusContent targetStatus,
             @NonNull final CollectionDAO dao,
@@ -473,7 +467,7 @@ public class ImportHelper {
 
         result.setStatus(targetStatus).setStorageUri(bookFolder.getUri().toString());
         List<ImageFile> images = new ArrayList<>();
-        scanImages(context, bookFolder, client, targetStatus, false, images, imageFiles);
+        scanImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles);
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
         result.setImageFiles(images);
@@ -490,7 +484,7 @@ public class ImportHelper {
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
             @NonNull final List<DocumentFile> chapterFolders,
-            @NonNull final ContentProviderClient client,
+            @NonNull final FileExplorer explorer,
             @NonNull final List<String> parentNames,
             @NonNull final CollectionDAO dao,
             @Nullable final DocumentFile jsonFile) {
@@ -517,7 +511,7 @@ public class ImportHelper {
         List<ImageFile> images = new ArrayList<>();
         // Scan pages across all subfolders
         for (DocumentFile chapterFolder : chapterFolders)
-            scanImages(context, chapterFolder, client, StatusContent.EXTERNAL, true, images, null);
+            scanImages(context, chapterFolder, explorer, StatusContent.EXTERNAL, true, images, null);
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
         result.setImageFiles(images);
@@ -533,7 +527,7 @@ public class ImportHelper {
     private static void scanImages(
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
-            @NonNull final ContentProviderClient client,
+            @NonNull final FileExplorer explorer,
             @NonNull final StatusContent targetStatus,
             boolean addFolderNametoImgName,
             @NonNull final List<ImageFile> images,
@@ -541,7 +535,7 @@ public class ImportHelper {
         int order = (images.isEmpty()) ? 0 : Stream.of(images).map(ImageFile::getOrder).max(Integer::compareTo).get();
         String folderName = (null == bookFolder.getName()) ? "" : bookFolder.getName();
         if (null == imageFiles)
-            imageFiles = FileHelper.listFiles(context, bookFolder, client, ImageHelper.getImageNamesFilter());
+            imageFiles = explorer.listFiles(context, bookFolder, ImageHelper.getImageNamesFilter());
 
         String namePrefix = "";
         if (addFolderNametoImgName) namePrefix = folderName + "-";
@@ -586,13 +580,13 @@ public class ImportHelper {
     public static List<Content> scanForArchives(
             @NonNull final Context context,
             @NonNull final List<DocumentFile> subFolders,
-            @NonNull final ContentProviderClient client,
+            @NonNull final FileExplorer explorer,
             @NonNull final List<String> parentNames,
             @NonNull final CollectionDAO dao) {
         List<Content> result = new ArrayList<>();
 
         for (DocumentFile subfolder : subFolders) {
-            List<DocumentFile> files = FileHelper.listFiles(context, subfolder, client, null);
+            List<DocumentFile> files = explorer.listFiles(context, subfolder, null);
 
             List<DocumentFile> archives = new ArrayList<>();
             List<DocumentFile> jsons = new ArrayList<>();

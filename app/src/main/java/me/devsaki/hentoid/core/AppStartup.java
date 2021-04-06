@@ -10,6 +10,8 @@ import android.os.Looper;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -26,9 +28,14 @@ import java.util.Map;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiConsumer;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.json.JsonSiteSettings;
@@ -39,14 +46,67 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
+import me.devsaki.hentoid.workers.StartupWorker;
 import timber.log.Timber;
 
 public class AppStartup {
 
-    private AppStartup() {
-        throw new IllegalStateException("Utility class");
+    private List<Observable<Float>> launchTasks;
+    private Disposable launchDisposable = null;
+
+    private static boolean isInitialized = false;
+
+    public void initApp(
+            @NonNull final Context context,
+            @NonNull Consumer<Float> onMainProgress,
+            @NonNull Consumer<Float> onSecondaryProgress,
+            @NonNull Runnable onComplete
+    ) {
+        if (isInitialized) onComplete.run();
+
+        // Wait until pre-launch tasks are completed
+        launchTasks = getPreLaunchTasks(context);
+        launchTasks.addAll(DatabaseMaintenance.getPreLaunchCleanupTasks(context));
+
+        // TODO switch from a recursive function to a full RxJava-powered chain
+        doRunTask(0, onMainProgress, onSecondaryProgress, () -> {
+            if (launchDisposable != null) launchDisposable.dispose();
+            isInitialized = true;
+
+            onComplete.run();
+            // Run post-launch tasks on a worker
+            WorkManager workManager = WorkManager.getInstance(context);
+            workManager.enqueue(new OneTimeWorkRequest.Builder(StartupWorker.class).build());
+        });
+    }
+
+    private void doRunTask(
+            int taskIndex,
+            @NonNull Consumer<Float> onMainProgress,
+            @NonNull Consumer<Float> onSecondaryProgress,
+            @NonNull Runnable onComplete
+    ) {
+        if (launchDisposable != null) launchDisposable.dispose();
+        try {
+            onMainProgress.accept(taskIndex * 1f / launchTasks.size());
+        } catch (Exception e) {
+            Timber.w(e);
+        }
+        // Continue executing launch tasks
+        if (taskIndex < launchTasks.size()) {
+            Timber.i("Pre-launch task %s/%s", taskIndex + 1, launchTasks.size());
+            launchDisposable = launchTasks.get(taskIndex)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            onSecondaryProgress,
+                            Timber::e,
+                            () -> doRunTask(taskIndex + 1, onMainProgress, onSecondaryProgress, onComplete)
+                    );
+        } else {
+            onComplete.run();
+        }
     }
 
     /**
@@ -94,10 +154,6 @@ public class AppStartup {
 
     private static void initUtils(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         try {
-            Timber.i("Init user agents : start");
-            HttpHelper.initUserAgents(context);
-            Timber.i("Init user agents : done");
-
             Timber.i("Init notifications : start");
             // Init notification channels
             UpdateNotificationChannel.init(context);

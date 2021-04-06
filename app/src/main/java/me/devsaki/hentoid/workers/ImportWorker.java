@@ -1,9 +1,7 @@
 package me.devsaki.hentoid.workers;
 
-import android.content.ContentProviderClient;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.CheckResult;
@@ -13,6 +11,8 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.squareup.moshi.JsonDataException;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -46,8 +47,8 @@ import me.devsaki.hentoid.json.URLBuilder;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
-import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.FileExplorer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.ImportHelper;
@@ -180,27 +181,24 @@ public class ImportWorker extends Worker {
             return;
         }
 
-        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(Uri.parse(Preferences.getStorageUri()));
-        if (null == client) return;
-
         List<DocumentFile> bookFolders = new ArrayList<>();
         CollectionDAO dao = new ObjectBoxDAO(context);
 
-        try {
+        try (FileExplorer explorer = new FileExplorer(context, Uri.parse(Preferences.getStorageUri()))) {
             // 1st pass : Import groups JSON
 
             // Flag existing groups for cleanup
             dao.flagAllGroups(Grouping.CUSTOM);
 
-            DocumentFile groupsFile = FileHelper.findFile(context, rootFolder, client, Consts.GROUPS_JSON_FILE_NAME);
+            DocumentFile groupsFile = explorer.findFile(context, rootFolder, Consts.GROUPS_JSON_FILE_NAME);
             if (groupsFile != null) importGroups(context, groupsFile, dao, log);
             else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
 
             // 2nd pass : count subfolders of every site folder
-            List<DocumentFile> siteFolders = FileHelper.listFolders(context, rootFolder, client);
+            List<DocumentFile> siteFolders = explorer.listFolders(context, rootFolder);
             int foldersProcessed = 1;
             for (DocumentFile f : siteFolders) {
-                bookFolders.addAll(FileHelper.listFolders(context, f, client));
+                bookFolders.addAll(explorer.listFolders(context, f));
                 eventProgress(STEP_2_BOOK_FOLDERS, siteFolders.size(), foldersProcessed++, 0);
             }
             eventComplete(STEP_2_BOOK_FOLDERS, siteFolders.size(), siteFolders.size(), 0, null);
@@ -223,8 +221,8 @@ public class ImportWorker extends Worker {
 
                 // Detect the presence of images if the corresponding cleanup option has been enabled
                 if (cleanNoImages) {
-                    List<DocumentFile> imageFiles = FileHelper.listFiles(context, bookFolder, client, imageNames);
-                    List<DocumentFile> subfolders = FileHelper.listFolders(context, bookFolder, client);
+                    List<DocumentFile> imageFiles = explorer.listFiles(context, bookFolder, imageNames);
+                    List<DocumentFile> subfolders = explorer.listFolders(context, bookFolder);
                     if (imageFiles.isEmpty() && subfolders.isEmpty()) { // No supported images nor subfolders
                         booksKO++;
                         boolean success = bookFolder.delete();
@@ -238,7 +236,8 @@ public class ImportWorker extends Worker {
 
                 // Detect JSON and try to parse it
                 try {
-                    content = importJson(context, bookFolder, client, dao);
+                    List<DocumentFile> bookFiles = explorer.listFiles(context, bookFolder, null);
+                    content = importJson(context, bookFolder, bookFiles, dao);
                     if (content != null) {
                         // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
                         if (existingFlaggedContent != null)
@@ -268,7 +267,7 @@ public class ImportWorker extends Worker {
                             String bookFolderName = bookPathParts[bookPathParts.length - 1];
 
                             if (!canonicalBookFolderName.left.equalsIgnoreCase(bookFolderName)) {
-                                if (renameFolder(context, bookFolder, content, client, canonicalBookFolderName.left)) {
+                                if (renameFolder(context, bookFolder, content, explorer, canonicalBookFolderName.left)) {
                                     trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName.left);
                                 } else {
                                     trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName.left);
@@ -277,7 +276,8 @@ public class ImportWorker extends Worker {
                         }
 
                         // Attach image file Uri's to the book's images
-                        List<DocumentFile> imageFiles = FileHelper.listFiles(context, bookFolder, client, imageNames);
+//                        List<DocumentFile> imageFiles = FileHelper.listFiles(context, bookFolder, client, imageNames);
+                        List<DocumentFile> imageFiles = Stream.of(bookFiles).filter(f -> imageNames.accept(f.getName())).toList();
                         if (!imageFiles.isEmpty()) {
                             // No images described in the JSON -> recreate them
                             if (contentImages.isEmpty()) {
@@ -297,7 +297,7 @@ public class ImportWorker extends Worker {
                         ContentHelper.addContent(context, dao, content);
                         trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK : %s", bookFolder.getUri().toString());
                     } else { // JSON not found
-                        List<DocumentFile> subfolders = FileHelper.listFolders(context, bookFolder, client);
+                        List<DocumentFile> subfolders = explorer.listFolders(context, bookFolder);
                         if (!subfolders.isEmpty()) // Folder doesn't contain books but contains subdirectories
                         {
                             bookFolders.addAll(subfolders);
@@ -344,7 +344,7 @@ public class ImportWorker extends Worker {
                                     }
                             }
                             // Scan the folder
-                            Content storedContent = ImportHelper.scanBookFolder(context, bookFolder, client, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
+                            Content storedContent = ImportHelper.scanBookFolder(context, bookFolder, explorer, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
                             DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
                             storedContent.setJsonUri(newJson.getUri().toString());
                             ContentHelper.addContent(context, dao, storedContent);
@@ -371,18 +371,14 @@ public class ImportWorker extends Worker {
             eventComplete(STEP_3_BOOKS, bookFolders.size(), booksOK, booksKO, null);
 
             // 4th pass : Import queue JSON
-            DocumentFile queueFile = FileHelper.findFile(context, rootFolder, client, Consts.QUEUE_JSON_FILE_NAME);
+            DocumentFile queueFile = explorer.findFile(context, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
             if (queueFile != null) importQueue(context, queueFile, dao, log);
             else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
+        } catch (IOException e) {
+            Timber.w(e);
         } finally {
             // Write log in root folder
             DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
-
-            // ContentProviderClient.close only available on API level 24+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                client.close();
-            else
-                client.release();
 
             dao.deleteAllFlaggedBooks(true);
             dao.deleteAllFlaggedGroups();
@@ -402,13 +398,13 @@ public class ImportWorker extends Worker {
         return logInfo;
     }
 
-    private boolean renameFolder(@NonNull Context context, @NonNull DocumentFile folder, @NonNull final Content content, @NonNull ContentProviderClient client, @NonNull final String newName) {
+    private boolean renameFolder(@NonNull Context context, @NonNull DocumentFile folder, @NonNull final Content content, @NonNull FileExplorer explorer, @NonNull final String newName) {
         try {
             if (folder.renameTo(newName)) {
                 // 1- Update the book folder's URI
                 content.setStorageUri(folder.getUri().toString());
                 // 2- Update the JSON's URI
-                DocumentFile jsonFile = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_V2);
+                DocumentFile jsonFile = explorer.findFile(context, folder, Consts.JSON_FILE_NAME_V2);
                 if (jsonFile != null) content.setJsonUri(jsonFile.getUri().toString());
                 // 3- Update the image's URIs -> will be done by the next block back in startImport
                 return true;
@@ -493,16 +489,19 @@ public class ImportWorker extends Worker {
     private Content importJson(
             @NonNull final Context context,
             @NonNull DocumentFile folder,
-            @NonNull ContentProviderClient client,
+            @NonNull List<DocumentFile> bookFiles,
             @NonNull CollectionDAO dao) throws ParseException {
-        DocumentFile file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_V2);
-        if (file != null) return importJsonV2(context, file, folder, dao);
+//        DocumentFile file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_V2);
+        Optional<DocumentFile> file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_V2)).findFirst();
+        if (file.isPresent()) return importJsonV2(context, file.get(), folder, dao);
 
-        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME);
-        if (file != null) return importJsonV1(context, file, folder);
+//        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME);
+        file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME)).findFirst();
+        if (file.isPresent()) return importJsonV1(context, file.get(), folder);
 
-        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_OLD);
-        if (file != null) return importJsonLegacy(context, file, folder);
+//        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_OLD);
+        file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_OLD)).findFirst();
+        if (file.isPresent()) return importJsonLegacy(context, file.get(), folder);
 
         return null;
     }

@@ -66,7 +66,7 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ic_fav_toggle"
         android:tint="?colorOnPrimary"
-        android:tooltipText="@string/previous_book_help"
+        android:tooltipText="@string/fav_help"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_next_book_btn"
         app:layout_constraintStart_toEndOf="@id/viewer_prev_book_btn"

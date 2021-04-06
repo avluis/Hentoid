@@ -39,7 +39,6 @@ public class DatabaseMaintenance {
     public static List<Observable<Float>> getPreLaunchCleanupTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
-        result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
@@ -50,7 +49,9 @@ public class DatabaseMaintenance {
 
     public static List<Observable<Float>> getPostLaunchCleanupTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
+        result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanBookmarksOneShot));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanOrphanAttributes));
         return result;
     }
 
@@ -111,7 +112,7 @@ public class DatabaseMaintenance {
             int max = contents.size();
             float pos = 1;
             for (Content c : contents) {
-                db.deleteContent(c);
+                db.deleteContentById(c.getId());
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Clearing temporary books : done");
@@ -294,6 +295,19 @@ public class DatabaseMaintenance {
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Computing downloaded content read progress : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void cleanOrphanAttributes(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Compute missing downloaded Content size according to underlying ImageFile sizes
+            Timber.i("Cleaning orphan attributes : start");
+            db.cleanupOrphanAttributes();
+            Timber.i("Cleaning orphan attributes : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

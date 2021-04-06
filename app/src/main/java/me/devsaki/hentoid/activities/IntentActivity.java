@@ -7,6 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import me.devsaki.hentoid.core.AppStartup;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -32,6 +33,18 @@ public class IntentActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        new AppStartup().initApp(this, this::onMainProgress, this::onSecondaryProgress, this::onInitComplete);
+    }
+
+    private void onMainProgress(float f) {
+        Timber.i("Init @ IntentActivity (main) : %s%%", f);
+    }
+
+    private void onSecondaryProgress(float f) {
+        Timber.i("Init @ IntentActivity (secondary) : %s%%", f);
+    }
+
+    private void onInitComplete() {
         Intent intent = getIntent();
         String action = intent.getAction();
         Uri data = intent.getData();

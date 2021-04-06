@@ -6,17 +6,11 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.util.List;
 import java.util.Random;
 
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.AppStartup;
 import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
@@ -28,9 +22,6 @@ import timber.log.Timber;
  */
 public class SplashActivity extends BaseActivity {
 
-    private List<Observable<Float>> launchTasks;
-
-    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private ProgressBar mainPb;
     private ProgressBar secondaryPb;
 
@@ -50,35 +41,16 @@ public class SplashActivity extends BaseActivity {
 
         Timber.d("Splash / Init");
 
-        // Wait until launch tasks are completed
-        launchTasks = AppStartup.getPreLaunchTasks(this);
-        launchTasks.addAll(DatabaseMaintenance.getPreLaunchCleanupTasks(this));
-        // TODO execute post-launch tasks in another runner (background worker ?)
-        launchTasks.addAll(AppStartup.getPostLaunchTasks(this));
-        launchTasks.addAll(DatabaseMaintenance.getPostLaunchCleanupTasks(this));
-        doLaunchTask(0);
+        new AppStartup().initApp(
+                this,
+                this::displayMainProgress,
+                this::displaySecondaryProgress,
+                this::followStartupFlow
+        );
     }
 
-    private void doLaunchTask(int taskIndex) {
-        mainPb.setProgress(Math.round(100 * (taskIndex * 1f / launchTasks.size())));
-        // Continue executing launch tasks
-        if (taskIndex < launchTasks.size()) {
-            Timber.i("Splash / Launch task %s/%s", taskIndex + 1, launchTasks.size());
-            compositeDisposable.add(
-                    launchTasks.get(taskIndex)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(
-                                    this::displaySecondaryProgress,
-                                    Timber::e,
-                                    () -> doLaunchTask(taskIndex + 1)
-                            )
-            );
-        } else {
-            mainPb.setVisibility(View.GONE);
-            secondaryPb.setVisibility(View.GONE);
-            followStartupFlow();
-        }
+    private void displayMainProgress(Float progress) {
+        mainPb.setProgress(Math.round(progress * 100));
     }
 
     private void displaySecondaryProgress(Float progress) {
@@ -86,6 +58,9 @@ public class SplashActivity extends BaseActivity {
     }
 
     private void followStartupFlow() {
+        mainPb.setVisibility(View.GONE);
+        secondaryPb.setVisibility(View.GONE);
+
         Timber.d("Splash / Startup flow initiated");
         if (Preferences.isFirstRun()) { // Go to intro wizard if it's a first run
             goToActivity(new Intent(this, IntroActivity.class));
@@ -111,14 +86,6 @@ public class SplashActivity extends BaseActivity {
         } finally {
             dao.cleanup();
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (launchTasks != null) launchTasks.clear();
-        compositeDisposable.clear();
-
-        super.onDestroy();
     }
 
     /**

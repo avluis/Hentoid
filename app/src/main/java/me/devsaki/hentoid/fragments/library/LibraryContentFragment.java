@@ -74,6 +74,7 @@ import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
@@ -386,7 +387,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             activity.get().sortCommandsAutoHide(true, null);
         });
         sortReshuffleButton.setOnClickListener( v-> {
-            RandomSeedSingleton.getInstance().renewSeed();
+            RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
             viewModel.updateContentOrder();
             activity.get().sortCommandsAutoHide(true, null);
         });
@@ -403,7 +404,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 item.setChecked(true);
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
                 if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM) {
-                    RandomSeedSingleton.getInstance().renewSeed();
+                    RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
                     sortDirectionButton.setVisibility(View.GONE);
                     sortReshuffleButton.setVisibility(View.VISIBLE);
                 } else {

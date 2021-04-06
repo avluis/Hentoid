@@ -31,6 +31,8 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) : A
         val context = getApplication<Application>().applicationContext
 
         // Remove all external books from DB
+        // NB : do NOT use ContentHelper.removeContent as it would remove files too
+        // here we just want to remove DB entries without removing files
         dao.deleteAllExternalBooks()
 
         // Remove all images stored in the app's persistent folder (archive covers)

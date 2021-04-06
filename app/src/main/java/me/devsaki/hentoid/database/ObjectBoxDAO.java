@@ -270,7 +270,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void deleteContent(@NonNull final Content content) {
-        db.deleteContent(content);
+        db.deleteContentById(content.getId());
     }
 
     public List<ErrorRecord> selectErrorRecordByContentId(long contentId) {
@@ -305,6 +305,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public void deleteAllExternalBooks() {
         db.deleteContentById(db.selectAllExternalBooksQ().findIds());
+        db.cleanupOrphanAttributes();
     }
 
     @Override

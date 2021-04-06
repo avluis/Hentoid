@@ -170,7 +170,7 @@ public class QueueViewModel extends AndroidViewModel {
                 Observable.fromIterable(content)
                         .observeOn(Schedulers.io())
                         .map(c -> doRemove(c.getId()))
-                        .doOnComplete(this::saveQueue) // Done properly in the IO thread
+                        .doOnComplete(this::onRemoveComplete) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> {
@@ -201,7 +201,7 @@ public class QueueViewModel extends AndroidViewModel {
                 Observable.fromIterable(localQueue)
                         .observeOn(Schedulers.io())
                         .map(qr -> doRemove(qr.getContent().getTargetId()))
-                        .doOnComplete(this::saveQueue) // Done properly in the IO thread
+                        .doOnComplete(this::onRemoveComplete) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> {
@@ -267,7 +267,7 @@ public class QueueViewModel extends AndroidViewModel {
         contentHashToShowFirst.setValue(hash);
     }
 
-    private void saveQueue() {
+    private void onRemoveComplete() {
         if (ContentHelper.updateQueueJson(getApplication().getApplicationContext(), dao))
             Timber.i("Queue JSON successfully saved");
         else Timber.w("Queue JSON saving failed");

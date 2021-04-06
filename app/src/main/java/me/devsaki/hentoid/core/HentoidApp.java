@@ -1,10 +1,6 @@
 package me.devsaki.hentoid.core;
 
 import android.app.Application;
-import android.app.NotificationManager;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.lifecycle.Lifecycle;
@@ -13,9 +9,7 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.jakewharton.threetenabp.AndroidThreeTen;
-import com.thin.downloadmanager.util.Log;
 
 import org.threeten.bp.Instant;
 
@@ -25,9 +19,7 @@ import io.reactivex.exceptions.UndeliverableException;
 import io.reactivex.plugins.RxJavaPlugins;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
-import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
-import me.devsaki.hentoid.services.UpdateCheckService;
+import me.devsaki.hentoid.activities.SplashActivity;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
@@ -110,6 +102,9 @@ public class HentoidApp extends Application {
         boolean isAnalyticsEnabled = Preferences.isAnalyticsEnabled();
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(isAnalyticsEnabled);
 
+        // Make sure the app restarts with the splash screen in case of any unhandled issue
+        Thread.setDefaultUncaughtExceptionHandler(new EmergencyRestartHandler(this, SplashActivity.class));
+
         // Plug the lifecycle listener to handle locking
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifeCycleListener());
 
@@ -128,6 +123,11 @@ public class HentoidApp extends Application {
             }
             Timber.w(e, "Undeliverable exception received, not sure what to do");
         });
+
+        // Init user agents (must be done here as some users seem not to complete AppStartup properly)
+        Timber.i("Init user agents : start");
+        HttpHelper.initUserAgents(this);
+        Timber.i("Init user agents : done");
     }
 
     /**

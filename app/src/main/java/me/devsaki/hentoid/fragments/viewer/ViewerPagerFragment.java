@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -383,6 +384,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.informationMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.informationMicroMenu.dips());
 
         // Favourite micro menu
+        updateFavouriteButtonIcon();
+
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineItemClickListener((p, i) -> onFavouriteMicroMenuClick(p));
         binding.controlsOverlay.viewerFavouriteActionBtn.setOnClickListener(v -> onFavouriteMicroMenuOpen());
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.favouriteMicroMenu.dips());
@@ -410,7 +413,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onShuffleClick() {
         goToPage(1);
-        viewModel.onShuffleClick();
+        viewModel.toggleShuffle();
     }
 
     /**
@@ -463,15 +466,20 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Handle click on one of the "Favourite" micro menu items
      */
     private void onFavouriteMicroMenuClick(int position) {
-        if (0 == position) { // Content
-            viewModel.toggleContentFavourite(this::onFavouriteSuccess);
-            isContentFavourite = !isContentFavourite;
-        } else if (1 == position) { // Image
-            viewModel.toggleImageFavourite(this.imageIndex, this::onFavouriteSuccess);
-            isPageFavourite = !isPageFavourite;
-        }
+        if (0 == position) viewModel.toggleContentFavourite(this::onBookFavouriteSuccess);
+        else if (1 == position)
+            viewModel.toggleImageFavourite(this.imageIndex, this::onPageFavouriteSuccess);
 
         binding.controlsOverlay.favouriteMicroMenu.dips();
+    }
+
+    private void updateFavouriteButtonIcon() {
+        @DrawableRes int iconRes = R.drawable.ic_fav_empty;
+        if (isPageFavourite) {
+            if (isContentFavourite) iconRes = R.drawable.ic_fav_full;
+            else iconRes = R.drawable.ic_fav_bottom_half;
+        } else if (isContentFavourite) iconRes = R.drawable.ic_fav_top_half;
+        binding.controlsOverlay.viewerFavouriteActionBtn.setImageResource(iconRes);
     }
 
     private void hidePendingMicroMenus() {
@@ -479,9 +487,18 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.favouriteMicroMenu.dips();
     }
 
-    private void onFavouriteSuccess(Boolean newState) {
+    private void onPageFavouriteSuccess(Boolean newState) {
         // TODO display something more graphical (heart / heartbreak)
-        ToastHelper.toast(newState ? R.string.favourite_success : R.string.unfavourite_success);
+        ToastHelper.toast(newState ? R.string.page_favourite_success : R.string.page_unfavourite_success);
+        isPageFavourite = !isPageFavourite;
+        updateFavouriteButtonIcon();
+    }
+
+    private void onBookFavouriteSuccess(Boolean newState) {
+        // TODO display something more graphical (heart / heartbreak)
+        ToastHelper.toast(newState ? R.string.book_favourite_success : R.string.book_unfavourite_success);
+        isContentFavourite = !isContentFavourite;
+        updateFavouriteButtonIcon();
     }
 
     /**
@@ -498,6 +515,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             binding.viewerNoImgTxt.setVisibility(View.VISIBLE);
         } else if (imageIndex > -1 && imageIndex < images.size()) {
             isPageFavourite = images.get(imageIndex).isFavourite();
+            updateFavouriteButtonIcon();
             binding.viewerNoImgTxt.setVisibility(View.GONE);
         }
     }
@@ -567,6 +585,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
         updateNavigationUi(content);
+        updateFavouriteButtonIcon();
     }
 
     /**
@@ -622,6 +641,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             else if (Constant.VIEWER_DIRECTION_RTL == direction && imageIndex < scrollPosition)
                 isScrollLTR = false;
             adapter.setScrollLTR(isScrollLTR);
+            hidePendingMicroMenus();
         }
 
         imageIndex = scrollPosition;
@@ -636,6 +656,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             adapter.resetScaleAtPosition(scrollPosition);
 
         updatePageDisplay();
+        updateFavouriteButtonIcon();
     }
 
     /**
@@ -1007,8 +1028,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (binding != null)
+                        if (binding != null) {
                             binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
+                            binding.viewerPagenumberText.setVisibility(View.GONE);
+                        }
                         setSystemBarsVisible(true);
                     }
                 });
@@ -1022,8 +1045,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (binding != null)
+                        if (binding != null) {
                             binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
+                            onUpdatePageNumDisplay();
+                        }
                     }
                 });
         setSystemBarsVisible(false);
