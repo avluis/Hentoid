@@ -79,7 +79,7 @@ public class HitomiActivity extends BaseWebActivity {
         if (jsBlacklistCache.contains(url)) return true;
 
         // 2- Accept non-JS files
-        if (!url.toLowerCase().endsWith(".js")) return false;
+        if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
 
         // 3- Accept JS files defined in the whitelist
         for (Pattern p : whitelistUrlPattern) {
@@ -104,7 +104,7 @@ public class HitomiActivity extends BaseWebActivity {
             Timber.e(e);
         }
 
-        // Accept non-blocked grey JS files
+        // Accept non-blocked (=grey) JS files
         return false;
     }
 }
