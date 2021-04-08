@@ -402,11 +402,11 @@ public class HttpHelper {
         return result;
     }
 
-    @Nullable
+    // TODO doc
     public static String getCookies(@NonNull String url) {
         String result = CookieManager.getInstance().getCookie(url);
         if (result != null) return HttpHelper.stripParams(result);
-        else return null;
+        else return "";
     }
 
     // TODO doc
