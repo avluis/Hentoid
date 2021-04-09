@@ -386,7 +386,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             viewModel.updateContentOrder();
             activity.get().sortCommandsAutoHide(true, null);
         });
-        sortReshuffleButton.setOnClickListener( v-> {
+        sortReshuffleButton.setOnClickListener(v -> {
             RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
             viewModel.updateContentOrder();
             activity.get().sortCommandsAutoHide(true, null);
@@ -805,7 +805,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             return;
         }
 
-        if (!activity.get().collapseSearchMenu()) {
+        if (!activity.get().collapseSearchMenu() && !activity.get().closeLeftDrawer()) {
             // If none of the above and we're into a grouping, go back to the groups view
             if (!Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
                 // Load an empty list to avoid having the image of the current list appear

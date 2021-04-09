@@ -542,7 +542,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             return;
         }
 
-        if (!activity.get().collapseSearchMenu()) {
+        if (!activity.get().collapseSearchMenu() && !activity.get().closeLeftDrawer()) {
             // If none of the above and a search filter is on => clear search filter
             if (activity.get().isSearchQueryActive()) {
                 activity.get().setQuery("");
