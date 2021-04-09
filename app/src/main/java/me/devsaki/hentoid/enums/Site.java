@@ -60,6 +60,7 @@ public enum Site {
     // Default values overridden in sites.json
     private boolean useMobileAgent = true;
     private boolean useHentoidAgent = false;
+    private boolean useWebviewAgent = true;
     private boolean hasImageProcessing = false;
     private boolean hasBackupURLs = false;
     private boolean hasCoverBasedPageUpdates = false;
@@ -128,6 +129,10 @@ public enum Site {
         return useHentoidAgent;
     }
 
+    public boolean useWebviewAgent() {
+        return useWebviewAgent;
+    }
+
     public boolean hasImageProcessing() {
         return hasImageProcessing;
     }
@@ -154,9 +159,9 @@ public enum Site {
 
     public String getUserAgent() {
         if (useMobileAgent())
-            return HttpHelper.getMobileUserAgent(useHentoidAgent());
+            return HttpHelper.getMobileUserAgent(useHentoidAgent(), useWebviewAgent());
         else
-            return HttpHelper.getDesktopUserAgent(useHentoidAgent());
+            return HttpHelper.getDesktopUserAgent(useHentoidAgent(), useWebviewAgent());
     }
 
     public void updateFrom(@NonNull final JsonSiteSettings.JsonSite jsonSite) {

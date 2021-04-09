@@ -46,7 +46,7 @@ public class PururinParser extends BaseImageListParser {
         // 2- Generate image URL from  imagePath constant, gallery ID, page number and extension
 
         // 1- Get image extension from gallery data (JSON on HTML body)
-        Document doc = getOnlineDocument(url, headers, Site.PURURIN.useHentoidAgent());
+        Document doc = getOnlineDocument(url, headers, Site.PURURIN.useHentoidAgent(), Site.PURURIN.useWebviewAgent());
         if (doc != null) {
             String json = doc.select("gallery-read").attr(":gallery");
             PururinInfo info = JsonHelper.jsonToObject(json, PururinInfo.class);

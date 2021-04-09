@@ -35,7 +35,7 @@ public class ManhwaParser extends BaseImageListParser {
 
         // 1. Scan the gallery page for chapter URLs
         List<String> chapterUrls = new ArrayList<>();
-        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MANHWA.useHentoidAgent());
+        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
         if (doc != null) {
             List<Element> chapters = doc.select("[class^=wp-manga-chapter] a");
             for (Element e : chapters) {
@@ -50,7 +50,7 @@ public class ManhwaParser extends BaseImageListParser {
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {
             if (processHalted) break;
-            doc = getOnlineDocument(url, headers, Site.MANHWA.useHentoidAgent());
+            doc = getOnlineDocument(url, headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
                 result.addAll(Stream.of(images).map(i -> i.attr("src")).filterNot(String::isEmpty).toList());

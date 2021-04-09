@@ -31,7 +31,7 @@ public class TsuminoParser extends BaseImageListParser {
         ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
 
         // Fetch the reader page
-        Document doc = getOnlineDocument(content.getReaderUrl(), headers, Site.TSUMINO.useHentoidAgent());
+        Document doc = getOnlineDocument(content.getReaderUrl(), headers, Site.TSUMINO.useHentoidAgent(), Site.TSUMINO.useWebviewAgent());
         if (null != doc) {
             Elements captcha = doc.select(".g-recaptcha");
             if (captcha != null && !captcha.isEmpty())
