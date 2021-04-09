@@ -480,7 +480,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (currentPosition > 0 || -1 == topItemPosition) topItemPosition = currentPosition;
 
         outState.putInt(KEY_LAST_LIST_POSITION, topItemPosition);
-        topItemPosition = -1;
+        //topItemPosition = -1;
     }
 
     @Override
