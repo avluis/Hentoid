@@ -403,10 +403,6 @@
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
     <string name="web_url_clipboard">URL copied to clipboard</string>
     <string name="help_web_download">You\'ve reached a book page.\nTime to download with the bottom bar!</string>
-    <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
-    <string name="help_web_exh_account">Please use or create an ExHentai account</string>
-    <string name="help_web_invalid_exh_credentials">Invalid credentials, please log in again</string>
-    <string name="help_web_incomplete_exh_credentials">Incomplete credentials, please log in again. If the issue persists, consider accessing the site from another country or creating a new account.</string>
     <string name="blocked_tag">Book has a blocked tag (%s)\nDownload canceled</string>
     <string name="blocked_tag_queued">Book has a blocked tag (%s)\nQueued as an error</string>
     <string name="bookmark_current">Bookmark current page</string>
@@ -414,6 +410,12 @@
     <string name="bookmark_copy_url">Copy bookmark URL to clipboard</string>
     <string name="alert_unwanted_tags">This book is tagged with %s</string>
     <string name="bookmark_homepage">Homepage</string>
+    <!-- Web browser (site specifics) -->
+    <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
+    <string name="help_web_fakku_premium">That book can\'t be viewed with your current Fakku access.</string>
+    <string name="help_web_exh_account">Please use or create an ExHentai account</string>
+    <string name="help_web_invalid_exh_credentials">Invalid credentials, please log in again</string>
+    <string name="help_web_incomplete_exh_credentials">Incomplete credentials, please log in again. If the issue persists, consider accessing the site from another country or creating a new account.</string>
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>

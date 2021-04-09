@@ -22,16 +22,6 @@ public class TooltipHelper {
     }
 
 
-    public static void showTooltipAlways(
-            @NonNull Context context,
-            @StringRes int message,
-            @NonNull ArrowOrientation orientation,
-            @NonNull View anchor,
-            @NonNull LifecycleOwner lifecycleOwner
-    ) {
-        showTooltip(context, message, orientation, anchor, lifecycleOwner, true);
-    }
-
     public static void showTooltip(
             @NonNull Context context,
             @StringRes int message,
