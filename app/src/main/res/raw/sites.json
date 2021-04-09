@@ -27,7 +27,8 @@
       "hasBackupURLs": true
     },
     "FAKKU2": {
-      "hasImageProcessing": true
+      "hasImageProcessing": true,
+      "useWebviewAgent": false
     },
     "MANHWA": {
       "hasCoverBasedPageUpdates": true

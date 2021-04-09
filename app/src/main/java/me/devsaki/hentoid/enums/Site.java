@@ -167,6 +167,7 @@ public enum Site {
     public void updateFrom(@NonNull final JsonSiteSettings.JsonSite jsonSite) {
         if (jsonSite.useMobileAgent != null) useMobileAgent = jsonSite.useMobileAgent;
         if (jsonSite.useHentoidAgent != null) useHentoidAgent = jsonSite.useHentoidAgent;
+        if (jsonSite.useWebviewAgent != null) useWebviewAgent = jsonSite.useWebviewAgent;
         if (jsonSite.hasImageProcessing != null) hasImageProcessing = jsonSite.hasImageProcessing;
         if (jsonSite.hasBackupURLs != null) hasBackupURLs = jsonSite.hasBackupURLs;
         if (jsonSite.hasCoverBasedPageUpdates != null)
