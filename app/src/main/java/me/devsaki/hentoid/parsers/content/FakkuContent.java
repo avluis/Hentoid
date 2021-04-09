@@ -36,7 +36,7 @@ public class FakkuContent extends BaseContentParser {
     @Selector(value = "a.button")
     private List<Element> greenButton;
 
-    private final String[] BLOCKED_CONTENT_CAPTIONS = new String[]{"subscribe", "purchase", "buy", "order", "trial", "buy"};
+    private final String[] BLOCKED_CONTENT_CAPTIONS = new String[]{"subscribe", "purchase", "buy", "order", "trial", "buy", "game", "install"};
 
     @Nullable
     public Content update(@NonNull final Content content, @Nonnull String url) {
