@@ -54,7 +54,7 @@ import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
  */
 public class ExternalImportService extends IntentService {
 
-    private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_ID = 6;
     private static final Pattern ENDS_WITH_NUMBER = Pattern.compile(".*\\d+(\\.\\d+)?$");
 
     private static boolean running;

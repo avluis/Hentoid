@@ -39,7 +39,7 @@ import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
  */
 public class UpdateCheckService extends Service {
 
-    private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_ID = 7;
 
     private static final String EXTRA_IS_MANUAL_CHECK = "isManualCheck";
 

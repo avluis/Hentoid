@@ -32,7 +32,7 @@ import static java.util.Objects.requireNonNull;
  */
 public class UpdateDownloadService extends Service implements DownloadStatusListenerV1 {
 
-    private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_ID = 8;
 
     private static boolean running;
 

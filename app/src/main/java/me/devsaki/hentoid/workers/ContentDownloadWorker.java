@@ -88,6 +88,9 @@ import timber.log.Timber;
 
 public class ContentDownloadWorker extends Worker {
 
+    private static final int NOTIFICATION_ID = 3;
+    private static final int NOTIFICATION_ID_WARNING = 4;
+
     private enum QueuingResult {
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
     }
@@ -130,10 +133,10 @@ public class ContentDownloadWorker extends Worker {
     }
 
     private void initNotifications(Context context) {
-        notificationManager = new NotificationManager(context, 1);
+        notificationManager = new NotificationManager(context, NOTIFICATION_ID);
         notificationManager.cancel();
 
-        warningNotificationManager = new NotificationManager(context, 2);
+        warningNotificationManager = new NotificationManager(context, NOTIFICATION_ID_WARNING);
         warningNotificationManager.cancel();
     }
 
