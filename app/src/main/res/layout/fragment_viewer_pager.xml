@@ -80,7 +80,7 @@
 
     <include
         android:id="@+id/controls_overlay"
-        layout="@layout/include_viewer_bottom_bar"
+        layout="@layout/include_viewer_controls_overlay"
         android:clickable="true"
         android:focusable="true"
         android:visibility="invisible" />

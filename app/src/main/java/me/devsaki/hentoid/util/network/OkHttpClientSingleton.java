@@ -5,7 +5,7 @@ import android.util.SparseArray;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.core.HentoidApp;
 import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -54,7 +54,7 @@ public class OkHttpClientSingleton {
         Request.Builder builder = chain.request().newBuilder();
         // If not specified, all requests are done with the device's mobile user-agent, without the Hentoid string
         if (null == chain.request().header("User-Agent") && null == chain.request().header("user-agent"))
-            builder.header(HttpHelper.HEADER_USER_AGENT, HttpHelper.getMobileUserAgent(false));
+            builder.header(HttpHelper.HEADER_USER_AGENT, HttpHelper.getMobileUserAgent(false, true));
         return chain.proceed(builder.build());
     }
 }

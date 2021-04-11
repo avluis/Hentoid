@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
  */
 public class GroupItemBundle {
     private static final String KEY_PICTURE = "picture";
+    private static final String KEY_FAV = "favourite";
 
     private GroupItemBundle() {
         throw new UnsupportedOperationException();
@@ -24,6 +25,10 @@ public class GroupItemBundle {
 
         public void setCoverUri(String uri) {
             bundle.putString(KEY_PICTURE, uri);
+        }
+
+        public void setFavourite(boolean isFavourite) {
+            bundle.putBoolean(KEY_FAV, isFavourite);
         }
 
         public boolean isEmpty() {
@@ -46,6 +51,12 @@ public class GroupItemBundle {
         @Nullable
         public String getCoverUri() {
             if (bundle.containsKey(KEY_PICTURE)) return bundle.getString(KEY_PICTURE);
+            else return null;
+        }
+
+        @Nullable
+        public Boolean isFavourite() {
+            if (bundle.containsKey(KEY_FAV)) return bundle.getBoolean(KEY_FAV);
             else return null;
         }
     }

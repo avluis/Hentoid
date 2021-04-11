@@ -76,7 +76,7 @@ public class HttpHelper {
      */
     @Nullable
     public static Document getOnlineDocument(String url) throws IOException {
-        return getOnlineDocument(url, null, true);
+        return getOnlineDocument(url, null, true, true);
     }
 
     /**
@@ -89,8 +89,8 @@ public class HttpHelper {
      * @throws IOException in case something bad happens when trying to access the online resource
      */
     @Nullable
-    public static Document getOnlineDocument(String url, List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
-        ResponseBody resource = getOnlineResource(url, headers, true, useHentoidAgent).body();
+    public static Document getOnlineDocument(String url, List<Pair<String, String>> headers, boolean useHentoidAgent, boolean useWebviewAgent) throws IOException {
+        ResponseBody resource = getOnlineResource(url, headers, true, useHentoidAgent, useWebviewAgent).body();
         if (resource != null) {
             return Jsoup.parse(resource.string());
         }
@@ -106,8 +106,8 @@ public class HttpHelper {
      * @return HTTP response
      * @throws IOException in case something bad happens when trying to access the online resource
      */
-    public static Response getOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) throws IOException {
-        Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent);
+    public static Response getOnlineResource(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) throws IOException {
+        Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
         Request request = requestBuilder.get().build();
         return OkHttpClientSingleton.getInstance(DEFAULT_REQUEST_TIMEOUT).newCall(request).execute();
     }
@@ -126,9 +126,10 @@ public class HttpHelper {
             @NonNull String url,
             @Nullable List<Pair<String, String>> headers,
             boolean useHentoidAgent,
+            boolean useWebviewAgent,
             @NonNull final String body,
             @NonNull final String mimeType) throws IOException {
-        Request.Builder requestBuilder = buildRequest(url, headers, true, useHentoidAgent);
+        Request.Builder requestBuilder = buildRequest(url, headers, true, useHentoidAgent, useWebviewAgent);
         Request request = requestBuilder.post(RequestBody.create(body, MediaType.parse(mimeType))).build();
         return OkHttpClientSingleton.getInstance(DEFAULT_REQUEST_TIMEOUT).newCall(request).execute();
     }
@@ -142,14 +143,14 @@ public class HttpHelper {
      * @param useHentoidAgent True if the Hentoid User-Agent has to be used; false if a neutral User-Agent has to be used
      * @return HTTP request built with the given arguments
      */
-    private static Request.Builder buildRequest(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) {
+    private static Request.Builder buildRequest(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
         Request.Builder requestBuilder = new Request.Builder().url(url);
         if (headers != null)
             for (Pair<String, String> header : headers)
                 if (header.second != null)
                     requestBuilder.addHeader(header.first, header.second);
 
-        requestBuilder.header(HEADER_USER_AGENT, useMobileAgent ? getMobileUserAgent(useHentoidAgent) : getDesktopUserAgent(useHentoidAgent));
+        requestBuilder.header(HEADER_USER_AGENT, useMobileAgent ? getMobileUserAgent(useHentoidAgent, useWebviewAgent) : getDesktopUserAgent(useHentoidAgent, useWebviewAgent));
 
         return requestBuilder;
     }
@@ -402,18 +403,18 @@ public class HttpHelper {
         return result;
     }
 
-    @Nullable
+    // TODO doc
     public static String getCookies(@NonNull String url) {
         String result = CookieManager.getInstance().getCookie(url);
         if (result != null) return HttpHelper.stripParams(result);
-        else return null;
+        else return "";
     }
 
     // TODO doc
-    public static String getCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) {
+    public static String getCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
         String result = getCookies(url);
         if (result != null) return result;
-        else return peekCookies(url, headers, useMobileAgent, useHentoidAgent);
+        else return peekCookies(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
     }
 
     /**
@@ -423,13 +424,13 @@ public class HttpHelper {
      * @return Raw cookies string
      */
     public static String peekCookies(@NonNull final String url) {
-        return peekCookies(url, null, true, false);
+        return peekCookies(url, null, true, false, true);
     }
 
     // TODO doc
-    public static String peekCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent) {
+    public static String peekCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
         try {
-            Response response = getOnlineResource(url, headers, useMobileAgent, useHentoidAgent);
+            Response response = getOnlineResource(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
             List<String> cookielist = response.headers().values("Set-Cookie");
             return TextUtils.join("; ", cookielist);
         } catch (IOException e) {
@@ -465,8 +466,8 @@ public class HttpHelper {
      * @param withHentoid True if the Hentoid user-agent has to appear
      * @return The app's mobile user agent
      */
-    public static String getMobileUserAgent(boolean withHentoid) {
-        return getDefaultUserAgent(withHentoid);
+    public static String getMobileUserAgent(boolean withHentoid, boolean withWebview) {
+        return getDefaultUserAgent(withHentoid, withWebview);
     }
 
     /**
@@ -475,11 +476,12 @@ public class HttpHelper {
      * @param withHentoid True if the Hentoid user-agent has to appear
      * @return The app's desktop user agent
      */
-    public static String getDesktopUserAgent(boolean withHentoid) {
+    public static String getDesktopUserAgent(boolean withHentoid, boolean withWebview) {
         if (null == defaultChromeAgent)
             throw new RuntimeException("Call initUserAgents first to initialize them !");
         String result = String.format(DESKTOP_USER_AGENT_PATTERN, defaultChromeAgent);
         if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME;
+        if (!withWebview) result = cleanWebViewAgent(result);
         return result;
     }
 
@@ -489,12 +491,25 @@ public class HttpHelper {
      * @param withHentoid True if the Hentoid user-agent has to appear
      * @return The app's default user agent
      */
-    public static String getDefaultUserAgent(boolean withHentoid) {
+    public static String getDefaultUserAgent(boolean withHentoid, boolean withWebview) {
         if (null == defaultUserAgent)
             throw new RuntimeException("Call initUserAgents first to initialize them !");
         String result = defaultUserAgent;
         if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME;
+        if (!withWebview) result = cleanWebViewAgent(result);
         return result;
+    }
+
+    private static String cleanWebViewAgent(@NonNull final String agent) {
+        String result = agent;
+        int buildIndex = result.indexOf(" Build/");
+        if (buildIndex > -1) {
+            int closeIndex = result.indexOf(")", buildIndex);
+            int separatorIndex = result.indexOf(";", buildIndex);
+            int firstIndex = Math.min(closeIndex, separatorIndex);
+            result = result.substring(0, buildIndex) + result.substring(firstIndex);
+        }
+        return result.replace("; wv", "");
     }
 
     /**
@@ -527,9 +542,11 @@ public class HttpHelper {
             }
 
             int pathIndex = uriNoParams.lastIndexOf('/');
-            path = theUri.substring(0, pathIndex);
-            int extIndex = uriNoParams.lastIndexOf('.');
+            if (pathIndex > -1)
+                path = theUri.substring(0, pathIndex);
+            else path = theUri;
 
+            int extIndex = uriNoParams.lastIndexOf('.');
             // No extensions detected
             if (extIndex < 0 || extIndex < pathIndex) {
                 extension = "";

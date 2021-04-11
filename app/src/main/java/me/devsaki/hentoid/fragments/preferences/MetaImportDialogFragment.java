@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.fragments.preferences;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
@@ -38,7 +37,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -51,7 +49,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
-import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
@@ -63,7 +61,6 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
-import static me.devsaki.hentoid.util.ImportHelper.RQST_PICK_IMPORT_FILE;
 
 /**
  * Created by Robb on 05/2020
@@ -82,9 +79,6 @@ public class MetaImportDialogFragment extends DialogFragment {
     private CheckBox bookmarksChk;
     private View runBtn;
 
-    // Variable used during the selection process
-    private Uri selectedFileUri;
-
     // Variable used during the import process
     private CollectionDAO dao;
     private int totalItems;
@@ -97,6 +91,11 @@ public class MetaImportDialogFragment extends DialogFragment {
 
     // Disposable for RxJava
     private Disposable importDisposable = Disposables.empty();
+
+    private final ActivityResultLauncher<Integer> pickFile = registerForActivityResult(
+            new ImportHelper.PickFileContract(),
+            result -> onFilePickerResult(result.left, result.right)
+    );
 
 
     public static void invoke(@NonNull final FragmentManager fragmentManager) {
@@ -120,55 +119,30 @@ public class MetaImportDialogFragment extends DialogFragment {
         progressBar = requireViewById(rootView, R.id.import_progress_bar);
 
         selectFileBtn = requireViewById(rootView, R.id.import_select_file_btn);
-        selectFileBtn.setOnClickListener(v -> ImportHelper.openFilePicker(this));
+        selectFileBtn.setOnClickListener(v -> pickFile.launch(0));
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
-
-        @ImportHelper.UiResult int result = processPickerResult(requestCode, resultCode, data);
-        switch (result) {
-            case ImportHelper.UiResult.OK:
+    private void onFilePickerResult(Integer resultCode, Uri uri) {
+        switch (resultCode) {
+            case ImportHelper.PickerResult.OK:
                 // File selected
-                DocumentFile doc = DocumentFile.fromSingleUri(requireContext(), selectedFileUri);
+                DocumentFile doc = DocumentFile.fromSingleUri(requireContext(), uri);
                 if (null == doc) return;
                 selectFileBtn.setVisibility(View.GONE);
                 checkFile(doc);
                 break;
-            case ImportHelper.UiResult.CANCELED:
+            case ImportHelper.PickerResult.KO_CANCELED:
                 Snackbar.make(rootView, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
-            case ImportHelper.UiResult.INVALID_FOLDER:
+            case ImportHelper.PickerResult.KO_NO_URI:
                 Snackbar.make(rootView, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
-            case ImportHelper.UiResult.OTHER:
+            case ImportHelper.PickerResult.KO_OTHER:
                 Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
             default:
                 // Nothing should happen here
         }
-    }
-
-    private @ImportHelper.UiResult
-    int processPickerResult(
-            int requestCode,
-            int resultCode,
-            final Intent data) {
-        HentoidApp.LifeCycleListener.enable(); // Restores autolock on app going to background
-
-        // Return from the SAF picker
-        if (requestCode == RQST_PICK_IMPORT_FILE && resultCode == Activity.RESULT_OK) {
-            // Get Uri from Storage Access Framework
-            Uri fileUri = data.getData();
-            if (fileUri != null) {
-                selectedFileUri = fileUri;
-                return ImportHelper.UiResult.OK;
-            } else return ImportHelper.UiResult.INVALID_FOLDER;
-        } else if (resultCode == Activity.RESULT_CANCELED) {
-            return ImportHelper.UiResult.CANCELED;
-        } else return ImportHelper.UiResult.OTHER;
     }
 
     private void checkFile(@NonNull DocumentFile jsonFile) {

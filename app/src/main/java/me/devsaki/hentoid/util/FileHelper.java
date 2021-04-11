@@ -3,7 +3,6 @@ package me.devsaki.hentoid.util;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
-import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -45,6 +44,8 @@ import java.util.Locale;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
+
+import static me.devsaki.hentoid.util.FileExplorer.createNameFilterEquals;
 
 /**
  * Created by avluis on 08/05/2016.
@@ -361,6 +362,109 @@ public class FileHelper {
         return 0;
     }
 
+
+    /**
+     * Find the folder inside the given parent folder (non recursive) that has the given name
+     *
+     * @param context       Context to use
+     * @param parent        Parent folder of the folder to find
+     * @param subfolderName Name of the folder to find
+     * @return Folder inside the given parent folder (non recursive) that has the given name; null if not found
+     */
+    @Nullable
+    public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
+        List<DocumentFile> result = listDocumentFiles(context, parent, subfolderName, true, false);
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
+    }
+
+    /**
+     * Find the file inside the given parent folder (non recursive) that has the given name
+     *
+     * @param context  Context to use
+     * @param parent   Parent folder of the file to find
+     * @param fileName Name of the file to find
+     * @return File inside the given parent folder (non recursive) that has the given name; null if not found
+     */
+    @Nullable
+    public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String fileName) {
+        List<DocumentFile> result = listDocumentFiles(context, parent, fileName, false, true);
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
+    }
+
+    /**
+     * List all subfolders inside the given parent folder (non recursive)
+     *
+     * @param context Context to use
+     * @param parent  Parent folder to list subfolders from
+     * @return Subfolders of the given parent folder
+     */
+    // see https://stackoverflow.com/questions/5084896/using-contentproviderclient-vs-contentresolver-to-access-content-provider
+    public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
+        return listFoldersFilter(context, parent, null);
+    }
+
+    /**
+     * List all subfolders inside the given parent folder (non recursive) that match the given name filter
+     *
+     * @param context Context to use
+     * @param parent  Parent folder to list subfolders from
+     * @param filter  Name filter to use to filter the folders to list
+     * @return Subfolders of the given parent folder matching the given name filter
+     */
+    public static List<DocumentFile> listFoldersFilter(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
+        List<DocumentFile> result = Collections.emptyList();
+        try (FileExplorer fe = new FileExplorer(context, parent)) {
+            result = fe.listDocumentFiles(context, parent, filter, true, false);
+        } catch (IOException e) {
+            Timber.w(e);
+        }
+        return result;
+    }
+
+    /**
+     * List all files (non-folders) inside the given parent folder (non recursive) that match the given name filter
+     *
+     * @param context Context to use
+     * @param parent  Parent folder to list files from
+     * @param filter  Name filter to use to filter the files to list
+     * @return Files of the given parent folder matching the given name filter
+     */
+    public static List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
+        List<DocumentFile> result = Collections.emptyList();
+        try (FileExplorer fe = new FileExplorer(context, parent)) {
+            result = fe.listDocumentFiles(context, parent, filter, false, true);
+        } catch (IOException e) {
+            Timber.w(e);
+        }
+        return result;
+    }
+
+    /**
+     * List all elements inside the given parent folder (non recursive) that match the given criteria
+     *
+     * @param context     Context to use
+     * @param parent      Parent folder to list elements from
+     * @param nameFilter  Name filter to use to filter the elements to list
+     * @param listFolders True if the listed elements have to include folders
+     * @param listFiles   True if the listed elements have to include files (non-folders)
+     * @return Elements of the given parent folder matching the given criteria
+     */
+    private static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
+                                                        @NonNull final DocumentFile parent,
+                                                        final String nameFilter,
+                                                        boolean listFolders,
+                                                        boolean listFiles) {
+        List<DocumentFile> result = Collections.emptyList();
+        try (FileExplorer fe = new FileExplorer(context, parent)) {
+            result = fe.listDocumentFiles(context, parent, createNameFilterEquals(nameFilter), listFolders, listFiles);
+        } catch (IOException e) {
+            Timber.w(e);
+        }
+        return result;
+    }
+
     /**
      * Open the given file using the device's app(s) of choice
      *
@@ -411,7 +515,7 @@ public class FileHelper {
                     try {
                         openFileWithIntent(context, uri, "resource/folder");
                     } catch (ActivityNotFoundException e2) {
-                        ToastUtil.toast(R.string.select_file_manager);
+                        ToastHelper.toast(R.string.select_file_manager);
                         openFileWithIntent(context, uri, "*/*");
                         // TODO if it also crashes after this call, tell the user to get DocumentsUI.apk ? (see #670)
                     }
@@ -420,7 +524,7 @@ public class FileHelper {
                 openFileWithIntent(context, uri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(fileName)));
         } catch (ActivityNotFoundException e) {
             Timber.e(e, "No activity found to open %s", uri.toString());
-            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
+            ToastHelper.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
 
@@ -536,205 +640,16 @@ public class FileHelper {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("text/*");
         sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
-        sharingIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+        if (fileUri.toString().startsWith("file")) {
+            Uri legitUri = FileProvider.getUriForFile(
+                    context,
+                    AUTHORITY,
+                    new File(fileUri.toString()));
+            sharingIntent.putExtra(Intent.EXTRA_STREAM, legitUri);
+        } else {
+            sharingIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+        }
         context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
-    }
-
-    /**
-     * List all subfolders inside the given parent folder (non recursive)
-     *
-     * @param context Context to use
-     * @param parent  Parent folder to list subfolders from
-     * @return Subfolders of the given parent folder
-     */
-    // see https://stackoverflow.com/questions/5084896/using-contentproviderclient-vs-contentresolver-to-access-content-provider
-    public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
-        return listFoldersFilter(context, parent, null);
-    }
-
-    /**
-     * List all subfolders inside the given parent folder (non recursive)
-     *
-     * @param context Context to use
-     * @param parent  Parent folder to list subfolders from
-     * @param client  ContentProviderClient to use
-     * @return Subfolders of the given parent folder
-     */
-    public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client) {
-        return FileUtil.listDocumentFiles(context, parent, client, null, true, false);
-    }
-
-    /**
-     * List all subfolders inside the given parent folder (non recursive) that match the given name filter
-     *
-     * @param context Context to use
-     * @param parent  Parent folder to list subfolders from
-     * @param filter  Name filter to use to filter the folders to list
-     * @return Subfolders of the given parent folder matching the given name filter
-     */
-    public static List<DocumentFile> listFoldersFilter(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
-        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
-        if (null == client) return Collections.emptyList();
-        try {
-            return FileUtil.listDocumentFiles(context, parent, client, filter, true, false);
-        } finally {
-            // ContentProviderClient.close only available on API level 24+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                client.close();
-            else
-                client.release();
-        }
-    }
-
-    /**
-     * List all files (non-folders) inside the given parent folder (non recursive) that match the given name filter
-     *
-     * @param context Context to use
-     * @param parent  Parent folder to list files from
-     * @param client  ContentProviderClient to use
-     * @param filter  Name filter to use to filter the files to list
-     * @return Files of the given parent folder matching the given name filter
-     */
-    public static List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
-        return FileUtil.listDocumentFiles(context, parent, client, filter, false, true);
-    }
-
-    /**
-     * Count all files (non-folders) inside the given parent folder (non recursive) that match the given name filter
-     *
-     * @param parent Parent folder to count files from
-     * @param client ContentProviderClient to use
-     * @param filter Name filter to use to filter the files to count
-     * @return Number of files inside the given parent folder matching the given name filter
-     */
-    public static int countFiles(@NonNull DocumentFile parent, @NonNull ContentProviderClient client, final FileHelper.NameFilter filter) {
-        return FileUtil.countDocumentFiles(parent, client, filter, false, true);
-    }
-
-    /**
-     * List all files (non-folders) inside the given parent folder (non recursive) that match the given name filter
-     *
-     * @param context Context to use
-     * @param parent  Parent folder to list files from
-     * @param filter  Name filter to use to filter the files to list
-     * @return Files of the given parent folder matching the given name filter
-     */
-    public static List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
-        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
-        if (null == client) return Collections.emptyList();
-        try {
-            return FileUtil.listDocumentFiles(context, parent, client, filter, false, true);
-        } finally {
-            // ContentProviderClient.close only available on API level 24+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                client.close();
-            else
-                client.release();
-        }
-    }
-
-    /**
-     * Find the folder inside the given parent folder (non recursive) that has the given name
-     *
-     * @param context       Context to use
-     * @param parent        Parent folder of the folder to find
-     * @param client        ContentProviderClient to use
-     * @param subfolderName Name of the folder to find
-     * @return Folder inside the given parent folder (non recursive) that has the given name; null if not found
-     */
-    @Nullable
-    public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, @NonNull String subfolderName) {
-        List<DocumentFile> result = FileUtil.listDocumentFiles(context, parent, client, FileHelper.createNameFilterEquals(subfolderName), true, false);
-        if (!result.isEmpty()) return result.get(0);
-        else return null;
-    }
-
-    /**
-     * Find the file inside the given parent folder (non recursive) that has the given name
-     *
-     * @param context  Context to use
-     * @param parent   Parent folder of the file to find
-     * @param client   ContentProviderClient to use
-     * @param fileName Name of the file to find
-     * @return File inside the given parent folder (non recursive) that has the given name; null if not found
-     */
-    @Nullable
-    public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull ContentProviderClient client, @NonNull String fileName) {
-        List<DocumentFile> result = FileUtil.listDocumentFiles(context, parent, client, FileHelper.createNameFilterEquals(fileName), false, true);
-        if (!result.isEmpty()) return result.get(0);
-        else return null;
-    }
-
-    /**
-     * Find the folder inside the given parent folder (non recursive) that has the given name
-     *
-     * @param context       Context to use
-     * @param parent        Parent folder of the folder to find
-     * @param subfolderName Name of the folder to find
-     * @return Folder inside the given parent folder (non recursive) that has the given name; null if not found
-     */
-    @Nullable
-    public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
-        List<DocumentFile> result = listDocumentFiles(context, parent, subfolderName, true, false);
-        if (!result.isEmpty()) return result.get(0);
-        else return null;
-    }
-
-    /**
-     * Find the file inside the given parent folder (non recursive) that has the given name
-     *
-     * @param context  Context to use
-     * @param parent   Parent folder of the file to find
-     * @param fileName Name of the file to find
-     * @return File inside the given parent folder (non recursive) that has the given name; null if not found
-     */
-    @Nullable
-    public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String fileName) {
-        List<DocumentFile> result = listDocumentFiles(context, parent, fileName, false, true);
-        if (!result.isEmpty()) return result.get(0);
-        else return null;
-    }
-
-    /**
-     * List all folders _and_ files inside the given parent folder (non recursive)
-     *
-     * @param context Context to use
-     * @param parent  Parent folder to list elements from
-     * @param client  ContentProviderClient to use
-     * @return Folders and files of the given parent folder
-     */
-    public static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
-                                                       @NonNull final DocumentFile parent,
-                                                       @NonNull ContentProviderClient client) {
-        return FileUtil.listDocumentFiles(context, parent, client, null, true, true);
-    }
-
-    /**
-     * List all elements inside the given parent folder (non recursive) that match the given criteria
-     *
-     * @param context     Context to use
-     * @param parent      Parent folder to list elements from
-     * @param nameFilter  Name filter to use to filter the elements to list
-     * @param listFolders True if the listed elements have to include folders
-     * @param listFiles   True if the listed elements have to include files (non-folders)
-     * @return Elements of the given parent folder matching the given criteria
-     */
-    private static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
-                                                        @NonNull final DocumentFile parent,
-                                                        final String nameFilter,
-                                                        boolean listFolders,
-                                                        boolean listFiles) {
-        ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
-        if (null == client) return Collections.emptyList();
-        try {
-            return FileUtil.listDocumentFiles(context, parent, client, FileHelper.createNameFilterEquals(nameFilter), listFolders, listFiles);
-        } finally {
-            // ContentProviderClient.close only available on API level 24+
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-                client.close();
-            else
-                client.release();
-        }
     }
 
     /**
@@ -998,15 +913,6 @@ public class FileHelper {
         }
     }
 
-    /**
-     * Create a NameFilter that filters all names equal'ing the given string
-     *
-     * @param name String to be used for filtering names
-     * @return NameFilter that filters all names equal'ing the given string
-     */
-    private static NameFilter createNameFilterEquals(@NonNull final String name) {
-        return displayName -> displayName.equalsIgnoreCase(name);
-    }
 
     /**
      * Return the content of the given file as an UTF-8 string
@@ -1014,13 +920,22 @@ public class FileHelper {
      *
      * @param context Context to be used
      * @param f       File to read from
-     * @return Content of the given file as a string
+     * @return Content of the given file as a string; empty string if an error occurred
      */
     static String readFileAsString(@NonNull final Context context, @NonNull DocumentFile f) {
+        try {
+            return readStreamAsString(FileHelper.getInputStream(context, f));
+        } catch (IOException | IllegalArgumentException e) {
+            Timber.e(e, "Error while reading %s", f.getUri().toString());
+        }
+        return "";
+    }
+
+    public static String readStreamAsString(@NonNull final InputStream str) throws IOException, IllegalArgumentException {
         StringBuilder result = new StringBuilder();
         String sCurrentLine;
         boolean isFirst = true;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(FileHelper.getInputStream(context, f)))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(str))) {
             while ((sCurrentLine = br.readLine()) != null) {
                 if (isFirst) {
                     // Strip UTF-8 BOMs if any
@@ -1030,8 +945,6 @@ public class FileHelper {
                 }
                 result.append(sCurrentLine);
             }
-        } catch (IOException | IllegalArgumentException e) {
-            Timber.e(e, "Error while reading %s", f.getUri().toString());
         }
         return result.toString();
     }

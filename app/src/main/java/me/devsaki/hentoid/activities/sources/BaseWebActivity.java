@@ -86,13 +86,13 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -117,20 +117,24 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.PermissionUtil;
+import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
-import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.ToastHelper;
+import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
+import me.devsaki.hentoid.widget.AddQueueMenu;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.PermissionUtil.RQST_STORAGE_PERMISSION;
+import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
 import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
 
@@ -457,8 +461,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // Validate permissions
     // TODO find something better than that
     private void checkPermissions() {
-        if (!PermissionUtil.requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
-            ToastUtil.toast("Storage permission denied - cannot use the downloader");
+        if (!PermissionHelper.requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
+            ToastHelper.toast("Storage permission denied - cannot use the downloader");
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -797,7 +801,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (null == currentContent) return;
 
         if (!isDownloadPlus && StatusContent.DOWNLOADED == currentContent.getStatus()) {
-            ToastUtil.toast(R.string.already_downloaded);
+            ToastHelper.toast(R.string.already_downloaded);
             if (!quickDownload) changeActionMode(ActionMode.READ);
             return;
         }
@@ -811,23 +815,31 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         List<String> blockedTags = ContentHelper.getBlockedTags(currentContent);
         if (!blockedTags.isEmpty()) {
             if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
-                ToastUtil.toast(getResources().getString(R.string.blocked_tag, blockedTags.get(0)));
+                ToastHelper.toast(getResources().getString(R.string.blocked_tag, blockedTags.get(0)));
             } else { // Insert directly as an error
                 List<ErrorRecord> errors = new ArrayList<>();
                 errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tags : " + TextUtils.join(", ", blockedTags), Instant.now()));
                 currentContent.setErrorLog(errors);
                 currentContent.setStatus(StatusContent.ERROR);
                 objectBoxDAO.insertContent(currentContent);
-                ToastUtil.toast(getResources().getString(R.string.blocked_tag_queued, blockedTags.get(0)));
+                ToastHelper.toast(getResources().getString(R.string.blocked_tag_queued, blockedTags.get(0)));
                 changeActionMode(ActionMode.VIEW_QUEUE);
             }
             return;
         }
 
+        // No reason to block or ignore -> actually add to the queue
+        if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK)
+            AddQueueMenu.show(this, webView, this, (position, item) -> addToQueue((0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM));
+        else
+            addToQueue(Preferences.getQueueNewDownloadPosition());
+    }
+
+    private void addToQueue(int addMode) {
         animatedCheck.setVisibility(View.VISIBLE);
         ((Animatable) animatedCheck.getDrawable()).start();
         new Handler(getMainLooper()).postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
-        objectBoxDAO.addContentToQueue(currentContent, null);
+        objectBoxDAO.addContentToQueue(currentContent, null, addMode, ContentQueueManager.getInstance().isQueueActive());
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
         changeActionMode(ActionMode.VIEW_QUEUE);
     }
@@ -927,13 +939,13 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (quickDownload) {
             if (ContentStatus.UNKNOWN == status) processDownload(true, false);
             else if (ContentStatus.IN_COLLECTION == status)
-                ToastUtil.toast(R.string.already_downloaded);
-            else if (ContentStatus.IN_QUEUE == status) ToastUtil.toast(R.string.already_queued);
+                ToastHelper.toast(R.string.already_downloaded);
+            else if (ContentStatus.IN_QUEUE == status) ToastHelper.toast(R.string.already_queued);
         }
     }
 
     public void onResultFailed() {
-        runOnUiThread(() -> ToastUtil.toast(R.string.web_unparsable));
+        runOnUiThread(() -> ToastHelper.toast(R.string.web_unparsable));
     }
 
     private void searchForMoreImages(@NonNull final Content storedContent) {
@@ -1025,7 +1037,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     void showTooltip(@StringRes int resource, boolean always) {
-        TooltipUtil.showTooltip(this, resource, ArrowOrientation.BOTTOM, bottomToolbar, this, always);
+        TooltipHelper.showTooltip(this, resource, ArrowOrientation.BOTTOM, bottomToolbar, this, always);
     }
 
     /**
@@ -1222,7 +1234,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                             FileHelper.openFile(view.getContext(), uri);
                         }, e -> {
                             disposable.dispose();
-                            ToastUtil.toast("Downloading torrent failed : " + e.getMessage());
+                            ToastHelper.toast("Downloading torrent failed : " + e.getMessage());
                             Timber.w(e);
                         });
             }
@@ -1246,7 +1258,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             List<Pair<String, String>> requestHeadersList;
             requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
 
-            Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
+            Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent(), getStartSite().useWebviewAgent());
             ResponseBody body = onlineFileResponse.body();
             if (null == body)
                 throw new IOException("Empty response from server");
@@ -1387,7 +1399,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
             try {
                 // Query resource here, using OkHttp
-                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
+                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent(), getStartSite().useWebviewAgent());
 
                 // Scram if the response is a redirection or an error
                 if (response.code() >= 300) return null;

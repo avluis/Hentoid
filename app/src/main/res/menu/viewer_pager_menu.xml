@@ -12,13 +12,6 @@
         android:tooltipText="@string/viewer_slideshow_help"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_page_menu"
-        android:enabled="true"
-        android:icon="@drawable/ic_image"
-        android:title="@string/viewer_page_menu"
-        android:tooltipText="@string/viewer_page_menu_help"
-        app:showAsAction="always" />
-    <item
         android:id="@+id/action_delete_book"
         android:enabled="true"
         android:icon="@drawable/ic_action_delete_forever"

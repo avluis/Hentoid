@@ -28,8 +28,16 @@ class PrefsActivity : BaseActivity() {
         supportFragmentManager.commit {
             replace(android.R.id.content, fragment)
         }
+    }
 
+    override fun onStart() {
+        super.onStart()
         EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        EventBus.getDefault().unregister(this)
+        super.onStop()
     }
 
     private fun isViewerPrefs(): Boolean {
@@ -44,11 +52,6 @@ class PrefsActivity : BaseActivity() {
             val parser = PrefsActivityBundle.Parser(intent.extras!!)
             parser.isDownloaderPrefs
         } else false
-    }
-
-    override fun onDestroy() {
-        EventBus.getDefault().unregister(this)
-        super.onDestroy()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

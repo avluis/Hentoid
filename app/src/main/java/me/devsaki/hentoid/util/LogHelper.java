@@ -20,9 +20,9 @@ import javax.annotation.Nonnull;
 import me.devsaki.hentoid.BuildConfig;
 import timber.log.Timber;
 
-public class LogUtil {
+public class LogHelper {
 
-    private LogUtil() {
+    private LogHelper() {
         throw new IllegalStateException("Utility class");
     }
 

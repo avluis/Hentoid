@@ -57,3 +57,4 @@
     java.lang.Object readResolve();
 }
 -keep class net.sf.sevenzipjbinding.** { *; }
+#-keep class com.skydoves.submarine.SubmarineView { *; }

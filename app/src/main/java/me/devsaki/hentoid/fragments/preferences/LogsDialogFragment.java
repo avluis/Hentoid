@@ -125,6 +125,7 @@ public class LogsDialogFragment extends DialogFragment {
                 .setTextTypeface(Typeface.DEFAULT)
                 .setMenuColor(ContextCompat.getColor(requireContext(), R.color.dark_gray))
                 .setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
+                .setAutoDismiss(true)
                 .build();
 
         powerMenu.setOnMenuItemClickListener((p, i) -> {
@@ -133,7 +134,6 @@ public class LogsDialogFragment extends DialogFragment {
             } else {
                 FileHelper.shareFile(requireContext(), document.getUri(), item.getText());
             }
-            powerMenu.dismiss();
         });
 
         powerMenu.setIconColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87));

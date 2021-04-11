@@ -11,14 +11,14 @@ import androidx.lifecycle.ViewModelProvider;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.fragments.viewer.ViewerGalleryFragment;
 import me.devsaki.hentoid.fragments.viewer.ViewerPagerFragment;
-import me.devsaki.hentoid.util.PermissionUtil;
+import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.VolumeKeyListener;
 
-import static me.devsaki.hentoid.util.PermissionUtil.RQST_STORAGE_PERMISSION;
+import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
 
 
 public class ImageViewerActivity extends BaseActivity {
@@ -45,14 +45,16 @@ public class ImageViewerActivity extends BaseActivity {
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(ImageViewerViewModel.class);
 
+        viewModel.observeDbImages(this);
+
         if (null == viewModel.getContent().getValue()) { // ViewModel hasn't loaded anything yet (fresh start)
             Bundle searchParams = parser.getSearchParams();
             if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
             else viewModel.loadFromContent(contentId);
         }
 
-        if (!PermissionUtil.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION)) {
-            ToastUtil.toast("Storage permission denied - cannot open the viewer");
+        if (!PermissionHelper.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION)) {
+            ToastHelper.toast("Storage permission denied - cannot open the viewer");
             return;
         }
 

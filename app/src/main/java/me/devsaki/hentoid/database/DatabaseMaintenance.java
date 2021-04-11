@@ -32,23 +32,26 @@ public class DatabaseMaintenance {
         throw new IllegalStateException("Utility class");
     }
 
-    // TODO separate pre-processing actions that _need_ to happen before the library screen is displayed
-    // versus general cleanup actions that may be processed in the background as the app starts (e.g. cleanBookmarksOneShot)
-
     /**
      * Clean up and upgrade database
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup
      */
-    public static List<Observable<Float>> getCleanupTasks(@NonNull final Context context) {
+    public static List<Observable<Float>> getPreLaunchCleanupTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
-        result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
-        result.add(createObservableFrom(context, DatabaseMaintenance::cleanBookmarksOneShot));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
         result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeReadingProgress));
+        return result;
+    }
+
+    public static List<Observable<Float>> getPostLaunchCleanupTasks(@NonNull final Context context) {
+        List<Observable<Float>> result = new ArrayList<>();
+        result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanBookmarksOneShot));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanOrphanAttributes));
         return result;
     }
 
@@ -109,7 +112,7 @@ public class DatabaseMaintenance {
             int max = contents.size();
             float pos = 1;
             for (Content c : contents) {
-                db.deleteContent(c);
+                db.deleteContentById(c.getId());
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Clearing temporary books : done");
@@ -292,6 +295,19 @@ public class DatabaseMaintenance {
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Computing downloaded content read progress : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void cleanOrphanAttributes(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Compute missing downloaded Content size according to underlying ImageFile sizes
+            Timber.i("Cleaning orphan attributes : start");
+            db.cleanupOrphanAttributes();
+            Timber.i("Cleaning orphan attributes : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

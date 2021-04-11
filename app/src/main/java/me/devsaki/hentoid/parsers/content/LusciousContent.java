@@ -18,6 +18,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.LusciousBookMetadata;
 import me.devsaki.hentoid.json.sources.LusciousQueryParam;
 import me.devsaki.hentoid.retrofit.sources.LusciousServer;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
@@ -42,6 +43,8 @@ public class LusciousContent extends BaseContentParser {
                 Timber.w(e);
                 return null;
             }
+        } else if (Helper.isNumeric(url)) { // Book ID is directly provided
+            bookId = url;
         } else { // Triggered by the loading of the page itself
             // ID is the last numeric part of the URL
             // e.g. /albums/lewd_title_ch_1_3_42116/ -> 42116 is the ID

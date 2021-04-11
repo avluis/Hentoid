@@ -30,7 +30,7 @@ import timber.log.Timber;
  */
 public class ExHentaiActivity extends BaseWebActivity {
 
-    private static final String[] GALLERY_FILTER = {"exhentai.org/g/[0-9]+/[A-Za-z0-9\\-_]+"};
+    private static final String[] GALLERY_FILTER = {"exhentai.org/g/[0-9]+/[\\w\\-]+"};
 
     Site getStartSite() {
         return Site.EXHENTAI;

@@ -115,7 +115,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.EXTERNAL_LIBRARY -> {
                     if (ExternalImportService.isRunning()) {
-                        ToastUtil.toast(getString(R.string.pref_import_running))
+                        ToastHelper.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
                     }
@@ -132,7 +132,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                                 dialog1.dismiss()
                                 Preferences.setExternalLibraryUri("")
                                 viewModel.removeAllExternalContent()
-                                ToastUtil.toast(getString(R.string.prefs_external_library_detached))
+                                ToastHelper.toast(getString(R.string.prefs_external_library_detached))
                             }
                             .setNegativeButton(R.string.no
                             ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
@@ -142,7 +142,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.REFRESH_LIBRARY -> {
                     if (ImportWorker.isRunning()) {
-                        ToastUtil.toast(getString(R.string.pref_import_running))
+                        ToastHelper.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
                     }
@@ -162,12 +162,12 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.VIEWER_RENDERING -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        ToastUtil.toast(getString(R.string.pref_viewer_rendering_no_android5))
+                        ToastHelper.toast(getString(R.string.pref_viewer_rendering_no_android5))
                     true
                 }
                 Preferences.Key.SETTINGS_FOLDER -> {
                     if (ImportWorker.isRunning()) {
-                        ToastUtil.toast(getString(R.string.pref_import_running))
+                        ToastHelper.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)
                     }
@@ -223,7 +223,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     */
 
     private fun onPrefRequiringRestartChanged() {
-        ToastUtil.toast(R.string.restart_needed)
+        ToastHelper.toast(R.string.restart_needed)
     }
 
     private fun onHentoidFolderChanged() {

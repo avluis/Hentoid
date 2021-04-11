@@ -14,7 +14,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
-import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
 
 import static androidx.core.view.ViewCompat.requireViewById;

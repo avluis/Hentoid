@@ -31,8 +31,10 @@ import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
@@ -55,7 +57,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -226,11 +227,7 @@ public class ObjectBoxDB {
         }
     }
 
-    void deleteContent(Content content) {
-        deleteContentById(content.getId());
-    }
-
-    private void deleteContentById(long contentId) {
+    void deleteContentById(long contentId) {
         deleteContentById(new long[]{contentId});
     }
 
@@ -254,26 +251,19 @@ public class ObjectBoxDB {
             if (c != null) {
                 store.runInTx(() -> {
                     if (c.getImageFiles() != null) {
-                        for (ImageFile i : c.getImageFiles())
-                            imageFileBox.remove(i);   // Delete imageFiles
+                        imageFileBox.remove(c.getImageFiles());
                         c.getImageFiles().clear();                                      // Clear links to all imageFiles
                     }
 
                     if (c.getErrorLog() != null) {
-                        for (ErrorRecord e : c.getErrorLog())
-                            errorBox.remove(e);   // Delete error records
+                        errorBox.remove(c.getErrorLog());
                         c.getErrorLog().clear();                                    // Clear links to all errorRecords
                     }
 
-                    // Delete attribute when current content is the only content left on the attribute
-                    for (Attribute a : c.getAttributes())
-                        if (1 == a.contents.size()) {
-                            for (AttributeLocation l : a.getLocations())
-                                locationBox.remove(l); // Delete all locations
-                            a.getLocations().clear();                                           // Clear location links
-                            attributeBox.remove(a);                                             // Delete the attribute itself
-                        }
-                    c.getAttributes().clear();                                      // Clear links to all attributes
+                    // Clear links to all attributes
+                    // NB : Properly removing all attributes here would be too costly
+                    // It's done by calling cleanupOrphanAttributes
+                    c.getAttributes().clear();
 
                     // Delete corresponding groupItem
                     List<GroupItem> groupItems = groupItemBox.query().equal(GroupItem_.contentId, id).build().find();
@@ -288,6 +278,24 @@ public class ObjectBoxDB {
 
                     contentBox.remove(c);                                           // Remove the content itself
                 });
+            }
+        }
+    }
+
+    /**
+     * Cleanup all Attributes that don't have any backlink among content
+     */
+    public void cleanupOrphanAttributes() {
+        Box<Attribute> attributeBox = store.boxFor(Attribute.class);
+        Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
+
+        List<Attribute> attrs = attributeBox.getAll();
+        for (Attribute attr : attrs) {
+            if (attr.contents.isEmpty()) {
+                Timber.i(">> Found empty attr : %s", attr.getName());
+                locationBox.remove(attr.getLocations());
+                attr.getLocations().clear();                                           // Clear location links
+                attributeBox.remove(attr);                                             // Delete the attribute itself
             }
         }
     }
@@ -315,8 +323,8 @@ public class ObjectBoxDB {
         return store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.rank).max();
     }
 
-    void insertQueue(long id, int order) {
-        store.boxFor(QueueRecord.class).put(new QueueRecord(id, order));
+    void insertQueue(long contentId, int order) {
+        store.boxFor(QueueRecord.class).put(new QueueRecord(contentId, order));
     }
 
     void updateQueue(@NonNull final List<QueueRecord> queue) {
@@ -671,7 +679,7 @@ public class ObjectBoxDB {
         LazyList<Content> lazyList = query.findLazy();
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < lazyList.size(); i++) order.add(i);
-        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed()));
+        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
 
         List<Long> result = new ArrayList<>();
         for (int i = 0; i < order.size(); i++) {
@@ -979,6 +987,7 @@ public class ObjectBoxDB {
         if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.getCode());
         List<ImageFile> imgs = query.equal(ImageFile_.contentId, contentId).build().find();
 
+
         if (imgs.isEmpty()) return;
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setStatus(updateTo);
@@ -1185,12 +1194,20 @@ public class ObjectBoxDB {
         return (int) store.boxFor(GroupItem.class).query().equal(GroupItem_.groupId, groupid).build().property(GroupItem_.order).max();
     }
 
-    Query<Group> selectGroupsQ(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility) {
+    Query<Group> selectGroupsQ(
+            int grouping,
+            @Nullable String query,
+            int orderField,
+            boolean orderDesc,
+            int artistGroupVisibility,
+            boolean groupFavouritesOnly) {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
         if (query != null) qb.contains(Group_.name, query);
 
         if (grouping == Grouping.ARTIST.getId() && artistGroupVisibility != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS)
             qb.equal(Group_.subtype, artistGroupVisibility);
+
+        if (groupFavouritesOnly) qb.equal(Group_.favourite, true);
 
         Property<Group> property = Group_.name;
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.getId())

@@ -31,7 +31,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
 import me.devsaki.hentoid.database.domains.Content;
@@ -135,10 +135,11 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
     }
 
 
-    static class GroupViewHolder extends FastAdapter.ViewHolder<GroupDisplayItem> {
+    public static class GroupViewHolder extends FastAdapter.ViewHolder<GroupDisplayItem> {
 
         private final View baseLayout;
         private final TextView title;
+        private final ImageView ivFavourite;
         private ImageView ivCover;
         private View ivReorder;
 
@@ -148,6 +149,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             super(view);
             baseLayout = requireViewById(view, R.id.item);
             title = requireViewById(view, R.id.tvTitle);
+            ivFavourite = requireViewById(view, R.id.ivFavourite);
 
             if (viewType == ViewType.LIBRARY_EDIT) {
                 ivReorder = requireViewById(view, R.id.ivReorder);
@@ -167,6 +169,9 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) coverUri = stringValue;
+
+                Boolean boolValue = bundleParser.isFavourite();
+                if (boolValue != null) item.group.setFavourite(boolValue);
             }
 
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
@@ -191,6 +196,12 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             }
             List<GroupItem> items = item.group.items;
             title.setText(String.format("%s%s", item.group.name, (null == items || items.isEmpty()) ? "" : " (" + items.size() + ")"));
+
+            if (item.group.isFavourite()) {
+                ivFavourite.setImageResource(R.drawable.ic_fav_full);
+            } else {
+                ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+            }
         }
 
         private void attachCover(@NonNull ImageFile cover) {
@@ -212,6 +223,10 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
                         .load(Uri.parse(thumbLocation))
                         .apply(glideRequestOptions)
                         .into(ivCover);
+        }
+
+        public View getFavouriteButton() {
+            return ivFavourite;
         }
 
         @Override

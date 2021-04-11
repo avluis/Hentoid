@@ -59,7 +59,7 @@ public class HitomiParser implements ImageListParser {
         // Get the gallery JSON
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, pageUrl));
-        Response response = HttpHelper.getOnlineResource(galleryJsonUrl, headers, Site.HITOMI.useMobileAgent(), Site.HITOMI.useHentoidAgent());
+        Response response = HttpHelper.getOnlineResource(galleryJsonUrl, headers, Site.HITOMI.useMobileAgent(), Site.HITOMI.useHentoidAgent(), Site.HITOMI.useWebviewAgent());
 
         ResponseBody body = response.body();
         if (null == body) throw new IOException("Empty body");

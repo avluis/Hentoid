@@ -15,22 +15,12 @@ import com.skydoves.balloon.BalloonAnimation;
 
 import me.devsaki.hentoid.R;
 
-public class TooltipUtil {
+public class TooltipHelper {
 
-    private TooltipUtil() {
+    private TooltipHelper() {
         throw new IllegalStateException("Utility class");
     }
 
-
-    public static void showTooltipAlways(
-            @NonNull Context context,
-            @StringRes int message,
-            @NonNull ArrowOrientation orientation,
-            @NonNull View anchor,
-            @NonNull LifecycleOwner lifecycleOwner
-    ) {
-        showTooltip(context, message, orientation, anchor, lifecycleOwner, true);
-    }
 
     public static void showTooltip(
             @NonNull Context context,
@@ -56,7 +46,7 @@ public class TooltipUtil {
         Balloon.Builder balloonBuilder = new Balloon.Builder(context)
                 .setArrowSize(10)
                 .setArrowOrientation(orientation)
-                .setArrowVisible(true)
+                .setIsVisibleArrow(true)
                 .setPadding(4)
                 .setTextSize(15f)
                 .setArrowPosition(0.5f)

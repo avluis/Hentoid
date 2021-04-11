@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.database.domains;
 
 import java.util.ArrayList;
 import java.util.HashMap;

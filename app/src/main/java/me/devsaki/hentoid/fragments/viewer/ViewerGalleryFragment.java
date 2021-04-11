@@ -174,7 +174,7 @@ public class ViewerGalleryFragment extends Fragment {
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
-                viewModel.toggleFilterFavouritePages();
+                viewModel.filterFavouriteImages(!filterFavouritesState);
             }
             return true;
         });
@@ -200,10 +200,10 @@ public class ViewerGalleryFragment extends Fragment {
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
 
         if (filterFavouritesLaunchRequest && filterFavouritesLaunchRequest != filterFavouritesLaunchState)
-            viewModel.toggleFilterFavouritePages();
+            viewModel.filterFavouriteImages(filterFavouritesLaunchRequest);
 
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
-        viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
+        viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
         viewModel.getShowFavouritesOnly().observe(getViewLifecycleOwner(), this::onShowFavouriteChanged);
     }
 
@@ -214,7 +214,7 @@ public class ViewerGalleryFragment extends Fragment {
         recyclerView = null;
 
         if (filterFavouritesLaunchState != filterFavouritesState)
-            viewModel.toggleFilterFavouritePages();
+            viewModel.filterFavouriteImages(filterFavouritesLaunchState);
 
         super.onDestroy();
     }
@@ -251,20 +251,20 @@ public class ViewerGalleryFragment extends Fragment {
         switch (menuItem.getItemId()) {
             case R.id.action_delete:
                 if (!selectedItems.isEmpty()) {
-                    List<ImageFile> selectedContent = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
-                    askDeleteSelected(selectedContent);
+                    List<ImageFile> selectedImages = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
+                    askDeleteSelected(selectedImages);
                 }
                 break;
             case R.id.action_set_cover:
                 if (!selectedItems.isEmpty()) {
-                    Optional<ImageFile> selectedContent = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().findFirst();
-                    if (selectedContent.isPresent()) askSetSelectedCover(selectedContent.get());
+                    Optional<ImageFile> selectedImages = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().findFirst();
+                    if (selectedImages.isPresent()) askSetSelectedCover(selectedImages.get());
                 }
                 break;
             case R.id.action_toggle_favorite_pages:
                 if (!selectedItems.isEmpty()) {
-                    List<ImageFile> selectedContent = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
-                    viewModel.togglePageFavourite(selectedContent, this::onFavouriteSuccess);
+                    List<ImageFile> selectedImages = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().toList();
+                    viewModel.toggleImageFavourite(selectedImages, this::onFavouriteSuccess);
                 }
                 break;
             default:
@@ -407,6 +407,7 @@ public class ViewerGalleryFragment extends Fragment {
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect())
+                .setOnCancelListener(dialog -> selectExtension.deselect())
                 .create().show();
     }
 }

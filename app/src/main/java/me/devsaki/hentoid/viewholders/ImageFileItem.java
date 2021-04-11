@@ -38,7 +38,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
 
     // Return a copy, not the original instance that has to remain in synch with its visual representation
     public ImageFile getImage() {
-        return new ImageFile(image);
+        return image;
     }
 
     public void setCurrent(boolean current) {

@@ -17,7 +17,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.annimon.stream.Stream;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -42,7 +41,7 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
-public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
+public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
     private ImageViewerViewModel viewModel;
 
@@ -61,13 +60,13 @@ public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
     private ImageView deleteButton;
 
 
-    public static void show(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
+    public static void invoke(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
 
         builder.setImageIndex(imageIndex);
         builder.setScale(currentScale);
 
-        ViewerBottomSheetFragment imageBottomSheetFragment = new ViewerBottomSheetFragment();
+        ViewerBottomImageFragment imageBottomSheetFragment = new ViewerBottomImageFragment();
         imageBottomSheetFragment.setArguments(builder.getBundle());
         ThemeHelper.setStyle(context, imageBottomSheetFragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         imageBottomSheetFragment.show(fragmentManager, "imageBottomSheetFragment");
@@ -113,8 +112,9 @@ public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        viewModel.getImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
+        viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
     }
+
 
     /**
      * Observer for changes in the book's list of images
@@ -178,15 +178,15 @@ public class ViewerBottomSheetFragment extends BottomSheetDialogFragment {
      * Handle click on "Favourite" action button
      */
     private void onFavouriteClick() {
-        viewModel.togglePageFavourite(Stream.of(image).toList(), this::onToggleFavouriteSuccess);
+        viewModel.toggleImageFavourite(imageIndex, this::onToggleFavouriteSuccess);
     }
 
     /**
      * Success callback when the new favourite'd state has been successfully persisted
      */
-    private void onToggleFavouriteSuccess() {
-        image.setFavourite(!image.isFavourite());
-        updateFavouriteDisplay(image.isFavourite());
+    private void onToggleFavouriteSuccess(Boolean newState) {
+        image.setFavourite(newState);
+        updateFavouriteDisplay(newState);
     }
 
     /**

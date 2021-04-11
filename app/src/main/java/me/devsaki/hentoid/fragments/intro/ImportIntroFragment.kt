@@ -1,8 +1,6 @@
 package me.devsaki.hentoid.fragments.intro
 
-import android.app.Activity
 import android.content.DialogInterface
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,6 +12,8 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
@@ -21,11 +21,13 @@ import me.devsaki.hentoid.databinding.IntroSlide04Binding
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.ImportHelper
+import me.devsaki.hentoid.util.ImportHelper.setAndScanHentoidFolder
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.workers.ImportWorker
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import timber.log.Timber
 
 class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
@@ -33,6 +35,11 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     private var _mergedBinding: IncludeImportStepsBinding? = null
     private val binding get() = _binding!!
     private val mergedBinding get() = _mergedBinding!!
+    lateinit var importDisposable: Disposable
+
+    private val pickFolder = registerForActivityResult(ImportHelper.PickFolderContract()) { res ->
+        onFolderPickerResult(res.left, res.right)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,28 +64,42 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        mergedBinding.importStep1Button.setOnClickListener { ImportHelper.openFolderPicker(this, false) }
+        mergedBinding.importStep1Button.setOnClickListener { pickFolder.launch(0) }
         mergedBinding.importStep1Button.visibility = View.VISIBLE
 
         binding.skipBtn.setOnClickListener { askSkip() }
     }
 
-    // Callback from the directory chooser
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (ImportHelper.processPickerResult(activity as Activity, requestCode, resultCode, data)) {
-            ImportHelper.Result.OK_EMPTY_FOLDER -> nextStep()
-            ImportHelper.Result.OK_LIBRARY_DETECTED -> updateOnSelectFolder() // Import service is already launched by the Helper; nothing else to do
-            ImportHelper.Result.OK_LIBRARY_DETECTED_ASK -> {
+    private fun onFolderPickerResult(resultCode: Int, treeUri: Uri?) {
+        when (resultCode) {
+            ImportHelper.PickerResult.OK -> {
+                if (null == treeUri) return
+                importDisposable = io.reactivex.Single.fromCallable { setAndScanHentoidFolder(requireContext(), treeUri, true, null) }
+                        .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                { i: Int -> onScanHentoidFolderResult(i) }, { t: Throwable? -> Timber.w(t) }
+                        )
+            }
+            ImportHelper.PickerResult.KO_CANCELED -> Snackbar.make(binding.main, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.PickerResult.KO_OTHER, ImportHelper.PickerResult.KO_NO_URI -> Snackbar.make(binding.main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
+        }
+    }
+
+    private fun onScanHentoidFolderResult(resultCode: Int) {
+        importDisposable.dispose()
+        when (resultCode) {
+            ImportHelper.ProcessFolderResult.OK_EMPTY_FOLDER -> nextStep()
+            ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED -> updateOnSelectFolder() // Import service is already launched by the Helper; nothing else to do
+            ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED_ASK -> {
                 updateOnSelectFolder()
                 ImportHelper.showExistingLibraryDialog(requireContext()) { onCancelExistingLibraryDialog() }
             }
-            ImportHelper.Result.CANCELED -> Snackbar.make(binding.main, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.INVALID_FOLDER -> Snackbar.make(binding.main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.APP_FOLDER -> Snackbar.make(binding.main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.DOWNLOAD_FOLDER -> Snackbar.make(binding.main, R.string.import_download_folder, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.CREATE_FAIL -> Snackbar.make(binding.main, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.Result.OTHER -> Snackbar.make(binding.main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER -> Snackbar.make(binding.main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.ProcessFolderResult.KO_APP_FOLDER -> Snackbar.make(binding.main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER -> Snackbar.make(binding.main, R.string.import_download_folder, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.ProcessFolderResult.KO_CREATE_FAIL -> Snackbar.make(binding.main, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.ProcessFolderResult.KO_OTHER -> Snackbar.make(binding.main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
         }
     }
 

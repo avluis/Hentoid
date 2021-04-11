@@ -24,7 +24,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.enums.Grouping;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 
@@ -161,7 +161,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
                 viewModel.moveBooksToNew(bookIds, newNameTxt.getText().toString(), getParent()::onChangeGroupSuccess);
                 dismiss();
             } else {
-                ToastUtil.toast(R.string.group_name_exists);
+                ToastHelper.toast(R.string.group_name_exists);
             }
         }
     }

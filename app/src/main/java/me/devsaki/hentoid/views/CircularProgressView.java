@@ -73,9 +73,6 @@ public class CircularProgressView extends View {
     }
 
     private void drawProgress(Canvas canvas, Paint paint, float previousValue, float value) {
-        previousValue = Math.min(360, previousValue);
-        value = Math.min(360, value);
-
         float startAngle = -90 + (360f / total * previousValue);
         float sweepAngle = (360f / total * value);
 

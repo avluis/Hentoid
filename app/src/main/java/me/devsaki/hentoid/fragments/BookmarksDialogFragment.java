@@ -41,7 +41,7 @@ import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
 
@@ -264,7 +264,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
             SiteBookmark b = Stream.of(selectedItems).findFirst().get().getTag();
             if (b != null)
                 if (Helper.copyPlainTextToClipboard(context, b.getUrl())) {
-                    ToastUtil.toast(context, R.string.web_url_clipboard);
+                    ToastHelper.toast(context, R.string.web_url_clipboard);
                     selectionToolbar.setVisibility(View.INVISIBLE);
                 }
         }

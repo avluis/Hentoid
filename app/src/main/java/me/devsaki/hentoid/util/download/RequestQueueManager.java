@@ -23,7 +23,7 @@ import timber.log.Timber;
  * <p>
  * NB : Class looks like a singleton but isn't really one, since it is reinstanciated everytime forceSlowMode changes
  */
-public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListener<T> {
+public class RequestQueueManager<T> implements RequestQueue.RequestEventListener {
     private static RequestQueueManager mInstance;           // Instance of the singleton
     //    private static Boolean allowParallelDownloads = null;   // True if current instance can download from the same IP with multiple simultaneous connexions
     private static final int TIMEOUT_MS = 15000;
@@ -82,7 +82,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     private RequestQueue getRequestQueue(Context ctx) { // This is the safest code, as it relies on standard Volley interface
         if (mRequestQueue == null) {
             mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext(), new VolleyOkHttp3Stack(TIMEOUT_MS));
-            mRequestQueue.addRequestFinishedListener(this);
+            mRequestQueue.addRequestEventListener(this);
         }
         return mRequestQueue;
     }
@@ -90,10 +90,20 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     private RequestQueue getRequestQueue(Context ctx, int nbDlThreads) { // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
         if (mRequestQueue == null) {
             BasicNetwork network = new BasicNetwork(new VolleyOkHttp3Stack(TIMEOUT_MS));
+            DiskBasedCache.FileSupplier cacheSupplier =
+                    new DiskBasedCache.FileSupplier() {
+                        private File cacheDir = null;
 
-            File cacheDir = new File(ctx.getCacheDir(), "volley"); // NB : this is dirty, as this value is supposed to be private in Volley.java
-            mRequestQueue = new RequestQueue(new DiskBasedCache(cacheDir), network, nbDlThreads);
-            mRequestQueue.addRequestFinishedListener(this);
+                        @Override
+                        public File get() {
+                            if (cacheDir == null) {
+                                cacheDir = new File(ctx.getCacheDir(), "volley"); // NB : this is dirty, as this value is supposed to be private in Volley.java
+                            }
+                            return cacheDir;
+                        }
+                    };
+            mRequestQueue = new RequestQueue(new DiskBasedCache(cacheSupplier), network, nbDlThreads);
+            mRequestQueue.addRequestEventListener(this);
             mRequestQueue.start();
         }
         return mRequestQueue;
@@ -164,5 +174,12 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
         RequestQueue.RequestFilter filterForAll = request -> true;
         mRequestQueue.cancelAll(filterForAll);
         Timber.d("RequestQueue ::: canceled");
+    }
+
+    @Override
+    public void onRequestEvent(Request<?> request, int event) {
+        if (event == RequestQueue.RequestEvent.REQUEST_FINISHED) {
+            onRequestFinished((Request<T>)request); // https://github.com/google/volley/issues/403
+        }
     }
 }

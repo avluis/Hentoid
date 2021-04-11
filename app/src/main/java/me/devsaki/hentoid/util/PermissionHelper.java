@@ -8,12 +8,12 @@ import androidx.core.content.ContextCompat;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
-public class PermissionUtil {
+public class PermissionHelper {
 
     public static final int RQST_STORAGE_PERMISSION = 3;
 
 
-    private PermissionUtil() {
+    private PermissionHelper() {
         throw new IllegalStateException("Utility class");
     }
 

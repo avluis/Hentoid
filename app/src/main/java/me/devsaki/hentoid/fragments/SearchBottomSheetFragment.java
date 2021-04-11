@@ -197,8 +197,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
         searchMasterDataDebouncer.clear();
+        super.onDestroyView();
     }
 
     /**

@@ -12,6 +12,7 @@ import java.util.Random;
 import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
 import io.objectbox.reactive.DataObserver;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 
 // Inspired from ObjectBoxDataSource
@@ -53,7 +54,7 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
         LazyList<T> lazyList = query.findLazy();
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < lazyList.size(); i++) order.add(i);
-        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed()));
+        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
 
         int maxPage = Math.min(startPosition + loadCount, order.size());
 

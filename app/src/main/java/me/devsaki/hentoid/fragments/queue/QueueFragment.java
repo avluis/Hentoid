@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -73,11 +74,11 @@ import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.PermissionUtil;
+import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
-import me.devsaki.hentoid.util.ToastUtil;
-import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.ToastHelper;
+import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
@@ -103,6 +104,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // COMMUNICATION
+    private OnBackPressedCallback callback;
     // Viewmodel
     private QueueViewModel viewModel;
     // Activity
@@ -163,8 +165,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
     }
 
@@ -254,7 +256,31 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::updateNetworkUsage));
 
+        addCustomBackControl();
+
         return rootView;
+    }
+
+    private void addCustomBackControl() {
+        if (callback != null) callback.remove();
+        callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                customBackPress();
+            }
+        };
+        activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
+    }
+
+    private void customBackPress() {
+        // If content is selected, deselect it
+        if (!selectExtension.getSelections().isEmpty()) {
+            selectExtension.deselect();
+            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+        } else {
+            callback.remove();
+            requireActivity().onBackPressed();
+        }
     }
 
     private void initToolbar() {
@@ -422,7 +448,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS:
                 motiveMsg = R.string.paused_dl_folder_credentials;
-                PermissionUtil.requestExternalStorageReadWritePermission(getActivity(), PermissionUtil.RQST_STORAGE_PERMISSION);
+                PermissionHelper.requestExternalStorageReadWritePermission(getActivity(), PermissionHelper.RQST_STORAGE_PERMISSION);
                 break;
             case DownloadEvent.Motive.NONE:
             default: // NONE
@@ -590,7 +616,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         // Signal swipe-to-cancel though a tooltip
         if (!isEmpty)
-            TooltipUtil.showTooltip(
+            TooltipHelper.showTooltip(
                     requireContext(), R.string.help_swipe_cancel, ArrowOrientation.BOTTOM, recyclerView,
                     getViewLifecycleOwner());
     }
@@ -692,7 +718,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             Content c = item.getContent();
             // Process the click
             if (null == c) {
-                ToastUtil.toast(R.string.err_no_content);
+                ToastHelper.toast(R.string.err_no_content);
                 return false;
             }
             // Retrieve the latest version of the content if storage URI is unknown
@@ -702,7 +728,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
             if (c != null) {
                 if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
-                    ToastUtil.toast(R.string.err_no_content);
+                    ToastHelper.toast(R.string.err_no_content);
                 return true;
             } else return false;
         }

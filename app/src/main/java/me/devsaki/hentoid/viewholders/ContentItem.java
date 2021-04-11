@@ -46,9 +46,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -57,6 +57,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LanguageHelper;
@@ -99,7 +100,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     static {
         Context context = HentoidApp.getInstance();
-        int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
 
         int screenWidthPx = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels - (2 * (int) context.getResources().getDimension(R.dimen.default_cardview_margin));
         int gridHorizontalWidthPx = (int) context.getResources().getDimension(R.dimen.card_grid_width);
@@ -108,6 +108,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         ITEM_HORIZONTAL_MARGIN_PX = remainingSpacePx / (nbItems * 2);
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
+        int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
 
         glideRequestOptions = new RequestOptions()
@@ -478,22 +479,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         }
 
         private void attachTags(@NonNull final Content content) {
-            Context context = tvTags.getContext();
-            List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
-            if (tagsAttributes == null) {
-                tvTags.setText(context.getResources().getString(R.string.work_untitled));
+            String tagTxt = ContentHelper.formatTags(content);
+            if (tagTxt.isEmpty()) {
                 tvTags.setVisibility(View.GONE);
             } else {
                 tvTags.setVisibility(View.VISIBLE);
-                List<String> allTags = new ArrayList<>();
-                for (Attribute attribute : tagsAttributes) {
-                    allTags.add(attribute.getName());
-                }
-                if (Build.VERSION.SDK_INT >= 24) {
-                    allTags.sort(null);
-                }
-                String tags = android.text.TextUtils.join(", ", allTags);
-                tvTags.setText(tags);
+                tvTags.setText(tagTxt);
                 tvTags.setTextColor(ThemeHelper.getColor(tvTags.getContext(), R.color.card_tags_light));
             }
         }

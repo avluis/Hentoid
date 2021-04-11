@@ -9,6 +9,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.ActivityAboutBinding
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.fragments.about.LicensesFragment
+import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.greenrobot.eventbus.EventBus

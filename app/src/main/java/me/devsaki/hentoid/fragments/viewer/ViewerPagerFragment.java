@@ -17,8 +17,10 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
@@ -30,6 +32,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.skydoves.submarine.SubmarineItem;
+import com.skydoves.submarine.SubmarineView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -58,7 +62,7 @@ import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -94,8 +98,11 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
     private Disposable slideshowTimer = null;
 
+    // Properties
     private Map<String, String> bookPreferences; // Preferences of current book; to feed the book prefs dialog
     private boolean isContentArchive; // True if current content is an archive
+    private boolean isPageFavourite; // True if current page is favourited
+    private boolean isContentFavourite; // True if current content is favourited
 
     private Debouncer<Integer> indexRefreshDebouncer;
 
@@ -135,9 +142,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             switch (clickedMenuItem.getItemId()) {
                 case R.id.action_show_favorite_pages:
                     onShowFavouriteClick();
-                    break;
-                case R.id.action_page_menu:
-                    onPageMenuClick();
                     break;
                 case R.id.action_book_settings:
                     onBookSettingsClick();
@@ -187,7 +191,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         viewModel.getContent()
                 .observe(getViewLifecycleOwner(), this::onContentChanged);
 
-        viewModel.getImages()
+        viewModel.getViewerImages()
                 .observe(getViewLifecycleOwner(), this::onImagesChanged);
 
         viewModel.getStartingIndex()
@@ -225,14 +229,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
+
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         ((ImageViewerActivity) requireActivity()).registerKeyListener(
                 new VolumeKeyListener()
@@ -249,12 +249,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (Preferences.Constant.VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             ViewerBrowseModeDialogFragment.invoke(this);
         updatePageDisplay();
-        updateFavouritesGalleryButtonDisplay();
     }
 
     // Make sure position is saved when app is closed by the user
     @Override
     public void onStop() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         viewModel.onLeaveBook(imageIndex);
         if (slideshowTimer != null) slideshowTimer.dispose();
         ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
@@ -263,7 +263,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     @Override
     public void onDestroy() {
-        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         Preferences.unregisterPrefsChangedListener(listener);
         if (adapter != null) {
             adapter.setRecyclerView(null);
@@ -281,15 +280,15 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
             // Prevent switching books when archive extraction is in progress (may trigger multiple extractions at the same time)
             // TODO make that possible in the future when unarchival is done on demand
-            binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.INVISIBLE);
-            binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.INVISIBLE);
+            binding.controlsOverlay.viewerPrevBookBtn.setEnabled(false);
+            binding.controlsOverlay.viewerNextBookBtn.setEnabled(false);
 
             binding.viewerLoadingTxt.setText(getResources().getString(R.string.loading_images, event.elementsKO + event.elementsOK, event.elementsTotal));
             binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             binding.viewerLoadingTxt.setVisibility(View.GONE);
-            binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.VISIBLE);
-            binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.VISIBLE);
+            binding.controlsOverlay.viewerPrevBookBtn.setEnabled(true);
+            binding.controlsOverlay.viewerNextBookBtn.setEnabled(true);
         }
     }
 
@@ -374,9 +373,25 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             }
         });
 
+        // Information micro menu
+        binding.controlsOverlay.informationMicroMenu.setSubmarineItemClickListener((p, i) -> onInfoMicroMenuClick(p));
+        binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book)));
+        binding.controlsOverlay.informationMicroMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page)));
+        binding.controlsOverlay.viewerInfoBtn.setOnClickListener(v -> {
+            binding.controlsOverlay.favouriteMicroMenu.dips();
+            binding.controlsOverlay.informationMicroMenu.floats();
+        });
+        binding.controlsOverlay.informationMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.informationMicroMenu.dips());
+
+        // Favourite micro menu
+        updateFavouriteButtonIcon();
+
+        binding.controlsOverlay.favouriteMicroMenu.setSubmarineItemClickListener((p, i) -> onFavouriteMicroMenuClick(p));
+        binding.controlsOverlay.viewerFavouriteActionBtn.setOnClickListener(v -> onFavouriteMicroMenuOpen());
+        binding.controlsOverlay.favouriteMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.favouriteMicroMenu.dips());
+
         // Gallery
         binding.controlsOverlay.viewerGalleryBtn.setOnClickListener(v -> displayGallery(false));
-        binding.controlsOverlay.viewerFavouritesBtn.setOnClickListener(v -> displayGallery(true));
     }
 
     /**
@@ -398,22 +413,92 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onShuffleClick() {
         goToPage(1);
-        viewModel.onShuffleClick();
+        viewModel.toggleShuffle();
     }
 
     /**
-     * Handle click on "Show favourite pages" action button
+     * Handle click on "Show favourite pages" toggle action button
      */
     private void onShowFavouriteClick() {
-        viewModel.toggleFilterFavouritePages();
+        viewModel.filterFavouriteImages(!showFavoritePagesButton.isChecked());
     }
 
     /**
-     * Handle click on "Page menu" action button
+     * Update the display of the "favourite page" action button
+     *
+     * @param showFavouritePages True if the button has to represent a favourite page; false instead
      */
-    private void onPageMenuClick() {
-        float currentScale = adapter.getScaleAtPosition(imageIndex);
-        ViewerBottomSheetFragment.show(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+    private void updateShowFavouriteDisplay(boolean showFavouritePages) {
+        showFavoritePagesButton.setChecked(showFavouritePages);
+        if (showFavouritePages) {
+            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_on);
+            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_on);
+        } else {
+            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_off);
+            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_off);
+        }
+    }
+
+    /**
+     * Handle click on "Information" micro menu
+     */
+    private void onInfoMicroMenuClick(int position) {
+        if (0 == position) { // Content
+            ViewerBottomContentFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager());
+        } else { // Image
+            float currentScale = adapter.getScaleAtPosition(imageIndex);
+            ViewerBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+        }
+        binding.controlsOverlay.informationMicroMenu.dips();
+    }
+
+    private void onFavouriteMicroMenuOpen() {
+        binding.controlsOverlay.informationMicroMenu.dips();
+
+        SubmarineView favMenu = binding.controlsOverlay.favouriteMicroMenu;
+        favMenu.clearAllSubmarineItems();
+        favMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), isContentFavourite ? R.drawable.ic_book_fav : R.drawable.ic_book)));
+        favMenu.addSubmarineItem(new SubmarineItem(ContextCompat.getDrawable(requireContext(), isPageFavourite ? R.drawable.ic_page_fav : R.drawable.ic_page)));
+        favMenu.floats();
+    }
+
+    /**
+     * Handle click on one of the "Favourite" micro menu items
+     */
+    private void onFavouriteMicroMenuClick(int position) {
+        if (0 == position) viewModel.toggleContentFavourite(this::onBookFavouriteSuccess);
+        else if (1 == position)
+            viewModel.toggleImageFavourite(this.imageIndex, this::onPageFavouriteSuccess);
+
+        binding.controlsOverlay.favouriteMicroMenu.dips();
+    }
+
+    private void updateFavouriteButtonIcon() {
+        @DrawableRes int iconRes = R.drawable.ic_fav_empty;
+        if (isPageFavourite) {
+            if (isContentFavourite) iconRes = R.drawable.ic_fav_full;
+            else iconRes = R.drawable.ic_fav_bottom_half;
+        } else if (isContentFavourite) iconRes = R.drawable.ic_fav_top_half;
+        binding.controlsOverlay.viewerFavouriteActionBtn.setImageResource(iconRes);
+    }
+
+    private void hidePendingMicroMenus() {
+        binding.controlsOverlay.informationMicroMenu.dips();
+        binding.controlsOverlay.favouriteMicroMenu.dips();
+    }
+
+    private void onPageFavouriteSuccess(Boolean newState) {
+        // TODO display something more graphical (heart / heartbreak)
+        ToastHelper.toast(newState ? R.string.page_favourite_success : R.string.page_unfavourite_success);
+        isPageFavourite = !isPageFavourite;
+        updateFavouriteButtonIcon();
+    }
+
+    private void onBookFavouriteSuccess(Boolean newState) {
+        // TODO display something more graphical (heart / heartbreak)
+        ToastHelper.toast(newState ? R.string.book_favourite_success : R.string.book_unfavourite_success);
+        isContentFavourite = !isContentFavourite;
+        updateFavouriteButtonIcon();
     }
 
     /**
@@ -428,7 +513,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (images.isEmpty()) {
             setSystemBarsVisible(true);
             binding.viewerNoImgTxt.setVisibility(View.VISIBLE);
-        } else {
+        } else if (imageIndex > -1 && imageIndex < images.size()) {
+            isPageFavourite = images.get(imageIndex).isFavourite();
+            updateFavouriteButtonIcon();
             binding.viewerNoImgTxt.setVisibility(View.GONE);
         }
     }
@@ -494,9 +581,11 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         }
         bookPreferences = content.getBookPreferences();
         isContentArchive = content.isArchive();
+        isContentFavourite = content.isFavourite();
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
         updateNavigationUi(content);
+        updateFavouriteButtonIcon();
     }
 
     /**
@@ -552,18 +641,22 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             else if (Constant.VIEWER_DIRECTION_RTL == direction && imageIndex < scrollPosition)
                 isScrollLTR = false;
             adapter.setScrollLTR(isScrollLTR);
+            hidePendingMicroMenus();
         }
 
         imageIndex = scrollPosition;
         ImageFile currentImage = adapter.getImageAt(imageIndex);
-        if (currentImage != null) viewModel.markPageAsRead(currentImage.getOrder());
+        if (currentImage != null) {
+            viewModel.markPageAsRead(currentImage.getOrder());
+            isPageFavourite = currentImage.isFavourite();
+        }
 
         // Resets zoom if we're using horizontal (independent pages) mode
         if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
             adapter.resetScaleAtPosition(scrollPosition);
 
         updatePageDisplay();
-        updateFavouritesGalleryButtonDisplay();
+        updateFavouriteButtonIcon();
     }
 
     /**
@@ -601,33 +694,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         maxPageNumber = content.getQtyPages();
         updatePageDisplay();
-    }
-
-    /**
-     * Update the display of the favourites gallery launcher
-     */
-    private void updateFavouritesGalleryButtonDisplay() {
-        if (binding != null)
-            if (adapter.isFavouritePresent()) {
-                binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.VISIBLE);
-            } else {
-                binding.controlsOverlay.viewerFavouritesBtn.setVisibility(View.INVISIBLE);
-            }
-    }
-
-    /**
-     * Update the display of the "favourite page" action button
-     *
-     * @param showFavouritePages True if the button has to represent a favourite page; false instead
-     */
-    private void updateShowFavouriteDisplay(boolean showFavouritePages) {
-        if (showFavouritePages) {
-            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_on);
-            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_on);
-        } else {
-            showFavoritePagesButton.setIcon(R.drawable.ic_filter_favs_off);
-            showFavoritePagesButton.setTitle(R.string.viewer_filter_favourite_off);
-        }
     }
 
     /**
@@ -821,6 +887,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * @param position Position to go to (0-indexed)
      */
     private void seekToPosition(int position) {
+        // Hide pending micro-menus
+        hidePendingMicroMenus();
+
         if (View.VISIBLE == binding.controlsOverlay.imagePreviewCenter.getVisibility()) {
             ImageView previousImageView;
             ImageView nextImageView;
@@ -884,6 +953,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void onLeftTap() {
         if (null == binding) return;
 
+        // Hide pending micro-menus
+        hidePendingMicroMenus();
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
@@ -906,6 +978,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onRightTap() {
         if (null == binding) return;
+
+        // Hide pending micro-menus
+        hidePendingMicroMenus();
 
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
@@ -930,6 +1005,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void onMiddleTap() {
         if (null == binding) return;
 
+        // Hide pending micro-menus
+        hidePendingMicroMenus();
+
         // Stop slideshow if it is on
         if (slideshowTimer != null) {
             stopSlideshow();
@@ -950,8 +1028,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (binding != null)
+                        if (binding != null) {
                             binding.controlsOverlay.getRoot().setVisibility(View.VISIBLE);
+                            binding.viewerPagenumberText.setVisibility(View.GONE);
+                        }
                         setSystemBarsVisible(true);
                     }
                 });
@@ -965,8 +1045,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         super.onAnimationEnd(animation);
-                        if (binding != null)
+                        if (binding != null) {
                             binding.controlsOverlay.getRoot().setVisibility(View.INVISIBLE);
+                            onUpdatePageNumDisplay();
+                        }
                     }
                 });
         setSystemBarsVisible(false);
@@ -1059,7 +1141,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         }
 
         if (showToast)
-            ToastUtil.toast(String.format(Locale.ENGLISH, "Starting slideshow (delay %.1fs)", delayMs / 1000f));
+            ToastHelper.toast(String.format(Locale.ENGLISH, "Starting slideshow (delay %.1fs)", delayMs / 1000f));
         scrollListener.disableScroll();
 
         slideshowTimer = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
@@ -1074,7 +1156,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             slideshowTimer.dispose();
             slideshowTimer = null;
             scrollListener.enableScroll();
-            ToastUtil.toast("Slideshow stopped");
+            ToastHelper.toast("Slideshow stopped");
         }
     }
 }

@@ -13,7 +13,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -67,9 +66,9 @@ import me.devsaki.hentoid.notification.delete.DeleteProgressNotification;
 import me.devsaki.hentoid.notification.delete.DeleteStartNotification;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.PermissionUtil;
+import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.TooltipUtil;
+import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.util.notification.NotificationManager;
@@ -93,8 +92,6 @@ public class LibraryActivity extends BaseActivity {
 
     private DrawerLayout drawerLayout;
 
-    private OnBackPressedCallback callback;
-
     // ======== COMMUNICATION
     // Viewmodel
     private LibraryViewModel viewModel;
@@ -117,6 +114,8 @@ public class LibraryActivity extends BaseActivity {
     private View searchClearButton;
     // Sort direction button
     private ImageView sortDirectionButton;
+    // Sort reshuffle button
+    private ImageView sortReshuffleButton;
     // Sort field button
     private TextView sortFieldButton;
 
@@ -183,6 +182,8 @@ public class LibraryActivity extends BaseActivity {
     private boolean isCustomGroupingAvailable;
     // Titles of each of the Viewpager2's tabs
     private final Map<Integer, String> titles = new HashMap<>();
+    // TODO doc
+    private boolean isGroupFavsChecked = false;
 
 
     // Used to auto-hide the sort controls bar when no activity is detected
@@ -197,6 +198,10 @@ public class LibraryActivity extends BaseActivity {
 
     public ImageView getSortDirectionButton() {
         return sortDirectionButton;
+    }
+
+    public View getSortReshuffleButton() {
+        return sortReshuffleButton;
     }
 
     public TextView getSortFieldButton() {
@@ -230,6 +235,10 @@ public class LibraryActivity extends BaseActivity {
 
     public void toggleEditMode() {
         setEditMode(!editMode);
+    }
+
+    public boolean isGroupFavsChecked() {
+        return isGroupFavsChecked;
     }
 
 
@@ -276,14 +285,6 @@ public class LibraryActivity extends BaseActivity {
         } catch (Exception e) {
             Timber.e(e);
         }
-
-        callback = new OnBackPressedCallback(false) {
-            @Override
-            public void handleOnBackPressed() {
-                closeNavigationDrawer();
-            }
-        };
-        getOnBackPressedDispatcher().addCallback(this, callback);
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
@@ -341,10 +342,10 @@ public class LibraryActivity extends BaseActivity {
     private void onCreated() {
         // Display search bar tooltip _after_ the left drawer closes (else it displays over it)
         if (Preferences.isFirstRunProcessComplete())
-            TooltipUtil.showTooltip(this, R.string.help_search, ArrowOrientation.TOP, toolbar, this);
+            TooltipHelper.showTooltip(this, R.string.help_search, ArrowOrientation.TOP, toolbar, this);
 
         // Display permissions alert if required
-        if (!PermissionUtil.checkExternalStorageReadWritePermission(this)) {
+        if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) {
             ((TextView) findViewById(R.id.library_alert_txt)).setText(R.string.permissions_lost);
             findViewById(R.id.library_alert_fix_btn).setOnClickListener(v -> fixPermissions());
             alertTxt.setVisibility(View.VISIBLE);
@@ -395,6 +396,7 @@ public class LibraryActivity extends BaseActivity {
 
         // Sort controls
         sortDirectionButton = findViewById(R.id.sort_direction_btn);
+        sortReshuffleButton = findViewById(R.id.sort_reshuffle_btn);
         sortFieldButton = findViewById(R.id.sort_field_btn);
 
         // Main tabs
@@ -530,7 +532,11 @@ public class LibraryActivity extends BaseActivity {
             case R.id.action_favourites:
                 menuItem.setChecked(!menuItem.isChecked());
                 updateFavouriteFilter();
-                viewModel.toggleFavouriteFilter();
+                if (isGroupDisplayed()) {
+                    isGroupFavsChecked = menuItem.isChecked();
+                    viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
+                } else
+                    viewModel.toggleContentFavouriteFilter();
                 break;
             case R.id.action_order:
                 showSearchSortBar(null, null, true);
@@ -556,9 +562,16 @@ public class LibraryActivity extends BaseActivity {
             searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
 
         if (showSort != null) {
-            if (showSort) searchClearButton.setVisibility(View.GONE);
-            sortDirectionButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
             sortFieldButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
+            if (showSort) {
+                boolean isRandom = (!isGroupDisplayed() && Preferences.Constant.ORDER_FIELD_RANDOM == Preferences.getContentSortField());
+                sortDirectionButton.setVisibility(isRandom ? View.GONE : View.VISIBLE);
+                sortReshuffleButton.setVisibility(isRandom ? View.VISIBLE : View.GONE);
+                searchClearButton.setVisibility(View.GONE);
+            } else {
+                sortDirectionButton.setVisibility(View.GONE);
+                sortReshuffleButton.setVisibility(View.GONE);
+            }
         }
 
         if (isGroupDisplayed() && Preferences.getGroupingDisplay().equals(Grouping.ARTIST)) {
@@ -587,6 +600,14 @@ public class LibraryActivity extends BaseActivity {
 
         // Restore CLEAR button if it's needed
         if (hideSortOnly && isSearchQueryActive()) searchClearButton.setVisibility(View.VISIBLE);
+    }
+
+    public boolean closeLeftDrawer() {
+        if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        }
+        return false;
     }
 
     public boolean collapseSearchMenu() {
@@ -687,7 +708,7 @@ public class LibraryActivity extends BaseActivity {
                 break;
             case Preferences.Key.GROUPING_DISPLAY:
             case Preferences.Key.ARTIST_GROUP_VISIBILITY:
-                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
                 break;
             default:
                 // Nothing to handle there
@@ -723,6 +744,9 @@ public class LibraryActivity extends BaseActivity {
             if (currentGrouping.equals(selectedGrouping)) return false;
 
             Preferences.setGroupingDisplay(selectedGrouping.getId());
+            isGroupFavsChecked = false;
+            favsMenu.setChecked(false);
+            updateFavouriteFilter();
 
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
             if (!selectedGrouping.canReorderBooks()
@@ -805,7 +829,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void fixPermissions() {
-        PermissionUtil.requestExternalStorageReadWritePermission(this, PermissionUtil.RQST_STORAGE_PERMISSION);
+        PermissionHelper.requestExternalStorageReadWritePermission(this, PermissionHelper.RQST_STORAGE_PERMISSION);
     }
 
     private boolean isLowOnSpace() {
@@ -819,7 +843,7 @@ public class LibraryActivity extends BaseActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
-        if (requestCode != PermissionUtil.RQST_STORAGE_PERMISSION) return;
+        if (requestCode != PermissionHelper.RQST_STORAGE_PERMISSION) return;
         if (permissions.length < 2) return;
         if (grantResults.length == 0) return;
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -827,16 +851,15 @@ public class LibraryActivity extends BaseActivity {
             alertIcon.setVisibility(View.GONE);
             alertFixBtn.setVisibility(View.GONE);
         } // Don't show rationales here; the alert still displayed on screen should be enough
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     public void closeNavigationDrawer() {
         drawerLayout.closeDrawer(GravityCompat.START);
-        callback.setEnabled(false);
     }
 
     public void openNavigationDrawer() {
         drawerLayout.openDrawer(GravityCompat.START);
-        callback.setEnabled(true);
     }
 
     private boolean isGroupDisplayed() {
@@ -847,7 +870,7 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) return;
 
         enableFragment(0);
-        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility());
+        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
     }
@@ -863,7 +886,7 @@ public class LibraryActivity extends BaseActivity {
 
         searchMenu.setVisible(!editMode);
         newGroupMenu.setVisible(!editMode && isGroupDisplayed() && currentGrouping.canReorderGroups());
-        favsMenu.setVisible(!editMode && !isGroupDisplayed());
+        favsMenu.setVisible(!editMode);
         reorderMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_reorder_lines);
         reorderCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);

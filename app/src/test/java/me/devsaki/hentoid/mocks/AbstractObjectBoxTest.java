@@ -3,7 +3,7 @@ package me.devsaki.hentoid.mocks;
 import androidx.annotation.NonNull;
 import androidx.test.core.app.ApplicationProvider;
 
-import com.google.firebase.FirebaseApp;
+//import com.google.firebase.FirebaseApp;
 
 import net.lachlanmckee.timberjunit.TimberTestRule;
 
@@ -77,7 +77,7 @@ public abstract class AbstractObjectBoxTest {
 
     @Before // Crashes when used inside @BeforeClass. Only valid way to use that is inside @Before
     public void prepareSupportTools() {
-        FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext());
+        //FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext());
     }
 
 

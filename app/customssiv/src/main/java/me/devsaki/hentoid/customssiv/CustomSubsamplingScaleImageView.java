@@ -1877,7 +1877,7 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull Context context,
             @NonNull DecoderFactory<? extends ImageRegionDecoder> decoderFactory,
             @NonNull Uri source) throws Exception {
-        Helper.mustNotRunOnUiThread();
+        Helper.assertNonUiThread();
         String sourceUri = source.toString();
         view.debug("TilesInitTask.doInBackground");
         decoder = decoderFactory.make();
@@ -1931,7 +1931,7 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull CustomSubsamplingScaleImageView view,
             @NonNull ImageRegionDecoder decoder,
             @NonNull Tile tile) {
-        Helper.mustNotRunOnUiThread();
+        Helper.assertNonUiThread();
         if (decoder.isReady() && tile.visible) {
             view.decoderLock.readLock().lock();
             try {
@@ -1954,7 +1954,7 @@ public class CustomSubsamplingScaleImageView extends View {
     protected Tile processTile(
             @NonNull Tile loadedTile,
             final float targetScale) {
-        Helper.mustNotRunOnUiThread();
+        Helper.assertNonUiThread();
 
         // Take any prior subsampling into consideration _before_ processing the tile
         float resizeScale = targetScale * loadedTile.sampleSize;
@@ -1986,7 +1986,7 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     private Bitmap loadBitmap(@NonNull Context context, @NonNull DecoderFactory<? extends ImageDecoder> factory, @NonNull Uri uri) throws Exception {
-        Helper.mustNotRunOnUiThread();
+        Helper.assertNonUiThread();
         singleImage.loading = true;
         return factory.make().decode(context, uri);
     }
@@ -1997,7 +1997,7 @@ public class CustomSubsamplingScaleImageView extends View {
             @NonNull Bitmap bitmap,
             @NonNull CustomSubsamplingScaleImageView view,
             final float targetScale) {
-        Helper.mustNotRunOnUiThread();
+        Helper.assertNonUiThread();
 
         singleImage.rawWidth = bitmap.getWidth();
         singleImage.rawHeight = bitmap.getHeight();

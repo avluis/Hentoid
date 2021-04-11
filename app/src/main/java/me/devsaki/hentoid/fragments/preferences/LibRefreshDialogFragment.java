@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.preferences;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,6 +13,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,6 +31,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
@@ -75,8 +76,14 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     private boolean isServiceGracefulClose = false;
 
-    // Disposable for RxJava
+    // Disposables for RxJava
+    private Disposable importDisposable;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
+    private final ActivityResultLauncher<Integer> pickFolder = registerForActivityResult(
+            new ImportHelper.PickFolderContract(),
+            result -> onFolderPickerResult(result.left, result.right)
+    );
 
 
     public static void invoke(@NonNull final FragmentManager fragmentManager, boolean showOptions, boolean chooseFolder, boolean externalLibrary) {
@@ -161,7 +168,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             res -> {
-                                if (ImportHelper.Result.INVALID_FOLDER == res || ImportHelper.Result.CREATE_FAIL == res || ImportHelper.Result.APP_FOLDER == res || ImportHelper.Result.DOWNLOAD_FOLDER == res)
+                                if (ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER == res || ImportHelper.ProcessFolderResult.KO_CREATE_FAIL == res || ImportHelper.ProcessFolderResult.KO_APP_FOLDER == res || ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER == res)
                                     dismiss();
                             },
                             Timber::w
@@ -179,7 +186,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             res -> {
-                                if (ImportHelper.Result.INVALID_FOLDER == res || ImportHelper.Result.CREATE_FAIL == res || ImportHelper.Result.OK_EMPTY_FOLDER == res)
+                                if (ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER == res || ImportHelper.ProcessFolderResult.KO_CREATE_FAIL == res || ImportHelper.ProcessFolderResult.OK_EMPTY_FOLDER == res)
                                     dismiss();
                             },
                             Timber::w
@@ -217,8 +224,8 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
         if (askFolder) {
             step1FolderButton.setVisibility(View.VISIBLE);
-            step1FolderButton.setOnClickListener(v -> pickFolder(isExternal));
-            pickFolder(isExternal); // Ask right away, there's no reason why the user should click again
+            step1FolderButton.setOnClickListener(v -> pickFolder.launch(0));
+            pickFolder.launch(0); // Ask right away, there's no reason why the user should click again
         } else {
             ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
             rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
@@ -227,58 +234,67 @@ public class LibRefreshDialogFragment extends DialogFragment {
         }
     }
 
-    private void pickFolder(boolean isExternal) {
-        ImportHelper.openFolderPicker(this, isExternal);
+    private void onFolderPickerResult(Integer resultCode, Uri uri) {
+        switch (resultCode) {
+            case ImportHelper.PickerResult.OK:
+                importDisposable = io.reactivex.Single.fromCallable(() -> {
+                    if (externalLibrary)
+                        return ImportHelper.setAndScanExternalFolder(requireContext(), uri);
+                    else
+                        return ImportHelper.setAndScanHentoidFolder(requireContext(), uri, true, null);
+                })
+                        .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                this::onScanHentoidFolderResult,
+                                Timber::w
+                        );
+                break;
+            case ImportHelper.PickerResult.KO_CANCELED:
+                Snackbar.make(rootView, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show();
+                break;
+            case ImportHelper.PickerResult.KO_OTHER:
+            case ImportHelper.PickerResult.KO_NO_URI:
+                Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
+                setCancelable(true);
+                break;
+            default:
+                // Nothing should happen here
+        }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        compositeDisposable.add(Single.fromCallable(() -> ImportHelper.processPickerResult(requireActivity(), requestCode, resultCode, data))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        this::processPickerResult,
-                        Timber::w
-                )
-        );
-    }
-
-    public void processPickerResult(@ImportHelper.Result int result) {
-        switch (result) {
-            case ImportHelper.Result.OK_EMPTY_FOLDER:
+    private void onScanHentoidFolderResult(Integer resultCode) {
+        importDisposable.dispose();
+        switch (resultCode) {
+            case ImportHelper.ProcessFolderResult.OK_EMPTY_FOLDER:
                 dismiss();
                 break;
-            case ImportHelper.Result.OK_LIBRARY_DETECTED:
+            case ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED:
                 // Hentoid folder is finally selected at this point -> Update UI
                 updateOnSelectFolder();
                 // Import service is already launched by the Helper; nothing else to do
                 break;
-            case ImportHelper.Result.OK_LIBRARY_DETECTED_ASK:
+            case ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED_ASK:
                 updateOnSelectFolder();
                 ImportHelper.showExistingLibraryDialog(requireContext(), this::onCancelExistingLibraryDialog);
                 break;
-            case ImportHelper.Result.CANCELED:
-                Snackbar.make(rootView, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show();
-                break;
-            case ImportHelper.Result.INVALID_FOLDER:
+            case ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER:
                 Snackbar.make(rootView, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
                 setCancelable(true);
                 break;
-            case ImportHelper.Result.APP_FOLDER:
+            case ImportHelper.ProcessFolderResult.KO_APP_FOLDER:
                 Snackbar.make(rootView, R.string.import_app_folder, BaseTransientBottomBar.LENGTH_LONG).show();
                 setCancelable(true);
                 break;
-            case ImportHelper.Result.DOWNLOAD_FOLDER:
+            case ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER:
                 Snackbar.make(rootView, R.string.import_download_folder, BaseTransientBottomBar.LENGTH_LONG).show();
                 setCancelable(true);
                 break;
-            case ImportHelper.Result.CREATE_FAIL:
+            case ImportHelper.ProcessFolderResult.KO_CREATE_FAIL:
                 Snackbar.make(rootView, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show();
                 setCancelable(true);
                 break;
-            case ImportHelper.Result.OTHER:
+            case ImportHelper.ProcessFolderResult.KO_OTHER:
                 Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
                 setCancelable(true);
                 break;

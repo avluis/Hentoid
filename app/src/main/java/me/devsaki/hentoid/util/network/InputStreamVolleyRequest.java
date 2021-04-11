@@ -24,6 +24,7 @@ public class InputStreamVolleyRequest extends Request<Object> {
     private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mParseListener;
     private final Map<String, String> headers;
     private final boolean useHentoidAgent;
+    private final boolean useWebviewAgent;
 
 
     public InputStreamVolleyRequest(
@@ -31,11 +32,13 @@ public class InputStreamVolleyRequest extends Request<Object> {
             String mUrl,
             Map<String, String> headers,
             boolean useHentoidAgent,
+            boolean useWebviewAgent,
             Response.Listener<Map.Entry<byte[], Map<String, String>>> parseListener,
             Response.ErrorListener errorListener) {
         super(method, mUrl, errorListener);
         this.headers = headers;
         this.useHentoidAgent = useHentoidAgent;
+        this.useWebviewAgent = useWebviewAgent;
         // this request would never use cache.
         setShouldCache(false);
         mParseListener = parseListener;
@@ -60,7 +63,7 @@ public class InputStreamVolleyRequest extends Request<Object> {
     @Override
     public Map<String, String> getHeaders() {
         Map<String, String> params = new HashMap<>();
-        params.put(HttpHelper.HEADER_USER_AGENT, HttpHelper.getMobileUserAgent(useHentoidAgent));
+        params.put(HttpHelper.HEADER_USER_AGENT, HttpHelper.getMobileUserAgent(useHentoidAgent, useWebviewAgent));
         params.put("Accept", "image/jpeg,image/png,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*"); // Required to pass through cloudflare filtering on some sites
         params.putAll(headers);
         return params;

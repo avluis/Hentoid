@@ -38,7 +38,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
 
-import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.customssiv.ImageSource;

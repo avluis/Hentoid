@@ -196,16 +196,16 @@ public class LibraryViewModel extends AndroidViewModel {
      *
      * @param query Query to use for the search
      */
-    public void searchGroup(Grouping grouping, @NonNull String query, int orderField, boolean orderDesc, int artistGroupVisibility) {
+    public void searchGroup(Grouping grouping, @NonNull String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping.getId(), query, orderField, orderDesc, artistGroupVisibility);
+        currentGroupsSource = dao.selectGroups(grouping.getId(), query, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
         groups.addSource(currentGroupsSource, groups::setValue);
     }
 
     /**
-     * Toggle the favourite filter
+     * Toggle the books favourite filter
      */
-    public void toggleFavouriteFilter() {
+    public void toggleContentFavouriteFilter() {
         searchManager.setFilterBookFavourites(!searchManager.isFilterBookFavourites());
         newSearch.setValue(true);
         doSearchContent();
@@ -237,14 +237,14 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchContent();
     }
 
-    public void setGrouping(Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility) {
+    public void setGrouping(Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
         if (grouping.equals(Grouping.FLAT)) {
             setGroup(null);
             return;
         }
 
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility);
+        currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
         groups.addSource(currentGroupsSource, groups::setValue);
 
         if (currentGroupCountSource != null) totalGroups.removeSource(currentGroupCountSource);
@@ -304,7 +304,12 @@ public class LibraryViewModel extends AndroidViewModel {
         throw new InvalidParameterException("Invalid ContentId : " + contentId);
     }
 
-    public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, @NonNull final Runnable onSuccess) {
+    public void redownloadContent(
+            @NonNull final List<Content> contentList,
+            boolean reparseContent,
+            boolean reparseImages,
+            int addMode,
+            @NonNull final Runnable onSuccess) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
 
@@ -318,7 +323,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
                             return c;
                         })
-                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus))
+                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus, addMode, ContentQueueManager.getInstance().isQueueActive()))
                         .doOnComplete(() -> {
                             // TODO is there stuff to do on the IO thread ?
                         })
@@ -611,6 +616,54 @@ public class LibraryViewModel extends AndroidViewModel {
             Timber.e(e, "Error when trying to delete %s", group.id);
             throw new GroupNotRemovedException(group, "Error when trying to delete " + group.id + " : " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Toggle the "favourite" state of the given group
+     *
+     * @param group Group whose favourite state to toggle
+     */
+    public void toggleGroupFavourite(@NonNull final Group group) {
+        if (group.isBeingDeleted()) return;
+
+        compositeDisposable.add(
+                Single.fromCallable(() -> doToggleGroupFavourite(group.id))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                    // Updated through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    /**
+     * Toggle the "favourite" state of the given group
+     *
+     * @param groupId ID of the group whose favourite state to toggle
+     * @return Resulting group
+     */
+    private Group doToggleGroupFavourite(long groupId) {
+        Helper.assertNonUiThread();
+
+        // Check if given group still exists in DB
+        Group theGroup = dao.selectGroup(groupId);
+
+        if (theGroup != null) {
+            theGroup.setFavourite(!theGroup.isFavourite());
+
+            // Persist in it JSON
+            GroupHelper.updateGroupsJson(getApplication(), dao);
+
+            // Persist in it DB
+            dao.insertGroup(theGroup);
+
+            return theGroup;
+        }
+
+        throw new InvalidParameterException("Invalid GroupId : " + groupId);
     }
 
     public void moveBooksToNew(long[] bookIds, String newGroupName, @NonNull final Runnable onSuccess) {

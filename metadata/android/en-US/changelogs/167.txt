@@ -1,0 +1,38 @@
+New
+
+    Library screen : Groups can now be favourited and filtered by favourite
+    Library screen : The "sort order" button becomes a "reshuffle" button when sorting randomly
+    Queue : New setting to decide where new downloads are added
+        Top : Top of the queue, or 2nd place if the 1st item is being downloaded
+        Bottom (default) : Same as previous behaviour
+        Ask every time
+
+Changed
+
+    FAKKU is back !
+    Toonily : Smarter ad blocker
+    Manwha Hentai : Smarter ad blocker
+    Picture viewer : New UI to toggle picture / book favourite
+    Picture viewer : New UI to view picture / book details
+    Picture viewer : Page number display is now invisible when showing the controls overlay
+    Queue screen : Back button deselects current selection
+    The Hentai Nexus source is not visible anymore (downloads are not removed)
+
+Fixes
+
+    Luscious : members.luscious.net links now trigger the "open with..." dialog when launched from an external app
+    Luscious : No need to reload gallery pages anymore to get the download button working
+    Browser : Even more ads removed
+    Queue screen : Fix broken progression circle for large books
+    Library screen : Prevent list from scrolling down when going back from the viewer in some cases
+    Library screen : The back button always closes the left drawer when needed
+    Picture viewer : Toggle favourite picture works again
+    Picture viewer : Favouriting a page when in shuffle mode doesn't reshuffle pages anymore
+    Image gallery : Favouriting a page doesn't remove it anymore
+
+Technical
+
+    Major performance improvements when importing or refreshing the library with a large collection
+    The app is now properly initialized when opening it trough the "open with..." dialog
+    The app now properly restarts with the startup screen after crashing
+

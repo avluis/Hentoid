@@ -95,7 +95,7 @@ public interface CollectionDAO {
 
     // Groups
 
-    LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility);
+    LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly);
 
     List<Group> selectGroups(int grouping);
 
@@ -186,7 +186,7 @@ public interface CollectionDAO {
 
     LiveData<List<QueueRecord>> selectQueueContent();
 
-    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus);
+    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int mode, boolean isQueueActive);
 
     void updateQueue(@NonNull List<QueueRecord> queue);
 

@@ -45,7 +45,7 @@ import io.reactivex.schedulers.Schedulers;
 //import me.devsaki.fakku.FakkuDecode;
 //import me.devsaki.fakku.PageInfo;
 //import me.devsaki.fakku.PointTranslation;
-import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -65,7 +65,7 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
@@ -87,6 +87,9 @@ import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
 
 public class ContentDownloadWorker extends Worker {
+
+    private static final int NOTIFICATION_ID = 3;
+    private static final int NOTIFICATION_ID_WARNING = 4;
 
     private enum QueuingResult {
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
@@ -130,10 +133,10 @@ public class ContentDownloadWorker extends Worker {
     }
 
     private void initNotifications(Context context) {
-        notificationManager = new NotificationManager(context, 1);
+        notificationManager = new NotificationManager(context, NOTIFICATION_ID);
         notificationManager.cancel();
 
-        warningNotificationManager = new NotificationManager(context, 2);
+        warningNotificationManager = new NotificationManager(context, NOTIFICATION_ID_WARNING);
         warningNotificationManager.cancel();
     }
 
@@ -742,6 +745,7 @@ public class ContentDownloadWorker extends Worker {
                 HttpHelper.fixUrl(img.getUrl(), site.getUrl()),
                 requestHeaders,
                 site.useHentoidAgent(),
+                site.useWebviewAgent(),
                 result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
                 error -> onRequestError(error, img, dir, backupUrlFinal, requestHeaders));
     }

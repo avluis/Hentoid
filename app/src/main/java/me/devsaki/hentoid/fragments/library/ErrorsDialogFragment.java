@@ -24,8 +24,8 @@ import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.LogUtil;
-import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.util.ToastHelper;
 
 /**
  * Created by Robb on 11/2018
@@ -122,10 +122,10 @@ public class ErrorsDialogFragment extends DialogFragment {
         }
     }
 
-    private LogUtil.LogInfo createLog(@NonNull final Content content) {
-        List<LogUtil.LogEntry> log = new ArrayList<>();
+    private LogHelper.LogInfo createLog(@NonNull final Content content) {
+        List<LogHelper.LogEntry> log = new ArrayList<>();
 
-        LogUtil.LogInfo errorLogInfo = new LogUtil.LogInfo();
+        LogHelper.LogInfo errorLogInfo = new LogHelper.LogInfo();
         errorLogInfo.setLogName("Error");
         errorLogInfo.setFileName("error_log" + content.getId());
         errorLogInfo.setNoDataMessage("No error detected.");
@@ -135,23 +135,23 @@ public class ErrorsDialogFragment extends DialogFragment {
         if (errorLog != null) {
             errorLogInfo.setHeader("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
             for (ErrorRecord e : errorLog)
-                log.add(new LogUtil.LogEntry(e.getTimestamp(), e.toString()));
+                log.add(new LogHelper.LogEntry(e.getTimestamp(), e.toString()));
         }
 
         return errorLogInfo;
     }
 
     private void showErrorLog(@NonNull final Content content) {
-        ToastUtil.toast(R.string.redownload_generating_log_file);
+        ToastHelper.toast(R.string.redownload_generating_log_file);
 
-        LogUtil.LogInfo logInfo = createLog(content);
-        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
+        LogHelper.LogInfo logInfo = createLog(content);
+        DocumentFile logFile = LogHelper.writeLog(requireContext(), logInfo);
         if (logFile != null) FileHelper.openFile(requireContext(), logFile);
     }
 
     private void shareErrorLog(@NonNull final Content content) {
-        LogUtil.LogInfo logInfo = createLog(content);
-        DocumentFile logFile = LogUtil.writeLog(requireContext(), logInfo);
+        LogHelper.LogInfo logInfo = createLog(content);
+        DocumentFile logFile = LogHelper.writeLog(requireContext(), logInfo);
         if (logFile != null)
             FileHelper.shareFile(requireContext(), logFile.getUri(), "Error log for book ID " + content.getUniqueSiteId());
     }
