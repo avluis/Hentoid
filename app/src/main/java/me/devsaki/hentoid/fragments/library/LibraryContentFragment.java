@@ -1348,6 +1348,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
+    }
+
+    @Override
     public void itemSwiped(int position, int direction) {
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
         if (vh instanceof ISwipeableViewHolder) {

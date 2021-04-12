@@ -802,4 +802,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     public void itemSwiped(int i, int i1) {
         // TODO
     }
+
+    @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
+    }
 }

@@ -836,6 +836,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
+    }
+
+    @Override
     public void itemSwiped(int position, int direction) {
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
         if (vh instanceof ISwipeableViewHolder) {
