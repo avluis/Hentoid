@@ -159,7 +159,7 @@ dependencies {
      * UI
      */
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = "5.3.5"
+    def fastadapter_version = '5.4.0'
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"
