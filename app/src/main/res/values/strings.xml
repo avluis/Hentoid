@@ -478,6 +478,10 @@
     <string name="book_prefs">Book settings</string>
     <string name="goto_app_prefs">App settings</string>
     <string name="use_app_prefs">Use app settings (%s)</string>
+    <string name="page_details">Page details</string>
+    <string name="book_details">Book details</string>
+    <string name="page_favourite_toggle">Toggle page favourite</string>
+    <string name="book_favourite_toggle">Toggle book favourite</string>
     <string name="page_favourite_success">Page favourited</string>
     <string name="page_unfavourite_success">Page unfavourited</string>
     <string name="book_favourite_success">Book favourited</string>
