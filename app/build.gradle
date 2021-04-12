@@ -245,7 +245,7 @@ dependencies {
     implementation 'org.greenrobot:eventbus:3.2.0'
 
     // Lightweight Stream : github.com/aNNiMON/Lightweight-Stream-API
-    implementation 'com.annimon:stream:1.2.1'
+    implementation 'com.annimon:stream:1.2.2'
 
     // LeakCanary: github.com/square/leakcanary
     if (includeLeakCanary.toBoolean()) {
