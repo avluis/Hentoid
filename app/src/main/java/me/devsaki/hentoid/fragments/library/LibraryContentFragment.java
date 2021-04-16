@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -394,7 +395,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
-            PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
+            PopupMenu popup = new PopupMenu(requireContext(), sortFieldButton, Gravity.END);
             popup.getMenuInflater()
                     .inflate(R.menu.library_books_sort_popup, popup.getMenu());
             popup.getMenu().findItem(R.id.sort_custom).setVisible(group != null && group.hasCustomBookOrder);
