@@ -591,6 +591,7 @@ public class LibraryActivity extends BaseActivity {
         }
 
         sortDirectionButton.setVisibility(View.GONE);
+        sortReshuffleButton.setVisibility(View.GONE);
         sortFieldButton.setVisibility(View.GONE);
         showArtistsGroupsButton.setVisibility(View.GONE);
 
