@@ -1,7 +1,13 @@
 package me.devsaki.hentoid.activities.sources;
 
+import androidx.annotation.NonNull;
+
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 
 public class FakkuActivity extends BaseWebActivity {
 
@@ -14,11 +20,28 @@ public class FakkuActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new FakkuWebClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
 
         showTooltip(R.string.help_web_fakku_account, false); // Kinda hacky, but it's better than creating a whole new class just for that
 
         return client;
+    }
+
+    private class FakkuWebClient extends CustomWebViewClient {
+
+        FakkuWebClient(String[] filter, WebContentListener listener) {
+            super(filter, listener);
+        }
+
+        // Show a tooltip everytime a content is ignored (premium Fakku content)
+        @Override
+        protected void processContent(@Nonnull Content content, @NonNull String url, boolean quickDownload) {
+            if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED)) {
+                showTooltip(R.string.help_web_fakku_premium, true);
+                return;
+            }
+            super.processContent(content, url, quickDownload);
+        }
     }
 }

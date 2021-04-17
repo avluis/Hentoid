@@ -42,7 +42,7 @@ public class Hentai2ReadParser extends BaseImageListParser {
         // NB : We can't just guess the URLs by starting to 1 and increment them
         // because the site provides "subchapters" (e.g. 4.6, 2.5)
         List<String> chapterUrls = new ArrayList<>();
-        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.HENTAI2READ.useHentoidAgent());
+        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.HENTAI2READ.useHentoidAgent(), Site.HENTAI2READ.useWebviewAgent());
         if (doc != null) {
             List<Element> chapters = doc.select(".nav-chapters a[href^=" + content.getGalleryUrl() + "]");
             for (Element e : chapters) chapterUrls.add(e.attr("href"));
@@ -54,7 +54,7 @@ public class Hentai2ReadParser extends BaseImageListParser {
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {
             if (processHalted) break;
-            doc = getOnlineDocument(url, headers, Site.HENTAI2READ.useHentoidAgent());
+            doc = getOnlineDocument(url, headers, Site.HENTAI2READ.useHentoidAgent(), Site.HENTAI2READ.useWebviewAgent());
             if (doc != null) {
                 List<Element> scripts = doc.select("script");
                 for (Element e : scripts)

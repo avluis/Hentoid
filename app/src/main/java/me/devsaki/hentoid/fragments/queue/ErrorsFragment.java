@@ -506,6 +506,11 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     }
 
     @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing; error items are not draggable
+    }
+
+    @Override
     public void itemSwiped(int position, int direction) {
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
         if (vh instanceof ISwipeableViewHolder) {

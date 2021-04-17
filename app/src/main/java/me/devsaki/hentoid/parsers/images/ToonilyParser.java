@@ -36,7 +36,7 @@ public class ToonilyParser extends BaseImageListParser {
 
         // 1. Scan the gallery page for chapter URLs
         List<String> chapterUrls = new ArrayList<>();
-        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent());
+        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
         if (doc != null) {
             List<Element> chapters = doc.select("[class^=wp-manga-chapter] a");
             for (Element e : chapters) {
@@ -51,7 +51,7 @@ public class ToonilyParser extends BaseImageListParser {
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {
             if (processHalted) break;
-            doc = getOnlineDocument(url, headers, Site.TOONILY.useHentoidAgent());
+            doc = getOnlineDocument(url, headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
                 result.addAll(Stream.of(images).map(i -> i.attr("data-src").trim()).filterNot(String::isEmpty).toList());

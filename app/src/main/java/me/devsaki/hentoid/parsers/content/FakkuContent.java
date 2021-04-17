@@ -9,12 +9,12 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -36,13 +36,17 @@ public class FakkuContent extends BaseContentParser {
     @Selector(value = "a.button")
     private List<Element> greenButton;
 
+    private final String[] BLOCKED_CONTENT_CAPTIONS = new String[]{"subscribe", "purchase", "buy", "order", "trial", "buy", "game", "install"};
+
     @Nullable
     public Content update(@NonNull final Content content, @Nonnull String url) {
         if (greenButton != null) {
             // Check if book is available
             for (Element e : greenButton) {
-                if (e.text().toLowerCase().contains("subscribe") || e.text().toLowerCase().contains("purchase"))
-                    return new Content().setStatus(StatusContent.IGNORED);
+                String text = e.text().toLowerCase();
+                for (String c : BLOCKED_CONTENT_CAPTIONS)
+                    if (text.contains(c))
+                        return new Content().setStatus(StatusContent.IGNORED);
             }
         }
 

@@ -41,7 +41,7 @@ public class ImhentaiParser extends BaseImageListParser {
         // 2- Generate image URL from  imagePath constant, gallery ID, page number and extension
 
         // 1- Get image extension from gallery data (JSON on HTML body)
-        Document doc = getOnlineDocument(url, headers, Site.IMHENTAI.useHentoidAgent());
+        Document doc = getOnlineDocument(url, headers, Site.IMHENTAI.useHentoidAgent(), Site.IMHENTAI.useWebviewAgent());
         if (doc != null) {
             List<Element> thumbs = doc.select(".gthumb img");
             List<Element> scripts = doc.select("body script");

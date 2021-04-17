@@ -444,6 +444,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Content theContent = collectionDao.selectContent(loadedContentId);
         if (null == theImages || null == theContent) return;
 
+        int nbReadablePages = (int) Stream.of(theImages).filter(ImageFile::isReadable).count();
         int readThresholdPref = Preferences.getViewerReadThreshold();
         int readThresholdPosition;
         switch (readThresholdPref) {
@@ -454,7 +455,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 readThresholdPosition = 5;
                 break;
             case Preferences.Constant.VIEWER_READ_THRESHOLD_ALL:
-                readThresholdPosition = (int) Stream.of(theImages).filter(ImageFile::isReadable).count();
+                readThresholdPosition = nbReadablePages;
                 break;
             default:
                 readThresholdPosition = 1;
@@ -463,7 +464,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         boolean updateReads = (readPageNumbers.size() >= readThresholdPosition || theContent.getReads() > 0);
 
         // Reset the memorized page index if it represents the last page
-        int indexToSet = (collectionIndex >= theImages.size()) ? 0 : collectionIndex;
+        int indexToSet = (collectionIndex >= nbReadablePages) ? 0 : collectionIndex;
 
         leaveDisposable =
                 Completable.fromRunnable(() -> doLeaveBook(theContent.getId(), indexToSet, updateReads))

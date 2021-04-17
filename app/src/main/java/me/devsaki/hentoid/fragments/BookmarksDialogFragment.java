@@ -396,6 +396,11 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         }
     }
 
+    @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
+    }
+
     public interface Parent {
         void openUrl(@NonNull final String url);
         void updateBookmarkButton(boolean newValue);

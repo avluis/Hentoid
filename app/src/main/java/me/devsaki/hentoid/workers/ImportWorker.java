@@ -269,6 +269,8 @@ public class ImportWorker extends Worker {
                             if (!canonicalBookFolderName.left.equalsIgnoreCase(bookFolderName)) {
                                 if (renameFolder(context, bookFolder, content, explorer, canonicalBookFolderName.left)) {
                                     trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName.left);
+                                    // Rescan files inside the renamed folder
+                                    bookFiles = explorer.listFiles(context, bookFolder, null);
                                 } else {
                                     trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName.left);
                                 }
@@ -276,7 +278,6 @@ public class ImportWorker extends Worker {
                         }
 
                         // Attach image file Uri's to the book's images
-//                        List<DocumentFile> imageFiles = FileHelper.listFiles(context, bookFolder, client, imageNames);
                         List<DocumentFile> imageFiles = Stream.of(bookFiles).filter(f -> imageNames.accept(f.getName())).toList();
                         if (!imageFiles.isEmpty()) {
                             // No images described in the JSON -> recreate them

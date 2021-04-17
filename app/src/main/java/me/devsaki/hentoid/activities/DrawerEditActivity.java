@@ -130,4 +130,9 @@ public class DrawerEditActivity extends BaseActivity implements ItemTouchCallbac
             ((IDraggableViewHolder) viewHolder).onDragged();
         }
     }
+
+    @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
+    }
 }

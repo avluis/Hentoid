@@ -505,7 +505,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             dlPreparationProgressBar.setVisibility(View.GONE);
         }
 
-        dlPreparationProgressBar.setProgress1((float) (event.total - event.done));
+        dlPreparationProgressBar.setProgress1(event.done);
     }
 
     /**
@@ -833,6 +833,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         if (viewHolder instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) viewHolder).onDragged();
         }
+    }
+
+    @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
     }
 
     @Override

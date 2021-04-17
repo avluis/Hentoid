@@ -1221,7 +1221,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             List<Pair<String, String>> requestHeadersList;
             requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
 
-            Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
+            Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent(), getStartSite().useWebviewAgent());
             ResponseBody body = onlineFileResponse.body();
             if (null == body)
                 throw new IOException("Empty response from server");
@@ -1362,7 +1362,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
             try {
                 // Query resource here, using OkHttp
-                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
+                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent(), getStartSite().useWebviewAgent());
 
                 // Scram if the response is a redirection or an error
                 if (response.code() >= 300) return null;

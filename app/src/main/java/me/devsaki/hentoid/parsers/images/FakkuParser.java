@@ -63,11 +63,11 @@ public class FakkuParser implements ImageListParser {
 
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, downloadParams.get(HttpHelper.HEADER_REFERER_KEY)));
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, Site.FAKKU2.getUrl() + "/"));
         String readUrl = content.getGalleryUrl().replace("www", "books").replace("/hentai", "//hentai") + "/read";
 
         // Get the raw content of the page to detect if it's JSON (no JSON = probably trying to get a premium book with a non-premium account)
-        ResponseBody response = HttpHelper.getOnlineResource(readUrl, headers, Site.FAKKU2.useMobileAgent(), Site.FAKKU2.useHentoidAgent()).body();
+        ResponseBody response = HttpHelper.getOnlineResource(readUrl, headers, Site.FAKKU2.useMobileAgent(), Site.FAKKU2.useHentoidAgent(), Site.FAKKU2.useWebviewAgent()).body();
         if (null == response) throw new IOException("Could not load response");
 
         String rawResource = response.string().trim();

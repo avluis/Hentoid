@@ -13,7 +13,6 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -92,8 +91,6 @@ import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 public class LibraryActivity extends BaseActivity {
 
     private DrawerLayout drawerLayout;
-
-    private OnBackPressedCallback callback;
 
     // ======== COMMUNICATION
     // Viewmodel
@@ -288,14 +285,6 @@ public class LibraryActivity extends BaseActivity {
         } catch (Exception e) {
             Timber.e(e);
         }
-
-        callback = new OnBackPressedCallback(false) {
-            @Override
-            public void handleOnBackPressed() {
-                closeNavigationDrawer();
-            }
-        };
-        getOnBackPressedDispatcher().addCallback(this, callback);
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
@@ -602,6 +591,7 @@ public class LibraryActivity extends BaseActivity {
         }
 
         sortDirectionButton.setVisibility(View.GONE);
+        sortReshuffleButton.setVisibility(View.GONE);
         sortFieldButton.setVisibility(View.GONE);
         showArtistsGroupsButton.setVisibility(View.GONE);
 
@@ -609,6 +599,14 @@ public class LibraryActivity extends BaseActivity {
 
         // Restore CLEAR button if it's needed
         if (hideSortOnly && isSearchQueryActive()) searchClearButton.setVisibility(View.VISIBLE);
+    }
+
+    public boolean closeLeftDrawer() {
+        if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        }
+        return false;
     }
 
     public boolean collapseSearchMenu() {
@@ -857,12 +855,10 @@ public class LibraryActivity extends BaseActivity {
 
     public void closeNavigationDrawer() {
         drawerLayout.closeDrawer(GravityCompat.START);
-        callback.setEnabled(false);
     }
 
     public void openNavigationDrawer() {
         drawerLayout.openDrawer(GravityCompat.START);
-        callback.setEnabled(true);
     }
 
     private boolean isGroupDisplayed() {

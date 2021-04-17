@@ -9,6 +9,7 @@ public class JsonSiteSettings {
     public static class JsonSite {
         public Boolean useMobileAgent = null;
         public Boolean useHentoidAgent = null;
+        public Boolean useWebviewAgent = null;
         public Boolean hasImageProcessing = null;
         public Boolean hasBackupURLs = null;
         public Boolean hasCoverBasedPageUpdates = null;

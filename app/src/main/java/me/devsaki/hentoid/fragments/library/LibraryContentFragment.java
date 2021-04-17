@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -386,7 +387,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             viewModel.updateContentOrder();
             activity.get().sortCommandsAutoHide(true, null);
         });
-        sortReshuffleButton.setOnClickListener( v-> {
+        sortReshuffleButton.setOnClickListener(v -> {
             RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
             viewModel.updateContentOrder();
             activity.get().sortCommandsAutoHide(true, null);
@@ -394,7 +395,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
-            PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
+            PopupMenu popup = new PopupMenu(requireContext(), sortFieldButton, Gravity.END);
             popup.getMenuInflater()
                     .inflate(R.menu.library_books_sort_popup, popup.getMenu());
             popup.getMenu().findItem(R.id.sort_custom).setVisible(group != null && group.hasCustomBookOrder);
@@ -738,7 +739,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (currentPosition > 0 || -1 == topItemPosition) topItemPosition = currentPosition;
 
         outState.putInt(KEY_LAST_LIST_POSITION, topItemPosition);
-        topItemPosition = -1;
+        //topItemPosition = -1;
     }
 
     @Override
@@ -805,7 +806,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             return;
         }
 
-        if (!activity.get().collapseSearchMenu()) {
+        if (!activity.get().collapseSearchMenu() && !activity.get().closeLeftDrawer()) {
             // If none of the above and we're into a grouping, go back to the groups view
             if (!Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
                 // Load an empty list to avoid having the image of the current list appear
@@ -1345,6 +1346,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (viewHolder instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) viewHolder).onDragged();
         }
+    }
+
+    @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
     }
 
     @Override

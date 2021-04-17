@@ -26,7 +26,7 @@ import timber.log.Timber;
  */
 public class StartupWorker extends Worker {
 
-    private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_ID = 2;
 
     private static boolean running;
     private NotificationManager notificationManager;
@@ -42,7 +42,7 @@ public class StartupWorker extends Worker {
 
         initNotifications(context);
 
-        Timber.w("Import worker created");
+        Timber.w("Startup worker created");
     }
 
     @Override
@@ -66,7 +66,7 @@ public class StartupWorker extends Worker {
 
         if (notificationManager != null) notificationManager.cancel();
 
-        Timber.d("Import worker destroyed");
+        Timber.d("Startup worker destroyed");
     }
 
     @NonNull

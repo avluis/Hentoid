@@ -79,7 +79,7 @@ public class HitomiActivity extends BaseWebActivity {
         if (jsBlacklistCache.contains(url)) return true;
 
         // 2- Accept non-JS files
-        if (!url.toLowerCase().endsWith(".js")) return false;
+        if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
 
         // 3- Accept JS files defined in the whitelist
         for (Pattern p : whitelistUrlPattern) {
@@ -90,7 +90,7 @@ public class HitomiActivity extends BaseWebActivity {
         // 4- For the others (gray list), block them if they _contain_ keywords
         Timber.d(">> examining grey file %s", url);
         try {
-            Response response = HttpHelper.getOnlineResource(url, null, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent());
+            Response response = HttpHelper.getOnlineResource(url, null, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent(), getStartSite().useWebviewAgent());
             ResponseBody body = response.body();
             if (null == body) throw new IOException("Empty body");
 
@@ -104,7 +104,7 @@ public class HitomiActivity extends BaseWebActivity {
             Timber.e(e);
         }
 
-        // Accept non-blocked grey JS files
+        // Accept non-blocked (=grey) JS files
         return false;
     }
 }
