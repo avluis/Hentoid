@@ -49,7 +49,7 @@
     </androidx.recyclerview.widget.RecyclerView>
 
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guidelineMiddle"
+        android:id="@+id/guideline_middle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -63,7 +63,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
         android:text="@string/category_any"
-        app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
+        app:layout_constraintEnd_toStartOf="@id/guideline_middle"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textCategoryTag" />
@@ -75,7 +75,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
         android:text="@string/category_series"
-        app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
+        app:layout_constraintStart_toEndOf="@id/guideline_middle"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textCategoryLanguage" />
@@ -89,7 +89,7 @@
         android:text="@string/category_artist"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
+        app:layout_constraintStart_toEndOf="@id/guideline_middle"
         app:layout_constraintTop_toBottomOf="@id/textCategoryTag" />
 
     <TextView
@@ -101,7 +101,7 @@
         android:text="@string/category_language"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
+        app:layout_constraintStart_toEndOf="@id/guideline_middle"
         app:layout_constraintTop_toBottomOf="@id/textCategoryArtist" />
 
     <TextView
@@ -111,7 +111,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
         android:text="@string/category_source"
-        app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
+        app:layout_constraintEnd_toStartOf="@id/guideline_middle"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textCategoryCharacter" />
@@ -123,7 +123,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
         android:text="@string/category_character"
-        app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
+        app:layout_constraintEnd_toStartOf="@id/guideline_middle"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textCategoryAny" />
@@ -137,7 +137,7 @@
         android:text="@string/category_tag"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
+        app:layout_constraintStart_toEndOf="@id/guideline_middle"
         app:layout_constraintTop_toBottomOf="@id/search_tags" />
 
     <TextView
@@ -166,6 +166,6 @@
         android:onClick="onExcludeClick"
         android:text="@string/exclude"
         app:layout_constraintBottom_toTopOf="@id/textCategoryAny"
-        app:layout_constraintEnd_toEndOf="@id/guidelineMiddle"
+        app:layout_constraintEnd_toEndOf="@id/guideline_middle"
         app:layout_constraintStart_toStartOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

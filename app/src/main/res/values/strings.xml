@@ -500,6 +500,19 @@
 
     <!-- Duplicate detector -->
     <string name="title_activity_duplicate_detector">Duplicate detector</string>
+    <string name="duplicate_use_title">Title</string>
+    <string name="duplicate_use_cover">Cover</string>
+    <string name="duplicate_use_artist">Artist</string>
+    <string name="duplicate_use_same_language">Same language only</string>
+    <string name="duplicate_use_sensitivity">Sensitivity</string>
+    <string-array name="duplicate_use_sensitivities">
+        <item>Permissive</item>
+        <item>Standard</item>
+        <item>Strict</item>
+    </string-array>
+    <string name="duplicate_find_action">Find duplicates</string>
+    <string name="duplicate_index_covers">Indexing cover pictures</string>
+    <string name="duplicate_find">Detecting duplicate books</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.LibraryActivity"
+    tools:ignore="AlwaysShowAction"
+    tools:targetApi="o">
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/open_settings"
+        android:tooltipText="@string/open_settings"
+        app:showAsAction="always" />
+</menu>

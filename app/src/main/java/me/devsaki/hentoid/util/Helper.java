@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Pair;
 import android.view.View;
 
 import androidx.annotation.DimenRes;
@@ -18,7 +19,6 @@ import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.annimon.stream.Stream;
-import com.skydoves.submarine.SubmarineView;
 
 import org.apache.commons.text.StringEscapeUtils;
 
@@ -26,7 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +38,6 @@ import javax.annotation.Nonnull;
 
 import io.reactivex.disposables.Disposable;
 import io.whitfin.siphash.SipHasher;
-import timber.log.Timber;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
@@ -384,6 +382,18 @@ public final class Helper {
         return SipHasher.hash(SIP_KEY, data);
     }
 
+    // TODO doc
+    public static double weigthedAverage(List<Pair<Double, Double>> operands) {
+        if (operands.isEmpty()) return 0.0;
+
+        double numerator = 0.0;
+        double denominator = 0.0;
+        for (Pair<Double, Double> operand : operands) {
+            numerator += (operand.first * operand.second);
+            denominator += operand.second;
+        }
+        return numerator / denominator;
+    }
 
     // TODO doc
     public static class LifecycleRxCleaner implements LifecycleObserver {

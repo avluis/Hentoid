@@ -6,7 +6,6 @@ import java.util.Objects;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
-import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.core.Consts;

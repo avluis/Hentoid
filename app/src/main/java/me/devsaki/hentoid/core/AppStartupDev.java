@@ -86,7 +86,7 @@ public class AppStartupDev {
         for (int i = 0; i < hashes1.size(); i++) {
             for (int j = 0; j < hashes1.size(); j++) {
 //                if (i == j) continue;
-                float sim = ImagePHash.similarity(hashes1.get(i), hashes1.get(j));
+                double sim = ImagePHash.similarity(hashes1.get(i), hashes1.get(j));
                 if (sim > threshold) {
                     nbSuccess++;
                     Timber.d("%s =%s= %s", vals1.get(i), sim, vals1.get(j));
@@ -100,7 +100,7 @@ public class AppStartupDev {
         for (int i = 0; i < hashes2.size(); i++) {
             for (int j = 0; j < hashes2.size(); j++) {
 //                if (i == j) continue;
-                float sim = ImagePHash.similarity(hashes2.get(i), hashes2.get(j));
+                double sim = ImagePHash.similarity(hashes2.get(i), hashes2.get(j));
                 if (sim > threshold) {
                     nbSuccess++;
                     Timber.d("%s =%s= %s", vals2.get(i), sim, vals2.get(j));
@@ -113,7 +113,7 @@ public class AppStartupDev {
         // Comparisons between sets 1 & 2
         for (int i = 0; i < hashes1.size(); i++) {
             for (int j = 0; j < hashes2.size(); j++) {
-                float sim = ImagePHash.similarity(hashes1.get(i), hashes2.get(j));
+                double sim = ImagePHash.similarity(hashes1.get(i), hashes2.get(j));
                 if (sim > threshold) {
                     nbSuccess++;
                     Timber.d("%s =%s= %s", vals1.get(i), sim, vals2.get(j));

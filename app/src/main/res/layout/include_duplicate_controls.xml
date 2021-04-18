@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:background="@color/dark_gray"
+        android:visibility="gone"
+        android:padding="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_middle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.3" />
+
+        <CheckBox
+            android:id="@+id/use_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/duplicate_use_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <CheckBox
+            android:id="@+id/use_cover"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/duplicate_use_cover"
+            app:layout_constraintStart_toEndOf="@id/guideline_middle"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <CheckBox
+            android:id="@+id/use_artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/duplicate_use_artist"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/use_cover" />
+
+        <CheckBox
+            android:id="@+id/use_same_language"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/duplicate_use_same_language"
+            app:layout_constraintStart_toEndOf="@id/guideline_middle"
+            app:layout_constraintTop_toBottomOf="@id/use_cover" />
+
+        <TextView
+            android:id="@+id/use_sensitivity_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:layout_marginTop="8dp"
+            android:text="@string/duplicate_use_sensitivity"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/use_artist" />
+
+        <com.skydoves.powerspinner.PowerSpinnerView
+            android:id="@+id/use_sensitivity"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:background="@drawable/bg_spinner_border"
+            android:gravity="center_vertical"
+            app:layout_constraintBottom_toBottomOf="@id/use_sensitivity_txt"
+            app:layout_constraintStart_toEndOf="@id/use_sensitivity_txt"
+            app:layout_constraintTop_toTopOf="@id/use_sensitivity_txt"
+            app:spinner_arrow_gravity="end"
+            app:spinner_arrow_padding="8dp"
+            app:spinner_arrow_tint="@color/white_opacity_66"
+            app:spinner_divider_show="true"
+            app:spinner_divider_size="0.4dp"
+            app:spinner_popup_background="@color/dark_gray"
+            app:spinner_popup_elevation="14dp" />
+
+        <TextView
+            android:id="@+id/scan_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_fab_extended"
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="12dp"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="20dp"
+            android:text="@string/duplicate_find_action"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/use_sensitivity" />
+
+        <TextView
+            android:id="@+id/index_pictures_txt"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:paddingTop="16dp"
+            android:text="@string/duplicate_index_covers"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scan_fab"
+            tools:visibility="visible" />
+
+        <ProgressBar
+            android:id="@+id/index_pictures_pb"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/index_pictures_txt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/index_pictures_txt"
+            app:layout_constraintTop_toTopOf="@id/index_pictures_txt"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/detect_books_txt"
+            android:layout_width="120dp"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:layout_marginTop="16dp"
+            android:text="@string/duplicate_find"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/index_pictures_txt"
+            tools:visibility="visible" />
+
+        <ProgressBar
+            android:id="@+id/detect_books_pb"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="0dp"
+            android:layout_height="4dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/detect_books_txt"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/detect_books_txt"
+            app:layout_constraintTop_toTopOf="@id/detect_books_txt"
+            tools:visibility="visible" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</merge>
