@@ -5,8 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.annimon.stream.Stream
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -15,6 +15,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
+import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
 
 class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
@@ -22,11 +23,11 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     private var _binding: FragmentDuplicateMainBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel by viewModels<DuplicateViewModel>()
+    lateinit var viewModel: DuplicateViewModel
     private val itemAdapter = ItemAdapter<DuplicateItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDuplicateMainBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -43,7 +44,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.scanFab.setOnClickListener {
             this.onScanClick()
         }
-
+        val vmFactory = ViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
         viewModel.duplicates.observe(viewLifecycleOwner, Observer { l: List<DuplicateViewModel.DuplicateResult>? -> this.onNewDuplicates(l) })
     }
 

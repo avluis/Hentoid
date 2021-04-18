@@ -30,6 +30,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         // Thresholds according to the "sensibility" setting
         private val COVER_THRESHOLDS = doubleArrayOf(0.71, 0.75, 0.8) // @48-bit resolution, according to calibration tests
         private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
+        private val TOTAL_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
     }
 
     val duplicates = MutableLiveData<List<DuplicateResult>>()
@@ -146,7 +147,8 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
 
                 if (useArtist) artistScore = computeArtistScore(contentRef, contentCandidate)
 
-                result.add(DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore))
+                val duplicateResult = DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore)
+                if (duplicateResult.computeTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) result.add(duplicateResult)
             }
             duplicates.postValue(result)
         }

@@ -13,13 +13,16 @@
         android:paddingStart="@dimen/default_cardview_margin"
         android:paddingTop="@dimen/default_cardview_margin"
         android:paddingEnd="@dimen/default_cardview_margin"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/item_library_content" />
 
     <include
         android:id="@+id/controls"
+        android:clickable="true"
+        android:focusable="true"
         layout="@layout/include_duplicate_controls" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
