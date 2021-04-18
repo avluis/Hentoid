@@ -24,7 +24,6 @@ import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
-import com.mikepenz.fastadapter.swipe.IDrawerSwipeableViewHolder;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -140,7 +139,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     }
 
 
-    public static class ContentViewHolder extends FastAdapter.ViewHolder<DuplicateItem> implements IDraggableViewHolder, IDrawerSwipeableViewHolder, ISwipeableViewHolder {
+    public static class ContentViewHolder extends FastAdapter.ViewHolder<DuplicateItem> {
 
         // Common elements
         private final View baseLayout;
@@ -151,9 +150,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         private final TextView tvPages;
         private final ImageView ivSite;
         private final ImageView ivError;
-
-        private final View bookCard;
-        private final View deleteButton;
 
         // Specific to library content
         private View ivNew;
@@ -177,9 +173,8 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             tvArtist = itemView.findViewById(R.id.tvArtist);
             tvPages = itemView.findViewById(R.id.tvPages);
             ivError = itemView.findViewById(R.id.ivError);
-            // Swipe elements
-            bookCard = itemView.findViewById(R.id.item_card);
-            deleteButton = itemView.findViewById(R.id.delete_btn);
+            ivFavourite = itemView.findViewById(R.id.ivFavourite);
+            ivExternal = itemView.findViewById(R.id.ivExternal);
 
             if (viewType == ViewType.MAIN) {
                 // TODO
@@ -433,37 +428,8 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         @Override
         public void unbindView(@NotNull DuplicateItem item) {
 //            deleteActionRunnable = null;
-            bookCard.setTranslationX(0f);
             if (ivCover != null && Helper.isValidContextForGlide(ivCover))
                 Glide.with(ivCover).clear(ivCover);
-        }
-
-        @Override
-        public void onDragged() {
-            // TODO fix incorrect visual behaviour when dragging an item to 1st position
-            //bookCard.setBackgroundColor(ThemeHelper.getColor(bookCard.getContext(), R.color.white_opacity_25));
-        }
-
-        @Override
-        public void onDropped() {
-            // TODO fix incorrect visual behaviour when dragging an item to 1st position
-            //bookCard.setBackground(bookCard.getContext().getDrawable(R.drawable.bg_book_card));
-        }
-
-        @NotNull
-        @Override
-        public View getSwipeableView() {
-            return bookCard;
-        }
-
-        @Override
-        public void onSwiped() {
-            if (deleteButton != null) deleteButton.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        public void onUnswiped() {
-            if (deleteButton != null) deleteButton.setVisibility(View.GONE);
         }
     }
 }

@@ -642,6 +642,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getDuplicateSensitivity() {
+        return Integer.parseInt(sharedPreferences.getString(Key.DUPLICATE_SENSITIVITY, Integer.toString(Default.DUPLICATE_SENSITIVITY)) + "");
+    }
+
+    public static void setDuplicateSensitivity(int duplicateSensitivity) {
+        sharedPreferences.edit()
+                .putString(Key.DUPLICATE_SENSITIVITY, Integer.toString(duplicateSensitivity))
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -726,6 +736,7 @@ public final class Preferences {
         public static final String ARTIST_GROUP_VISIBILITY = "artist_group_visibility";
         public static final String VIEWER_DELETE_ASK_MODE = "viewer_delete_ask";
         public static final String VIEWER_DELETE_TARGET = "viewer_delete_target";
+        public static final String DUPLICATE_SENSITIVITY = "duplicate_sensitivity";
 
         // Deprecated values kept for housekeeping/migration
         static final String ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -806,6 +817,7 @@ public final class Preferences {
         static final int ARTIST_GROUP_VISIBILITY = Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
         static final int VIEWER_DELETE_ASK_MODE = Constant.VIEWER_DELETE_ASK_AGAIN;
         static final int VIEWER_DELETE_TARGET = Constant.VIEWER_DELETE_TARGET_PAGE;
+        static final int DUPLICATE_SENSITIVITY = 1;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

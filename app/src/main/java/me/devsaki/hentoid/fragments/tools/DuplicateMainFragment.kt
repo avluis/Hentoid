@@ -7,15 +7,18 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.annimon.stream.Stream
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
+import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import timber.log.Timber
 
 class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
@@ -39,17 +42,27 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
+        binding.list.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        FastScrollerBuilder(binding.list).build()
         binding.list.adapter = fastAdapter
 
         binding.controls.scanFab.setOnClickListener {
             this.onScanClick()
         }
+
+        binding.controls.useSensitivity.setItems(R.array.duplicate_use_sensitivities)
+        binding.controls.useSensitivity.selectItemByIndex(Preferences.getDuplicateSensitivity())
+
+        // TODO only do that when dupes DB is empty
+        binding.controls.root.visibility = View.VISIBLE
+
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
         viewModel.duplicates.observe(viewLifecycleOwner, Observer { l: List<DuplicateViewModel.DuplicateResult>? -> this.onNewDuplicates(l) })
     }
 
     private fun onScanClick() {
+        Preferences.setDuplicateSensitivity(binding.controls.useSensitivity.selectedIndex)
         viewModel.scanForDuplicates(
                 binding.controls.useTitle.isChecked,
                 binding.controls.useCover.isChecked,
@@ -59,6 +72,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         )
     }
 
+    @Synchronized
     private fun onNewDuplicates(duplicates: List<DuplicateViewModel.DuplicateResult>?) {
         if (null == duplicates) return
 
@@ -68,5 +82,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         val items: List<DuplicateItem> = Stream.of(duplicates).withoutNulls().map { i -> DuplicateItem(i, DuplicateItem.ViewType.MAIN) }.toList()
         set(itemAdapter, items)
+
+        binding.controls.root.visibility = View.GONE
     }
 }

@@ -115,6 +115,9 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
             }
 
             for (contentCandidate in library) {
+                // Ignore same item comparison
+                if (contentRef.id == contentCandidate.id) continue
+
                 // Check if that combination has already been processed
                 val existingResult = detectedDuplicatesHash[Pair(contentCandidate.id, contentRef.id)]
                 if (existingResult != null) {
@@ -134,7 +137,10 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
 
                 // Remove if not same language
                 if (sameLanguageOnly && !containsSameLanguage(contentRef, contentCandidate)) {
-                    result.add(DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore))
+                    val duplicateResult = DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore)
+                    result.add(duplicateResult)
+                    detectedDuplicatesHash[Pair(contentRef.id, contentCandidate.id)] = duplicateResult
+//                    Timber.i("L %s [%s %s %s] %s", duplicateResult.reference.id, duplicateResult.titleScore, duplicateResult.artistScore, duplicateResult.coverScore, duplicateResult.calcTotalScore())
                     continue
                 }
 
@@ -148,10 +154,14 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
                 if (useArtist) artistScore = computeArtistScore(contentRef, contentCandidate)
 
                 val duplicateResult = DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore)
-                if (duplicateResult.computeTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) result.add(duplicateResult)
+                result.add(duplicateResult)
+                detectedDuplicatesHash[Pair(contentRef.id, contentCandidate.id)] = duplicateResult
+//                Timber.i("D %s [%s %s %s] %s", duplicateResult.reference.id, duplicateResult.titleScore, duplicateResult.artistScore, duplicateResult.coverScore, duplicateResult.calcTotalScore())
             }
-            duplicates.postValue(result)
         }
+        // TODO save to DB instead
+        val finalResult = Stream.of(result).filter{ item -> item.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity] }.toList()
+        duplicates.postValue(finalResult)
     }
 
     private fun containsSameLanguage(contentRef: Content, contentCandidate: Content): Boolean {
@@ -181,7 +191,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         return if (similarity1 > TEXT_THRESHOLDS[sensitivity]) {
             candidateTitle = removeDigits(candidateTitle)
             val similarity2 = textComparator.similarity(referenceTitle, candidateTitle)
-            if (similarity2 - similarity1 < 0.02 && candidateTitle != referenceTitle) {
+            if (similarity2 - similarity1 < 0.02) {
                 similarity1
             } else {
                 0.0 // Most probably a chapter variant -> set to 0%
@@ -234,7 +244,11 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
             val coverScore: Double,
             val artistScore: Double) {
 
-        fun computeTotalScore(): Double {
+        private var totalScore = -1.0
+
+        fun calcTotalScore(): Double {
+            if (totalScore > -1.0) return totalScore
+            // Calculate
             val operands = ArrayList<android.util.Pair<Double, Double>>();
             if (titleScore > -1) operands.add(android.util.Pair<Double, Double>(titleScore, 1.0))
             if (coverScore > -1) operands.add(android.util.Pair<Double, Double>(coverScore, 1.0))
