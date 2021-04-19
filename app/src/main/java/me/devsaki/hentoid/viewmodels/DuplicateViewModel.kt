@@ -13,7 +13,9 @@ import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.*
+import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
 
@@ -21,6 +23,10 @@ import java.io.IOException
 class DuplicateViewModel(application: Application, val dao: CollectionDAO) : AndroidViewModel(application) {
 
     companion object {
+        // Processing steps
+        const val STEP_COVER_INDEX = 0
+        const val STEP_DUPLICATES = 1
+
         // Thresholds according to the "sensibility" setting
         private val COVER_THRESHOLDS = doubleArrayOf(0.71, 0.75, 0.8) // @48-bit resolution, according to calibration tests
         private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
@@ -68,7 +74,8 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
             if (noCoverHashes.isNotEmpty()) {
                 val hash = ImagePHash(48, 8)
 
-                // TODO display progress on UI
+                EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, 0, 0, noCoverHashes.size))
+                var elementsKO = 0
                 for ((progress, img) in noCoverHashes.withIndex()) {
                     try {
                         FileHelper.getInputStream(context, Uri.parse(img.fileUri))
@@ -77,10 +84,13 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
                                     img.imageHash = hash.calcPHash(b)
                                 }
                     } catch (e: IOException) {
+                        elementsKO++
                         Timber.w(e) // Doesn't break the loop
                     }
+                    EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progress - elementsKO + 1, elementsKO, noCoverHashes.size))
                     Timber.i("Calculating hashes : %s / %s", progress + 1, noCoverHashes.size)
                 }
+                EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, noCoverHashes.size - elementsKO, elementsKO, noCoverHashes.size))
                 dao.insertImageFiles(noCoverHashes)
             }
         }
@@ -100,7 +110,8 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         val result = ArrayList<DuplicateResult>()
         val textComparator = Cosine()
 
-        for (contentRef in library) {
+        EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, 0, 0, library.size))
+        for ((progress, contentRef) in library.withIndex()) {
             lateinit var referenceTitleDigits: String
             lateinit var referenceTitle: String
             if (useTitle) {
@@ -134,7 +145,6 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
                     val duplicateResult = DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore)
                     result.add(duplicateResult)
                     detectedDuplicatesHash[Pair(contentRef.id, contentCandidate.id)] = duplicateResult
-//                    Timber.i("L %s [%s %s %s] %s", duplicateResult.reference.id, duplicateResult.titleScore, duplicateResult.artistScore, duplicateResult.coverScore, duplicateResult.calcTotalScore())
                     continue
                 }
 
@@ -150,10 +160,11 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
                 val duplicateResult = DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore)
                 result.add(duplicateResult)
                 detectedDuplicatesHash[Pair(contentRef.id, contentCandidate.id)] = duplicateResult
-//                Timber.i("D %s [%s %s %s] %s", duplicateResult.reference.id, duplicateResult.titleScore, duplicateResult.artistScore, duplicateResult.coverScore, duplicateResult.calcTotalScore())
             }
+            EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progress + 1, 0, library.size))
         }
         // TODO save to DB instead
+        EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, library.size, 0, library.size))
         val finalResult = Stream.of(result).filter { item -> item.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity] }.toList()
         duplicates.postValue(finalResult)
     }

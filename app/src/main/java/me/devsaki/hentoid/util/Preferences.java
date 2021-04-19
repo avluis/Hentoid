@@ -652,6 +652,46 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isDuplicateUseTitle() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_TITLE, Default.DUPLICATE_USE_TITLE);
+    }
+
+    public static void setDuplicateUseTitle(boolean useTitle) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_USE_TITLE, useTitle)
+                .apply();
+    }
+
+    public static boolean isDuplicateUseCover() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_COVER, Default.DUPLICATE_USE_COVER);
+    }
+
+    public static void setDuplicateUseCover(boolean useCover) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_USE_COVER, useCover)
+                .apply();
+    }
+
+    public static boolean isDuplicateUseArtist() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_ARTIST, Default.DUPLICATE_USE_ARTIST);
+    }
+
+    public static void setDuplicateUseArtist(boolean useArtist) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_USE_ARTIST, useArtist)
+                .apply();
+    }
+
+    public static boolean isDuplicateUseSameLanguage() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_SAME_LANGUAGE, Default.DUPLICATE_USE_SAME_LANGUAGE);
+    }
+
+    public static void setDuplicateUseSameLanguage(boolean useSameLanguage) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_USE_SAME_LANGUAGE, useSameLanguage)
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -737,6 +777,10 @@ public final class Preferences {
         public static final String VIEWER_DELETE_ASK_MODE = "viewer_delete_ask";
         public static final String VIEWER_DELETE_TARGET = "viewer_delete_target";
         public static final String DUPLICATE_SENSITIVITY = "duplicate_sensitivity";
+        public static final String DUPLICATE_USE_TITLE = "duplicate_use_title";
+        public static final String DUPLICATE_USE_COVER = "duplicate_use_cover";
+        public static final String DUPLICATE_USE_ARTIST = "duplicate_use_artist";
+        public static final String DUPLICATE_USE_SAME_LANGUAGE = "duplicate_use_same_language";
 
         // Deprecated values kept for housekeeping/migration
         static final String ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -818,6 +862,10 @@ public final class Preferences {
         static final int VIEWER_DELETE_ASK_MODE = Constant.VIEWER_DELETE_ASK_AGAIN;
         static final int VIEWER_DELETE_TARGET = Constant.VIEWER_DELETE_TARGET_PAGE;
         static final int DUPLICATE_SENSITIVITY = 1;
+        static final boolean DUPLICATE_USE_TITLE = true;
+        static final boolean DUPLICATE_USE_COVER = false;
+        static final boolean DUPLICATE_USE_ARTIST = true;
+        static final boolean DUPLICATE_USE_SAME_LANGUAGE = false;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

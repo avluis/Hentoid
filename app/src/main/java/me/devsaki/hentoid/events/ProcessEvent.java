@@ -64,7 +64,7 @@ public class ProcessEvent {
     }
 
     /**
-     * Use for EventType.COMPLETE events
+     * Use for EventType.COMPLETE events with a log
      *
      * @param eventType     event type code
      * @param step          step of the process
