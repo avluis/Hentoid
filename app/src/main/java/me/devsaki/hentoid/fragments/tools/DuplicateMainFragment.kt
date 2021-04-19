@@ -8,7 +8,6 @@ import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.annimon.stream.Stream
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
@@ -114,7 +113,14 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         // TODO update UI title
 
-        val items: List<DuplicateItem> = Stream.of(duplicates).withoutNulls().map { i -> DuplicateItem(i, DuplicateItem.ViewType.MAIN) }.toList()
+        // Group by reference book and count duplicates
+        val result: MutableList<DuplicateViewModel.DuplicateResult> = ArrayList()
+        val map = duplicates.filter { !it.mirrorEntry }.groupBy { it.reference }.mapValues { it.value.sumBy { 1 } }.toMap()
+        for (entry in map) {
+            result.add(DuplicateViewModel.DuplicateResult(entry.key))
+        }
+        // Order by size desc and transforms to DuplicateItem
+        val items = result.sortedBy { it.reference.size }.map { DuplicateItem(it, DuplicateItem.ViewType.MAIN) }
         set(itemAdapter, items)
 
         binding.controls.root.visibility = View.GONE

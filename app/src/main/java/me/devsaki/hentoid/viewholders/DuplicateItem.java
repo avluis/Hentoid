@@ -71,6 +71,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     }
 
     private final Content content;
+    private final int nbDuplicates;
     private final @ViewType
     int viewType;
     private final boolean isEmpty;
@@ -96,14 +97,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 .error(d);
     }
 
-    // Constructor for empty placeholder
-    public DuplicateItem(@ViewType int viewType) {
-        isEmpty = true;
-        content = null;
-        this.viewType = viewType;
-        setIdentifier(Helper.generateIdForPlaceholder());
-    }
-
     // Constructor for library and error item
     public DuplicateItem(DuplicateViewModel.DuplicateResult result, @ViewType int viewType) {
         this.viewType = viewType;
@@ -111,8 +104,13 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         if (result != null) setIdentifier(result.hash64());
         else setIdentifier(Helper.generateIdForPlaceholder());
 
-        if (result != null) content = result.getReference();
-        else content = null;
+        if (result != null) {
+            content = result.getReference();
+            nbDuplicates = result.getNbDuplicates();
+        } else {
+            content = null;
+            nbDuplicates = 0;
+        }
     }
 
     @Nullable

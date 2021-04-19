@@ -124,10 +124,11 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
 
                 // Check if that combination has already been processed
                 val existingResult = detectedDuplicatesHash[Pair(contentCandidate.id, contentRef.id)]
-                if (existingResult != null) {
+                if (existingResult?.duplicate != null) {
                     result.add(DuplicateResult(
                             existingResult.duplicate,
                             existingResult.reference,
+                            true,
                             existingResult.titleScore,
                             existingResult.coverScore,
                             existingResult.artistScore))
@@ -141,7 +142,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
 
                 // Remove if not same language
                 if (sameLanguageOnly && !containsSameLanguage(contentRef, contentCandidate)) {
-                    val duplicateResult = DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore)
+                    val duplicateResult = DuplicateResult(contentRef, contentCandidate, false, titleScore, coverScore, artistScore)
                     result.add(duplicateResult)
                     detectedDuplicatesHash[Pair(contentRef.id, contentCandidate.id)] = duplicateResult
                     continue
@@ -156,7 +157,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
 
                 if (useArtist) artistScore = computeArtistScore(contentRef, contentCandidate)
 
-                val duplicateResult = DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore)
+                val duplicateResult = DuplicateResult(contentRef, contentCandidate, false, titleScore, coverScore, artistScore)
                 result.add(duplicateResult)
                 detectedDuplicatesHash[Pair(contentRef.id, contentCandidate.id)] = duplicateResult
             }
@@ -226,10 +227,11 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
 
     class DuplicateResult(
             val reference: Content,
-            val duplicate: Content,
-            val titleScore: Double,
-            val coverScore: Double,
-            val artistScore: Double) {
+            val duplicate: Content? = null,
+            val mirrorEntry : Boolean = false,
+            val titleScore: Double = 0.0,
+            val coverScore: Double = 0.0,
+            val artistScore: Double = 0.0) {
 
         private var totalScore = -1.0
         var nbDuplicates = 1
@@ -245,7 +247,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         }
 
         fun hash64(): Long {
-            return Helper.hash64((reference.id.toString() + "." + duplicate.id.toString()).toByteArray())
+            return Helper.hash64((reference.id.toString() + "." + duplicate?.id.toString()).toByteArray())
         }
     }
 }
