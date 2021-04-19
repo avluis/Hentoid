@@ -513,6 +513,7 @@
     <string name="duplicate_find_action">Find duplicates</string>
     <string name="duplicate_index_covers">Indexing cover pictures</string>
     <string name="duplicate_find">Detecting duplicate books</string>
+    <string name="duplicate_count">%d duplicates ></string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

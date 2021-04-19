@@ -44,7 +44,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
-import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LanguageHelper;
@@ -148,14 +147,11 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         private final TextView tvPages;
         private final ImageView ivSite;
         private final ImageView ivError;
-
-        // Specific to library content
-        private View ivNew;
-        private TextView tvTags;
-        private TextView tvSeries;
         private ImageView ivFavourite;
         private ImageView ivExternal;
         private CircularProgressView readingProgress;
+        // Specific to main screen
+        private TextView viewDetails;
 
 //        private Runnable deleteActionRunnable = null;
 
@@ -175,7 +171,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             ivExternal = itemView.findViewById(R.id.ivExternal);
 
             if (viewType == ViewType.MAIN) {
-                // TODO
+                viewDetails = itemView.findViewById(R.id.view_details);
             } else if (viewType == ViewType.DETAILS) {
                 // TODO
             }
@@ -214,9 +210,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             attachTitle(item.content);
             if (readingProgress != null) attachReadingProgress(item.content);
             if (tvArtist != null) attachArtist(item.content);
-            if (tvSeries != null) attachSeries(item.content);
-            if (tvPages != null) attachPages(item.content, item.viewType);
-            if (tvTags != null) attachTags(item.content);
+            if (tvPages != null) attachPages(item.content);
             attachButtons(item);
         }
 
@@ -236,10 +230,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();
-
-            // Unread indicator
-            if (ivNew != null)
-                ivNew.setVisibility((0 == item.getContent().getReads()) ? View.VISIBLE : View.GONE);
         }
 
         private void attachCover(@NonNull final Content content) {
@@ -352,23 +342,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             }
         }
 
-
-        private void attachSeries(@NonNull final Content content) {
-            List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
-            if (seriesAttributes == null || seriesAttributes.isEmpty()) {
-                tvSeries.setVisibility(View.GONE);
-            } else {
-                tvSeries.setVisibility(View.VISIBLE);
-                List<String> allSeries = new ArrayList<>();
-                for (Attribute attribute : seriesAttributes) {
-                    allSeries.add(attribute.getName());
-                }
-                String series = android.text.TextUtils.join(", ", allSeries);
-                tvSeries.setText(tvSeries.getContext().getString(R.string.work_series, series));
-            }
-        }
-
-        private void attachPages(@NonNull final Content content, @ViewType int viewType) {
+        private void attachPages(@NonNull final Content content) {
             tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
             Context context = tvPages.getContext();
 
@@ -377,18 +351,8 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             tvPages.setText(template);
         }
 
-        private void attachTags(@NonNull final Content content) {
-            String tagTxt = ContentHelper.formatTags(content);
-            if (tagTxt.isEmpty()) {
-                tvTags.setVisibility(View.GONE);
-            } else {
-                tvTags.setVisibility(View.VISIBLE);
-                tvTags.setText(tagTxt);
-                tvTags.setTextColor(ThemeHelper.getColor(tvTags.getContext(), R.color.card_tags_light));
-            }
-        }
-
         private void attachButtons(@NonNull final DuplicateItem item) {
+            Context context = tvPages.getContext();
             Content content = item.getContent();
             if (null == content) return;
 
@@ -402,26 +366,24 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 ivSite.setVisibility(View.GONE);
             }
 
+            // External icon
             ivExternal.setVisibility(content.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
+
+            // Favourite icon
             if (content.isFavourite()) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full);
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_empty);
             }
+
+            // View details icon
+            if (viewDetails != null)
+                viewDetails.setText(context.getResources().getString(R.string.duplicate_count, item.nbDuplicates + 1));
         }
 
-        public View getFavouriteButton() {
-            return ivFavourite;
+        public View getViewDetailsButton() {
+            return viewDetails;
         }
-
-        public View getSiteButton() {
-            return ivSite;
-        }
-
-        public View getErrorButton() {
-            return ivError;
-        }
-
 
         @Override
         public void unbindView(@NotNull DuplicateItem item) {
