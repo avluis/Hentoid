@@ -55,6 +55,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
@@ -456,7 +457,7 @@ public class Content implements Serializable {
             String[] nameParts = parts.getFileNameNoExt().split("-");
             String[] lastPartParts = nameParts[nameParts.length - 1].split("x");
             for (String s : lastPartParts)
-                if (!Helper.isNumeric(s)) return url;
+                if (!StringHelper.isNumeric(s)) return url;
 
             nameParts = Arrays.copyOf(nameParts, nameParts.length - 1);
             return parts.getPath() + TextUtils.join("-", nameParts);
@@ -506,7 +507,7 @@ public class Content implements Serializable {
     }
 
     public String getTitle() {
-        return Helper.protect(title);
+        return StringHelper.protect(title);
     }
 
     public Content setTitle(String title) {

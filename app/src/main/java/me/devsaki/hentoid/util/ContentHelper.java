@@ -598,7 +598,7 @@ public final class ContentHelper {
         String id = content.getUniqueSiteId();
         // For certain sources (8muses, fakku), unique IDs are strings that may be very long
         // => shorten them by using their hashCode
-        if (id.length() > 10) id = Helper.formatIntAsStr(Math.abs(id.hashCode()), 10);
+        if (id.length() > 10) id = StringHelper.formatIntAsStr(Math.abs(id.hashCode()), 10);
         return "[" + id + "]";
     }
 
@@ -869,7 +869,7 @@ public final class ContentHelper {
             List<String> tags = Stream.of(content.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG)).map(Attribute::getName).toList();
             for (String blocked : Preferences.getBlockedTags())
                 for (String tag : tags)
-                    if (blocked.equalsIgnoreCase(tag) || Helper.isPresentAsWord(blocked, tag)) {
+                    if (blocked.equalsIgnoreCase(tag) || StringHelper.isPresentAsWord(blocked, tag)) {
                         if (result.isEmpty()) result = new ArrayList<>();
                         result.add(tag);
                         break;
@@ -962,7 +962,7 @@ public final class ContentHelper {
     private static class InnerNameNumberFileComparator implements Comparator<DocumentFile> {
         @Override
         public int compare(@NonNull DocumentFile o1, @NonNull DocumentFile o2) {
-            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(Helper.protect(o1.getName()), Helper.protect(o2.getName()));
+            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(StringHelper.protect(o1.getName()), StringHelper.protect(o2.getName()));
         }
     }
 

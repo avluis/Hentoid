@@ -22,8 +22,8 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImportHelper;
+import me.devsaki.hentoid.util.StringHelper;
 
 public class JsonContent {
 
@@ -73,7 +73,7 @@ public class JsonContent {
     public static JsonContent fromEntity(Content c, boolean keepImages) {
         JsonContent result = new JsonContent();
         result.url = c.getUrl();
-        result.title = Helper.removeNonPrintableChars(c.getTitle());
+        result.title = StringHelper.removeNonPrintableChars(c.getTitle());
         result.author = c.getAuthor();
         result.coverImageUrl = c.getCoverImageUrl();
         result.qtyPages = c.getQtyPages();
@@ -117,7 +117,7 @@ public class JsonContent {
         if (null == site) site = Site.NONE;
         result.setSite(site);
         result.setUrl(url);
-        result.setTitle(Helper.removeNonPrintableChars(title));
+        result.setTitle(StringHelper.removeNonPrintableChars(title));
         result.setAuthor(author);
         result.setCoverImageUrl(coverImageUrl);
         result.setQtyPages(qtyPages);

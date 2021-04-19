@@ -17,7 +17,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.DoujinsParser;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class DoujinsContent extends BaseContentParser {
@@ -39,7 +39,7 @@ public class DoujinsContent extends BaseContentParser {
 
         if (breadcrumbs != null && !breadcrumbs.isEmpty()) {
             Element e = breadcrumbs.get(breadcrumbs.size() - 1);
-            content.setTitle(Helper.removeNonPrintableChars(e.text()));
+            content.setTitle(StringHelper.removeNonPrintableChars(e.text()));
         }
 
         if (images != null && !images.isEmpty()) {

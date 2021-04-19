@@ -17,7 +17,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class PorncomixContent extends BaseContentParser {
@@ -59,7 +59,7 @@ public class PorncomixContent extends BaseContentParser {
 
         title = title.trim();
         if (title.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
-        content.setTitle(Helper.removeNonPrintableChars(title.trim()));
+        content.setTitle(StringHelper.removeNonPrintableChars(title.trim()));
 
         content.setUrl(url);
         content.setCoverImageUrl(coverUrl);

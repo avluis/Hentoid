@@ -14,7 +14,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class Hentai2ReadContent extends BaseContentParser {
@@ -36,7 +36,7 @@ public class Hentai2ReadContent extends BaseContentParser {
         content.setCoverImageUrl(coverUrl);
         if (!title.isEmpty()) {
             String titleStr = title.get(title.size() - 1).text();
-            content.setTitle(!titleStr.isEmpty() ? Helper.removeNonPrintableChars(titleStr) : "");
+            content.setTitle(!titleStr.isEmpty() ? StringHelper.removeNonPrintableChars(titleStr) : "");
         } else content.setTitle("<no title>");
         content.setUniqueSiteId(uniqueId);
 

@@ -119,6 +119,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
@@ -644,7 +645,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * Handler for the "bookmark" top menu button of the browser
      */
     private void onBookmarkClick() {
-        BookmarksDialogFragment.invoke(this, getStartSite(), Helper.protect(webView.getTitle()), Helper.protect(webView.getUrl()));
+        BookmarksDialogFragment.invoke(this, getStartSite(), StringHelper.protect(webView.getTitle()), StringHelper.protect(webView.getUrl()));
     }
 
     /**
@@ -659,7 +660,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * Handler for the "copy URL to clipboard" button
      */
     private void onCopyClick() {
-        if (Helper.copyPlainTextToClipboard(this, Helper.protect(webView.getUrl())))
+        if (Helper.copyPlainTextToClipboard(this, StringHelper.protect(webView.getUrl())))
             ToastHelper.toast(R.string.web_url_clipboard);
     }
 
@@ -826,7 +827,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
             WebBackForwardList webBFL = webView.copyBackForwardList();
-            String originalUrl = Helper.protect(webView.getOriginalUrl());
+            String originalUrl = StringHelper.protect(webView.getOriginalUrl());
             int i = webBFL.getCurrentIndex();
             do {
                 i--;
@@ -1275,7 +1276,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         private void refreshNavigationMenu() {
             backMenu.setEnabled(webView.canGoBack());
             forwardMenu.setEnabled(webView.canGoForward());
-            boolean isResults = isResultsPage(Helper.protect(webView.getUrl()));
+            boolean isResults = isResultsPage(StringHelper.protect(webView.getUrl()));
             changeSeekMode(isResults ? SeekMode.PAGE : SeekMode.GALLERY, isResults || backListContainsGallery(webView.copyBackForwardList()) > -1);
             // Manager bottom alert banner visibility
             if (isGalleryPage(webView.getUrl())) displayBottomAlertBanner(blockedTags);

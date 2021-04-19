@@ -90,6 +90,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -1144,7 +1145,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         String query = getQuery();
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
-        if (newSearch && Helper.isNumeric(query)) {
+        if (newSearch && StringHelper.isNumeric(query)) {
             ArrayList<Integer> siteCodes = Stream.of(result)
                     .withoutNulls()
                     .filter(content -> query.equals(content.getUniqueSiteId()))
