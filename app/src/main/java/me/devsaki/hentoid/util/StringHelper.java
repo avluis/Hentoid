@@ -1,45 +1,14 @@
 package me.devsaki.hentoid.util;
 
-import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
-import android.content.res.Configuration;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Pair;
-import android.view.View;
-
-import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
-import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.annimon.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nonnull;
-
-import io.reactivex.disposables.Disposable;
-import io.whitfin.siphash.SipHasher;
-
-import static android.content.Context.CLIPBOARD_SERVICE;
 
 /**
  * Created by avluis on 06/05/2016.
@@ -161,5 +130,30 @@ public final class StringHelper {
      */
     public static String protect(@Nullable String s) {
         return (null == s) ? "" : s;
+    }
+
+    // TODO doc
+    public static String cleanup(String s) {
+        boolean openBracket = false;
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(' || c == '[') openBracket = true;
+            else if (c == ')' || c == ']') openBracket = false;
+            else if (c == '-') {
+                // Ignore
+            } else if (!openBracket) result.append(c);
+        }
+        return result.toString().toLowerCase().trim().replace("&quot;", "\"").replace("&amp;", "&").replace("&#039;", "'");
+    }
+
+    // TODO doc
+    public static String removeDigits(String s) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (!Character.isDigit(c)) result.append(c);
+        }
+        return result.toString().trim();
     }
 }

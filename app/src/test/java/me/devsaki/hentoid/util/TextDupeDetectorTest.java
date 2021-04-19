@@ -1838,14 +1838,14 @@ Kimodebu Ossan no Ore ga Namaiki Ojou-sama o Saimin NTR shite mita
         Cosine c = new Cosine();
         //SorensenDice c = new SorensenDice();
         for (String s1 : vals1) {
-            String s1c = cleanup(s1);
-            String s1cp = removeDigits(s1c);
+            String s1c = StringHelper.cleanup(s1);
+            String s1cp = StringHelper.removeDigits(s1c);
             for (String s2 : vals1) {
                 if (s1 == s2) continue;
-                String s2c = cleanup(s2);
+                String s2c = StringHelper.cleanup(s2);
                 double similarity = c.similarity(s1c, s2c);
                 if (similarity > 0.8) {
-                    String s2cp = removeDigits(s2c);
+                    String s2cp = StringHelper.removeDigits(s2c);
                     double similarity2 = c.similarity(s1cp, s2cp);
                     if (similarity2 - similarity < 0.02 && !s1cp.equals(s2cp)) {
                         System.out.println(s1c);
@@ -1859,28 +1859,5 @@ Kimodebu Ossan no Ore ga Namaiki Ojou-sama o Saimin NTR shite mita
                 }
             }
         }
-    }
-
-    private String cleanup(String s) {
-        boolean openBracket = false;
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (c == '(' || c == '[') openBracket = true;
-            else if (c == ')' || c == ']') openBracket = false;
-            else if (c == '-') {
-                // Ignore
-            } else if (!openBracket) result.append(c);
-        }
-        return result.toString().toLowerCase().trim().replace("&quot;", "\"").replace("&amp;", "&").replace("&#039;", "'");
-    }
-
-    private String removeDigits(String s) {
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            if (!Character.isDigit(c)) result.append(c);
-        }
-        return result.toString().trim();
     }
 }
