@@ -12,15 +12,10 @@ import android.view.View;
 
 import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
-
-import com.annimon.stream.Stream;
-
-import org.apache.commons.text.StringEscapeUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,8 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -53,29 +46,6 @@ public final class Helper {
 
     private static final byte[] SIP_KEY = "0123456789ABCDEF".getBytes();
 
-
-    /**
-     * Decode the given base-64-encoded string
-     *
-     * @param encodedString Base-64 encoded string to decode
-     * @return Raw decoded data
-     */
-    public static byte[] decode64(String encodedString) {
-        // Pure Java
-        // return org.apache.commons.codec.binary.Base64.decodeBase64(encodedString);
-        // Android
-        return android.util.Base64.decode(encodedString, android.util.Base64.DEFAULT);
-    }
-
-    /**
-     * Encode the given base-64-encoded string
-     *
-     * @param rawString Raw string to encode
-     * @return Encoded string
-     */
-    public static String encode64(String rawString) {
-        return android.util.Base64.encodeToString(rawString.getBytes(), android.util.Base64.DEFAULT);
-    }
 
     /**
      * Retreives the given dimension value as DP, not pixels

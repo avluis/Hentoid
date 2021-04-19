@@ -140,7 +140,8 @@ public final class StringHelper {
             char c = s.charAt(i);
             if (c == '(' || c == '[') openBracket = true;
             else if (c == ')' || c == ']') openBracket = false;
-            else if (c == '-') {
+            else //noinspection StatementWithEmptyBody
+                if (c == '-') {
                 // Ignore
             } else if (!openBracket) result.append(c);
         }
@@ -155,5 +156,28 @@ public final class StringHelper {
             if (!Character.isDigit(c)) result.append(c);
         }
         return result.toString().trim();
+    }
+
+    /**
+     * Decode the given base-64-encoded string
+     *
+     * @param encodedString Base-64 encoded string to decode
+     * @return Raw decoded data
+     */
+    public static byte[] decode64(String encodedString) {
+        // Pure Java
+        // return org.apache.commons.codec.binary.Base64.decodeBase64(encodedString);
+        // Android
+        return android.util.Base64.decode(encodedString, android.util.Base64.DEFAULT);
+    }
+
+    /**
+     * Encode the given base-64-encoded string
+     *
+     * @param rawString Raw string to encode
+     * @return Encoded string
+     */
+    public static String encode64(String rawString) {
+        return android.util.Base64.encodeToString(rawString.getBytes(), android.util.Base64.DEFAULT);
     }
 }
