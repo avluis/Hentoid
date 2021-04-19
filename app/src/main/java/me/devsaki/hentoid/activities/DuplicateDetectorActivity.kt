@@ -9,11 +9,13 @@ import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.ActivityDuplicateDetectorBinding
+import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.tools.DuplicateDetailsFragment
 import me.devsaki.hentoid.fragments.tools.DuplicateMainFragment
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import org.greenrobot.eventbus.EventBus
 
 class DuplicateDetectorActivity : BaseActivity() {
 
@@ -31,6 +33,7 @@ class DuplicateDetectorActivity : BaseActivity() {
         binding = ActivityDuplicateDetectorBinding.inflate(layoutInflater)
         binding?.let {
             setContentView(it.root)
+            //it.toolbar.setNavigationOnClickListener { onBackCommand() }
             it.toolbar.setNavigationOnClickListener { onBackPressed() }
         }
 
@@ -57,6 +60,7 @@ class DuplicateDetectorActivity : BaseActivity() {
 
         viewPager.registerOnPageChangeCallback(object : OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
+                enableCurrentFragment()
                 hideSettingsBar()
                 updateToolbar()
                 updateSelectionToolbar()
@@ -70,9 +74,11 @@ class DuplicateDetectorActivity : BaseActivity() {
         val pagerAdapter: FragmentStateAdapter = DuplicatePagerAdapter(this)
         viewPager.adapter = pagerAdapter
         pagerAdapter.notifyDataSetChanged()
+        enableCurrentFragment()
     }
 
     fun goBackToMain() {
+        enableFragment(0)
 //        if (isGroupDisplayed()) return
 //        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked)
         viewPager.currentItem = 0
@@ -80,8 +86,25 @@ class DuplicateDetectorActivity : BaseActivity() {
     }
 
     fun showDetailsFor(content: Content) {
+        enableFragment(1)
         viewModel.setContent(content)
         viewPager.currentItem = 1
+    }
+
+    private fun onBackCommand() {
+        if (1 == viewPager.currentItem)
+            goBackToMain()
+        else
+            onBackPressed()
+    }
+
+    private fun enableCurrentFragment() {
+        enableFragment(viewPager.currentItem)
+    }
+
+    private fun enableFragment(fragmentIndex: Int) {
+        EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.EV_ENABLE, if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_MAIN else CommunicationEvent.RC_DUPLICATE_DETAILS, null))
+        EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.EV_DISABLE, if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_DETAILS else CommunicationEvent.RC_DUPLICATE_MAIN, null))
     }
 
     private fun initToolbar() {

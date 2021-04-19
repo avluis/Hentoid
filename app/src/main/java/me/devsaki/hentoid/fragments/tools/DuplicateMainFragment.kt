@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,6 +17,7 @@ import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
 import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
+import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DuplicateItem
@@ -34,12 +36,16 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     private val binding get() = _binding!!
 
     // Communication
+    private var callback: OnBackPressedCallback? = null
     private lateinit var activity: WeakReference<DuplicateDetectorActivity>
     lateinit var viewModel: DuplicateViewModel
 
     // UI
     private val itemAdapter = ItemAdapter<DuplicateItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
+
+    // VARS
+    private var enabled = true
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -49,6 +55,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDuplicateMainBinding.inflate(inflater, container, false)
+        addCustomBackControl()
         return binding.root
     }
 
@@ -94,6 +101,21 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
         viewModel.allDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateViewModel.DuplicateResult>? -> this.onDuplicatesChanged(l) })
+    }
+
+    private fun addCustomBackControl() {
+        if (callback != null) callback?.remove()
+        callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                onCustomBackPress()
+            }
+        }
+        activity.get()!!.onBackPressedDispatcher.addCallback(activity.get()!!, callback!!)
+    }
+
+    private fun onCustomBackPress() {
+        callback?.remove()
+        requireActivity().onBackPressed()
     }
 
     private fun onScanClick() {
@@ -169,5 +191,26 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
             activity.get()?.showDetailsFor(item.content!!)
         }
         return true
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onActivityEvent(event: CommunicationEvent) {
+        if (event.recipient != CommunicationEvent.RC_DUPLICATE_MAIN) return
+        when (event.type) {
+            CommunicationEvent.EV_ENABLE -> onEnable()
+            CommunicationEvent.EV_DISABLE -> onDisable()
+            else -> {
+            }
+        }
+    }
+
+    private fun onEnable() {
+        enabled = true
+        callback?.isEnabled = true
+    }
+
+    private fun onDisable() {
+        enabled = false
+        callback?.isEnabled = false
     }
 }

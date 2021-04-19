@@ -14,6 +14,8 @@ public class CommunicationEvent {
     public static final int RC_GROUPS = 1;
     public static final int RC_CONTENTS = 2;
     public static final int RC_DRAWER = 3;
+    public static final int RC_DUPLICATE_MAIN = 4;
+    public static final int RC_DUPLICATE_DETAILS = 5;
 
     private final int type;
     private final int recipient;
