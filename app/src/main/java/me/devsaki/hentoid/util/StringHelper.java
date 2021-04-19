@@ -132,7 +132,17 @@ public final class StringHelper {
         return (null == s) ? "" : s;
     }
 
-    // TODO doc
+    /**
+     * Clean up the given string by
+     * - Removing everything between ()'s and []'s
+     * - Removing [-_~/\]'s
+     * - Putting all characters lowercase
+     * - Replacing HTML-escaped characters by their ASCII equivalent
+     * - Trimming
+     *
+     * @param s String to cleanup
+     * @return Cleaned-up string
+     */
     public static String cleanup(String s) {
         boolean openBracket = false;
         StringBuilder result = new StringBuilder();
@@ -141,14 +151,19 @@ public final class StringHelper {
             if (c == '(' || c == '[') openBracket = true;
             else if (c == ')' || c == ']') openBracket = false;
             else //noinspection StatementWithEmptyBody
-                if (c == '-') {
-                // Ignore
-            } else if (!openBracket) result.append(c);
+                if (c == '-' || c == '_' || c == '~' || c == '/' || c == '\\') {
+                    // Ignore
+                } else if (!openBracket) result.append(c);
         }
-        return result.toString().toLowerCase().trim().replace("&quot;", "\"").replace("&amp;", "&").replace("&#039;", "'");
+        return StringEscapeUtils.unescapeHtml4(result.toString().toLowerCase().trim());
     }
 
-    // TODO doc
+    /**
+     * Remove all digits from the given string
+     *
+     * @param s String to remove digits from
+     * @return Processed string
+     */
     public static String removeDigits(String s) {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {

@@ -13,15 +13,9 @@ import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
-import me.devsaki.hentoid.util.FileHelper
-import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.ImagePHash
-import me.devsaki.hentoid.util.LanguageHelper
+import me.devsaki.hentoid.util.*
 import timber.log.Timber
 import java.io.IOException
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 
 class DuplicateViewModel(application: Application, val dao: CollectionDAO) : AndroidViewModel(application) {
@@ -110,8 +104,8 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
             lateinit var referenceTitleDigits: String
             lateinit var referenceTitle: String
             if (useTitle) {
-                referenceTitleDigits = cleanup(contentRef.title)
-                referenceTitle = removeDigits(referenceTitleDigits)
+                referenceTitleDigits = StringHelper.cleanup(contentRef.title)
+                referenceTitle = StringHelper.removeDigits(referenceTitleDigits)
             }
 
             for (contentCandidate in library) {
@@ -160,7 +154,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
             }
         }
         // TODO save to DB instead
-        val finalResult = Stream.of(result).filter{ item -> item.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity] }.toList()
+        val finalResult = Stream.of(result).filter { item -> item.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity] }.toList()
         duplicates.postValue(finalResult)
     }
 
@@ -186,10 +180,10 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
             contentCandidate: Content,
             sensitivity: Int
     ): Double {
-        var candidateTitle = cleanup(contentCandidate.title)
+        var candidateTitle = StringHelper.cleanup(contentCandidate.title)
         val similarity1 = textComparator.similarity(referenceTitleDigits, candidateTitle)
         return if (similarity1 > TEXT_THRESHOLDS[sensitivity]) {
-            candidateTitle = removeDigits(candidateTitle)
+            candidateTitle = StringHelper.removeDigits(candidateTitle)
             val similarity2 = textComparator.similarity(referenceTitle, candidateTitle)
             if (similarity2 - similarity1 < 0.02) {
                 similarity1
@@ -216,27 +210,6 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         return -1.0 // Nothing to match against
     }
 
-    // TODO doc
-    private fun cleanup(s: String): String {
-        var openBracket = false
-        val result = StringBuilder()
-        for (element in s) {
-            if (element == '(' || element == '[') openBracket = true else if (element == ')' || element == ']') openBracket = false else if (element == '-') {
-                // Ignore
-            } else if (!openBracket) result.append(element)
-        }
-        return result.toString().toLowerCase(Locale.ROOT).trim { it <= ' ' }.replace("&quot;", "\"").replace("&amp;", "&").replace("&#039;", "'")
-    }
-
-    // TODO doc
-    private fun removeDigits(s: String): String {
-        val result = StringBuilder()
-        for (element in s) {
-            if (!Character.isDigit(element)) result.append(element)
-        }
-        return result.toString().trim { it <= ' ' }
-    }
-
     class DuplicateResult(
             val reference: Content,
             val duplicate: Content,
@@ -249,7 +222,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         fun calcTotalScore(): Double {
             if (totalScore > -1.0) return totalScore
             // Calculate
-            val operands = ArrayList<android.util.Pair<Double, Double>>();
+            val operands = ArrayList<android.util.Pair<Double, Double>>()
             if (titleScore > -1) operands.add(android.util.Pair<Double, Double>(titleScore, 1.0))
             if (coverScore > -1) operands.add(android.util.Pair<Double, Double>(coverScore, 1.0))
             if (artistScore > -1) operands.add(android.util.Pair<Double, Double>(artistScore, 0.5))
