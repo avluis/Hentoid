@@ -7,6 +7,8 @@ import com.annimon.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -135,7 +137,7 @@ public final class StringHelper {
     /**
      * Clean up the given string by
      * - Removing everything between ()'s and []'s
-     * - Removing [-_~/\]'s
+     * - Replacing [-_~/\]'s by a space
      * - Putting all characters lowercase
      * - Replacing HTML-escaped characters by their ASCII equivalent
      * - Trimming
@@ -150,12 +152,10 @@ public final class StringHelper {
             char c = s.charAt(i);
             if (c == '(' || c == '[') openBracket = true;
             else if (c == ')' || c == ']') openBracket = false;
-            else //noinspection StatementWithEmptyBody
-                if (c == '-' || c == '_' || c == '~' || c == '/' || c == '\\') {
-                    // Ignore
-                } else if (!openBracket) result.append(c);
+            else if (c == '-' || c == '_' || c == '~' || c == '/' || c == '\\') result.append(' ');
+            else if (!openBracket) result.append(c);
         }
-        return StringEscapeUtils.unescapeHtml4(result.toString().toLowerCase().trim());
+        return StringEscapeUtils.unescapeHtml4(result.toString().toLowerCase().replace("  ", " ").trim());
     }
 
     /**
@@ -194,5 +194,21 @@ public final class StringHelper {
      */
     public static String encode64(String rawString) {
         return android.util.Base64.encodeToString(rawString.getBytes(), android.util.Base64.DEFAULT);
+    }
+
+    public static boolean isTransposition(@NonNull String reference, @NonNull String comparison) {
+        String refClean = cleanup(reference);
+        String compClean = cleanup(comparison);
+
+        if (refClean.equals(compClean)) return true;
+
+        List<String> refParts = Arrays.asList(refClean.split(" "));
+        List<String> compParts = Arrays.asList(compClean.split(" "));
+
+        if (1 == refParts.size() && 1 == compParts.size()) return false;
+        if (refParts.size() != compParts.size()) return false;
+
+        for (String s : refParts) if (!compParts.contains(s)) return false;
+        return true;
     }
 }

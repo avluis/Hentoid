@@ -202,8 +202,12 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         val refArtists = contentReference.attributeMap[AttributeType.ARTIST]
         val candidateArtists = contentCandidate.attributeMap[AttributeType.ARTIST]
         if (!candidateArtists.isNullOrEmpty() && !refArtists.isNullOrEmpty()) {
-            for (refArtist in refArtists) {
-                if (candidateArtists.contains(refArtist)) return 1.0
+            for (candidateArtist in candidateArtists) {
+                for (refArtist in refArtists) {
+                    if (candidateArtist.id == refArtist.id) return 1.0
+                    if (refArtist.equals(candidateArtist)) return 1.0
+                    if (StringHelper.isTransposition(refArtist.name, candidateArtist.name)) return 1.0
+                }
             }
             return 0.0 // No match
         }
