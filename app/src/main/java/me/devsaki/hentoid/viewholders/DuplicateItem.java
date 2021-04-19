@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -372,8 +373,12 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             // Favourite icon
             if (content.isFavourite()) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    ivFavourite.setTooltipText(context.getText(R.string.book_favourite_success));
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    ivFavourite.setTooltipText(context.getText(R.string.book_unfavourite_success));
             }
 
             // View details icon
