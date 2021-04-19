@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.tools
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
@@ -56,6 +57,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDuplicateMainBinding.inflate(inflater, container, false)
         addCustomBackControl()
+        activity.get()?.initFragmentToolbars(this::toolbarOnItemClicked)
         return binding.root
     }
 
@@ -82,7 +84,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         // Item click listener
         // TODO it's actually on the "X duplicates" button...
-        fastAdapter.onClickListener = { _: View?, _: IAdapter<DuplicateItem>, i: DuplicateItem, p: Int -> onItemClick(p, i) }
+        fastAdapter.onClickListener = { _: View?, _: IAdapter<DuplicateItem>, i: DuplicateItem, _: Int -> onItemClick(i) }
 
         binding.controls.scanFab.setOnClickListener {
             this.onScanClick()
@@ -96,7 +98,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.useSensitivity.selectItemByIndex(Preferences.getDuplicateSensitivity())
 
         // TODO only do that when dupes DB is empty
-        binding.controls.root.visibility = View.VISIBLE
+        setSettingsPanelVisibility(true)
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
@@ -116,6 +118,31 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     private fun onCustomBackPress() {
         callback?.remove()
         requireActivity().onBackPressed()
+    }
+
+    private fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
+            R.id.action_settings -> setSettingsPanelVisibility()
+        }
+        return true
+    }
+
+    private fun setSettingsPanelVisibility(visibility: Boolean? = null) {
+        var result = View.VISIBLE
+        if (null == visibility) { // Toggle
+            if (View.VISIBLE == binding.controls.root.visibility) result = View.GONE
+        } else { // Force visibility
+            if (!visibility) result = View.GONE
+        }
+
+        if (result == View.VISIBLE) {
+            binding.controls.scanFab.visibility = View.VISIBLE
+            binding.controls.detectBooksTxt.visibility = View.GONE
+            binding.controls.detectBooksPb.visibility = View.GONE
+            binding.controls.indexPicturesTxt.visibility = View.GONE
+            binding.controls.indexPicturesPb.visibility = View.GONE
+        }
+        binding.controls.root.visibility = result
     }
 
     private fun onScanClick() {
@@ -186,7 +213,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
      *
      * @param item GroupDisplayItem that has been clicked on
      */
-    private fun onItemClick(position: Int, item: DuplicateItem): Boolean {
+    private fun onItemClick(item: DuplicateItem): Boolean {
         if (item.content != null) {
             activity.get()?.showDetailsFor(item.content!!)
         }
