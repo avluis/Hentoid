@@ -13,9 +13,25 @@
         android:paddingStart="@dimen/default_cardview_margin"
         android:paddingTop="@dimen/default_cardview_margin"
         android:paddingEnd="@dimen/default_cardview_margin"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/apply_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/item_library_content" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/item_duplicate_detail" />
+
+    <TextView
+        android:id="@+id/apply_btn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="?colorSecondary"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="@string/apply_processing"
+        android:textAllCaps="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

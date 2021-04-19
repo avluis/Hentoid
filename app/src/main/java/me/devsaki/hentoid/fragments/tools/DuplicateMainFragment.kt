@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.tools
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,9 +10,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mikepenz.fastadapter.FastAdapter
+import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.DuplicateDetectorActivity
 import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.util.Preferences
@@ -23,15 +26,26 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
+import java.lang.ref.WeakReference
 
 class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     private var _binding: FragmentDuplicateMainBinding? = null
     private val binding get() = _binding!!
 
+    // Communication
+    private lateinit var activity: WeakReference<DuplicateDetectorActivity>
     lateinit var viewModel: DuplicateViewModel
+
+    // UI
     private val itemAdapter = ItemAdapter<DuplicateItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        check(requireActivity() is DuplicateDetectorActivity) { "Parent activity has to be a DuplicateDetectorActivity" }
+        activity = WeakReference<DuplicateDetectorActivity>(requireActivity() as DuplicateDetectorActivity)
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDuplicateMainBinding.inflate(inflater, container, false)
@@ -59,6 +73,10 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         FastScrollerBuilder(binding.list).build()
         binding.list.adapter = fastAdapter
 
+        // Item click listener
+        // TODO it's actually on the "X duplicates" button...
+        fastAdapter.onClickListener = { _: View?, _: IAdapter<DuplicateItem>, i: DuplicateItem, p: Int -> onItemClick(p, i) }
+
         binding.controls.scanFab.setOnClickListener {
             this.onScanClick()
         }
@@ -75,7 +93,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
-        viewModel.duplicates.observe(viewLifecycleOwner, { l: List<DuplicateViewModel.DuplicateResult>? -> this.onNewDuplicates(l) })
+        viewModel.allDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateViewModel.DuplicateResult>? -> this.onDuplicatesChanged(l) })
     }
 
     private fun onScanClick() {
@@ -106,7 +124,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     }
 
     @Synchronized
-    private fun onNewDuplicates(duplicates: List<DuplicateViewModel.DuplicateResult>?) {
+    private fun onDuplicatesChanged(duplicates: List<DuplicateViewModel.DuplicateResult>?) {
         if (null == duplicates) return
 
         Timber.i(">> New duplicates ! Size=%s", duplicates.size)
@@ -119,8 +137,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         for (entry in map) {
             result.add(DuplicateViewModel.DuplicateResult(entry.key))
         }
-        // Order by size desc and transforms to DuplicateItem
-        val items = result.sortedBy { it.reference.size }.map { DuplicateItem(it, DuplicateItem.ViewType.MAIN) }
+        // Transform to DuplicateItem
+        val items = result.map { DuplicateItem(it, DuplicateItem.ViewType.MAIN) }
         set(itemAdapter, items)
 
         binding.controls.root.visibility = View.GONE
@@ -139,5 +157,17 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 binding.controls.detectBooksPb.visibility = View.VISIBLE
             }
         }
+    }
+
+    /**
+     * Callback for the group holder itself
+     *
+     * @param item GroupDisplayItem that has been clicked on
+     */
+    private fun onItemClick(position: Int, item: DuplicateItem): Boolean {
+        if (item.content != null) {
+            activity.get()?.showDetailsFor(item.content!!)
+        }
+        return true
     }
 }

@@ -32,7 +32,8 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         private val TOTAL_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
     }
 
-    val duplicates = MutableLiveData<List<DuplicateResult>>()
+    val allDuplicates = MutableLiveData<List<DuplicateResult>>()
+    val selectedDuplicates = MutableLiveData<List<DuplicateResult>>()
 
 
     override fun onCleared() {
@@ -166,7 +167,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         // TODO save to DB instead
         EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, library.size, 0, library.size))
         val finalResult = result.filter { it.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity] }
-        duplicates.postValue(finalResult)
+        allDuplicates.postValue(finalResult)
     }
 
     private fun containsSameLanguage(contentRef: Content, contentCandidate: Content): Boolean {
@@ -249,5 +250,9 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         fun hash64(): Long {
             return Helper.hash64((reference.id.toString() + "." + duplicate?.id.toString()).toByteArray())
         }
+    }
+
+    fun setContent(content: Content) {
+        selectedDuplicates.postValue(allDuplicates.value?.filter { it.reference.id == content.id })
     }
 }

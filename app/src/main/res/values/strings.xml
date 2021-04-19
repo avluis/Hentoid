@@ -514,6 +514,15 @@
     <string name="duplicate_index_covers">Indexing cover pictures</string>
     <string name="duplicate_find">Detecting duplicate books</string>
     <string name="duplicate_count">%d duplicates ></string>
+    <string name="duplicate_title_score">Title : %.0f%%</string>
+    <string name="duplicate_title_score_nodata">Title : no data</string>
+    <string name="duplicate_cover_score">Cover : %.0f%%</string>
+    <string name="duplicate_cover_score_nodata">Cover : no data</string>
+    <string name="duplicate_artist_score">Artist : %.0f%%</string>
+    <string name="duplicate_artist_score_nodata">Artist : no data</string>
+    <string name="duplicate_total_score">%.0f%%</string>
+    <string name="apply_processing">Apply (%d remaining choices)</string>
+    <string name="apply_final">Apply</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

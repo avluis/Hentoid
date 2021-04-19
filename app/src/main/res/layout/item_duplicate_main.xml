@@ -42,7 +42,6 @@
             android:adjustViewBounds="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/pbDownload"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_hentoid_trans"
@@ -71,7 +70,7 @@
             android:textColor="@color/card_tags_light"
             android:textSize="@dimen/text_subtitle_2"
             android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="@id/guideline_middle"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivCover"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@string/book_title" />

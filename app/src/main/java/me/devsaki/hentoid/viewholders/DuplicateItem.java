@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.viewholders;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -17,6 +18,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.Group;
 
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
@@ -71,10 +73,16 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     }
 
     private final Content content;
-    private final int nbDuplicates;
     private final @ViewType
     int viewType;
     private final boolean isEmpty;
+
+    private int nbDuplicates = 0;
+    private boolean isReferenceItem = false;
+    private Double titleScore = -1.0;
+    private Double coverScore = -1.0;
+    private Double artistScore = -1.0;
+    private Double totalScore = -1.0;
 
 //    private Consumer<DuplicateItem> deleteAction = null;
 
@@ -97,7 +105,15 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 .error(d);
     }
 
-    // Constructor for library and error item
+    public DuplicateItem(Content content, @ViewType int viewType) {
+        this.viewType = viewType;
+        isEmpty = (null == content);
+        if (content != null) setIdentifier(content.hash64());
+        else setIdentifier(Helper.generateIdForPlaceholder());
+        this.content = content;
+        isReferenceItem = true;
+    }
+
     public DuplicateItem(DuplicateViewModel.DuplicateResult result, @ViewType int viewType) {
         this.viewType = viewType;
         isEmpty = (null == result);
@@ -105,11 +121,18 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         else setIdentifier(Helper.generateIdForPlaceholder());
 
         if (result != null) {
-            content = result.getReference();
+            if (viewType == ViewType.MAIN) {
+                content = result.getReference();
+            } else {
+                content = result.getDuplicate();
+                titleScore = result.getTitleScore();
+                coverScore = result.getCoverScore();
+                artistScore = result.getArtistScore();
+                totalScore = result.calcTotalScore();
+            }
             nbDuplicates = result.getNbDuplicates();
         } else {
             content = null;
-            nbDuplicates = 0;
         }
     }
 
@@ -147,12 +170,17 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         private final TextView tvArtist;
         private final TextView tvPages;
         private final ImageView ivSite;
-        private final ImageView ivError;
-        private ImageView ivFavourite;
-        private ImageView ivExternal;
+        private final ImageView ivFavourite;
+        private final ImageView ivExternal;
         private CircularProgressView readingProgress;
         // Specific to main screen
         private TextView viewDetails;
+        // Specific to details screen
+        private Group scores;
+        private TextView titleScore;
+        private TextView coverScore;
+        private TextView artistScore;
+        private TextView totalScore;
 
 //        private Runnable deleteActionRunnable = null;
 
@@ -167,14 +195,17 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             ivSite = requireViewById(itemView, R.id.queue_site_button);
             tvArtist = itemView.findViewById(R.id.tvArtist);
             tvPages = itemView.findViewById(R.id.tvPages);
-            ivError = itemView.findViewById(R.id.ivError);
             ivFavourite = itemView.findViewById(R.id.ivFavourite);
             ivExternal = itemView.findViewById(R.id.ivExternal);
 
             if (viewType == ViewType.MAIN) {
                 viewDetails = itemView.findViewById(R.id.view_details);
             } else if (viewType == ViewType.DETAILS) {
-                // TODO
+                scores = itemView.findViewById(R.id.scores);
+                titleScore = itemView.findViewById(R.id.title_score);
+                coverScore = itemView.findViewById(R.id.cover_score);
+                artistScore = itemView.findViewById(R.id.artist_score);
+                totalScore = itemView.findViewById(R.id.total_score);
             }
         }
 
@@ -202,7 +233,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             /*
             if (item.deleteAction != null)
                 deleteActionRunnable = () -> item.deleteAction.accept(item);
-
              */
 
             updateLayoutVisibility(item);
@@ -212,6 +242,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             if (readingProgress != null) attachReadingProgress(item.content);
             if (tvArtist != null) attachArtist(item.content);
             if (tvPages != null) attachPages(item.content);
+            if (titleScore != null) attachScores(item);
             attachButtons(item);
         }
 
@@ -350,6 +381,30 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             String template = context.getResources().getString(R.string.work_pages_library, content.getNbDownloadedPages(), content.getSize() * 1.0 / (1024 * 1024));
 
             tvPages.setText(template);
+        }
+
+        private void attachScores(@NonNull final DuplicateItem item) {
+            Resources res = titleScore.getContext().getResources();
+
+            if (!item.isReferenceItem) {
+                scores.setVisibility(View.VISIBLE);
+
+                if (item.titleScore > -1.0)
+                    titleScore.setText(res.getString(R.string.duplicate_title_score, item.titleScore * 100));
+                else titleScore.setText(R.string.duplicate_title_score_nodata);
+
+                if (item.coverScore > -1.0)
+                    coverScore.setText(res.getString(R.string.duplicate_cover_score, item.coverScore * 100));
+                else coverScore.setText(R.string.duplicate_cover_score_nodata);
+
+                if (item.artistScore > -1.0)
+                    artistScore.setText(res.getString(R.string.duplicate_artist_score, item.artistScore * 100));
+                else artistScore.setText(R.string.duplicate_artist_score_nodata);
+
+                totalScore.setText(res.getString(R.string.duplicate_total_score, item.totalScore * 100));
+            } else { // Reference item
+                scores.setVisibility(View.GONE);
+            }
         }
 
         private void attachButtons(@NonNull final DuplicateItem item) {
