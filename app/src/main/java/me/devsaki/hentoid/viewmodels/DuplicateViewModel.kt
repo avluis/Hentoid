@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import com.annimon.stream.Stream
 import info.debatty.java.stringsimilarity.Cosine
 import info.debatty.java.stringsimilarity.interfaces.StringSimilarity
 import io.reactivex.disposables.Disposables
@@ -70,7 +69,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         if (useCover) {
             val context = getApplication<Application>().applicationContext
 
-            val noCoverHashes = Stream.of(library).map { content -> content.cover }.filter { cover -> (0L == cover.imageHash) }.toList()
+            val noCoverHashes = library.filter { 0L == it.cover.imageHash }.map { it.cover }
             if (noCoverHashes.isNotEmpty()) {
                 val hash = ImagePHash(48, 8)
 
@@ -165,7 +164,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         }
         // TODO save to DB instead
         EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, library.size, 0, library.size))
-        val finalResult = Stream.of(result).filter { item -> item.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity] }.toList()
+        val finalResult = result.filter { it.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity] }
         duplicates.postValue(finalResult)
     }
 
@@ -173,8 +172,8 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         val refLanguages = contentRef.attributeMap[AttributeType.LANGUAGE]
         val candidateLanguages = contentCandidate.attributeMap[AttributeType.LANGUAGE]
         if (!candidateLanguages.isNullOrEmpty() && !refLanguages.isNullOrEmpty()) {
-            val candidateCodes = Stream.of(candidateLanguages).map { lang -> LanguageHelper.getCountryCodeFromLanguage(lang.name) }.toList()
-            val refCodes = Stream.of(refLanguages).map { lang -> LanguageHelper.getCountryCodeFromLanguage(lang.name) }.toList()
+            val candidateCodes = candidateLanguages.map { LanguageHelper.getCountryCodeFromLanguage(it.name) }
+            val refCodes = refLanguages.map { LanguageHelper.getCountryCodeFromLanguage(it.name) }
 
             for (refCode in refCodes) {
                 if (candidateCodes.contains(refCode)) return true
@@ -233,6 +232,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
             val artistScore: Double) {
 
         private var totalScore = -1.0
+        var nbDuplicates = 1
 
         fun calcTotalScore(): Double {
             if (totalScore > -1.0) return totalScore
