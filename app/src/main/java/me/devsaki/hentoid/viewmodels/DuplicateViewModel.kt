@@ -54,7 +54,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
                 .observeOn(Schedulers.computation())
                 .subscribe { list ->
                     run {
-                        processLibrary(list, useTitle, useCover, useArtist, sameLanguageOnly, sensitivity)
+                        processLibrary(list.sortedByDescending { it.size }, useTitle, useCover, useArtist, sameLanguageOnly, sensitivity)
                         searchDisposable.dispose()
                     }
                 }
@@ -228,7 +228,7 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
     class DuplicateResult(
             val reference: Content,
             val duplicate: Content? = null,
-            val mirrorEntry : Boolean = false,
+            val mirrorEntry: Boolean = false,
             val titleScore: Double = 0.0,
             val coverScore: Double = 0.0,
             val artistScore: Double = 0.0) {
