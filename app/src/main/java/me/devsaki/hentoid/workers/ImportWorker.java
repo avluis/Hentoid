@@ -66,8 +66,6 @@ import timber.log.Timber;
  */
 public class ImportWorker extends Worker {
 
-    private static final int NOTIFICATION_ID = ImportWorker.class.getName().hashCode();
-
     public static final int STEP_GROUPS = 0;
     public static final int STEP_1 = 1;
     public static final int STEP_2_BOOK_FOLDERS = 2;
@@ -98,7 +96,7 @@ public class ImportWorker extends Worker {
     }
 
     private void initNotifications(Context context) {
-        notificationManager = new NotificationManager(context, NOTIFICATION_ID);
+        notificationManager = new NotificationManager(context, R.id.import_service);
         notificationManager.cancel();
     }
 
@@ -111,7 +109,7 @@ public class ImportWorker extends Worker {
         // Tell everyone the worker is shutting down
         running = false;
 
-        EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.IMPORT));
+        EventBus.getDefault().post(new ServiceDestroyedEvent(R.id.import_service));
         EventBus.getDefault().unregister(this);
 
         if (notificationManager != null) notificationManager.cancel();

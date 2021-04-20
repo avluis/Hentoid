@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util.notification;
 
 import android.content.Context;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.work.ForegroundInfo;
@@ -12,7 +13,7 @@ public class NotificationManager {
 
     final int notificationId;
 
-    public NotificationManager(@NonNull Context context, int notificationId) {
+    public NotificationManager(@NonNull Context context, @IdRes int notificationId) {
         this.context = context;
         this.notificationId = notificationId;
     }

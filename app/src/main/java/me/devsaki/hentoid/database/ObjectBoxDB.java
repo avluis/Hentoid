@@ -1299,7 +1299,7 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    List<Content> selectStoredContent(boolean nonFavouritesOnly, boolean includeQueued) {
+    List<Content> selectStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         if (includeQueued)
             query.in(Content_.status, new int[]{
@@ -1315,6 +1315,13 @@ public class ObjectBoxDB {
         query.notNull(Content_.storageUri);
         query.notEqual(Content_.storageUri, "");
         if (nonFavouritesOnly) query.equal(Content_.favourite, false);
+        if (orderField > -1) {
+            Property<Content> field = getPropertyFromField(orderField);
+            if (null != field) {
+                if (orderDesc) query.orderDesc(field);
+                else query.order(field);
+            }
+        }
         return query.build().find();
     }
 

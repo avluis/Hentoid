@@ -242,12 +242,12 @@ public final class Helper {
     }
 
     // TODO doc
-    public static double weigthedAverage(List<Pair<Double, Double>> operands) {
-        if (operands.isEmpty()) return 0.0;
+    public static float weigthedAverage(List<Pair<Float, Float>> operands) {
+        if (operands.isEmpty()) return 0;
 
-        double numerator = 0.0;
-        double denominator = 0.0;
-        for (Pair<Double, Double> operand : operands) {
+        float numerator = 0;
+        float denominator = 0;
+        for (Pair<Float, Float> operand : operands) {
             numerator += (operand.first * operand.second);
             denominator += operand.second;
         }

@@ -53,8 +53,8 @@ import me.devsaki.hentoid.util.LanguageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import me.devsaki.hentoid.viewmodels.DuplicateViewModel;
 import me.devsaki.hentoid.views.CircularProgressView;
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -79,10 +79,10 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
 
     private int nbDuplicates = 0;
     private boolean isReferenceItem = false;
-    private Double titleScore = -1.0;
-    private Double coverScore = -1.0;
-    private Double artistScore = -1.0;
-    private Double totalScore = -1.0;
+    private Float titleScore = -1f;
+    private Float coverScore = -1f;
+    private Float artistScore = -1f;
+    private Float totalScore = -1f;
 
 //    private Consumer<DuplicateItem> deleteAction = null;
 
@@ -114,7 +114,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         isReferenceItem = true;
     }
 
-    public DuplicateItem(DuplicateViewModel.DuplicateResult result, @ViewType int viewType) {
+    public DuplicateItem(DuplicateDetectorWorker.DuplicateResult result, @ViewType int viewType) {
         this.viewType = viewType;
         isEmpty = (null == result);
         if (result != null) setIdentifier(result.hash64());

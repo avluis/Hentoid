@@ -35,10 +35,10 @@ public class ImagePHash {
         return Long.SIZE - Long.bitCount(similarityMask);
     }
 
-    public static double similarity(long hash1, long hash2) {
+    public static float similarity(long hash1, long hash2) {
         long similarityMask = ~((hash1 | hash2) & (~(hash1 & hash2)));
 
-        return Long.bitCount(similarityMask) * 1.0 / Long.SIZE;
+        return Long.bitCount(similarityMask) * 1f / Long.SIZE;
     }
 
 

@@ -21,6 +21,7 @@ import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -81,7 +82,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
-        viewModel.selectedDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateViewModel.DuplicateResult>? -> this.onDuplicatesChanged(l) })
+        viewModel.selectedDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateDetectorWorker.DuplicateResult>? -> this.onDuplicatesChanged(l) })
     }
 
     private fun addCustomBackControl() {
@@ -99,7 +100,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
     }
 
     @Synchronized
-    private fun onDuplicatesChanged(duplicates: List<DuplicateViewModel.DuplicateResult>?) {
+    private fun onDuplicatesChanged(duplicates: List<DuplicateDetectorWorker.DuplicateResult>?) {
         if (null == duplicates) return
 
         Timber.i(">> New selected duplicates ! Size=%s", duplicates.size)

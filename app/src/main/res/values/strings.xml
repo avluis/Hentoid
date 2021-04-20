@@ -523,6 +523,9 @@
     <string name="duplicate_total_score">%.0f%%</string>
     <string name="apply_processing">Apply (%d remaining choices)</string>
     <string name="apply_final">Apply</string>
+    <string name="duplicate_notif_start">Starting duplicate detection</string>
+    <string name="duplicate_notif_complete_title">Duplicate detection complete</string>
+    <string name="duplicate_notif_complete_desc">%d duplicates detected successfully</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

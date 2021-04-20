@@ -147,7 +147,7 @@ public class ContentDownloadWorker extends Worker {
 
     private void clear() {
         // Tell everyone the worker is shutting down
-        EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.DOWNLOAD));
+        EventBus.getDefault().post(new ServiceDestroyedEvent(R.id.download_service));
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 

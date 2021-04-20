@@ -13,7 +13,10 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.reactivex.Single
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposables
+import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
@@ -226,27 +229,30 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         val dao = ObjectBoxDAO(activity)
         var searchDisposable = Disposables.empty()
 
-        searchDisposable = dao.selectStoredBooks(true, false).subscribe { list ->
-            MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
-                    .setIcon(R.drawable.ic_warning)
-                    .setCancelable(false)
-                    .setTitle(R.string.app_name)
-                    .setMessage(getString(R.string.pref_ask_delete_all_except_favs, list.size))
-                    .setPositiveButton(R.string.yes
-                    ) { dialog1: DialogInterface, _: Int ->
-                        dao.cleanup()
-                        dialog1.dismiss()
-                        searchDisposable.dispose()
-                        DeleteProgressDialogFragment.invoke(parentFragmentManager, resources.getString(R.string.delete_title))
-                        viewModel.deleteItems(list)
-                    }
-                    .setNegativeButton(R.string.no
-                    ) { dialog12: DialogInterface, _: Int ->
-                        dao.cleanup()
-                        dialog12.dismiss()
-                    }
-                    .create()
-                    .show()
-        }
+        searchDisposable = Single.fromCallable { dao.selectStoredBooks(true, false, -1, false) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { list ->
+                    MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                            .setIcon(R.drawable.ic_warning)
+                            .setCancelable(false)
+                            .setTitle(R.string.app_name)
+                            .setMessage(getString(R.string.pref_ask_delete_all_except_favs, list.size))
+                            .setPositiveButton(R.string.yes
+                            ) { dialog1: DialogInterface, _: Int ->
+                                dao.cleanup()
+                                dialog1.dismiss()
+                                searchDisposable.dispose()
+                                DeleteProgressDialogFragment.invoke(parentFragmentManager, resources.getString(R.string.delete_title))
+                                viewModel.deleteItems(list)
+                            }
+                            .setNegativeButton(R.string.no
+                            ) { dialog12: DialogInterface, _: Int ->
+                                dao.cleanup()
+                                dialog12.dismiss()
+                            }
+                            .create()
+                            .show()
+                }
     }
 }

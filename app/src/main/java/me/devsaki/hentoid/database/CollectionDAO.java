@@ -128,7 +128,7 @@ public interface CollectionDAO {
 
     // High-level queries (internal and external locations)
 
-    Single<List<Content>> selectStoredBooks(boolean nonFavouriteOnly, boolean includeQueued);
+    List<Content> selectStoredBooks(boolean nonFavouriteOnly, boolean includeQueued, int orderField, boolean orderDesc);
 
 
     Single<List<Long>> selectRecentBookIds(long groupId, int orderField, boolean orderDesc, boolean bookFavouritesOnly, boolean pageFavouritesOnly);

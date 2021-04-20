@@ -24,6 +24,7 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -102,7 +103,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
-        viewModel.allDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateViewModel.DuplicateResult>? -> this.onDuplicatesChanged(l) })
+        viewModel.allDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateDetectorWorker.DuplicateResult>? -> this.onDuplicatesChanged(l) })
     }
 
     private fun addCustomBackControl() {
@@ -173,7 +174,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     }
 
     @Synchronized
-    private fun onDuplicatesChanged(duplicates: List<DuplicateViewModel.DuplicateResult>?) {
+    private fun onDuplicatesChanged(duplicates: List<DuplicateDetectorWorker.DuplicateResult>?) {
         if (null == duplicates) return
 
         Timber.i(">> New duplicates ! Size=%s", duplicates.size)
@@ -181,10 +182,10 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         // TODO update UI title
 
         // Group by reference book and count duplicates
-        val result: MutableList<DuplicateViewModel.DuplicateResult> = ArrayList()
-        val map = duplicates.filter { !it.mirrorEntry }.groupBy { it.reference }.mapValues { it.value.sumBy { 1 } }.toMap()
+        val result: MutableList<DuplicateDetectorWorker.DuplicateResult> = ArrayList()
+        val map = duplicates.groupBy { it.reference }.mapValues { it.value.sumBy { 1 } }.toMap()
         for (entry in map) {
-            result.add(DuplicateViewModel.DuplicateResult(entry.key))
+            result.add(DuplicateDetectorWorker.DuplicateResult(entry.key))
         }
         // Transform to DuplicateItem
         val items = result.map { DuplicateItem(it, DuplicateItem.ViewType.MAIN) }
@@ -195,12 +196,12 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
-        val progressBar: ProgressBar = if (DuplicateViewModel.STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
+        val progressBar: ProgressBar = if (DuplicateDetectorWorker.STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             progressBar.max = event.elementsTotal
             progressBar.progress = event.elementsOK + event.elementsKO
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            if (DuplicateViewModel.STEP_COVER_INDEX == event.step) {
+            if (DuplicateDetectorWorker.STEP_COVER_INDEX == event.step) {
                 binding.controls.detectBooksTxt.visibility = View.VISIBLE
                 binding.controls.detectBooksPb.progress = 0
                 binding.controls.detectBooksPb.visibility = View.VISIBLE

@@ -516,7 +516,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServiceDestroyed(ServiceDestroyedEvent event) {
-        if (event.service != ServiceDestroyedEvent.Service.DOWNLOAD) return;
+        if (event.service != R.id.download_service) return;
 
         isPaused = true;
         updateProgressFirstItem(true);
