@@ -10,6 +10,7 @@ import androidx.work.WorkerParameters;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,22 +25,26 @@ import timber.log.Timber;
  */
 public abstract class BaseWorker extends Worker {
 
-    private static final Map<Integer, Boolean> running = new HashMap<>();
+    private static final Map<Integer, Boolean> running = Collections.synchronizedMap(new HashMap<>());
     protected NotificationManager notificationManager;
 
     private final @IdRes
     int serviceId;
 
-    private static synchronized boolean isRunning(int serviceId) {
+    protected static boolean isRunning(int serviceId) {
         Boolean isRunning = running.get(serviceId);
         return (isRunning != null && isRunning);
     }
 
-    private static synchronized void registerStart(int serviceId) {
+    private boolean isRunning() {
+        return isRunning(serviceId);
+    }
+
+    private void registerStart() {
         running.put(serviceId, true);
     }
 
-    private static synchronized void registerShutdown(int serviceId) {
+    private void registerShutdown() {
         running.put(serviceId, false);
     }
 
@@ -74,7 +79,7 @@ public abstract class BaseWorker extends Worker {
         onClear();
 
         // Tell everyone the worker is shutting down
-        registerShutdown(serviceId);
+        registerShutdown();
 
         EventBus.getDefault().post(new ServiceDestroyedEvent(serviceId));
         EventBus.getDefault().unregister(this);
@@ -87,8 +92,8 @@ public abstract class BaseWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        if (isRunning(serviceId)) return Result.failure();
-        registerStart(serviceId);
+        if (isRunning()) return Result.failure();
+        registerStart();
 
         ensureLongRunning();
         try {

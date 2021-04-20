@@ -8,7 +8,7 @@ import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.work.Worker;
+import androidx.work.Data;
 import androidx.work.WorkerParameters;
 
 import com.annimon.stream.Optional;
@@ -38,7 +38,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.ContentV1;
 import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
@@ -56,7 +55,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ParseException;
-import me.devsaki.hentoid.util.notification.NotificationManager;
+import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.ImportData;
 import timber.log.Timber;
 
@@ -64,7 +63,7 @@ import timber.log.Timber;
 /**
  * Worker responsible for importing an existing Hentoid library.
  */
-public class ImportWorker extends Worker {
+public class ImportWorker extends BaseWorker {
 
     public static final int STEP_GROUPS = 0;
     public static final int STEP_1 = 1;
@@ -72,69 +71,35 @@ public class ImportWorker extends Worker {
     public static final int STEP_3_BOOKS = 3;
     public static final int STEP_4_QUEUE_FINAL = 4;
 
-    private static boolean running;
-    private NotificationManager notificationManager;
-
-    public static boolean isRunning() {
-        return running;
-    }
-
     public ImportWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
-        super(context, parameters);
+        super(context, parameters, R.id.import_service);
+    }
 
-        initNotifications(context);
-
-        Timber.w("Import worker created");
+    public static boolean isRunning() {
+        return isRunning(R.id.import_service);
     }
 
     @Override
-    public void onStopped() {
-        clear();
-        super.onStopped();
-    }
-
-    private void initNotifications(Context context) {
-        notificationManager = new NotificationManager(context, R.id.import_service);
-        notificationManager.cancel();
-    }
-
-    private void ensureLongRunning() {
+    Notification getStartNotification() {
         String message = getApplicationContext().getResources().getString(R.string.starting_download);
-        setForegroundAsync(notificationManager.buildForegroundInfo(new DownloadProgressNotification(message, 0, 0, 0, 0, 0)));
+        return new DownloadProgressNotification(message, 0, 0, 0, 0, 0);
     }
 
-    private void clear() {
-        // Tell everyone the worker is shutting down
-        running = false;
-
-        EventBus.getDefault().post(new ServiceDestroyedEvent(R.id.import_service));
-        EventBus.getDefault().unregister(this);
-
-        if (notificationManager != null) notificationManager.cancel();
-
-        Timber.d("Import worker destroyed");
-    }
-
-    @NonNull
     @Override
-    public Result doWork() {
-        if (running) return Result.failure();
-        running = true;
+    void onClear() {
+        // Nothing
+    }
 
-        ensureLongRunning();
-        try {
-            ImportData.Parser data = new ImportData.Parser(getInputData());
-            boolean doRename = data.getRefreshRename();
-            boolean doCleanNoJson = data.getRefreshCleanNoJson();
-            boolean doCleanNoImages = data.getRefreshCleanNoImages();
+    @Override
+    void getToWork(@NonNull Data input) {
+        ImportData.Parser data = new ImportData.Parser(getInputData());
+        boolean doRename = data.getRefreshRename();
+        boolean doCleanNoJson = data.getRefreshCleanNoJson();
+        boolean doCleanNoImages = data.getRefreshCleanNoImages();
 
-            startImport(doRename, doCleanNoJson, doCleanNoImages);
-        } finally {
-            clear();
-        }
-        return Result.success();
+        startImport(doRename, doCleanNoJson, doCleanNoImages);
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -490,15 +455,12 @@ public class ImportWorker extends Worker {
             @NonNull DocumentFile folder,
             @NonNull List<DocumentFile> bookFiles,
             @NonNull CollectionDAO dao) throws ParseException {
-//        DocumentFile file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_V2);
         Optional<DocumentFile> file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_V2)).findFirst();
         if (file.isPresent()) return importJsonV2(context, file.get(), folder, dao);
 
-//        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME);
         file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME)).findFirst();
         if (file.isPresent()) return importJsonV1(context, file.get(), folder);
 
-//        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_OLD);
         file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_OLD)).findFirst();
         if (file.isPresent()) return importJsonLegacy(context, file.get(), folder);
 
