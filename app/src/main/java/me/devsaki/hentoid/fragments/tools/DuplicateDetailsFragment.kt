@@ -16,12 +16,12 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
+import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateDetailsBinding
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -82,7 +82,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
-        viewModel.selectedDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateDetectorWorker.DuplicateResult>? -> this.onDuplicatesChanged(l) })
+        viewModel.selectedDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateEntry>? -> this.onDuplicatesChanged(l) })
     }
 
     private fun addCustomBackControl() {
@@ -100,7 +100,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
     }
 
     @Synchronized
-    private fun onDuplicatesChanged(duplicates: List<DuplicateDetectorWorker.DuplicateResult>?) {
+    private fun onDuplicatesChanged(duplicates: List<DuplicateEntry>?) {
         if (null == duplicates) return
 
         Timber.i(">> New selected duplicates ! Size=%s", duplicates.size)
@@ -110,7 +110,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         // Order by relevance desc and transforms to DuplicateItem
         val items = duplicates.sortedByDescending { it.calcTotalScore() }.map { DuplicateItem(it, DuplicateItem.ViewType.DETAILS) }.toMutableList()
         // Add the reference item on top
-        if (items.isNotEmpty()) items.add(0, DuplicateItem(duplicates[0].reference, DuplicateItem.ViewType.DETAILS))
+        if (items.isNotEmpty()) items.add(0, DuplicateItem(duplicates[0].referenceContent, DuplicateItem.ViewType.DETAILS))
         FastAdapterDiffUtil[itemAdapter] = items
     }
 

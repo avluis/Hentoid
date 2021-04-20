@@ -8,8 +8,10 @@ import androidx.work.WorkerParameters
 import info.debatty.java.stringsimilarity.Cosine
 import info.debatty.java.stringsimilarity.interfaces.StringSimilarity
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification
@@ -37,6 +39,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) : 
     }
 
     val dao = ObjectBoxDAO(context)
+    val duplicatesDao = DuplicatesDAO(context)
 
     override fun getStartNotification(): Notification {
         return DuplicateStartNotification()
@@ -44,6 +47,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) : 
 
     override fun onClear() {
         dao.cleanup()
+        duplicatesDao.cleanup()
     }
 
     override fun getToWork(input: Data) {
@@ -92,8 +96,8 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) : 
             sensitivity: Int
     ) {
         Helper.assertNonUiThread()
-        val detectedDuplicatesHash = HashMap<Pair<Long, Long>, DuplicateResult>()
-        val result = ArrayList<DuplicateResult>()
+        val detectedDuplicatesHash = HashMap<Pair<Long, Long>, DuplicateEntry>()
+        val result = ArrayList<DuplicateEntry>()
         val textComparator = Cosine()
 
         EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, 0, 0, library.size))
@@ -112,8 +116,9 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) : 
                 // Check if that combination has already been processed
                 val existingResult = detectedDuplicatesHash[Pair(contentCandidate.id, contentRef.id)]
                 if (existingResult?.duplicate != null) {
-                    result.add(DuplicateResult(
+                    result.add(DuplicateEntry(
                             existingResult.duplicate,
+                            0, // TODO
                             existingResult.reference,
                             existingResult.titleScore,
                             existingResult.coverScore,
@@ -128,7 +133,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) : 
 
                 // Remove if not same language
                 if (sameLanguageOnly && !containsSameLanguage(contentRef, contentCandidate)) {
-                    val duplicateResult = DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore)
+                    val duplicateResult = DuplicateEntry(contentRef.id, contentRef.size, contentCandidate.id, titleScore, coverScore, artistScore)
                     result.add(duplicateResult)
                     detectedDuplicatesHash[Pair(contentRef.id, contentCandidate.id)] = duplicateResult
                     continue
@@ -143,7 +148,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) : 
 
                 if (useArtist) artistScore = computeArtistScore(contentRef, contentCandidate)
 
-                val duplicateResult = DuplicateResult(contentRef, contentCandidate, titleScore, coverScore, artistScore)
+                val duplicateResult = DuplicateEntry(contentRef.id, contentRef.size, contentCandidate.id, titleScore, coverScore, artistScore)
                 result.add(duplicateResult)
                 detectedDuplicatesHash[Pair(contentRef.id, contentCandidate.id)] = duplicateResult
             }
@@ -152,7 +157,7 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) : 
 
         EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, library.size, 0, library.size))
         val finalResult = result.filter { it.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity] }
-        // TODO save to DB
+        duplicatesDao.insertEntries(finalResult)
     }
 
     private fun containsSameLanguage(contentRef: Content, contentCandidate: Content): Boolean {
@@ -209,30 +214,5 @@ class DuplicateDetectorWorker(context: Context, parameters: WorkerParameters) : 
             return 0f // No match
         }
         return -1f // Nothing to match against
-    }
-
-    class DuplicateResult(
-            val reference: Content,
-            val duplicate: Content? = null,
-            val titleScore: Float = 0f,
-            val coverScore: Float = 0f,
-            val artistScore: Float = 0f) {
-
-        private var totalScore = -1f
-        var nbDuplicates = 1
-
-        fun calcTotalScore(): Float {
-            if (totalScore > -1) return totalScore
-            // Calculate
-            val operands = ArrayList<android.util.Pair<Float, Float>>()
-            if (titleScore > -1) operands.add(android.util.Pair<Float, Float>(titleScore, 1f))
-            if (coverScore > -1) operands.add(android.util.Pair<Float, Float>(coverScore, 1f))
-            if (artistScore > -1) operands.add(android.util.Pair<Float, Float>(artistScore, 0.5f))
-            return Helper.weigthedAverage(operands)
-        }
-
-        fun hash64(): Long {
-            return Helper.hash64((reference.id.toString() + "." + duplicate?.id.toString()).toByteArray())
-        }
     }
 }

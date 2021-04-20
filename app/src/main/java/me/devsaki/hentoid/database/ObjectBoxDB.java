@@ -67,8 +67,6 @@ import static com.annimon.stream.Collectors.toList;
 
 public class ObjectBoxDB {
 
-    // TODO - put indexes
-
     // Status displayed in the library view (all books of the library; both internal and external)
     private static final int[] libraryStatus = ContentHelper.getLibraryStatuses();
 

@@ -42,6 +42,7 @@ import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.DuplicateEntry;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -54,7 +55,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.CircularProgressView;
-import me.devsaki.hentoid.workers.DuplicateDetectorWorker;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -114,7 +114,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         isReferenceItem = true;
     }
 
-    public DuplicateItem(DuplicateDetectorWorker.DuplicateResult result, @ViewType int viewType) {
+    public DuplicateItem(DuplicateEntry result, @ViewType int viewType) {
         this.viewType = viewType;
         isEmpty = (null == result);
         if (result != null) setIdentifier(result.hash64());
@@ -122,9 +122,9 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
 
         if (result != null) {
             if (viewType == ViewType.MAIN) {
-                content = result.getReference();
+                content = result.getReferenceContent();
             } else {
-                content = result.getDuplicate();
+                content = result.getDuplicateContent();
                 titleScore = result.getTitleScore();
                 coverScore = result.getCoverScore();
                 artistScore = result.getArtistScore();

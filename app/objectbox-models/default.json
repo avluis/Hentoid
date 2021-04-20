@@ -567,9 +567,59 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "13:7937878460553138785",
+      "lastPropertyId": "7:1098218792851277018",
+      "name": "DuplicateEntry",
+      "properties": [
+        {
+          "id": "1:6457903105882729256",
+          "name": "reference",
+          "type": 6,
+          "flags": 4
+        },
+        {
+          "id": "2:4015520791093060143",
+          "name": "duplicate",
+          "type": 6,
+          "flags": 4
+        },
+        {
+          "id": "3:2093692672368655834",
+          "name": "titleScore",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "4:1857179527185107957",
+          "name": "coverScore",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "5:334967191803969001",
+          "name": "artistScore",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "6:4769062372712151805",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "7:1098218792851277018",
+          "name": "referenceSize",
+          "type": 6,
+          "flags": 4
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "12:6339833598022566662",
+  "lastEntityId": "13:7937878460553138785",
   "lastIndexId": "16:2424237144553088526",
   "lastRelationId": "3:1412032361666532056",
   "lastSequenceId": "0:0",

@@ -7,16 +7,15 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
-import me.devsaki.hentoid.workers.ImportWorker
 import me.devsaki.hentoid.workers.data.DuplicateData
-import me.devsaki.hentoid.workers.data.ImportData
 
 
 class DuplicateViewModel(application: Application, val dao: CollectionDAO) : AndroidViewModel(application) {
 
-    val allDuplicates = MutableLiveData<List<DuplicateDetectorWorker.DuplicateResult>>()
-    val selectedDuplicates = MutableLiveData<List<DuplicateDetectorWorker.DuplicateResult>>()
+    val allDuplicates = MutableLiveData<List<DuplicateEntry>>()
+    val selectedDuplicates = MutableLiveData<List<DuplicateEntry>>()
 
 
     override fun onCleared() {
@@ -43,6 +42,6 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
     }
 
     fun setContent(content: Content) {
-        selectedDuplicates.postValue(allDuplicates.value?.filter { it.reference.id == content.id })
+        selectedDuplicates.postValue(allDuplicates.value?.filter { it.reference == content.id })
     }
 }

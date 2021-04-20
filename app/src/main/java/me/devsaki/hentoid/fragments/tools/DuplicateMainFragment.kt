@@ -17,6 +17,7 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
+import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
@@ -103,7 +104,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
-        viewModel.allDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateDetectorWorker.DuplicateResult>? -> this.onDuplicatesChanged(l) })
+        viewModel.allDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateEntry>? -> this.onDuplicatesChanged(l) })
     }
 
     private fun addCustomBackControl() {
@@ -174,7 +175,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     }
 
     @Synchronized
-    private fun onDuplicatesChanged(duplicates: List<DuplicateDetectorWorker.DuplicateResult>?) {
+    private fun onDuplicatesChanged(duplicates: List<DuplicateEntry>?) {
         if (null == duplicates) return
 
         Timber.i(">> New duplicates ! Size=%s", duplicates.size)
@@ -182,13 +183,13 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         // TODO update UI title
 
         // Group by reference book and count duplicates
-        val result: MutableList<DuplicateDetectorWorker.DuplicateResult> = ArrayList()
+        val entries: MutableList<DuplicateEntry> = ArrayList()
         val map = duplicates.groupBy { it.reference }.mapValues { it.value.sumBy { 1 } }.toMap()
         for (entry in map) {
-            result.add(DuplicateDetectorWorker.DuplicateResult(entry.key))
+            entries.add(DuplicateEntry(0, entry.key))
         }
         // Transform to DuplicateItem
-        val items = result.map { DuplicateItem(it, DuplicateItem.ViewType.MAIN) }
+        val items = entries.map { DuplicateItem(it, DuplicateItem.ViewType.MAIN) }
         set(itemAdapter, items)
 
         binding.controls.root.visibility = View.GONE
