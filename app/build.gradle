@@ -116,7 +116,7 @@ dependencies {
     /**
      * ANDROID FRAMEWORK
      */
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.31"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.32"
 
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
@@ -232,7 +232,7 @@ dependencies {
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
-    def objectbox_version = "2.8.1"
+    def objectbox_version = "2.9.1"
     if (includeObjectBoxBrowser.toBoolean()) {
         debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
         releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"
