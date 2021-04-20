@@ -66,7 +66,7 @@ import timber.log.Timber;
  */
 public class ImportWorker extends Worker {
 
-    private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_ID = ImportWorker.class.getName().hashCode();
 
     public static final int STEP_GROUPS = 0;
     public static final int STEP_1 = 1;

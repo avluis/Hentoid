@@ -45,8 +45,9 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.fakku.FakkuDecode;
 import me.devsaki.fakku.PageInfo;
 import me.devsaki.fakku.PointTranslation;
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.Consts;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -65,7 +66,6 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
@@ -88,8 +88,8 @@ import timber.log.Timber;
 
 public class ContentDownloadWorker extends Worker {
 
-    private static final int NOTIFICATION_ID = 3;
-    private static final int NOTIFICATION_ID_WARNING = 4;
+    private static final int NOTIFICATION_ID = ContentDownloadWorker.class.getName().hashCode();
+    private static final int NOTIFICATION_ID_WARNING = (ContentDownloadWorker.class.getName() + ".warning").hashCode();
 
     private enum QueuingResult {
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END

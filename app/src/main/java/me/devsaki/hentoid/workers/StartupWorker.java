@@ -26,7 +26,7 @@ import timber.log.Timber;
  */
 public class StartupWorker extends Worker {
 
-    private static final int NOTIFICATION_ID = 2;
+    private static final int NOTIFICATION_ID = StartupWorker.class.getName().hashCode();
 
     private static boolean running;
     private NotificationManager notificationManager;

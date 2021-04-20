@@ -41,6 +41,7 @@ import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
+import me.devsaki.hentoid.workers.ContentDownloadWorker;
 import me.devsaki.hentoid.workers.ImportWorker;
 import timber.log.Timber;
 
@@ -54,7 +55,7 @@ import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
  */
 public class ExternalImportService extends IntentService {
 
-    private static final int NOTIFICATION_ID = 6;
+    private static final int NOTIFICATION_ID = ExternalImportService.class.getName().hashCode();
     private static final Pattern ENDS_WITH_NUMBER = Pattern.compile(".*\\d+(\\.\\d+)?$");
 
     private static boolean running;

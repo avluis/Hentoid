@@ -53,7 +53,7 @@ import timber.log.Timber;
  */
 public class API29MigrationService extends IntentService {
 
-    private static final int NOTIFICATION_ID = 5;
+    private static final int NOTIFICATION_ID = API29MigrationService.class.getName().hashCode();
 
     private ServiceNotificationManager notificationManager;
     private Disposable searchDisposable = Disposables.empty();
