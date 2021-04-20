@@ -41,7 +41,6 @@ import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
-import me.devsaki.hentoid.workers.ContentDownloadWorker;
 import me.devsaki.hentoid.workers.ImportWorker;
 import timber.log.Timber;
 
