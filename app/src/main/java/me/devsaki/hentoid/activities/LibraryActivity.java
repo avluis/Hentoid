@@ -953,7 +953,7 @@ public class LibraryActivity extends BaseActivity {
             @Nullable final Runnable onSuccess
     ) {
         DeleteNotificationChannel.init(this);
-        deleteNotificationManager = new NotificationManager(this, 1);
+        deleteNotificationManager = new NotificationManager(this, R.id.delete_processing);
         deleteNotificationManager.cancel();
         deleteProgress = 0;
         deleteMax = contents.size() + groups.size();
@@ -1019,7 +1019,7 @@ public class LibraryActivity extends BaseActivity {
                         (dialog, which) -> {
                             selectExtension.deselect();
                             ArchiveNotificationChannel.init(this);
-                            archiveNotificationManager = new NotificationManager(this, 1);
+                            archiveNotificationManager = new NotificationManager(this, R.id.archive_processing);
                             archiveNotificationManager.cancel();
                             archiveProgress = 0;
                             archiveMax = items.size();
