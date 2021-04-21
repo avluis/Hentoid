@@ -63,7 +63,7 @@ public abstract class BaseWorker extends Worker {
     @Override
     public void onStopped() {
         onInterrupt();
-//        clear();
+        clear();
         super.onStopped();
     }
 
@@ -77,14 +77,15 @@ public abstract class BaseWorker extends Worker {
     }
 
     private void clear() {
+        if (!isRunning()) return;
         onClear();
-        registerShutdown();
 
         // Tell everyone the worker is shutting down
         EventBus.getDefault().post(new ServiceDestroyedEvent(serviceId));
 
         if (notificationManager != null) notificationManager.cancel();
 
+        registerShutdown();
         Timber.d("%s worker destroyed", this.getClass().getSimpleName());
     }
 
