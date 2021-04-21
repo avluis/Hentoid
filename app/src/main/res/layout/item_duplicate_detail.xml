@@ -76,7 +76,7 @@
             tools:text="@string/book_title" />
 
         <TextView
-            android:id="@+id/tvArtist"
+            android:id="@+id/tvLaunchCode"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
@@ -89,6 +89,22 @@
             app:layout_constraintEnd_toEndOf="@id/guideline_middle"
             app:layout_constraintStart_toEndOf="@id/ivCover"
             app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            tools:text="@string/book_launchcode" />
+
+        <TextView
+            android:id="@+id/tvArtist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="@color/card_tags_light"
+            android:textSize="@dimen/caption"
+            app:layout_constraintEnd_toEndOf="@id/guideline_middle"
+            app:layout_constraintStart_toEndOf="@id/ivCover"
+            app:layout_constraintTop_toBottomOf="@id/tvLaunchCode"
             tools:text="@string/book_artist" />
 
         <TextView

@@ -273,6 +273,7 @@
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="book_title">This is a rather long title, just because we need it to be.</string>
+    <string name="book_launchcode">Launch code : %s</string>
     <string name="book_series">Series: Name</string>
     <string name="book_artist">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
     <string name="book_pages_queue">Pages: 1234; estimated 125 MB</string>
@@ -526,6 +527,9 @@
     <string name="duplicate_notif_start">Starting duplicate detection</string>
     <string name="duplicate_notif_complete_title">Duplicate detection complete</string>
     <string name="duplicate_notif_complete_desc">%d duplicates detected successfully</string>
+    <string name="duplicate_empty_first_use">Run a new duplicate search</string>
+    <string name="duplicate_empty_processing">Detection in process</string>
+    <string name="duplicate_empty_no_result">No duplicates found</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

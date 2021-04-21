@@ -176,6 +176,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         // Specific to main screen
         private TextView viewDetails;
         // Specific to details screen
+        private TextView tvLaunchCode;
         private Group scores;
         private TextView titleScore;
         private TextView coverScore;
@@ -201,6 +202,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             if (viewType == ViewType.MAIN) {
                 viewDetails = itemView.findViewById(R.id.view_details);
             } else if (viewType == ViewType.DETAILS) {
+                tvLaunchCode = itemView.findViewById(R.id.tvLaunchCode);
                 scores = itemView.findViewById(R.id.scores);
                 titleScore = itemView.findViewById(R.id.title_score);
                 coverScore = itemView.findViewById(R.id.cover_score);
@@ -240,6 +242,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             attachFlag(item.content);
             attachTitle(item.content);
             if (readingProgress != null) attachReadingProgress(item.content);
+            if (tvLaunchCode != null) attachLaunchCode(item.content);
             if (tvArtist != null) attachArtist(item.content);
             if (tvPages != null) attachPages(item.content);
             if (titleScore != null) attachScores(item);
@@ -339,6 +342,11 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             }
             tvTitle.setText(title);
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
+        }
+
+        private void attachLaunchCode(@NonNull final Content content) {
+            Resources res = tvPages.getContext().getResources();
+            tvLaunchCode.setText(res.getString(R.string.book_launchcode, content.getUniqueSiteId()));
         }
 
         private void attachReadingProgress(@NonNull final Content content) {

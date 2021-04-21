@@ -14,7 +14,6 @@ import me.devsaki.hentoid.database.DuplicatesDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification;
-import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.Notification;
@@ -36,6 +35,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
         dao = new ObjectBoxDAO(getApplicationContext());
         duplicatesDAO = new DuplicatesDAO(getApplicationContext());
+    }
+
+    public static boolean isRunning() {
+        return isRunning(R.id.duplicate_detector_service);
     }
 
     @Override

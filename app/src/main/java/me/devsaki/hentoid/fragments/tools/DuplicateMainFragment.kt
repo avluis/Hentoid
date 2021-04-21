@@ -26,6 +26,7 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -99,9 +100,6 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.useSensitivity.setItems(R.array.duplicate_use_sensitivities)
         binding.controls.useSensitivity.selectItemByIndex(Preferences.getDuplicateSensitivity())
 
-        // TODO only do that when dupes DB is empty
-        setSettingsPanelVisibility(true)
-
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
         viewModel.allDuplicates.observe(viewLifecycleOwner, { this.onDuplicatesChanged(it) })
@@ -114,7 +112,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 onCustomBackPress()
             }
         }
-        activity.get()!!.onBackPressedDispatcher.addCallback(activity.get()!!, callback!!)
+        activity.get()?.onBackPressedDispatcher?.addCallback(activity.get()!!, callback!!)
     }
 
     private fun onCustomBackPress() {
@@ -165,6 +163,9 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
             binding.controls.detectBooksPb.visibility = View.VISIBLE
         }
 
+        activity.get()?.firstUse = false
+        binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_processing)
+
         viewModel.scanForDuplicates(
                 binding.controls.useTitle.isChecked,
                 binding.controls.useCover.isChecked,
@@ -179,6 +180,20 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 //        if (null == duplicates) return
 
         Timber.i(">> New duplicates ! Size=%s", duplicates.size)
+
+        // Update settings panel visibility
+        if (duplicates.isEmpty()) {
+            if (activity.get() != null && activity.get()!!.firstUse) {
+                setSettingsPanelVisibility(duplicates.isEmpty())
+                binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
+            } else if (DuplicateDetectorWorker.isRunning()) {
+                binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_processing)
+            } else {
+                binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
+            }
+        } else {
+            setSettingsPanelVisibility(false)
+        }
 
         // TODO update UI title
 
@@ -195,16 +210,20 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         // Transform to DuplicateItem
         val items = entries.map { DuplicateItem(it, DuplicateItem.ViewType.MAIN) }
         set(itemAdapter, items)
-
-        binding.controls.root.visibility = View.GONE
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
         val progressBar: ProgressBar = if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            progressBar.visibility = View.VISIBLE
             progressBar.max = event.elementsTotal
             progressBar.progress = event.elementsOK + event.elementsKO
+            if (STEP_COVER_INDEX == event.step) {
+                binding.controls.indexPicturesTxt.visibility = View.VISIBLE
+            } else {
+                binding.controls.detectBooksTxt.visibility = View.VISIBLE
+            }
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             if (STEP_COVER_INDEX == event.step) {
                 binding.controls.detectBooksTxt.visibility = View.VISIBLE
