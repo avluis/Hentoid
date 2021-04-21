@@ -53,6 +53,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
     void getToWork(@NonNull Data input) {
         DuplicateData.Parser data = new DuplicateData.Parser(input);
 
+        duplicatesDAO.clear();
+
         List<Content> library = dao.selectStoredBooks(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true);
         if (data.getUseCover())
             DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, library);
