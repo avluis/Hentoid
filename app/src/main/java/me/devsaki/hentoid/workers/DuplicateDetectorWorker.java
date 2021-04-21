@@ -7,6 +7,7 @@ import androidx.work.Data;
 import androidx.work.WorkerParameters;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
@@ -28,6 +29,9 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private final CollectionDAO dao;
     private final DuplicatesDAO duplicatesDAO;
 
+    private AtomicBoolean interrupted = new AtomicBoolean(false);
+
+
     public DuplicateDetectorWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
@@ -47,6 +51,11 @@ public class DuplicateDetectorWorker extends BaseWorker {
     }
 
     @Override
+    void onInterrupt() {
+        interrupted.set(true);
+    }
+
+    @Override
     void onClear() {
         dao.cleanup();
         duplicatesDAO.cleanup();
@@ -60,7 +69,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
         List<Content> library = dao.selectStoredBooks(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true);
         if (data.getUseCover())
-            DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, library);
-        DuplicateHelper.Companion.processLibrary(duplicatesDAO, library, data.getUseTitle(), data.getUseCover(), data.getUseArtist(), data.getUseSameLanguage(), data.getSensitivity());
+            DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, library, interrupted);
+        if (!interrupted.get())
+            DuplicateHelper.Companion.processLibrary(duplicatesDAO, library, data.getUseTitle(), data.getUseCover(), data.getUseArtist(), data.getUseSameLanguage(), data.getSensitivity(), interrupted);
     }
 }

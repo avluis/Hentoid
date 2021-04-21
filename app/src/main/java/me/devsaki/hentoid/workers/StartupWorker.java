@@ -43,6 +43,11 @@ public class StartupWorker extends BaseWorker {
     }
 
     @Override
+    void onInterrupt() {
+        // Nothing; won't happen
+    }
+
+    @Override
     void onClear() {
         launchTasks.clear();
     }

@@ -122,6 +122,12 @@ public class ContentDownloadWorker extends BaseWorker {
     }
 
     @Override
+    void onInterrupt() {
+        requestQueueManager.cancelQueue();
+        downloadCanceled = true;
+    }
+
+    @Override
     void onClear() {
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();

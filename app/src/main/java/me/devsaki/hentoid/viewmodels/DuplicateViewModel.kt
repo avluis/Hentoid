@@ -3,8 +3,10 @@ package me.devsaki.hentoid.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE
 import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
@@ -40,7 +42,11 @@ class DuplicateViewModel(application: Application, private val duplicatesDao: Du
 
         DuplicateNotificationChannel.init(getApplication())
         val workManager = WorkManager.getInstance(getApplication())
-        workManager.enqueue(OneTimeWorkRequestBuilder<DuplicateDetectorWorker>().setInputData(builder.data).build())
+        workManager.enqueueUniqueWork(
+                "duplicate detector",
+                ExistingWorkPolicy.REPLACE,
+                OneTimeWorkRequestBuilder<DuplicateDetectorWorker>().setInputData(builder.data).addTag(WORK_CLOSEABLE).build()
+        )
     }
 
     fun setContent(content: Content) {

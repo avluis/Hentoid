@@ -26,6 +26,8 @@ public abstract class Consts {
     public static final String SEED_CONTENT = "content";
     public static final String SEED_PAGES = "pages";
 
+    public static final String WORK_CLOSEABLE = "closeable";
+
 
     public static final String URL_GITHUB = "https://github.com/AVnetWS/Hentoid";
     public static final String URL_GITHUB_WIKI = "https://github.com/AVnetWS/Hentoid/wiki";

@@ -62,7 +62,8 @@ public abstract class BaseWorker extends Worker {
 
     @Override
     public void onStopped() {
-        clear();
+        onInterrupt();
+//        clear();
         super.onStopped();
     }
 
@@ -77,12 +78,10 @@ public abstract class BaseWorker extends Worker {
 
     private void clear() {
         onClear();
-
-        // Tell everyone the worker is shutting down
         registerShutdown();
 
+        // Tell everyone the worker is shutting down
         EventBus.getDefault().post(new ServiceDestroyedEvent(serviceId));
-        EventBus.getDefault().unregister(this);
 
         if (notificationManager != null) notificationManager.cancel();
 
@@ -105,6 +104,8 @@ public abstract class BaseWorker extends Worker {
     }
 
     abstract Notification getStartNotification();
+
+    abstract void onInterrupt();
 
     abstract void onClear();
 

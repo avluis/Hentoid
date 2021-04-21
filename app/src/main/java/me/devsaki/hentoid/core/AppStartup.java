@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
@@ -78,7 +79,7 @@ public class AppStartup {
             onComplete.run();
             // Run post-launch tasks on a worker
             WorkManager workManager = WorkManager.getInstance(context);
-            workManager.enqueue(new OneTimeWorkRequest.Builder(StartupWorker.class).build());
+            workManager.enqueueUniqueWork("startup", ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(StartupWorker.class).build());
         });
     }
 

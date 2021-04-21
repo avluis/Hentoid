@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.util;
 
 import android.app.Activity;
-import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -13,6 +12,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
@@ -54,6 +54,7 @@ import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.O;
 import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
+import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
 
 public class ImportHelper {
 
@@ -402,7 +403,7 @@ public class ImportHelper {
         builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
 
         WorkManager workManager = WorkManager.getInstance(context);
-        workManager.enqueue(new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).build());
+        workManager.enqueueUniqueWork("import", ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
     }
 
     // TODO doc

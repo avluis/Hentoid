@@ -15,6 +15,7 @@ import me.devsaki.hentoid.events.ProcessEvent
 import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
 
 class DuplicateHelper {
 
@@ -31,7 +32,11 @@ class DuplicateHelper {
         /**
          * Detect if there are missing cover hashes
          */
-        fun indexCovers(context: Context, dao: CollectionDAO, library: List<Content>) {
+        fun indexCovers(
+                context: Context,
+                dao: CollectionDAO,
+                library: List<Content>,
+                interrupted: AtomicBoolean) {
             val noCoverHashes = library.filter { 0L == it.cover.imageHash && !it.cover.status.equals(StatusContent.ONLINE) }
             if (noCoverHashes.isNotEmpty()) {
                 val hash = ImagePHash(48, 8)
@@ -39,6 +44,7 @@ class DuplicateHelper {
                 EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, 0, 0, noCoverHashes.size))
                 var elementsKO = 0
                 for ((progress, content) in noCoverHashes.withIndex()) {
+                    if (interrupted.get()) break
                     try {
                         FileHelper.getInputStream(context, Uri.parse(content.cover.fileUri))
                                 .use {
@@ -68,7 +74,8 @@ class DuplicateHelper {
                 useCover: Boolean,
                 useArtist: Boolean,
                 sameLanguageOnly: Boolean,
-                sensitivity: Int
+                sensitivity: Int,
+                interrupted: AtomicBoolean
         ) {
             Helper.assertNonUiThread()
             //val detectedDuplicatesHash = HashMap<Pair<Long, Long>, DuplicateEntry>()
@@ -77,6 +84,7 @@ class DuplicateHelper {
 
             EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, 0, 0, library.size))
             for ((progress, contentRef) in library.withIndex()) {
+                if (interrupted.get()) break
                 lateinit var referenceTitleDigits: String
                 lateinit var referenceTitle: String
                 if (useTitle) {
@@ -87,6 +95,7 @@ class DuplicateHelper {
                 for (contentCandidate in library) {
                     // Ignore same item comparison
                     if (contentRef.id == contentCandidate.id) continue
+                    if (interrupted.get()) break
 
                     // Check if that combination has already been processed
                     if (detectedDuplicatesHash.contains(Pair(contentCandidate.id, contentRef.id))) continue

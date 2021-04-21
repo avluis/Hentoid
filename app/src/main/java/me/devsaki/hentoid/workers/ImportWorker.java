@@ -72,6 +72,9 @@ public class ImportWorker extends BaseWorker {
     public static final int STEP_3_BOOKS = 3;
     public static final int STEP_4_QUEUE_FINAL = 4;
 
+    private boolean interrupted = false;
+
+
     public ImportWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
@@ -85,6 +88,11 @@ public class ImportWorker extends BaseWorker {
     @Override
     Notification getStartNotification() {
         return new ImportStartNotification();
+    }
+
+    @Override
+    void onInterrupt() {
+        interrupted = true;
     }
 
     @Override
@@ -187,6 +195,7 @@ public class ImportWorker extends BaseWorker {
             dao.flagAllErrorBooksWithJson();
 
             for (int i = 0; i < bookFolders.size(); i++) {
+                if (interrupted) throw new InterruptedException();
                 DocumentFile bookFolder = bookFolders.get(i);
 
                 // Detect the presence of images if the corresponding cleanup option has been enabled
@@ -345,7 +354,7 @@ public class ImportWorker extends BaseWorker {
             DocumentFile queueFile = explorer.findFile(context, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
             if (queueFile != null) importQueue(context, queueFile, dao, log);
             else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             Timber.w(e);
         } finally {
             // Write log in root folder

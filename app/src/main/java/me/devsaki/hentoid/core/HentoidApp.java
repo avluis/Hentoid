@@ -7,6 +7,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
+import androidx.work.WorkManager;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.jakewharton.threetenabp.AndroidThreeTen;
@@ -23,7 +24,10 @@ import me.devsaki.hentoid.activities.SplashActivity;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker;
 import timber.log.Timber;
+
+import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -149,12 +153,20 @@ public class HentoidApp extends Application {
 
         @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
         private void onMoveToBackground() {
-            Timber.d("Moving to background");
+            Timber.d("App moving to background");
             if (enabled && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
                 HentoidApp.setUnlocked(false);
                 HentoidApp.setLockInstant(Instant.now().toEpochMilli());
             }
         }
 
+        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        private void onDestroy() {
+            Timber.d("App is being destroyed");
+            if (enabled) {
+                WorkManager workManager = WorkManager.getInstance(HentoidApp.getInstance());
+                workManager.cancelAllWorkByTag(WORK_CLOSEABLE);
+            }
+        }
     }
 }
