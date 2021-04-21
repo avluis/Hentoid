@@ -40,6 +40,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.json.JsonSiteSettings;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
+import me.devsaki.hentoid.notification.startup.StartupNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.util.FileHelper;
@@ -123,7 +124,7 @@ public class AppStartup {
 
     public static List<Observable<Float>> getPostLaunchTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
-        result.add(createObservableFrom(context, AppStartupDev::testImg));
+//        result.add(createObservableFrom(context, AppStartupDev::testImg));
         result.add(createObservableFrom(context, AppStartup::searchForUpdates));
         result.add(createObservableFrom(context, AppStartup::sendFirebaseStats));
         return result;
@@ -156,6 +157,7 @@ public class AppStartup {
         try {
             Timber.i("Init notifications : start");
             // Init notification channels
+            StartupNotificationChannel.init(context);
             UpdateNotificationChannel.init(context);
             DownloadNotificationChannel.init(context);
 

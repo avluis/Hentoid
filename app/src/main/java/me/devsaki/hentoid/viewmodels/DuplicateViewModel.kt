@@ -3,24 +3,25 @@ package me.devsaki.hentoid.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import androidx.work.OneTimeWorkRequest
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import me.devsaki.hentoid.database.CollectionDAO
+import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
+import me.devsaki.hentoid.notification.duplicates.DuplicateNotificationChannel
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.devsaki.hentoid.workers.data.DuplicateData
 
 
-class DuplicateViewModel(application: Application, val dao: CollectionDAO) : AndroidViewModel(application) {
+class DuplicateViewModel(application: Application, private val duplicatesDao: DuplicatesDAO) : AndroidViewModel(application) {
 
-    val allDuplicates = MutableLiveData<List<DuplicateEntry>>()
+    val allDuplicates = duplicatesDao.getEntriesLive()
     val selectedDuplicates = MutableLiveData<List<DuplicateEntry>>()
 
 
     override fun onCleared() {
         super.onCleared()
-        dao.cleanup()
+        duplicatesDao.cleanup()
     }
 
     fun scanForDuplicates(
@@ -37,8 +38,9 @@ class DuplicateViewModel(application: Application, val dao: CollectionDAO) : And
         builder.setUseSameLanguage(sameLanguageOnly)
         builder.setSensitivity(sensitivity)
 
+        DuplicateNotificationChannel.init(getApplication())
         val workManager = WorkManager.getInstance(getApplication())
-        workManager.enqueue(OneTimeWorkRequest.Builder(DuplicateDetectorWorker::class.java).setInputData(builder.data).build())
+        workManager.enqueue(OneTimeWorkRequestBuilder<DuplicateDetectorWorker>().setInputData(builder.data).build())
     }
 
     fun setContent(content: Content) {

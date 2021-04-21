@@ -3,6 +3,7 @@ package me.devsaki.hentoid.viewmodels
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.util.Preferences
 
@@ -19,7 +20,7 @@ class ViewModelFactory(val application: Application): ViewModelProvider.Factory 
             QueueViewModel::class.java -> QueueViewModel(application, ObjectBoxDAO(application))
             ImageViewerViewModel::class.java -> ImageViewerViewModel(application, ObjectBoxDAO(application))
             PreferencesViewModel::class.java -> PreferencesViewModel(application, ObjectBoxDAO(application))
-            DuplicateViewModel::class.java -> DuplicateViewModel(application, ObjectBoxDAO(application))
+            DuplicateViewModel::class.java -> DuplicateViewModel(application, DuplicatesDAO(application))
             else -> throw RuntimeException()
         } as T
     }

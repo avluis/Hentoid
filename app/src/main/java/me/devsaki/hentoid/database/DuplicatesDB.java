@@ -2,11 +2,11 @@ package me.devsaki.hentoid.database;
 
 import android.content.Context;
 
-import java.io.File;
 import java.util.List;
 
 import io.objectbox.BoxStore;
 import io.objectbox.android.AndroidObjectBrowser;
+import io.objectbox.query.Query;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.DuplicateEntry;
 import me.devsaki.hentoid.database.domains.DuplicateEntry_;
@@ -16,7 +16,8 @@ import timber.log.Timber;
 
 public class DuplicatesDB {
 
-    private static final File DB_DIRECTORY = new File("duplicates-db");
+    //private static final File DB_DIRECTORY = new File("duplicates-db");
+    private static final String DB_NAME = "duplicates-db";
 
     private static DuplicatesDB instance;
 
@@ -24,7 +25,7 @@ public class DuplicatesDB {
 
 
     private DuplicatesDB(Context context) {
-        store = MyObjectBox.builder().directory(DB_DIRECTORY).androidContext(context.getApplicationContext()).maxSizeInKByte(Preferences.getMaxDbSizeKb()).build();
+        store = MyObjectBox.builder().name(DB_NAME).androidContext(context.getApplicationContext()).maxSizeInKByte(Preferences.getMaxDbSizeKb()).build();
 
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
             boolean started = new AndroidObjectBrowser(store).start(context.getApplicationContext());
@@ -55,12 +56,12 @@ public class DuplicatesDB {
         if (store != null) {
             store.closeThreadResources();
             store.close();
+            store.deleteAllFiles();
         }
-        BoxStore.deleteAllFiles(DB_DIRECTORY);
     }
 
-    public List<DuplicateEntry> getEntries() {
-        return store.boxFor(DuplicateEntry.class).query().orderDesc(DuplicateEntry_.referenceSize).build().find();
+    public Query<DuplicateEntry> selectEntriesQ() {
+        return store.boxFor(DuplicateEntry.class).query().orderDesc(DuplicateEntry_.referenceSize).build();
     }
 
     void insertEntry(DuplicateEntry entry) {
@@ -69,5 +70,9 @@ public class DuplicatesDB {
 
     void insertEntries(List<DuplicateEntry> entry) {
         store.boxFor(DuplicateEntry.class).put(entry);
+    }
+
+    void clearEntries() {
+        store.boxFor(DuplicateEntry.class).removeAll();
     }
 }

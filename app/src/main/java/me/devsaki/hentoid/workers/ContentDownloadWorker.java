@@ -10,7 +10,7 @@ import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.work.Worker;
+import androidx.work.Data;
 import androidx.work.WorkerParameters;
 
 import com.android.volley.AuthFailureError;
@@ -58,7 +58,6 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
@@ -83,25 +82,18 @@ import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.InputStreamVolleyRequest;
 import me.devsaki.hentoid.util.network.NetworkHelper;
-import me.devsaki.hentoid.util.notification.NotificationManager;
+import me.devsaki.hentoid.util.notification.Notification;
 import timber.log.Timber;
 
-public class ContentDownloadWorker extends Worker {
-
-    private static final int NOTIFICATION_ID = ContentDownloadWorker.class.getName().hashCode();
-    private static final int NOTIFICATION_ID_WARNING = (ContentDownloadWorker.class.getName() + ".warning").hashCode();
+public class ContentDownloadWorker extends BaseWorker {
 
     private enum QueuingResult {
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
     }
 
-    private NotificationManager notificationManager;
-    private NotificationManager warningNotificationManager;
-
     // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
     private final CollectionDAO dao;
 
-    private static boolean running;
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
 
@@ -109,70 +101,39 @@ public class ContentDownloadWorker extends Worker {
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Download speed calculator
-    private final DownloadSpeedCalculator downloadSpeedCalulator = new DownloadSpeedCalculator();
+    private final DownloadSpeedCalculator downloadSpeedCalculator = new DownloadSpeedCalculator();
 
 
     public ContentDownloadWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
-        super(context, parameters);
+        super(context, parameters, R.id.download_service);
 
-        initNotifications(context);
         EventBus.getDefault().register(this);
         dao = new ObjectBoxDAO(context);
 
         requestQueueManager = RequestQueueManager.getInstance(context);
-
-        Timber.d("Download worker created");
     }
 
     @Override
-    public void onStopped() {
-        clear();
-        super.onStopped();
-    }
-
-    private void initNotifications(Context context) {
-        notificationManager = new NotificationManager(context, NOTIFICATION_ID);
-        notificationManager.cancel();
-
-        warningNotificationManager = new NotificationManager(context, NOTIFICATION_ID_WARNING);
-        warningNotificationManager.cancel();
-    }
-
-    private void ensureLongRunning() {
+    Notification getStartNotification() {
         String message = getApplicationContext().getResources().getString(R.string.starting_download);
-        setForegroundAsync(notificationManager.buildForegroundInfo(new DownloadProgressNotification(message, 0, 0, 0, 0, 0)));
+        return new DownloadProgressNotification(message, 0, 0, 0, 0, 0);
     }
 
-    private void clear() {
-        // Tell everyone the worker is shutting down
-        EventBus.getDefault().post(new ServiceDestroyedEvent(R.id.download_service));
+    @Override
+    void onClear() {
         EventBus.getDefault().unregister(this);
         compositeDisposable.clear();
 
         if (dao != null) dao.cleanup();
-        running = false;
 
-        if (notificationManager != null) notificationManager.cancel();
         ContentQueueManager.getInstance().setInactive();
-
-        Timber.d("Download worker destroyed");
     }
 
-    @NonNull
     @Override
-    public Result doWork() {
-        if (running) return Result.failure();
-        running = true;
-
-        ensureLongRunning();
-        try {
-            iterateQueue();
-        } finally {
-            clear();
-        }
-        return Result.success();
+    void getToWork(@NonNull Data input) {
+        iterateQueue();
     }
 
     private void iterateQueue() {
@@ -381,7 +342,7 @@ public class ContentDownloadWorker extends Worker {
             String message = String.format("Directory could not be created: %s.", absolutePath);
             Timber.w(message);
             logErrorRecord(content.getId(), ErrorType.IO, content.getUrl(), "Destination folder", message);
-            warningNotificationManager.notify(new DownloadWarningNotification(title, absolutePath));
+            notificationManager.notify(new DownloadWarningNotification(title, absolutePath));
 
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
@@ -467,8 +428,8 @@ public class ContentDownloadWorker extends Worker {
             Timber.d("Progress: OK:%d size:%dMB - KO:%d - Total:%d", pagesOK, (int) sizeDownloadedMB, pagesKO, totalPages);
 
             // Download speed and size estimation
-            downloadSpeedCalulator.addSampleNow(NetworkHelper.getIncomingNetworkUsage(getApplicationContext()));
-            int avgSpeedKbps = (int) downloadSpeedCalulator.getAvgSpeedKbps();
+            downloadSpeedCalculator.addSampleNow(NetworkHelper.getIncomingNetworkUsage(getApplicationContext()));
+            int avgSpeedKbps = (int) downloadSpeedCalculator.getAvgSpeedKbps();
 
             double estimateBookSizeMB = -1;
             if (pagesOK > 3 && progress > 0 && totalPages > 0) {
@@ -496,6 +457,7 @@ public class ContentDownloadWorker extends Worker {
 
             // We're polling the DB because we can't observe LiveData from a background service
             try {
+                //noinspection BusyWait
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 Timber.w(e);

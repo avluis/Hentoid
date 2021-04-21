@@ -43,9 +43,9 @@ import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.json.URLBuilder;
-import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
+import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileExplorer;
 import me.devsaki.hentoid.util.FileHelper;
@@ -83,8 +83,7 @@ public class ImportWorker extends BaseWorker {
 
     @Override
     Notification getStartNotification() {
-        String message = getApplicationContext().getResources().getString(R.string.starting_download);
-        return new DownloadProgressNotification(message, 0, 0, 0, 0, 0);
+        return new ImportStartNotification();
     }
 
     @Override

@@ -18,6 +18,7 @@ public class DownloadNotificationChannel {
     private static final String ID_OLD = "download";
     static final String ID = "downloads";
 
+    // IMPORTANT : ALWAYS INIT THE CHANNEL BEFORE FIRING NOTIFICATIONS !
     public static void init(@NonNull Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String name = "Book downloads";

@@ -17,6 +17,7 @@ public class DuplicateNotificationChannel {
 
     static final String ID = "duplicate";
 
+    // IMPORTANT : ALWAYS INIT THE CHANNEL BEFORE FIRING NOTIFICATIONS !
     public static void init(@NonNull final Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String name = "Duplicates detection";
