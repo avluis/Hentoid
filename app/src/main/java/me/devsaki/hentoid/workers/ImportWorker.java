@@ -26,6 +26,7 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.DuplicatesDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -174,6 +175,13 @@ public class ImportWorker extends BaseWorker {
             trace(Log.INFO, 0, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
             trace(Log.INFO, 0, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
 
+            // Cleanup previously detected duplicates
+            DuplicatesDAO duplicatesDAO = new DuplicatesDAO(context);
+            try {
+                duplicatesDAO.clear();
+            } finally {
+                duplicatesDAO.cleanup();
+            }
             // Flag DB content for cleanup
             dao.flagAllInternalBooks();
             dao.flagAllErrorBooksWithJson();
