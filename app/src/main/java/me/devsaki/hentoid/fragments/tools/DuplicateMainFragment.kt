@@ -204,6 +204,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
             if (mapEntry.key != null) {
                 val entry = DuplicateEntry(mapEntry.key!!.id, mapEntry.key!!.size)
                 entry.referenceContent = mapEntry.key!!
+                entry.nbDuplicates = mapEntry.value
                 entries.add(entry)
             }
         }
