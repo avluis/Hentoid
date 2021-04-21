@@ -60,7 +60,7 @@ class DuplicatesDAO(ctx: Context) {
         return e
     }
 
-    fun clear() {
+    fun clearEntries() {
         duplicatesDb.clearEntries()
     }
 

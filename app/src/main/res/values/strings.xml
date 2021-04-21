@@ -528,7 +528,7 @@
     <string name="duplicate_notif_complete_title">Duplicate detection complete</string>
     <string name="duplicate_notif_complete_desc">%d duplicates detected successfully</string>
     <string name="duplicate_empty_first_use">Run a new duplicate search</string>
-    <string name="duplicate_empty_processing">Detection in process</string>
+    <string name="duplicate_processing">Duplicate detection in progress</string>
     <string name="duplicate_empty_no_result">No duplicates found</string>
 
     <!-- Startup -->

@@ -5,29 +5,28 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import info.debatty.java.stringsimilarity.Cosine
 import info.debatty.java.stringsimilarity.interfaces.StringSimilarity
+import io.reactivex.ObservableEmitter
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.events.ProcessEvent
-import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.IOException
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.collections.HashSet
 
 class DuplicateHelper {
 
     companion object {
-        // Processing steps
-        const val STEP_COVER_INDEX = 0
-        const val STEP_DUPLICATES = 1
-
         // Thresholds according to the "sensibility" setting
         private val COVER_THRESHOLDS = doubleArrayOf(0.71, 0.75, 0.8) // @48-bit resolution, according to calibration tests
         private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
         private val TOTAL_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
+
+        private val detectedDuplicatesHash = Collections.synchronizedSet(HashSet<Pair<Long, Long>>())
 
         /**
          * Detect if there are missing cover hashes
@@ -36,12 +35,11 @@ class DuplicateHelper {
                 context: Context,
                 dao: CollectionDAO,
                 library: List<Content>,
-                interrupted: AtomicBoolean) {
+                interrupted: AtomicBoolean,
+                emitter: ObservableEmitter<Int>) {
             val noCoverHashes = library.filter { 0L == it.cover.imageHash && !it.cover.status.equals(StatusContent.ONLINE) }
             if (noCoverHashes.isNotEmpty()) {
                 val hash = ImagePHash(48, 8)
-
-                EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, 0, 0, noCoverHashes.size))
                 var elementsKO = 0
                 for ((progress, content) in noCoverHashes.withIndex()) {
                     if (interrupted.get()) break
@@ -51,20 +49,27 @@ class DuplicateHelper {
                                     val b = BitmapFactory.decodeStream(it)
                                     content.cover.imageHash = hash.calcPHash(b)
                                 }
+                    } catch (e: IOException) {
+                        content.cover.imageHash = Long.MIN_VALUE
+                        elementsKO++
+                        Timber.w(e) // Doesn't break the loop
+                    } finally {
                         // Update the picture in DB
                         dao.insertImageFile(content.cover)
                         // Update the book JSON
                         if (content.jsonUri.isNotEmpty()) ContentHelper.updateContentJson(context, content)
                         else ContentHelper.createContentJson(context, content)
-                    } catch (e: IOException) {
-                        elementsKO++
-                        Timber.w(e) // Doesn't break the loop
                     }
-                    EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progress - elementsKO + 1, elementsKO, noCoverHashes.size))
+
+                    emitter.onNext((progress + 1) * 100 / noCoverHashes.size)
                     Timber.i("Calculating hashes : %s / %s", progress + 1, noCoverHashes.size)
                 }
-                EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, noCoverHashes.size - elementsKO, elementsKO, noCoverHashes.size))
+                emitter.onComplete()
             }
+        }
+
+        private fun nbCombinations(librarySize: Int): Int {
+            return (librarySize * (librarySize - 1)) / 2
         }
 
         fun processLibrary(
@@ -75,15 +80,14 @@ class DuplicateHelper {
                 useArtist: Boolean,
                 sameLanguageOnly: Boolean,
                 sensitivity: Int,
-                interrupted: AtomicBoolean
+                interrupted: AtomicBoolean,
+                emitter: ObservableEmitter<Float>
         ) {
             Helper.assertNonUiThread()
-            //val detectedDuplicatesHash = HashMap<Pair<Long, Long>, DuplicateEntry>()
-            val detectedDuplicatesHash = HashSet<Pair<Long, Long>>()
             val textComparator = Cosine()
+            var globalProgress: Float
 
-            EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, 0, 0, library.size))
-            for ((progress, contentRef) in library.withIndex()) {
+            for (contentRef in library) {
                 if (interrupted.get()) break
                 lateinit var referenceTitleDigits: String
                 lateinit var referenceTitle: String
@@ -95,10 +99,15 @@ class DuplicateHelper {
                 for (contentCandidate in library) {
                     // Ignore same item comparison
                     if (contentRef.id == contentCandidate.id) continue
-                    if (interrupted.get()) break
 
                     // Check if that combination has already been processed
+                    if (detectedDuplicatesHash.contains(Pair(contentRef.id, contentCandidate.id))) continue
                     if (detectedDuplicatesHash.contains(Pair(contentCandidate.id, contentRef.id))) continue
+
+                    if (interrupted.get()) break
+
+                    globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations(library.size)
+                    emitter.onNext(globalProgress)
 
                     // Process current combination of Content
                     var titleScore = -1f
@@ -112,6 +121,14 @@ class DuplicateHelper {
                     }
 
                     if (useCover) {
+                        // Don't analyze anything if covers have not been hashed
+                        if (0L == contentRef.cover.imageHash || 0L == contentCandidate.cover.imageHash) continue
+                        // Give up analysis for unhashable covers
+                        if (Long.MIN_VALUE == contentRef.cover.imageHash || Long.MIN_VALUE == contentCandidate.cover.imageHash) {
+                            detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
+                            continue
+                        }
+
                         val preCoverScore = ImagePHash.similarity(contentRef.cover.imageHash, contentCandidate.cover.imageHash)
                         coverScore = if (preCoverScore >= COVER_THRESHOLDS[sensitivity]) preCoverScore else 0f
                     }
@@ -124,9 +141,12 @@ class DuplicateHelper {
                     if (duplicateResult.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) duplicatesDao.insertEntry(duplicateResult)
                     detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
                 }
-                EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progress + 1, 0, library.size))
             }
-            EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, library.size, 0, library.size))
+            globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations(library.size)
+            if (globalProgress >= 1f) {
+                emitter.onComplete()
+                detectedDuplicatesHash.clear()
+            }
         }
 
         private fun containsSameLanguage(contentRef: Content, contentCandidate: Content): Boolean {

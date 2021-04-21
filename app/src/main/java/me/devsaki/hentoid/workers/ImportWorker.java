@@ -186,7 +186,7 @@ public class ImportWorker extends BaseWorker {
             // Cleanup previously detected duplicates
             DuplicatesDAO duplicatesDAO = new DuplicatesDAO(context);
             try {
-                duplicatesDAO.clear();
+                duplicatesDAO.clearEntries();
             } finally {
                 duplicatesDAO.cleanup();
             }

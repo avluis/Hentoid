@@ -45,6 +45,9 @@ class DuplicateDetectorActivity : BaseActivity() {
         val vmFactory = ViewModelFactory(application)
         viewModel = ViewModelProvider(this, vmFactory).get(DuplicateViewModel::class.java)
 
+        // Cancel any previous worker that might be running TODO CANCEL BUTTON
+//        WorkManager.getInstance(application).cancelAllWorkByTag(DuplicateDetectorWorker.WORKER_TAG)
+
         initUI()
         updateToolbar()
         initSelectionToolbar()

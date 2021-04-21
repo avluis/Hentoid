@@ -21,12 +21,12 @@ import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.util.DuplicateHelper.Companion.STEP_COVER_INDEX
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker.STEP_COVER_INDEX
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -136,16 +136,32 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         }
 
         if (result == View.VISIBLE) {
-            binding.controls.scanFab.visibility = View.VISIBLE
-            binding.controls.detectBooksTxt.visibility = View.GONE
-            binding.controls.detectBooksPb.visibility = View.GONE
-            binding.controls.indexPicturesTxt.visibility = View.GONE
-            binding.controls.indexPicturesPb.visibility = View.GONE
+            if (DuplicateDetectorWorker.isRunning()) {
+                binding.controls.scanFab.visibility = View.GONE
+                // TODO simplify that
+                if (binding.controls.useCover.isChecked) {
+                    binding.controls.detectBooksTxt.visibility = View.VISIBLE
+                    binding.controls.detectBooksPb.visibility = View.VISIBLE
+                } else {
+                    binding.controls.detectBooksTxt.visibility = View.GONE
+                    binding.controls.detectBooksPb.visibility = View.GONE
+                }
+                binding.controls.indexPicturesTxt.visibility = View.VISIBLE
+                binding.controls.indexPicturesPb.visibility = View.VISIBLE
+            } else {
+                binding.controls.scanFab.visibility = View.VISIBLE
+                binding.controls.detectBooksTxt.visibility = View.GONE
+                binding.controls.detectBooksPb.visibility = View.GONE
+                binding.controls.indexPicturesTxt.visibility = View.GONE
+                binding.controls.indexPicturesPb.visibility = View.GONE
+            }
         }
         binding.controls.root.visibility = result
     }
 
     private fun onScanClick() {
+        // TODO grey everything until scan is done
+        // TODO add a cancel button on the notification and the UI
         Preferences.setDuplicateUseTitle(binding.controls.useTitle.isChecked)
         Preferences.setDuplicateUseCover(binding.controls.useCover.isChecked)
         Preferences.setDuplicateUseArtist(binding.controls.useArtist.isChecked)
@@ -157,14 +173,13 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
             binding.controls.indexPicturesTxt.visibility = View.VISIBLE
             binding.controls.detectBooksPb.progress = 0
             binding.controls.indexPicturesPb.visibility = View.VISIBLE
-        } else {
-            binding.controls.detectBooksTxt.visibility = View.VISIBLE
-            binding.controls.detectBooksPb.progress = 0
-            binding.controls.detectBooksPb.visibility = View.VISIBLE
         }
+        binding.controls.detectBooksTxt.visibility = View.VISIBLE
+        binding.controls.detectBooksPb.progress = 0
+        binding.controls.detectBooksPb.visibility = View.VISIBLE
 
         activity.get()?.firstUse = false
-        binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_processing)
+        binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
 
         viewModel.scanForDuplicates(
                 binding.controls.useTitle.isChecked,
@@ -177,8 +192,6 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     @Synchronized
     private fun onDuplicatesChanged(duplicates: List<DuplicateEntry>) {
-//        if (null == duplicates) return
-
         Timber.i(">> New duplicates ! Size=%s", duplicates.size)
 
         // Update settings panel visibility
@@ -187,7 +200,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 setSettingsPanelVisibility(duplicates.isEmpty())
                 binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
             } else if (DuplicateDetectorWorker.isRunning()) {
-                binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_processing)
+                binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
             } else {
                 binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
             }
@@ -217,20 +230,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     fun onProcessEvent(event: ProcessEvent) {
         val progressBar: ProgressBar = if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            progressBar.visibility = View.VISIBLE
             progressBar.max = event.elementsTotal
             progressBar.progress = event.elementsOK + event.elementsKO
-            if (STEP_COVER_INDEX == event.step) {
-                binding.controls.indexPicturesTxt.visibility = View.VISIBLE
-            } else {
-                binding.controls.detectBooksTxt.visibility = View.VISIBLE
-            }
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            if (STEP_COVER_INDEX == event.step) {
-                binding.controls.detectBooksTxt.visibility = View.VISIBLE
-                binding.controls.detectBooksPb.progress = 0
-                binding.controls.detectBooksPb.visibility = View.VISIBLE
-            }
         }
     }
 
