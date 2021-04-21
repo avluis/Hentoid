@@ -108,7 +108,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     }
 
     private fun addCustomBackControl() {
-        if (callback != null) callback?.remove()
+        callback?.remove()
         callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 onCustomBackPress()
