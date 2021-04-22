@@ -26,9 +26,6 @@ class DuplicateHelper {
         private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
         private val TOTAL_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
 
-        //private val detectedDuplicatesHash = Collections.synchronizedSet(HashSet<Pair<Long, Long>>())
-        //private val detectedDuplicatesHash = HashSet<Pair<Int, Int>>()
-
         /**
          * Detect if there are missing cover hashes
          */
@@ -83,7 +80,6 @@ class DuplicateHelper {
                 progress: Consumer<Float>
         ) {
             Helper.assertNonUiThread()
-            Timber.i(" >> PROCESS Entering")
 
             val detectedDuplicatesHash = HashSet<Pair<Int, Int>>()
             val fullLines = HashSet<Int>()
@@ -140,9 +136,9 @@ class DuplicateHelper {
                         }
 
                         if (useCover) {
-                            // Don't analyze anything if covers have not been hashed
+                            // Don't analyze anything if covers have not been hashed (will be done on next iteration)
                             if (0L == contentRef.cover.imageHash || 0L == contentCandidate.cover.imageHash) continue
-                            // Give up analysis for unhashable covers
+                            // Ignore unhashable covers
                             coverScore = if (Long.MIN_VALUE == contentRef.cover.imageHash || Long.MIN_VALUE == contentCandidate.cover.imageHash) {
                                 -1f
                             } else {
@@ -160,6 +156,7 @@ class DuplicateHelper {
                         detectedDuplicatesHash.add(Pair(i, j))
                     }
 
+                    // Record full lines for quicker scan
                     if (lineMatchCounter == library.size - i - 1) fullLines.add(i)
 
                     // Save results for this reference
