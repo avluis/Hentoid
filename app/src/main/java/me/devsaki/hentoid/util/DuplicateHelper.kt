@@ -27,7 +27,7 @@ class DuplicateHelper {
         private val TOTAL_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
 
         //private val detectedDuplicatesHash = Collections.synchronizedSet(HashSet<Pair<Long, Long>>())
-        private val detectedDuplicatesHash = HashSet<Pair<Long, Long>>()
+        //private val detectedDuplicatesHash = HashSet<Pair<Int, Int>>()
 
         /**
          * Detect if there are missing cover hashes
@@ -38,6 +38,7 @@ class DuplicateHelper {
                 library: List<Content>,
                 interrupted: AtomicBoolean,
                 emitter: ObservableEmitter<Pair<Int, Float>>) {
+            Helper.assertNonUiThread()
             val noCoverHashes = library.filter { 0L == it.cover.imageHash && !it.cover.status.equals(StatusContent.ONLINE) }
             if (noCoverHashes.isNotEmpty()) {
                 val hash = ImagePHash(48, 8)
@@ -84,39 +85,57 @@ class DuplicateHelper {
             Helper.assertNonUiThread()
             Timber.i(" >> PROCESS Entering")
 
+            val detectedDuplicatesHash = HashSet<Pair<Int, Int>>()
+            val fullLines = HashSet<Int>()
+            val nbCombinations = (library.size * (library.size - 1)) / 2
+            var lineMatchCounter = 0
+
             val textComparator = Cosine()
             var globalProgress = 0f
-            val nbCombinations = (library.size * (library.size - 1)) / 2
+
+            var contentRef: Content
+            var contentCandidate: Content
+
+            var referenceTitleDigits = ""
+            var referenceTitle = ""
+
+            var titleScore: Float
+            var coverScore: Float
+            var artistScore: Float
+
+            val tempResults = ArrayList<DuplicateEntry>()
 
             do {
-                for (contentRef in library) {
-                    Timber.i(" >> PROCESS %s/%s", detectedDuplicatesHash.size, nbCombinations)
+                for (i in 0 until library.size - 1) {
                     if (interrupted.get()) return
-                    lateinit var referenceTitleDigits: String
-                    lateinit var referenceTitle: String
+                    if (fullLines.contains(i)) continue
+
+                    lineMatchCounter = 0
+                    contentRef = library[i]
                     if (useTitle) {
                         referenceTitleDigits = StringHelper.cleanup(contentRef.title)
                         referenceTitle = StringHelper.removeDigits(referenceTitleDigits)
                     }
 
-                    for (contentCandidate in library) {
-                        // Ignore same item comparison
-                        if (contentRef.id == contentCandidate.id) continue
-
-                        // Check if that combination has already been processed
-                        if (detectedDuplicatesHash.contains(Pair(contentRef.id, contentCandidate.id))) continue
-                        if (detectedDuplicatesHash.contains(Pair(contentCandidate.id, contentRef.id))) continue
-
+                    for (j in (i + 1) until library.size) {
                         if (interrupted.get()) return
 
+                        // Check if that combination has already been processed
+                        if (detectedDuplicatesHash.contains(Pair(i, j))) {
+                            lineMatchCounter++
+                            continue
+                        }
+
                         // Process current combination of Content
-                        var titleScore = -1f
-                        var coverScore = -1f
-                        var artistScore = -1f
+                        titleScore = -1f
+                        coverScore = -1f
+                        artistScore = -1f
+
+                        contentCandidate = library[j]
 
                         // Remove if not same language
                         if (sameLanguageOnly && !containsSameLanguage(contentRef, contentCandidate)) {
-                            detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
+                            detectedDuplicatesHash.add(Pair(i, j))
                             continue
                         }
 
@@ -124,13 +143,12 @@ class DuplicateHelper {
                             // Don't analyze anything if covers have not been hashed
                             if (0L == contentRef.cover.imageHash || 0L == contentCandidate.cover.imageHash) continue
                             // Give up analysis for unhashable covers
-                            if (Long.MIN_VALUE == contentRef.cover.imageHash || Long.MIN_VALUE == contentCandidate.cover.imageHash) {
-                                detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
-                                continue
+                            coverScore = if (Long.MIN_VALUE == contentRef.cover.imageHash || Long.MIN_VALUE == contentCandidate.cover.imageHash) {
+                                -1f
+                            } else {
+                                val preCoverScore = ImagePHash.similarity(contentRef.cover.imageHash, contentCandidate.cover.imageHash)
+                                if (preCoverScore >= COVER_THRESHOLDS[sensitivity]) preCoverScore else 0f
                             }
-
-                            val preCoverScore = ImagePHash.similarity(contentRef.cover.imageHash, contentCandidate.cover.imageHash)
-                            coverScore = if (preCoverScore >= COVER_THRESHOLDS[sensitivity]) preCoverScore else 0f
                         }
 
                         if (useTitle) titleScore = computeTitleScore(textComparator, referenceTitleDigits, referenceTitle, contentCandidate, sensitivity)
@@ -138,12 +156,23 @@ class DuplicateHelper {
                         if (useArtist) artistScore = computeArtistScore(contentRef, contentCandidate)
 
                         val duplicateResult = DuplicateEntry(contentRef.id, contentRef.size, contentCandidate.id, titleScore, coverScore, artistScore)
-                        if (duplicateResult.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) duplicatesDao.insertEntry(duplicateResult)
-                        detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
+                        if (duplicateResult.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) tempResults.add(duplicateResult)
+                        detectedDuplicatesHash.add(Pair(i, j))
                     }
+
+                    if (lineMatchCounter == library.size - i - 1) fullLines.add(i)
+
+                    // Save results for this reference
+                    if (tempResults.isNotEmpty()) {
+                        duplicatesDao.insertEntries(tempResults)
+                        tempResults.clear()
+                    }
+
                     globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations
+                    Timber.i(" >> PROCESS [%s] %s / %s (%s %%)", i, detectedDuplicatesHash.size, nbCombinations, globalProgress)
                     progress.accept(globalProgress)
                 }
+                Timber.i(" >> PROCESS End reached")
             } while (globalProgress < 1f)
 
             progress.accept(1f)

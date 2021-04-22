@@ -165,7 +165,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
     private void notifyProcessProgress(Float progress) {
         int progressPc = Math.round(progress * 100);
-        Timber.i(">> DUPE PROGRESS %s", progressPc);
+//        Timber.i(">> DUPE PROGRESS %s", progressPc);
         if (progressPc < 100) {
             notificationManager.notify(new DuplicateProgressNotification(progressPc, 100));
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, progressPc, 0, 100));

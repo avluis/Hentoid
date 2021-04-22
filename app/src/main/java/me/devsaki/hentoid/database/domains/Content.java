@@ -581,7 +581,9 @@ public class Content implements Serializable {
             for (ImageFile img : images)
                 if (img.isCover()) return img;
         }
-        return new ImageFile(0, getCoverImageUrl(), StatusContent.ONLINE, 1);
+        ImageFile makeupCover = new ImageFile(0, getCoverImageUrl(), StatusContent.ONLINE, 1);
+        makeupCover.setImageHash(Long.MIN_VALUE); // Makeup cover is unhashable
+        return makeupCover;
     }
 
     public String getCoverImageUrl() {
