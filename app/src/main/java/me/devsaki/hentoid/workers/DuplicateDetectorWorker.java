@@ -97,19 +97,13 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.computation())
                 .subscribe(
-                        progress -> {
-                            int progressPc = Math.round(progress * 100);
-                            Timber.i(">> INDEX PROGRESS %s", progressPc);
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progressPc, 0, 100));
-                        },
+                        progress -> EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, Math.round(progress * 100), 0, 100)),
                         Timber::w,
-                        () -> {
-                            Timber.i(">> INDEX COMPLETE");
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, 100, 0, 100));
-                        }
+                        () -> EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, 100, 0, 100))
                 );
 
         // Run duplicate detection in the worker
+        // TODO test when starting indexes from scratch - put a little delay between each loop ?
         DuplicateHelper.Companion.processLibrary(
                 duplicatesDAO,
                 library,
