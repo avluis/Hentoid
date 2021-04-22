@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import kotlin.Pair;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DuplicatesDAO;
@@ -88,27 +87,24 @@ public class DuplicateDetectorWorker extends BaseWorker {
         duplicatesDAO.clearEntries();
 
         List<Content> library = dao.selectStoredBooks(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true);
-        Observable<Pair<Integer, Float>> indexObservable =
+        Observable<Float> indexObservable =
                 Observable.create(
                         emitter -> DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, library, interrupted, emitter)
                 );
 
-        AtomicBoolean indexComplete = new AtomicBoolean(false);
         // Run cover indexing in the background
         disposable = indexObservable
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.computation())
                 .subscribe(
                         progress -> {
-                            int progressType = progress.component1();
-                            int progressPc = Math.round(progress.component2() * 100);
+                            int progressPc = Math.round(progress * 100);
                             Timber.i(">> INDEX PROGRESS %s", progressPc);
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, progressType, progressPc, 0, 100));
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progressPc, 0, 100));
                         },
                         Timber::w,
                         () -> {
                             Timber.i(">> INDEX COMPLETE");
-                            indexComplete.set(true);
                             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, 100, 0, 100));
                         }
                 );
@@ -124,48 +120,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 data.getSensitivity(),
                 interrupted,
                 this::notifyProcessProgress);
-
-        /*
-        Observable<Pair<Integer, Float>> processObservable =
-                Observable.create(
-                        emitter -> DuplicateHelper.Companion.processLibrary(duplicatesDAO, library, data.getUseTitle(), data.getUseCover(), data.getUseArtist(), data.getUseSameLanguage(), data.getSensitivity(), interrupted, emitter)
-                );
-        processObservable = processObservable.subscribeOn(Schedulers.computation());
-
-        // tasks are used to execute Rx's observeOn on current thread
-        // See https://github.com/square/retrofit/issues/370#issuecomment-315868381
-        LinkedBlockingQueue<Runnable> tasks = new LinkedBlockingQueue<>();
-
-        disposable = Observable.merge(indexObservable, processObservable)
-                .observeOn(Schedulers.from(tasks::add))
-                .subscribe(
-                        progress -> {
-                            int progressType = progress.component1();
-                            int progressPc = Math.round(progress.component2() * 100);
-                            Timber.i(">> %s PROGRESS %s", progressType, progressPc);
-                            if (progressType == STEP_DUPLICATES)
-                                notificationManager.notify(new DuplicateProgressNotification(progressPc, 100));
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, progressType, progressPc, 0, 100));
-                        },
-                        Timber::w
-                );
-
-        try {
-            tasks.take().run();
-        } catch (InterruptedException e) {
-            Timber.w(e);
-        }
-
-        Timber.i(">> COMPLETE");
-        notificationManager.notify(new DuplicateCompleteNotification(0)); // TODO nb duplicates
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, 100, 0, 100));
-
-         */
     }
 
     private void notifyProcessProgress(Float progress) {
         int progressPc = Math.round(progress * 100);
-//        Timber.i(">> DUPE PROGRESS %s", progressPc);
         if (progressPc < 100) {
             notificationManager.notify(new DuplicateProgressNotification(progressPc, 100));
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, progressPc, 0, 100));
