@@ -726,15 +726,13 @@ public final class ContentHelper {
         // Look up similar names between images and file names
         for (ImageFile img : images) {
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
-            if (fileNameProperties.containsKey(imgName)) {
-                ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
-                if (property != null) {
-                    if (imgName.equals(Consts.THUMB_FILE_NAME)) {
-                        coverFound = true;
-                        img.setIsCover(true);
-                    }
-                    result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
+            ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
+            if (property != null) {
+                if (imgName.equals(Consts.THUMB_FILE_NAME)) {
+                    coverFound = true;
+                    img.setIsCover(true);
                 }
+                result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
             } else
                 Timber.i(">> img dropped %s", imgName);
         }
@@ -894,7 +892,7 @@ public final class ContentHelper {
         if (!cookieStr.isEmpty())
             requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
 
-        Response response = HttpHelper.getOnlineResource(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(),content.getSite().useWebviewAgent());
+        Response response = HttpHelper.getOnlineResource(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
 
         // Scram if the response is a redirection or an error
         if (response.code() >= 300) return content;
