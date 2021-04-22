@@ -13,7 +13,6 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.StatusContent
-import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import timber.log.Timber
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -34,7 +33,7 @@ class DuplicateHelper {
                 dao: CollectionDAO,
                 library: List<Content>,
                 interrupted: AtomicBoolean,
-                emitter: ObservableEmitter<Pair<Int, Float>>) {
+                emitter: ObservableEmitter<Float>) {
             Helper.assertNonUiThread()
             val noCoverHashes = library.filter { 0L == it.cover.imageHash && !it.cover.status.equals(StatusContent.ONLINE) }
             if (noCoverHashes.isNotEmpty()) {
@@ -60,12 +59,12 @@ class DuplicateHelper {
                         else ContentHelper.createContentJson(context, content)
                     }
 
-                    emitter.onNext(Pair(DuplicateDetectorWorker.STEP_COVER_INDEX, (progress + 1) * 1f / noCoverHashes.size))
+                    emitter.onNext((progress + 1) * 1f / noCoverHashes.size)
                     Timber.i("Calculating hashes : %s / %s", progress + 1, noCoverHashes.size)
                 }
-                emitter.onNext(Pair(DuplicateDetectorWorker.STEP_COVER_INDEX, 1f))
-                emitter.onComplete()
             }
+            emitter.onNext(1f)
+            emitter.onComplete()
         }
 
         fun processLibrary(
