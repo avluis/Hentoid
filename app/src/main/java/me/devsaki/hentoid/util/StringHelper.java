@@ -201,6 +201,7 @@ public final class StringHelper {
         String compClean = cleanup(comparison);
 
         if (refClean.equals(compClean)) return true;
+        if (refClean.replace(" ", "").equals(compClean.replace(" ", ""))) return true;
 
         List<String> refParts = Arrays.asList(refClean.split(" "));
         List<String> compParts = Arrays.asList(compClean.split(" "));
