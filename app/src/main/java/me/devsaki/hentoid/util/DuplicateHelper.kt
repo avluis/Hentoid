@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.core.util.Consumer
 import info.debatty.java.stringsimilarity.Cosine
 import info.debatty.java.stringsimilarity.interfaces.StringSimilarity
 import io.reactivex.ObservableEmitter
@@ -68,12 +69,6 @@ class DuplicateHelper {
                 emitter.onComplete()
             }
         }
-/*
-        private fun nbCombinations(librarySize: Int): Int {
-            return (librarySize * (librarySize - 1)) / 2
-        }
-
- */
 
         fun processLibrary(
                 duplicatesDao: DuplicatesDAO,
@@ -84,17 +79,18 @@ class DuplicateHelper {
                 sameLanguageOnly: Boolean,
                 sensitivity: Int,
                 interrupted: AtomicBoolean,
-                emitter: ObservableEmitter<Pair<Int, Float>>
+                progress: Consumer<Float>
         ) {
             Helper.assertNonUiThread()
-            Timber.i("Entering processing")
+            Timber.i(" >> PROCESS Entering")
 
             val textComparator = Cosine()
-            var globalProgress: Float
+            var globalProgress = 0f
             val nbCombinations = (library.size * (library.size - 1)) / 2
 
             do {
                 for (contentRef in library) {
+                    Timber.i(" >> PROCESS %s/%s", detectedDuplicatesHash.size, nbCombinations)
                     if (interrupted.get()) return
                     lateinit var referenceTitleDigits: String
                     lateinit var referenceTitle: String
@@ -112,9 +108,6 @@ class DuplicateHelper {
                         if (detectedDuplicatesHash.contains(Pair(contentCandidate.id, contentRef.id))) continue
 
                         if (interrupted.get()) return
-
-                        globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations
-                        emitter.onNext(Pair(DuplicateDetectorWorker.STEP_DUPLICATES, globalProgress))
 
                         // Process current combination of Content
                         var titleScore = -1f
@@ -148,11 +141,12 @@ class DuplicateHelper {
                         if (duplicateResult.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) duplicatesDao.insertEntry(duplicateResult)
                         detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
                     }
+                    globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations
+                    progress.accept(globalProgress)
                 }
-                globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations
             } while (globalProgress < 1f)
 
-            emitter.onComplete()
+            progress.accept(1f)
             detectedDuplicatesHash.clear()
         }
 

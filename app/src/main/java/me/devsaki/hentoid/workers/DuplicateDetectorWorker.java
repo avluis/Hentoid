@@ -9,7 +9,6 @@ import androidx.work.WorkerParameters;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Observable;
@@ -93,8 +92,40 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 Observable.create(
                         emitter -> DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, library, interrupted, emitter)
                 );
-        indexObservable = indexObservable.subscribeOn(Schedulers.io());
 
+        AtomicBoolean indexComplete = new AtomicBoolean(false);
+        // Run cover indexing in the background
+        disposable = indexObservable
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.computation())
+                .subscribe(
+                        progress -> {
+                            int progressType = progress.component1();
+                            int progressPc = Math.round(progress.component2() * 100);
+                            Timber.i(">> INDEX PROGRESS %s", progressPc);
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, progressType, progressPc, 0, 100));
+                        },
+                        Timber::w,
+                        () -> {
+                            Timber.i(">> INDEX COMPLETE");
+                            indexComplete.set(true);
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, 100, 0, 100));
+                        }
+                );
+
+        // Run duplicate detection in the worker
+        DuplicateHelper.Companion.processLibrary(
+                duplicatesDAO,
+                library,
+                data.getUseTitle(),
+                data.getUseCover(),
+                data.getUseArtist(),
+                data.getUseSameLanguage(),
+                data.getSensitivity(),
+                interrupted,
+                this::notifyProcessProgress);
+
+        /*
         Observable<Pair<Integer, Float>> processObservable =
                 Observable.create(
                         emitter -> DuplicateHelper.Companion.processLibrary(duplicatesDAO, library, data.getUseTitle(), data.getUseCover(), data.getUseArtist(), data.getUseSameLanguage(), data.getSensitivity(), interrupted, emitter)
@@ -128,5 +159,19 @@ public class DuplicateDetectorWorker extends BaseWorker {
         Timber.i(">> COMPLETE");
         notificationManager.notify(new DuplicateCompleteNotification(0)); // TODO nb duplicates
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, 100, 0, 100));
+
+         */
+    }
+
+    private void notifyProcessProgress(Float progress) {
+        int progressPc = Math.round(progress * 100);
+        Timber.i(">> DUPE PROGRESS %s", progressPc);
+        if (progressPc < 100) {
+            notificationManager.notify(new DuplicateProgressNotification(progressPc, 100));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, progressPc, 0, 100));
+        } else {
+            notificationManager.notify(new DuplicateCompleteNotification(0));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, progressPc, 0, 100));
+        }
     }
 }
