@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import kotlin.Pair;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DuplicatesDAO;
@@ -71,6 +72,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
     @Override
     void onInterrupt() {
         interrupted.set(true);
+        if (disposable != null) disposable.dispose();
     }
 
     @Override
@@ -87,33 +89,34 @@ public class DuplicateDetectorWorker extends BaseWorker {
         duplicatesDAO.clearEntries();
 
         List<Content> library = dao.selectStoredBooks(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true);
-        Observable<Integer> indexObservable = Observable.create(emitter -> DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, library, interrupted, emitter));
-        Observable<Float> processObservable = Observable.create(emitter -> DuplicateHelper.Companion.processLibrary(duplicatesDAO, library, data.getUseTitle(), data.getUseCover(), data.getUseArtist(), data.getUseSameLanguage(), data.getSensitivity(), interrupted, emitter));
+        Observable<Pair<Integer, Float>> indexObservable =
+                Observable.create(
+                        emitter -> DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, library, interrupted, emitter)
+                );
+        indexObservable = indexObservable.subscribeOn(Schedulers.io());
+
+        Observable<Pair<Integer, Float>> processObservable =
+                Observable.create(
+                        emitter -> DuplicateHelper.Companion.processLibrary(duplicatesDAO, library, data.getUseTitle(), data.getUseCover(), data.getUseArtist(), data.getUseSameLanguage(), data.getSensitivity(), interrupted, emitter)
+                );
+        processObservable = processObservable.subscribeOn(Schedulers.computation());
 
         // tasks are used to execute Rx's observeOn on current thread
         // See https://github.com/square/retrofit/issues/370#issuecomment-315868381
         LinkedBlockingQueue<Runnable> tasks = new LinkedBlockingQueue<>();
 
-        disposable = indexObservable
-                .subscribeOn(Schedulers.io())
-                .doOnNext(indexProgress -> EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, indexProgress, 0, 100)))
-                .filter(indexProgress -> indexProgress % 10 > 0) // Only run a comparison every 10% of indexing
-                .observeOn(Schedulers.computation())
-                .flatMap(indexProgress -> processObservable)
+        disposable = Observable.merge(indexObservable, processObservable)
                 .observeOn(Schedulers.from(tasks::add))
                 .subscribe(
-                        processProgress -> {
-                            int progressPc = Math.round(processProgress * 100);
-                            Timber.i(">> DUPLICATE PROGRESS %s", progressPc);
-                            notificationManager.notify(new DuplicateProgressNotification(progressPc, 100));
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, progressPc, 0, 100));
+                        progress -> {
+                            int progressType = progress.component1();
+                            int progressPc = Math.round(progress.component2() * 100);
+                            Timber.i(">> %s PROGRESS %s", progressType, progressPc);
+                            if (progressType == STEP_DUPLICATES)
+                                notificationManager.notify(new DuplicateProgressNotification(progressPc, 100));
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, progressType, progressPc, 0, 100));
                         },
-                        Timber::w,
-                        () -> {
-                            Timber.i(">> DUPLICATE COMPLETE");
-                            notificationManager.notify(new DuplicateCompleteNotification(0)); // TODO nb duplicates
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, 100, 0, 100));
-                        }
+                        Timber::w
                 );
 
         try {
@@ -121,11 +124,9 @@ public class DuplicateDetectorWorker extends BaseWorker {
         } catch (InterruptedException e) {
             Timber.w(e);
         }
-        /*
-        if (data.getUseCover())
-            DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, library, interrupted);
-        if (!interrupted.get())
-            DuplicateHelper.Companion.processLibrary(duplicatesDAO, library, data.getUseTitle(), data.getUseCover(), data.getUseArtist(), data.getUseSameLanguage(), data.getSensitivity(), interrupted);
-         */
+
+        Timber.i(">> COMPLETE");
+        notificationManager.notify(new DuplicateCompleteNotification(0)); // TODO nb duplicates
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, 100, 0, 100));
     }
 }

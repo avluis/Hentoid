@@ -12,11 +12,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.StatusContent
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import timber.log.Timber
 import java.io.IOException
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.HashSet
 
 class DuplicateHelper {
 
@@ -26,7 +25,8 @@ class DuplicateHelper {
         private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
         private val TOTAL_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
 
-        private val detectedDuplicatesHash = Collections.synchronizedSet(HashSet<Pair<Long, Long>>())
+        //private val detectedDuplicatesHash = Collections.synchronizedSet(HashSet<Pair<Long, Long>>())
+        private val detectedDuplicatesHash = HashSet<Pair<Long, Long>>()
 
         /**
          * Detect if there are missing cover hashes
@@ -36,7 +36,7 @@ class DuplicateHelper {
                 dao: CollectionDAO,
                 library: List<Content>,
                 interrupted: AtomicBoolean,
-                emitter: ObservableEmitter<Int>) {
+                emitter: ObservableEmitter<Pair<Int, Float>>) {
             val noCoverHashes = library.filter { 0L == it.cover.imageHash && !it.cover.status.equals(StatusContent.ONLINE) }
             if (noCoverHashes.isNotEmpty()) {
                 val hash = ImagePHash(48, 8)
@@ -61,16 +61,19 @@ class DuplicateHelper {
                         else ContentHelper.createContentJson(context, content)
                     }
 
-                    emitter.onNext((progress + 1) * 100 / noCoverHashes.size)
+                    emitter.onNext(Pair(DuplicateDetectorWorker.STEP_COVER_INDEX, (progress + 1) * 1f / noCoverHashes.size))
                     Timber.i("Calculating hashes : %s / %s", progress + 1, noCoverHashes.size)
                 }
+                emitter.onNext(Pair(DuplicateDetectorWorker.STEP_COVER_INDEX, 1f))
                 emitter.onComplete()
             }
         }
-
+/*
         private fun nbCombinations(librarySize: Int): Int {
             return (librarySize * (librarySize - 1)) / 2
         }
+
+ */
 
         fun processLibrary(
                 duplicatesDao: DuplicatesDAO,
@@ -81,72 +84,76 @@ class DuplicateHelper {
                 sameLanguageOnly: Boolean,
                 sensitivity: Int,
                 interrupted: AtomicBoolean,
-                emitter: ObservableEmitter<Float>
+                emitter: ObservableEmitter<Pair<Int, Float>>
         ) {
             Helper.assertNonUiThread()
+            Timber.i("Entering processing")
+
             val textComparator = Cosine()
             var globalProgress: Float
+            val nbCombinations = (library.size * (library.size - 1)) / 2
 
-            for (contentRef in library) {
-                if (interrupted.get()) break
-                lateinit var referenceTitleDigits: String
-                lateinit var referenceTitle: String
-                if (useTitle) {
-                    referenceTitleDigits = StringHelper.cleanup(contentRef.title)
-                    referenceTitle = StringHelper.removeDigits(referenceTitleDigits)
-                }
-
-                for (contentCandidate in library) {
-                    // Ignore same item comparison
-                    if (contentRef.id == contentCandidate.id) continue
-
-                    // Check if that combination has already been processed
-                    if (detectedDuplicatesHash.contains(Pair(contentRef.id, contentCandidate.id))) continue
-                    if (detectedDuplicatesHash.contains(Pair(contentCandidate.id, contentRef.id))) continue
-
-                    if (interrupted.get()) break
-
-                    globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations(library.size)
-                    emitter.onNext(globalProgress)
-
-                    // Process current combination of Content
-                    var titleScore = -1f
-                    var coverScore = -1f
-                    var artistScore = -1f
-
-                    // Remove if not same language
-                    if (sameLanguageOnly && !containsSameLanguage(contentRef, contentCandidate)) {
-                        detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
-                        continue
+            do {
+                for (contentRef in library) {
+                    if (interrupted.get()) return
+                    lateinit var referenceTitleDigits: String
+                    lateinit var referenceTitle: String
+                    if (useTitle) {
+                        referenceTitleDigits = StringHelper.cleanup(contentRef.title)
+                        referenceTitle = StringHelper.removeDigits(referenceTitleDigits)
                     }
 
-                    if (useCover) {
-                        // Don't analyze anything if covers have not been hashed
-                        if (0L == contentRef.cover.imageHash || 0L == contentCandidate.cover.imageHash) continue
-                        // Give up analysis for unhashable covers
-                        if (Long.MIN_VALUE == contentRef.cover.imageHash || Long.MIN_VALUE == contentCandidate.cover.imageHash) {
+                    for (contentCandidate in library) {
+                        // Ignore same item comparison
+                        if (contentRef.id == contentCandidate.id) continue
+
+                        // Check if that combination has already been processed
+                        if (detectedDuplicatesHash.contains(Pair(contentRef.id, contentCandidate.id))) continue
+                        if (detectedDuplicatesHash.contains(Pair(contentCandidate.id, contentRef.id))) continue
+
+                        if (interrupted.get()) return
+
+                        globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations
+                        emitter.onNext(Pair(DuplicateDetectorWorker.STEP_DUPLICATES, globalProgress))
+
+                        // Process current combination of Content
+                        var titleScore = -1f
+                        var coverScore = -1f
+                        var artistScore = -1f
+
+                        // Remove if not same language
+                        if (sameLanguageOnly && !containsSameLanguage(contentRef, contentCandidate)) {
                             detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
                             continue
                         }
 
-                        val preCoverScore = ImagePHash.similarity(contentRef.cover.imageHash, contentCandidate.cover.imageHash)
-                        coverScore = if (preCoverScore >= COVER_THRESHOLDS[sensitivity]) preCoverScore else 0f
+                        if (useCover) {
+                            // Don't analyze anything if covers have not been hashed
+                            if (0L == contentRef.cover.imageHash || 0L == contentCandidate.cover.imageHash) continue
+                            // Give up analysis for unhashable covers
+                            if (Long.MIN_VALUE == contentRef.cover.imageHash || Long.MIN_VALUE == contentCandidate.cover.imageHash) {
+                                detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
+                                continue
+                            }
+
+                            val preCoverScore = ImagePHash.similarity(contentRef.cover.imageHash, contentCandidate.cover.imageHash)
+                            coverScore = if (preCoverScore >= COVER_THRESHOLDS[sensitivity]) preCoverScore else 0f
+                        }
+
+                        if (useTitle) titleScore = computeTitleScore(textComparator, referenceTitleDigits, referenceTitle, contentCandidate, sensitivity)
+
+                        if (useArtist) artistScore = computeArtistScore(contentRef, contentCandidate)
+
+                        val duplicateResult = DuplicateEntry(contentRef.id, contentRef.size, contentCandidate.id, titleScore, coverScore, artistScore)
+                        if (duplicateResult.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) duplicatesDao.insertEntry(duplicateResult)
+                        detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
                     }
-
-                    if (useTitle) titleScore = computeTitleScore(textComparator, referenceTitleDigits, referenceTitle, contentCandidate, sensitivity)
-
-                    if (useArtist) artistScore = computeArtistScore(contentRef, contentCandidate)
-
-                    val duplicateResult = DuplicateEntry(contentRef.id, contentRef.size, contentCandidate.id, titleScore, coverScore, artistScore)
-                    if (duplicateResult.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) duplicatesDao.insertEntry(duplicateResult)
-                    detectedDuplicatesHash.add(Pair(contentRef.id, contentCandidate.id))
                 }
-            }
-            globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations(library.size)
-            if (globalProgress >= 1f) {
-                emitter.onComplete()
-                detectedDuplicatesHash.clear()
-            }
+                globalProgress = detectedDuplicatesHash.size * 1f / nbCombinations
+            } while (globalProgress < 1f)
+
+            emitter.onComplete()
+            detectedDuplicatesHash.clear()
         }
 
         private fun containsSameLanguage(contentRef: Content, contentCandidate: Content): Boolean {
