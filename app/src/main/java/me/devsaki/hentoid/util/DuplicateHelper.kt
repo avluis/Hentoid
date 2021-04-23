@@ -1,12 +1,17 @@
 package me.devsaki.hentoid.util
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.core.util.Consumer
 import info.debatty.java.stringsimilarity.Cosine
 import info.debatty.java.stringsimilarity.interfaces.StringSimilarity
 import io.reactivex.ObservableEmitter
+import io.reactivex.disposables.Disposable
+import io.reactivex.rxkotlin.subscribeBy
+import io.reactivex.rxkotlin.toObservable
+import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -54,9 +59,19 @@ class DuplicateHelper {
                     } finally {
                         // Update the picture in DB
                         dao.insertImageFile(content.cover)
-                        // Update the book JSON
-                        if (content.jsonUri.isNotEmpty()) ContentHelper.updateContentJson(context, content)
-                        else ContentHelper.createContentJson(context, content)
+                    }
+
+                    try {
+                        // Update the book JSON if the book folder still exists
+                        if (content.storageUri.isNotEmpty()) {
+                            val folder = FileHelper.getFolderFromTreeUriString(context, content.storageUri)
+                            if (folder != null) {
+                                if (content.jsonUri.isNotEmpty()) ContentHelper.updateContentJson(context, content)
+                                else ContentHelper.createContentJson(context, content)
+                            }
+                        }
+                    } catch (e: IOException) {
+                        Timber.w(e) // Doesn't break the loop
                     }
 
                     emitter.onNext((progress + 1) * 1f / noCoverHashes.size)
@@ -65,6 +80,66 @@ class DuplicateHelper {
             }
             emitter.onNext(1f)
             emitter.onComplete()
+        }
+
+        fun indexCoversRx(
+                context: Context,
+                dao: CollectionDAO,
+                library: List<Content>,
+                progress: Consumer<Float>): Disposable {
+
+            val noCoverHashes = library.filter { 0L == it.cover.imageHash && !it.cover.status.equals(StatusContent.ONLINE) }
+            val hash = ImagePHash(48, 8)
+            var index = 0
+
+            return library.toObservable()
+                    .observeOn(Schedulers.io())
+                    .map { content -> Pair(content, getCoverBitmapFromContent(context, content)) }
+                    .observeOn(Schedulers.computation())
+                    .map { contentBitmap -> Pair(contentBitmap.first, calcPhash(hash, contentBitmap.second)) }
+                    .observeOn(Schedulers.io())
+                    .map { contentHash -> savePhash(context, dao, contentHash.first, contentHash.second) }
+                    .subscribeBy(
+                            onNext = { progress.accept(++index * 1f / noCoverHashes.size) },
+                            onError = { t -> Timber.w(t) },
+                            onComplete = { progress.accept(1f) }
+                    )
+
+        }
+
+        private fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
+            try {
+                FileHelper.getInputStream(context, Uri.parse(content.cover.fileUri))
+                        .use {
+                            return BitmapFactory.decodeStream(it)
+                        }
+            } catch (e: IOException) {
+                Timber.w(e) // Doesn't break the loop
+                return null
+            }
+        }
+
+        private fun calcPhash(hashEngine: ImagePHash, bitmap: Bitmap?): Long {
+            return if (null == bitmap) -1
+            else hashEngine.calcPHash(bitmap)
+        }
+
+        private fun savePhash(context: Context, dao: CollectionDAO, content: Content, pHash: Long) {
+            content.cover.imageHash = pHash
+            // Update the picture in DB
+            dao.insertImageFile(content.cover)
+            try {
+                // Update the book JSON if the book folder still exists
+                if (content.storageUri.isNotEmpty()) {
+                    val folder = FileHelper.getFolderFromTreeUriString(context, content.storageUri)
+                    if (folder != null) {
+                        if (content.jsonUri.isNotEmpty()) ContentHelper.updateContentJson(context, content)
+                        else ContentHelper.createContentJson(context, content)
+                    }
+                }
+            } catch (e: IOException) {
+                Timber.w(e) // Doesn't break the loop
+            }
         }
 
         fun processLibrary(
@@ -83,7 +158,7 @@ class DuplicateHelper {
             val detectedDuplicatesHash = HashSet<Pair<Int, Int>>()
             val fullLines = HashSet<Int>()
             val nbCombinations = (library.size * (library.size - 1)) / 2
-            var lineMatchCounter = 0
+            var lineMatchCounter: Int
 
             val textComparator = Cosine()
             var globalProgress = 0f
@@ -169,6 +244,7 @@ class DuplicateHelper {
                     progress.accept(globalProgress)
                 }
                 Timber.i(" >> PROCESS End reached")
+                Thread.sleep(1500) // Don't rush in another loop
             } while (globalProgress < 1f)
 
             progress.accept(1f)

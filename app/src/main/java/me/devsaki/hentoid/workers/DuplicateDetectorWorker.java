@@ -11,9 +11,7 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DuplicatesDAO;
@@ -27,7 +25,6 @@ import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.DuplicateData;
-import timber.log.Timber;
 
 
 /**
@@ -87,23 +84,11 @@ public class DuplicateDetectorWorker extends BaseWorker {
         duplicatesDAO.clearEntries();
 
         List<Content> library = dao.selectStoredBooks(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true);
-        Observable<Float> indexObservable =
-                Observable.create(
-                        emitter -> DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, library, interrupted, emitter)
-                );
 
         // Run cover indexing in the background
-        disposable = indexObservable
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.computation())
-                .subscribe(
-                        progress -> EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, Math.round(progress * 100), 0, 100)),
-                        Timber::w,
-                        () -> EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, 100, 0, 100))
-                );
+        disposable = DuplicateHelper.Companion.indexCoversRx(getApplicationContext(), dao, library, this::notifyIndexProgress);
 
         // Run duplicate detection in the worker
-        // TODO test when starting indexes from scratch - put a little delay between each loop ?
         DuplicateHelper.Companion.processLibrary(
                 duplicatesDAO,
                 library,
@@ -114,6 +99,15 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 data.getSensitivity(),
                 interrupted,
                 this::notifyProcessProgress);
+    }
+
+    private void notifyIndexProgress(Float progress) {
+        int progressPc = Math.round(progress * 1000);
+        if (progressPc < 1000) {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progressPc, 0, 1000));
+        } else {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, progressPc, 0, 1000));
+        }
     }
 
     private void notifyProcessProgress(Float progress) {
