@@ -133,6 +133,7 @@ public class ImagePHash {
         return hash;
     }
 
+    // TODO optimize by using renderscript
     public Bitmap resize(Bitmap bm, int newHeight, int newWidth) {
         // "RECREATE" THE NEW BITMAP
         Bitmap resizedBitmap = null;
@@ -144,6 +145,8 @@ public class ImagePHash {
         return resizedBitmap;
     }
 
+    // TODO optimize by using renderscript
+    // see https://stackoverflow.com/questions/31905350/renderscript-greyscale-not-quite-working, http://www.johndcook.com/blog/2009/08/24/algorithms-convert-color-grayscale/ and https://gist.github.com/imminent/cf4ab750104aa286fa08
     private Bitmap grayscale(Bitmap orginalBitmap) {
         ColorMatrix colorMatrix = new ColorMatrix();
         colorMatrix.setSaturation(0);
@@ -161,6 +164,7 @@ public class ImagePHash {
         return blackAndWhiteBitmap;
     }
 
+    // TODO optimize by using renderscript
     private static int getBlue(Bitmap img, int x, int y) {
         return (img.getPixel(x, y)) & 0xff;
     }

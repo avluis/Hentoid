@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -150,7 +149,7 @@ public final class ContentHelper {
 
         DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
         if (null == file)
-            throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
+            throw new IllegalArgumentException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
         try {
             JsonHelper.updateJson(context, JsonContent.fromEntity(content), JsonContent.class, file);
