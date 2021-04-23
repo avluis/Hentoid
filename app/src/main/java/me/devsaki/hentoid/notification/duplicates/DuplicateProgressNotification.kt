@@ -12,7 +12,7 @@ class DuplicateProgressNotification(
         private val max: Int
 ) : Notification {
 
-    private val progressString: String = " %.2f%%".format(Locale.US, progress * 100.0 / max)
+    private val progressString: String = " %.2f%%".format(Locale.US, progress * 100f / max)
 
     override fun onCreateNotification(context: Context): android.app.Notification {
         return NotificationCompat.Builder(context, DuplicateNotificationChannel.ID)
