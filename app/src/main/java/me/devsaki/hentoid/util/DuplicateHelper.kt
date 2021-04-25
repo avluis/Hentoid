@@ -7,7 +7,6 @@ import android.net.Uri
 import androidx.core.util.Consumer
 import info.debatty.java.stringsimilarity.Cosine
 import info.debatty.java.stringsimilarity.interfaces.StringSimilarity
-import io.reactivex.ObservableEmitter
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.rxkotlin.toObservable
@@ -30,6 +29,7 @@ class DuplicateHelper {
         private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
         private val TOTAL_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
 
+        /*
         /**
          * Detect if there are missing cover hashes
          */
@@ -82,6 +82,8 @@ class DuplicateHelper {
             emitter.onComplete()
         }
 
+         */
+
         fun indexCoversRx(
                 context: Context,
                 dao: CollectionDAO,
@@ -91,6 +93,8 @@ class DuplicateHelper {
             val noCoverHashes = library.filter { 0L == it.cover.imageHash && !it.cover.status.equals(StatusContent.ONLINE) }
             val hash = ImagePHash(48, 8)
             var index = 0
+
+            if (noCoverHashes.isEmpty()) progress.accept(1f)
 
             return library.toObservable()
                     .observeOn(Schedulers.io())
@@ -108,6 +112,8 @@ class DuplicateHelper {
         }
 
         private fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
+            if (content.cover.fileUri.isEmpty()) return null
+
             try {
                 FileHelper.getInputStream(context, Uri.parse(content.cover.fileUri))
                         .use {
