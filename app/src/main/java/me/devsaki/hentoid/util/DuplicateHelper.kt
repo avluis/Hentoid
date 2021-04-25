@@ -94,8 +94,6 @@ class DuplicateHelper {
             val hash = ImagePHash(48, 8)
             var index = 0
 
-            if (noCoverHashes.isEmpty()) progress.accept(1f)
-
             return library.toObservable()
                     .observeOn(Schedulers.io())
                     .map { content -> Pair(content, getCoverBitmapFromContent(context, content)) }

@@ -147,22 +147,18 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 binding.controls.scanFab.visibility = View.INVISIBLE
                 binding.controls.stopFab.visibility = View.VISIBLE
                 // TODO simplify that
-                if (binding.controls.useCover.isChecked) {
-                    binding.controls.detectBooksTxt.visibility = View.VISIBLE
-                    binding.controls.detectBooksPb.visibility = View.VISIBLE
-                } else {
-                    binding.controls.detectBooksTxt.visibility = View.GONE
-                    binding.controls.detectBooksPb.visibility = View.GONE
-                }
-                binding.controls.indexPicturesTxt.visibility = View.VISIBLE
-                binding.controls.indexPicturesPb.visibility = View.VISIBLE
+                val coverControlsVisibility = if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
+                binding.controls.indexPicturesTxt.visibility = coverControlsVisibility
+                binding.controls.indexPicturesPb.visibility = coverControlsVisibility
+                binding.controls.detectBooksTxt.visibility = View.VISIBLE
+                binding.controls.detectBooksPb.visibility = View.VISIBLE
             } else {
                 binding.controls.scanFab.visibility = View.VISIBLE
                 binding.controls.stopFab.visibility = View.INVISIBLE
-                binding.controls.detectBooksTxt.visibility = View.GONE
-                binding.controls.detectBooksPb.visibility = View.GONE
                 binding.controls.indexPicturesTxt.visibility = View.GONE
                 binding.controls.indexPicturesPb.visibility = View.GONE
+                binding.controls.detectBooksTxt.visibility = View.GONE
+                binding.controls.detectBooksPb.visibility = View.GONE
             }
         }
         binding.controls.root.visibility = result
@@ -191,11 +187,10 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     private fun activateScan() {
         binding.controls.scanFab.visibility = View.INVISIBLE
         binding.controls.stopFab.visibility = View.VISIBLE
-        if (binding.controls.useCover.isChecked) {
-            binding.controls.indexPicturesTxt.visibility = View.VISIBLE
-            binding.controls.detectBooksPb.progress = 0
-            binding.controls.indexPicturesPb.visibility = View.VISIBLE
-        }
+        val coverControlsVisibility = if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
+        binding.controls.indexPicturesTxt.visibility = coverControlsVisibility
+        binding.controls.indexPicturesPb.progress = 0
+        binding.controls.indexPicturesPb.visibility = coverControlsVisibility
         binding.controls.detectBooksTxt.visibility = View.VISIBLE
         binding.controls.detectBooksPb.progress = 0
         binding.controls.detectBooksPb.visibility = View.VISIBLE
@@ -210,11 +205,11 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.indexPicturesPb.visibility = View.GONE
         binding.controls.detectBooksTxt.visibility = View.GONE
         binding.controls.detectBooksPb.visibility = View.GONE
-        binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
     }
 
     private fun onStopClick() {
         WorkManager.getInstance(requireContext()).cancelUniqueWork(R.id.duplicate_detector_service.toString())
+        binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
     }
 
     @Synchronized
@@ -294,7 +289,10 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onServiceDestroyedEvent(event: ServiceDestroyedEvent) {
         if (event.service == R.id.duplicate_detector_service) {
+            // TODO find a way to display the "try again" message when the service doesn't stop normally
             disableScan()
+            if (0 == itemAdapter.adapterItemCount)
+                binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
         }
     }
 
