@@ -27,10 +27,6 @@ class DuplicateDetectorActivity : BaseActivity() {
     // Viewmodel
     private lateinit var viewModel: DuplicateViewModel
 
-    // Vars
-    var firstUse = true
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 

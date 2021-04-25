@@ -20,6 +20,7 @@ class DuplicateViewModel(application: Application, private val duplicatesDao: Du
 
     val allDuplicates = duplicatesDao.getEntriesLive()
     val selectedDuplicates = MutableLiveData<List<DuplicateEntry>>()
+    val firstUse = MutableLiveData<Boolean>()
 
 
     override fun onCleared() {
@@ -55,5 +56,9 @@ class DuplicateViewModel(application: Application, private val duplicatesDao: Du
 
     fun setContent(content: Content) {
         selectedDuplicates.postValue(allDuplicates.value?.filter { it.reference == content.id })
+    }
+
+    fun setFirstUse(value: Boolean) {
+        firstUse.postValue(value)
     }
 }

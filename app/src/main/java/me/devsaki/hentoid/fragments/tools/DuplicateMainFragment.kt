@@ -52,6 +52,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     // VARS
     private var enabled = true
+    private var firstUse = true
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -108,6 +109,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
         viewModel.allDuplicates.observe(viewLifecycleOwner, { this.onDuplicatesChanged(it) })
+        viewModel.firstUse.observe(viewLifecycleOwner, { b -> firstUse = b })
     }
 
     private fun addCustomBackControl() {
@@ -176,7 +178,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         activateScan()
 
-        activity.get()?.firstUse = false
+        viewModel.setFirstUse(false)
         viewModel.scanForDuplicates(
                 binding.controls.useTitle.isChecked,
                 binding.controls.useCover.isChecked,
@@ -222,15 +224,21 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         // Update settings panel visibility
         if (duplicates.isEmpty()) {
             setSettingsPanelVisibility(true)
-            if (activity.get() != null && activity.get()!!.firstUse) {
-                binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
-            } else if (DuplicateDetectorWorker.isRunning(requireContext())) {
-                binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
-            } else {
-                binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
+            binding.emptyTxt.visibility = View.VISIBLE
+            when {
+                firstUse -> {
+                    binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
+                }
+                DuplicateDetectorWorker.isRunning(requireContext()) -> {
+                    binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
+                }
+                else -> {
+                    binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
+                }
             }
         } else {
             setSettingsPanelVisibility(false)
+            binding.emptyTxt.visibility = View.GONE
         }
 
         // TODO update UI title
