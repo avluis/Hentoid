@@ -494,6 +494,8 @@
 
         <receiver android:name=".receiver.DownloadNotificationPauseReceiver" />
 
+        <receiver android:name=".receiver.DuplicateNotificationStopReceiver" />
+
         <receiver android:name=".receiver.InstallRunReceiver" />
 
         <receiver android:name=".receiver.InstallCompletedReceiver" />

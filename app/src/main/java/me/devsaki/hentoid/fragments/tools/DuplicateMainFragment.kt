@@ -11,6 +11,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.WorkManager
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -92,6 +93,9 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.scanFab.setOnClickListener {
             this.onScanClick()
         }
+        binding.controls.stopFab.setOnClickListener {
+            this.onStopClick()
+        }
 
         binding.controls.useTitle.isChecked = Preferences.isDuplicateUseTitle()
         binding.controls.useCover.isChecked = Preferences.isDuplicateUseCover()
@@ -137,7 +141,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         if (result == View.VISIBLE) {
             if (DuplicateDetectorWorker.isRunning(requireContext())) {
-                binding.controls.scanFab.visibility = View.GONE
+                binding.controls.scanFab.visibility = View.INVISIBLE
+                binding.controls.stopFab.visibility = View.VISIBLE
                 // TODO simplify that
                 if (binding.controls.useCover.isChecked) {
                     binding.controls.detectBooksTxt.visibility = View.VISIBLE
@@ -150,6 +155,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 binding.controls.indexPicturesPb.visibility = View.VISIBLE
             } else {
                 binding.controls.scanFab.visibility = View.VISIBLE
+                binding.controls.stopFab.visibility = View.INVISIBLE
                 binding.controls.detectBooksTxt.visibility = View.GONE
                 binding.controls.detectBooksPb.visibility = View.GONE
                 binding.controls.indexPicturesTxt.visibility = View.GONE
@@ -161,14 +167,14 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     private fun onScanClick() {
         // TODO grey everything until scan is done
-        // TODO add a cancel button on the notification and the UI
         Preferences.setDuplicateUseTitle(binding.controls.useTitle.isChecked)
         Preferences.setDuplicateUseCover(binding.controls.useCover.isChecked)
         Preferences.setDuplicateUseArtist(binding.controls.useArtist.isChecked)
         Preferences.setDuplicateUseSameLanguage(binding.controls.useSameLanguage.isChecked)
         Preferences.setDuplicateSensitivity(binding.controls.useSensitivity.selectedIndex)
 
-        binding.controls.scanFab.visibility = View.GONE
+        binding.controls.scanFab.visibility = View.INVISIBLE
+        binding.controls.stopFab.visibility = View.VISIBLE
         if (binding.controls.useCover.isChecked) {
             binding.controls.indexPicturesTxt.visibility = View.VISIBLE
             binding.controls.detectBooksPb.progress = 0
@@ -188,6 +194,10 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 binding.controls.useSameLanguage.isChecked,
                 binding.controls.useSensitivity.selectedIndex
         )
+    }
+
+    private fun onStopClick() {
+        WorkManager.getInstance(requireContext()).cancelUniqueWork(R.id.duplicate_detector_service.toString())
     }
 
     @Synchronized

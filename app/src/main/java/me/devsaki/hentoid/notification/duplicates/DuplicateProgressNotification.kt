@@ -1,8 +1,12 @@
 package me.devsaki.hentoid.notification.duplicates
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.receiver.DownloadNotificationPauseReceiver
+import me.devsaki.hentoid.receiver.DuplicateNotificationStopReceiver
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.notification.Notification
 import java.util.*
@@ -21,9 +25,15 @@ class DuplicateProgressNotification(
                 .setContentText(progressString)
                 .setProgress(max, progress, false)
                 .setColor(ThemeHelper.getColor(context, R.color.secondary_light))
+                .addAction(R.drawable.ic_action_pause, context.getString(R.string.stop), getStopIntent(context))
                 .setLocalOnly(true)
                 .setOngoing(true)
                 .setOnlyAlertOnce(true)
                 .build()
+    }
+
+    private fun getStopIntent(context: Context): PendingIntent {
+        val intent = Intent(context, DuplicateNotificationStopReceiver::class.java)
+        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT)
     }
 }

@@ -91,10 +91,25 @@
         android:paddingStart="12dp"
         android:paddingEnd="20dp"
         android:text="@string/duplicate_find_action"
+        app:drawableStartCompat="@drawable/ic_search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/use_sensitivity"
-        app:drawableStartCompat="@drawable/ic_search" />
+        app:layout_constraintTop_toBottomOf="@id/use_sensitivity" />
+
+    <TextView
+        android:id="@+id/stop_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg_fab_extended"
+        android:gravity="center"
+        android:paddingStart="28dp"
+        android:paddingEnd="28dp"
+        android:text="@string/stop"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/use_sensitivity" />
 
     <TextView
         android:id="@+id/index_pictures_txt"
