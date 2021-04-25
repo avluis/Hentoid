@@ -244,7 +244,7 @@ class DuplicateHelper {
                     progress.accept(globalProgress)
                 }
                 Timber.i(" >> PROCESS End reached")
-                Thread.sleep(1500) // Don't rush in another loop
+                Thread.sleep(3000) // Don't rush in another loop
             } while (globalProgress < 1f)
 
             progress.accept(1f)

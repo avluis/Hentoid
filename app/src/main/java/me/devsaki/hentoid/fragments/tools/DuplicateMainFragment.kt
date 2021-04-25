@@ -22,6 +22,7 @@ import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
+import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
@@ -173,6 +174,19 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         Preferences.setDuplicateUseSameLanguage(binding.controls.useSameLanguage.isChecked)
         Preferences.setDuplicateSensitivity(binding.controls.useSensitivity.selectedIndex)
 
+        activateScan()
+
+        activity.get()?.firstUse = false
+        viewModel.scanForDuplicates(
+                binding.controls.useTitle.isChecked,
+                binding.controls.useCover.isChecked,
+                binding.controls.useArtist.isChecked,
+                binding.controls.useSameLanguage.isChecked,
+                binding.controls.useSensitivity.selectedIndex
+        )
+    }
+
+    private fun activateScan() {
         binding.controls.scanFab.visibility = View.INVISIBLE
         binding.controls.stopFab.visibility = View.VISIBLE
         if (binding.controls.useCover.isChecked) {
@@ -184,16 +198,17 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.detectBooksPb.progress = 0
         binding.controls.detectBooksPb.visibility = View.VISIBLE
 
-        activity.get()?.firstUse = false
         binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
+    }
 
-        viewModel.scanForDuplicates(
-                binding.controls.useTitle.isChecked,
-                binding.controls.useCover.isChecked,
-                binding.controls.useArtist.isChecked,
-                binding.controls.useSameLanguage.isChecked,
-                binding.controls.useSensitivity.selectedIndex
-        )
+    private fun disableScan() {
+        binding.controls.scanFab.visibility = View.VISIBLE
+        binding.controls.stopFab.visibility = View.INVISIBLE
+        binding.controls.indexPicturesTxt.visibility = View.GONE
+        binding.controls.indexPicturesPb.visibility = View.GONE
+        binding.controls.detectBooksTxt.visibility = View.GONE
+        binding.controls.detectBooksPb.visibility = View.GONE
+        binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
     }
 
     private fun onStopClick() {
@@ -265,6 +280,13 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
             CommunicationEvent.EV_DISABLE -> onDisable()
             else -> {
             }
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onServiceDestroyedEvent(event: ServiceDestroyedEvent) {
+        if (event.service == R.id.duplicate_detector_service) {
+            disableScan()
         }
     }
 
