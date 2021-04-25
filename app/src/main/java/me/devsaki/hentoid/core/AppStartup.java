@@ -79,7 +79,9 @@ public class AppStartup {
             onComplete.run();
             // Run post-launch tasks on a worker
             WorkManager workManager = WorkManager.getInstance(context);
-            workManager.enqueueUniqueWork("startup", ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(StartupWorker.class).build());
+            workManager.enqueueUniqueWork(Integer.toString(R.id.startup_service),
+                    ExistingWorkPolicy.KEEP,
+                    new OneTimeWorkRequest.Builder(StartupWorker.class).build());
         });
     }
 

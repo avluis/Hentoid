@@ -32,9 +32,6 @@ import me.devsaki.hentoid.workers.data.DuplicateData;
  */
 public class DuplicateDetectorWorker extends BaseWorker {
 
-    // Worker tag
-    public static String WORKER_TAG = "duplicate detector";
-
     // Processing steps
     public static int STEP_COVER_INDEX = 0;
     public static int STEP_DUPLICATES = 1;
@@ -55,8 +52,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
         duplicatesDAO = new DuplicatesDAO(getApplicationContext());
     }
 
-    public static boolean isRunning() {
-        return isRunning(R.id.duplicate_detector_service);
+    public static boolean isRunning(@NonNull Context context) {
+        return isRunning(context, R.id.duplicate_detector_service);
     }
 
     @Override

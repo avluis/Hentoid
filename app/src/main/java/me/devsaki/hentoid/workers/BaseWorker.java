@@ -5,14 +5,18 @@ import android.content.Context;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.work.Data;
+import androidx.work.WorkInfo;
+import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
+import com.google.common.util.concurrent.ListenableFuture;
+
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.util.notification.Notification;
@@ -25,27 +29,20 @@ import timber.log.Timber;
  */
 public abstract class BaseWorker extends Worker {
 
-    private static final Map<Integer, Boolean> running = Collections.synchronizedMap(new HashMap<>());
     protected NotificationManager notificationManager;
 
     private final @IdRes
     int serviceId;
 
-    protected static boolean isRunning(int serviceId) {
-        Boolean isRunning = running.get(serviceId);
-        return (isRunning != null && isRunning);
-    }
-
-    private boolean isRunning() {
-        return isRunning(serviceId);
-    }
-
-    private void registerStart() {
-        running.put(serviceId, true);
-    }
-
-    private void registerShutdown() {
-        running.put(serviceId, false);
+    protected static boolean isRunning(@NonNull Context context, @IdRes int serviceId) {
+        ListenableFuture<List<WorkInfo>> infos = WorkManager.getInstance(context).getWorkInfosForUniqueWork(Integer.toString(serviceId));
+        try {
+            Optional<WorkInfo> info = Stream.of(infos.get()).filter(i -> !i.getState().isFinished()).findFirst();
+            return info.isPresent();
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+        return false;
     }
 
     public BaseWorker(
@@ -77,7 +74,6 @@ public abstract class BaseWorker extends Worker {
     }
 
     private void clear() {
-        if (!isRunning()) return;
         onClear();
 
         // Tell everyone the worker is shutting down
@@ -85,16 +81,12 @@ public abstract class BaseWorker extends Worker {
 
         if (notificationManager != null) notificationManager.cancel();
 
-        registerShutdown();
         Timber.d("%s worker destroyed", this.getClass().getSimpleName());
     }
 
     @NonNull
     @Override
     public Result doWork() {
-        if (isRunning()) return Result.failure();
-        registerStart();
-
         ensureLongRunning();
         try {
             getToWork(getInputData());

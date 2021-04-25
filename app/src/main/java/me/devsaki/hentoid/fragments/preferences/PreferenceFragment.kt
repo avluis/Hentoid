@@ -135,7 +135,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     true
                 }
                 Preferences.Key.REFRESH_LIBRARY -> {
-                    if (ImportWorker.isRunning()) {
+                    if (ImportWorker.isRunning(requireContext())) {
                         ToastHelper.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
@@ -152,7 +152,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     true
                 }
                 Preferences.Key.SETTINGS_FOLDER -> {
-                    if (ImportWorker.isRunning()) {
+                    if (ImportWorker.isRunning(requireContext())) {
                         ToastHelper.toast(getString(R.string.pref_import_running))
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)

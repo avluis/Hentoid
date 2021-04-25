@@ -136,7 +136,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         }
 
         if (result == View.VISIBLE) {
-            if (DuplicateDetectorWorker.isRunning()) {
+            if (DuplicateDetectorWorker.isRunning(requireContext())) {
                 binding.controls.scanFab.visibility = View.GONE
                 // TODO simplify that
                 if (binding.controls.useCover.isChecked) {
@@ -196,10 +196,10 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         // Update settings panel visibility
         if (duplicates.isEmpty()) {
+            setSettingsPanelVisibility(true)
             if (activity.get() != null && activity.get()!!.firstUse) {
-                setSettingsPanelVisibility(duplicates.isEmpty())
                 binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
-            } else if (DuplicateDetectorWorker.isRunning()) {
+            } else if (DuplicateDetectorWorker.isRunning(requireContext())) {
                 binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
             } else {
                 binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)

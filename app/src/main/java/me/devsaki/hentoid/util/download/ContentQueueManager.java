@@ -6,6 +6,7 @@ import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.workers.ContentDownloadWorker;
 
 import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
@@ -68,7 +69,7 @@ public class ContentQueueManager {
         if (!isQueueActive) {
             WorkManager workManager = WorkManager.getInstance(context);
             workManager.enqueueUniqueWork(
-                    "queue",
+                    Integer.toString(R.id.download_service),
                     ExistingWorkPolicy.KEEP,
                     new OneTimeWorkRequest.Builder(ContentDownloadWorker.class).addTag(WORK_CLOSEABLE).build()
             );

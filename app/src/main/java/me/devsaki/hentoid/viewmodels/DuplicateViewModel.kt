@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.database.DuplicatesDAO
 import me.devsaki.hentoid.database.domains.Content
@@ -43,12 +44,11 @@ class DuplicateViewModel(application: Application, private val duplicatesDao: Du
         DuplicateNotificationChannel.init(getApplication())
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
-                "duplicate detector",
+                R.id.duplicate_detector_service.toString(),
                 ExistingWorkPolicy.REPLACE,
                 OneTimeWorkRequestBuilder<DuplicateDetectorWorker>()
                         .setInputData(builder.data)
                         .addTag(Consts.WORK_CLOSEABLE)
-                        .addTag(DuplicateDetectorWorker.WORKER_TAG)
                         .build()
         )
     }

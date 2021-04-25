@@ -403,7 +403,10 @@ public class ImportHelper {
         builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
 
         WorkManager workManager = WorkManager.getInstance(context);
-        workManager.enqueueUniqueWork("import", ExistingWorkPolicy.KEEP, new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.import_service),
+                ExistingWorkPolicy.KEEP,
+                new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
     }
 
     // TODO doc

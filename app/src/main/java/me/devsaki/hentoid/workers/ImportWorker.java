@@ -81,8 +81,8 @@ public class ImportWorker extends BaseWorker {
         super(context, parameters, R.id.import_service);
     }
 
-    public static boolean isRunning() {
-        return isRunning(R.id.import_service);
+    public static boolean isRunning(@NonNull Context context) {
+        return isRunning(context, R.id.import_service);
     }
 
     @Override
