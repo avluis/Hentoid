@@ -22,6 +22,7 @@ import org.threeten.bp.Instant;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
@@ -72,7 +73,7 @@ public class ImportWorker extends BaseWorker {
     public static final int STEP_3_BOOKS = 3;
     public static final int STEP_4_QUEUE_FINAL = 4;
 
-    private boolean interrupted = false;
+    private AtomicBoolean interrupted = new AtomicBoolean(false);
 
 
     public ImportWorker(
@@ -92,7 +93,7 @@ public class ImportWorker extends BaseWorker {
 
     @Override
     void onInterrupt() {
-        interrupted = true;
+        interrupted.set(true);
     }
 
     @Override
@@ -195,7 +196,7 @@ public class ImportWorker extends BaseWorker {
             dao.flagAllErrorBooksWithJson();
 
             for (int i = 0; i < bookFolders.size(); i++) {
-                if (interrupted) throw new InterruptedException();
+                if (interrupted.get()) throw new InterruptedException();
                 DocumentFile bookFolder = bookFolders.get(i);
 
                 // Detect the presence of images if the corresponding cleanup option has been enabled
