@@ -41,6 +41,13 @@ public class LogHelper {
             this.isError = false;
         }
 
+        public LogEntry(@NonNull String message, Object... formatArgs) {
+            this.timestamp = Instant.now();
+            this.message = String.format(message, formatArgs);
+            this.chapter = 1;
+            this.isError = false;
+        }
+
         public LogEntry(@NonNull String message, int chapter, boolean isError) {
             this.timestamp = Instant.now();
             this.message = message;
@@ -63,18 +70,24 @@ public class LogHelper {
     public static class LogInfo {
         private String fileName = "";
         private String logName = "";
-        private String noDataMessage = "";
+        private String noDataMessage = "no data";
         private String header = "";
         private List<LogEntry> log = Collections.emptyList();
 
         /**
-         * Log file name, without the extension
+         * Set the log file name, without the extension
+         *
          * @param fileName
          */
         public void setFileName(@NonNull String fileName) {
             this.fileName = fileName;
         }
 
+        /**
+         * Set display name of the log, for use in its header
+         *
+         * @param logName
+         */
         public void setLogName(@NonNull String logName) {
             this.logName = logName;
         }

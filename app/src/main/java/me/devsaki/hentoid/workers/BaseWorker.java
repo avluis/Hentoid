@@ -16,9 +16,12 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
@@ -33,6 +36,10 @@ public abstract class BaseWorker extends Worker {
 
     private final @IdRes
     int serviceId;
+
+    // TEMP
+    protected final List<LogHelper.LogEntry> logs = new ArrayList<>();
+
 
     protected static boolean isRunning(@NonNull Context context, @IdRes int serviceId) {
         ListenableFuture<List<WorkInfo>> infos = WorkManager.getInstance(context).getWorkInfosForUniqueWork(Integer.toString(serviceId));
@@ -55,6 +62,8 @@ public abstract class BaseWorker extends Worker {
         initNotifications(context);
 
         Timber.w("%s worker created", this.getClass().getSimpleName());
+        // TEMP
+        logs.add(new LogHelper.LogEntry("worker created"));
     }
 
     @Override
@@ -82,6 +91,15 @@ public abstract class BaseWorker extends Worker {
         if (notificationManager != null) notificationManager.cancel();
 
         Timber.d("%s worker destroyed", this.getClass().getSimpleName());
+
+        // TEMP
+        logs.add(new LogHelper.LogEntry("Worker destroyed / stopped=%s", isStopped()));
+
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
+        logInfo.setFileName(Integer.toString(serviceId));
+        logInfo.setLogName(Integer.toString(serviceId));
+        logInfo.setLog(logs);
+        LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
     }
 
     @NonNull
@@ -90,6 +108,8 @@ public abstract class BaseWorker extends Worker {
         ensureLongRunning();
         try {
             getToWork(getInputData());
+        } catch (Exception e) {
+            logs.add(new LogHelper.LogEntry("Exception caught ! %s : %s", e.getMessage(), e.getStackTrace()));
         } finally {
             clear();
         }

@@ -27,6 +27,7 @@ import me.devsaki.hentoid.notification.duplicates.DuplicateCompleteNotification;
 import me.devsaki.hentoid.notification.duplicates.DuplicateProgressNotification;
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification;
 import me.devsaki.hentoid.util.DuplicateHelper;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.DuplicateData;
@@ -104,8 +105,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
         HashSet<Pair<Long, Long>> detectedIds = new HashSet<>();
 
         do {
+            logs.add(new LogHelper.LogEntry("Loop started"));
             processAll(duplicatesDAO, candidates, detectedIds, nbCombinations);
             Timber.i(" >> PROCESS End reached");
+            logs.add(new LogHelper.LogEntry("Loop End reached"));
             if (isStopped()) break;
             try {
                 //noinspection BusyWait
@@ -115,6 +118,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
             }
             if (isStopped()) break;
         } while (detectedIds.size() * 1f / nbCombinations < 1f);
+        logs.add(new LogHelper.LogEntry("Final End reached"));
 
         detectedIds.clear();
         notifyProcessProgress(1f);

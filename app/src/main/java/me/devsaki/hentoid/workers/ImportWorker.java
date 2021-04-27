@@ -116,8 +116,8 @@ public class ImportWorker extends BaseWorker {
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, String... t) {
-        s = String.format(s, (Object[]) t);
+    private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, Object... t) {
+        s = String.format(s, t);
         Timber.log(priority, s);
         boolean isError = (priority > Log.INFO);
         if (null != memoryLog) memoryLog.add(new LogHelper.LogEntry(s, chapter, isError));
