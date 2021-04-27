@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import info.debatty.java.stringsimilarity.Cosine;
 import io.reactivex.disposables.Disposable;
@@ -48,7 +47,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private final CollectionDAO dao;
     private final DuplicatesDAO duplicatesDAO;
 
-    private final AtomicBoolean interrupted = new AtomicBoolean(false);
     private Disposable indexDisposable = null;
 
     private final Set<Integer> fullLines = new HashSet<>();
@@ -77,7 +75,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
     @Override
     void onInterrupt() {
-        interrupted.set(true);
         if (indexDisposable != null) indexDisposable.dispose();
     }
 
@@ -107,16 +104,16 @@ public class DuplicateDetectorWorker extends BaseWorker {
         HashSet<Pair<Long, Long>> detectedIds = new HashSet<>();
 
         do {
-            processAll(duplicatesDAO, candidates, detectedIds, nbCombinations, interrupted);
+            processAll(duplicatesDAO, candidates, detectedIds, nbCombinations);
             Timber.i(" >> PROCESS End reached");
-            if (interrupted.get()) break;
+            if (isStopped()) break;
             try {
                 //noinspection BusyWait
                 Thread.sleep(3000); // Don't rush in another loop
             } catch (InterruptedException e) {
                 Timber.w(e);
             }
-            if (interrupted.get()) break;
+            if (isStopped()) break;
         } while (detectedIds.size() * 1f / nbCombinations < 1f);
 
         detectedIds.clear();
@@ -126,18 +123,17 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private void processAll(DuplicatesDAO duplicatesDao,
                             List<DuplicateHelper.DuplicateCandidate> library,
                             HashSet<Pair<Long, Long>> detectedIds,
-                            long nbCombinations,
-                            AtomicBoolean interrupted) {
+                            long nbCombinations) {
         List<DuplicateEntry> tempResults = new ArrayList<>();
         for (int i = 0; i < library.size(); i++) {
-            if (interrupted.get()) return;
+            if (isStopped()) return;
 
             if (!fullLines.contains(i)) {
                 int lineMatchCounter = 0;
                 DuplicateHelper.DuplicateCandidate reference = library.get(i);
 
                 for (int j = (i + 1); j < library.size(); j++) {
-                    if (interrupted.get()) return;
+                    if (isStopped()) return;
                     DuplicateHelper.DuplicateCandidate candidate = library.get(j);
 
                     // Check if that combination has already been processed
