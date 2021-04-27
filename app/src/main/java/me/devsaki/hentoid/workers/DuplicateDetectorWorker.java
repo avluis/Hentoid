@@ -50,7 +50,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
     private final AtomicBoolean interrupted = new AtomicBoolean(false);
     private Disposable indexDisposable = null;
-    private Disposable processDisposable = null;
 
     private final Set<Integer> fullLines = new HashSet<>();
 
@@ -80,13 +79,11 @@ public class DuplicateDetectorWorker extends BaseWorker {
     void onInterrupt() {
         interrupted.set(true);
         if (indexDisposable != null) indexDisposable.dispose();
-        if (processDisposable != null) processDisposable.dispose();
     }
 
     @Override
     void onClear() {
         if (indexDisposable != null) indexDisposable.dispose();
-        if (processDisposable != null) processDisposable.dispose();
         dao.cleanup();
         duplicatesDAO.cleanup();
     }
@@ -172,24 +169,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
         }
     }
 
-    /*
-    private Triple<Content, Pair<String, String>, Observable<Content>> prepareContent(Content
-                                                                                              reference) {
-        String referenceTitleDigits = "";
-        String referenceTitle = "";
-        if (inputData.getUseTitle()) {
-            referenceTitleDigits = StringHelper.cleanup(reference.getTitle());
-            referenceTitle = StringHelper.removeDigits(referenceTitleDigits);
-        }
-        return new Triple<>(
-                reference,
-                new Pair<>(referenceTitleDigits, referenceTitle),
-                dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true)
-        );
-    }
-
-     */
-
     @Nullable
     private DuplicateEntry processContent(
             DuplicateHelper.DuplicateCandidate reference,
@@ -223,22 +202,22 @@ public class DuplicateDetectorWorker extends BaseWorker {
     }
 
     private void notifyIndexProgress(Float progress) {
-        int progressPc = Math.round(progress * 1000);
-        if (progressPc < 1000) {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progressPc, 0, 1000));
+        int progressPc = Math.round(progress * 10000);
+        if (progressPc < 10000) {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progressPc, 0, 10000));
         } else {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, progressPc, 0, 1000));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, progressPc, 0, 10000));
         }
     }
 
     private void notifyProcessProgress(Float progress) {
-        int progressPc = Math.round(progress * 1000);
-        if (progressPc < 1000) {
-            notificationManager.notify(new DuplicateProgressNotification(progressPc, 1000));
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, progressPc, 0, 1000));
+        int progressPc = Math.round(progress * 10000);
+        if (progressPc < 10000) {
+            notificationManager.notify(new DuplicateProgressNotification(progressPc, 10000));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, progressPc, 0, 10000));
         } else {
             notificationManager.notify(new DuplicateCompleteNotification(0));
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, progressPc, 0, 1000));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, progressPc, 0, 10000));
         }
     }
 }
