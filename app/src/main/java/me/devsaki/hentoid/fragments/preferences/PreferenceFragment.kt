@@ -229,7 +229,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         val dao = ObjectBoxDAO(activity)
         var searchDisposable = Disposables.empty()
 
-        searchDisposable = Single.fromCallable { dao.selectStoredBooks(true, false, -1, false) }
+        searchDisposable = Single.fromCallable { dao.selectStoredContent(true, false, -1, false) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe { list ->

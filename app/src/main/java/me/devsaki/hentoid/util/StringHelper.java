@@ -196,15 +196,14 @@ public final class StringHelper {
         return android.util.Base64.encodeToString(rawString.getBytes(), android.util.Base64.DEFAULT);
     }
 
-    public static boolean isTransposition(@NonNull String reference, @NonNull String comparison) {
-        String refClean = cleanup(reference);
-        String compClean = cleanup(comparison);
+    // TODO doc
+    public static boolean isTransposition(@NonNull String referenceCleanup, @NonNull String comparisonCleanup) {
+        if (referenceCleanup.equals(comparisonCleanup)) return true;
+        if (referenceCleanup.replace(" ", "").equals(comparisonCleanup.replace(" ", "")))
+            return true;
 
-        if (refClean.equals(compClean)) return true;
-        if (refClean.replace(" ", "").equals(compClean.replace(" ", ""))) return true;
-
-        List<String> refParts = Arrays.asList(refClean.split(" "));
-        List<String> compParts = Arrays.asList(compClean.split(" "));
+        List<String> refParts = Arrays.asList(referenceCleanup.split(" "));
+        List<String> compParts = Arrays.asList(comparisonCleanup.split(" "));
 
         if (1 == refParts.size() && 1 == compParts.size()) return false;
         if (refParts.size() != compParts.size()) return false;
