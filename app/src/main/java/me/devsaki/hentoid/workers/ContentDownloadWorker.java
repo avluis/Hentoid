@@ -339,7 +339,7 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
         // Create destination folder for images to be downloaded
-        DocumentFile dir = ContentHelper.createContentDownloadDir(getApplicationContext(), content);
+        DocumentFile dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content);
         // Folder creation failed
         if (null == dir || !dir.exists()) {
             String title = content.getTitle();

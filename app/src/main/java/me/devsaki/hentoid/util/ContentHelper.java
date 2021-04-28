@@ -516,7 +516,7 @@ public final class ContentHelper {
      * @return Created directory
      */
     @Nullable
-    public static DocumentFile createContentDownloadDir(@NonNull Context context, @NonNull Content content) {
+    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content) {
         DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
         if (null == siteDownloadDir) return null;
 
