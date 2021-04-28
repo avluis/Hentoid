@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Set;
 
 import info.debatty.java.stringsimilarity.Cosine;
+import io.reactivex.Completable;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import kotlin.Pair;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
@@ -49,6 +52,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private final DuplicatesDAO duplicatesDAO;
 
     private Disposable indexDisposable = null;
+    private final CompositeDisposable notificationDisposables = new CompositeDisposable();
 
     private final Set<Integer> fullLines = new HashSet<>();
 
@@ -77,11 +81,13 @@ public class DuplicateDetectorWorker extends BaseWorker {
     @Override
     void onInterrupt() {
         if (indexDisposable != null) indexDisposable.dispose();
+        if (notificationDisposables != null) notificationDisposables.clear();
     }
 
     @Override
     void onClear() {
         if (indexDisposable != null) indexDisposable.dispose();
+        if (notificationDisposables != null) notificationDisposables.clear();
         dao.cleanup();
         duplicatesDAO.cleanup();
     }
@@ -165,7 +171,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
             float progress = detectedIds.size() * 1f / nbCombinations;
             Timber.i(" >> PROCESS [%s] %s / %s (%s %%)", i, detectedIds.size(), nbCombinations, progress);
-            notifyProcessProgress(progress);
+            if (0 == i % 10)
+                notifyProcessProgress(progress); // Only update every 10 iterations to optimize
         }
     }
 
@@ -211,12 +218,23 @@ public class DuplicateDetectorWorker extends BaseWorker {
     }
 
     private void notifyProcessProgress(Float progress) {
+        notificationDisposables.add(Completable.fromRunnable(() -> doNotifyProcessProgress(progress))
+                .subscribeOn(Schedulers.computation())
+                .subscribe(
+                        notificationDisposables::clear
+                )
+        );
+    }
+
+    private void doNotifyProcessProgress(Float progress) {
         int progressPc = Math.round(progress * 10000);
         if (progressPc < 10000) {
-            notificationManager.notify(new DuplicateProgressNotification(progressPc, 10000));
+            setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateProgressNotification(progressPc, 10000)));
+            //notificationManager.notify(new DuplicateProgressNotification(progressPc, 10000));
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, progressPc, 0, 10000));
         } else {
-            notificationManager.notify(new DuplicateCompleteNotification(0));
+            setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateCompleteNotification(0)));
+            //notificationManager.notify(new DuplicateCompleteNotification(0));
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, progressPc, 0, 10000));
         }
     }
