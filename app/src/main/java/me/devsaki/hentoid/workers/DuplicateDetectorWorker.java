@@ -56,7 +56,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
     private final Set<Integer> fullLines = new HashSet<>();
 
-    private DuplicateData.Parser inputData;
     private Cosine textComparator;
 
 
@@ -94,7 +93,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
     @Override
     void getToWork(@NonNull Data input) {
-        inputData = new DuplicateData.Parser(input);
+        DuplicateData.Parser inputData = new DuplicateData.Parser(input);
 
         duplicatesDAO.clearEntries();
 
@@ -112,7 +111,16 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
         do {
             logs.add(new LogHelper.LogEntry("Loop started"));
-            processAll(duplicatesDAO, candidates, detectedIds, nbCombinations);
+            processAll(
+                    duplicatesDAO,
+                    candidates,
+                    detectedIds,
+                    nbCombinations,
+                    inputData.getUseTitle(),
+                    inputData.getUseCover(),
+                    inputData.getUseArtist(),
+                    inputData.getUseSameLanguage(),
+                    inputData.getSensitivity());
             Timber.i(" >> PROCESS End reached");
             logs.add(new LogHelper.LogEntry("Loop End reached"));
             if (isStopped()) break;
@@ -133,7 +141,12 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private void processAll(DuplicatesDAO duplicatesDao,
                             List<DuplicateHelper.DuplicateCandidate> library,
                             HashSet<Pair<Long, Long>> detectedIds,
-                            long nbCombinations) {
+                            long nbCombinations,
+                            boolean useTitle,
+                            boolean useCover,
+                            boolean useSameArtist,
+                            boolean useSameLanguage,
+                            int sensitivity) {
         List<DuplicateEntry> tempResults = new ArrayList<>();
         for (int i = 0; i < library.size(); i++) {
             if (isStopped()) return;
@@ -152,7 +165,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                         continue;
                     }
 
-                    DuplicateEntry entry = processContent(reference, candidate);
+                    DuplicateEntry entry = processContent(reference, candidate, useTitle, useCover, useSameArtist, useSameLanguage, sensitivity);
                     if (entry != null) tempResults.add(entry);
 
                     // Mark as processed
@@ -179,32 +192,37 @@ public class DuplicateDetectorWorker extends BaseWorker {
     @Nullable
     private DuplicateEntry processContent(
             DuplicateHelper.DuplicateCandidate reference,
-            DuplicateHelper.DuplicateCandidate candidate) {
+            DuplicateHelper.DuplicateCandidate candidate,
+            boolean useTitle,
+            boolean useCover,
+            boolean useSameArtist,
+            boolean useSameLanguage,
+            int sensitivity) {
         float titleScore = -1f;
         float coverScore = -1f;
         float artistScore = -1f;
 
         // Remove if not same language
-        if (inputData.getUseSameLanguage() && !DuplicateHelper.Companion.containsSameLanguage(reference.getCountryCodes(), candidate.getCountryCodes()))
+        if (useSameLanguage && !DuplicateHelper.Companion.containsSameLanguage(reference.getCountryCodes(), candidate.getCountryCodes()))
             return null;
 
-        if (inputData.getUseCover())
+        if (useCover)
             coverScore = DuplicateHelper.Companion.computeCoverScore(
                     reference.getCoverHash(), candidate.getCoverHash(),
-                    inputData.getSensitivity());
+                    sensitivity);
 
-        if (inputData.getUseTitle())
+        if (useTitle)
             titleScore = DuplicateHelper.Companion.computeTitleScore(
                     textComparator,
                     reference.getTitleCleanup(), reference.getTitleNoDigits(),
                     candidate.getTitleCleanup(), candidate.getTitleNoDigits(),
-                    inputData.getSensitivity());
+                    sensitivity);
 
-        if (inputData.getUseArtist())
+        if (useSameArtist)
             artistScore = DuplicateHelper.Companion.computeArtistScore(reference.getArtistsCleanup(), candidate.getArtistsCleanup());
 
         DuplicateEntry result = new DuplicateEntry(reference.getId(), reference.getSize(), candidate.getId(), titleScore, coverScore, artistScore, 0);
-        if (result.calcTotalScore() >= TOTAL_THRESHOLDS[inputData.getSensitivity()]) return result;
+        if (result.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) return result;
         else return null;
     }
 
