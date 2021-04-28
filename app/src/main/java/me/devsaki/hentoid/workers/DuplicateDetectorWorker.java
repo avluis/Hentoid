@@ -169,10 +169,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 }
             }
 
-            float progress = detectedIds.size() * 1f / nbCombinations;
-            Timber.i(" >> PROCESS [%s] %s / %s (%s %%)", i, detectedIds.size(), nbCombinations, progress);
-            if (0 == i % 10)
+            if (0 == i % 10) {
+                float progress = detectedIds.size() * 1f / nbCombinations;
                 notifyProcessProgress(progress); // Only update every 10 iterations to optimize
+            }
         }
     }
 
@@ -230,11 +230,9 @@ public class DuplicateDetectorWorker extends BaseWorker {
         int progressPc = Math.round(progress * 10000);
         if (progressPc < 10000) {
             setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateProgressNotification(progressPc, 10000)));
-            //notificationManager.notify(new DuplicateProgressNotification(progressPc, 10000));
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, progressPc, 0, 10000));
         } else {
             setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateCompleteNotification(0)));
-            //notificationManager.notify(new DuplicateCompleteNotification(0));
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, progressPc, 0, 10000));
         }
     }

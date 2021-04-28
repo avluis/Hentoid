@@ -180,7 +180,7 @@ public final class StringHelper {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            if (SPACES.contains(c)) {
+            if (c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r') {
                 if (first) {
                     result.append(' ');
                     first = false;
