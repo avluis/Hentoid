@@ -14,7 +14,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import info.debatty.java.stringsimilarity.Cosine;
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -33,6 +32,7 @@ import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.string_similarity.Cosine;
 import me.devsaki.hentoid.workers.data.DuplicateData;
 import timber.log.Timber;
 

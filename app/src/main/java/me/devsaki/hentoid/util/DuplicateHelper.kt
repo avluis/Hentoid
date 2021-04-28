@@ -4,13 +4,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.util.Consumer
-import info.debatty.java.stringsimilarity.interfaces.StringSimilarity
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import timber.log.Timber
 import java.io.IOException
 import java.util.*

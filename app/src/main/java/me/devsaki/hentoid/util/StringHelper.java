@@ -23,6 +23,7 @@ public final class StringHelper {
     }
 
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static final List<Character> SPACES = Arrays.asList('\t', '\n', '\f', '\r', ' ');
 
 
     /**
@@ -171,6 +172,25 @@ public final class StringHelper {
             if (!Character.isDigit(c)) result.append(c);
         }
         return result.toString().trim();
+    }
+
+    // TODO doc
+    public static String cleanSpaces(String s) {
+        boolean first = true;
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (SPACES.contains(c)) {
+                if (first) {
+                    result.append(' ');
+                    first = false;
+                }
+            } else {
+                first = true;
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 
     /**
