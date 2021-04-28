@@ -62,6 +62,9 @@ public class FileHelper {
     private static final String PRIMARY_VOLUME_NAME = "primary";
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
 
+    private static final String ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"; // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
+
+
     public static String getFileProviderAuthority() {
         return AUTHORITY;
     }
@@ -984,6 +987,11 @@ public class FileHelper {
             if (doc != null) return doc.length();
         }
         return -1;
+    }
+
+    // TODO doc
+    public static String cleanFileName(@NonNull final String fileName) {
+        return fileName.replaceAll(ILLEGAL_FILENAME_CHARS, "");
     }
 
     @FunctionalInterface
