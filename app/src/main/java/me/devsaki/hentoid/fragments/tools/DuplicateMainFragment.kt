@@ -29,6 +29,7 @@ import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker.STEP_COVER_INDEX
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker.STEP_DUPLICATES
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -172,7 +173,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         Preferences.setDuplicateUseSameLanguage(binding.controls.useSameLanguage.isChecked)
         Preferences.setDuplicateSensitivity(binding.controls.useSensitivity.selectedIndex)
 
-        activateScan()
+        activateScanUi()
 
         viewModel.setFirstUse(false)
         viewModel.scanForDuplicates(
@@ -184,7 +185,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         )
     }
 
-    private fun activateScan() {
+    private fun activateScanUi() {
         binding.controls.scanFab.visibility = View.INVISIBLE
         binding.controls.stopFab.visibility = View.VISIBLE
         val coverControlsVisibility = if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
@@ -198,7 +199,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
     }
 
-    private fun disableScan() {
+    private fun disableScanUi() {
         binding.controls.scanFab.visibility = View.VISIBLE
         binding.controls.stopFab.visibility = View.INVISIBLE
         binding.controls.indexPicturesTxt.visibility = View.GONE
@@ -218,7 +219,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         // Update settings panel visibility
         if (duplicates.isEmpty()) {
-            setSettingsPanelVisibility(true)
+//            setSettingsPanelVisibility(true)
             binding.emptyTxt.visibility = View.VISIBLE
             when {
                 firstUse -> {
@@ -232,7 +233,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 }
             }
         } else {
-            setSettingsPanelVisibility(false)
+//            setSettingsPanelVisibility(false)
             binding.emptyTxt.visibility = View.GONE
         }
 
@@ -257,10 +258,23 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
         val progressBar: ProgressBar = if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
+        progressBar.max = event.elementsTotal
+        progressBar.progress = event.elementsOK + event.elementsKO
+        if (ProcessEvent.EventType.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
+            setSettingsPanelVisibility(false)
+            disableScanUi()
+        } else if (binding.controls.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(requireContext())) activateScanUi()
+
+        /*
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             progressBar.max = event.elementsTotal
             progressBar.progress = event.elementsOK + event.elementsKO
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            progressBar.max = event.elementsTotal
+            progressBar.progress = event.elementsOK + event.elementsKO
+            disableScan()
         }
+         */
     }
 
     /**
@@ -290,7 +304,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     fun onServiceDestroyedEvent(event: ServiceDestroyedEvent) {
         if (event.service == R.id.duplicate_detector_service) {
             // TODO find a way to display the "try again" message when the service doesn't stop normally
-            disableScan()
+            disableScanUi()
             if (0 == itemAdapter.adapterItemCount)
                 binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
         }

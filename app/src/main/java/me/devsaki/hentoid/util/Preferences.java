@@ -692,6 +692,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getDuplicateLastIndex() {
+        return Integer.parseInt(sharedPreferences.getString(Key.DUPLICATE_LAST_INDEX, "-1") + "");
+    }
+
+    public static void setDuplicateLastIndex(int lastIndex) {
+        sharedPreferences.edit()
+                .putString(Key.DUPLICATE_LAST_INDEX, Integer.toString(lastIndex))
+                .apply();
+    }
+
     public static final class Key {
 
         private Key() {
@@ -781,6 +791,7 @@ public final class Preferences {
         public static final String DUPLICATE_USE_COVER = "duplicate_use_cover";
         public static final String DUPLICATE_USE_ARTIST = "duplicate_use_artist";
         public static final String DUPLICATE_USE_SAME_LANGUAGE = "duplicate_use_same_language";
+        public static final String DUPLICATE_LAST_INDEX = "last_index";
 
         // Deprecated values kept for housekeeping/migration
         static final String ANALYTICS_TRACKING = "pref_analytics_tracking";

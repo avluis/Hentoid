@@ -36,6 +36,7 @@ public abstract class BaseWorker extends Worker {
 
     private final @IdRes
     int serviceId;
+    private boolean isComplete = true;
 
     // TEMP
     protected final List<LogHelper.LogEntry> logs = new ArrayList<>();
@@ -82,8 +83,25 @@ public abstract class BaseWorker extends Worker {
         setForegroundAsync(notificationManager.buildForegroundInfo(getStartNotification()));
     }
 
+    void setComplete(boolean complete) {
+        isComplete = complete;
+    }
+
+    boolean isComplete() {
+        return isComplete;
+    }
+
     private void clear() {
         onClear();
+
+        // TEMP
+        logs.add(new LogHelper.LogEntry("Worker destroyed / stopped=%s / complete=%s", isStopped(), isComplete));
+
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
+        logInfo.setFileName(Integer.toString(serviceId));
+        logInfo.setLogName(Integer.toString(serviceId));
+        logInfo.setLog(logs);
+        LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
 
         // Tell everyone the worker is shutting down
         EventBus.getDefault().post(new ServiceDestroyedEvent(serviceId));
@@ -91,15 +109,6 @@ public abstract class BaseWorker extends Worker {
         if (notificationManager != null) notificationManager.cancel();
 
         Timber.d("%s worker destroyed", this.getClass().getSimpleName());
-
-        // TEMP
-        logs.add(new LogHelper.LogEntry("Worker destroyed / stopped=%s", isStopped()));
-
-        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-        logInfo.setFileName(Integer.toString(serviceId));
-        logInfo.setLogName(Integer.toString(serviceId));
-        logInfo.setLog(logs);
-        LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
     }
 
     @NonNull
@@ -113,6 +122,9 @@ public abstract class BaseWorker extends Worker {
         } finally {
             clear();
         }
+
+        // Retry when incomplete and not manually stopped
+        if (!isStopped() && !isComplete) return Result.retry();
         return Result.success();
     }
 

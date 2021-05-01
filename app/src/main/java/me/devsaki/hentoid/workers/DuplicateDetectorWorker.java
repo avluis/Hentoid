@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
@@ -55,6 +56,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private final CompositeDisposable notificationDisposables = new CompositeDisposable();
 
     private final Set<Integer> fullLines = new HashSet<>();
+    private final AtomicInteger currentIndex = new AtomicInteger(0);
 
     private Cosine textComparator;
 
@@ -85,6 +87,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
     @Override
     void onClear() {
+        if (!isStopped() && !isComplete())
+            Preferences.setDuplicateLastIndex(currentIndex.get());
+        else Preferences.setDuplicateLastIndex(-1);
+
         if (indexDisposable != null) indexDisposable.dispose();
         if (notificationDisposables != null) notificationDisposables.clear();
         dao.cleanup();
@@ -95,8 +101,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
     void getToWork(@NonNull Data input) {
         DuplicateData.Parser inputData = new DuplicateData.Parser(input);
 
-        duplicatesDAO.clearEntries();
-
         // Run cover indexing in the background
         indexDisposable = DuplicateHelper.Companion.indexCoversRx(getApplicationContext(), dao, this::notifyIndexProgress);
 
@@ -106,8 +110,21 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
         textComparator = new Cosine();
 
+        // Mark process as incomplete until all combinations are searched
+        // to support abort and retry
+        setComplete(false);
+
         long nbCombinations = (candidates.size() * (candidates.size() - 1)) / 2;
         HashSet<Pair<Long, Long>> detectedIds = new HashSet<>();
+
+        // Retrieve number of lines done in previous iteration (ended with RETRY)
+        int startIndex = Preferences.getDuplicateLastIndex() + 1;
+        if (0 == startIndex) duplicatesDAO.clearEntries();
+        else { // Artificially populate detected indexes according to startIndex
+            for (int i = 0; i < startIndex; i++)
+                for (int j = (i + 1); j < candidates.size(); j++)
+                    detectedIds.add(new Pair<>(candidates.get(i).getId(), candidates.get(j).getId()));
+        }
 
         do {
             logs.add(new LogHelper.LogEntry("Loop started"));
@@ -116,14 +133,16 @@ public class DuplicateDetectorWorker extends BaseWorker {
                     candidates,
                     detectedIds,
                     nbCombinations,
+                    startIndex,
                     inputData.getUseTitle(),
                     inputData.getUseCover(),
                     inputData.getUseArtist(),
                     inputData.getUseSameLanguage(),
                     inputData.getSensitivity());
-            Timber.i(" >> PROCESS End reached");
+            Timber.d(" >> PROCESS End reached");
             logs.add(new LogHelper.LogEntry("Loop End reached"));
             if (isStopped()) break;
+//            if (detectedIds.size() > 10000 && -1 == Preferences.getDuplicateLastIndex()) break;
             try {
                 //noinspection BusyWait
                 Thread.sleep(3000); // Don't rush in another loop
@@ -131,24 +150,29 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 Timber.w(e);
             }
             if (isStopped()) break;
+//            if (detectedIds.size() > 10000 && -1 == Preferences.getDuplicateLastIndex()) break;
         } while (detectedIds.size() * 1f / nbCombinations < 1f);
-        logs.add(new LogHelper.LogEntry("Final End reached"));
 
+        setComplete(detectedIds.size() * 1f / nbCombinations >= 1f);
+        logs.add(new LogHelper.LogEntry("Final End reached (complete=%s)", isComplete()));
+
+        notifyProcessProgress(detectedIds.size() * 1f / nbCombinations);
         detectedIds.clear();
-        notifyProcessProgress(1f);
     }
 
     private void processAll(DuplicatesDAO duplicatesDao,
                             List<DuplicateHelper.DuplicateCandidate> library,
                             HashSet<Pair<Long, Long>> detectedIds,
                             long nbCombinations,
+                            int startIndex,
                             boolean useTitle,
                             boolean useCover,
                             boolean useSameArtist,
                             boolean useSameLanguage,
                             int sensitivity) {
         List<DuplicateEntry> tempResults = new ArrayList<>();
-        for (int i = 0; i < library.size(); i++) {
+        for (int i = startIndex; i < library.size(); i++) {
+//            if (detectedIds.size() > 10000 && -1 == Preferences.getDuplicateLastIndex()) break;
             if (isStopped()) return;
 
             if (!fullLines.contains(i)) {
@@ -181,6 +205,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
                     tempResults.clear();
                 }
             }
+
+            currentIndex.set(i);
 
             if (0 == i % 10) {
                 float progress = detectedIds.size() * 1f / nbCombinations;
