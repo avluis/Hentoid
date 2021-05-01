@@ -219,7 +219,6 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         // Update settings panel visibility
         if (duplicates.isEmpty()) {
-//            setSettingsPanelVisibility(true)
             binding.emptyTxt.visibility = View.VISIBLE
             when {
                 firstUse -> {
@@ -233,7 +232,6 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 }
             }
         } else {
-//            setSettingsPanelVisibility(false)
             binding.emptyTxt.visibility = View.GONE
         }
 
@@ -264,17 +262,6 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
             setSettingsPanelVisibility(false)
             disableScanUi()
         } else if (binding.controls.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(requireContext())) activateScanUi()
-
-        /*
-        if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            progressBar.max = event.elementsTotal
-            progressBar.progress = event.elementsOK + event.elementsKO
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            progressBar.max = event.elementsTotal
-            progressBar.progress = event.elementsOK + event.elementsKO
-            disableScan()
-        }
-         */
     }
 
     /**
