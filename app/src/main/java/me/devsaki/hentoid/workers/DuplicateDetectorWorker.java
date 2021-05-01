@@ -10,9 +10,10 @@ import androidx.work.WorkerParameters;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
@@ -55,7 +56,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private Disposable indexDisposable = null;
     private final CompositeDisposable notificationDisposables = new CompositeDisposable();
 
-    private final Set<Integer> fullLines = new HashSet<>();
     private final AtomicInteger currentIndex = new AtomicInteger(0);
 
     private Cosine textComparator;
@@ -114,26 +114,28 @@ public class DuplicateDetectorWorker extends BaseWorker {
         // to support abort and retry
         setComplete(false);
 
-        long nbCombinations = (candidates.size() * (candidates.size() - 1)) / 2;
-        HashSet<Pair<Long, Long>> detectedIds = new HashSet<>();
+        HashSet<Pair<Long, Long>> ignoredIds = new HashSet<>();
+        Map<Long, List<Long>> matchedIds = new HashMap<>();
+        Map<Long, List<Long>> reverseMatchedIds = new HashMap<>();
 
         // Retrieve number of lines done in previous iteration (ended with RETRY)
         int startIndex = Preferences.getDuplicateLastIndex() + 1;
         if (0 == startIndex) duplicatesDAO.clearEntries();
-        else { // Artificially populate detected indexes according to startIndex
-            for (int i = 0; i < startIndex; i++)
-                for (int j = (i + 1); j < candidates.size(); j++)
-                    detectedIds.add(new Pair<>(candidates.get(i).getId(), candidates.get(j).getId()));
+        else {
+            // TODO populate matchedIds and reverseMatchedIds using the duplicate database
         }
 
+        boolean isReRun = false;
         do {
             logs.add(new LogHelper.LogEntry("Loop started"));
             processAll(
                     duplicatesDAO,
                     candidates,
-                    detectedIds,
-                    nbCombinations,
+                    ignoredIds,
+                    matchedIds,
+                    reverseMatchedIds,
                     startIndex,
+                    isReRun,
                     inputData.getUseTitle(),
                     inputData.getUseCover(),
                     inputData.getUseArtist(),
@@ -142,29 +144,32 @@ public class DuplicateDetectorWorker extends BaseWorker {
             Timber.d(" >> PROCESS End reached");
             logs.add(new LogHelper.LogEntry("Loop End reached"));
             if (isStopped()) break;
-//            if (detectedIds.size() > 10000 && -1 == Preferences.getDuplicateLastIndex()) break;
-            try {
-                //noinspection BusyWait
-                Thread.sleep(3000); // Don't rush in another loop
-            } catch (InterruptedException e) {
-                Timber.w(e);
+            if (!ignoredIds.isEmpty()) {
+                try {
+                    //noinspection BusyWait
+                    Thread.sleep(3000); // Don't rush in another loop
+                } catch (InterruptedException e) {
+                    Timber.w(e);
+                }
             }
             if (isStopped()) break;
-//            if (detectedIds.size() > 10000 && -1 == Preferences.getDuplicateLastIndex()) break;
-        } while (detectedIds.size() * 1f / nbCombinations < 1f);
+            isReRun = true;
+        } while (!ignoredIds.isEmpty());
 
-        setComplete(detectedIds.size() * 1f / nbCombinations >= 1f);
+        setComplete(ignoredIds.isEmpty());
         logs.add(new LogHelper.LogEntry("Final End reached (complete=%s)", isComplete()));
 
-        notifyProcessProgress(detectedIds.size() * 1f / nbCombinations);
-        detectedIds.clear();
+        ignoredIds.clear();
+        matchedIds.clear();
     }
 
     private void processAll(DuplicatesDAO duplicatesDao,
                             List<DuplicateHelper.DuplicateCandidate> library,
-                            HashSet<Pair<Long, Long>> detectedIds,
-                            long nbCombinations,
+                            HashSet<Pair<Long, Long>> ignoredIds,
+                            Map<Long, List<Long>> matchedIds,
+                            Map<Long, List<Long>> reverseMatchedIds,
                             int startIndex,
+                            boolean isReRun,
                             boolean useTitle,
                             boolean useCover,
                             boolean useSameArtist,
@@ -172,45 +177,64 @@ public class DuplicateDetectorWorker extends BaseWorker {
                             int sensitivity) {
         List<DuplicateEntry> tempResults = new ArrayList<>();
         for (int i = startIndex; i < library.size(); i++) {
-//            if (detectedIds.size() > 10000 && -1 == Preferences.getDuplicateLastIndex()) break;
+            if (ignoredIds.size() > 1e6)
+                break; // Better to wait rather than saturating the ignored IDs map
             if (isStopped()) return;
 
-            if (!fullLines.contains(i)) {
-                int lineMatchCounter = 0;
-                DuplicateHelper.DuplicateCandidate reference = library.get(i);
+            DuplicateHelper.DuplicateCandidate reference = library.get(i);
 
-                for (int j = (i + 1); j < library.size(); j++) {
-                    if (isStopped()) return;
-                    DuplicateHelper.DuplicateCandidate candidate = library.get(j);
+            for (int j = (i + 1); j < library.size(); j++) {
+                if (isStopped()) return;
+                DuplicateHelper.DuplicateCandidate candidate = library.get(j);
 
-                    // Check if that combination has already been processed
-                    if (detectedIds.contains(new Pair<>(reference.getId(), candidate.getId()))) {
-                        lineMatchCounter++;
-                        continue;
+                // For re-runs, check if that combination has been ignored in the past and has to be matched
+                if (isReRun && !ignoredIds.contains(new Pair<>(reference.getId(), candidate.getId())))
+                    continue;
+
+                DuplicateEntry entry = processContent(reference, candidate, ignoredIds, useTitle, useCover, useSameArtist, useSameLanguage, sensitivity);
+                if (entry != null) {
+                    // Check if matched IDs don't already contain the reference as a transitive link
+                    // TODO doc
+                    boolean transitiveMatchFound = false;
+                    List<Long> reverseMatchesC = reverseMatchedIds.get(candidate.getId());
+                    if (reverseMatchesC != null && !reverseMatchesC.isEmpty()) {
+                        List<Long> reverseMatchesRef = reverseMatchedIds.get(reference.getId());
+                        if (reverseMatchesRef != null && !reverseMatchesRef.isEmpty()) {
+                            for (long lc : reverseMatchesC)
+                                for (long lr : reverseMatchesRef)
+                                    if (lc == lr) {
+                                        transitiveMatchFound = true;
+                                        break;
+                                    }
+                        }
                     }
+                    // Record the entry
+                    if (!transitiveMatchFound) {
+                        List<Long> matches = matchedIds.get(reference.getId());
+                        if (null == matches) matches = new ArrayList<>();
+                        matches.add(candidate.getId());
+                        matchedIds.put(reference.getId(), matches);
 
-                    DuplicateEntry entry = processContent(reference, candidate, useTitle, useCover, useSameArtist, useSameLanguage, sensitivity);
-                    if (entry != null) tempResults.add(entry);
-
-                    // Mark as processed
-                    detectedIds.add(new Pair<>(reference.getId(), candidate.getId()));
+                        List<Long> reverseMatches = reverseMatchedIds.get(candidate.getId());
+                        if (null == reverseMatches) reverseMatches = new ArrayList<>();
+                        reverseMatches.add(reference.getId());
+                        reverseMatchedIds.put(candidate.getId(), reverseMatches);
+                    }
+                    tempResults.add(entry);
                 }
+            }
 
-                // Record full lines for quicker scan
-                if (lineMatchCounter == library.size() - i - 1) fullLines.add(i);
-
-                // Save results for this reference
-                if (!tempResults.isEmpty()) {
-                    duplicatesDao.insertEntries(tempResults);
-                    tempResults.clear();
-                }
+            // Save results for this reference
+            if (!tempResults.isEmpty()) {
+                duplicatesDao.insertEntries(tempResults);
+                tempResults.clear();
             }
 
             currentIndex.set(i);
 
             if (0 == i % 10) {
-                float progress = detectedIds.size() * 1f / nbCombinations;
-                notifyProcessProgress(progress); // Only update every 10 iterations to optimize
+                float progress = i * 1f / (library.size() - 1);
+                notifyProcessProgress(progress); // Only update every 10 iterations for performance
             }
         }
     }
@@ -219,6 +243,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private DuplicateEntry processContent(
             DuplicateHelper.DuplicateCandidate reference,
             DuplicateHelper.DuplicateCandidate candidate,
+            HashSet<Pair<Long, Long>> ignoredIds,
             boolean useTitle,
             boolean useCover,
             boolean useSameArtist,
@@ -232,10 +257,18 @@ public class DuplicateDetectorWorker extends BaseWorker {
         if (useSameLanguage && !DuplicateHelper.Companion.containsSameLanguage(reference.getCountryCodes(), candidate.getCountryCodes()))
             return null;
 
-        if (useCover)
+        if (useCover) {
             coverScore = DuplicateHelper.Companion.computeCoverScore(
                     reference.getCoverHash(), candidate.getCoverHash(),
                     sensitivity);
+            Pair<Long, Long> key = new Pair<>(reference.getId(), candidate.getId());
+            if (coverScore == -2f) { // Ignored cover
+                ignoredIds.add(key);
+                return null;
+            } else {
+                ignoredIds.remove(key);
+            }
+        }
 
         if (useTitle)
             titleScore = DuplicateHelper.Companion.computeTitleScore(

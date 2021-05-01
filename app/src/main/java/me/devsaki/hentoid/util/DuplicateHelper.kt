@@ -111,7 +111,7 @@ class DuplicateHelper {
                 sensitivity: Int
         ): Float {
             // Don't analyze anything if covers have not been hashed (will be done on next iteration)
-            if (0L == referenceHash || 0L == candidateHash) return -1f
+            if (0L == referenceHash || 0L == candidateHash) return -2f
             // Ignore unhashable covers
             if (Long.MIN_VALUE == referenceHash || Long.MIN_VALUE == candidateHash) return -1f
 
@@ -167,7 +167,7 @@ class DuplicateHelper {
         val size = content.size
         val titleCleanup = if (useTitle) StringHelper.cleanup(content.title) else ""
         val titleNoDigits = if (useTitle) StringHelper.removeDigits(titleCleanup) else ""
-        val artistsCleanup = if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map { it -> StringHelper.cleanup(it.name) } else Collections.emptyList()
+        val artistsCleanup: List<String>? = if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map { it -> StringHelper.cleanup(it.name) } else Collections.emptyList()
         val countryCodes = if (useLanguage) content.attributeMap[AttributeType.LANGUAGE]?.map { LanguageHelper.getCountryCodeFromLanguage(it.name) } else Collections.emptyList()
     }
 
