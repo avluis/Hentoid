@@ -219,8 +219,9 @@ public class DuplicateDetectorWorker extends BaseWorker {
                         if (null == reverseMatches) reverseMatches = new ArrayList<>();
                         reverseMatches.add(reference.getId());
                         reverseMatchedIds.put(candidate.getId(), reverseMatches);
+
+                        tempResults.add(entry);
                     }
-                    tempResults.add(entry);
                 }
             }
 
