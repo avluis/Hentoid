@@ -66,6 +66,7 @@ import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -554,6 +555,12 @@ public class ContentDownloadWorker extends BaseWorker {
                     }
                 }
 
+                // Compute perceptual hash for the cover picture
+                Bitmap coverBitmap = DuplicateHelper.Companion.getCoverBitmapFromContent(getApplicationContext(), content);
+                long pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), coverBitmap);
+                coverBitmap.recycle();
+                content.getCover().setImageHash(pHash);
+
                 // Mark content as downloaded
                 if (0 == content.getDownloadDate())
                     content.setDownloadDate(Instant.now().toEpochMilli());
@@ -947,8 +954,8 @@ public class ContentDownloadWorker extends BaseWorker {
 
         if (!ImageHelper.isImageExtensionSupported(fileExt))
             throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - data not processed", fileExt, img.getUrl()));
-        else
-            return saveImage(dir, img.getName() + "." + fileExt, mimeType, binaryContent);
+
+        return saveImage(dir, img.getName() + "." + fileExt, mimeType, binaryContent);
     }
 
     /**
