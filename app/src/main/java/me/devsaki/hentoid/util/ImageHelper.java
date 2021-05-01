@@ -14,6 +14,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -158,12 +159,14 @@ public final class ImageHelper {
         return inSampleSize;
     }
 
-    public static Bitmap decodeSampledBitmapFromStream(InputStream stream, int reqWidth, int reqHeight) {
+    public static Bitmap decodeSampledBitmapFromStream(InputStream stream, int reqWidth, int reqHeight) throws IOException {
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
+        if (stream.markSupported()) stream.mark(1024);
         BitmapFactory.decodeStream(stream, null, options);
+        if (stream.markSupported()) stream.reset();
 
         // Calculate inSampleSize
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
