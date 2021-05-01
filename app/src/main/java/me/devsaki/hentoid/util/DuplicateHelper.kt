@@ -24,21 +24,29 @@ class DuplicateHelper {
         private const val COVER_WORK_RESOLUTION = 48
 
 
+        fun getHashEngine(): ImagePHash {
+            return ImagePHash(COVER_WORK_RESOLUTION, 8)
+        }
+
         fun indexCoversRx(
                 context: Context,
                 dao: CollectionDAO,
                 progress: Consumer<Float>): Disposable {
 
-            val hash = ImagePHash(COVER_WORK_RESOLUTION, 8)
+            val hash = getHashEngine()
             var index = 0
-            val nbContent = dao.countContentWithUnhashedCovers();
+            val nbContent = dao.countContentWithUnhashedCovers()
 
             return dao.streamContentWithUnhashedCovers()
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io())
                     .map { content -> Pair(content, getCoverBitmapFromContent(context, content)) }
                     .observeOn(Schedulers.computation())
-                    .map { contentBitmap -> Pair(contentBitmap.first, calcPhash(hash, contentBitmap.second)) }
+                    .map {
+                        val pHash = calcPhash(hash, it.second)
+                        it.second?.recycle()
+                        Pair(it.first, pHash)
+                    }
                     .observeOn(Schedulers.io())
                     .map { contentHash -> savePhash(context, dao, contentHash.first, contentHash.second) }
                     .subscribeBy(
@@ -49,7 +57,7 @@ class DuplicateHelper {
 
         }
 
-        private fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
+        fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
             if (content.cover.fileUri.isEmpty()) return null
 
             try {
@@ -63,7 +71,7 @@ class DuplicateHelper {
             }
         }
 
-        private fun calcPhash(hashEngine: ImagePHash, bitmap: Bitmap?): Long {
+        fun calcPhash(hashEngine: ImagePHash, bitmap: Bitmap?): Long {
             return if (null == bitmap) -1
             else hashEngine.calcPHash(bitmap)
         }
