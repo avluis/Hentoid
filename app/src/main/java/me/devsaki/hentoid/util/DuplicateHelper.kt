@@ -141,8 +141,7 @@ class DuplicateHelper {
                 if (similarity2 - similarity1 < 0.01) {
                     similarity1
                 } else {
-                    // TODO set back to 0%
-                    0.1f // Most probably a chapter variant -> set to 0%
+                    0f // Most probably a chapter variant -> set to 0%
                 }
             } else {
                 0f // Below threshold
