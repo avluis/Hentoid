@@ -23,7 +23,7 @@ class DuplicateHelper {
         private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
         private const val COVER_WORK_RESOLUTION = 48
 
-        private val TITLE_CHAPTER_WORDS = listOf("chapter", "case", "after", "before", "final", "chap", "part", "update", "gaiden", "issue", "volume", "vol", "first", "second", "third", "fourth", "fifth", "1st", "2nd", "3rd", "4th", "5th")
+        private val TITLE_CHAPTER_WORDS = listOf("chapter", "case", "after", "before", "final", "chap", "part", "update", "gaiden", "issue", "volume", "vol", "first", "second", "third", "fourth", "fifth", "1st", "2nd", "3rd", "4th", "5th", "zenpen", "全編", "chuuhen", "中編", "kouhen", "後編")
 
 
         fun getHashEngine(): ImagePHash {
