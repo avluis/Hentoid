@@ -14,10 +14,12 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
@@ -28,7 +30,12 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 public final class ImageHelper {
 
     private static final Charset CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1;
+
     public static final String MIME_IMAGE_GENERIC = "image/*";
+    public static final String MIME_IMAGE_WEBP = "image/webp";
+    public static final String MIME_IMAGE_JPEG = "image/jpeg";
+    public static final String MIME_IMAGE_GIF = "image/gif";
+
 
     private static FileHelper.NameFilter imageNamesFilter;
 
@@ -79,7 +86,7 @@ public final class ImageHelper {
         // In Java, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
         if ((byte) 0xFF == binary[0] && (byte) 0xD8 == binary[1] && (byte) 0xFF == binary[2])
-            return "image/jpeg";
+            return MIME_IMAGE_JPEG;
         else if ((byte) 0x89 == binary[0] && (byte) 0x50 == binary[1] && (byte) 0x4E == binary[2]) {
             // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
             int acTlPos = FileHelper.findSequencePosition(binary, 0, "acTL".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
@@ -89,10 +96,10 @@ public final class ImageHelper {
             }
             return "image/png";
         } else if ((byte) 0x47 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2])
-            return "image/gif";
+            return MIME_IMAGE_GIF;
         else if ((byte) 0x52 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2] && (byte) 0x46 == binary[3]
                 && (byte) 0x57 == binary[8] && (byte) 0x45 == binary[9] && (byte) 0x42 == binary[10] && (byte) 0x50 == binary[11])
-            return "image/webp";
+            return MIME_IMAGE_WEBP;
         else if ((byte) 0x42 == binary[0] && (byte) 0x4D == binary[1]) return "image/bmp";
         else return MIME_IMAGE_GENERIC;
     }
@@ -136,17 +143,14 @@ public final class ImageHelper {
         return b;
     }
 
-    public static int calculateInSampleSize(
-            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+    public static int calculateInSampleSize(int rawWidth, int rawHeight, int reqWidth, int reqHeight) {
         // Raw height and width of image
-        final int height = options.outHeight;
-        final int width = options.outWidth;
         int inSampleSize = 1;
 
-        if (height > reqHeight || width > reqWidth) {
+        if (rawHeight > reqHeight || rawWidth > reqWidth) {
 
-            final int halfHeight = height / 2;
-            final int halfWidth = width / 2;
+            final int halfHeight = rawHeight / 2;
+            final int halfWidth = rawWidth / 2;
 
             // Calculate the largest inSampleSize value that is a power of 2 and keeps both
             // height and width larger than the requested height and width.
@@ -159,20 +163,49 @@ public final class ImageHelper {
         return inSampleSize;
     }
 
-    public static Bitmap decodeSampledBitmapFromStream(InputStream stream, int reqWidth, int reqHeight) throws IOException {
+    public static Bitmap decodeSampledBitmapFromStream(@NonNull InputStream stream, int reqWidth, int reqHeight) throws IOException {
+        // Check the image format
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(stream, 1024);
+        bufferedInputStream.mark(1024);
+        byte[] header = new byte[12];
+        int nbRead = bufferedInputStream.read(header);
+        bufferedInputStream.reset();
+        String mimeType = "";
+        if (nbRead == header.length) mimeType = getMimeTypeFromPictureBinary(header);
+
+        if (mimeType.isEmpty()) return null;
+
+        // If it's something else than WEBP, we can continue using the buffered stream
+        // If it's WEBP we have to duplicate the stream because Android reads the whole file
+        // even though options.inJustDecodeBounds is active
+        InputStream workStream1 = bufferedInputStream;
+        InputStream workStream2 = null;
+        if (mimeType.equals(MIME_IMAGE_WEBP)) {
+            List<InputStream> streams = Helper.duplicateInputStream(workStream1, 2);
+            workStream1 = streams.get(0);
+            workStream2 = streams.get(1);
+        }
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        if (stream.markSupported()) stream.mark(1024);
-        BitmapFactory.decodeStream(stream, null, options);
-        if (stream.markSupported()) stream.reset();
+        BitmapFactory.decodeStream(workStream1, null, options);
+        if (null == workStream2) {
+            workStream1.reset();
+            workStream2 = workStream1;
+        } else {
+            workStream1.close();
+        }
 
         // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        options.inSampleSize = calculateInSampleSize(options.outWidth, options.outHeight, reqWidth, reqHeight);
 
-        // Decode bitmap with inSampleSize set
+        // Decode final bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeStream(stream, null, options);
+        try {
+            return BitmapFactory.decodeStream(workStream2, null, options);
+        } finally {
+            workStream2.close();
+        }
     }
 }

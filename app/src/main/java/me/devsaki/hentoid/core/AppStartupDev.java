@@ -2,10 +2,10 @@ package me.devsaki.hentoid.core;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 
 import androidx.annotation.NonNull;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.reactivex.ObservableEmitter;
+import me.devsaki.hentoid.util.DuplicateHelper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.ImagePHash;
 import timber.log.Timber;
 
@@ -31,19 +33,16 @@ public class AppStartupDev {
         List<Long> hashes2 = new ArrayList<>();
 
         try {
-            ImagePHash hash = new ImagePHash(resolution, 8);
-            //Bitmap.Config bitmapConfig = Bitmap.Config.ARGB_8888;
-            Bitmap.Config bitmapConfig = Bitmap.Config.RGB_565;
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = bitmapConfig;
+            ImagePHash hashEngine = DuplicateHelper.Companion.getHashEngine(resolution);
 
             String[] set1 = context.getAssets().list("imageSet1");
             if (null == set1) return;
 
             for (String s : set1) {
                 try (InputStream is = context.getAssets().open("imageSet1/" + s)) {
-                    Bitmap b = BitmapFactory.decodeStream(is, null, options);
-                    long hashStr = hash.calcPHash(b);
+                    Bitmap b = ImageHelper.decodeSampledBitmapFromStream(is, resolution, resolution);
+                    long hashStr = DuplicateHelper.Companion.calcPhash(hashEngine, b);
+                    if (b != null) b.recycle();
                     hashes1.add(hashStr);
                     System.out.println(s + " : " + hashStr);
                 } catch (Exception e) {
@@ -58,8 +57,9 @@ public class AppStartupDev {
 
             for (String s : set2) {
                 try (InputStream is = context.getAssets().open("imageSet2/" + s)) {
-                    Bitmap b = BitmapFactory.decodeStream(is, null, options);
-                    long hashStr = hash.calcPHash(b);
+                    Bitmap b = ImageHelper.decodeSampledBitmapFromStream(is, resolution, resolution);
+                    long hashStr = DuplicateHelper.Companion.calcPhash(hashEngine, b);
+                    if (b != null) b.recycle();
                     hashes2.add(hashStr);
                     System.out.println(s + " : " + hashStr);
                 } catch (Exception e) {

@@ -12,7 +12,6 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import timber.log.Timber
-import java.io.BufferedInputStream
 import java.io.IOException
 import java.util.*
 
@@ -26,7 +25,11 @@ class DuplicateHelper {
 
 
         fun getHashEngine(): ImagePHash {
-            return ImagePHash(COVER_WORK_RESOLUTION, 8)
+            return getHashEngine(COVER_WORK_RESOLUTION)
+        }
+
+        fun getHashEngine(resolution: Int = COVER_WORK_RESOLUTION): ImagePHash {
+            return ImagePHash(resolution, 8)
         }
 
         fun indexCoversRx(
@@ -62,7 +65,7 @@ class DuplicateHelper {
             if (content.cover.fileUri.isEmpty()) return null
 
             try {
-                BufferedInputStream(FileHelper.getInputStream(context, Uri.parse(content.cover.fileUri)))
+                FileHelper.getInputStream(context, Uri.parse(content.cover.fileUri))
                         .use {
                             return ImageHelper.decodeSampledBitmapFromStream(it, COVER_WORK_RESOLUTION, COVER_WORK_RESOLUTION)
                         }

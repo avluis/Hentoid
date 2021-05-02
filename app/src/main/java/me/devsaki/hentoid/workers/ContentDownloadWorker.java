@@ -946,7 +946,7 @@ public class ContentDownloadWorker extends BaseWorker {
         // If all else fails, fall back to jpg as default
         if (null == fileExt || fileExt.isEmpty()) {
             fileExt = "jpg";
-            mimeType = "image/jpeg";
+            mimeType = ImageHelper.MIME_IMAGE_JPEG;
             Timber.d("Using default extension for %s -> %s", img.getUrl(), fileExt);
         }
         if (null == mimeType) mimeType = ImageHelper.MIME_IMAGE_GENERIC;
