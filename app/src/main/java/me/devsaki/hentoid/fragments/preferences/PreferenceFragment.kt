@@ -21,7 +21,6 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
-import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
 import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.services.UpdateCheckService
@@ -214,7 +213,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     }
 
     private fun onPrefColorThemeChanged() {
-        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Preferences.getColorTheme()))
+        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity)
     }
 
     private fun populateMemoryUsage() {
