@@ -6,20 +6,15 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 
-
-/*
+/**
  * pHash-like image hash.
- * Author: Elliot Shepherd (elliot@jarofworms.com
+ * Author: Elliot Shepherd (elliot@jarofworms.com)
  * https://gist.github.com/kuFEAR/6e20342198d4040e0bb5
  * Based On: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
  */
 public class ImagePHash {
     private int size = 32;
     private int smallerSize = 8;
-
-    public ImagePHash() {
-        initCoefficients();
-    }
 
     public ImagePHash(int size, int smallerSize) {
         this.size = size;
