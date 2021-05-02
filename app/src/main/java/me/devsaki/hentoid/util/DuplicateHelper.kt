@@ -23,6 +23,8 @@ class DuplicateHelper {
         private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
         private const val COVER_WORK_RESOLUTION = 48
 
+        private val TITLE_CHAPTER_WORDS = listOf("chapter", "case", "after", "before", "final", "chap", "part", "update", "gaiden", "issue", "volume", "vol", "first", "second", "third", "fourth", "fifth", "1st", "2nd", "3rd", "4th", "5th")
+
 
         fun getHashEngine(): ImagePHash {
             return getHashEngine(COVER_WORK_RESOLUTION)
@@ -131,16 +133,26 @@ class DuplicateHelper {
                 sensitivity: Int
         ): Float {
             val similarity1 = textComparator.similarity(referenceTitleCleanup, candidateTitleCleanup).toFloat()
+            // Perfect match
+            if (similarity1 > 0.99f) return similarity1
+            // Other cases
             return if (similarity1 > TEXT_THRESHOLDS[sensitivity]) {
                 val similarity2 = textComparator.similarity(referenceTitleNoDigits, candidateTitleNoDigits)
-                if (similarity2 - similarity1 < 0.02) {
+                if (similarity2 - similarity1 < 0.01) {
                     similarity1
                 } else {
-                    0f // Most probably a chapter variant -> set to 0%
+                    // TODO set back to 0%
+                    0.1f // Most probably a chapter variant -> set to 0%
                 }
             } else {
                 0f // Below threshold
             }
+        }
+
+        fun sanitizeTitle(title: String): String {
+            var result = StringHelper.removeDigits(title)
+            for (s in TITLE_CHAPTER_WORDS) result = result.replace(s, "")
+            return result
         }
 
         fun computeArtistScore(
@@ -169,7 +181,7 @@ class DuplicateHelper {
         val coverHash = content.cover.imageHash
         val size = content.size
         val titleCleanup = if (useTitle) StringHelper.cleanup(content.title) else ""
-        val titleNoDigits = if (useTitle) StringHelper.removeDigits(titleCleanup) else ""
+        val titleNoDigits = if (useTitle) sanitizeTitle(titleCleanup) else ""
         val artistsCleanup: List<String>? = if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map { it -> StringHelper.cleanup(it.name) } else Collections.emptyList()
         val countryCodes = if (useLanguage) content.attributeMap[AttributeType.LANGUAGE]?.map { LanguageHelper.getCountryCodeFromLanguage(it.name) } else Collections.emptyList()
     }

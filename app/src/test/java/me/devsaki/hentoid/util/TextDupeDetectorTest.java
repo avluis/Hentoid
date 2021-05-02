@@ -14,7 +14,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import info.debatty.java.stringsimilarity.Cosine;
+import me.devsaki.hentoid.util.string_similarity.Cosine;
 import timber.log.Timber;
 
 @RunWith(RobolectricTestRunner.class)
@@ -68,23 +68,18 @@ Kimodebu Ossan no Ore ga Namaiki Ojou-sama o Saimin NTR shite mita
         //SorensenDice c = new SorensenDice();
         for (String s1 : vals1) {
             String s1c = StringHelper.cleanup(s1);
-            String s1cp = StringHelper.removeDigits(s1c);
+            String s1cp = DuplicateHelper.Companion.sanitizeTitle(s1c);
             for (String s2 : vals1) {
                 if (s1 == s2) continue;
                 String s2c = StringHelper.cleanup(s2);
-                double similarity = c.similarity(s1c, s2c);
-                if (similarity > 0.8) {
-                    String s2cp = StringHelper.removeDigits(s2c);
+                String s2cp = DuplicateHelper.Companion.sanitizeTitle(s2c);
+                double score = DuplicateHelper.Companion.computeTitleScore(c, s1c, s1cp, s2c, s2cp, 0);
+                if (score > 0) {
+                    double similarity1 = c.similarity(s1c, s2c);
                     double similarity2 = c.similarity(s1cp, s2cp);
-                    if (similarity2 - similarity < 0.02 && !s1cp.equals(s2cp)) {
-                        System.out.println(s1c);
-//                        System.out.println(s1cp);
-                        System.out.println(similarity);
-                        System.out.println(s2c);
-//                        System.out.println(s2cp);
-                        System.out.println("");
-                    }
-                    break;
+                    System.out.println(String.format("%s %s [%.2f / %.2f => %.2f] %s", (score > 0.1f) ? "" : "      ", s1c, similarity1, similarity2, score, s2c));
+                    if (score > 0.1f)
+                        System.out.println(String.format("%s > %s", s1cp, s2cp));
                 }
             }
         }
