@@ -272,7 +272,7 @@ public class API29MigrationService extends IntentService {
         logInfo.setLogName("API29Migration");
         logInfo.setFileName("API29_migration_log");
         logInfo.setNoDataMessage("No content detected.");
-        logInfo.setLog(log);
+        logInfo.setEntries(log);
         return logInfo;
     }
 }

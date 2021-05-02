@@ -100,7 +100,7 @@ public abstract class BaseWorker extends Worker {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
         logInfo.setFileName(Integer.toString(serviceId));
         logInfo.setLogName(Integer.toString(serviceId));
-        logInfo.setLog(logs);
+        logInfo.setEntries(logs);
         LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
 
         // Tell everyone the worker is shutting down

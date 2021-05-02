@@ -209,7 +209,7 @@ public class ExternalImportService extends IntentService {
         logInfo.setLogName("Import external");
         logInfo.setFileName("import_external_log");
         logInfo.setNoDataMessage("No content detected.");
-        logInfo.setLog(log);
+        logInfo.setEntries(log);
         return logInfo;
     }
 

@@ -372,7 +372,7 @@ public class ImportWorker extends BaseWorker {
         logInfo.setLogName(cleanup ? "Cleanup" : "Import");
         logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
         logInfo.setNoDataMessage("No content detected.");
-        logInfo.setLog(log);
+        logInfo.setEntries(log);
         return logInfo;
     }
 
