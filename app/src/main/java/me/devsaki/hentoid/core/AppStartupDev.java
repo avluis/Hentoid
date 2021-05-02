@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
