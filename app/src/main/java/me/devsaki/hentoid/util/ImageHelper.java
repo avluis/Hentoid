@@ -143,19 +143,28 @@ public final class ImageHelper {
         return b;
     }
 
-    public static int calculateInSampleSize(int rawWidth, int rawHeight, int reqWidth, int reqHeight) {
+    /**
+     * Calculate sample size to load the picture with, according to raw and required dimensions
+     *
+     * @param rawWidth     Raw width of the picture, in pixels
+     * @param rawHeight    Raw height of the picture, in pixels
+     * @param targetWidth  Target width of the picture, in pixels
+     * @param targetHeight Target height of the picture, in pixels
+     * @return Sample size to use to load the picture with
+     */
+    public static int calculateInSampleSize(int rawWidth, int rawHeight, int targetWidth, int targetHeight) {
         // Raw height and width of image
         int inSampleSize = 1;
 
-        if (rawHeight > reqHeight || rawWidth > reqWidth) {
+        if (rawHeight > targetHeight || rawWidth > targetWidth) {
 
             final int halfHeight = rawHeight / 2;
             final int halfWidth = rawWidth / 2;
 
             // Calculate the largest inSampleSize value that is a power of 2 and keeps both
             // height and width larger than the requested height and width.
-            while ((halfHeight / inSampleSize) >= reqHeight
-                    && (halfWidth / inSampleSize) >= reqWidth) {
+            while ((halfHeight / inSampleSize) >= targetHeight
+                    && (halfWidth / inSampleSize) >= targetWidth) {
                 inSampleSize *= 2;
             }
         }
@@ -163,7 +172,16 @@ public final class ImageHelper {
         return inSampleSize;
     }
 
-    public static Bitmap decodeSampledBitmapFromStream(@NonNull InputStream stream, int reqWidth, int reqHeight) throws IOException {
+    /**
+     * Create a Bitmap from the given InputStream, optimizing resources according to the given required width and height
+     *
+     * @param stream       Stream to load the bitmap from
+     * @param targetWidth  Target picture width, in pixels
+     * @param targetHeight Target picture height, in pixels
+     * @return Bitmap created from the given InputStream
+     * @throws IOException If anything bad happens at load-time
+     */
+    public static Bitmap decodeSampledBitmapFromStream(@NonNull InputStream stream, int targetWidth, int targetHeight) throws IOException {
         // Check the image format
         BufferedInputStream bufferedInputStream = new BufferedInputStream(stream, 1024);
         bufferedInputStream.mark(1024);
@@ -198,7 +216,7 @@ public final class ImageHelper {
         }
 
         // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options.outWidth, options.outHeight, reqWidth, reqHeight);
+        options.inSampleSize = calculateInSampleSize(options.outWidth, options.outHeight, targetWidth, targetHeight);
 
         // Decode final bitmap with inSampleSize set
         options.inJustDecodeBounds = false;
