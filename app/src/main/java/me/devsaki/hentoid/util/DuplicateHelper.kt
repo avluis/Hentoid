@@ -73,7 +73,7 @@ class DuplicateHelper {
         }
 
         fun calcPhash(hashEngine: ImagePHash, bitmap: Bitmap?): Long {
-            return if (null == bitmap) -1
+            return if (null == bitmap) Long.MIN_VALUE
             else hashEngine.calcPHash(bitmap)
         }
 
