@@ -230,7 +230,7 @@ public class ImportHelper {
             return ProcessFolderResult.KO_DOWNLOAD_FOLDER;
         }
         // Retrieve or create the Hentoid folder
-        DocumentFile hentoidFolder = addHentoidFolder(context, docFile);
+        DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
             Timber.e("Could not create Hentoid folder in root %s", docFile.getUri().toString());
             return ProcessFolderResult.KO_CREATE_FAIL;
@@ -358,9 +358,15 @@ public class ImportHelper {
     }
 
 
-    // TODO doc
+    /**
+     * Detect or create the Hentoid app folder inside the given base folder
+     *
+     * @param context    Context to be used
+     * @param baseFolder Root folder to search for or create the Hentoid folder
+     * @return DocumentFile representing the found or newly created Hentoid folder
+     */
     @Nullable
-    private static DocumentFile addHentoidFolder(@NonNull final Context context, @NonNull final DocumentFile baseFolder) {
+    private static DocumentFile getOrCreateHentoidFolder(@NonNull final Context context, @NonNull final DocumentFile baseFolder) {
         String folderName = baseFolder.getName();
         if (null == folderName) folderName = "";
 
@@ -376,8 +382,15 @@ public class ImportHelper {
         return baseFolder;
     }
 
-    // TODO doc
-    // Try and detect any ".Hentoid" or "Hentoid" folder inside the selected folder
+    /**
+     * Try and detect any ".Hentoid" or "Hentoid" folder inside the given folder
+     * (the given folder itself being a candidate)
+     *
+     * @param context Context to use
+     * @param root    Root folder to search the Hentoid folder in
+     * @return DocumentFile being the given folder if nothing has been found, or another folder if a Hentoid folder has been found inside
+     * // TODO this contract sucks, it should return null when nothing is found, and a DocumentFile if any folder, including the root, qualifies
+     */
     public static DocumentFile getExistingHentoidDirFrom(@NonNull final Context context, @NonNull final DocumentFile root) {
         if (!root.exists() || !root.isDirectory() || null == root.getName()) return root;
 
@@ -390,7 +403,12 @@ public class ImportHelper {
         else return root;
     }
 
-    // TODO doc
+    /**
+     * Run the import of the Hentoid primary library
+     *
+     * @param context Context to use
+     * @param options Import options to use
+     */
     private static void runHentoidImport(
             @NonNull final Context context,
             @Nullable final ImportOptions options
@@ -409,7 +427,11 @@ public class ImportHelper {
                 new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
     }
 
-    // TODO doc
+    /**
+     * Run the import of the Hentoid external library
+     *
+     * @param context Context to use
+     */
     private static void runExternalImport(
             @NonNull final Context context
     ) {
@@ -423,7 +445,19 @@ public class ImportHelper {
         }
     }
 
-    // TODO doc
+    /**
+     * Create a Content from the given folder
+     *
+     * @param context      Context to use
+     * @param bookFolder   Folder to analyze
+     * @param explorer     FileExplorer to use
+     * @param parentNames  Names of parent folders, for formatting purposes
+     * @param targetStatus Target status of the Content to create
+     * @param dao          CollectionDAO to use
+     * @param imageFiles   List of images to match files with; null if they have to be recreated from the files
+     * @param jsonFile     JSON file to use, if one has been detected upstream; null if it has to be detected
+     * @return Content created from the folder information and files
+     */
     public static Content scanBookFolder(
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
@@ -483,7 +517,18 @@ public class ImportHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Create a Content from the given parent folder and chapter subfolders, merging all "chapters" into one content
+     *
+     * @param context        Context to use
+     * @param parent         Parent folder to take into account for title and download date
+     * @param chapterFolders Folders containing chapters to scan for images
+     * @param explorer       FileExplorer to use
+     * @param parentNames    Names of parent folders, for formatting purposes
+     * @param dao            CollectionDAO to use
+     * @param jsonFile       JSON file to use, if one has been detected upstream; null if it needs to be detected
+     * @return Content created from the folder information, subfolders and files
+     */
     public static Content scanChapterFolders(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
@@ -527,7 +572,17 @@ public class ImportHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Populate on enrich the given image list according to the contents of the given folder
+     *
+     * @param context                Context to use
+     * @param bookFolder             Folder to scan image files from
+     * @param explorer               FileExplorer to use
+     * @param targetStatus           Target status of the detected images
+     * @param addFolderNametoImgName True if the parent folder name has to be added to detected images name
+     * @param images                 Image list to populate or enrich
+     * @param imageFiles             Image file list, if already listed upstream; null if it needs to be listed
+     */
     private static void scanImages(
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
@@ -559,17 +614,30 @@ public class ImportHelper {
         }
     }
 
-    // TODO doc
+    /**
+     * Return a list with the attribute flagging a book as external
+     *
+     * @return List with the attribute flagging a book as external
+     */
     private static List<Attribute> newExternalAttribute() {
         return Stream.of(new Attribute(AttributeType.TAG, EXTERNAL_LIB_TAG, EXTERNAL_LIB_TAG, Site.NONE)).toList();
     }
 
-    // TODO doc
+    /**
+     * Remove the attribute flagging the given book as external, if it exists
+     *
+     * @param content Content to remove the "external" attribute flag, if it has been set
+     */
     public static void removeExternalAttribute(@NonNull final Content content) {
         content.putAttributes(Stream.of(content.getAttributes()).filterNot(a -> a.getName().equalsIgnoreCase(EXTERNAL_LIB_TAG)).toList());
     }
 
-    // TODO doc
+    /**
+     * Convert the given list of parent folder names into a list of Attribute of type TAG
+     *
+     * @param parentNames List of parent folder names
+     * @return Representation of parent folder names as Attributes of type TAG
+     */
     private static AttributeMap parentNamesAsTags(@NonNull final List<String> parentNames) {
         AttributeMap result = new AttributeMap();
         // Don't include the very first one, it's the name of the root folder of the library
@@ -580,7 +648,16 @@ public class ImportHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Create Content from every archive inside the given subfolders
+     *
+     * @param context     Context to use
+     * @param subFolders  Subfolders to scan for archives
+     * @param explorer    FileExplorer to use
+     * @param parentNames Names of parent folders, for formatting purposes
+     * @param dao         CollectionDAO to use
+     * @return List of Content created from every archive inside the given subfolders
+     */
     public static List<Content> scanForArchives(
             @NonNull final Context context,
             @NonNull final List<DocumentFile> subFolders,
@@ -615,7 +692,19 @@ public class ImportHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Create a content from the given archive
+     * NB : any returned Content with the IGNORED status shouldn't be taken into account by the caller
+     *
+     * @param context      Context to use
+     * @param parentFolder Parent folder where the archive is located
+     * @param archive      Archive file to scan
+     * @param parentNames  Names of parent folders, for formatting purposes
+     * @param targetStatus Target status of the Content to create
+     * @param dao          CollectionDAO to use
+     * @param jsonFile     JSON file to use, if one has been detected upstream; null if it has to be detected
+     * @return Content created from the given archive
+     */
     public static Content scanArchive(
             @NonNull final Context context,
             @NonNull final DocumentFile parentFolder,
@@ -675,16 +764,14 @@ public class ImportHelper {
         return result;
     }
 
-    // TODO doc
-    private static String getFolders(@NonNull final ArchiveHelper.ArchiveEntry entry) {
-        String path = entry.path;
-        int separatorIndex = path.lastIndexOf('/');
-        if (-1 == separatorIndex) return "";
-
-        return path.substring(0, separatorIndex);
-    }
-
-    // TODO doc
+    /**
+     * Add the given list of bookmarks to the DB, handling duplicates
+     * Bookmarks that have the same URL as existing ones won't be imported
+     *
+     * @param dao       CollectionDAO to use
+     * @param bookmarks List of bookmarks to add to the existing bookmarks
+     * @return Quantity of new integrated bookmarks
+     */
     public static int importBookmarks(@NonNull final CollectionDAO dao, List<SiteBookmark> bookmarks) {
         // Don't import bookmarks that have the same URL as existing ones
         Set<SiteBookmark> existingBookmarkUrls = new HashSet<>(dao.selectAllBookmarks());
@@ -693,7 +780,13 @@ public class ImportHelper {
         return bookmarksToImport.size();
     }
 
-    // TODO doc
+    /**
+     * Return the first file with the given name (without extension) among the given list of files
+     *
+     * @param files List of files to search into
+     * @param name  File name to detect
+     * @return First file with the given name among the given list, or null if none matches the given name
+     */
     @Nullable
     public static DocumentFile getFileWithName(List<DocumentFile> files, @Nullable String name) {
         if (null == name) return null;

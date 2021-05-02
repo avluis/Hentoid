@@ -537,10 +537,11 @@ public final class ContentHelper {
 
     /**
      * Format the download directory path of the given content according to current user preferences
-     * TODO update
      *
      * @param content Content to get the path from
-     * @return Canonical download directory path of the given content, according to current user preferences
+     * @return Pair containing the canonical naming of the given content :
+     * - Left side : Naming convention allowing non-ANSI characters
+     * - Right side : Old naming convention with ANSI characters alone
      */
     public static ImmutablePair<String, String> formatBookFolderName(@NonNull final Content content) {
         String title = content.getTitle();
