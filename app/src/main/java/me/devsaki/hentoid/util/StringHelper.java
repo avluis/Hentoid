@@ -23,7 +23,6 @@ public final class StringHelper {
     }
 
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
-    private static final List<Character> SPACES = Arrays.asList('\t', '\n', '\f', '\r', ' ');
 
 
     /**
@@ -138,7 +137,7 @@ public final class StringHelper {
     /**
      * Clean up the given string by
      * - Removing everything between ()'s and []'s
-     * - Replacing [-_~/\]'s by a space
+     * - Replacing [-_~/\,;:|.]'s by a space
      * - Putting all characters lowercase
      * - Replacing HTML-escaped characters by their ASCII equivalent
      * - Trimming
@@ -153,10 +152,11 @@ public final class StringHelper {
             char c = s.charAt(i);
             if (c == '(' || c == '[') openBracket = true;
             else if (c == ')' || c == ']') openBracket = false;
-            else if (c == '-' || c == '_' || c == '~' || c == '/' || c == '\\') result.append(' ');
+            else if (c == '-' || c == '_' || c == ':' || c == ';' || c == ',' || c == '~' || c == '/' || c == '\\' || c == '|' || c == '.')
+                result.append(' ');
             else if (!openBracket) result.append(c);
         }
-        return StringEscapeUtils.unescapeHtml4(result.toString().toLowerCase().replace("  ", " ").trim());
+        return cleanMultipleSpaces(StringEscapeUtils.unescapeHtml4(result.toString().toLowerCase()).trim());
     }
 
     /**
@@ -174,8 +174,15 @@ public final class StringHelper {
         return result.toString().trim();
     }
 
-    // TODO doc
-    public static String cleanSpaces(String s) {
+    /**
+     * Remove any multiple spaces from the given string to replace them with a single space
+     * NB1 : This methods is a fast alternative to using Regexes to replace \s by ' '
+     * NB2 : Spaces are ' ', '\t', '\n', '\f' and '\r'
+     *
+     * @param s String to clean spaces from
+     * @return Given string with cleaned spaces
+     */
+    public static String cleanMultipleSpaces(@NonNull final String s) {
         boolean first = true;
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
@@ -216,7 +223,15 @@ public final class StringHelper {
         return android.util.Base64.encodeToString(rawString.getBytes(), android.util.Base64.DEFAULT);
     }
 
-    // TODO doc
+    /**
+     * Indicate if the given string is the transposition of the other given string
+     * Here "X is a transposition of Y" means "X contains all words of Y, potentially arranged in another order"
+     * e.g. "word1 word2 word3" is a transposition for "word2 word3 word1"
+     *
+     * @param referenceCleanup  Cleaned-up reference string
+     * @param comparisonCleanup Cleaned-up comparison string
+     * @return True if comparisonCleanup is a transposition of referenceCleanup; false if not
+     */
     public static boolean isTransposition(@NonNull String referenceCleanup, @NonNull String comparisonCleanup) {
         if (referenceCleanup.equals(comparisonCleanup)) return true;
         if (referenceCleanup.replace(" ", "").equals(comparisonCleanup.replace(" ", "")))

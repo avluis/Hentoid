@@ -73,7 +73,7 @@ public abstract class ShingleBased {
     public final Map<String, Integer> getProfile(final String string) {
         HashMap<String, Integer> shingles = new HashMap<String, Integer>();
 
-        String string_no_space = StringHelper.cleanSpaces(string);
+        String string_no_space = StringHelper.cleanMultipleSpaces(string);
         for (int i = 0; i < (string_no_space.length() - k + 1); i++) {
             String shingle = string_no_space.substring(i, i + k);
             Integer old = shingles.get(shingle);
