@@ -109,7 +109,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.EXTERNAL_LIBRARY -> {
                     if (ExternalImportService.isRunning()) {
-                        ToastHelper.toast(getString(R.string.pref_import_running))
+                        ToastHelper.toast(R.string.pref_import_running)
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
                     }
@@ -126,7 +126,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                                 dialog1.dismiss()
                                 Preferences.setExternalLibraryUri("")
                                 viewModel.removeAllExternalContent()
-                                ToastHelper.toast(getString(R.string.prefs_external_library_detached))
+                                ToastHelper.toast(R.string.prefs_external_library_detached)
                             }
                             .setNegativeButton(R.string.no
                             ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
@@ -136,7 +136,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.REFRESH_LIBRARY -> {
                     if (ImportWorker.isRunning(requireContext())) {
-                        ToastHelper.toast(getString(R.string.pref_import_running))
+                        ToastHelper.toast(R.string.pref_import_running)
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
                     }
@@ -148,12 +148,12 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.VIEWER_RENDERING -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        ToastHelper.toast(getString(R.string.pref_viewer_rendering_no_android5))
+                        ToastHelper.toast(R.string.pref_viewer_rendering_no_android5)
                     true
                 }
                 Preferences.Key.SETTINGS_FOLDER -> {
                     if (ImportWorker.isRunning(requireContext())) {
-                        ToastHelper.toast(getString(R.string.pref_import_running))
+                        ToastHelper.toast(R.string.pref_import_running)
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)
                     }
