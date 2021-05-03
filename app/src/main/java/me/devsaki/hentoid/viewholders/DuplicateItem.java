@@ -79,17 +79,14 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     private final @ViewType
     int viewType;
     private final boolean isEmpty;
+    private final boolean isReferenceItem;
 
     private int nbDuplicates = 0;
-    private boolean isReferenceItem = false;
     private Float titleScore = -1f;
     private Float coverScore = -1f;
     private Float artistScore = -1f;
     private Float totalScore = -1f;
     private Boolean keep = null;
-
-//    private Consumer<DuplicateItem> deleteAction = null;
-
 
     static {
         Context context = HentoidApp.getInstance();
@@ -107,15 +104,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         glideRequestOptions = new RequestOptions()
                 .centerInside()
                 .error(d);
-    }
-
-    public DuplicateItem(Content content, @ViewType int viewType) {
-        this.viewType = viewType;
-        isEmpty = (null == content);
-        if (content != null) setIdentifier(content.hash64());
-        else setIdentifier(Helper.generateIdForPlaceholder());
-        this.content = content;
-        isReferenceItem = true;
     }
 
     public DuplicateItem(DuplicateEntry result, @ViewType int viewType) {
@@ -196,8 +184,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         private TextView keepButton;
         private TextView deleteButton;
 
-//        private Runnable deleteActionRunnable = null;
-
 
         ContentViewHolder(View view, @ViewType int viewType) {
             super(view);
@@ -246,11 +232,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) item.content.getCover().setFileUri(stringValue);
             }
-
-            /*
-            if (item.deleteAction != null)
-                deleteActionRunnable = () -> item.deleteAction.accept(item);
-             */
 
             updateLayoutVisibility(item);
             attachCover(item.content);
@@ -500,7 +481,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
 
         @Override
         public void unbindView(@NotNull DuplicateItem item) {
-//            deleteActionRunnable = null;
             if (ivCover != null && Helper.isValidContextForGlide(ivCover))
                 Glide.with(ivCover).clear(ivCover);
         }

@@ -72,6 +72,10 @@ public class DuplicatesDB {
         store.boxFor(DuplicateEntry.class).put(entry);
     }
 
+    void delete(DuplicateEntry entry) {
+        store.boxFor(DuplicateEntry.class).remove(entry);
+    }
+
     void clearEntries() {
         store.boxFor(DuplicateEntry.class).removeAll();
     }

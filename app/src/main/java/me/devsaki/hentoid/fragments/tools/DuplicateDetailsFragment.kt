@@ -53,7 +53,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
     private var enabled = true
 
 
-    val ITEM_DIFF_CALLBACK: DiffCallback<DuplicateItem> = object : DiffCallback<DuplicateItem> {
+    private val ITEM_DIFF_CALLBACK: DiffCallback<DuplicateItem> = object : DiffCallback<DuplicateItem> {
         override fun areItemsTheSame(oldItem: DuplicateItem, newItem: DuplicateItem): Boolean {
             return oldItem.identifier == newItem.identifier
         }
@@ -111,7 +111,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         // "Keep" button click listener
         fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
             override fun onClick(v: View, position: Int, fastAdapter: FastAdapter<DuplicateItem>, item: DuplicateItem) {
-                onBookChoice(item.content, false)
+                onBookChoice(item.content, true)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
@@ -124,7 +124,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         // "Delete" button click listener
         fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
             override fun onClick(v: View, position: Int, fastAdapter: FastAdapter<DuplicateItem>, item: DuplicateItem) {
-                onBookChoice(item.content, true)
+                onBookChoice(item.content, false)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
@@ -133,6 +133,8 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
                 } else super.onBind(viewHolder)
             }
         })
+
+        binding.applyBtn.setOnClickListener { viewModel.applyChoices { activity.get()?.goBackToMain() } }
     }
 
     private fun addCustomBackControl() {
@@ -164,11 +166,17 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
 
         // Order by relevance desc and transforms to DuplicateItem
         val items = duplicates.sortedByDescending { it.calcTotalScore() }.map { DuplicateItem(it, DuplicateItem.ViewType.DETAILS) }.toMutableList()
-        /*
-        // Add the reference item on top
-        if (items.isNotEmpty()) items.add(0, DuplicateItem(duplicates[0].referenceContent, DuplicateItem.ViewType.DETAILS))
-         */
         set(itemAdapter, items, ITEM_DIFF_CALLBACK)
+
+        // Update bottom bar
+        val nbChoicesRemaining = items.size - duplicates.filter { it.keep != null }.count()
+        if (nbChoicesRemaining > 0) {
+            binding.applyBtn.text = resources.getString(R.string.apply_processing, nbChoicesRemaining)
+            binding.applyBtn.isEnabled = false
+        } else {
+            binding.applyBtn.text = resources.getString(R.string.apply_final)
+            binding.applyBtn.isEnabled = true
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

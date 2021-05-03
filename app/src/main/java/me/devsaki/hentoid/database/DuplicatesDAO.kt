@@ -71,4 +71,8 @@ class DuplicatesDAO(ctx: Context) {
     fun insertEntries(entry: List<DuplicateEntry>) {
         duplicatesDb.insertEntries(entry)
     }
+
+    fun delete(entry: DuplicateEntry) {
+        duplicatesDb.delete(entry)
+    }
 }

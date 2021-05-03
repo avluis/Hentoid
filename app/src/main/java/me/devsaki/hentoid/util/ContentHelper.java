@@ -316,7 +316,7 @@ public final class ContentHelper {
             File[] images = appFolder.listFiles((dir, name) -> FileHelper.getFileNameWithoutExtension(name).equals(content.getId() + ""));
             if (images != null)
                 for (File f : images) FileHelper.removeFile(f);
-        } else if (isInLibrary(content.getStatus()) && !content.getStorageUri().isEmpty()) { // Remove a folder and its content
+        } else if (/*isInLibrary(content.getStatus()) &&*/ !content.getStorageUri().isEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
             DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
             if (null == folder)

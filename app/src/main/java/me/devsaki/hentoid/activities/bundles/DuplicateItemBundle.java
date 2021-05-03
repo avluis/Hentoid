@@ -23,7 +23,8 @@ public class DuplicateItemBundle {
         private final Bundle bundle = new Bundle();
 
         public void setKeep(Boolean value) {
-            bundle.putBoolean(KEY_KEEP, value);
+            if (value != null)
+                bundle.putBoolean(KEY_KEEP, value);
         }
 
         public boolean isEmpty() {
