@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -14,11 +15,13 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.Group;
+import androidx.core.content.ContextCompat;
 
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
@@ -83,6 +86,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     private Float coverScore = -1f;
     private Float artistScore = -1f;
     private Float totalScore = -1f;
+    private Boolean keep = null;
 
 //    private Consumer<DuplicateItem> deleteAction = null;
 
@@ -129,11 +133,13 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 coverScore = result.getCoverScore();
                 artistScore = result.getArtistScore();
                 totalScore = result.calcTotalScore();
+                keep = result.getKeep();
             }
             nbDuplicates = result.getNbDuplicates();
         } else {
             content = null;
         }
+        isReferenceItem = (titleScore > 1f);
     }
 
     @Nullable
@@ -159,6 +165,11 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         return R.id.duplicate;
     }
 
+    @Nullable
+    public Boolean getKeep() {
+        return keep;
+    }
+
 
     public static class ContentViewHolder extends FastAdapter.ViewHolder<DuplicateItem> {
 
@@ -182,6 +193,8 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         private TextView coverScore;
         private TextView artistScore;
         private TextView totalScore;
+        private TextView keepButton;
+        private TextView deleteButton;
 
 //        private Runnable deleteActionRunnable = null;
 
@@ -208,6 +221,8 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 coverScore = itemView.findViewById(R.id.cover_score);
                 artistScore = itemView.findViewById(R.id.artist_score);
                 totalScore = itemView.findViewById(R.id.total_score);
+                keepButton = itemView.findViewById(R.id.keep_btn);
+                deleteButton = itemView.findViewById(R.id.delete_btn);
             }
         }
 
@@ -447,10 +462,40 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             // View details icon
             if (viewDetails != null)
                 viewDetails.setText(context.getResources().getString(R.string.duplicate_count, item.nbDuplicates + 1));
+
+            // Keep and delete buttons
+            if (keepButton != null) {
+                @ColorInt int targetColor = (item.keep == null || item.keep) ?
+                        ThemeHelper.getColor(context, R.color.secondary_light) :
+                        ContextCompat.getColor(context, R.color.medium_gray);
+                keepButton.setTextColor(targetColor);
+                Drawable[] drawables = keepButton.getCompoundDrawables();
+                if (drawables[0] != null) {
+                    drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
+                }
+            }
+            if (deleteButton != null) {
+                @ColorInt int targetColor = (item.keep == null || !item.keep) ?
+                        ThemeHelper.getColor(context, R.color.secondary_light) :
+                        ContextCompat.getColor(context, R.color.medium_gray);
+                deleteButton.setTextColor(targetColor);
+                Drawable[] drawables = deleteButton.getCompoundDrawables();
+                if (drawables[0] != null) {
+                    drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
+                }
+            }
         }
 
         public View getViewDetailsButton() {
             return viewDetails;
+        }
+
+        public View getKeepButton() {
+            return keepButton;
+        }
+
+        public View getDeleteButton() {
+            return deleteButton;
         }
 
         @Override

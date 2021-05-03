@@ -11,11 +11,17 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.annimon.stream.Objects
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
-import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil
+import com.mikepenz.fastadapter.diff.DiffCallback
+import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil.set
+import com.mikepenz.fastadapter.listeners.ClickEventHook
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
+import me.devsaki.hentoid.activities.bundles.DuplicateItemBundle
+import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateDetailsBinding
 import me.devsaki.hentoid.events.CommunicationEvent
@@ -46,6 +52,24 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
     // Vars
     private var enabled = true
 
+
+    val ITEM_DIFF_CALLBACK: DiffCallback<DuplicateItem> = object : DiffCallback<DuplicateItem> {
+        override fun areItemsTheSame(oldItem: DuplicateItem, newItem: DuplicateItem): Boolean {
+            return oldItem.identifier == newItem.identifier
+        }
+
+        override fun areContentsTheSame(oldItem: DuplicateItem, newItem: DuplicateItem): Boolean {
+            return Objects.equals(oldItem.keep, newItem.keep)
+        }
+
+        override fun getChangePayload(oldItem: DuplicateItem, oldItemPosition: Int, newItem: DuplicateItem, newItemPosition: Int): Any? {
+            val diffBundleBuilder = DuplicateItemBundle.Builder()
+            if (!Objects.equals(oldItem.keep, newItem.keep)) {
+                diffBundleBuilder.setKeep(newItem.keep)
+            }
+            return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -83,6 +107,32 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
         viewModel.selectedDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateEntry>? -> this.onDuplicatesChanged(l) })
+
+        // "Keep" button click listener
+        fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
+            override fun onClick(v: View, position: Int, fastAdapter: FastAdapter<DuplicateItem>, item: DuplicateItem) {
+                onBookChoice(item.content, false)
+            }
+
+            override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+                return if (viewHolder is DuplicateItem.ContentViewHolder) {
+                    viewHolder.keepButton
+                } else super.onBind(viewHolder)
+            }
+        })
+
+        // "Delete" button click listener
+        fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
+            override fun onClick(v: View, position: Int, fastAdapter: FastAdapter<DuplicateItem>, item: DuplicateItem) {
+                onBookChoice(item.content, true)
+            }
+
+            override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+                return if (viewHolder is DuplicateItem.ContentViewHolder) {
+                    viewHolder.deleteButton
+                } else super.onBind(viewHolder)
+            }
+        })
     }
 
     private fun addCustomBackControl() {
@@ -99,6 +149,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         Handler(Looper.getMainLooper()).postDelayed({ activity.get()?.goBackToMain() }, 100)
     }
 
+    private fun onBookChoice(item: Content?, choice: Boolean?) {
+        if (item != null)
+            viewModel.setBookChoice(item, choice)
+    }
+
     @Synchronized
     private fun onDuplicatesChanged(duplicates: List<DuplicateEntry>?) {
         if (null == duplicates) return
@@ -109,9 +164,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
 
         // Order by relevance desc and transforms to DuplicateItem
         val items = duplicates.sortedByDescending { it.calcTotalScore() }.map { DuplicateItem(it, DuplicateItem.ViewType.DETAILS) }.toMutableList()
+        /*
         // Add the reference item on top
         if (items.isNotEmpty()) items.add(0, DuplicateItem(duplicates[0].referenceContent, DuplicateItem.ViewType.DETAILS))
-        FastAdapterDiffUtil[itemAdapter] = items
+         */
+        set(itemAdapter, items, ITEM_DIFF_CALLBACK)
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

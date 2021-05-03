@@ -58,7 +58,21 @@ class DuplicateViewModel(application: Application, private val duplicatesDao: Du
     }
 
     fun setContent(content: Content) {
-        selectedDuplicates.postValue(allDuplicates.value?.filter { it.reference == content.id })
+        val selectedDupes = ArrayList(allDuplicates.value?.filter { it.referenceId == content.id })
+        // Add reference item on top
+        val refEntry = DuplicateEntry(content.id, content.size, content.id, 2f, 2f) // Artificially give it a huge score to bring it to the top
+        refEntry.referenceContent = content
+        refEntry.duplicateContent = content
+        selectedDupes.add(0, refEntry)
+        selectedDuplicates.postValue(selectedDupes)
+    }
+
+    fun setBookChoice(content: Content, choice: Boolean?) {
+        val selectedDupes = ArrayList(selectedDuplicates.value)
+        for (dupe in selectedDupes) {
+            if (dupe.duplicateId == content.id) dupe.keep = choice
+        }
+        selectedDuplicates.postValue(selectedDupes)
     }
 
     fun setFirstUse(value: Boolean) {

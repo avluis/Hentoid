@@ -24,15 +24,15 @@ class DuplicatesDAO(ctx: Context) {
         val entries = duplicatesDb.selectEntriesQ().find()
 
         // Get all contents in one go
-        val contentIds = entries.map { it.reference }
+        val contentIds = entries.map { it.referenceId }
         val contents = db.selectContentById(contentIds)
         if (contents != null) {
             val contentsMap = contents.groupBy { it.id }
 
             // Map them back to the corresponding entry
             for (entry in entries) {
-                entry.referenceContent = contentsMap[entry.reference]?.get(0)
-                entry.duplicateContent = contentsMap[entry.duplicate]?.get(0)
+                entry.referenceContent = contentsMap[entry.referenceId]?.get(0)
+                entry.duplicateContent = contentsMap[entry.duplicateId]?.get(0)
             }
         }
         return entries
@@ -52,7 +52,7 @@ class DuplicatesDAO(ctx: Context) {
     }
 
     private fun enrichWithContent(e: DuplicateEntry): DuplicateEntry {
-        val items: List<Content>? = db.selectContentById(mutableListOf(e.reference, e.duplicate))
+        val items: List<Content>? = db.selectContentById(mutableListOf(e.referenceId, e.duplicateId))
         if (items != null && items.size > 1) {
             e.referenceContent = items[0]
             e.duplicateContent = items[1]

@@ -6,13 +6,13 @@ import me.devsaki.hentoid.util.Helper
 
 @Entity
 data class DuplicateEntry(
-        val reference: Long,
+        val referenceId: Long,
         val referenceSize: Long,
-        var duplicate: Long = -1,
+        var duplicateId: Long = -1,
         val titleScore: Float = 0f,
         val coverScore: Float = 0f,
         val artistScore: Float = 0f,
-        @Id var id: Long = 0) {
+        @Id var id: Long = 0) { // ID is mandatory for ObjectBox to work
 
     @Transient
     private var totalScore = -1f
@@ -26,6 +26,9 @@ data class DuplicateEntry(
     @Transient
     var duplicateContent: Content? = null
 
+    @Transient
+    var keep: Boolean? = null
+
 
     fun calcTotalScore(): Float {
         if (totalScore > -1) return totalScore
@@ -38,6 +41,6 @@ data class DuplicateEntry(
     }
 
     fun hash64(): Long {
-        return Helper.hash64(("$reference.$duplicate").toByteArray())
+        return Helper.hash64(("$referenceId.$duplicateId").toByteArray())
     }
 }
