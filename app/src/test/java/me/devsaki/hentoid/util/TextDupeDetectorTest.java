@@ -77,9 +77,9 @@ Kimodebu Ossan no Ore ga Namaiki Ojou-sama o Saimin NTR shite mita
                 if (score > 0) {
                     double similarity1 = c.similarity(s1c, s2c);
                     double similarity2 = c.similarity(s1cp, s2cp);
-                    System.out.println(String.format("%s %s [%.2f / %.2f => %.2f] %s", (score > 0.1f) ? "" : "      ", s1c, similarity1, similarity2, score, s2c));
+                    System.out.printf("%s %s [%.2f / %.2f => %.2f] %s%n", (score > 0.1f) ? "" : "      ", s1c, similarity1, similarity2, score, s2c);
                     if (score > 0.1f)
-                        System.out.println(String.format("%s > %s", s1cp, s2cp));
+                        System.out.printf("%s > %s%n", s1cp, s2cp);
                 }
             }
         }
