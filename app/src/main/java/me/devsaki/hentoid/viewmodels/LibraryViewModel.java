@@ -201,6 +201,24 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
+     * Toggle the completed filter
+     */
+    public void toggleCompletedFilter() {
+        searchManager.setFilterBookCompleted(!searchManager.isFilterBookCompleted());
+        newSearch.setValue(true);
+        doSearchContent();
+    }
+
+    /**
+     * Toggle the completed filter
+     */
+    public void toggleNotCompletedFilter() {
+        searchManager.setFilterBookNotCompleted(!searchManager.isFilterBookNotCompleted());
+        newSearch.setValue(true);
+        doSearchContent();
+    }
+
+    /**
      * Toggle the favourite filter
      */
     public void toggleFavouriteFilter() {
@@ -253,6 +271,49 @@ public class LibraryViewModel extends AndroidViewModel {
     // =========================
     // ========= CONTENT ACTIONS
     // =========================
+
+
+    public void toggleContentCompleted(@NonNull final Content content, @NonNull final Runnable onSuccess) {
+        if (content.isBeingDeleted()) return;
+        compositeDisposable.add(
+                Single.fromCallable(() -> doToggleContentCompleted(content.getId()))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> onSuccess.run(),
+                                Timber::e
+                        )
+        );
+    }
+
+    /**
+     * Toggle the "favourite" state of the given content
+     *
+     * @param contentId ID of the content whose favourite state to toggle
+     * @return Resulting content
+     */
+    private Content doToggleContentCompleted(long contentId) {
+        Helper.assertNonUiThread();
+
+        // Check if given content still exists in DB
+        Content theContent = dao.selectContent(contentId);
+
+        if (theContent != null) {
+            theContent.setCompleted(!theContent.isCompleted());
+
+            // Persist in it JSON
+            if (!theContent.getJsonUri().isEmpty()) // Having an active Content without JSON file shouldn't be possible after the API29 migration
+                ContentHelper.updateContentJson(getApplication(), theContent);
+            else ContentHelper.createContentJson(getApplication(), theContent);
+
+            // Persist in it DB
+            dao.insertContent(theContent);
+
+            return theContent;
+        }
+
+        throw new InvalidParameterException("Invalid ContentId : " + contentId);
+    }
 
     /**
      * Toggle the "favourite" state of the given content
@@ -675,5 +736,15 @@ public class LibraryViewModel extends AndroidViewModel {
                     return;
                 }
             }
+    }
+
+
+
+
+    public void resetCompletedFilter() {
+        if(searchManager.isFilterBookCompleted())
+            toggleCompletedFilter();
+        else if (searchManager.isFilterBookNotCompleted())
+            toggleNotCompletedFilter();
     }
 }

@@ -18,6 +18,12 @@
         android:tooltipText="@string/menu_delete_single"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_completed"
+        android:icon="@drawable/ic_completed_single"
+        android:title="@string/menu_completed_single"
+        android:tooltipText="@string/menu_completed_single"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_archive"
         android:icon="@drawable/ic_archive"
         android:title="@string/menu_archive"

@@ -38,6 +38,7 @@
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
     <string name="menu_fav">Toggle favourite filter</string>
+    <string name="menu_comp">Toggle completed filter</string>
     <string name="menu_mark_fav">Toggle favourite</string>
     <string name="menu_group_new">New group</string>
     <string name="menu_edit_order">Edit order</string>
@@ -240,6 +241,9 @@
     <!-- Library fragment -->
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
+    <string name="ask_filter_completed">How would you like to filter completed books?</string>
+    <string name="filter_completed">Show completed only</string>
+    <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
@@ -485,4 +489,5 @@
 
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
+    <string name="menu_completed_single">Completed</string>
 </resources>

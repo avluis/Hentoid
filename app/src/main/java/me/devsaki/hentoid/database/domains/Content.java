@@ -94,6 +94,7 @@ public class Content implements Serializable {
     private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite;
+    private boolean completed;
     private long reads = 0;
     private long size = 0; // Yes, it _is_ redundant with the contained images' size. ObjectBox can't do thesum in a single Query, so here it is !
     private long lastReadDate;
@@ -690,6 +691,15 @@ public class Content implements Serializable {
 
     public boolean isFavourite() {
         return favourite;
+    }
+
+    public boolean isCompleted(){
+        return completed;
+    }
+
+    public Content setCompleted(boolean completed) {
+        this.completed = completed;
+        return this;
     }
 
     public Content setFavourite(boolean favourite) {
