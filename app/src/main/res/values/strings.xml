@@ -52,6 +52,7 @@
     <string name="menu_open_folder">Open containing folder</string>
     <string name="menu_redownload">Redownload</string>
     <string name="menu_redownload_scratch">Redownload from scratch</string>
+    <string name="menu_select_all">Select All</string>
     <string name="menu_share">Share</string>
     <string name="menu_share_help">Share book URL and title using another app</string>
     <string name="menu_archive">Archive</string>

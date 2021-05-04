@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -553,6 +554,10 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
                 askRedownloadSelectedItemsScratch();
                 keepToolbar = true;
                 break;
+            case R.id.action_selectAll:
+                selectAll();
+                keepToolbar = true;
+                break;
             case R.id.action_set_cover:
                 askSetCover();
                 break;
@@ -606,7 +611,13 @@ public class LibraryContentFragment extends Fragment implements ErrorsDialogFrag
         for(ContentItem item: selectedItems) {
             item.setSelected(false);
         }
+
     }
+
+    private void selectAll() {
+        selectExtension.select();
+    }
+
 
     /**
      * Callback for the "archive item" action button
