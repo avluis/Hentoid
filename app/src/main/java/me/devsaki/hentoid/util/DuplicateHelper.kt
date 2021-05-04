@@ -19,11 +19,41 @@ class DuplicateHelper {
 
     companion object {
         // Thresholds according to the "sensibility" setting
-        private val COVER_THRESHOLDS = doubleArrayOf(0.71, 0.75, 0.8) // @48-bit resolution, according to calibration tests
+        private val COVER_THRESHOLDS =
+            doubleArrayOf(0.71, 0.75, 0.8) // @48-bit resolution, according to calibration tests
         private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
         private const val COVER_WORK_RESOLUTION = 48
 
-        private val TITLE_CHAPTER_WORDS = listOf("chapter", "case", "after", "before", "final", "chap", "part", "update", "gaiden", "issue", "volume", "vol", "first", "second", "third", "fourth", "fifth", "1st", "2nd", "3rd", "4th", "5th", "zenpen", "全編", "chuuhen", "中編", "kouhen", "後編")
+        private val TITLE_CHAPTER_WORDS = listOf(
+            "chapter",
+            "case",
+            "after",
+            "before",
+            "final",
+            "chap",
+            "part",
+            "update",
+            "gaiden",
+            "issue",
+            "volume",
+            "vol",
+            "first",
+            "second",
+            "third",
+            "fourth",
+            "fifth",
+            "1st",
+            "2nd",
+            "3rd",
+            "4th",
+            "5th",
+            "zenpen",
+            "全編",
+            "chuuhen",
+            "中編",
+            "kouhen",
+            "後編"
+        )
 
 
         fun getHashEngine(): ImagePHash {
@@ -35,31 +65,39 @@ class DuplicateHelper {
         }
 
         fun indexCoversRx(
-                context: Context,
-                dao: CollectionDAO,
-                progress: Consumer<Float>): Disposable {
+            context: Context,
+            dao: CollectionDAO,
+            progress: Consumer<Float>
+        ): Disposable {
 
             val hash = getHashEngine()
             var index = 0
             val nbContent = dao.countContentWithUnhashedCovers()
 
             return dao.streamContentWithUnhashedCovers()
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.io())
-                    .map { content -> Pair(content, getCoverBitmapFromContent(context, content)) }
-                    .observeOn(Schedulers.computation())
-                    .map {
-                        val pHash = calcPhash(hash, it.second)
-                        it.second?.recycle()
-                        Pair(it.first, pHash)
-                    }
-                    .observeOn(Schedulers.io())
-                    .map { contentHash -> savePhash(context, dao, contentHash.first, contentHash.second) }
-                    .subscribeBy(
-                            onNext = { progress.accept(++index * 1f / nbContent) },
-                            onError = { t -> Timber.w(t) },
-                            onComplete = { progress.accept(1f) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .map { content -> Pair(content, getCoverBitmapFromContent(context, content)) }
+                .observeOn(Schedulers.computation())
+                .map {
+                    val pHash = calcPhash(hash, it.second)
+                    it.second?.recycle()
+                    Pair(it.first, pHash)
+                }
+                .observeOn(Schedulers.io())
+                .map { contentHash ->
+                    savePhash(
+                        context,
+                        dao,
+                        contentHash.first,
+                        contentHash.second
                     )
+                }
+                .subscribeBy(
+                    onNext = { progress.accept(++index * 1f / nbContent) },
+                    onError = { t -> Timber.w(t) },
+                    onComplete = { progress.accept(1f) }
+                )
 
         }
 
@@ -68,9 +106,13 @@ class DuplicateHelper {
 
             try {
                 FileHelper.getInputStream(context, Uri.parse(content.cover.fileUri))
-                        .use {
-                            return ImageHelper.decodeSampledBitmapFromStream(it, COVER_WORK_RESOLUTION, COVER_WORK_RESOLUTION)
-                        }
+                    .use {
+                        return ImageHelper.decodeSampledBitmapFromStream(
+                            it,
+                            COVER_WORK_RESOLUTION,
+                            COVER_WORK_RESOLUTION
+                        )
+                    }
             } catch (e: IOException) {
                 Timber.w(e) // Doesn't break the loop
                 return null
@@ -91,7 +133,10 @@ class DuplicateHelper {
                 if (content.storageUri.isNotEmpty()) {
                     val folder = FileHelper.getFolderFromTreeUriString(context, content.storageUri)
                     if (folder != null) {
-                        if (content.jsonUri.isNotEmpty()) ContentHelper.updateContentJson(context, content)
+                        if (content.jsonUri.isNotEmpty()) ContentHelper.updateContentJson(
+                            context,
+                            content
+                        )
                         else ContentHelper.createContentJson(context, content)
                     }
                 }
@@ -100,7 +145,10 @@ class DuplicateHelper {
             }
         }
 
-        fun containsSameLanguage(referenceCodes: List<String>?, candidateCodes: List<String>?): Boolean {
+        fun containsSameLanguage(
+            referenceCodes: List<String>?,
+            candidateCodes: List<String>?
+        ): Boolean {
             if (!referenceCodes.isNullOrEmpty() && !candidateCodes.isNullOrEmpty()) {
                 for (refCode in referenceCodes) {
                     if (candidateCodes.contains(refCode)) return true
@@ -111,9 +159,9 @@ class DuplicateHelper {
         }
 
         fun computeCoverScore(
-                referenceHash: Long,
-                candidateHash: Long,
-                sensitivity: Int
+            referenceHash: Long,
+            candidateHash: Long,
+            sensitivity: Int
         ): Float {
             // Don't analyze anything if covers have not been hashed (will be done on next iteration)
             if (0L == referenceHash || 0L == candidateHash) return -2f
@@ -125,21 +173,23 @@ class DuplicateHelper {
         }
 
         fun computeTitleScore(
-                textComparator: StringSimilarity,
-                referenceTitleCleanup: String,
-                referenceTitleNoDigits: String,
-                candidateTitleCleanup: String,
-                candidateTitleNoDigits: String,
-                sensitivity: Int
+            textComparator: StringSimilarity,
+            referenceTitleCleanup: String,
+            referenceTitleNoDigits: String,
+            candidateTitleCleanup: String,
+            candidateTitleNoDigits: String,
+            sensitivity: Int
         ): Float {
-            val similarity1 = textComparator.similarity(referenceTitleCleanup, candidateTitleCleanup).toFloat()
+            val similarity1 =
+                textComparator.similarity(referenceTitleCleanup, candidateTitleCleanup)
             // Perfect match
-            if (similarity1 > 0.99f) return similarity1
+            if (similarity1 > 0.99) return similarity1.toFloat()
             // Other cases
             return if (similarity1 > TEXT_THRESHOLDS[sensitivity]) {
-                val similarity2 = textComparator.similarity(referenceTitleNoDigits, candidateTitleNoDigits)
+                val similarity2 =
+                    textComparator.similarity(referenceTitleNoDigits, candidateTitleNoDigits)
                 if (similarity2 - similarity1 < 0.01) {
-                    similarity1
+                    similarity1.toFloat()
                 } else {
                     0f // Most probably a chapter variant -> set to 0%
                 }
@@ -155,8 +205,8 @@ class DuplicateHelper {
         }
 
         fun computeArtistScore(
-                referenceArtistsCleanup: List<String>?,
-                candidateArtistsCleanup: List<String>?
+            referenceArtistsCleanup: List<String>?,
+            candidateArtistsCleanup: List<String>?
         ): Float {
             if (!candidateArtistsCleanup.isNullOrEmpty() && !referenceArtistsCleanup.isNullOrEmpty()) {
                 for (candidateArtist in candidateArtistsCleanup) {
@@ -172,17 +222,23 @@ class DuplicateHelper {
     }
 
     class DuplicateCandidate(
-            content: Content,
-            useTitle: Boolean,
-            useArtist: Boolean,
-            useLanguage: Boolean) {
+        content: Content,
+        useTitle: Boolean,
+        useArtist: Boolean,
+        useLanguage: Boolean
+    ) {
         val id = content.id
         val coverHash = content.cover.imageHash
         val size = content.size
         val titleCleanup = if (useTitle) StringHelper.cleanup(content.title) else ""
         val titleNoDigits = if (useTitle) sanitizeTitle(titleCleanup) else ""
-        val artistsCleanup: List<String>? = if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map { it -> StringHelper.cleanup(it.name) } else Collections.emptyList()
-        val countryCodes = if (useLanguage) content.attributeMap[AttributeType.LANGUAGE]?.map { LanguageHelper.getCountryCodeFromLanguage(it.name) } else Collections.emptyList()
+        val artistsCleanup: List<String>? =
+            if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map { it ->
+                StringHelper.cleanup(it.name)
+            } else Collections.emptyList()
+        val countryCodes = if (useLanguage) content.attributeMap[AttributeType.LANGUAGE]?.map {
+            LanguageHelper.getCountryCodeFromLanguage(it.name)
+        } else Collections.emptyList()
     }
 
 }
