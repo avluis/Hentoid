@@ -376,10 +376,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         // Information micro menu
         binding.controlsOverlay.informationMicroMenu.setSubmarineItemClickListener((p, i) -> onInfoMicroMenuClick(p));
         binding.controlsOverlay.informationMicroMenu.addSubmarineItem(
-                new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book), null, getResources().getString(R.string.book_details))
+                new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_book)/*, null, getResources().getString(R.string.book_details)*/)
         );
         binding.controlsOverlay.informationMicroMenu.addSubmarineItem(
-                new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page), null, getResources().getString(R.string.page_details))
+                new SubmarineItem(ContextCompat.getDrawable(requireContext(), R.drawable.ic_page)/*, null, getResources().getString(R.string.page_details)*/)
         );
         binding.controlsOverlay.viewerInfoBtn.setOnClickListener(v -> {
             binding.controlsOverlay.favouriteMicroMenu.dips();
@@ -463,15 +463,15 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         favMenu.clearAllSubmarineItems();
         favMenu.addSubmarineItem(
                 new SubmarineItem(
-                        ContextCompat.getDrawable(requireContext(), isContentFavourite ? R.drawable.ic_book_fav : R.drawable.ic_book),
+                        ContextCompat.getDrawable(requireContext(), isContentFavourite ? R.drawable.ic_book_fav : R.drawable.ic_book)/*,
                         null,
-                        getResources().getString(R.string.book_favourite_toggle)
+                        getResources().getString(R.string.book_favourite_toggle)*/
                 )
         );
         favMenu.addSubmarineItem(
-                new SubmarineItem(ContextCompat.getDrawable(requireContext(), isPageFavourite ? R.drawable.ic_page_fav : R.drawable.ic_page),
+                new SubmarineItem(ContextCompat.getDrawable(requireContext(), isPageFavourite ? R.drawable.ic_page_fav : R.drawable.ic_page)/*,
                         null,
-                        getResources().getString(R.string.page_favourite_toggle)
+                        getResources().getString(R.string.page_favourite_toggle)*/
                 )
         );
         favMenu.floats();
@@ -1096,7 +1096,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void setSystemBarsVisible(boolean visible) {
         int uiOptions;
-        // TODO wait until androidx.core is out of alpha and use WindowCompat (see https://stackoverflow.com/questions/62643517/immersive-fullscreen-on-android-11)
+        // TODO wait until androidx.core 1.5+ is out of alpha and use WindowCompat (see https://stackoverflow.com/questions/62643517/immersive-fullscreen-on-android-11)
         if (visible) {
             uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
