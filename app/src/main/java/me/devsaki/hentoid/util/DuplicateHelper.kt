@@ -20,8 +20,8 @@ class DuplicateHelper {
     companion object {
         // Thresholds according to the "sensibility" setting
         private val COVER_THRESHOLDS =
-            doubleArrayOf(0.71, 0.75, 0.8) // @48-bit resolution, according to calibration tests
-        private val TEXT_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
+            doubleArrayOf(0.8, 0.85, 0.9) // @48-bit resolution, according to calibration tests
+        private val TEXT_THRESHOLDS = doubleArrayOf(0.78, 0.8, 0.85)
         private const val COVER_WORK_RESOLUTION = 48
 
         private val TITLE_CHAPTER_WORDS = listOf(
