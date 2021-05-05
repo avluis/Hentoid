@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.web;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

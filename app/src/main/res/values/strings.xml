@@ -16,6 +16,8 @@
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
     <string name="resume">Resume</string>
+    <string name="cancel">Cancel</string>
+    <string name="cancel_all">Cancel all</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -71,8 +73,6 @@
     <!-- Queue -->
     <string name="queue_queue_tab">In progress</string>
     <string name="queue_errors_tab">Errors</string>
-    <string name="cancel">Cancel</string>
-    <string name="cancel_all">Cancel all</string>
     <plurals name="ask_cancel_multiple">
         <item quantity="one">Are you sure you wish to cancel the selected item ?</item>
         <item quantity="other">Are you sure you wish to cancel the selected items ?</item>
@@ -533,6 +533,14 @@
     <string name="duplicate_empty_no_result">No duplicates found</string>
     <string name="duplicate_keep">Keep</string>
     <string name="duplicate_delete">Delete</string>
+
+    <!-- Duplicate dialog -->
+    <string name="duplicate_alert">Duplicate alert!</string>
+    <string name="duplicate_alert_subtitle">The book you\'re about to download may be a duplicate of a book you already own.</string>
+    <string name="duplicate_alert_in_library">In library</string>
+    <string name="duplicate_alert_in_queue">In queue</string>
+    <string name="duplicate_alert_remember">Remember and don\'t ask me again</string>
+    <string name="duplicate_alert_similarity">Similarity : %d%%</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

@@ -51,6 +51,8 @@ public interface CollectionDAO {
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl);
 
+    List<Content> searchTitlesWith(@NonNull final String word, int[] contentStatusCodes);
+
     long insertContent(@NonNull final Content content);
 
     void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo);

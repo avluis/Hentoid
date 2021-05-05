@@ -11,11 +11,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
@@ -939,6 +941,7 @@ public final class ContentHelper {
         }
     }
 
+    // TODO doc
     public static String formatTags(@NonNull final Content content) {
         List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes == null) return "";
@@ -951,6 +954,23 @@ public final class ContentHelper {
             allTags.sort(null);
         }
         return android.text.TextUtils.join(", ", allTags);
+    }
+
+    @Nullable
+    public static Content findDuplicate(@NonNull final CollectionDAO dao, @NonNull final Content content) {
+        // First find good rough candidates by searching for the longest word in the title
+        String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
+        Optional<String> longestWord = Stream.of(words).sorted((o1, o2) -> Integer.compare(o1.length(), o2.length())).findLast();
+        if (longestWord.isEmpty()) return null;
+
+        int[] contentStatuses = ArrayUtils.addAll(libraryStatus, queueTabStatus);
+        List<Content> roughCandidates = dao.searchTitlesWith(longestWord.get(), contentStatuses);
+        if (roughCandidates.isEmpty()) return null;
+
+        // Refine by running the actual duplicate detection algorithm against the rough candidates
+        // TODO
+
+        return roughCandidates.get(0);
     }
 
     /**

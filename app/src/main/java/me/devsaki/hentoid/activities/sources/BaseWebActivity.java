@@ -107,7 +107,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
-import me.devsaki.hentoid.fragments.BookmarksDialogFragment;
+import me.devsaki.hentoid.fragments.web.BookmarksDialogFragment;
+import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
@@ -144,7 +145,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-public abstract class BaseWebActivity extends BaseActivity implements WebContentListener, BookmarksDialogFragment.Parent {
+public abstract class BaseWebActivity extends BaseActivity implements WebContentListener, BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {
 
     @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.VIEW_QUEUE, ActionMode.READ})
     @Retention(RetentionPolicy.SOURCE)
@@ -159,7 +160,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         int READ = 3;
     }
 
-    @IntDef({ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE})
+    @IntDef({ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE, ContentStatus.HAS_DUPLICATE})
     @Retention(RetentionPolicy.SOURCE)
     private @interface ContentStatus {
         // Content is unknown (i.e. ready to be downloaded)
@@ -168,6 +169,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         int IN_COLLECTION = 1;
         // Content is already queued
         int IN_QUEUE = 2;
+        // Content has a potential duplicate
+        int HAS_DUPLICATE = 3;
     }
 
     @IntDef({SeekMode.PAGE, SeekMode.GALLERY})
@@ -866,6 +869,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
 
         if (!isInCollection && !isInQueue) {
+            Content duplicate = null;
+            if (contentDB != null)
+                duplicate = ContentHelper.findDuplicate(objectBoxDAO, contentDB);
+
+            if (duplicate != null) {
+                DuplicateDialogFragment.invoke(this, duplicate.getId());
+                return ContentStatus.HAS_DUPLICATE;
+            }
+
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
                 content.setStatus(StatusContent.SAVED);
                 ContentHelper.addContent(this, objectBoxDAO, content);
@@ -874,10 +886,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             }
             if (!quickDownload) changeActionMode(ActionMode.DOWNLOAD);
         } else {
-            /*
-            content.setId(contentDB.getId());
-            content.setStatus(contentDB.getStatus());
-             */
             content = contentDB;
         }
         currentContent = content;
@@ -1019,6 +1027,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 if (url.contains(s)) return true;
             }
         return false;
+    }
+
+    @Override
+    public void onDownloadDuplicate() {
+        // TODO
     }
 
 

@@ -284,6 +284,11 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectContentBySourceAndUrl(site, contentUrl, Content.getNeutralCoverUrlRoot(coverUrl, site));
     }
 
+    @Override
+    public List<Content> searchTitlesWith(@NonNull String word, int[] contentStatusCodes) {
+        return db.selectContentWithTitle(word, contentStatusCodes);
+    }
+
     @Nullable
     public Content selectContentByStorageUri(@NonNull final String storageUri, boolean onlyFlagged) {
         // Select only the "document" part of the URI, as the "tree" part can vary

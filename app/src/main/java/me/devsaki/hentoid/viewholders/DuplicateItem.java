@@ -192,7 +192,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             tvTitle = requireViewById(itemView, R.id.tvTitle);
             ivCover = requireViewById(itemView, R.id.ivCover);
             ivFlag = requireViewById(itemView, R.id.ivFlag);
-            ivSite = requireViewById(itemView, R.id.queue_site_button);
+            ivSite = requireViewById(itemView, R.id.ivSite);
             tvArtist = itemView.findViewById(R.id.tvArtist);
             tvPages = itemView.findViewById(R.id.tvPages);
             ivFavourite = itemView.findViewById(R.id.ivFavourite);

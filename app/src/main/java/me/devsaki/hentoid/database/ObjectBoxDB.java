@@ -964,6 +964,13 @@ public class ObjectBoxDB {
         return result;
     }
 
+    List<Content> selectContentWithTitle(@NonNull String word, int[] contentStatusCodes) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.contains(Content_.title, word);
+        query.in(Content_.status, contentStatusCodes);
+        return query.build().find();
+    }
+
     void updateImageFileStatusParamsMimeTypeUriSize(@NonNull ImageFile image) {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
