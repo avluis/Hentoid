@@ -104,10 +104,16 @@ public class DuplicateDetectorWorker extends BaseWorker {
         // Run cover indexing in the background
         indexDisposable = DuplicateHelper.Companion.indexCoversRx(getApplicationContext(), dao, this::notifyIndexProgress);
 
-        List<DuplicateHelper.DuplicateCandidate> candidates = new ArrayList<>();
-        dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true,
-                content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, inputData.getUseTitle(), inputData.getUseArtist(), inputData.getUseSameLanguage())));
+        // Initialize duplicate detection
+        detectDuplicates(inputData.getUseTitle(), inputData.getUseCover(), inputData.getUseArtist(), inputData.getUseSameLanguage(), inputData.getSensitivity());
+    }
 
+    private void detectDuplicates(
+            boolean useTitle,
+            boolean useCover,
+            boolean useArtist,
+            boolean useSameLanguage,
+            int sensitivity) {
         textComparator = new Cosine();
 
         // Mark process as incomplete until all combinations are searched
@@ -130,7 +136,13 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
         boolean isReRun = false;
         do {
-            logs.add(new LogHelper.LogEntry("Loop started"));
+            logs.add(new LogHelper.LogEntry("Preparation started"));
+            // Pre-compute all book entries as DuplicateCandidates
+            List<DuplicateHelper.DuplicateCandidate> candidates = new ArrayList<>();
+            dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true,
+                    content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useSameLanguage)));
+
+            logs.add(new LogHelper.LogEntry("Detection started"));
             processAll(
                     duplicatesDAO,
                     candidates,
@@ -139,13 +151,13 @@ public class DuplicateDetectorWorker extends BaseWorker {
                     reverseMatchedIds,
                     startIndex,
                     isReRun,
-                    inputData.getUseTitle(),
-                    inputData.getUseCover(),
-                    inputData.getUseArtist(),
-                    inputData.getUseSameLanguage(),
-                    inputData.getSensitivity());
+                    useTitle,
+                    useCover,
+                    useArtist,
+                    useSameLanguage,
+                    sensitivity);
             Timber.d(" >> PROCESS End reached");
-            logs.add(new LogHelper.LogEntry("Loop End reached"));
+            logs.add(new LogHelper.LogEntry("Setection End"));
             if (isStopped()) break;
             if (!ignoredIds.isEmpty()) {
                 try {
