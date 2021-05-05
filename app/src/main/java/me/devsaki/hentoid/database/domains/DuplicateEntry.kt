@@ -6,13 +6,14 @@ import me.devsaki.hentoid.util.Helper
 
 @Entity
 data class DuplicateEntry(
-        val referenceId: Long,
-        val referenceSize: Long,
-        var duplicateId: Long = -1,
-        val titleScore: Float = 0f,
-        val coverScore: Float = 0f,
-        val artistScore: Float = 0f,
-        @Id var id: Long = 0) { // ID is mandatory for ObjectBox to work
+    val referenceId: Long,
+    val referenceSize: Long,
+    var duplicateId: Long = -1,
+    val titleScore: Float = 0f,
+    val coverScore: Float = 0f,
+    val artistScore: Float = 0f,
+    @Id var id: Long = 0
+) { // ID is mandatory for ObjectBox to work
 
     @Transient
     private var totalScore = -1f
@@ -31,13 +32,13 @@ data class DuplicateEntry(
 
 
     fun calcTotalScore(): Float {
+        // Try to fetch pre-calculated score, if present
         if (totalScore > -1) return totalScore
         // Calculate
         val operands = ArrayList<android.util.Pair<Float, Float>>()
         if (titleScore > -1) operands.add(android.util.Pair<Float, Float>(titleScore, 1f))
         if (coverScore > -1) operands.add(android.util.Pair<Float, Float>(coverScore, 1f))
-        if (artistScore > -1) operands.add(android.util.Pair<Float, Float>(artistScore, 0.5f))
-        return Helper.weigthedAverage(operands)
+        return Helper.weigthedAverage(operands) * (if (artistScore > -1) artistScore else 1f)
     }
 
     fun hash64(): Long {
