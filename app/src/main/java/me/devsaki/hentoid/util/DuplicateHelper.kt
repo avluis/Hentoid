@@ -230,7 +230,7 @@ class DuplicateHelper {
         val id = content.id
         val coverHash = content.cover.imageHash
         val size = content.size
-        val titleCleanup = if (useTitle) StringHelper.cleanup(content.title) else ""
+        val titleCleanup = (if (useTitle) StringHelper.cleanup(content.title) else "")!!
         val titleNoDigits = if (useTitle) sanitizeTitle(titleCleanup) else ""
         val artistsCleanup: List<String>? =
             if (useArtist) content.attributeMap[AttributeType.ARTIST]?.map { it ->
