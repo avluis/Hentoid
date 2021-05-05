@@ -560,6 +560,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 long pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), coverBitmap);
                 if (coverBitmap != null) coverBitmap.recycle();
                 content.getCover().setImageHash(pHash);
+                dao.insertImageFile(content.getCover());
 
                 // Mark content as downloaded
                 if (0 == content.getDownloadDate())
