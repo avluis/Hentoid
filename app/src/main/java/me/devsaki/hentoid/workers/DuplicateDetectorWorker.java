@@ -122,7 +122,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
         int startIndex = Preferences.getDuplicateLastIndex() + 1;
         if (0 == startIndex) duplicatesDAO.clearEntries();
         else {
-            // TODO populate matchedIds and reverseMatchedIds using the duplicate database
+            // Pre-populate matchedIds and reverseMatchedIds using existing duplicates
+            List<DuplicateEntry> entries = duplicatesDAO.getEntries();
+            for (DuplicateEntry entry : entries)
+                processEntry(entry.getReferenceId(), entry.getDuplicateId(), matchedIds, reverseMatchedIds);
         }
 
         boolean isReRun = false;
@@ -192,37 +195,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
                     continue;
 
                 DuplicateEntry entry = processContent(reference, candidate, ignoredIds, useTitle, useCover, useSameArtist, useSameLanguage, sensitivity);
-                if (entry != null) {
-                    // Check if matched IDs don't already contain the reference as a transitive link
-                    // TODO doc
-                    boolean transitiveMatchFound = false;
-                    List<Long> reverseMatchesC = reverseMatchedIds.get(candidate.getId());
-                    if (reverseMatchesC != null && !reverseMatchesC.isEmpty()) {
-                        List<Long> reverseMatchesRef = reverseMatchedIds.get(reference.getId());
-                        if (reverseMatchesRef != null && !reverseMatchesRef.isEmpty()) {
-                            for (long lc : reverseMatchesC)
-                                for (long lr : reverseMatchesRef)
-                                    if (lc == lr) {
-                                        transitiveMatchFound = true;
-                                        break;
-                                    }
-                        }
-                    }
-                    // Record the entry
-                    if (!transitiveMatchFound) {
-                        List<Long> matches = matchedIds.get(reference.getId());
-                        if (null == matches) matches = new ArrayList<>();
-                        matches.add(candidate.getId());
-                        matchedIds.put(reference.getId(), matches);
-
-                        List<Long> reverseMatches = reverseMatchedIds.get(candidate.getId());
-                        if (null == reverseMatches) reverseMatches = new ArrayList<>();
-                        reverseMatches.add(reference.getId());
-                        reverseMatchedIds.put(candidate.getId(), reverseMatches);
-
-                        tempResults.add(entry);
-                    }
-                }
+                if (entry != null && processEntry(entry.getReferenceId(), entry.getDuplicateId(), matchedIds, reverseMatchedIds))
+                    tempResults.add(entry);
             }
 
             // Save results for this reference
@@ -293,6 +267,45 @@ public class DuplicateDetectorWorker extends BaseWorker {
         } else {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, progressPc, 0, 10000));
         }
+    }
+
+    private boolean processEntry(
+            long referenceId,
+            long candidateId,
+            Map<Long, List<Long>> matchedIds,
+            Map<Long, List<Long>> reverseMatchedIds
+    ) {
+        // Check if matched IDs don't already contain the reference as a transitive link
+        // TODO doc
+        boolean transitiveMatchFound = false;
+        List<Long> reverseMatchesC = reverseMatchedIds.get(candidateId);
+        if (reverseMatchesC != null && !reverseMatchesC.isEmpty()) {
+            List<Long> reverseMatchesRef = reverseMatchedIds.get(referenceId);
+            if (reverseMatchesRef != null && !reverseMatchesRef.isEmpty()) {
+                for (long lc : reverseMatchesC) {
+                    for (long lr : reverseMatchesRef)
+                        if (lc == lr) {
+                            transitiveMatchFound = true;
+                            break;
+                        }
+                    if (transitiveMatchFound) break;
+                }
+            }
+        }
+        // Record the entry
+        if (!transitiveMatchFound) {
+            List<Long> matches = matchedIds.get(referenceId);
+            if (null == matches) matches = new ArrayList<>();
+            matches.add(candidateId);
+            matchedIds.put(referenceId, matches);
+
+            List<Long> reverseMatches = reverseMatchedIds.get(candidateId);
+            if (null == reverseMatches) reverseMatches = new ArrayList<>();
+            reverseMatches.add(referenceId);
+            reverseMatchedIds.put(candidateId, reverseMatches);
+            return true;
+        }
+        return false;
     }
 
     private void notifyProcessProgress(Float progress) {
