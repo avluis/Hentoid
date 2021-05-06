@@ -500,7 +500,7 @@ public class LibraryActivity extends BaseActivity {
         toolbar.setOnMenuItemClickListener(toolbarOnItemClicked);
         selectionToolbar.setOnMenuItemClickListener(selectionToolbarOnItemClicked);
         selectionToolbar.setNavigationOnClickListener(v -> {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);
         });
     }
@@ -938,12 +938,12 @@ public class LibraryActivity extends BaseActivity {
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             deleteItems(contents, groups, onSuccess);
                         })
                 .setNegativeButton(R.string.no,
-                        (dialog, which) -> selectExtension.deselect())
-                .setOnCancelListener(dialog -> selectExtension.deselect())
+                        (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
+                .setOnCancelListener(dialog -> selectExtension.deselect(selectExtension.getSelections()))
                 .create().show();
     }
 
@@ -1017,7 +1017,7 @@ public class LibraryActivity extends BaseActivity {
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             ArchiveNotificationChannel.init(this);
                             archiveNotificationManager = new NotificationManager(this, R.id.archive_processing);
                             archiveNotificationManager.cancel();
@@ -1027,7 +1027,7 @@ public class LibraryActivity extends BaseActivity {
                             viewModel.archiveContents(items, this::onContentArchiveProgress, this::onContentArchiveSuccess, this::onContentArchiveError);
                         })
                 .setNegativeButton(R.string.no,
-                        (dialog, which) -> selectExtension.deselect())
+                        (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
                 .create().show();
     }
 
