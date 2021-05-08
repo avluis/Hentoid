@@ -386,7 +386,7 @@ public class ObjectBoxDB {
         if (attrs.isEmpty()) return new long[0];
 
         if (attrs.get(0).isExcluded()) {
-            long[] filteredBooks = selectFilteredContent(attrs, false);
+            long[] filteredBooks = selectFilteredContent(attrs, false, false, false);
 
             // Find all content positively matching the given attributes
             // TODO... but the attrs are already negative ^^"
