@@ -174,7 +174,6 @@ public class AppStartup {
             StartupNotificationChannel.init(context);
             UpdateNotificationChannel.init(context);
             DownloadNotificationChannel.init(context);
-
             // Clears all previous notifications
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (manager != null) manager.cancelAll();
