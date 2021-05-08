@@ -883,7 +883,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (content.getUrl().isEmpty()) return ContentStatus.UNKNOWN;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
-        String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? content.getCoverImageUrl() : "";
+        String searchUrl = ""; //getStartSite().hasCoverBasedPageUpdates() ? content.getCoverImageUrl() : "";
         Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), searchUrl);
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
@@ -896,9 +896,14 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             try {
                 List<Pair<String, String>> requestHeadersList = new ArrayList<>();
                 Map<String, String> downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
-                String cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                if (cookieStr != null && !cookieStr.isEmpty())
-                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+
+                String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                if (value != null)
+                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, value));
+
+                value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                if (value != null)
+                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, value));
 
                 Response onlineCover = HttpHelper.getOnlineResource(
                         content.getCoverImageUrl(),
@@ -936,7 +941,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
         currentContent = content;
 
-        if (isInCollection) return ContentStatus.IN_COLLECTION;
+        if (isInCollection) {
+            // TODO rethink the "download plus" feature for potential duplicates
+            return ContentStatus.IN_COLLECTION;
+        }
         if (isInQueue) return ContentStatus.IN_QUEUE;
         if (isDuplicate) return ContentStatus.HAS_DUPLICATE;
         return ContentStatus.UNKNOWN;
@@ -988,17 +996,17 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         runOnUiThread(() -> ToastHelper.toast(R.string.web_unparsable));
     }
 
-    private void searchForMoreImages(@NonNull final Content storedContent) {
-        disposable = Single.fromCallable(() -> doSearchForMoreImages(storedContent))
+    private void searchForExtraImages(@NonNull final Content storedContent) {
+        disposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        l -> onSearchForMoreImagesSuccess(storedContent, l),
+                        l -> onSearchForExtraImagesSuccess(storedContent, l),
                         Timber::e
                 );
     }
 
-    private List<ImageFile> doSearchForMoreImages(@NonNull final Content storedContent) {
+    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent) {
         List<ImageFile> result = Collections.emptyList();
 
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(storedContent);
@@ -1023,7 +1031,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         return result;
     }
 
-    private void onSearchForMoreImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
+    private void onSearchForExtraImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
         disposable.dispose();
         if (additionalImages.isEmpty()) return;
 
@@ -1035,7 +1043,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             }
 
             // Append additional pages to the current book's list of pages
-            // and remove duplicates
+            // and remove duplicates (URL-based)
             List<ImageFile> updatedImgs = new ArrayList<>();
             Set<String> existingUrls = new HashSet<>();
             Set<String> storedUrls = new HashSet<>();
@@ -1054,6 +1062,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             }
 
             // Display the "download more" button
+            // TODO only do that for existing books; duplicate books should have another treatment
             List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();
             if (!additionalNonDownloadedImages.isEmpty()) {
                 changeActionMode(ActionMode.DOWNLOAD_PLUS);
