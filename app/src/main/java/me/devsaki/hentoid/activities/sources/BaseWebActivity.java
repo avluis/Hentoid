@@ -988,26 +988,6 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         runOnUiThread(() -> ToastHelper.toast(R.string.web_unparsable));
     }
 
-    /*
-        private void searchForDuplicates(@NonNull final CollectionDAO dao, @NonNull final Content storedContent) {
-            disposable = Single.fromCallable(() -> ContentHelper.findDuplicate(dao, storedContent))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .filter(result -> result != null)
-                    .subscribe(
-                            pair -> onSearchForDuplicatesSuccess(pair.left, pair.right),
-                            Timber::e
-                    );
-        }
-
-        private void onSearchForDuplicatesSuccess(@NonNull final Content duplicateContent, float similarityScore) {
-            disposable.dispose();
-            duplicateId = duplicateContent.getId();
-            duplicateSimilarity = similarityScore;
-            // TODO rethink the "download plus" feature for potential duplicates
-            changeActionMode(ActionMode.DUPLICATE_ALERT);
-        }
-    */
     private void searchForMoreImages(@NonNull final Content storedContent) {
         disposable = Single.fromCallable(() -> doSearchForMoreImages(storedContent))
                 .subscribeOn(Schedulers.io())
