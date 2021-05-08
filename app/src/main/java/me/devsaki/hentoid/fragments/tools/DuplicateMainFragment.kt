@@ -58,10 +58,15 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(requireActivity() is DuplicateDetectorActivity) { "Parent activity has to be a DuplicateDetectorActivity" }
-        activity = WeakReference<DuplicateDetectorActivity>(requireActivity() as DuplicateDetectorActivity)
+        activity =
+            WeakReference<DuplicateDetectorActivity>(requireActivity() as DuplicateDetectorActivity)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentDuplicateMainBinding.inflate(inflater, container, false)
         addCustomBackControl()
         activity.get()?.initFragmentToolbars(this::toolbarOnItemClicked)
@@ -85,13 +90,15 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        binding.list.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.list.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         FastScrollerBuilder(binding.list).build()
         binding.list.adapter = fastAdapter
 
         // Item click listener
         // TODO it's actually on the "X duplicates" button...
-        fastAdapter.onClickListener = { _: View?, _: IAdapter<DuplicateItem>, i: DuplicateItem, _: Int -> onItemClick(i) }
+        fastAdapter.onClickListener =
+            { _: View?, _: IAdapter<DuplicateItem>, i: DuplicateItem, _: Int -> onItemClick(i) }
 
         binding.controls.scanFab.setOnClickListener {
             this.onScanClick()
@@ -99,6 +106,9 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.stopFab.setOnClickListener {
             this.onStopClick()
         }
+
+        binding.controls.useTitle.setOnCheckedChangeListener { _, _ -> onMainCriteriaChanged() }
+        binding.controls.useCover.setOnCheckedChangeListener { _, _ -> onMainCriteriaChanged() }
 
         binding.controls.useTitle.isChecked = Preferences.isDuplicateUseTitle()
         binding.controls.useCover.isChecked = Preferences.isDuplicateUseCover()
@@ -148,7 +158,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                 binding.controls.scanFab.visibility = View.INVISIBLE
                 binding.controls.stopFab.visibility = View.VISIBLE
                 // TODO simplify that
-                val coverControlsVisibility = if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
+                val coverControlsVisibility =
+                    if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
                 binding.controls.indexPicturesTxt.visibility = coverControlsVisibility
                 binding.controls.indexPicturesPb.visibility = coverControlsVisibility
                 binding.controls.detectBooksTxt.visibility = View.VISIBLE
@@ -166,7 +177,6 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     }
 
     private fun onScanClick() {
-        // TODO grey everything until scan is done
         Preferences.setDuplicateUseTitle(binding.controls.useTitle.isChecked)
         Preferences.setDuplicateUseCover(binding.controls.useCover.isChecked)
         Preferences.setDuplicateUseArtist(binding.controls.useArtist.isChecked)
@@ -177,18 +187,26 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         viewModel.setFirstUse(false)
         viewModel.scanForDuplicates(
-                binding.controls.useTitle.isChecked,
-                binding.controls.useCover.isChecked,
-                binding.controls.useArtist.isChecked,
-                binding.controls.useSameLanguage.isChecked,
-                binding.controls.useSensitivity.selectedIndex
+            binding.controls.useTitle.isChecked,
+            binding.controls.useCover.isChecked,
+            binding.controls.useArtist.isChecked,
+            binding.controls.useSameLanguage.isChecked,
+            binding.controls.useSensitivity.selectedIndex
         )
     }
 
     private fun activateScanUi() {
         binding.controls.scanFab.visibility = View.INVISIBLE
         binding.controls.stopFab.visibility = View.VISIBLE
-        val coverControlsVisibility = if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
+
+        binding.controls.useTitle.isEnabled = false
+        binding.controls.useCover.isEnabled = false
+        binding.controls.useArtist.isEnabled = false
+        binding.controls.useSameLanguage.isEnabled = false
+        binding.controls.useSensitivity.isEnabled = false
+
+        val coverControlsVisibility =
+            if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
         binding.controls.indexPicturesTxt.visibility = coverControlsVisibility
         binding.controls.indexPicturesPb.progress = 0
         binding.controls.indexPicturesPb.visibility = coverControlsVisibility
@@ -202,14 +220,27 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     private fun disableScanUi() {
         binding.controls.scanFab.visibility = View.VISIBLE
         binding.controls.stopFab.visibility = View.INVISIBLE
+
+        binding.controls.useTitle.isEnabled = true
+        binding.controls.useCover.isEnabled = true
+        binding.controls.useArtist.isEnabled = true
+        binding.controls.useSameLanguage.isEnabled = true
+        binding.controls.useSensitivity.isEnabled = true
+
         binding.controls.indexPicturesTxt.visibility = View.GONE
         binding.controls.indexPicturesPb.visibility = View.GONE
         binding.controls.detectBooksTxt.visibility = View.GONE
         binding.controls.detectBooksPb.visibility = View.GONE
     }
 
+    private fun onMainCriteriaChanged() {
+        binding.controls.scanFab.isEnabled =
+            (binding.controls.useTitle.isChecked || binding.controls.useCover.isChecked)
+    }
+
     private fun onStopClick() {
-        WorkManager.getInstance(requireContext()).cancelUniqueWork(R.id.duplicate_detector_service.toString())
+        WorkManager.getInstance(requireContext())
+            .cancelUniqueWork(R.id.duplicate_detector_service.toString())
         binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
     }
 
@@ -239,7 +270,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         // Group by reference book and count duplicates
         val entries: MutableList<DuplicateEntry> = ArrayList()
-        val map = duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumBy { 1 } }.toMap()
+        val map =
+            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumBy { 1 } }.toMap()
         for (mapEntry in map) {
             if (mapEntry.key != null) {
                 val entry = DuplicateEntry(mapEntry.key!!.id, mapEntry.key!!.size)
@@ -255,13 +287,17 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
-        val progressBar: ProgressBar = if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
+        val progressBar: ProgressBar =
+            if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
         progressBar.max = event.elementsTotal
         progressBar.progress = event.elementsOK + event.elementsKO
         if (ProcessEvent.EventType.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
             setSettingsPanelVisibility(false)
             disableScanUi()
-        } else if (binding.controls.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(requireContext())) activateScanUi()
+        } else if (binding.controls.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
+                requireContext()
+            )
+        ) activateScanUi()
     }
 
     /**

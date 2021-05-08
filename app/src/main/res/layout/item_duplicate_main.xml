@@ -105,7 +105,7 @@
             tools:text="@string/book_pages_queue" />
 
         <ImageView
-            android:id="@+id/queue_site_button"
+            android:id="@+id/ivSite"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="@color/transparent"
@@ -127,7 +127,7 @@
             android:src="@drawable/ic_fav_empty"
             android:tooltipText="@string/book_favourite_success"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"
-            app:layout_constraintEnd_toStartOf="@id/queue_site_button"
+            app:layout_constraintEnd_toStartOf="@id/ivSite"
             app:layout_constraintVertical_bias="1.0"
             app:tint="@color/medium_gray"
             tools:ignore="ContentDescription" />
