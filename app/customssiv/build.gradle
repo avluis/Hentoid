@@ -6,7 +6,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
-    buildToolsVersion "29.0.3"
 
     defaultConfig {
         minSdkVersion 21
