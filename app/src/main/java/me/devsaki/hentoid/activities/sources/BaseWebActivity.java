@@ -726,7 +726,9 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         else if (ActionMode.DOWNLOAD_PLUS == actionButtonMode) processDownload(false, true);
         else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
         else if (ActionMode.DUPLICATE_ALERT == actionButtonMode)
-            DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity);
+            if (Preferences.getDownloadDuplicateMode() == Preferences.Constant.DOWNLOAD_DUPLICATE_ASK)
+                DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity);
+            else processDownload(false, false);
         else if (ActionMode.READ == actionButtonMode && currentContent != null) {
             String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
             currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
@@ -968,8 +970,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 changeActionMode(ActionMode.VIEW_QUEUE);
                 break;
             case ContentStatus.HAS_DUPLICATE:
-                if (quickDownload)
-                    DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity);
+                if (quickDownload) {
+                    if (Preferences.getDownloadDuplicateMode() == Preferences.Constant.DOWNLOAD_DUPLICATE_ASK)
+                        DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity);
+                    else processDownload(true, false);
+                }
                 changeActionMode(ActionMode.DUPLICATE_ALERT);
                 break;
             default:

@@ -32,6 +32,7 @@ import me.devsaki.hentoid.databinding.DialogWebDuplicateBinding;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 
 import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
@@ -177,7 +178,11 @@ public final class DuplicateDialogFragment extends DialogFragment {
     }
 
     private void submit(boolean download) {
-        if (download) parent.onDownloadDuplicate();
+        if (download) {
+            if (binding.chAlwaysDownload.isChecked())
+                Preferences.setDownloadDuplicateMode(Preferences.Constant.DOWNLOAD_DUPLICATE_DOWNLOAD);
+            parent.onDownloadDuplicate();
+        }
         dismiss();
     }
 

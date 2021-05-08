@@ -90,6 +90,14 @@
                 android:summaryOn="@string/pref_browser_augmented_on"
                 android:title="@string/pref_browser_augmented_title"
                 app:iconSpaceReserved="false" />
+            <ListPreference
+                android:defaultValue="@string/pref_browser_duplicate_default"
+                android:entries="@array/pref_browser_duplicate_entries"
+                android:entryValues="@array/pref_browser_duplicate_values"
+                android:key="browser_duplicate"
+                android:summary="@string/pref_attributes_list_order_summary"
+                android:title="@string/pref_browser_duplicate_title"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_theme"

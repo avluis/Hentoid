@@ -43,6 +43,8 @@
     <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
     <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
     <string name="pref_browser_augmented_default" translatable="false">true</string>
+    <string name="pref_browser_duplicate_title">Action on duplicate</string>
+    <string name="pref_browser_duplicate_default" translatable="false">0</string>
 
     <string name="pref_cat_theme">App theme</string>
     <string name="pref_color_theme_title">Color theme</string>

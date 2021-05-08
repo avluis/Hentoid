@@ -539,7 +539,7 @@
     <string name="duplicate_alert_subtitle">The book you\'re about to download may be a duplicate of a book you already own.</string>
     <string name="duplicate_alert_in_library">In library</string>
     <string name="duplicate_alert_in_queue">In queue</string>
-    <string name="duplicate_alert_remember">Remember and don\'t ask me again</string>
+    <string name="duplicate_alert_always_download">Always download and don\'t ask me again</string>
     <string name="duplicate_alert_similarity">Similarity : %.0f%%</string>
 
     <!-- Startup -->
