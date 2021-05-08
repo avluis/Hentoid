@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -28,6 +29,9 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.databinding.DialogWebDuplicateBinding;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 
 import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
@@ -35,6 +39,7 @@ import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 public final class DuplicateDialogFragment extends DialogFragment {
 
     private static final String KEY_CONTENT_ID = "contentId";
+    private static final String KEY_CONTENT_SIMILARITY = "similarity";
     private DialogWebDuplicateBinding binding = null;
 
     private static final RequestOptions glideRequestOptions;
@@ -56,15 +61,18 @@ public final class DuplicateDialogFragment extends DialogFragment {
     // === VARIABLES
     private DuplicateDialogFragment.Parent parent;
     private long contentId;
+    private float similarity;
 
 
     public static void invoke(
             @NonNull final FragmentActivity parent,
-            @NonNull final long contentId) {
+            long contentId,
+            float similarity) {
         DuplicateDialogFragment fragment = new DuplicateDialogFragment();
 
         Bundle args = new Bundle();
         args.putLong(KEY_CONTENT_ID, contentId);
+        args.putFloat(KEY_CONTENT_SIMILARITY, similarity);
         fragment.setArguments(args);
 
         fragment.show(parent.getSupportFragmentManager(), null);
@@ -76,6 +84,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
         contentId = getArguments().getLong(KEY_CONTENT_ID);
+        similarity = getArguments().getFloat(KEY_CONTENT_SIMILARITY);
 
         parent = (Parent) getActivity();
     }
@@ -97,6 +106,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
     @Override
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
+        Context context = requireContext();
 
         Content content = loadContent();
 
@@ -119,6 +129,45 @@ public final class DuplicateDialogFragment extends DialogFragment {
                     .load(Uri.parse(thumbLocation))
                     .apply(glideRequestOptions)
                     .into(binding.ivCover);
+
+        @DrawableRes int resId = ContentHelper.getFlagResourceId(context, content);
+        if (resId != 0) {
+            binding.ivFlag.setImageResource(resId);
+            binding.ivFlag.setVisibility(View.VISIBLE);
+        } else {
+            binding.ivFlag.setVisibility(View.GONE);
+        }
+
+        binding.tvArtist.setText(ContentHelper.formatArtistForDisplay(context, content));
+
+        binding.tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
+        binding.tvPages.setText(context.getString(R.string.work_pages_queue, content.getQtyPages() + "", ""));
+
+        // Buttons
+        Site site = content.getSite();
+        if (site != null && !site.equals(Site.NONE)) {
+            int img = site.getIco();
+            binding.ivSite.setImageResource(img);
+            binding.ivSite.setVisibility(View.VISIBLE);
+        } else {
+            binding.ivSite.setVisibility(View.GONE);
+        }
+        binding.ivExternal.setVisibility(content.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
+        if (content.isFavourite()) {
+            binding.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+        } else {
+            binding.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+        }
+
+        // Similarity score
+        binding.tvScore.setText(context.getString(R.string.duplicate_alert_similarity, similarity * 100));
+
+
+        binding.cancelBtn.setOnClickListener(v -> dismiss());
+        binding.downloadBtn.setOnClickListener(v -> {
+            parent.onDownloadDuplicate();
+            dismiss();
+        });
     }
 
     private Content loadContent() {

@@ -9,10 +9,12 @@ import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity
 import timber.log.Timber
 import java.io.IOException
+import java.io.InputStream
 import java.util.*
 
 class DuplicateHelper {
@@ -22,6 +24,7 @@ class DuplicateHelper {
         private val COVER_THRESHOLDS =
             doubleArrayOf(0.8, 0.85, 0.9) // @48-bit resolution, according to calibration tests
         private val TEXT_THRESHOLDS = doubleArrayOf(0.78, 0.8, 0.85)
+        private val TOTAL_THRESHOLDS = doubleArrayOf(0.8, 0.85, 0.9)
         private const val COVER_WORK_RESOLUTION = 48
 
         private val TITLE_CHAPTER_WORDS = listOf(
@@ -107,16 +110,20 @@ class DuplicateHelper {
             try {
                 FileHelper.getInputStream(context, Uri.parse(content.cover.fileUri))
                     .use {
-                        return ImageHelper.decodeSampledBitmapFromStream(
-                            it,
-                            COVER_WORK_RESOLUTION,
-                            COVER_WORK_RESOLUTION
-                        )
+                        return getCoverBitmapFromStream(it)
                     }
             } catch (e: IOException) {
                 Timber.w(e) // Doesn't break the loop
                 return null
             }
+        }
+
+        fun getCoverBitmapFromStream(stream: InputStream): Bitmap? {
+            return ImageHelper.decodeSampledBitmapFromStream(
+                stream,
+                COVER_WORK_RESOLUTION,
+                COVER_WORK_RESOLUTION
+            )
         }
 
         fun calcPhash(hashEngine: ImagePHash, bitmap: Bitmap?): Long {
@@ -144,6 +151,62 @@ class DuplicateHelper {
                 Timber.w(e) // Doesn't break the loop
             }
         }
+
+        fun processContent(
+            reference: DuplicateCandidate,
+            candidate: DuplicateCandidate,
+            ignoredIds: HashSet<Pair<Long, Long>>?,
+            useTitle: Boolean,
+            useCover: Boolean,
+            useSameArtist: Boolean,
+            useSameLanguage: Boolean,
+            sensitivity: Int,
+            textComparator: StringSimilarity
+        ): DuplicateEntry? {
+            var titleScore = -1f
+            var coverScore = -1f
+            var artistScore = -1f
+
+            // Remove if not same language
+            if (useSameLanguage && !containsSameLanguage(
+                    reference.countryCodes,
+                    candidate.countryCodes
+                )
+            ) return null
+            if (useCover) {
+                coverScore = computeCoverScore(
+                    reference.coverHash, candidate.coverHash,
+                    sensitivity
+                )
+                val key = Pair(reference.id, candidate.id)
+                if (coverScore == -2f) { // Ignored cover
+                    ignoredIds?.add(key)
+                    return null
+                } else {
+                    ignoredIds?.remove(key)
+                }
+            }
+            if (useTitle) titleScore = computeTitleScore(
+                textComparator,
+                reference.titleCleanup, reference.titleNoDigits,
+                candidate.titleCleanup, candidate.titleNoDigits,
+                sensitivity
+            )
+            if (useSameArtist) artistScore =
+                computeArtistScore(reference.artistsCleanup, candidate.artistsCleanup)
+            val result = DuplicateEntry(
+                reference.id,
+                reference.size,
+                candidate.id,
+                candidate.size,
+                titleScore,
+                coverScore,
+                artistScore,
+                0
+            )
+            return if (result.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) result else null
+        }
+
 
         fun containsSameLanguage(
             referenceCodes: List<String>?,
@@ -225,10 +288,12 @@ class DuplicateHelper {
         content: Content,
         useTitle: Boolean,
         useArtist: Boolean,
-        useLanguage: Boolean
+        useLanguage: Boolean,
+        forceCoverHash: Long = Long.MIN_VALUE
     ) {
         val id = content.id
-        val coverHash = content.cover.imageHash
+        val coverHash =
+            if (Long.MIN_VALUE == forceCoverHash) content.cover.imageHash else forceCoverHash
         val size = content.size
         val titleCleanup = (if (useTitle) StringHelper.cleanup(content.title) else "")!!
         val titleNoDigits = if (useTitle) sanitizeTitle(titleCleanup) else ""

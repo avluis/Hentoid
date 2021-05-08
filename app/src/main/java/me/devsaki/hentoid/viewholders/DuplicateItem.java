@@ -36,24 +36,21 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.core.HentoidApp;
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.DuplicateEntry;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LanguageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
@@ -316,17 +313,13 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         }
 
         private void attachFlag(@NonNull final Content content) {
-            List<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
-            if (langAttributes != null && !langAttributes.isEmpty())
-                for (Attribute lang : langAttributes) {
-                    @DrawableRes int resId = LanguageHelper.getFlagFromLanguage(ivFlag.getContext(), lang.getName());
-                    if (resId != 0) {
-                        ivFlag.setImageResource(resId);
-                        ivFlag.setVisibility(View.VISIBLE);
-                        return;
-                    }
-                }
-            ivFlag.setVisibility(View.GONE);
+            @DrawableRes int resId = ContentHelper.getFlagResourceId(ivFlag.getContext(), content);
+            if (resId != 0) {
+                ivFlag.setImageResource(resId);
+                ivFlag.setVisibility(View.VISIBLE);
+            } else {
+                ivFlag.setVisibility(View.GONE);
+            }
         }
 
         private void attachTitle(@NonNull final Content content) {
@@ -356,26 +349,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         }
 
         private void attachArtist(@NonNull final Content content) {
-            Context context = tvArtist.getContext();
-            List<Attribute> attributes = new ArrayList<>();
-
-            List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
-            if (artistAttributes != null)
-                attributes.addAll(artistAttributes);
-            List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
-            if (circleAttributes != null)
-                attributes.addAll(circleAttributes);
-
-            if (attributes.isEmpty()) {
-                tvArtist.setText(context.getString(R.string.work_artist, context.getResources().getString(R.string.work_untitled)));
-            } else {
-                List<String> allArtists = new ArrayList<>();
-                for (Attribute attribute : attributes) {
-                    allArtists.add(attribute.getName());
-                }
-                String artists = android.text.TextUtils.join(", ", allArtists);
-                tvArtist.setText(context.getString(R.string.work_artist, artists));
-            }
+            tvArtist.setText(ContentHelper.formatArtistForDisplay(tvArtist.getContext(), content));
         }
 
         private void attachPages(@NonNull final Content content) {

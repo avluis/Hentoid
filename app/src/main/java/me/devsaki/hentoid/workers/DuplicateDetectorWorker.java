@@ -3,7 +3,6 @@ package me.devsaki.hentoid.workers;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.work.Data;
 import androidx.work.WorkerParameters;
 
@@ -35,6 +34,7 @@ import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
+import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
 import me.devsaki.hentoid.workers.data.DuplicateData;
 import timber.log.Timber;
 
@@ -43,8 +43,6 @@ import timber.log.Timber;
  * Worker responsible for running post-startup tasks
  */
 public class DuplicateDetectorWorker extends BaseWorker {
-
-    private final double[] TOTAL_THRESHOLDS = new double[]{0.8, 0.85, 0.9};
 
     // Processing steps
     public static int STEP_COVER_INDEX = 0;
@@ -57,8 +55,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private final CompositeDisposable notificationDisposables = new CompositeDisposable();
 
     private final AtomicInteger currentIndex = new AtomicInteger(0);
-
-    private Cosine textComparator;
 
 
     public DuplicateDetectorWorker(
@@ -114,7 +110,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
             boolean useArtist,
             boolean useSameLanguage,
             int sensitivity) {
-        textComparator = new Cosine();
 
         // Mark process as incomplete until all combinations are searched
         // to support abort and retry
@@ -140,7 +135,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
             // Pre-compute all book entries as DuplicateCandidates
             List<DuplicateHelper.DuplicateCandidate> candidates = new ArrayList<>();
             dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true,
-                    content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useSameLanguage)));
+                    content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useSameLanguage, Long.MIN_VALUE)));
 
             logs.add(new LogHelper.LogEntry("Detection started"));
             processAll(
@@ -191,6 +186,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                             boolean useSameLanguage,
                             int sensitivity) {
         List<DuplicateEntry> tempResults = new ArrayList<>();
+        StringSimilarity cosine = new Cosine();
         for (int i = startIndex; i < library.size(); i++) {
             if (ignoredIds.size() > 1e6)
                 break; // Better to wait rather than saturating the ignored IDs map
@@ -206,7 +202,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 if (isReRun && !ignoredIds.contains(new Pair<>(reference.getId(), candidate.getId())))
                     continue;
 
-                DuplicateEntry entry = processContent(reference, candidate, ignoredIds, useTitle, useCover, useSameArtist, useSameLanguage, sensitivity);
+                DuplicateEntry entry = DuplicateHelper.Companion.processContent(
+                        reference, candidate,
+                        ignoredIds,
+                        useTitle, useCover, useSameArtist, useSameLanguage, sensitivity, cosine);
                 if (entry != null && processEntry(entry.getReferenceId(), entry.getDuplicateId(), matchedIds, reverseMatchedIds))
                     tempResults.add(entry);
             }
@@ -224,52 +223,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 notifyProcessProgress(progress); // Only update every 10 iterations for performance
             }
         }
-    }
-
-    @Nullable
-    private DuplicateEntry processContent(
-            DuplicateHelper.DuplicateCandidate reference,
-            DuplicateHelper.DuplicateCandidate candidate,
-            HashSet<Pair<Long, Long>> ignoredIds,
-            boolean useTitle,
-            boolean useCover,
-            boolean useSameArtist,
-            boolean useSameLanguage,
-            int sensitivity) {
-        float titleScore = -1f;
-        float coverScore = -1f;
-        float artistScore = -1f;
-
-        // Remove if not same language
-        if (useSameLanguage && !DuplicateHelper.Companion.containsSameLanguage(reference.getCountryCodes(), candidate.getCountryCodes()))
-            return null;
-
-        if (useCover) {
-            coverScore = DuplicateHelper.Companion.computeCoverScore(
-                    reference.getCoverHash(), candidate.getCoverHash(),
-                    sensitivity);
-            Pair<Long, Long> key = new Pair<>(reference.getId(), candidate.getId());
-            if (coverScore == -2f) { // Ignored cover
-                ignoredIds.add(key);
-                return null;
-            } else {
-                ignoredIds.remove(key);
-            }
-        }
-
-        if (useTitle)
-            titleScore = DuplicateHelper.Companion.computeTitleScore(
-                    textComparator,
-                    reference.getTitleCleanup(), reference.getTitleNoDigits(),
-                    candidate.getTitleCleanup(), candidate.getTitleNoDigits(),
-                    sensitivity);
-
-        if (useSameArtist)
-            artistScore = DuplicateHelper.Companion.computeArtistScore(reference.getArtistsCleanup(), candidate.getArtistsCleanup());
-
-        DuplicateEntry result = new DuplicateEntry(reference.getId(), reference.getSize(), candidate.getId(), titleScore, coverScore, artistScore, 0);
-        if (result.calcTotalScore() >= TOTAL_THRESHOLDS[sensitivity]) return result;
-        else return null;
     }
 
     private void notifyIndexProgress(Float progress) {

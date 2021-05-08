@@ -26,7 +26,11 @@ import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 
-class DuplicateViewModel(application: Application, private val dao: CollectionDAO, private val duplicatesDao: DuplicatesDAO) : AndroidViewModel(application) {
+class DuplicateViewModel(
+    application: Application,
+    private val dao: CollectionDAO,
+    private val duplicatesDao: DuplicatesDAO
+) : AndroidViewModel(application) {
 
     // Cleanup for all RxJava calls
     private val compositeDisposable = CompositeDisposable()
@@ -48,11 +52,11 @@ class DuplicateViewModel(application: Application, private val dao: CollectionDA
     }
 
     fun scanForDuplicates(
-            useTitle: Boolean,
-            useCover: Boolean,
-            useArtist: Boolean,
-            sameLanguageOnly: Boolean,
-            sensitivity: Int
+        useTitle: Boolean,
+        useCover: Boolean,
+        useArtist: Boolean,
+        sameLanguageOnly: Boolean,
+        sensitivity: Int
     ) {
         val builder = DuplicateData.Builder()
         builder.setUseTitle(useTitle)
@@ -64,23 +68,31 @@ class DuplicateViewModel(application: Application, private val dao: CollectionDA
         DuplicateNotificationChannel.init(getApplication())
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
-                R.id.duplicate_detector_service.toString(),
-                ExistingWorkPolicy.REPLACE,
-                OneTimeWorkRequestBuilder<DuplicateDetectorWorker>()
-                        .setInputData(builder.data)
-                        .setBackoffCriteria(
-                                BackoffPolicy.LINEAR,
-                                OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
-                                TimeUnit.MILLISECONDS)
-                        .addTag(Consts.WORK_CLOSEABLE)
-                        .build()
+            R.id.duplicate_detector_service.toString(),
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequestBuilder<DuplicateDetectorWorker>()
+                .setInputData(builder.data)
+                .setBackoffCriteria(
+                    BackoffPolicy.LINEAR,
+                    OneTimeWorkRequest.MIN_BACKOFF_MILLIS,
+                    TimeUnit.MILLISECONDS
+                )
+                .addTag(Consts.WORK_CLOSEABLE)
+                .build()
         )
     }
 
     fun setContent(content: Content) {
         val selectedDupes = ArrayList(allDuplicates.value?.filter { it.referenceId == content.id })
         // Add reference item on top
-        val refEntry = DuplicateEntry(content.id, content.size, content.id, 2f, 2f) // Artificially give it a huge score to bring it to the top
+        val refEntry = DuplicateEntry(
+            content.id,
+            content.size,
+            content.id,
+            content.size,
+            2f,
+            2f
+        ) // Artificially give it a huge score to bring it to the top
         refEntry.referenceContent = content
         refEntry.duplicateContent = content
         selectedDupes.add(0, refEntry)
@@ -99,32 +111,32 @@ class DuplicateViewModel(application: Application, private val dao: CollectionDA
         val selectedDupes = ArrayList(selectedDuplicates.value)
 
         compositeDisposable.add(
-                Observable.fromIterable(selectedDupes)
-                        .observeOn(Schedulers.io())
-                        .map {
-                            if (it.keep == false) doRemove(it.duplicateId)
-                            it
-                        }
-                        .doOnNext {
-                            // Update UI
-                            if (it.keep == false) {
-                                val newList = selectedDupes.toMutableList();
-                                newList.remove(it)
-                                selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on
-                            }
-                            if (it.titleScore <= 1f) // Just don't try to delete the fake reference entry that has been put there for display
-                                duplicatesDao.delete(it)
-                        }
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeBy(
-                                onNext = {
-                                    // Already done on IO thread by doOnNext
-                                },
-                                onError = { t -> Timber.w(t) },
-                                onComplete = {
-                                    onComplete.run()
-                                }
-                        )
+            Observable.fromIterable(selectedDupes)
+                .observeOn(Schedulers.io())
+                .map {
+                    if (it.keep == false) doRemove(it.duplicateId)
+                    it
+                }
+                .doOnNext {
+                    // Update UI
+                    if (it.keep == false) {
+                        val newList = selectedDupes.toMutableList()
+                        newList.remove(it)
+                        selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on
+                    }
+                    if (it.titleScore <= 1f) // Just don't try to delete the fake reference entry that has been put there for display
+                        duplicatesDao.delete(it)
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(
+                    onNext = {
+                        // Already done on IO thread by doOnNext
+                    },
+                    onError = { t -> Timber.w(t) },
+                    onComplete = {
+                        onComplete.run()
+                    }
+                )
         )
     }
 

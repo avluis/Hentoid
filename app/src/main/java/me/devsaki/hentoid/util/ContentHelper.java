@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Pair;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
@@ -47,6 +48,7 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.DuplicateEntry;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -63,13 +65,14 @@ import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.string_similarity.Cosine;
+import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
-import static com.annimon.stream.Collectors.toList;
 import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 
 /**
@@ -786,7 +789,7 @@ public final class ContentHelper {
         int order = startingOrder;
         boolean coverFound = false;
         // Sort files by anything that resembles a number inside their names
-        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberFileComparator()).collect(toList());
+        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberFileComparator()).toList();
         for (DocumentFile f : fileList) {
             String name = namePrefix + ((f.getName() != null) ? f.getName() : "");
             ImageFile img = new ImageFile();
@@ -823,7 +826,7 @@ public final class ContentHelper {
         List<ImageFile> result = new ArrayList<>();
         int order = startingOrder;
         // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
-        List<ArchiveHelper.ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).collect(toList());
+        List<ArchiveHelper.ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).toList();
         for (ArchiveHelper.ArchiveEntry f : fileList) {
             String name = namePrefix + f.path;
             String path = archiveFileUri.toString() + File.separator + f.path;
@@ -877,12 +880,26 @@ public final class ContentHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Update the given content's properties by parsing its webpage
+     *
+     * @param content Content to parse again from its online source
+     * @return Content updated from its online source
+     * @throws IOException If something horrible happens during parsing
+     */
     public static Content reparseFromScratch(@NonNull final Content content) throws IOException {
         return reparseFromScratch(content, content.getGalleryUrl());
     }
 
-    // TODO visual feedback to warn the user about redownload "from scratch" having failed (whenever the original content is returned)
+    /**
+     * Parse the given webpage to update the given Content's properties
+     *
+     * @param content Content which properties to update
+     * @param url     Webpage to parse to update the given Content's properties
+     * @return Content with updated properties
+     * TODO feedback to warn the user about redownload "from scratch" having failed (whenever the original content is returned)
+     * @throws IOException If something horrible happens during parsing
+     */
     private static Content reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
         Helper.assertNonUiThread();
 
@@ -899,7 +916,7 @@ public final class ContentHelper {
         if (response.code() >= 300) return content;
 
         // Scram if the response is something else than html
-        Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
+        Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")));
         if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
             return content;
 
@@ -931,7 +948,13 @@ public final class ContentHelper {
         return newContent;
     }
 
-    // TODO doc
+    /**
+     * Remove all files (including JSON and cover thumb) from the given Content's folder
+     * The folder itself is left empty
+     *
+     * @param context Context to use
+     * @param content Content to remove files from
+     */
     public static void purgeFiles(@NonNull final Context context, @NonNull final Content content) {
         DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
@@ -941,8 +964,13 @@ public final class ContentHelper {
         }
     }
 
-    // TODO doc
-    public static String formatTags(@NonNull final Content content) {
+    /**
+     * Format the given Content's tags for display
+     *
+     * @param content Content to get the formatted tags for
+     * @return Given Content's tags formatted for display
+     */
+    public static String formatTagsForDisplay(@NonNull final Content content) {
         List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes == null) return "";
 
@@ -956,8 +984,65 @@ public final class ContentHelper {
         return android.text.TextUtils.join(", ", allTags);
     }
 
+    /**
+     * Get the resource ID for the given Content's language flag
+     *
+     * @param context Context to use
+     * @param content Content to get the flag resource ID for
+     * @return Resource ID (DrawableRes) of the given Content's language flag; 0 if no matching flag found
+     */
+    public static @DrawableRes
+    int getFlagResourceId(@NonNull final Context context, @NonNull final Content content) {
+        List<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
+        if (langAttributes != null && !langAttributes.isEmpty())
+            for (Attribute lang : langAttributes) {
+                @DrawableRes int resId = LanguageHelper.getFlagFromLanguage(context, lang.getName());
+                if (resId != 0) return resId;
+            }
+        return 0;
+    }
+
+    /**
+     * Format the given Content's artists for display
+     *
+     * @param context Context to use
+     * @param content Content to get the formatted artists for
+     * @return Given Content's artists formatted for display
+     */
+    public static String formatArtistForDisplay(@NonNull final Context context, @NonNull final Content content) {
+        List<Attribute> attributes = new ArrayList<>();
+
+        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
+        if (artistAttributes != null)
+            attributes.addAll(artistAttributes);
+        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
+        if (circleAttributes != null)
+            attributes.addAll(circleAttributes);
+
+        if (attributes.isEmpty()) {
+            return context.getString(R.string.work_artist, context.getResources().getString(R.string.work_untitled));
+        } else {
+            List<String> allArtists = new ArrayList<>();
+            for (Attribute attribute : attributes) {
+                allArtists.add(attribute.getName());
+            }
+            String artists = android.text.TextUtils.join(", ", allArtists);
+            return context.getString(R.string.work_artist, artists);
+        }
+    }
+
+    /**
+     * Find the best match for the given Content inside the library and queue
+     *
+     * @param dao     CollectionDao to use
+     * @param content Content to find the duplicate for
+     *                // TOD update
+     * @return Pair containing
+     * left side : Best match for the given Content inside the library and queue
+     * Right side : Similarity score (between 0 and 1; 1=100%)
+     */
     @Nullable
-    public static Content findDuplicate(@NonNull final CollectionDAO dao, @NonNull final Content content) {
+    public static ImmutablePair<Content, Float> findDuplicate(@NonNull final CollectionDAO dao, @NonNull final Content content, long pHash) {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted((o1, o2) -> Integer.compare(o1.length(), o2.length())).findLast();
@@ -968,9 +1053,24 @@ public final class ContentHelper {
         if (roughCandidates.isEmpty()) return null;
 
         // Refine by running the actual duplicate detection algorithm against the rough candidates
-        // TODO
+        List<DuplicateEntry> entries = new ArrayList<>();
+        StringSimilarity cosine = new Cosine();
+        // TODO make useLanguage a setting ?
+        DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, true, true, false, pHash);
+        List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, true, true, false, Long.MIN_VALUE)).toList();
+        for (DuplicateHelper.DuplicateCandidate candidate : candidates) {
+            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, null, true, true, true, false, 2, cosine);
+            if (entry != null) entries.add(entry);
+        }
+        // Sort by similarity and size (unfortunately, Comparator.comparing is API24...)
+        Optional<DuplicateEntry> bestMatch = Stream.of(entries).sorted(DuplicateEntry::compareTo).findFirst();
+        if (bestMatch.isPresent()) {
+            Content resultContent = dao.selectContent(bestMatch.get().getDuplicateId());
+            float resultScore = bestMatch.get().calcTotalScore();
+            return new ImmutablePair<>(resultContent, resultScore);
+        }
 
-        return roughCandidates.get(0);
+        return null;
     }
 
     /**

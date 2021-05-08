@@ -158,7 +158,7 @@
         tools:text="@string/duplicate_alert_similarity" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/redownload_btn"
+        android:id="@+id/download_btn"
         style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -180,7 +180,7 @@
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_close"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/redownload_btn"
+        app:layout_constraintStart_toEndOf="@id/download_btn"
         app:layout_constraintTop_toBottomOf="@id/tvScore" />
 
     <CheckBox

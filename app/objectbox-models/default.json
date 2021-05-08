@@ -570,7 +570,7 @@
     },
     {
       "id": "13:7937878460553138785",
-      "lastPropertyId": "9:1179341344641812936",
+      "lastPropertyId": "10:4636705001081237914",
       "name": "DuplicateEntry",
       "properties": [
         {
@@ -612,6 +612,12 @@
         {
           "id": "9:1179341344641812936",
           "name": "duplicateId",
+          "type": 6,
+          "flags": 4
+        },
+        {
+          "id": "10:4636705001081237914",
+          "name": "duplicateSize",
           "type": 6,
           "flags": 4
         }

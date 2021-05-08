@@ -48,6 +48,7 @@ import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.skydoves.balloon.ArrowOrientation;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -115,6 +116,7 @@ import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -147,7 +149,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
  */
 public abstract class BaseWebActivity extends BaseActivity implements WebContentListener, BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {
 
-    @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.VIEW_QUEUE, ActionMode.READ})
+    @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.VIEW_QUEUE, ActionMode.READ, ActionMode.DUPLICATE_ALERT})
     @Retention(RetentionPolicy.SOURCE)
     protected @interface ActionMode {
         // Download book
@@ -158,6 +160,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         int VIEW_QUEUE = 2;
         // Read downloaded book (image viewer)
         int READ = 3;
+        // Display the duplicate alert dialog
+        int DUPLICATE_ALERT = 4;
     }
 
     @IntDef({ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE, ContentStatus.HAS_DUPLICATE})
@@ -213,6 +217,10 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private CustomWebViewClient webClient;
     // Currently viewed content
     private Content currentContent = null;
+    // TODO doc
+    private long duplicateId = 0;
+    // TODO doc
+    private float duplicateSimilarity = 0f;
     // Database
     private CollectionDAO objectBoxDAO;
     // Indicates which mode the download button is in
@@ -225,6 +233,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     private UpdateInfo.SourceAlert alert;
     // Disposable to be used for punctual search
     private Disposable disposable;
+    // Disposable to be used for content processing
+    private Disposable processDisposable;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final Set<String> universalBlockedContent = new HashSet<>();         // Universal list (applied to all sites)
@@ -421,8 +431,17 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         checkPermissions();
         String url = webView.getUrl();
         Timber.i(">> WebActivity resume : %s %s %s", url, currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
-        if (currentContent != null && url != null && getWebClient().isGalleryPage(url))
-            processContent(currentContent, false);
+        if (currentContent != null && url != null && getWebClient().isGalleryPage(url)) {
+            if (processDisposable != null)
+                processDisposable.dispose(); // Cancel whichever process was happening before
+            processDisposable = Single.fromCallable(() -> processContent(currentContent))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            status -> onContentProcessed(status, false),
+                            Timber::e
+                    );
+        }
     }
 
     @Override
@@ -706,6 +725,8 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         if (ActionMode.DOWNLOAD == actionButtonMode) processDownload(false, false);
         else if (ActionMode.DOWNLOAD_PLUS == actionButtonMode) processDownload(false, true);
         else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
+        else if (ActionMode.DUPLICATE_ALERT == actionButtonMode)
+            DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity);
         else if (ActionMode.READ == actionButtonMode && currentContent != null) {
             String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
             currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
@@ -724,7 +745,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      */
     private void changeActionMode(@ActionMode int mode) {
         @DrawableRes int resId = R.drawable.ic_info;
-        if (ActionMode.DOWNLOAD == mode) {
+        if (ActionMode.DOWNLOAD == mode || ActionMode.DUPLICATE_ALERT == mode) {
             resId = R.drawable.selector_download_action;
         } else if (ActionMode.DOWNLOAD_PLUS == mode) {
             resId = R.drawable.ic_action_download_plus;
@@ -851,15 +872,13 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     /**
      * Display webview controls according to designated content
      *
-     * @param content       Currently displayed content
-     * @param quickDownload True if the action has been triggered by a quick download
-     *                      (which means we're not on a book gallery page but on the book list page)
+     * @param content Currently displayed content
      * @return The status of the Content after being processed
      */
     private @ContentStatus
-    int processContent(@NonNull Content content, boolean quickDownload) {
-        @ContentStatus int result = ContentStatus.UNKNOWN;
-        if (content.getUrl().isEmpty()) return result;
+    int processContent(@NonNull Content content) {
+        Helper.assertNonUiThread();
+        if (content.getUrl().isEmpty()) return ContentStatus.UNKNOWN;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
         String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? content.getCoverImageUrl() : "";
@@ -867,15 +886,41 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
+        boolean isDuplicate = false;
 
         if (!isInCollection && !isInQueue) {
-            Content duplicate = null;
-            if (contentDB != null)
-                duplicate = ContentHelper.findDuplicate(objectBoxDAO, contentDB);
+            // Index the content's cover picture
+            long pHash = Long.MIN_VALUE;
+            try {
+                List<Pair<String, String>> requestHeadersList = new ArrayList<>();
+                Map<String, String> downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
+                String cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                if (cookieStr != null && !cookieStr.isEmpty())
+                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
 
-            if (duplicate != null) {
-                DuplicateDialogFragment.invoke(this, duplicate.getId());
-                return ContentStatus.HAS_DUPLICATE;
+                Response onlineCover = HttpHelper.getOnlineResource(
+                        content.getCoverImageUrl(),
+                        requestHeadersList,
+                        getStartSite().useMobileAgent(),
+                        getStartSite().useHentoidAgent(),
+                        getStartSite().useWebviewAgent()
+                );
+                ResponseBody coverBody = onlineCover.body();
+                if (coverBody != null) {
+                    InputStream bodyStream = coverBody.byteStream();
+                    Bitmap b = DuplicateHelper.Companion.getCoverBitmapFromStream(bodyStream);
+                    pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), b);
+                }
+            } catch (IOException e) {
+                Timber.w(e);
+            }
+            // Look for duplicates
+            ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(objectBoxDAO, content, pHash);
+            if (duplicateResult != null) {
+                duplicateId = duplicateResult.left.getId();
+                duplicateSimilarity = duplicateResult.right;
+                // TODO rethink the "download plus" feature for potential duplicates
+                isDuplicate = true;
             }
 
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
@@ -884,42 +929,80 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
             } else {
                 content = contentDB;
             }
-            if (!quickDownload) changeActionMode(ActionMode.DOWNLOAD);
         } else {
             content = contentDB;
         }
         currentContent = content;
 
-        if (isInCollection) {
-            if (!quickDownload) changeActionMode(ActionMode.READ);
-            result = ContentStatus.IN_COLLECTION;
-            searchForMoreImages(contentDB); // Async; might switch from READ to DOWNLOAD_PLUS a couple seconds later
-        }
-        if (isInQueue) {
-            if (!quickDownload) changeActionMode(ActionMode.VIEW_QUEUE);
-            result = ContentStatus.IN_QUEUE;
-        }
-
-        if (webClient != null)
-            webClient.setBlockedTags(ContentHelper.getBlockedTags(content));
-
-        return result;
+        if (isInCollection) return ContentStatus.IN_COLLECTION;
+        if (isInQueue) return ContentStatus.IN_QUEUE;
+        if (isDuplicate) return ContentStatus.HAS_DUPLICATE;
+        return ContentStatus.UNKNOWN;
     }
 
-    public void onResultReady(@NonNull Content results, boolean quickDownload) {
-        @ContentStatus int status = processContent(results, quickDownload);
-        if (quickDownload) {
-            if (ContentStatus.UNKNOWN == status) processDownload(true, false);
-            else if (ContentStatus.IN_COLLECTION == status)
-                ToastHelper.toast(R.string.already_downloaded);
-            else if (ContentStatus.IN_QUEUE == status) ToastHelper.toast(R.string.already_queued);
+    public void onResultReady(@NonNull Content result, boolean quickDownload) {
+        if (processDisposable != null)
+            processDisposable.dispose(); // Cancel whichever process was happening before
+        processDisposable = Single.fromCallable(() -> processContent(result))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        status -> onContentProcessed(status, quickDownload),
+                        Timber::e
+                );
+    }
+
+    private void onContentProcessed(@ContentStatus int status, boolean quickDownload) {
+        processDisposable.dispose();
+        switch (status) {
+            case ContentStatus.UNKNOWN:
+                if (quickDownload) processDownload(true, false);
+                changeActionMode(ActionMode.DOWNLOAD);
+                break;
+            case ContentStatus.IN_COLLECTION:
+                if (quickDownload) ToastHelper.toast(R.string.already_downloaded);
+                changeActionMode(ActionMode.READ);
+                break;
+            case ContentStatus.IN_QUEUE:
+                if (quickDownload) ToastHelper.toast(R.string.already_queued);
+                changeActionMode(ActionMode.VIEW_QUEUE);
+                break;
+            case ContentStatus.HAS_DUPLICATE:
+                if (quickDownload)
+                    DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity);
+                changeActionMode(ActionMode.DUPLICATE_ALERT);
+                break;
+            default:
+                // Nothing
         }
+        if (webClient != null)
+            webClient.setBlockedTags(ContentHelper.getBlockedTags(currentContent));
     }
 
     public void onResultFailed() {
         runOnUiThread(() -> ToastHelper.toast(R.string.web_unparsable));
     }
 
+    /*
+        private void searchForDuplicates(@NonNull final CollectionDAO dao, @NonNull final Content storedContent) {
+            disposable = Single.fromCallable(() -> ContentHelper.findDuplicate(dao, storedContent))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .filter(result -> result != null)
+                    .subscribe(
+                            pair -> onSearchForDuplicatesSuccess(pair.left, pair.right),
+                            Timber::e
+                    );
+        }
+
+        private void onSearchForDuplicatesSuccess(@NonNull final Content duplicateContent, float similarityScore) {
+            disposable.dispose();
+            duplicateId = duplicateContent.getId();
+            duplicateSimilarity = similarityScore;
+            // TODO rethink the "download plus" feature for potential duplicates
+            changeActionMode(ActionMode.DUPLICATE_ALERT);
+        }
+    */
     private void searchForMoreImages(@NonNull final Content storedContent) {
         disposable = Single.fromCallable(() -> doSearchForMoreImages(storedContent))
                 .subscribeOn(Schedulers.io())
@@ -1031,7 +1114,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
     @Override
     public void onDownloadDuplicate() {
-        // TODO
+        processDownload(false, false);
     }
 
 

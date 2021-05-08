@@ -540,7 +540,7 @@
     <string name="duplicate_alert_in_library">In library</string>
     <string name="duplicate_alert_in_queue">In queue</string>
     <string name="duplicate_alert_remember">Remember and don\'t ask me again</string>
-    <string name="duplicate_alert_similarity">Similarity : %d%%</string>
+    <string name="duplicate_alert_similarity">Similarity : %.0f%%</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>
