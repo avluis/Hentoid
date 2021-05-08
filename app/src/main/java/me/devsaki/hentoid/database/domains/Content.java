@@ -663,7 +663,16 @@ public class Content implements Serializable {
     }
 
     public void computeReadProgress() {
-        readProgress = getReadPagesCount() * 1f / Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
+        if (null == getImageFiles()) {
+            readProgress = 0;
+            return;
+        }
+        long denominator = Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
+        if (0 == denominator) {
+            readProgress = 0;
+            return;
+        }
+        readProgress = getReadPagesCount() * 1f / denominator;
     }
 
     public float getReadProgress() {
@@ -709,7 +718,7 @@ public class Content implements Serializable {
         return favourite;
     }
 
-    public boolean isCompleted(){
+    public boolean isCompleted() {
         return completed;
     }
 
