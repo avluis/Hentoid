@@ -14,7 +14,6 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -182,27 +181,9 @@ public final class ImageHelper {
      * @throws IOException If anything bad happens at load-time
      */
     public static Bitmap decodeSampledBitmapFromStream(@NonNull InputStream stream, int targetWidth, int targetHeight) throws IOException {
-        // Check the image format
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(stream, 1024);
-        bufferedInputStream.mark(1024);
-        byte[] header = new byte[12];
-        int nbRead = bufferedInputStream.read(header);
-        bufferedInputStream.reset();
-        String mimeType = "";
-        if (nbRead == header.length) mimeType = getMimeTypeFromPictureBinary(header);
-
-        if (mimeType.isEmpty()) return null;
-
-        // If it's something else than WEBP, we can continue using the buffered stream
-        // If it's WEBP we have to duplicate the stream because Android reads the whole file
-        // even though options.inJustDecodeBounds is active
-        InputStream workStream1 = bufferedInputStream;
-        InputStream workStream2 = null;
-        if (mimeType.equals(MIME_IMAGE_WEBP)) {
-            List<InputStream> streams = Helper.duplicateInputStream(workStream1, 2);
-            workStream1 = streams.get(0);
-            workStream2 = streams.get(1);
-        }
+        List<InputStream> streams = Helper.duplicateInputStream(stream, 2);
+        InputStream workStream1 = streams.get(0);
+        InputStream workStream2 = streams.get(1);
 
         // First decode with inJustDecodeBounds=true to check dimensions
         final BitmapFactory.Options options = new BitmapFactory.Options();
