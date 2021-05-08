@@ -163,11 +163,8 @@ public final class DuplicateDialogFragment extends DialogFragment {
         binding.tvScore.setText(context.getString(R.string.duplicate_alert_similarity, similarity * 100));
 
 
-        binding.cancelBtn.setOnClickListener(v -> dismiss());
-        binding.downloadBtn.setOnClickListener(v -> {
-            parent.onDownloadDuplicate();
-            dismiss();
-        });
+        binding.cancelBtn.setOnClickListener(v -> submit(false));
+        binding.downloadBtn.setOnClickListener(v -> submit(true));
     }
 
     private Content loadContent() {
@@ -177,6 +174,11 @@ public final class DuplicateDialogFragment extends DialogFragment {
         } finally {
             dao.cleanup();
         }
+    }
+
+    private void submit(boolean download) {
+        if (download) parent.onDownloadDuplicate();
+        dismiss();
     }
 
 
