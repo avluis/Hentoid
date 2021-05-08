@@ -96,8 +96,8 @@ public class Content implements Serializable {
     @Deprecated
     private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
-    private boolean favourite;
-    private boolean completed;
+    private boolean favourite = false;
+    private boolean completed = false;
     private long reads = 0;
     private long lastReadDate;
     private int lastReadPageIndex = 0;
