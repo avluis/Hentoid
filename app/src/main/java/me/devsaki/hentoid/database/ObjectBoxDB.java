@@ -771,8 +771,8 @@ public class ObjectBoxDB {
         if (filterFavourites) contentFromSourceQueryBuilder.equal(Content_.favourite, true);
 
         if (bookCompletedOnly) contentFromSourceQueryBuilder.equal(Content_.completed, true);
-        else if (bookNotCompletedOnly) contentFromSourceQueryBuilder.equal(Content_.completed, false);
-
+        else if (bookNotCompletedOnly)
+            contentFromSourceQueryBuilder.equal(Content_.completed, false);
 
 
         Query<Content> contentFromSourceQuery = contentFromSourceQueryBuilder.build();
@@ -791,7 +791,8 @@ public class ObjectBoxDB {
         if (filterFavourites) contentFromAttributesQueryBuilder.equal(Content_.favourite, true);
 
         if (bookCompletedOnly) contentFromAttributesQueryBuilder.equal(Content_.completed, true);
-        else if (bookNotCompletedOnly) contentFromAttributesQueryBuilder.equal(Content_.completed, false);
+        else if (bookNotCompletedOnly)
+            contentFromAttributesQueryBuilder.equal(Content_.completed, false);
 
         contentFromAttributesQueryBuilder.link(Content_.attributes)
                 .equal(Attribute_.type, 0)
@@ -941,7 +942,7 @@ public class ObjectBoxDB {
             int page,
             int itemsPerPage,
             boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly    ) {
+            boolean bookNotCompletedOnly) {
         long[] filteredContent = selectFilteredContent(attributeFilter, filterFavourites, bookCompletedOnly, bookNotCompletedOnly);
         if (filteredContent.length == 0 && attributeFilter != null && !attributeFilter.isEmpty())
             return Collections.emptyList();
@@ -1330,6 +1331,10 @@ public class ObjectBoxDB {
 
     List<Content> selectDownloadedContentWithNoReadProgress() {
         return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.readProgress).build().find();
+    }
+
+    List<Content> selectContentWithNullCompleteField() {
+        return store.boxFor(Content.class).query().isNull(Content_.completed).build().find();
     }
 
     public Query<Content> selectOldStoredContentQ() {

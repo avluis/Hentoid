@@ -38,6 +38,7 @@ public class DatabaseMaintenance {
      */
     public static List<Observable<Float>> getPreLaunchCleanupTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
+        result.add(createObservableFrom(context, DatabaseMaintenance::setDefaultPropertiesOneShot));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
@@ -179,6 +180,27 @@ public class DatabaseMaintenance {
             Timber.i("Detecting duplicate bookmarks : %d favourites detected", contents.count());
             contents.remove();
             Timber.i("Detecting duplicate bookmarks : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void setDefaultPropertiesOneShot(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Set default values for new ObjectBox properties that are values as null by default (see https://github.com/objectbox/objectbox-java/issues/157)
+            Timber.i("Set default ObjectBox properties : start");
+            List<Content> contents = db.selectContentWithNullCompleteField();
+            Timber.i("Set default ObjectBox properties : %s books detected", contents.size());
+            int max = contents.size();
+            float pos = 1;
+            for (Content c : contents) {
+                c.setCompleted(false);
+                db.insertContent(c);
+                emitter.onNext(pos++ / max);
+            }
+            Timber.i("Set default ObjectBox properties : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();
