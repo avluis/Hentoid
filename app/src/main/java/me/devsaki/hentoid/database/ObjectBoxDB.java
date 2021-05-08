@@ -352,7 +352,7 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectVisibleContentQ() {
-        return selectContentSearchContentQ("", -1, Collections.emptyList(), false, false, Preferences.Constant.ORDER_FIELD_NONE, false);
+        return selectContentSearchContentQ("", -1, Collections.emptyList(), false, false, Preferences.Constant.ORDER_FIELD_NONE, false, false, false);
     }
 
     @Nullable
@@ -480,7 +480,9 @@ public class ObjectBoxDB {
             boolean filterBookFavourites,
             boolean filterPageFavourites,
             int orderField,
-            boolean orderDesc) {
+            boolean orderDesc,
+            boolean bookCompletedOnly,
+            boolean bookNotCompletedOnly) {
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField)
             return store.boxFor(Content.class).query().build();
 
@@ -501,6 +503,10 @@ public class ObjectBoxDB {
         if (hasSiteFilter)
             query.in(Content_.site, getIdsFromAttributes(sources));
         if (filterBookFavourites) query.equal(Content_.favourite, true);
+
+        if (bookCompletedOnly) query.equal(Content_.completed, true);
+        else if (bookNotCompletedOnly) query.equal(Content_.completed, false);
+
         if (hasTitleFilter) query.contains(Content_.title, title);
         if (hasTagFilter) {
             for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
@@ -508,7 +514,7 @@ public class ObjectBoxDB {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty()) {
-                        query.in(Content_.id, selectFilteredContent(attrs, false));
+                        query.in(Content_.id, selectFilteredContent(attrs, false, false, false));
                     }
                 }
             }
@@ -531,7 +537,9 @@ public class ObjectBoxDB {
             List<Attribute> metadata,
             boolean filterFavourites,
             int orderField,
-            boolean orderDesc) {
+            boolean orderDesc,
+            boolean bookCompletedOnly,
+            boolean bookNotCompletedOnly) {
         if (orderField != Preferences.Constant.ORDER_FIELD_CUSTOM) return new long[]{};
 
         AttributeMap metadataMap = new AttributeMap();
@@ -557,6 +565,11 @@ public class ObjectBoxDB {
         if (hasSiteFilter)
             contentQuery.in(Content_.site, getIdsFromAttributes(sources));
         if (filterFavourites) contentQuery.equal(Content_.favourite, true);
+
+        if (bookCompletedOnly) contentQuery.equal(Content_.completed, true);
+        else if (bookNotCompletedOnly) contentQuery.equal(Content_.completed, false);
+
+
         if (hasTitleFilter) contentQuery.contains(Content_.title, title);
         if (hasTagFilter) {
             for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
@@ -564,7 +577,7 @@ public class ObjectBoxDB {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty()) {
-                        contentQuery.in(Content_.id, selectFilteredContent(attrs, false));
+                        contentQuery.in(Content_.id, selectFilteredContent(attrs, false, false, false));
                     }
                 }
             }
@@ -572,11 +585,16 @@ public class ObjectBoxDB {
         return Helper.getPrimitiveLongArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
     }
 
-    private Query<Content> selectContentUniversalAttributesQ(String queryStr, long groupId, boolean filterBookFavourites, boolean filterPageFavourites) {
+    private Query<Content> selectContentUniversalAttributesQ(String queryStr, long groupId, boolean filterBookFavourites, boolean filterPageFavourites, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, libraryStatus);
 
         if (filterBookFavourites) query.equal(Content_.favourite, true);
+
+        if (bookCompletedOnly) query.equal(Content_.completed, true);
+        else if (bookNotCompletedOnly) query.equal(Content_.completed, false);
+
+
         if (filterPageFavourites) filterWithPageFavs(query);
         query.link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
@@ -592,7 +610,9 @@ public class ObjectBoxDB {
             boolean filterPageFavourites,
             long[] additionalIds,
             int orderField,
-            boolean orderDesc) {
+            boolean orderDesc,
+            boolean bookCompletedOnly,
+            boolean bookNotCompletedOnly) {
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField)
             return store.boxFor(Content.class).query().build();
 
@@ -600,6 +620,11 @@ public class ObjectBoxDB {
         query.in(Content_.status, libraryStatus);
 
         if (filterBookFavourites) query.equal(Content_.favourite, true);
+
+        if (bookCompletedOnly) query.equal(Content_.completed, true);
+        else if (bookNotCompletedOnly) query.equal(Content_.completed, false);
+
+
         if (filterPageFavourites) filterWithPageFavs(query);
 
         query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
@@ -626,7 +651,9 @@ public class ObjectBoxDB {
             boolean filterFavourites,
             long[] additionalIds,
             int orderField,
-            boolean orderDesc) {
+            boolean orderDesc,
+            boolean bookCompletedOnly,
+            boolean bookNotCompletedOnly) {
         if (orderField != Preferences.Constant.ORDER_FIELD_CUSTOM) return new long[]{};
 
         // Pre-filter and order on GroupItem
@@ -640,6 +667,11 @@ public class ObjectBoxDB {
         contentQuery.in(Content_.status, libraryStatus);
 
         if (filterFavourites) contentQuery.equal(Content_.favourite, true);
+
+        if (bookCompletedOnly) contentQuery.equal(Content_.completed, true);
+        else if (bookNotCompletedOnly) contentQuery.equal(Content_.completed, false);
+
+
         contentQuery.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         contentQuery.or().equal(Content_.uniqueSiteId, queryStr);
         //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
@@ -655,11 +687,13 @@ public class ObjectBoxDB {
             boolean filterBookFavourites,
             boolean filterPageFavourites,
             int orderField,
-            boolean orderDesc) {
+            boolean orderDesc,
+            boolean bookCompletedOnly,
+            boolean bookNotCompletedOnly) {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(queryStr, groupId, filterBookFavourites, filterPageFavourites);
-        return selectContentUniversalContentQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc);
+        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, bookCompletedOnly, bookNotCompletedOnly);
+        return selectContentUniversalContentQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
     }
 
     long[] selectContentUniversalByGroupItem(
@@ -668,11 +702,13 @@ public class ObjectBoxDB {
             boolean filterBookFavourites,
             boolean filterPageFavourites,
             int orderField,
-            boolean orderDesc) {
+            boolean orderDesc,
+            boolean bookCompletedOnly,
+            boolean bookNotCompletedOnly) {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(queryStr, groupId, filterBookFavourites, filterPageFavourites);
-        return selectContentUniversalContentByGroupItem(queryStr, groupId, filterBookFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc);
+        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, bookCompletedOnly, bookNotCompletedOnly);
+        return selectContentUniversalContentByGroupItem(queryStr, groupId, filterBookFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
     }
 
     private static long[] shuffleRandomSortId(Query<Content> query) {
@@ -688,9 +724,9 @@ public class ObjectBoxDB {
         return Helper.getPrimitiveLongArrayFromList(result);
     }
 
-    long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc) {
+    long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
         long[] result;
-        Query<Content> query = selectContentSearchContentQ(title, groupId, tags, filterBookFavourites, filterPageFavourites, orderField, orderDesc);
+        Query<Content> query = selectContentSearchContentQ(title, groupId, tags, filterBookFavourites, filterPageFavourites, orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
 
         if (orderField != Preferences.Constant.ORDER_FIELD_RANDOM) {
             result = query.findIds();
@@ -700,12 +736,12 @@ public class ObjectBoxDB {
         return result;
     }
 
-    long[] selectContentUniversalId(String queryStr, long groupId, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc) {
+    long[] selectContentUniversalId(String queryStr, long groupId, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
         long[] result;
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(queryStr, groupId, filterBookFavourites, filterPageFavourites);
-        Query<Content> query = selectContentUniversalContentQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc);
+        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, bookCompletedOnly, bookNotCompletedOnly);
+        Query<Content> query = selectContentUniversalContentQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
 
         if (orderField != Preferences.Constant.ORDER_FIELD_RANDOM) {
             result = query.findIds();
@@ -725,7 +761,7 @@ public class ObjectBoxDB {
         return Helper.getPrimitiveLongArrayFromList(group.getContentIds());
     }
 
-    private long[] selectFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
+    private long[] selectFilteredContent(List<Attribute> attrs, boolean filterFavourites, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
         if (null == attrs || attrs.isEmpty()) return new long[0];
 
         // Pre-build queries to reuse them efficiently within the loops
@@ -733,6 +769,12 @@ public class ObjectBoxDB {
         contentFromSourceQueryBuilder.in(Content_.status, libraryStatus);
         contentFromSourceQueryBuilder.equal(Content_.site, 1);
         if (filterFavourites) contentFromSourceQueryBuilder.equal(Content_.favourite, true);
+
+        if (bookCompletedOnly) contentFromSourceQueryBuilder.equal(Content_.completed, true);
+        else if (bookNotCompletedOnly) contentFromSourceQueryBuilder.equal(Content_.completed, false);
+
+
+
         Query<Content> contentFromSourceQuery = contentFromSourceQueryBuilder.build();
 
         QueryBuilder<Content> contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
@@ -747,6 +789,9 @@ public class ObjectBoxDB {
         contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
         contentFromAttributesQueryBuilder.in(Content_.status, libraryStatus);
         if (filterFavourites) contentFromAttributesQueryBuilder.equal(Content_.favourite, true);
+
+        if (bookCompletedOnly) contentFromAttributesQueryBuilder.equal(Content_.completed, true);
+        else if (bookNotCompletedOnly) contentFromAttributesQueryBuilder.equal(Content_.completed, false);
 
         contentFromAttributesQueryBuilder.link(Content_.attributes)
                 .equal(Attribute_.type, 0)
@@ -822,7 +867,7 @@ public class ObjectBoxDB {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty())
-                        query.in(Content_.id, selectFilteredContent(attrs, false));
+                        query.in(Content_.id, selectFilteredContent(attrs, false, false, false));
                 }
             }
 
@@ -881,8 +926,8 @@ public class ObjectBoxDB {
     }
 
     long countAvailableAttributes(AttributeType
-                                          type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
-        return queryAvailableAttributes(type, filter, selectFilteredContent(attributeFilter, filterFavourites)).count();
+                                          type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
+        return queryAvailableAttributes(type, filter, selectFilteredContent(attributeFilter, filterFavourites, bookCompletedOnly, bookNotCompletedOnly)).count();
     }
 
     @SuppressWarnings("squid:S2184")
@@ -894,11 +939,12 @@ public class ObjectBoxDB {
             boolean filterFavourites,
             int sortOrder,
             int page,
-            int itemsPerPage) {
-        long[] filteredContent = selectFilteredContent(attributeFilter, filterFavourites);
+            int itemsPerPage,
+            boolean bookCompletedOnly,
+            boolean bookNotCompletedOnly    ) {
+        long[] filteredContent = selectFilteredContent(attributeFilter, filterFavourites, bookCompletedOnly, bookNotCompletedOnly);
         if (filteredContent.length == 0 && attributeFilter != null && !attributeFilter.isEmpty())
             return Collections.emptyList();
-
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
         List<Integer> libraryStatusAsList = Helper.getListFromPrimitiveArray(libraryStatus);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
@@ -935,7 +981,7 @@ public class ObjectBoxDB {
 
     SparseIntArray countAvailableAttributesPerType(List<Attribute> attributeFilter) {
         // Get Content filtered by current selection
-        long[] filteredContent = selectFilteredContent(attributeFilter, false);
+        long[] filteredContent = selectFilteredContent(attributeFilter, false, false, false);
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
 

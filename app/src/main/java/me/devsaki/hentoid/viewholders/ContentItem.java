@@ -219,6 +219,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private ImageView ivFavourite;
         private ImageView ivExternal;
         private CircularProgressView readingProgress;
+        private ImageView ivCompleted;
 
         // Specific to Queued content
         private ProgressBar progressBar;
@@ -251,6 +252,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivExternal = itemView.findViewById(R.id.ivExternal);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
+                ivCompleted = requireViewById(itemView, R.id.ivCompleted);
                 readingProgress = requireViewById(itemView, R.id.reading_progress);
             } else if (viewType == ViewType.LIBRARY_GRID) {
                 ivNew = itemView.findViewById(R.id.lineNew);
@@ -280,6 +282,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
                 boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.content.setFavourite(boolValue);
+                boolValue = bundleParser.isCompleted();
+                if (boolValue != null) item.content.setCompleted(boolValue);
                 Long longValue = bundleParser.getReads();
                 if (longValue != null) item.content.setReads(longValue);
                 longValue = bundleParser.getReadPagesCount();
@@ -295,18 +299,25 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             attachCover(item.content);
             attachFlag(item.content);
             attachTitle(item.content);
-            if (readingProgress != null) attachReadingProgress(item.content);
+
+            if( ivCompleted != null)
+                attachCompletedIcon(item.content);
+            if (!item.content.isCompleted() && readingProgress != null)
+                 attachReadingProgress(item.content);
             if (tvArtist != null) attachArtist(item.content);
             if (tvSeries != null) attachSeries(item.content);
             if (tvPages != null) attachPages(item.content, item.viewType);
             if (tvTags != null) attachTags(item.content);
             attachButtons(item);
 
+
             if (progressBar != null)
                 updateProgress(item.content, baseLayout, getAdapterPosition(), false);
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
         }
+
+
 
         private void updateLayoutVisibility(@NonNull final ContentItem item) {
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
@@ -405,6 +416,18 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
             tvTitle.setText(title);
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
+        }
+
+        private void attachCompletedIcon(@NonNull final Content content) {
+            if (content.isCompleted()) {
+                if (readingProgress != null) {
+                    readingProgress.setVisibility(View.GONE);
+                    ivCompleted.setImageResource(R.drawable.ic_completed);
+                    ivCompleted.setVisibility(View.VISIBLE);
+                }
+            }
+
+            else  ivCompleted.setVisibility(View.GONE);
         }
 
         private void attachReadingProgress(@NonNull final Content content) {

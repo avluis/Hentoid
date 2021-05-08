@@ -220,8 +220,8 @@ public class DatabaseMaintenance {
             List<ImmutableTriple<Group, Attribute, List<Content>>> toInsert = new ArrayList<>();
             for (Grouping g : groupingsToProcess) {
                 if (g.equals(Grouping.ARTIST)) {
-                    List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0);
-                    artists.addAll(db.selectAvailableAttributes(AttributeType.CIRCLE, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0));
+                    List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0, false, false);
+                    artists.addAll(db.selectAvailableAttributes(AttributeType.CIRCLE, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0, false, false));
                     int order = 1;
                     for (Attribute a : artists) {
                         Group group = new Group(Grouping.ARTIST, a.getName(), order++);

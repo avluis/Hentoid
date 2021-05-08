@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -200,7 +201,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
                     && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())
 //                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
-                    && oldItem.isFavourite() == newItem.isFavourite();
+                    && oldItem.isFavourite() == newItem.isFavourite()
+                    && oldItem.isCompleted() == newItem.isCompleted();
         }
 
         @Nullable
@@ -210,6 +212,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+            }
+            if(oldItem.isCompleted() != newItem.isCompleted()) {
+                diffBundleBuilder.setIsCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
@@ -246,7 +251,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     && oldItem.getLastReadDate() == newItem.getLastReadDate()
                     && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())
 //                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
-                    && oldItem.isFavourite() == newItem.isFavourite();
+                    && oldItem.isFavourite() == newItem.isFavourite()
+                    && oldItem.isCompleted() == newItem.isCompleted();
         }
 
         @Override
@@ -260,6 +266,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+            }
+            if(oldItem.isCompleted() != newItem.isCompleted()) {
+                diffBundleBuilder.setIsCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
@@ -553,6 +562,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             case R.id.action_delete:
                 deleteSelectedItems();
                 break;
+            case R.id.action_completed:
+                markSelectedAsCompleted();
+                break;
             case R.id.action_archive:
                 archiveSelectedItems();
                 break;
@@ -566,6 +578,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 askRedownloadSelectedItemsScratch();
                 keepToolbar = true;
                 break;
+            case R.id.action_selectAll:
+                selectAll();
+                keepToolbar = true;
+                break;
             case R.id.action_set_cover:
                 askSetCover();
                 break;
@@ -576,6 +592,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (!keepToolbar) activity.get().getSelectionToolbar().setVisibility(View.GONE);
         return true;
     }
+
+
 
     /**
      * Callback for the "share item" action button
@@ -603,6 +621,27 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 activity.get().askDeleteItems(selectedContent, Collections.emptyList(), this::refreshIfNeeded, selectExtension);
         }
     }
+
+    /**
+     * Callback for "book completed" action button
+     */
+    private void markSelectedAsCompleted() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+
+        for(Content item: selectedContent){
+            viewModel.toggleContentCompleted(item, this::refreshIfNeeded);
+        }
+        for(ContentItem item: selectedItems) {
+            item.setSelected(false);
+        }
+
+    }
+
+    private void selectAll() {
+        selectExtension.select();
+    }
+
 
     /**
      * Callback for the "archive item" action button
@@ -1092,11 +1131,18 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             contentItems = Collections.emptyList();
         } else {
             @ContentItem.ViewType int viewType;
+
             if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay() || activity.get().isEditMode()) // Grid won't be used in edit mode
                 viewType = activity.get().isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
-            contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).distinct().toList();
+
+            contentItems = Stream.of(iLibrary
+                    .subList(0, iLibrary.size()))
+                    .withoutNulls().map(c ->
+                            new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook))
+                    .distinct()
+                    .toList();
         }
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK);
 

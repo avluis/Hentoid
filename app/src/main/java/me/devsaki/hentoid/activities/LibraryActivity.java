@@ -137,6 +137,8 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem reorderCancelMenu;
     // "Create new group" button on top menu
     private MenuItem newGroupMenu;
+    // "Toggle completed" button on top menu
+    private MenuItem completedFilterMenu;
     // "Toggle favourites" button on top menu
     private MenuItem favsMenu;
     // "Sort" button on top menu
@@ -148,6 +150,7 @@ public class LibraryActivity extends BaseActivity {
     private Toolbar selectionToolbar;
     private MenuItem editNameMenu;
     private MenuItem deleteMenu;
+    private MenuItem completedMenu;
     private MenuItem shareMenu;
     private MenuItem archiveMenu;
     private MenuItem changeGroupMenu;
@@ -452,7 +455,7 @@ public class LibraryActivity extends BaseActivity {
                 return true;
             }
         });
-
+        completedFilterMenu = toolbar.getMenu().findItem(R.id.action_completed_filter);
         favsMenu = toolbar.getMenu().findItem(R.id.action_favourites);
         updateFavouriteFilter();
 
@@ -527,6 +530,14 @@ public class LibraryActivity extends BaseActivity {
      */
     public boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
+            case R.id.action_completed_filter:
+                menuItem.setChecked(!menuItem.isChecked());
+                updateCompletedFilter();
+                if(menuItem.isChecked())
+                    askFilterCompleted();
+                else
+                    viewModel.resetCompletedFilter();
+                break;
             case R.id.action_favourites:
                 menuItem.setChecked(!menuItem.isChecked());
                 updateFavouriteFilter();
@@ -545,6 +556,7 @@ public class LibraryActivity extends BaseActivity {
         }
         return true;
     }
+
 
     private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
         if (showSort != null && showSort && View.VISIBLE == sortFieldButton.getVisibility()) {
@@ -624,6 +636,7 @@ public class LibraryActivity extends BaseActivity {
 
         editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
         deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
+        completedMenu = selectionToolbar.getMenu().findItem(R.id.action_completed);
         shareMenu = selectionToolbar.getMenu().findItem(R.id.action_share);
         archiveMenu = selectionToolbar.getMenu().findItem(R.id.action_archive);
         changeGroupMenu = selectionToolbar.getMenu().findItem(R.id.action_change_group);
@@ -675,6 +688,13 @@ public class LibraryActivity extends BaseActivity {
             default:
                 return Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
         }
+    }
+
+    /**
+     * Update completed filter button appearance on the action bar
+     */
+    private void updateCompletedFilter() {
+        completedFilterMenu.setIcon(completedFilterMenu.isChecked() ? R.drawable.ic_completed_filter_on : R.drawable.ic_completed_filter_off);
     }
 
     /**
@@ -904,6 +924,7 @@ public class LibraryActivity extends BaseActivity {
             editNameMenu.setVisible(!isMultipleSelection && Preferences.getGroupingDisplay().canReorderGroups());
             deleteMenu.setVisible(true);
             shareMenu.setVisible(false);
+            completedMenu.setVisible(false);
             archiveMenu.setVisible(true);
             changeGroupMenu.setVisible(false);
             folderMenu.setVisible(false);
@@ -912,6 +933,7 @@ public class LibraryActivity extends BaseActivity {
         } else {
             editNameMenu.setVisible(false);
             deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
+            completedMenu.setVisible(true);
             shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
             archiveMenu.setVisible(true);
             changeGroupMenu.setVisible(true);
@@ -920,6 +942,22 @@ public class LibraryActivity extends BaseActivity {
             coverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
         }
     }
+
+    public void askFilterCompleted(){
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+        String title = getString(R.string.ask_filter_completed);
+        builder.setMessage(title)
+                .setPositiveButton(R.string.filter_not_completed,
+                        (dialog, which) -> {
+                            viewModel.toggleNotCompletedFilter();
+                        })
+                .setNegativeButton(R.string.filter_completed,
+                        (dialog, which) -> {
+                            viewModel.toggleCompletedFilter();
+                        })
+                .create().show();
+    }
+
 
     /**
      * Display the yes/no dialog to make sure the user really wants to delete selected items

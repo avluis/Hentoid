@@ -18,6 +18,12 @@
         android:tooltipText="@string/menu_delete_single"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_completed"
+        android:icon="@drawable/ic_completed_single"
+        android:title="@string/menu_completed_single"
+        android:tooltipText="@string/menu_completed_single"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_archive"
         android:icon="@drawable/ic_archive"
         android:title="@string/menu_archive"
@@ -46,6 +52,12 @@
         android:icon="@drawable/ic_action_download_scratch"
         android:title="@string/menu_redownload_scratch"
         android:tooltipText="@string/menu_redownload_scratch"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_selectAll"
+        android:icon="@drawable/ic_folder_edit"
+        android:title="@string/menu_select_all"
+        android:tooltipText="@string/menu_select_all"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_set_cover"

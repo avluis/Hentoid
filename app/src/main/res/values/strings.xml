@@ -12,6 +12,7 @@
     <string name="goto_page">Go to page…</string>
     <string name="confirm">Confirm</string>
     <string name="please_wait">Please wait…</string>
+    <string name="menu_completed_single">Completed</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -38,6 +39,7 @@
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
     <string name="menu_fav">Toggle favourite filter</string>
+    <string name="menu_comp">Toggle completed filter</string>
     <string name="menu_mark_fav">Toggle favourite</string>
     <string name="menu_group_new">New group</string>
     <string name="menu_edit_order">Edit order</string>
@@ -51,6 +53,7 @@
     <string name="menu_open_folder">Open containing folder</string>
     <string name="menu_redownload">Redownload</string>
     <string name="menu_redownload_scratch">Redownload from scratch</string>
+    <string name="menu_select_all">Select All</string>
     <string name="menu_share">Share</string>
     <string name="menu_share_help">Share book URL and title using another app</string>
     <string name="menu_archive">Archive</string>
@@ -242,6 +245,9 @@
     <!-- Library fragment -->
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
+    <string name="ask_filter_completed">How would you like to filter completed books?</string>
+    <string name="filter_completed">Show completed only</string>
+    <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
         <item quantity="other">Are you sure you wish to delete the selected items ?</item>
