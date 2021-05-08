@@ -503,16 +503,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     }
 
     private void onPageFavouriteSuccess(Boolean newState) {
-        // TODO display something more graphical (heart / heartbreak)
         ToastHelper.toast(newState ? R.string.page_favourite_success : R.string.page_unfavourite_success);
-        isPageFavourite = !isPageFavourite;
+        isPageFavourite = newState;
         updateFavouriteButtonIcon();
     }
 
     private void onBookFavouriteSuccess(Boolean newState) {
-        // TODO display something more graphical (heart / heartbreak)
         ToastHelper.toast(newState ? R.string.book_favourite_success : R.string.book_unfavourite_success);
-        isContentFavourite = !isContentFavourite;
+        isContentFavourite = newState;
         updateFavouriteButtonIcon();
     }
 
