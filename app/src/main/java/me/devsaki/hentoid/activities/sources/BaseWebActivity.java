@@ -153,6 +153,15 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         int GALLERY = 1;
     }
 
+    // === NUTS AND BOLTS
+    private CustomWebViewClient webClient;
+    // Database
+    private CollectionDAO objectBoxDAO;
+    // Disposable to be used for punctual search
+    private Disposable disposable;
+    // Disposable to be used for content processing
+    private Disposable processDisposable;
+
 
     // === UI
     // Associated webview
@@ -180,16 +189,17 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // Progress bar
     private ProgressBar progressBar;
 
-    // === VARIABLES
-    private CustomWebViewClient webClient;
-    // Currently viewed content
+    // === CURRENTLY VIEWED CONTENT-RELATED VARIABLES
     private Content currentContent = null;
-    // TODO doc
+    // Content ID of the duplicate candidate of the currently viewed Content
     private long duplicateId = 0;
-    // TODO doc
+    // Similarity score of the duplicate candidate of the currently viewed Content
     private float duplicateSimilarity = 0f;
-    // Database
-    private CollectionDAO objectBoxDAO;
+    // Blocked tags found on the currently viewed Content
+    List<String> blockedTags = Collections.emptyList();
+
+
+    // === OTHER VARIABLES
     // Indicates which mode the download button is in
     protected @ActionMode
     int actionButtonMode;
@@ -198,13 +208,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     int seekButtonMode;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
-    // Disposable to be used for punctual search
-    private Disposable disposable;
-    // Disposable to be used for content processing
-    private Disposable processDisposable;
-
-    // TODO doc
-    List<String> blockedTags = Collections.emptyList();
 
 
     protected abstract CustomWebViewClient getWebClient();
@@ -545,20 +548,22 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     public void onPageFinished(boolean isResultsPage, boolean isGalleryPage) {
+        refreshNavigationMenu(isResultsPage);
         refreshStopMenu.setIcon(R.drawable.ic_action_refresh);
-        refreshNavigationMenu(isResultsPage, isGalleryPage);
+
+        // Manage bottom alert banner visibility
+        if (isGalleryPage)
+            displayBottomAlertBanner(blockedTags); // Called here to be sure it is displayed on the gallery page
+        else onBottomAlertCloseClick(null);
     }
 
     /**
      * Refresh the visuals of the buttons of the navigation menu
      */
-    private void refreshNavigationMenu(boolean isResultsPage, boolean isGalleryPage) {
+    private void refreshNavigationMenu(boolean isResultsPage) {
         backMenu.setEnabled(webView.canGoBack());
         forwardMenu.setEnabled(webView.canGoForward());
         changeSeekMode(isResultsPage ? BaseWebActivity.SeekMode.PAGE : BaseWebActivity.SeekMode.GALLERY, isResultsPage || backListContainsGallery(webView.copyBackForwardList()) > -1);
-        // Manager bottom alert banner visibility
-        if (isGalleryPage) displayBottomAlertBanner(blockedTags);
-        else onBottomAlertCloseClick(null);
     }
 
     /**
@@ -987,6 +992,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(storedContent);
         try {
+            // Call the parser to retrieve all the pages
+            // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
             List<ImageFile> onlineImgs = parser.parseImageList(storedContent);
             if (onlineImgs.isEmpty()) return result;
 
