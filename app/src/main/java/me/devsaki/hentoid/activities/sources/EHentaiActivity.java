@@ -31,7 +31,7 @@ public class EHentaiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new EHentaiWebClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new EHentaiWebClient(getStartSite(), GALLERY_FILTER, this);
         CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "sl=dm_2"); // Show thumbs in results page ("extended display")
         CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "nw=1"); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         client.restrictTo(DOMAIN_FILTER);
@@ -40,10 +40,10 @@ public class EHentaiActivity extends BaseWebActivity {
         return client;
     }
 
-    private class EHentaiWebClient extends CustomWebViewClient {
+    private static class EHentaiWebClient extends CustomWebViewClient {
 
-        EHentaiWebClient(String[] filter, WebContentListener listener) {
-            super(filter, listener);
+        EHentaiWebClient(Site site, String[] filter, CustomWebActivity activity) {
+            super(site, filter, activity);
         }
 
         // We call the API without using BaseWebActivity.parseResponse

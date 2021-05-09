@@ -20,7 +20,7 @@ public class FakkuActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new FakkuWebClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new FakkuWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
 
         showTooltip(R.string.help_web_fakku_account, false); // Kinda hacky, but it's better than creating a whole new class just for that
@@ -30,8 +30,8 @@ public class FakkuActivity extends BaseWebActivity {
 
     private class FakkuWebClient extends CustomWebViewClient {
 
-        FakkuWebClient(String[] filter, WebContentListener listener) {
-            super(filter, listener);
+        FakkuWebClient(Site site, String[] filter, CustomWebActivity activity) {
+            super(site, filter, activity);
         }
 
         // Show a tooltip everytime a content is ignored (premium Fakku content)

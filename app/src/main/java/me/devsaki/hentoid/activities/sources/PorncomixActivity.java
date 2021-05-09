@@ -21,9 +21,9 @@ public class PorncomixActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        addDirtyElements(DIRTY_ELEMENTS);
-        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
+        client.addDirtyElements(DIRTY_ELEMENTS);
         return client;
     }
 }

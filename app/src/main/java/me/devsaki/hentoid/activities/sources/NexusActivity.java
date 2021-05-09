@@ -5,7 +5,7 @@ import me.devsaki.hentoid.enums.Site;
 public class NexusActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "hentainexus.com";
-    private static final String[] DIRTY_ELEMENTS = {".unit-main",".unit-dt-blk",".unit-mobblk"};
+    private static final String[] DIRTY_ELEMENTS = {".unit-main", ".unit-dt-blk", ".unit-mobblk"};
     private static final String[] GALLERY_FILTER = {"//hentainexus.com/view/"};
 
     Site getStartSite() {
@@ -14,9 +14,9 @@ public class NexusActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        addDirtyElements(DIRTY_ELEMENTS);
-        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
+        client.addDirtyElements(DIRTY_ELEMENTS);
         return client;
     }
 }

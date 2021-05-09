@@ -20,31 +20,39 @@ public class ManhwaActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        addContentBlockFilter(BLOCKED_CONTENT);
-        addDirtyElements(DIRTY_ELEMENTS);
-        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new ManwhaWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
+        client.addContentBlockFilter(BLOCKED_CONTENT);
+        client.addDirtyElements(DIRTY_ELEMENTS);
         return client;
     }
 
-    /**
-     * Specific implementation to get rid of ad js files
-     * that have random names
-     */
-    @Override
-    protected boolean isUrlForbidden(@NonNull String url) {
-        // 1- Process usual blacklist
-        if (super.isUrlForbidden(url)) return true;
+    private static class ManwhaWebViewClient extends CustomWebViewClient {
 
-        // 2- Accept non-JS files
-        if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
-
-        // 3- Accept JS files defined in the whitelist
-        for (String s : JS_WHITELIST) {
-            if (url.toLowerCase().contains(s)) return false;
+        ManwhaWebViewClient(Site site, String[] filter, CustomWebActivity activity) {
+            super(site, filter, activity);
         }
 
-        // 4- Block all other JS files
-        return true;
+        /**
+         * Specific implementation to get rid of ad js files
+         * that have random names
+         */
+        @Override
+        protected boolean isUrlForbidden(@NonNull String url) {
+            // 1- Process usual blacklist
+            if (super.isUrlForbidden(url)) return true;
+
+            // 2- Accept non-JS files
+            if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
+
+            // 3- Accept JS files defined in the whitelist
+            for (String s : JS_WHITELIST) {
+                if (url.toLowerCase().contains(s)) return false;
+            }
+
+            // 4- Block all other JS files
+            return true;
+        }
     }
+
 }
