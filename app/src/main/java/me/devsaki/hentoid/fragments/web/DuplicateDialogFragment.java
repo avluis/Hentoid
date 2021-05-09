@@ -41,6 +41,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
 
     private static final String KEY_CONTENT_ID = "contentId";
     private static final String KEY_CONTENT_SIMILARITY = "similarity";
+    private static final String KEY_IS_DOWNLOAD_PLUS = "downloadPlus";
     private DialogWebDuplicateBinding binding = null;
 
     private static final RequestOptions glideRequestOptions;
@@ -57,23 +58,23 @@ public final class DuplicateDialogFragment extends DialogFragment {
                 .error(d);
     }
 
-    // === UI
-
     // === VARIABLES
     private DuplicateDialogFragment.Parent parent;
     private long contentId;
     private float similarity;
-
+    private boolean isDownloadPlus;
 
     public static void invoke(
             @NonNull final FragmentActivity parent,
             long contentId,
-            float similarity) {
+            float similarity,
+            boolean isDownloadPlus) {
         DuplicateDialogFragment fragment = new DuplicateDialogFragment();
 
         Bundle args = new Bundle();
         args.putLong(KEY_CONTENT_ID, contentId);
         args.putFloat(KEY_CONTENT_SIMILARITY, similarity);
+        args.putBoolean(KEY_IS_DOWNLOAD_PLUS, isDownloadPlus);
         fragment.setArguments(args);
 
         fragment.show(parent.getSupportFragmentManager(), null);
@@ -86,6 +87,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
         contentId = getArguments().getLong(KEY_CONTENT_ID);
         similarity = getArguments().getFloat(KEY_CONTENT_SIMILARITY);
+        isDownloadPlus = getArguments().getBoolean(KEY_IS_DOWNLOAD_PLUS, false);
 
         parent = (Parent) getActivity();
     }
@@ -108,8 +110,12 @@ public final class DuplicateDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
         Context context = requireContext();
-
         Content content = loadContent();
+
+        binding.subtitle.setText(isDownloadPlus ? R.string.duplicate_alert_subtitle_pages : R.string.duplicate_alert_subtitle_book);
+        binding.downloadPlusBtn.setVisibility(isDownloadPlus ? View.VISIBLE : View.GONE);
+        binding.chAlwaysDownload.setVisibility(isDownloadPlus ? View.GONE : View.VISIBLE);
+        binding.chNeverExtraOnDupes.setVisibility(isDownloadPlus ? View.VISIBLE : View.GONE);
 
         binding.tvTitle.setText(content.getTitle());
         ImageFile cover = content.getCover();
@@ -164,8 +170,9 @@ public final class DuplicateDialogFragment extends DialogFragment {
         binding.tvScore.setText(context.getString(R.string.duplicate_alert_similarity, similarity * 100));
 
 
-        binding.cancelBtn.setOnClickListener(v -> submit(false));
-        binding.downloadBtn.setOnClickListener(v -> submit(true));
+        binding.cancelBtn.setOnClickListener(v -> submit(false, false));
+        binding.downloadBtn.setOnClickListener(v -> submit(true, false));
+        binding.downloadPlusBtn.setOnClickListener(v -> submit(false, true));
     }
 
     private Content loadContent() {
@@ -177,17 +184,19 @@ public final class DuplicateDialogFragment extends DialogFragment {
         }
     }
 
-    private void submit(boolean download) {
-        if (download) {
+    private void submit(boolean downloadBook, boolean downloadExtraPages) {
+        if (downloadBook || downloadExtraPages) {
             if (binding.chAlwaysDownload.isChecked())
-                Preferences.setDownloadDuplicateMode(Preferences.Constant.DOWNLOAD_DUPLICATE_DOWNLOAD);
-            parent.onDownloadDuplicate();
+                Preferences.setDownloadDuplicateAsk(false);
+            if (binding.chNeverExtraOnDupes.isChecked())
+                Preferences.setDownloadDuplicateTry(false);
+            parent.onDownloadDuplicate(downloadExtraPages);
         }
         dismiss();
     }
 
 
     public interface Parent {
-        void onDownloadDuplicate();
+        void onDownloadDuplicate(boolean isDownloadPlus);
     }
 }

@@ -702,15 +702,26 @@ public final class Preferences {
                 .apply();
     }
 
-    public static int getDownloadDuplicateMode() {
-        return Integer.parseInt(sharedPreferences.getString(Key.DOWNLOAD_DUPLICATE, Integer.toString(Default.DOWNLOAD_DUPLICATE)) + "");
+    public static boolean isDownloadDuplicateAsk() {
+        return sharedPreferences.getBoolean(Key.DOWNLOAD_DUPLICATE_ASK, Default.DOWNLOAD_DUPLICATE_ASK);
     }
 
-    public static void setDownloadDuplicateMode(int value) {
+    public static void setDownloadDuplicateAsk(boolean value) {
         sharedPreferences.edit()
-                .putString(Key.DOWNLOAD_DUPLICATE, Integer.toString(value))
+                .putBoolean(Key.DOWNLOAD_DUPLICATE_ASK, value)
                 .apply();
     }
+
+    public static boolean isDownloadPlusDuplicateTry() {
+        return sharedPreferences.getBoolean(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, Default.DOWNLOAD_PLUS_DUPLICATE_TRY);
+    }
+
+    public static void setDownloadDuplicateTry(boolean value) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, value)
+                .apply();
+    }
+
 
     public static final class Key {
 
@@ -802,7 +813,8 @@ public final class Preferences {
         public static final String DUPLICATE_USE_ARTIST = "duplicate_use_artist";
         public static final String DUPLICATE_USE_SAME_LANGUAGE = "duplicate_use_same_language";
         public static final String DUPLICATE_LAST_INDEX = "last_index";
-        public static final String DOWNLOAD_DUPLICATE = "browser_duplicate";
+        public static final String DOWNLOAD_DUPLICATE_ASK = "download_duplicate_ask";
+        public static final String DOWNLOAD_PLUS_DUPLICATE_TRY = "download_plus_duplicate_try";
 
         // Deprecated values kept for housekeeping/migration
         static final String ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -888,7 +900,8 @@ public final class Preferences {
         static final boolean DUPLICATE_USE_COVER = false;
         static final boolean DUPLICATE_USE_ARTIST = true;
         static final boolean DUPLICATE_USE_SAME_LANGUAGE = false;
-        static final int DOWNLOAD_DUPLICATE = Constant.DOWNLOAD_DUPLICATE_ASK;
+        static final boolean DOWNLOAD_DUPLICATE_ASK = true;
+        static final boolean DOWNLOAD_PLUS_DUPLICATE_TRY = true;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -997,9 +1010,6 @@ public final class Preferences {
         public static final int VIEWER_CAP_TAP_ZOOM_2X = 2;
         public static final int VIEWER_CAP_TAP_ZOOM_4X = 4;
         public static final int VIEWER_CAP_TAP_ZOOM_6X = 6;
-
-        public static final int DOWNLOAD_DUPLICATE_ASK = 0;
-        public static final int DOWNLOAD_DUPLICATE_DOWNLOAD = 1;
 
         // Deprecated values kept for housekeeping/migration
         @Deprecated

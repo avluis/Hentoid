@@ -536,11 +536,15 @@
 
     <!-- Duplicate dialog -->
     <string name="duplicate_alert">Duplicate alert!</string>
-    <string name="duplicate_alert_subtitle">The book you\'re about to download may be a duplicate of a book you already own.</string>
+    <string name="duplicate_alert_subtitle_book">The book you\'re about to download may be a duplicate of a book you already own.</string>
+    <string name="duplicate_alert_subtitle_pages">The book you\'re about to download pages from may not be the one you already own.</string>
     <string name="duplicate_alert_in_library">In library</string>
     <string name="duplicate_alert_in_queue">In queue</string>
     <string name="duplicate_alert_always_download">Always download and don\'t ask me again</string>
+    <string name="duplicate_alert_never_extra_on_dupes">Never add pages from potential duplicates again</string>
     <string name="duplicate_alert_similarity">Similarity : %.0f%%</string>
+    <string name="duplicate_alert_download_book">Download book</string>
+    <string name="duplicate_alert_download_pages">Download extra pages</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

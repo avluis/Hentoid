@@ -90,13 +90,19 @@
                 android:summaryOn="@string/pref_browser_augmented_on"
                 android:title="@string/pref_browser_augmented_title"
                 app:iconSpaceReserved="false" />
-            <ListPreference
-                android:defaultValue="@string/pref_browser_duplicate_default"
-                android:entries="@array/pref_browser_duplicate_entries"
-                android:entryValues="@array/pref_browser_duplicate_values"
-                android:key="browser_duplicate"
-                android:summary="@string/pref_attributes_list_order_summary"
-                android:title="@string/pref_browser_duplicate_title"
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_duplicate_ask_default"
+                android:key="download_duplicate_ask"
+                android:summaryOff="@string/pref_browser_duplicate_ask_off"
+                android:summaryOn="@string/pref_browser_duplicate_ask_on"
+                android:title="@string/pref_browser_duplicate_ask_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_duplicate_try_pages_default"
+                android:key="download_plus_duplicate_try"
+                android:summaryOff="@string/pref_browser_duplicate_try_pages_off"
+                android:summaryOn="@string/pref_browser_duplicate_try_pages_on"
+                android:title="@string/pref_browser_duplicate_try_pages_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory

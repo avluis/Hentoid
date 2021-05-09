@@ -116,7 +116,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_P
  */
 public abstract class BaseWebActivity extends BaseActivity implements CustomWebViewClient.CustomWebActivity, BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {
 
-    @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.VIEW_QUEUE, ActionMode.READ, ActionMode.DUPLICATE_ALERT})
+    @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.VIEW_QUEUE, ActionMode.READ})
     @Retention(RetentionPolicy.SOURCE)
     protected @interface ActionMode {
         // Download book
@@ -127,11 +127,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         int VIEW_QUEUE = 2;
         // Read downloaded book (image viewer)
         int READ = 3;
-        // Display the duplicate alert dialog
-        int DUPLICATE_ALERT = 4;
     }
 
-    @IntDef({ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE, ContentStatus.HAS_DUPLICATE})
+    @IntDef({ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE})
     @Retention(RetentionPolicy.SOURCE)
     private @interface ContentStatus {
         // Content is unknown (i.e. ready to be downloaded)
@@ -140,8 +138,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         int IN_COLLECTION = 1;
         // Content is already queued
         int IN_QUEUE = 2;
-        // Content has a potential duplicate
-        int HAS_DUPLICATE = 3;
     }
 
     @IntDef({SeekMode.PAGE, SeekMode.GALLERY})
@@ -153,14 +149,18 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         int GALLERY = 1;
     }
 
+    private static final float SIMILARITY_SAFE_THRESHOLD = 0.95f;
+    private static final float SIMILARITY_MIN_THRESHOLD = 0.85f;
+
+
     // === NUTS AND BOLTS
     private CustomWebViewClient webClient;
     // Database
     private CollectionDAO objectBoxDAO;
     // Disposable to be used for punctual search
-    private Disposable disposable;
+    private Disposable searchExtraImagesdisposable;
     // Disposable to be used for content processing
-    private Disposable processDisposable;
+    private Disposable processContentDisposable;
 
 
     // === UI
@@ -192,11 +192,15 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // === CURRENTLY VIEWED CONTENT-RELATED VARIABLES
     private Content currentContent = null;
     // Content ID of the duplicate candidate of the currently viewed Content
-    private long duplicateId = 0;
+    private long duplicateId = -1;
+    // Content ID of the duplicate candidate of the currently viewed Content
+    private boolean duplicateSameSite = false;
     // Similarity score of the duplicate candidate of the currently viewed Content
     private float duplicateSimilarity = 0f;
     // Blocked tags found on the currently viewed Content
-    List<String> blockedTags = Collections.emptyList();
+    private List<String> blockedTags = Collections.emptyList();
+    // Extra images found on the currently viewed Content
+    private List<ImageFile> extraImages = Collections.emptyList();
 
 
     // === OTHER VARIABLES
@@ -376,9 +380,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         String url = webView.getUrl();
         Timber.i(">> WebActivity resume : %s %s %s", url, currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
         if (currentContent != null && url != null && getWebClient().isGalleryPage(url)) {
-            if (processDisposable != null)
-                processDisposable.dispose(); // Cancel whichever process was happening before
-            processDisposable = Single.fromCallable(() -> processContent(currentContent))
+            if (processContentDisposable != null)
+                processContentDisposable.dispose(); // Cancel whichever process was happening before
+            processContentDisposable = Single.fromCallable(() -> processContent(currentContent))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
@@ -545,6 +549,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     public void onGalleryPageStarted() {
         blockedTags.clear();
+        extraImages.clear();
+        duplicateId = -1;
+        duplicateSimilarity = 0f;
     }
 
     public void onPageFinished(boolean isResultsPage, boolean isGalleryPage) {
@@ -704,22 +711,48 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * Listener for the Action button : download content, view queue or read content
      */
     public void onActionClick() {
-        if (ActionMode.DOWNLOAD == actionButtonMode) processDownload(false, false);
-        else if (ActionMode.DOWNLOAD_PLUS == actionButtonMode) processDownload(false, true);
-        else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
+        boolean needsDuplicateAlert = (Preferences.isDownloadDuplicateAsk()
+                && (
+                (duplicateSimilarity >= SIMILARITY_SAFE_THRESHOLD && !duplicateSameSite)
+                        ||
+                        (duplicateSimilarity < SIMILARITY_SAFE_THRESHOLD && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD)
+        ));
+        switch (actionButtonMode) {
+            case ActionMode.DOWNLOAD:
+                if (needsDuplicateAlert)
+                    DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, false);
+                else processDownload(false, false);
+                break;
+            case ActionMode.DOWNLOAD_PLUS:
+                if (needsDuplicateAlert)
+                    DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, true);
+                else processDownload(false, true);
+                break;
+            case ActionMode.VIEW_QUEUE:
+                goToQueue();
+                break;
+            case ActionMode.READ:
+                if (currentContent != null) {
+                    String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
+                    currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
+                    if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
+                            || StatusContent.ERROR == currentContent.getStatus()
+                            || StatusContent.MIGRATED == currentContent.getStatus()))
+                        ContentHelper.openHentoidViewer(this, currentContent, null);
+                    else actionMenu.setEnabled(false);
+                }
+                break;
+            default:
+                // Nothing
+        }
+
+        /*
         else if (ActionMode.DUPLICATE_ALERT == actionButtonMode)
             if (Preferences.getDownloadDuplicateMode() == Preferences.Constant.DOWNLOAD_DUPLICATE_ASK)
                 DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity);
             else processDownload(false, false);
-        else if (ActionMode.READ == actionButtonMode && currentContent != null) {
-            String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
-            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
-            if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
-                    || StatusContent.ERROR == currentContent.getStatus()
-                    || StatusContent.MIGRATED == currentContent.getStatus()))
-                ContentHelper.openHentoidViewer(this, currentContent, null);
-            else actionMenu.setEnabled(false);
-        }
+         */
+
     }
 
     /**
@@ -729,7 +762,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      */
     private void changeActionMode(@ActionMode int mode) {
         @DrawableRes int resId = R.drawable.ic_info;
-        if (ActionMode.DOWNLOAD == mode || ActionMode.DUPLICATE_ALERT == mode) {
+        if (ActionMode.DOWNLOAD == mode) {
             resId = R.drawable.selector_download_action;
         } else if (ActionMode.DOWNLOAD_PLUS == mode) {
             resId = R.drawable.ic_action_download_plus;
@@ -779,6 +812,27 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         if (isDownloadPlus) {
+            // Copy the content's download params to the images
+            String downloadParamsStr = currentContent.getDownloadParams();
+            if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
+                for (ImageFile i : extraImages) i.setDownloadParams(downloadParamsStr);
+            }
+
+            // Append additional pages to the current book's list of pages
+            List<ImageFile> updatedImgs = new ArrayList<>(); // Entire image set to update
+            Set<String> existingUrls = new HashSet<>(); // URLs of known images
+            if (currentContent.getImageFiles() != null) {
+                existingUrls.addAll(Stream.of(currentContent.getImageFiles()).map(ImageFile::getUrl).toList());
+                updatedImgs.addAll(currentContent.getImageFiles());
+            }
+
+            // Save additional detected pages references to current book, without duplicate URLs
+            List<ImageFile> additionalNonExistingImages = Stream.of(extraImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
+            if (!additionalNonExistingImages.isEmpty()) {
+                updatedImgs.addAll(additionalNonExistingImages);
+                currentContent.setImageFiles(updatedImgs);
+            }
+
             currentContent.setStatus(StatusContent.SAVED);
             objectBoxDAO.insertContent(currentContent);
         }
@@ -870,7 +924,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
-        boolean isDuplicate = false;
 
         if (!isInCollection && !isInQueue) {
             // Index the content's cover picture
@@ -908,8 +961,17 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             if (duplicateResult != null) {
                 duplicateId = duplicateResult.left.getId();
                 duplicateSimilarity = duplicateResult.right;
-                // TODO rethink the "download plus" feature for potential duplicates
-                isDuplicate = true;
+                duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
+                if (duplicateSimilarity >= SIMILARITY_SAFE_THRESHOLD) {
+                    if (duplicateSameSite) {
+                        isInCollection = true; // Same site and very similar => considered as same book
+                        content = duplicateResult.left;
+                    }
+                } else {
+                    // Same site and kinda similar => download by default, but look for extra pics just in case
+                    if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry())
+                        searchForExtraImages(currentContent);
+                }
             }
 
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
@@ -924,18 +986,17 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         currentContent = content;
 
         if (isInCollection) {
-            // TODO rethink the "download plus" feature for potential duplicates
+            searchForExtraImages(currentContent);
             return ContentStatus.IN_COLLECTION;
         }
         if (isInQueue) return ContentStatus.IN_QUEUE;
-        if (isDuplicate) return ContentStatus.HAS_DUPLICATE;
         return ContentStatus.UNKNOWN;
     }
 
     public void onResultReady(@NonNull Content result, boolean quickDownload) {
-        if (processDisposable != null)
-            processDisposable.dispose(); // Cancel whichever process was happening before
-        processDisposable = Single.fromCallable(() -> processContent(result))
+        if (processContentDisposable != null)
+            processContentDisposable.dispose(); // Cancel whichever process was happening before
+        processContentDisposable = Single.fromCallable(() -> processContent(result))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -945,11 +1006,15 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     private void onContentProcessed(@ContentStatus int status, boolean quickDownload) {
-        processDisposable.dispose();
+        processContentDisposable.dispose();
         switch (status) {
             case ContentStatus.UNKNOWN:
-                if (quickDownload) processDownload(true, false);
-                changeActionMode(ActionMode.DOWNLOAD);
+                if (quickDownload) {
+                    if (duplicateId > -1 && Preferences.isDownloadDuplicateAsk())
+                        DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, false);
+                    else
+                        processDownload(true, false);
+                } else changeActionMode(ActionMode.DOWNLOAD);
                 break;
             case ContentStatus.IN_COLLECTION:
                 if (quickDownload) ToastHelper.toast(R.string.already_downloaded);
@@ -958,14 +1023,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             case ContentStatus.IN_QUEUE:
                 if (quickDownload) ToastHelper.toast(R.string.already_queued);
                 changeActionMode(ActionMode.VIEW_QUEUE);
-                break;
-            case ContentStatus.HAS_DUPLICATE:
-                if (quickDownload) {
-                    if (Preferences.getDownloadDuplicateMode() == Preferences.Constant.DOWNLOAD_DUPLICATE_ASK)
-                        DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity);
-                    else processDownload(true, false);
-                }
-                changeActionMode(ActionMode.DUPLICATE_ALERT);
                 break;
             default:
                 // Nothing
@@ -978,11 +1035,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     private void searchForExtraImages(@NonNull final Content storedContent) {
-        disposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent))
+        searchExtraImagesdisposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        l -> onSearchForExtraImagesSuccess(storedContent, l),
+                        list -> onSearchForExtraImagesSuccess(storedContent, list),
                         Timber::e
                 );
     }
@@ -1015,7 +1072,29 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     private void onSearchForExtraImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
-        disposable.dispose();
+        searchExtraImagesdisposable.dispose();
+        if (additionalImages.isEmpty()) return;
+
+        if (currentContent != null && currentContent.equals(storedContent)) { // User hasn't left the book page since
+            // Retrieve the URLs of stored pages
+            Set<String> storedUrls = new HashSet<>();
+            if (storedContent.getImageFiles() != null) {
+                storedUrls.addAll(Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getUrl).toList());
+            }
+
+            // Display the "download more" button only if extra images URLs aren't duplicates
+            List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();
+            if (!additionalNonDownloadedImages.isEmpty()) {
+                extraImages = additionalNonDownloadedImages;
+                changeActionMode(ActionMode.DOWNLOAD_PLUS);
+                BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
+                badge.setNumber(additionalNonDownloadedImages.size());
+            }
+        }
+    }
+
+    private void onSearchForExtraImagesSuccessOld(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
+        searchExtraImagesdisposable.dispose();
         if (additionalImages.isEmpty()) return;
 
         if (currentContent != null && currentContent.equals(storedContent)) { // User hasn't left the book page since
@@ -1027,16 +1106,17 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
             // Append additional pages to the current book's list of pages
             // and remove duplicates (URL-based)
-            List<ImageFile> updatedImgs = new ArrayList<>();
-            Set<String> existingUrls = new HashSet<>();
-            Set<String> storedUrls = new HashSet<>();
+            List<ImageFile> updatedImgs = new ArrayList<>(); // Entire image set to update
+            Set<String> existingUrls = new HashSet<>(); // URLs of known images
+//            Set<String> storedUrls = new HashSet<>(); // URLs of stored images among known images
             if (storedContent.getImageFiles() != null) {
                 existingUrls.addAll(Stream.of(storedContent.getImageFiles()).map(ImageFile::getUrl).toList());
-                storedUrls.addAll(Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getUrl).toList());
+//                storedUrls.addAll(Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getUrl).toList());
                 updatedImgs.addAll(storedContent.getImageFiles());
             }
 
             // Save additional detected pages references to current book
+            // TODO do that when actually downloading !
             List<ImageFile> additionalNonExistingImages = Stream.of(additionalImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
             if (!additionalNonExistingImages.isEmpty()) {
                 updatedImgs.addAll(additionalNonExistingImages);
@@ -1044,6 +1124,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 objectBoxDAO.insertContent(storedContent);
             }
 
+            /*
             // Display the "download more" button
             // TODO only do that for existing books; duplicate books should have another treatment
             List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();
@@ -1052,6 +1133,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
                 badge.setNumber(additionalNonDownloadedImages.size());
             }
+             */
         }
     }
 
@@ -1073,8 +1155,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @Override
-    public void onDownloadDuplicate() {
-        processDownload(false, false);
+    public void onDownloadDuplicate(boolean isDownloadPlus) {
+        processDownload(false, isDownloadPlus);
     }
 
 

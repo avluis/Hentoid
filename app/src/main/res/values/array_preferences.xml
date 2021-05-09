@@ -136,15 +136,6 @@
         <item>100</item>
     </string-array>
 
-    <string-array name="pref_browser_duplicate_entries">
-        <item>Always ask (default)</item>
-        <item>Download without asking</item>
-    </string-array>
-    <string-array name="pref_browser_duplicate_values">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-
     <string-array name="pref_attribute_list_order_entries">
         <item>Alphabetical</item>
         <item>Item count (most used first)</item>
