@@ -157,14 +157,21 @@
         app:layout_constraintTop_toBottomOf="@id/ivExternal"
         tools:text="@string/duplicate_alert_similarity" />
 
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrier"
+        android:layout_width="1dp"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvScore, ivCover" />
+
     <View
         android:id="@+id/divider"
         style="@style/Divider"
-        android:layout_marginTop="16dp"
         android:layout_width="0dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvScore" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barrier" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/download_btn"
@@ -175,8 +182,8 @@
         android:text="@string/duplicate_alert_download_book"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_download"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/divider" />
 
     <com.google.android.material.button.MaterialButton
@@ -187,8 +194,8 @@
         android:text="@string/duplicate_alert_download_pages"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_download_plus"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/download_btn" />
 
     <com.google.android.material.button.MaterialButton
@@ -199,8 +206,8 @@
         android:text="@string/cancel"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_close"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/download_plus_btn" />
 
     <CheckBox
@@ -220,5 +227,6 @@
         android:text="@string/duplicate_alert_never_extra_on_dupes"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ch_always_download" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
