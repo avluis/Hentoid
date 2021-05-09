@@ -149,7 +149,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         int GALLERY = 1;
     }
 
-    private static final float SIMILARITY_SAFE_THRESHOLD = 0.95f;
     private static final float SIMILARITY_MIN_THRESHOLD = 0.85f;
 
 
@@ -193,8 +192,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private Content currentContent = null;
     // Content ID of the duplicate candidate of the currently viewed Content
     private long duplicateId = -1;
-    // Content ID of the duplicate candidate of the currently viewed Content
-    private boolean duplicateSameSite = false;
     // Similarity score of the duplicate candidate of the currently viewed Content
     private float duplicateSimilarity = 0f;
     // Blocked tags found on the currently viewed Content
@@ -711,12 +708,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * Listener for the Action button : download content, view queue or read content
      */
     public void onActionClick() {
-        boolean needsDuplicateAlert = (Preferences.isDownloadDuplicateAsk()
-                && (
-                (duplicateSimilarity >= SIMILARITY_SAFE_THRESHOLD && !duplicateSameSite)
-                        ||
-                        (duplicateSimilarity < SIMILARITY_SAFE_THRESHOLD && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD)
-        ));
+        boolean needsDuplicateAlert = Preferences.isDownloadDuplicateAsk() && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD;
         switch (actionButtonMode) {
             case ActionMode.DOWNLOAD:
                 if (needsDuplicateAlert)
@@ -745,14 +737,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             default:
                 // Nothing
         }
-
-        /*
-        else if (ActionMode.DUPLICATE_ALERT == actionButtonMode)
-            if (Preferences.getDownloadDuplicateMode() == Preferences.Constant.DOWNLOAD_DUPLICATE_ASK)
-                DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity);
-            else processDownload(false, false);
-         */
-
     }
 
     /**
@@ -961,17 +945,17 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             if (duplicateResult != null) {
                 duplicateId = duplicateResult.left.getId();
                 duplicateSimilarity = duplicateResult.right;
-                duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
-                if (duplicateSimilarity >= SIMILARITY_SAFE_THRESHOLD) {
+                // Content ID of the duplicate candidate of the currently viewed Content
+                boolean duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
+                    /*
                     if (duplicateSameSite) {
-                        isInCollection = true; // Same site and very similar => considered as same book
+                        isInCollection = true; // Same site and very similar => considered as same book -> NOPE
                         content = duplicateResult.left;
                     }
-                } else {
-                    // Same site and kinda similar => download by default, but look for extra pics just in case
-                    if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry())
-                        searchForExtraImages(currentContent);
-                }
+                     */
+                // Same site and similar => download by default, but look for extra pics just in case
+                if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry())
+                    searchForExtraImages(currentContent);
             }
 
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
@@ -983,6 +967,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         } else {
             content = contentDB;
         }
+
         currentContent = content;
 
         if (isInCollection) {
@@ -1090,50 +1075,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
                 badge.setNumber(additionalNonDownloadedImages.size());
             }
-        }
-    }
-
-    private void onSearchForExtraImagesSuccessOld(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
-        searchExtraImagesdisposable.dispose();
-        if (additionalImages.isEmpty()) return;
-
-        if (currentContent != null && currentContent.equals(storedContent)) { // User hasn't left the book page since
-            // Copy the content's download params to the images
-            String downloadParamsStr = storedContent.getDownloadParams();
-            if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
-                for (ImageFile i : additionalImages) i.setDownloadParams(downloadParamsStr);
-            }
-
-            // Append additional pages to the current book's list of pages
-            // and remove duplicates (URL-based)
-            List<ImageFile> updatedImgs = new ArrayList<>(); // Entire image set to update
-            Set<String> existingUrls = new HashSet<>(); // URLs of known images
-//            Set<String> storedUrls = new HashSet<>(); // URLs of stored images among known images
-            if (storedContent.getImageFiles() != null) {
-                existingUrls.addAll(Stream.of(storedContent.getImageFiles()).map(ImageFile::getUrl).toList());
-//                storedUrls.addAll(Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getUrl).toList());
-                updatedImgs.addAll(storedContent.getImageFiles());
-            }
-
-            // Save additional detected pages references to current book
-            // TODO do that when actually downloading !
-            List<ImageFile> additionalNonExistingImages = Stream.of(additionalImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
-            if (!additionalNonExistingImages.isEmpty()) {
-                updatedImgs.addAll(additionalNonExistingImages);
-                storedContent.setImageFiles(updatedImgs);
-                objectBoxDAO.insertContent(storedContent);
-            }
-
-            /*
-            // Display the "download more" button
-            // TODO only do that for existing books; duplicate books should have another treatment
-            List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();
-            if (!additionalNonDownloadedImages.isEmpty()) {
-                changeActionMode(ActionMode.DOWNLOAD_PLUS);
-                BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
-                badge.setNumber(additionalNonDownloadedImages.size());
-            }
-             */
         }
     }
 
