@@ -311,7 +311,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
 
             if (progressBar != null)
-                updateProgress(item.content, baseLayout, getAdapterPosition(), false);
+                updateProgress(item.content, baseLayout, getAbsoluteAdapterPosition(), false);
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
         }
@@ -500,7 +500,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
-                boolean isFirstItem = (0 == getAdapterPosition());
+                boolean isFirstItem = (0 == getAbsoluteAdapterPosition());
                 ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
                 ivTop.setVisibility(View.VISIBLE);
                 ivBottom.setVisibility(View.VISIBLE);
