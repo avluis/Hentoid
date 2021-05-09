@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -215,7 +214,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
             }
-            if(oldItem.isCompleted() != newItem.isCompleted()) {
+            if (oldItem.isCompleted() != newItem.isCompleted()) {
                 diffBundleBuilder.setIsCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
@@ -269,7 +268,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
             }
-            if(oldItem.isCompleted() != newItem.isCompleted()) {
+            if (oldItem.isCompleted() != newItem.isCompleted()) {
                 diffBundleBuilder.setIsCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
@@ -596,7 +595,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
 
-
     /**
      * Callback for the "share item" action button
      */
@@ -629,15 +627,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void markSelectedAsCompleted() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
-        List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
-
-        for(Content item: selectedContent){
-            viewModel.toggleContentCompleted(item, this::refreshIfNeeded);
+        if (!selectedItems.isEmpty()) {
+            List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+            if (!selectedContent.isEmpty()) {
+                viewModel.toggleContentCompleted(selectedContent, this::refreshIfNeeded);
+                selectExtension.deselect(selectExtension.getSelections());
+            }
         }
-        for(ContentItem item: selectedItems) {
-            item.setSelected(false);
-        }
-
     }
 
     private void selectAll() {

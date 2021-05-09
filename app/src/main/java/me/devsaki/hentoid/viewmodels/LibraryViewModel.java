@@ -275,11 +275,14 @@ public class LibraryViewModel extends AndroidViewModel {
     // =========================
 
 
-    public void toggleContentCompleted(@NonNull final Content content, @NonNull final Runnable onSuccess) {
-        if (content.isBeingDeleted()) return;
+    public void toggleContentCompleted(@NonNull final List<Content> content, @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
-                Single.fromCallable(() -> doToggleContentCompleted(content.getId()))
-                        .subscribeOn(Schedulers.io())
+                Observable.fromIterable(content)
+                        .observeOn(Schedulers.io())
+                        .map(c -> {
+                            doToggleContentCompleted(c.getId());
+                            return c;
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 v -> onSuccess.run(),
@@ -289,18 +292,18 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
-     * Toggle the "favourite" state of the given content
+     * Toggle the "completed" state of the given content
      *
-     * @param contentId ID of the content whose favourite state to toggle
-     * @return Resulting content
+     * @param contentId ID of the content whose completed state to toggle
      */
-    private Content doToggleContentCompleted(long contentId) {
+    private void doToggleContentCompleted(long contentId) {
         Helper.assertNonUiThread();
 
         // Check if given content still exists in DB
         Content theContent = dao.selectContent(contentId);
 
         if (theContent != null) {
+            if (theContent.isBeingDeleted()) return;
             theContent.setCompleted(!theContent.isCompleted());
 
             // Persist in it JSON
@@ -310,8 +313,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
             // Persist in it DB
             dao.insertContent(theContent);
-
-            return theContent;
+            return;
         }
 
         throw new InvalidParameterException("Invalid ContentId : " + contentId);
@@ -661,10 +663,10 @@ public class LibraryViewModel extends AndroidViewModel {
         try {
             // Check if given content still exists in DB
             Group theGroup = dao.selectGroup(group.id);
-            if (!theGroup.items.isEmpty())
-                throw new GroupNotRemovedException(group, "Group is not empty");
-
             if (theGroup != null) {
+                if (!theGroup.items.isEmpty())
+                    throw new GroupNotRemovedException(group, "Group is not empty");
+
                 dao.deleteGroup(theGroup.id);
                 Timber.d("Removed group: %s from db.", theGroup.name);
                 return theGroup;
@@ -810,10 +812,8 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
 
-
-
     public void resetCompletedFilter() {
-        if(searchManager.isFilterBookCompleted())
+        if (searchManager.isFilterBookCompleted())
             toggleCompletedFilter();
         else if (searchManager.isFilterBookNotCompleted())
             toggleNotCompletedFilter();
