@@ -947,12 +947,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 duplicateSimilarity = duplicateResult.right;
                 // Content ID of the duplicate candidate of the currently viewed Content
                 boolean duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
-                    /*
-                    if (duplicateSameSite) {
-                        isInCollection = true; // Same site and very similar => considered as same book -> NOPE
-                        content = duplicateResult.left;
-                    }
-                     */
                 // Same site and similar => download by default, but look for extra pics just in case
                 if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry())
                     searchForExtraImages(currentContent);
