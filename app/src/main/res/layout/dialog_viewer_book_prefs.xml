@@ -49,10 +49,6 @@
         app:spinner_popup_background="@color/dark_gray"
         app:spinner_popup_elevation="14dp" />
 
-    <!--
-            app:spinner_arrow_drawable="@drawable/arrow_vector"
--->
-
     <TextView
         android:id="@+id/book_prefs_rendering_txt"
         android:layout_width="wrap_content"

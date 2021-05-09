@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
@@ -78,7 +79,9 @@ public class AppStartup {
             onComplete.run();
             // Run post-launch tasks on a worker
             WorkManager workManager = WorkManager.getInstance(context);
-            workManager.enqueue(new OneTimeWorkRequest.Builder(StartupWorker.class).build());
+            workManager.enqueueUniqueWork(Integer.toString(R.id.startup_service),
+                    ExistingWorkPolicy.KEEP,
+                    new OneTimeWorkRequest.Builder(StartupWorker.class).build());
         });
     }
 
@@ -116,6 +119,7 @@ public class AppStartup {
      */
     public static List<Observable<Float>> getPreLaunchTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
+        result.add(createObservableFrom(context, AppStartup::stopWorkers));
         result.add(createObservableFrom(context, AppStartup::processAppUpdate));
         result.add(createObservableFrom(context, AppStartup::loadSiteProperties));
         result.add(createObservableFrom(context, AppStartup::initUtils));
@@ -124,6 +128,7 @@ public class AppStartup {
 
     public static List<Observable<Float>> getPostLaunchTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
+//        result.add(createObservableFrom(context, AppStartupDev::testImg));
         result.add(createObservableFrom(context, AppStartup::searchForUpdates));
         result.add(createObservableFrom(context, AppStartup::sendFirebaseStats));
         return result;
@@ -131,6 +136,16 @@ public class AppStartup {
 
     private static Observable<Float> createObservableFrom(@NonNull final Context context, BiConsumer<Context, ObservableEmitter<Float>> function) {
         return Observable.create(emitter -> function.accept(context, emitter));
+    }
+
+    private static void stopWorkers(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        try {
+            Timber.i("Stop workers : start");
+            WorkManager.getInstance(context).cancelAllWorkByTag(Consts.WORK_CLOSEABLE);
+            Timber.i("Stop workers : done");
+        } finally {
+            emitter.onComplete();
+        }
     }
 
     private static void loadSiteProperties(@NonNull final Context context, ObservableEmitter<Float> emitter) {

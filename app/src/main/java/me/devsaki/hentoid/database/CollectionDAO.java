@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.function.Consumer;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -47,6 +50,8 @@ public interface CollectionDAO {
 
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl);
+
+    List<Content> searchTitlesWith(@NonNull final String word, int[] contentStatusCodes);
 
     long insertContent(@NonNull final Content content);
 
@@ -128,7 +133,15 @@ public interface CollectionDAO {
 
     // High-level queries (internal and external locations)
 
-    Single<List<Content>> selectStoredBooks(boolean nonFavouriteOnly, boolean includeQueued);
+    List<Content> selectStoredContent(boolean nonFavouriteOnly, boolean includeQueued, int orderField, boolean orderDesc);
+
+    long countStoredContent(boolean nonFavouriteOnly, boolean includeQueued);
+
+    Observable<Content> streamContentWithUnhashedCovers();
+
+    long countContentWithUnhashedCovers();
+
+    void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer);
 
 
     Single<List<Long>> selectRecentBookIds(long groupId, int orderField, boolean orderDesc, boolean bookFavouritesOnly, boolean pageFavouritesOnly, boolean bookCompletedOnly, boolean bookNotCompletedOnly);

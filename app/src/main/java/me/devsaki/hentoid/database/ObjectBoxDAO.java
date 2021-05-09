@@ -11,6 +11,7 @@ import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
 import com.annimon.stream.Stream;
+import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -24,7 +25,11 @@ import io.objectbox.BoxStore;
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
 import io.objectbox.query.Query;
+import io.objectbox.query.QueryBuilder;
+import io.objectbox.query.QueryConsumer;
 import io.objectbox.relation.ToOne;
+import io.reactivex.Emitter;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -73,10 +78,35 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public Single<List<Content>> selectStoredBooks(boolean nonFavouritesOnly, boolean includeQueued) {
-        return Single.fromCallable(() -> db.selectStoredContent(nonFavouritesOnly, includeQueued))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
+    public List<Content> selectStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
+        return db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc).build().find();
+    }
+
+    @Override
+    public long countStoredContent(boolean nonFavouritesOnly, boolean includeQueued) {
+        return db.selectStoredContentQ(nonFavouritesOnly, includeQueued, -1, false).build().count();
+    }
+
+    @Override
+    public long countContentWithUnhashedCovers() {
+        return db.selectNonHashedContent2().count();
+    }
+
+    @Override
+    public Observable<Content> streamContentWithUnhashedCovers() {
+        Query<Content> query = db.selectNonHashedContent2();
+        return Observable.create(emitter -> query.forEach(new DatabaseConsumer<>(emitter)));
+    }
+
+    // TODO make that observable fire onComplete event
+    public Observable<Content> streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
+        QueryBuilder<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc);
+        return Observable.create(emitter -> query.build().forEach(new DatabaseConsumer<>(emitter)));
+    }
+
+    public void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer) {
+        QueryBuilder<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc);
+        query.build().forEach(consumer::accept);
     }
 
     @Override
@@ -260,6 +290,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Nullable
     public Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl) {
         return db.selectContentBySourceAndUrl(site, contentUrl, Content.getNeutralCoverUrlRoot(coverUrl, site));
+    }
+
+    @Override
+    public List<Content> searchTitlesWith(@NonNull String word, int[] contentStatusCodes) {
+        return db.selectContentWithTitle(word, contentStatusCodes);
     }
 
     @Nullable
@@ -723,5 +758,19 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public long countOldStoredContent() {
         return db.selectOldStoredContentQ().count();
+    }
+
+    public static class DatabaseConsumer<T> implements QueryConsumer<T> {
+
+        private final Emitter<T> emitter;
+
+        public DatabaseConsumer(Emitter<T> emitter) {
+            this.emitter = emitter;
+        }
+
+        @Override
+        public void accept(@NonNull T data) {
+            emitter.onNext(data);
+        }
     }
 }

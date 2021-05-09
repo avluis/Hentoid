@@ -38,12 +38,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
 
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -439,7 +440,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         public void onImageLoadError(Throwable e) {
             Timber.w(e, ">>>>IMG %s reloaded with Glide", img.getFileUri());
             // Hack to fall back to glide by Manually forcing mime-type as GIF
-            img.setMimeType("image/gif");
+            img.setMimeType(ImageHelper.MIME_IMAGE_GIF);
             // Reload adapter
             notifyItemChanged(getLayoutPosition());
         }

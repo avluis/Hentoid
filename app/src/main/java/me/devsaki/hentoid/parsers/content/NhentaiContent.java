@@ -16,7 +16,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 // NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
@@ -66,7 +66,7 @@ public class NhentaiContent extends BaseContentParser {
 
         String titleDef = title.trim();
         if (titleDef.isEmpty()) titleDef = titleAlt.trim();
-        content.setTitle(Helper.removeNonPrintableChars(titleDef));
+        content.setTitle(StringHelper.removeNonPrintableChars(titleDef));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, "name", Site.NHENTAI);

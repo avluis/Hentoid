@@ -25,7 +25,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
 public class ParseHelper {
@@ -82,7 +82,7 @@ public class ParseHelper {
         if (null == s || s.isEmpty()) return "";
 
         String[] parts = s.split(" ");
-        if (parts.length > 1 && Helper.isNumeric(parts[parts.length - 1])) {
+        if (parts.length > 1 && StringHelper.isNumeric(parts[parts.length - 1])) {
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < parts.length - 1; i++) sb.append(parts[i]).append(" ");
             return sb.toString().trim();
@@ -146,7 +146,7 @@ public class ParseHelper {
         } else {
             name = element.selectFirst("." + childElementClass).ownText();
         }
-        name = Helper.removeNonPrintableChars(name);
+        name = StringHelper.removeNonPrintableChars(name);
         name = removeBrackets(name);
         if (removeTrailingNumbers) name = removeTrailingNumbers(name);
         if (name.isEmpty() || name.equals("-") || name.equals("/")) return;
@@ -191,7 +191,7 @@ public class ParseHelper {
     public static String getSavedCookieStr(String downloadParams) {
         Map<String, String> downloadParamsMap = ContentHelper.parseDownloadParams(downloadParams);
         if (downloadParamsMap.containsKey(HttpHelper.HEADER_COOKIE_KEY))
-            return Helper.protect(downloadParamsMap.get(HttpHelper.HEADER_COOKIE_KEY));
+            return StringHelper.protect(downloadParamsMap.get(HttpHelper.HEADER_COOKIE_KEY));
 
         return "";
     }

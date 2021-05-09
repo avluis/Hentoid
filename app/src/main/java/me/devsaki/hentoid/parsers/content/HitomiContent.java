@@ -14,7 +14,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HitomiContent extends BaseContentParser {
@@ -48,7 +48,7 @@ public class HitomiContent extends BaseContentParser {
         content.setSite(Site.HITOMI);
         content.setUrl(theUrl.replace(Site.HITOMI.getUrl(), "").replace("/reader", ""));
         content.setCoverImageUrl("https:" + coverUrl);
-        content.setTitle(Helper.removeNonPrintableChars(title));
+        content.setTitle(StringHelper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.HITOMI);

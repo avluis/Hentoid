@@ -14,7 +14,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class MrmContent extends BaseContentParser {
@@ -36,7 +36,7 @@ public class MrmContent extends BaseContentParser {
 
         content.setUrl(url.replace(Site.MRM.getUrl(), "").split("/")[0]);
         if (!title.isEmpty()) {
-            content.setTitle(Helper.removeNonPrintableChars(title));
+            content.setTitle(StringHelper.removeNonPrintableChars(title));
         } else content.setTitle("<no title>");
 
         AttributeMap attributes = new AttributeMap();

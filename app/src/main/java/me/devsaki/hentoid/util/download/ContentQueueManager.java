@@ -2,11 +2,14 @@ package me.devsaki.hentoid.util.download;
 
 import android.content.Context;
 
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.workers.ContentDownloadWorker;
+
+import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
 
 /**
  * Created by Robb_w on 2018/04
@@ -65,7 +68,11 @@ public class ContentQueueManager {
     public void resumeQueue(Context context) {
         if (!isQueueActive) {
             WorkManager workManager = WorkManager.getInstance(context);
-            workManager.enqueue(new OneTimeWorkRequest.Builder(ContentDownloadWorker.class).build());
+            workManager.enqueueUniqueWork(
+                    Integer.toString(R.id.download_service),
+                    ExistingWorkPolicy.KEEP,
+                    new OneTimeWorkRequest.Builder(ContentDownloadWorker.class).addTag(WORK_CLOSEABLE).build()
+            );
             isQueueActive = true;
         }
     }

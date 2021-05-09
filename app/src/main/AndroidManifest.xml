@@ -141,6 +141,17 @@
                 android:value=".activities.LibraryActivity" />
         </activity>
         <activity
+            android:name=".activities.ToolsActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_preferences"
+            android:parentActivityName=".activities.LibraryActivity"
+            android:theme="@style/Theme.Light.Prefs"
+            tools:ignore="UnusedAttribute">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.LibraryActivity" />
+        </activity>
+        <activity
             android:name=".activities.AboutActivity"
             android:label="@string/title_activity_about"
             android:parentActivityName=".activities.LibraryActivity"
@@ -152,6 +163,10 @@
         <activity
             android:name=".activities.DrawerEditActivity"
             android:label="@string/title_activity_drawer_edit"
+            tools:ignore="UnusedAttribute" />
+        <activity
+            android:name=".activities.DuplicateDetectorActivity"
+            android:label="@string/title_activity_duplicate_detector"
             tools:ignore="UnusedAttribute" />
         <activity
             android:name=".activities.SearchActivity"
@@ -478,6 +493,8 @@
         <receiver android:name=".receiver.ArchiveNotificationSuccessReceiver" />
 
         <receiver android:name=".receiver.DownloadNotificationPauseReceiver" />
+
+        <receiver android:name=".receiver.DuplicateNotificationStopReceiver" />
 
         <receiver android:name=".receiver.InstallRunReceiver" />
 

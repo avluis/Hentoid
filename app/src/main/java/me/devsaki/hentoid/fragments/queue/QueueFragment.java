@@ -76,6 +76,7 @@ import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
@@ -515,7 +516,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServiceDestroyed(ServiceDestroyedEvent event) {
-        if (event.service != ServiceDestroyedEvent.Service.DOWNLOAD) return;
+        if (event.service != R.id.download_service) return;
 
         isPaused = true;
         updateProgressFirstItem(true);
@@ -558,7 +559,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
                 // Update information bar
                 StringBuilder message = new StringBuilder();
-                String processedPagesFmt = Helper.formatIntAsStr(pagesOKDisplay, String.valueOf(totalPagesDisplay).length());
+                String processedPagesFmt = StringHelper.formatIntAsStr(pagesOKDisplay, String.valueOf(totalPagesDisplay).length());
                 message.append(processedPagesFmt).append("/").append(totalPagesDisplay).append(" processed");
                 if (pagesKO > 0)
                     message.append(" (").append(pagesKO).append(" errors)");

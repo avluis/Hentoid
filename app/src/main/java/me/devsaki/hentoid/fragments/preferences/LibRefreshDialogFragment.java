@@ -383,7 +383,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServiceDestroyed(ServiceDestroyedEvent event) {
-        if (event.service != ServiceDestroyedEvent.Service.IMPORT) return;
+        if (event.service != R.id.import_service) return;
         if (!isServiceGracefulClose) {
             Snackbar.make(rootView, R.string.import_unexpected, BaseTransientBottomBar.LENGTH_LONG).show();
             new Handler(Looper.getMainLooper()).postDelayed(this::dismiss, 3000);

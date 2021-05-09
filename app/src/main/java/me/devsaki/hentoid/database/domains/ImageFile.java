@@ -6,7 +6,6 @@ import java.util.Objects;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
-import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.core.Consts;
@@ -36,6 +35,7 @@ public class ImageFile {
     private ToOne<Content> content;
     private String mimeType;
     private long size = 0;
+    private long imageHash = 0;
 
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
     private String downloadParams = "";
@@ -186,6 +186,14 @@ public class ImageFile {
     public ImageFile setSize(long size) {
         this.size = size;
         return this;
+    }
+
+    public long getImageHash() {
+        return imageHash;
+    }
+
+    public void setImageHash(long hash) {
+        this.imageHash = hash;
     }
 
     public boolean isRead() {

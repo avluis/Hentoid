@@ -67,8 +67,6 @@ import static com.annimon.stream.Collectors.toList;
 
 public class ObjectBoxDB {
 
-    // TODO - put indexes
-
     // Status displayed in the library view (all books of the library; both internal and external)
     private static final int[] libraryStatus = ContentHelper.getLibraryStatuses();
 
@@ -1013,6 +1011,13 @@ public class ObjectBoxDB {
         return result;
     }
 
+    List<Content> selectContentWithTitle(@NonNull String word, int[] contentStatusCodes) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.contains(Content_.title, word);
+        query.in(Content_.status, contentStatusCodes);
+        return query.build().find();
+    }
+
     void updateImageFileStatusParamsMimeTypeUriSize(@NonNull ImageFile image) {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
@@ -1350,7 +1355,15 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    List<Content> selectStoredContent(boolean nonFavouritesOnly, boolean includeQueued) {
+    QueryBuilder<ImageFile> selectNonHashedCovers() {
+        QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
+        query.equal(ImageFile_.isCover, true)
+                .equal(ImageFile_.imageHash, 0)
+                .notEqual(ImageFile_.status, StatusContent.ONLINE.getCode());
+        return query;
+    }
+
+    QueryBuilder<Content> selectStoredContentQ(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         if (includeQueued)
             query.in(Content_.status, new int[]{
@@ -1366,7 +1379,40 @@ public class ObjectBoxDB {
         query.notNull(Content_.storageUri);
         query.notEqual(Content_.storageUri, "");
         if (nonFavouritesOnly) query.equal(Content_.favourite, false);
-        return query.build().find();
+        if (orderField > -1) {
+            Property<Content> field = getPropertyFromField(orderField);
+            if (null != field) {
+                if (orderDesc) query.orderDesc(field);
+                else query.order(field);
+            }
+        }
+        return query;
+    }
+
+    Query<Content> selectNonHashedContent1() {
+        return selectNonHashedCovers()
+                .link(ImageFile_.content)
+                .in(Content_.status, new int[]{
+                        StatusContent.DOWNLOADED.getCode(),
+                        StatusContent.MIGRATED.getCode()})
+                .notNull(Content_.storageUri)
+                .notEqual(Content_.storageUri, "").build();
+    }
+
+    Query<Content> selectNonHashedContent2() {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query()
+                .in(Content_.status, new int[]{
+                        StatusContent.DOWNLOADED.getCode(),
+                        StatusContent.MIGRATED.getCode()})
+                .notNull(Content_.storageUri)
+                .notEqual(Content_.storageUri, "");
+
+        QueryBuilder<ImageFile> imageQuery = query.backlink(ImageFile_.content);
+        imageQuery.equal(ImageFile_.isCover, true)
+                .in(ImageFile_.imageHash, new long[]{0, -1})
+                .notEqual(ImageFile_.status, StatusContent.ONLINE.getCode());
+
+        return query.build();
     }
 
     // Select all duplicate bookmarks that end with a "/"

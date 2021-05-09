@@ -43,11 +43,11 @@ public class HitomiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        addContentBlockFilter(BLOCKED_CONTENT);
-        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new HitomiWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.setResultsUrlPatterns(RESULTS_FILTER);
         client.setResultUrlRewriter(this::rewriteResultsUrl);
+        client.addContentBlockFilter(BLOCKED_CONTENT);
         return client;
     }
 
@@ -68,43 +68,50 @@ public class HitomiActivity extends BaseWebActivity {
         return builder.toString();
     }
 
-    /**
-     * Specific implementation to get rid of Hitomi's ad js files
-     * that have random names
-     */
-    @Override
-    protected boolean isUrlForbidden(@NonNull String url) {
-        // 1- Process usual blacklist and cached dynamic blacklist
-        if (super.isUrlForbidden(url)) return true;
-        if (jsBlacklistCache.contains(url)) return true;
+    private static class HitomiWebViewClient extends CustomWebViewClient {
 
-        // 2- Accept non-JS files
-        if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
-
-        // 3- Accept JS files defined in the whitelist
-        for (Pattern p : whitelistUrlPattern) {
-            Matcher matcher = p.matcher(url.toLowerCase());
-            if (matcher.find()) return false;
+        HitomiWebViewClient(Site site, String[] filter, CustomWebActivity activity) {
+            super(site, filter, activity);
         }
 
-        // 4- For the others (gray list), block them if they _contain_ keywords
-        Timber.d(">> examining grey file %s", url);
-        try {
-            Response response = HttpHelper.getOnlineResource(url, null, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent(), getStartSite().useWebviewAgent());
-            ResponseBody body = response.body();
-            if (null == body) throw new IOException("Empty body");
+        /**
+         * Specific implementation to get rid of Hitomi's ad js files
+         * that have random names
+         */
+        @Override
+        protected boolean isUrlForbidden(@NonNull String url) {
+            // 1- Process usual blacklist and cached dynamic blacklist
+            if (super.isUrlForbidden(url)) return true;
+            if (jsBlacklistCache.contains(url)) return true;
 
-            String jsBody = body.string().toLowerCase();
-            for (String s : BLOCKED_JS_CONTENTS)
-                if (jsBody.contains(s)) {
-                    jsBlacklistCache.add(url);
-                    return true;
-                }
-        } catch (IOException e) {
-            Timber.e(e);
+            // 2- Accept non-JS files
+            if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
+
+            // 3- Accept JS files defined in the whitelist
+            for (Pattern p : whitelistUrlPattern) {
+                Matcher matcher = p.matcher(url.toLowerCase());
+                if (matcher.find()) return false;
+            }
+
+            // 4- For the others (gray list), block them if they _contain_ keywords
+            Timber.d(">> examining grey file %s", url);
+            try {
+                Response response = HttpHelper.getOnlineResource(url, null, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+                ResponseBody body = response.body();
+                if (null == body) throw new IOException("Empty body");
+
+                String jsBody = body.string().toLowerCase();
+                for (String s : BLOCKED_JS_CONTENTS)
+                    if (jsBody.contains(s)) {
+                        jsBlacklistCache.add(url);
+                        return true;
+                    }
+            } catch (IOException e) {
+                Timber.e(e);
+            }
+
+            // Accept non-blocked (=grey) JS files
+            return false;
         }
-
-        // Accept non-blocked (=grey) JS files
-        return false;
     }
 }

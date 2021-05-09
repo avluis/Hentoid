@@ -20,7 +20,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 import timber.log.Timber;
@@ -56,7 +56,7 @@ public class MusesContent extends BaseContentParser {
         for (Element thumbLink : thumbLinks) {
             String href = thumbLink.attr("href");
             int numSeparator = href.lastIndexOf('/');
-            if (Helper.isNumeric(href.substring(numSeparator + 1)))
+            if (StringHelper.isNumeric(href.substring(numSeparator + 1)))
             {
                 Element img = thumbLink.select("img").first();
                 if (null == img) continue;
@@ -80,7 +80,7 @@ public class MusesContent extends BaseContentParser {
 
         if (breadcrumbs.size() > 1) {
             // Default : book title is the last breadcrumb
-            String bookTitle = Helper.capitalizeString(breadcrumbs.get(breadcrumbs.size() - 1).text());
+            String bookTitle = StringHelper.capitalizeString(breadcrumbs.get(breadcrumbs.size() - 1).text());
 
             if (breadcrumbs.size() > 2) {
                 // Element 1 is always the publisher (using CIRCLE as publisher never appears on the Hentoid UI)
@@ -113,7 +113,7 @@ public class MusesContent extends BaseContentParser {
                     }
                 }
             }
-            content.setTitle(Helper.removeNonPrintableChars(bookTitle));
+            content.setTitle(StringHelper.removeNonPrintableChars(bookTitle));
         }
         content.setQtyPages(nbImages); // Cover is duplicated in the code below; no need to decrease nbImages here
 

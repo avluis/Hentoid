@@ -13,6 +13,7 @@ class JsonImageFile {
     private boolean isRead;
     private StatusContent status;
     private String mimeType;
+    private long pHash;
 
     private JsonImageFile() {
     }
@@ -27,6 +28,7 @@ class JsonImageFile {
         result.favourite = f.isFavourite();
         result.isRead = f.isRead();
         result.mimeType = f.getMimeType();
+        result.pHash = f.getImageHash();
         return result;
     }
 
@@ -37,6 +39,7 @@ class JsonImageFile {
         result.setFavourite(favourite);
         result.setRead(isRead);
         result.setMimeType(mimeType);
+        result.setImageHash(pHash);
         return result;
     }
 }

@@ -91,6 +91,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -188,6 +189,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      * <p>
      * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
      */
+    // The one for the PagedList (endless mode)
     private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
         @Override
         public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
@@ -232,7 +234,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     }).build();
 
-
+    // The one for "classic" List (paged mode)
     public static final DiffCallback<ContentItem> CONTENT_ITEM_DIFF_CALLBACK = new DiffCallback<ContentItem>() {
         @Override
         public boolean areItemsTheSame(ContentItem oldItem, ContentItem newItem) {
@@ -1190,7 +1192,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         String query = getQuery();
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
-        if (newSearch && Helper.isNumeric(query)) {
+        if (newSearch && StringHelper.isNumeric(query)) {
             ArrayList<Integer> siteCodes = Stream.of(result)
                     .withoutNulls()
                     .filter(content -> query.equals(content.getUniqueSiteId()))

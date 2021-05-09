@@ -14,7 +14,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class PururinContent extends BaseContentParser {
@@ -51,7 +51,7 @@ public class PururinContent extends BaseContentParser {
 
         content.setUrl(url.replace(getProtocol(url) + "://pururin.io/gallery", ""));
         content.setCoverImageUrl(getProtocol(url) + ":" + coverUrl);
-        content.setTitle(!title.isEmpty() ? Helper.removeNonPrintableChars(title.get(0)) : "");
+        content.setTitle(!title.isEmpty() ? StringHelper.removeNonPrintableChars(title.get(0)) : "");
         int qtyPages = 0;
         boolean pagesFound = false;
         for (String s : pages) {

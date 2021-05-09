@@ -17,6 +17,7 @@ public class ArchiveNotificationChannel {
 
     static final String ID = "archive";
 
+    // IMPORTANT : ALWAYS INIT THE CHANNEL BEFORE FIRING NOTIFICATIONS !
     public static void init(@NonNull final Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String name = "Content archival";

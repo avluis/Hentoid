@@ -35,7 +35,7 @@ public class LusciousActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new LusciousWebClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new LusciousWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
@@ -45,8 +45,8 @@ public class LusciousActivity extends BaseWebActivity {
         private final Debouncer<Boolean> detectDebouncer;
         private final Map<String, Integer> bookIdsCount = new HashMap<>();
 
-        LusciousWebClient(String[] filter, WebContentListener listener) {
-            super(filter, listener);
+        LusciousWebClient(Site site, String[] filter, CustomWebActivity activity) {
+            super(site, filter, activity);
             detectDebouncer = new Debouncer<>(getApplication(), 2000, this::clearLoadingPics);
         }
 
