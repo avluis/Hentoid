@@ -299,10 +299,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             attachFlag(item.content);
             attachTitle(item.content);
 
-            if( ivCompleted != null)
-                attachCompletedIcon(item.content);
-            if (!item.content.isCompleted() && readingProgress != null)
-                 attachReadingProgress(item.content);
+            if (ivCompleted != null)
+                attachCompleted(item.content);
+            if (readingProgress != null)
+                attachReadingProgress(item.content);
             if (tvArtist != null) attachArtist(item.content);
             if (tvSeries != null) attachSeries(item.content);
             if (tvPages != null) attachPages(item.content, item.viewType);
@@ -315,7 +315,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
         }
-
 
 
         private void updateLayoutVisibility(@NonNull final ContentItem item) {
@@ -413,25 +412,20 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
         }
 
-        private void attachCompletedIcon(@NonNull final Content content) {
-            if (content.isCompleted()) {
-                if (readingProgress != null) {
-                    readingProgress.setVisibility(View.GONE);
-                    ivCompleted.setImageResource(R.drawable.ic_completed);
-                    ivCompleted.setVisibility(View.VISIBLE);
-                }
-            }
-
-            else  ivCompleted.setVisibility(View.GONE);
+        private void attachCompleted(@NonNull final Content content) {
+            if (content.isCompleted()) ivCompleted.setVisibility(View.VISIBLE);
+            else ivCompleted.setVisibility(View.GONE);
         }
 
         private void attachReadingProgress(@NonNull final Content content) {
             List<ImageFile> imgs = content.getImageFiles();
-            if (imgs != null) {
+            if (imgs != null && !content.isCompleted()) {
                 readingProgress.setVisibility(View.VISIBLE);
                 readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
                 readingProgress.setTotal(Stream.of(content.getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count());
                 readingProgress.setProgress1(content.getReadPagesCount());
+            } else {
+                readingProgress.setVisibility(View.GONE);
             }
         }
 
