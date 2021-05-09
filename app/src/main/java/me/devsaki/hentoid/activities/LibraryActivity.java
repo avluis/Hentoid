@@ -531,12 +531,13 @@ public class LibraryActivity extends BaseActivity {
     public boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_completed_filter:
-                menuItem.setChecked(!menuItem.isChecked());
-                updateCompletedFilter();
-                if(menuItem.isChecked())
+                if (!menuItem.isChecked())
                     askFilterCompleted();
-                else
+                else {
+                    completedFilterMenu.setChecked(!completedFilterMenu.isChecked());
+                    updateCompletedFilter();
                     viewModel.resetCompletedFilter();
+                }
                 break;
             case R.id.action_favourites:
                 menuItem.setChecked(!menuItem.isChecked());
@@ -904,11 +905,12 @@ public class LibraryActivity extends BaseActivity {
         Grouping currentGrouping = Preferences.getGroupingDisplay();
 
         searchMenu.setVisible(!editMode);
-        newGroupMenu.setVisible(!editMode && isGroupDisplayed() && currentGrouping.canReorderGroups());
+        newGroupMenu.setVisible(!editMode && isGroupDisplayed() && currentGrouping.canReorderGroups()); // Custom groups only
         favsMenu.setVisible(!editMode);
         reorderMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_reorder_lines);
         reorderCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
+        completedFilterMenu.setVisible(!editMode && !isGroupDisplayed());
 
         if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
         else reorderMenu.setVisible(currentGrouping.canReorderBooks());
@@ -943,16 +945,20 @@ public class LibraryActivity extends BaseActivity {
         }
     }
 
-    public void askFilterCompleted(){
+    public void askFilterCompleted() {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         String title = getString(R.string.ask_filter_completed);
         builder.setMessage(title)
                 .setPositiveButton(R.string.filter_not_completed,
                         (dialog, which) -> {
+                            completedFilterMenu.setChecked(!completedFilterMenu.isChecked());
+                            updateCompletedFilter();
                             viewModel.toggleNotCompletedFilter();
                         })
                 .setNegativeButton(R.string.filter_completed,
                         (dialog, which) -> {
+                            completedFilterMenu.setChecked(!completedFilterMenu.isChecked());
+                            updateCompletedFilter();
                             viewModel.toggleCompletedFilter();
                         })
                 .create().show();
