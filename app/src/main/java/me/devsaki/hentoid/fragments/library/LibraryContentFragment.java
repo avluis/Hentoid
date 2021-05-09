@@ -580,7 +580,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 keepToolbar = true;
                 break;
             case R.id.action_selectAll:
-                selectAll();
+                selectExtension.select();
                 keepToolbar = true;
                 break;
             case R.id.action_set_cover:
@@ -635,11 +635,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             }
         }
     }
-
-    private void selectAll() {
-        selectExtension.select();
-    }
-
 
     /**
      * Callback for the "archive item" action button
