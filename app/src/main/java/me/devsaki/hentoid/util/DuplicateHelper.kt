@@ -179,11 +179,13 @@ class DuplicateHelper {
                     sensitivity
                 )
                 val key = Pair(reference.id, candidate.id)
-                if (coverScore == -2f) { // Ignored cover
-                    ignoredIds?.add(key)
-                    return null
-                } else {
-                    ignoredIds?.remove(key)
+                if (ignoredIds != null) {
+                    if (coverScore == -2f) { // Ignored cover
+                        ignoredIds.add(key)
+                        return null
+                    } else {
+                        ignoredIds.remove(key)
+                    }
                 }
             }
             if (useTitle) titleScore = computeTitleScore(
