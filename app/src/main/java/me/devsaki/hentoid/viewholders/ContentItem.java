@@ -425,7 +425,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 readingProgress.setTotal(Stream.of(content.getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count());
                 readingProgress.setProgress1(content.getReadPagesCount());
             } else {
-                readingProgress.setVisibility(View.GONE);
+                readingProgress.setVisibility(View.INVISIBLE);
             }
         }
 
