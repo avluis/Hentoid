@@ -371,7 +371,6 @@ public final class ContentHelper {
             @NonNull final Context context,
             @NonNull final CollectionDAO dao,
             @NonNull final Content content) {
-        content.populateAuthor();
         long newContentId = dao.insertContent(content);
         content.setId(newContentId);
 
@@ -551,7 +550,7 @@ public final class ContentHelper {
     public static ImmutablePair<String, String> formatBookFolderName(@NonNull final Content content) {
         String title = content.getTitle();
         title = (null == title) ? "" : title;
-        String author = content.getAuthor().toLowerCase();
+        String author = formatBookAuthor(content).toLowerCase();
 
         return new ImmutablePair<>(
                 formatBookFolderName(content, FileHelper.cleanFileName(title), FileHelper.cleanFileName(author)),
@@ -604,6 +603,24 @@ public final class ContentHelper {
         // => shorten them by using their hashCode
         if (id.length() > 10) id = StringHelper.formatIntAsStr(Math.abs(id.hashCode()), 10);
         return "[" + id + "]";
+    }
+
+    public static String formatBookAuthor(@NonNull final Content content) {
+        String result = "";
+        AttributeMap attrMap = content.getAttributeMap();
+        // Try and get first Artist
+        List<Attribute> artistAttributes = attrMap.get(AttributeType.ARTIST);
+        if (artistAttributes != null && !artistAttributes.isEmpty())
+            result = artistAttributes.get(0).getName();
+
+        // If no Artist found, try and get first Circle
+        if (null == result || result.isEmpty()) {
+            List<Attribute> circleAttributes = attrMap.get(AttributeType.CIRCLE);
+            if (circleAttributes != null && !circleAttributes.isEmpty())
+                result = circleAttributes.get(0).getName();
+        }
+
+        return StringHelper.protect(result);
     }
 
     /**

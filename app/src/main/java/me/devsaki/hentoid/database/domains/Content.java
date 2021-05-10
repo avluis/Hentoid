@@ -53,6 +53,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ArchiveHelper;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
@@ -492,21 +493,6 @@ public class Content implements Serializable {
         return this;
     }
 
-    public Content populateAuthor() {
-        String authorStr = "";
-        AttributeMap attrMap = getAttributeMap();
-        if (attrMap.containsKey(AttributeType.ARTIST) && !attrMap.get(AttributeType.ARTIST).isEmpty())
-            authorStr = attrMap.get(AttributeType.ARTIST).get(0).getName();
-        if ((null == authorStr || authorStr.equals(""))
-                && attrMap.containsKey(AttributeType.CIRCLE)
-                && !attrMap.get(AttributeType.CIRCLE).isEmpty()) // Try and get Circle
-            authorStr = attrMap.get(AttributeType.CIRCLE).get(0).getName();
-
-        if (null == authorStr) authorStr = "";
-        setAuthor(authorStr);
-        return this;
-    }
-
     public String getTitle() {
         return StringHelper.protect(title);
     }
@@ -517,7 +503,7 @@ public class Content implements Serializable {
     }
 
     public String getAuthor() {
-        if (null == author) populateAuthor();
+        if (null == author) author = ContentHelper.formatBookAuthor(this);
         return author;
     }
 
@@ -648,9 +634,11 @@ public class Content implements Serializable {
     }
 
     private long getDownloadedPagesSize() {
-        if (imageFiles != null)
-            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
-        else return 0;
+        if (imageFiles != null) {
+            Long result = Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
+            if (result != null) return result;
+        }
+        return 0;
     }
 
     public long getSize() {
@@ -695,6 +683,7 @@ public class Content implements Serializable {
     /**
      * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public String getStorageFolder() {
         return storageFolder == null ? "" : storageFolder;
@@ -703,6 +692,7 @@ public class Content implements Serializable {
     /**
      * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public void resetStorageFolder() {
         storageFolder = "";

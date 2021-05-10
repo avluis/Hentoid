@@ -120,7 +120,6 @@ public class ContentV1 {
                 .setImageFiles(imageFiles)
                 .setCoverImageUrl(coverImageUrl)
                 .setTitle(title)
-                .populateAuthor()
                 .setQtyPages(qtyPages)
                 .setDownloadDate(downloadDate)
                 .setStatus(status);
