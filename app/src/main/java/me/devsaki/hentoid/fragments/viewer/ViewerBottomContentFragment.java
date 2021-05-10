@@ -107,7 +107,7 @@ public class ViewerBottomContentFragment extends BottomSheetDialogFragment {
                     .into(binding.ivCover);
 
         binding.contentTitle.setText(content.getTitle());
-        binding.contentArtist.setText(String.format("Artist : %s", content.getAuthor()));
+        binding.contentArtist.setText(ContentHelper.formatArtistForDisplay(requireContext(), content));
 
         String tagTxt = ContentHelper.formatTagsForDisplay(content);
         if (tagTxt.isEmpty()) {
