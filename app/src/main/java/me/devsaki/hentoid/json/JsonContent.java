@@ -29,7 +29,6 @@ public class JsonContent {
 
     private String url;
     private String title;
-    private String author;
     private String coverImageUrl;
     private Integer qtyPages;
     private long uploadDate;
@@ -75,7 +74,6 @@ public class JsonContent {
         JsonContent result = new JsonContent();
         result.url = c.getUrl();
         result.title = StringHelper.removeNonPrintableChars(c.getTitle());
-        result.author = c.getAuthor();
         result.coverImageUrl = c.getCoverImageUrl();
         result.qtyPages = c.getQtyPages();
         result.uploadDate = c.getUploadDate();
@@ -120,7 +118,6 @@ public class JsonContent {
         result.setSite(site);
         result.setUrl(url);
         result.setTitle(StringHelper.removeNonPrintableChars(title));
-        result.setAuthor(author);
         result.setCoverImageUrl(coverImageUrl);
         result.setQtyPages(qtyPages);
         result.setUploadDate(uploadDate);
