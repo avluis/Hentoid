@@ -106,7 +106,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     public DuplicateItem(DuplicateEntry result, @ViewType int viewType) {
         this.viewType = viewType;
         isEmpty = (null == result);
-        if (result != null) setIdentifier(result.hash64());
+        if (result != null) setIdentifier(result.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
 
         if (result != null) {

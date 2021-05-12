@@ -33,7 +33,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
 
     public ImageFileItem(@NonNull ImageFile image) {
         this.image = image;
-        setIdentifier(image.hash64());
+        setIdentifier(image.uniqueHash());
     }
 
     // Return a copy, not the original instance that has to remain in synch with its visual representation

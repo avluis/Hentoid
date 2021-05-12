@@ -43,7 +43,7 @@ data class DuplicateEntry(
         return Helper.weigthedAverage(operands) * (if (artistScore > -1) artistScore else 1f)
     }
 
-    fun hash64(): Long {
+    fun uniqueHash(): Long {
         return Helper.hash64(("$referenceId.$duplicateId").toByteArray())
     }
 

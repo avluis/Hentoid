@@ -235,13 +235,13 @@ public class ImageFile {
                 Objects.equals(getUrl(), imageFile.getUrl());
     }
 
-    public long hash64() {
-        return Helper.hash64((id + "." + url).getBytes());
-    }
-
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
         return Objects.hash(getId(), getUrl());
+    }
+
+    public long uniqueHash() {
+        return Helper.hash64((id + "." + url).getBytes());
     }
 }
