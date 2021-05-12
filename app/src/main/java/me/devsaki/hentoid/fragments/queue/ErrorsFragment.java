@@ -177,7 +177,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
 
     private void customBackPress() {
         // If content is selected, deselect it
-        if (!selectExtension.getSelections().isEmpty()) {
+        if (selectExtension != null && !selectExtension.getSelections().isEmpty()) {
             selectExtension.deselect();
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
         } else {
