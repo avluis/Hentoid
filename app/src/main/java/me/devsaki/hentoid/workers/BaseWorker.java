@@ -16,12 +16,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
@@ -38,8 +35,7 @@ public abstract class BaseWorker extends Worker {
     int serviceId;
     private boolean isComplete = true;
 
-    // TEMP
-    protected final List<LogHelper.LogEntry> logs = new ArrayList<>();
+//    protected final List<LogHelper.LogEntry> logs = new ArrayList<>();
 
 
     protected static boolean isRunning(@NonNull Context context, @IdRes int serviceId) {
@@ -64,7 +60,7 @@ public abstract class BaseWorker extends Worker {
 
         Timber.w("%s worker created", this.getClass().getSimpleName());
         // TEMP
-        logs.add(new LogHelper.LogEntry("worker created"));
+//        logs.add(new LogHelper.LogEntry("worker created"));
     }
 
     @Override
@@ -94,7 +90,7 @@ public abstract class BaseWorker extends Worker {
     private void clear() {
         onClear();
 
-        // TEMP
+/*
         logs.add(new LogHelper.LogEntry("Worker destroyed / stopped=%s / complete=%s", isStopped(), isComplete));
 
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
@@ -102,7 +98,7 @@ public abstract class BaseWorker extends Worker {
         logInfo.setLogName(Integer.toString(serviceId));
         logInfo.setEntries(logs);
         LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
-
+*/
         // Tell everyone the worker is shutting down
         EventBus.getDefault().post(new ServiceDestroyedEvent(serviceId));
 
@@ -118,7 +114,8 @@ public abstract class BaseWorker extends Worker {
         try {
             getToWork(getInputData());
         } catch (Exception e) {
-            logs.add(new LogHelper.LogEntry("Exception caught ! %s : %s", e.getMessage(), e.getStackTrace()));
+//            logs.add(new LogHelper.LogEntry("Exception caught ! %s : %s", e.getMessage(), e.getStackTrace()));
+            Timber.e(e);
         } finally {
             clear();
         }

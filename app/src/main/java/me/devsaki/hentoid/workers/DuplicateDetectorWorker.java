@@ -131,13 +131,13 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
         boolean isReRun = false;
         do {
-            logs.add(new LogHelper.LogEntry("Preparation started"));
+//            logs.add(new LogHelper.LogEntry("Preparation started"));
             // Pre-compute all book entries as DuplicateCandidates
             List<DuplicateHelper.DuplicateCandidate> candidates = new ArrayList<>();
             dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true,
                     content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useSameLanguage, Long.MIN_VALUE)));
 
-            logs.add(new LogHelper.LogEntry("Detection started"));
+//            logs.add(new LogHelper.LogEntry("Detection started"));
             processAll(
                     duplicatesDAO,
                     candidates,
@@ -152,7 +152,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                     useSameLanguage,
                     sensitivity);
             Timber.d(" >> PROCESS End reached");
-            logs.add(new LogHelper.LogEntry("Setection End"));
+//            logs.add(new LogHelper.LogEntry("Setection End"));
             if (isStopped()) break;
             if (!ignoredIds.isEmpty()) {
                 try {
@@ -167,7 +167,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
         } while (!ignoredIds.isEmpty());
 
         setComplete(ignoredIds.isEmpty());
-        logs.add(new LogHelper.LogEntry("Final End reached (complete=%s)", isComplete()));
+//        logs.add(new LogHelper.LogEntry("Final End reached (complete=%s)", isComplete()));
 
         ignoredIds.clear();
         matchedIds.clear();
