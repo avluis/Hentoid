@@ -132,7 +132,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
         isSwipeable = (content != null && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
-        if (content != null) setIdentifier(content.hash64());
+        if (content != null) setIdentifier(content.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
     }
 
@@ -144,7 +144,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
 //        setIdentifier(record.id);
-        if (content != null) setIdentifier(content.hash64());
+        if (content != null) setIdentifier(content.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
     }
 

@@ -875,22 +875,29 @@ public class Content implements Serializable {
         }
     }
 
+    // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI
+    // If not done, FastAdapter's PagedItemListImpl cache won't detect changes to the object
+    // and items won't be visually updated on screen
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-        return getId() == content.getId() &&
-                Objects.equals(getUniqueSiteId(), content.getUniqueSiteId());
+        return isFavourite() == content.isFavourite() &&
+                isCompleted() == content.isCompleted() &&
+                getLastReadDate() == content.getLastReadDate() &&
+                isBeingDeleted() == content.isBeingDeleted() &&
+                Objects.equals(getUrl(), content.getUrl()) &&
+                Objects.equals(getCoverImageUrl(), content.getCoverImageUrl()) &&
+                getSite() == content.getSite();
     }
 
     @Override
     public int hashCode() {
-        // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(id, uniqueSiteId);
+        return Objects.hash(getUrl(), getCoverImageUrl(), getSite(), isFavourite(), isCompleted(), getLastReadDate(), isBeingDeleted());
     }
 
-    public long hash64() {
+    public long uniqueHash() {
         return Helper.hash64((id + "." + uniqueSiteId).getBytes());
     }
 }

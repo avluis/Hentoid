@@ -861,7 +861,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         Intent intent = new Intent(this, QueueActivity.class);
 
         QueueActivityBundle.Builder builder = new QueueActivityBundle.Builder();
-        builder.setContentHash(currentContent.hash64());
+        builder.setContentHash(currentContent.uniqueHash());
         builder.setIsErrorsTab(currentContent.getStatus().equals(StatusContent.ERROR));
         intent.putExtras(builder.getBundle());
 

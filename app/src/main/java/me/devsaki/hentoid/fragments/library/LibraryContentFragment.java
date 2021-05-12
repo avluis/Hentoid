@@ -65,6 +65,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -192,18 +193,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
         @Override
         public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.equals(newItem);
+            return oldItem.uniqueHash() == newItem.uniqueHash();
         }
 
+        // Using equals for consistency with hashcode (see comment on Content#equals)
         @Override
         public boolean areContentsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
-                    && oldItem.getSite().equals(newItem.getSite())
-                    && oldItem.getLastReadDate() == newItem.getLastReadDate()
-                    && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())
-//                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
-                    && oldItem.isFavourite() == newItem.isFavourite()
-                    && oldItem.isCompleted() == newItem.isCompleted();
+            return Objects.equals(oldItem, newItem);
         }
 
         @Nullable
@@ -242,18 +238,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
         @Override
         public boolean areContentsTheSame(ContentItem oldContentItem, ContentItem newContentItem) {
-            Content oldItem = oldContentItem.getContent();
-            Content newItem = newContentItem.getContent();
-
-            if (null == oldItem || null == newItem) return false;
-
-            return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
-                    && oldItem.getSite().equals(newItem.getSite())
-                    && oldItem.getLastReadDate() == newItem.getLastReadDate()
-                    && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())
-//                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
-                    && oldItem.isFavourite() == newItem.isFavourite()
-                    && oldItem.isCompleted() == newItem.isCompleted();
+            return Objects.equals(oldContentItem.getContent(), newContentItem.getContent());
         }
 
         @Override
