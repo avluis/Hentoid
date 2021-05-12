@@ -65,8 +65,8 @@
     <me.devsaki.hentoid.views.CircularProgressView
         android:id="@+id/reading_progress"
         style="?android:attr/progressBarStyle"
-        android:layout_width="19dp"
-        android:layout_height="22dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:visibility="gone"
