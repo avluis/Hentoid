@@ -26,7 +26,7 @@ public class LusciousActivity extends BaseWebActivity {
             "luscious.net/[\\w\\-]+/[\\w\\-]+_[0-9]+/$", // Actual gallery page URL
             "[\\w]+.luscious.net/[\\w\\-]+/[0-9]+/[\\w\\-\\.]+$" // Image URL containing album ID
     };
-    private static final String[] DIRTY_ELEMENTS = {".ad_banner"};
+    //private static final String[] DIRTY_ELEMENTS = {".ad_banner"}; <-- doesn't work; added dynamically on an element with a bogus class
 
     public static final Pattern IMAGE_URL_PATTERN = Pattern.compile(GALLERY_FILTER[2]);
 
@@ -40,7 +40,7 @@ public class LusciousActivity extends BaseWebActivity {
         CustomWebViewClient client = new LusciousWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.addUrlWhitelist(DOMAIN_FILTER);
-        client.addDirtyElements(DIRTY_ELEMENTS);
+        //client.addDirtyElements(DIRTY_ELEMENTS);
         return client;
     }
 
