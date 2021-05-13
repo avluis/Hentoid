@@ -189,11 +189,6 @@ class DuplicateHelper {
                 if (ignoredIds != null) {
                     if (coverScore == -2f) { // Ignored cover
                         ignoredIds.add(key)
-                        Timber.i(
-                            ">> added ignored ID for books %s / %s",
-                            reference.id,
-                            candidate.id
-                        )
                         return null
                     } else {
                         ignoredIds.remove(key)
