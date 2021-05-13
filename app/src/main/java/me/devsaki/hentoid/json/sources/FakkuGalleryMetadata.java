@@ -2,6 +2,7 @@ package me.devsaki.hentoid.json.sources;
 
 import java.util.Map;
 
+@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
 public class FakkuGalleryMetadata {
     private FakkuContent content;
     private Map<String, FakkuPage> pages;

@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
 public class HitomiGalleryInfo {
 
     private List<HitomiGalleryPage> files;

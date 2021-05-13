@@ -4,6 +4,7 @@ import com.squareup.moshi.Json;
 
 import java.util.List;
 
+@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
 public class NexusGallery {
     private String b;
     private String r;
