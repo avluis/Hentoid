@@ -22,40 +22,9 @@ public class TextDupeDetectorTest {
 
     @Test
     public void displayDistances() {
-        /*
-        Cosine c = new Cosine();
-        System.out.println("COSINE");
-        System.out.println(c.similarity(vals1.get(0), vals1.get(1)) + "");
-        System.out.println(c.similarity(vals2.get(0), vals2.get(1)) + "");
-
-        Kimodebu Ossan no Ore ga Namaiki Ojou-sama o Saimin NTR shite mita | 좆돼지 아재인 내가 싸가지없는 아가씨를 최면 NTR해 봤다
-0.8168499661773069
-Kimodebu Ossan no Ore ga Namaiki Ojou-sama o Saimin NTR shite mita
-
-
-        SorensenDice s = new SorensenDice();
-        System.out.println("SORENSEN DICE");
-        System.out.println(s.similarity(vals1.get(0), vals1.get(1)) + "");
-        System.out.println(s.similarity(vals2.get(0), vals2.get(1)) + "");
-
-         */
-
-        /*
-        Jaccard j = new Jaccard();
-        System.out.println("JACCARD");
-        System.out.println(j.similarity(vals1.get(0), vals1.get(1)) + "");
-        System.out.println(j.similarity(vals2.get(0), vals2.get(1)) + "");
-
-        RatcliffObershelp ro = new RatcliffObershelp();
-        System.out.println("RATCLIFF-OBERSHELP");
-        System.out.println(ro.similarity(vals1.get(0), vals1.get(1)) + "");
-        System.out.println(ro.similarity(vals2.get(0), vals2.get(1)) + "");
-
-         */
-
         List<String> vals1 = new ArrayList<>();
         Context context = ApplicationProvider.getApplicationContext();
-        try (InputStream is = context.getAssets().open("titles.txt"); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+        try (InputStream is = context.getAssets().open("test_titles.txt"); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
             String sCurrentLine;
             while ((sCurrentLine = br.readLine()) != null) {
                 vals1.add(sCurrentLine);
@@ -65,7 +34,6 @@ Kimodebu Ossan no Ore ga Namaiki Ojou-sama o Saimin NTR shite mita
         }
 
         Cosine c = new Cosine();
-        //SorensenDice c = new SorensenDice();
         for (String s1 : vals1) {
             String s1c = StringHelper.cleanup(s1);
             String s1cp = DuplicateHelper.Companion.sanitizeTitle(s1c);
