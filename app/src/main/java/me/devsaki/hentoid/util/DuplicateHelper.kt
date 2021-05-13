@@ -29,13 +29,13 @@ class DuplicateHelper {
 
         private val TITLE_CHAPTER_WORDS = listOf(
             "chapter",
+            "chap",
             "case",
             "after",
             "before",
             "prologue",
             "prelude",
             "final",
-            "chap",
             "part",
             "update",
             "gaiden",
@@ -52,17 +52,17 @@ class DuplicateHelper {
             "3rd",
             "4th",
             "5th",
-            "ii",
-            "iii",
-            "iv",
-            "v",
-            "ex",
             "zenpen",
             "全編",
             "chuuhen",
             "中編",
             "kouhen",
-            "後編"
+            "後編",
+            "ex",
+            // Roman numerals (yes they can be present)
+            "i",
+            "v",
+            "x",
         )
 
 
