@@ -33,7 +33,7 @@ public class NhentaiActivity extends BaseWebActivity {
         client.setResultsUrlPatterns(RESULTS_FILTER);
         client.setResultUrlRewriter(this::rewriteResultsUrl);
         client.addDirtyElements(DIRTY_ELEMENTS);
-        client.addContentBlockFilter(BLOCKED_CONTENT);
+        client.addToUrlBlacklist(BLOCKED_CONTENT);
         return client;
     }
 

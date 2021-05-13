@@ -47,7 +47,7 @@ public class HitomiActivity extends BaseWebActivity {
         client.restrictTo(DOMAIN_FILTER);
         client.setResultsUrlPatterns(RESULTS_FILTER);
         client.setResultUrlRewriter(this::rewriteResultsUrl);
-        client.addContentBlockFilter(BLOCKED_CONTENT);
+        client.addToUrlBlacklist(BLOCKED_CONTENT);
         return client;
     }
 
@@ -79,9 +79,9 @@ public class HitomiActivity extends BaseWebActivity {
          * that have random names
          */
         @Override
-        protected boolean isUrlForbidden(@NonNull String url) {
+        protected boolean isUrlBlacklisted(@NonNull String url) {
             // 1- Process usual blacklist and cached dynamic blacklist
-            if (super.isUrlForbidden(url)) return true;
+            if (super.isUrlBlacklisted(url)) return true;
             if (jsBlacklistCache.contains(url)) return true;
 
             // 2- Accept non-JS files

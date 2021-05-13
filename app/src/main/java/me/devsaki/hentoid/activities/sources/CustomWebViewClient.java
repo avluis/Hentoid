@@ -106,17 +106,23 @@ class CustomWebViewClient extends WebViewClient {
     // Disposable to be used for punctual search
     private Disposable disposable;
 
-    // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
-    private static final Set<String> universalBlockedContent = new HashSet<>();         // Universal list (applied to all sites)
-    private List<String> localBlockedContent;                                           // Local list (applied to current site)
+    // List of blocked URLs (ads or annoying images) -- will be replaced by a blank stream
+    // Universal lists (applied to all sites)
+    private static final Set<String> universalUrlBlacklist = new HashSet<>();
+    private static final Set<String> universalUrlWhitelist = new HashSet<>();
+    // Local lists (applied to current site)
+    private List<String> localUrlBlacklist;
+    private List<String> localUrlWhitelist;
 
     // List of "dirty" elements (CSS selector) to be cleaned before displaying the page
     private List<String> dirtyElements;
 
 
     static {
-        String[] blockedDomains = HentoidApp.getInstance().getResources().getStringArray(R.array.blocked_domains);
-        universalBlockedContent.addAll(Arrays.asList(blockedDomains));
+        String[] appUrlBlacklist = HentoidApp.getInstance().getResources().getStringArray(R.array.blocked_domains);
+        universalUrlBlacklist.addAll(Arrays.asList(appUrlBlacklist));
+        String[] appUrlWhitelist = HentoidApp.getInstance().getResources().getStringArray(R.array.allowed_domains);
+        universalUrlWhitelist.addAll(Arrays.asList(appUrlWhitelist));
     }
 
 
@@ -137,30 +143,59 @@ class CustomWebViewClient extends WebViewClient {
     }
 
     /**
-     * Indicates if the given URL is forbidden by the current content filters
+     * Indicates if the given URL is blacklisted by the current content filters
      *
      * @param url URL to be examinated
-     * @return True if URL is forbidden according to current filters; false if not
+     * @return True if URL is blacklisted according to current filters; false if not
      */
-    protected boolean isUrlForbidden(@NonNull String url) {
-        for (String s : universalBlockedContent) {
-            if (url.contains(s)) return true;
+    protected boolean isUrlBlacklisted(@NonNull String url) {
+        String comparisonUrl = url.toLowerCase();
+        for (String s : universalUrlBlacklist) {
+            if (comparisonUrl.contains(s)) return true;
         }
-        if (localBlockedContent != null)
-            for (String s : localBlockedContent) {
-                if (url.contains(s)) return true;
+        if (localUrlBlacklist != null)
+            for (String s : localUrlBlacklist) {
+                if (comparisonUrl.contains(s)) return true;
             }
         return false;
     }
 
     /**
-     * Add an content block filter to current site
+     * Indicates if the given URL is whitelisted by the current content filters
      *
-     * @param filter Filter to addAll to content block system
+     * @param url URL to be examinated
+     * @return True if URL is whitelisted according to current filters; false if not
      */
-    protected void addContentBlockFilter(String[] filter) {
-        if (null == localBlockedContent) localBlockedContent = new ArrayList<>();
-        Collections.addAll(localBlockedContent, filter);
+    protected boolean isUrlWhitelisted(@NonNull String url) {
+        String comparisonUrl = url.toLowerCase();
+        for (String s : universalUrlWhitelist) {
+            if (comparisonUrl.contains(s)) return true;
+        }
+        if (localUrlWhitelist != null)
+            for (String s : localUrlWhitelist) {
+                if (comparisonUrl.contains(s)) return true;
+            }
+        return false;
+    }
+
+    /**
+     * Add an element to current URL blacklist
+     *
+     * @param filter Filter to addAll to local blacklist
+     */
+    protected void addToUrlBlacklist(String... filter) {
+        if (null == localUrlBlacklist) localUrlBlacklist = new ArrayList<>();
+        Collections.addAll(localUrlBlacklist, filter);
+    }
+
+    /**
+     * Add an element to current URL whitelist
+     *
+     * @param filter Filter to addAll to local whitelist
+     */
+    protected void addUrlWhitelist(String... filter) {
+        if (null == localUrlWhitelist) localUrlWhitelist = new ArrayList<>();
+        Collections.addAll(localUrlWhitelist, filter);
     }
 
     /**
@@ -168,7 +203,7 @@ class CustomWebViewClient extends WebViewClient {
      *
      * @param elements Elements (CSS selector) to addAll to page cleaner
      */
-    protected void addDirtyElements(String[] elements) {
+    protected void addDirtyElements(String... elements) {
         if (null == dirtyElements) dirtyElements = new ArrayList<>();
         Collections.addAll(dirtyElements, elements);
     }
@@ -285,7 +320,7 @@ class CustomWebViewClient extends WebViewClient {
             @NonNull final WebView view,
             @NonNull final String url,
             @Nullable final Map<String, String> requestHeaders) {
-        if (isUrlForbidden(url) || !url.startsWith("http")) return true;
+        if (isUrlBlacklisted(url) || !url.startsWith("http")) return true;
 
         // Download and open the torrent file
         // NB : Opening the URL itself won't work when the tracker is private
@@ -390,7 +425,7 @@ class CustomWebViewClient extends WebViewClient {
     @Nullable
     private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                @Nullable final Map<String, String> headers) {
-        if (isUrlForbidden(url) || !url.startsWith("http")) {
+        if (isUrlBlacklisted(url) || !url.startsWith("http")) {
             return new WebResourceResponse("text/plain", "utf-8", NOTHING);
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);

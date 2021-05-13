@@ -230,4 +230,22 @@
         app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
 
+    <SeekBar
+        android:id="@+id/slideshow_delay_seekbar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:colorControlActivated="?colorSecondary"
+        android:padding="8dp"
+        android:progressBackgroundTint="?colorOnPrimary"
+        android:progressTint="?colorSecondary"
+        app:tickColor="?colorPrimary"
+        android:valueFrom="0"
+        android:valueTo="5"
+        android:stepSize="1"
+        android:theme="@style/Widget.AppCompat.SeekBar.Discrete"
+        app:layout_constraintTop_toBottomOf="@id/viewer_pager_toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:targetApi="lollipop" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

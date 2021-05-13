@@ -21,7 +21,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        client.addContentBlockFilter(blockedContent);
+        client.addToUrlBlacklist(blockedContent);
         return client;
     }
 }

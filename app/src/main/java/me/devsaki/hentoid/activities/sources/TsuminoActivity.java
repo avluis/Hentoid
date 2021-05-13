@@ -27,7 +27,7 @@ public class TsuminoActivity extends BaseWebActivity {
         CustomWebViewClient client = new TsuminoWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.addDirtyElements(DIRTY_ELEMENTS);
-        client.addContentBlockFilter(blockedContent);
+        client.addToUrlBlacklist(blockedContent);
 
         return client;
     }

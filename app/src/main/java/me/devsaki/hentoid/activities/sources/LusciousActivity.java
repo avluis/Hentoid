@@ -16,6 +16,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.LusciousContent;
 import me.devsaki.hentoid.util.Debouncer;
+import me.devsaki.hentoid.util.network.HttpHelper;
 
 public class LusciousActivity extends BaseWebActivity {
 
@@ -25,6 +26,7 @@ public class LusciousActivity extends BaseWebActivity {
             "luscious.net/[\\w\\-]+/[\\w\\-]+_[0-9]+/$", // Actual gallery page URL
             "[\\w]+.luscious.net/[\\w\\-]+/[0-9]+/[\\w\\-\\.]+$" // Image URL containing album ID
     };
+    private static final String[] DIRTY_ELEMENTS = {".ad_banner"};
 
     public static final Pattern IMAGE_URL_PATTERN = Pattern.compile(GALLERY_FILTER[2]);
 
@@ -37,6 +39,8 @@ public class LusciousActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new LusciousWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
+        client.addUrlWhitelist(DOMAIN_FILTER);
+        client.addDirtyElements(DIRTY_ELEMENTS);
         return client;
     }
 
@@ -52,6 +56,22 @@ public class LusciousActivity extends BaseWebActivity {
 
         private void clearLoadingPics(Boolean b) {
             bookIdsCount.clear();
+        }
+
+        /**
+         * Specific implementation to get rid of ad js files
+         * that have random names
+         */
+        @Override
+        protected boolean isUrlBlacklisted(@NonNull String url) {
+            // 1- Process usual blacklist
+            if (super.isUrlBlacklisted(url)) return true;
+
+            // 2- Accept non-JS files
+            if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
+
+            // 3- Accept JS files defined in the whitelist; block others
+            return !super.isUrlWhitelisted(url);
         }
 
         // Call the API without using BaseWebActivity.parseResponse
