@@ -76,7 +76,6 @@ public class SearchContentIdDialogFragment extends DialogFragment {
                 if (!foundSitesList.contains(Site.ASMHENTAI_COMICS.getCode()))
                     sites.add(Site.ASMHENTAI_COMICS);
                 if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
-                if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
                 if (!foundSitesList.contains(Site.LUSCIOUS.getCode())) sites.add(Site.LUSCIOUS);
                 if (!foundSitesList.contains(Site.HBROWSE.getCode())) sites.add(Site.HBROWSE);
                 if (!foundSitesList.contains(Site.HENTAIFOX.getCode())) sites.add(Site.HENTAIFOX);
