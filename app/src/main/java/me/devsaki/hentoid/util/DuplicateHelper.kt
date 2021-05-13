@@ -32,6 +32,8 @@ class DuplicateHelper {
             "case",
             "after",
             "before",
+            "prologue",
+            "prelude",
             "final",
             "chap",
             "part",
