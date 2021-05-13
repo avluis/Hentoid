@@ -45,8 +45,9 @@ public class TextDupeDetectorTest {
                 if (score > 0) {
                     double similarity1 = c.similarity(s1c, s2c);
                     double similarity2 = c.similarity(s1cp, s2cp);
-                    System.out.printf("%s %s [%.2f / %.2f => %.2f] %s%n", (score > 0.1f) ? "" : "      ", s1c, similarity1, similarity2, score, s2c);
-                    if (score > 0.1f)
+                    double distance = similarity2 - similarity1;
+                    System.out.printf("%s %s [%.4f - %.4f = %.4f ==> %.4f] %s%n", (distance < 0.01) ? "MATCH " : "CHAPTER ", s1c, similarity1, similarity2, distance, score, s2c);
+                    if (distance < 0.01)
                         System.out.printf("%s > %s%n", s1cp, s2cp);
                 }
             }

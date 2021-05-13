@@ -50,6 +50,10 @@ class DuplicateHelper {
             "3rd",
             "4th",
             "5th",
+            "ii",
+            "iii",
+            "iv",
+            "v",
             "ex",
             "zenpen",
             "全編",
@@ -249,11 +253,16 @@ class DuplicateHelper {
             val similarity1 =
                 textComparator.similarity(referenceTitleCleanup, candidateTitleCleanup)
             // Perfect match
-            if (similarity1 > 0.99) return similarity1.toFloat()
+            if (similarity1 > 0.995) return similarity1.toFloat()
             // Other cases
             return if (similarity1 > TEXT_THRESHOLDS[sensitivity]) {
                 val similarity2 =
                     textComparator.similarity(referenceTitleNoDigits, candidateTitleNoDigits)
+                // Cleaned up versions are identical
+                // => most probably a chapter variant -> set to 0%
+                if (similarity2 > similarity1 && similarity2 > 0.995) return 0f;
+                // Very little difference between cleaned up and original version
+                // => not a chapter variant
                 if (similarity2 - similarity1 < 0.01) {
                     similarity1.toFloat()
                 } else {
