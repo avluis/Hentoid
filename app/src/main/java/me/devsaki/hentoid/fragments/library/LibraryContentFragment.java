@@ -639,7 +639,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void moveSelectedItems() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
-        selectExtension.deselect();
+        selectExtension.deselect(selectExtension.getSelections());
         List<Long> bookIds = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getId).toList();
         ChangeGroupDialogFragment.invoke(this, Helper.getPrimitiveLongArrayFromList(bookIds));
     }
@@ -660,7 +660,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
                 DocumentFile folder = FileHelper.getFolderFromTreeUriString(requireContext(), c.getStorageUri());
                 if (folder != null) {
-                    selectExtension.deselect();
+                    selectExtension.deselect(selectExtension.getSelections());
                     activity.get().getSelectionToolbar().setVisibility(View.GONE);
                     FileHelper.openFile(requireContext(), folder);
                 }
@@ -700,7 +700,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                             dialog1.dismiss();
                             redownloadFromScratch(contents);
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
@@ -727,7 +727,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                             dialog1.dismiss();
                             viewModel.setGroupCover(group.id, content.getCover());
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
@@ -817,7 +817,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void customBackPress() {
         // If content is selected, deselect it
         if (!selectExtension.getSelections().isEmpty()) {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             backButtonPressed = 0;
             return;

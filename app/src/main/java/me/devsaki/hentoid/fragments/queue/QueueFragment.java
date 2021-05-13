@@ -175,7 +175,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     public void onResume() {
         super.onResume();
 
-        if (selectExtension != null) selectExtension.deselect();
+        if (selectExtension != null) selectExtension.deselect(selectExtension.getSelections());
         initSelectionToolbar();
         update(-1);
     }
@@ -276,7 +276,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void customBackPress() {
         // If content is selected, deselect it
         if (!selectExtension.getSelections().isEmpty()) {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
         } else {
             callback.remove();
@@ -880,7 +880,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);
         });
         selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
@@ -899,13 +899,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case R.id.action_select_queue_top:
                 selectedPositions = Stream.of(selectedItems).map(fastAdapter::getPosition).sorted().toList();
-                selectExtension.deselect();
+                selectExtension.deselect(selectExtension.getSelections());
                 if (!selectedPositions.isEmpty())
                     processMove(selectedPositions, viewModel::moveTop);
                 break;
             case R.id.action_select_queue_bottom:
                 selectedPositions = Stream.of(selectedItems).map(fastAdapter::getPosition).sorted().toList();
-                selectExtension.deselect();
+                selectExtension.deselect(selectExtension.getSelections());
                 if (!selectedPositions.isEmpty())
                     processMove(selectedPositions, viewModel::moveBottom);
                 break;
@@ -954,12 +954,12 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             onCancelBooks(items);
                         })
                 .setNegativeButton(R.string.no,
-                        (dialog, which) -> selectExtension.deselect())
-                .setOnCancelListener(dialog -> selectExtension.deselect())
+                        (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
+                .setOnCancelListener(dialog -> selectExtension.deselect(selectExtension.getSelections()))
                 .create().show();
     }
 
@@ -987,13 +987,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                             // If the 1st item is selected, visually reset its progress
                             if (selectExtension.getSelections().contains(0))
                                 updateProgress(0, 0, 1, 0, 0, true);
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog12, which) -> {
                             dialog12.dismiss();
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .create()

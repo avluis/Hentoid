@@ -430,7 +430,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             if (!selectedContent.isEmpty() || !selectedGroups.isEmpty())
                 activity.get().askDeleteItems(selectedContent, selectedGroups, null, selectExtension);
             else
-                selectExtension.deselect();
+                selectExtension.deselect(selectExtension.getSelections());
         }
     }
 
@@ -536,7 +536,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void customBackPress() {
         // If content is selected, deselect it
         if (!selectExtension.getSelections().isEmpty()) {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             backButtonPressed = 0;
             return;
