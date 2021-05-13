@@ -474,6 +474,12 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_SLIDESHOW_DELAY, Integer.toString(Default.VIEWER_SLIDESHOW_DELAY)) + "");
     }
 
+    public static void setViewerSlideshowDelay(int value) {
+        sharedPreferences.edit()
+                .putString(Key.VIEWER_SLIDESHOW_DELAY, Integer.toString(value))
+                .apply();
+    }
+
     public static int getViewerSeparatingBars() {
         return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_SEPARATING_BARS, Integer.toString(Default.VIEWER_SEPARATING_BARS)) + "");
     }
@@ -868,7 +874,7 @@ public final class Preferences {
         static final boolean VIEWER_INVERT_VOLUME_ROCKER = false;
         static final int VIEWER_SEPARATING_BARS = Constant.VIEWER_SEPARATING_BARS_OFF;
         static final int VIEWER_READ_THRESHOLD = Constant.VIEWER_READ_THRESHOLD_1;
-        static final int VIEWER_SLIDESHOW_DELAY = Constant.VIEWER_SLIDESHOW_DELAY_2;
+        public static final int VIEWER_SLIDESHOW_DELAY = Constant.VIEWER_SLIDESHOW_DELAY_2;
         static final boolean VIEWER_HOLD_TO_ZOOM = false;
         static final int VIEWER_CAP_TAP_ZOOM = Constant.VIEWER_CAP_TAP_ZOOM_NONE;
         static final boolean VIEWER_AUTO_ROTATE = false;

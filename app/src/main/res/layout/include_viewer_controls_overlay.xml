@@ -160,14 +160,14 @@
         android:layout_height="40dp"
         android:alpha="0.8"
         app:layout_constraintBottom_toBottomOf="@id/viewer_info_btn"
-        app:layout_constraintStart_toStartOf="@id/viewer_info_btn"
         app:layout_constraintEnd_toEndOf="@id/viewer_info_btn"
+        app:layout_constraintStart_toStartOf="@id/viewer_info_btn"
         app:submarine_animation="scale"
         app:submarine_circleAnchor="bottom"
-        app:submarine_color="@android:color/black"
         app:submarine_circleSize="14dp"
-        app:submarine_expandSize="170dp"
+        app:submarine_color="@android:color/black"
         app:submarine_duration="250"
+        app:submarine_expandSize="170dp"
         app:submarine_orientation="vertical" />
 
     <com.skydoves.submarine.SubmarineView
@@ -176,14 +176,14 @@
         android:layout_height="40dp"
         android:alpha="0.8"
         app:layout_constraintBottom_toBottomOf="@id/viewer_favourite_action_btn"
-        app:layout_constraintStart_toStartOf="@id/viewer_favourite_action_btn"
         app:layout_constraintEnd_toEndOf="@id/viewer_favourite_action_btn"
+        app:layout_constraintStart_toStartOf="@id/viewer_favourite_action_btn"
         app:submarine_animation="scale"
         app:submarine_circleAnchor="bottom"
-        app:submarine_color="@android:color/black"
         app:submarine_circleSize="14dp"
-        app:submarine_expandSize="170dp"
+        app:submarine_color="@android:color/black"
         app:submarine_duration="250"
+        app:submarine_expandSize="170dp"
         app:submarine_orientation="vertical" />
 
     <!-- Image previews used when tracking -->
@@ -230,22 +230,24 @@
         app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
 
-    <SeekBar
-        android:id="@+id/slideshow_delay_seekbar"
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slideshow_delay_slider"
+        style="@style/App.Slider"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:colorControlActivated="?colorSecondary"
         android:padding="8dp"
-        android:progressBackgroundTint="?colorOnPrimary"
-        android:progressTint="?colorSecondary"
-        app:tickColor="?colorPrimary"
-        android:valueFrom="0"
-        android:valueTo="5"
-        android:stepSize="1"
-        android:theme="@style/Widget.AppCompat.SeekBar.Discrete"
-        app:layout_constraintTop_toBottomOf="@id/viewer_pager_toolbar"
-        app:layout_constraintStart_toStartOf="parent"
+        android:stepSize="1.0"
+        android:value="2.0"
+        android:valueFrom="1.0"
+        android:valueTo="5.0"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:targetApi="lollipop" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_pager_toolbar"
+        app:thumbColor="?colorSecondary"
+        app:tickColor="?colorSecondary"
+        app:tickVisible="true"
+        app:trackColor="@color/material_slider_inactive_track_color"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

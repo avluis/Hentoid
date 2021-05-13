@@ -28,8 +28,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.skydoves.submarine.SubmarineItem;
@@ -75,6 +77,11 @@ import timber.log.Timber;
 
 import static java.lang.String.format;
 import static me.devsaki.hentoid.util.Preferences.Constant;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_05;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_1;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_16;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_4;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8;
 
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
@@ -150,7 +157,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     onShuffleClick();
                     break;
                 case R.id.action_slideshow:
-                    startSlideshow();
+                    binding.controlsOverlay.slideshowDelaySlider.setValue(convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay()));
+                    binding.controlsOverlay.slideshowDelaySlider.setVisibility(View.VISIBLE);
                     break;
                 case R.id.action_delete_book:
                     if (Constant.VIEWER_DELETE_ASK_AGAIN == Preferences.getViewerDeleteAskMode())
@@ -345,6 +353,36 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     }
 
     private void initControlsOverlay() {
+        // Slideshow slider
+        Slider slider = binding.controlsOverlay.slideshowDelaySlider;
+        slider.setValueFrom(0);
+        int nbEntries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries).length;
+        slider.setValueTo(nbEntries - 1);
+        slider.setValue(convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay()));
+        slider.setLabelFormatter(value -> {
+            String[] entries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries);
+            return entries[(int) value];
+        });
+        slider.setOnFocusChangeListener((v, hasFocus) -> {
+                    if (!hasFocus) slider.setVisibility(View.GONE);
+                }
+        );
+        slider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+                                            @Override
+                                            public void onStartTrackingTouch(@NonNull Slider slider) {
+                                                // Nothing
+                                            }
+
+                                            @Override
+                                            public void onStopTrackingTouch(@NonNull Slider slider) {
+                                                Preferences.setViewerSlideshowDelay(convertSliderPositionToPrefsDelay((int) slider.getValue()));
+                                                slider.setVisibility(View.GONE);
+                                                startSlideshow(true);
+                                            }
+                                        }
+        );
+
+
         // Next/previous book
         binding.controlsOverlay.viewerPrevBookBtn.setOnClickListener(v -> previousBook());
         binding.controlsOverlay.viewerNextBookBtn.setOnClickListener(v -> nextBook());
@@ -396,6 +434,19 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         // Gallery
         binding.controlsOverlay.viewerGalleryBtn.setOnClickListener(v -> displayGallery(false));
+    }
+
+    private int convertPrefsDelayToSliderPosition(int prefsDelay) {
+        List<Integer> prefsValues = Stream.of(getResources().getStringArray(R.array.pref_viewer_slideshow_delay_values)).map(Integer::parseInt).toList();
+        for (int i = 0; i < prefsValues.size(); i++)
+            if (prefsValues.get(i) == prefsDelay) return i;
+
+        return 0;
+    }
+
+    private int convertSliderPositionToPrefsDelay(int sliderPosition) {
+        List<Integer> prefsValues = Stream.of(getResources().getStringArray(R.array.pref_viewer_slideshow_delay_values)).map(Integer::parseInt).toList();
+        return prefsValues.get(sliderPosition);
     }
 
     /**
@@ -1121,10 +1172,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         adapter.setMaxDimensions(maxDimensions.x, maxDimensions.y);
     }
 
-    private void startSlideshow() {
-        startSlideshow(true);
-    }
-
     private void startSlideshow(boolean showToast) {
         // Hide UI
         hideControlsOverlay();
@@ -1134,19 +1181,19 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         int delayMs;
 
         switch (delayPref) {
-            case Constant.VIEWER_SLIDESHOW_DELAY_05:
+            case VIEWER_SLIDESHOW_DELAY_05:
                 delayMs = 500;
                 break;
-            case Constant.VIEWER_SLIDESHOW_DELAY_1:
+            case VIEWER_SLIDESHOW_DELAY_1:
                 delayMs = 1000;
                 break;
-            case Constant.VIEWER_SLIDESHOW_DELAY_4:
+            case VIEWER_SLIDESHOW_DELAY_4:
                 delayMs = 4 * 1000;
                 break;
-            case Constant.VIEWER_SLIDESHOW_DELAY_8:
+            case VIEWER_SLIDESHOW_DELAY_8:
                 delayMs = 8 * 1000;
                 break;
-            case Constant.VIEWER_SLIDESHOW_DELAY_16:
+            case VIEWER_SLIDESHOW_DELAY_16:
                 delayMs = 16 * 1000;
                 break;
             default:
