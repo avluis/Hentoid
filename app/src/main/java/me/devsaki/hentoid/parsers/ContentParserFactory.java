@@ -18,7 +18,6 @@ import me.devsaki.hentoid.parsers.content.LusciousContent;
 import me.devsaki.hentoid.parsers.content.ManhwaContent;
 import me.devsaki.hentoid.parsers.content.MrmContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
-import me.devsaki.hentoid.parsers.content.NexusContent;
 import me.devsaki.hentoid.parsers.content.NhentaiContent;
 import me.devsaki.hentoid.parsers.content.PorncomixContent;
 import me.devsaki.hentoid.parsers.content.PururinContent;
@@ -40,7 +39,6 @@ import me.devsaki.hentoid.parsers.images.LusciousParser;
 import me.devsaki.hentoid.parsers.images.ManhwaParser;
 import me.devsaki.hentoid.parsers.images.MrmParser;
 import me.devsaki.hentoid.parsers.images.MusesParser;
-import me.devsaki.hentoid.parsers.images.NexusParser2;
 import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
@@ -74,8 +72,6 @@ public class ContentParserFactory {
                 return PururinContent.class;
             case FAKKU2:
                 return FakkuContent.class;
-            case NEXUS:
-                return NexusContent.class;
             case MUSES:
                 return MusesContent.class;
             case DOUJINS:
@@ -128,8 +124,6 @@ public class ContentParserFactory {
                 return new ExHentaiParser();
             case FAKKU2:
                 return new FakkuParser();
-            case NEXUS:
-                return new NexusParser2();
             case LUSCIOUS:
                 return new LusciousParser();
             case PORNCOMIX:

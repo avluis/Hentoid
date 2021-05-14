@@ -60,9 +60,6 @@
             android:name=".activities.sources.ASMHentaiActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".activities.sources.HentaiCafeActivity"
-            android:configChanges="orientation|screenSize" />
-        <activity
             android:name=".activities.sources.PururinActivity"
             android:configChanges="orientation|screenSize" />
         <activity
@@ -70,9 +67,6 @@
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.FakkuActivity"
-            android:configChanges="orientation|screenSize" />
-        <activity
-            android:name=".activities.sources.NexusActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.MusesActivity"
@@ -257,17 +251,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://hentai.cafe/" -->
-                <data
-                    android:host="hentai.cafe"
-                    android:pathPrefix="/hc.fyi/"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with "http://pururin.io/" -->
                 <data
                     android:host="pururin.io"
@@ -317,17 +300,6 @@
                 <data
                     android:host="www.fakku.net"
                     android:pathPrefix="/stay-home"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="hentainexus.com"
-                    android:pathPrefix="/view/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>

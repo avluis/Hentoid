@@ -25,7 +25,6 @@
     <screenName name="me.devsaki.hentoid.activities.sources.NhentaiActivity">Source: nhentai</screenName>
     <screenName name="me.devsaki.hentoid.activities.sources.TsuminoActivity">Source: tsumino</screenName>
     <screenName name="me.devsaki.hentoid.activities.sources.ASMHentaiActivity">Source: ASMHentai</screenName>
-    <screenName name="me.devsaki.hentoid.activities.sources.HentaiCafeActivity">Source: Hentai Cafe</screenName>
     <screenName name="me.devsaki.hentoid.activities.sources.PururinActivity">Source: Pururin</screenName>
 
     <screenName name="me.devsaki.hentoid.activities.IntentActivity">Launch: Intent</screenName>
