@@ -11,7 +11,6 @@ public class ToonilyActivity extends BaseWebActivity {
     private static final String[] GALLERY_FILTER = {"//toonily.com/[\\w\\-]+/[\\w\\-]+/$"};
     private static final String[] DIRTY_ELEMENTS = {".c-ads"};
     private static final String[] BLOCKED_CONTENT = {".cloudfront.net"};
-    private static final String[] JS_WHITELIST = {"//toonily.com/"};
 
     Site getStartSite() {
         return Site.TOONILY;
@@ -22,7 +21,7 @@ public class ToonilyActivity extends BaseWebActivity {
         CustomWebViewClient client = new ToonilyWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.addToUrlBlacklist(BLOCKED_CONTENT);
-        client.addUrlWhitelist(JS_WHITELIST);
+        client.addUrlWhitelist(DOMAIN_FILTER);
         client.addDirtyElements(DIRTY_ELEMENTS);
         return client;
     }

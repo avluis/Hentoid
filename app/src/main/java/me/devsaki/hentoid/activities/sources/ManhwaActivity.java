@@ -11,7 +11,6 @@ public class ManhwaActivity extends BaseWebActivity {
     private static final String[] GALLERY_FILTER = {"//manhwahentai.me/[\\w\\-]+/[\\w\\-]+/$"};
     private static final String[] DIRTY_ELEMENTS = {".c-ads"};
     private static final String[] BLOCKED_CONTENT = {".cloudfront.net"};
-    private static final String[] JS_WHITELIST = {"//manhwahentai.me/"};
 
 
     Site getStartSite() {
@@ -23,7 +22,7 @@ public class ManhwaActivity extends BaseWebActivity {
         CustomWebViewClient client = new ManwhaWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.addToUrlBlacklist(BLOCKED_CONTENT);
-        client.addUrlWhitelist(JS_WHITELIST);
+        client.addUrlWhitelist(DOMAIN_FILTER);
         client.addDirtyElements(DIRTY_ELEMENTS);
         return client;
     }
