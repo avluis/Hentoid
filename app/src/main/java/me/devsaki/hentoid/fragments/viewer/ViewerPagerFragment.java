@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
@@ -387,28 +386,28 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.viewerPrevBookBtn.setOnClickListener(v -> previousBook());
         binding.controlsOverlay.viewerNextBookBtn.setOnClickListener(v -> nextBook());
 
-        // Slider and preview
-        binding.controlsOverlay.viewerSeekbar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                binding.controlsOverlay.imagePreviewLeft.setVisibility(View.VISIBLE);
-                binding.controlsOverlay.imagePreviewCenter.setVisibility(View.VISIBLE);
-                binding.controlsOverlay.imagePreviewRight.setVisibility(View.VISIBLE);
-                binding.recyclerView.setVisibility(View.INVISIBLE);
-            }
+        // Page slider and preview
+        binding.controlsOverlay.pageSlider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+                                                                           @Override
+                                                                           public void onStartTrackingTouch(@NonNull Slider slider) {
+                                                                               binding.controlsOverlay.imagePreviewLeft.setVisibility(View.VISIBLE);
+                                                                               binding.controlsOverlay.imagePreviewCenter.setVisibility(View.VISIBLE);
+                                                                               binding.controlsOverlay.imagePreviewRight.setVisibility(View.VISIBLE);
+                                                                               binding.recyclerView.setVisibility(View.INVISIBLE);
+                                                                           }
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                binding.controlsOverlay.imagePreviewLeft.setVisibility(View.INVISIBLE);
-                binding.controlsOverlay.imagePreviewCenter.setVisibility(View.INVISIBLE);
-                binding.controlsOverlay.imagePreviewRight.setVisibility(View.INVISIBLE);
-                binding.recyclerView.setVisibility(View.VISIBLE);
-            }
+                                                                           @Override
+                                                                           public void onStopTrackingTouch(@NonNull Slider slider) {
+                                                                               binding.controlsOverlay.imagePreviewLeft.setVisibility(View.INVISIBLE);
+                                                                               binding.controlsOverlay.imagePreviewCenter.setVisibility(View.INVISIBLE);
+                                                                               binding.controlsOverlay.imagePreviewRight.setVisibility(View.INVISIBLE);
+                                                                               binding.recyclerView.setVisibility(View.VISIBLE);
+                                                                           }
+                                                                       }
+        );
 
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) seekToPosition(progress);
-            }
+        binding.controlsOverlay.pageSlider.addOnChangeListener((slider1, value, fromUser) -> {
+            if (fromUser) seekToPosition((int) value);
         });
 
         // Information micro menu
@@ -592,7 +591,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (null == binding) return;
 
         maxPosition = adapter.getItemCount() - 1;
-        binding.controlsOverlay.viewerSeekbar.setMax(maxPosition);
+        binding.controlsOverlay.pageSlider.setValueTo(maxPosition);
 
         // Can't access the gallery when there's no page to display
         if (maxPosition > -1) binding.controlsOverlay.viewerGalleryBtn.setVisibility(View.VISIBLE);
@@ -740,7 +739,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         pageMaxNumber.setText(maxPage);
         binding.viewerPagenumberText.setText(format("%s / %s", pageNum, maxPage));
 
-        binding.controlsOverlay.viewerSeekbar.setProgress(imageIndex);
+        binding.controlsOverlay.pageSlider.setValue(imageIndex);
     }
 
     /**
@@ -869,11 +868,11 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (Constant.VIEWER_DIRECTION_LTR == direction) {
             pageCurrentNumber = binding.controlsOverlay.viewerPagerLeftTxt;
             pageMaxNumber = binding.controlsOverlay.viewerPagerRightTxt;
-            binding.controlsOverlay.viewerSeekbar.setRotationY(0);
+            binding.controlsOverlay.pageSlider.setRotationY(0);
         } else if (Constant.VIEWER_DIRECTION_RTL == direction) {
             pageCurrentNumber = binding.controlsOverlay.viewerPagerRightTxt;
             pageMaxNumber = binding.controlsOverlay.viewerPagerLeftTxt;
-            binding.controlsOverlay.viewerSeekbar.setRotationY(180);
+            binding.controlsOverlay.pageSlider.setRotationY(180);
         }
         pageMaxNumber.setOnClickListener(null);
         pageCurrentNumber.setOnClickListener(v -> InputDialog.invokeNumberInputDialog(requireActivity(), R.string.goto_page, this::goToPage));
