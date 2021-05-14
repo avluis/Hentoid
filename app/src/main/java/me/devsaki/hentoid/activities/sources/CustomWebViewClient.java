@@ -430,9 +430,13 @@ class CustomWebViewClient extends WebViewClient {
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
 
-            // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
-            if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
-                return parseResponse(url, headers, false, false);
+            // If we're here to remove "dirty elements", we only do it
+            // on HTML resources (URLs without extension) from the source's main domain
+            if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty()) {
+                String host = Uri.parse(url).getHost();
+                if (host != null && !isHostNotInRestrictedDomains(host))
+                    return parseResponse(url, headers, false, false);
+            }
 
             return null;
         }
