@@ -949,7 +949,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 boolean duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
                 // Same site and similar => download by default, but look for extra pics just in case
                 if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry())
-                    searchForExtraImages(currentContent);
+                    searchForExtraImages(duplicateResult.left);
             }
 
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
@@ -1053,8 +1053,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private void onSearchForExtraImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
         searchExtraImagesdisposable.dispose();
         if (additionalImages.isEmpty()) return;
+        if (null == currentContent) return;
 
-        if (currentContent != null && currentContent.equals(storedContent)) { // User hasn't left the book page since
+        if (currentContent.equals(storedContent) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
             // Retrieve the URLs of stored pages
             Set<String> storedUrls = new HashSet<>();
             if (storedContent.getImageFiles() != null) {
