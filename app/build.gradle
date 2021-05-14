@@ -9,19 +9,6 @@ if (file('signing.gradle').exists()) {
     apply from: 'signing.gradle'
 }
 
-repositories {
-    exclusiveContent {
-        forRepository {
-            maven {
-                url 'https://dl.bintray.com/omicronapps/7-Zip-JBinding-4Android'
-            }
-        }
-        filter {
-            includeGroup "net.sf.sevenzipjbinding"
-        }
-    }
-}
-
 android {
     compileSdkVersion 30
     compileOptions {
@@ -267,7 +254,7 @@ dependencies {
     implementation 'com.jakewharton.threetenabp:threetenabp:1.3.0'
 
     // Archive management
-//    implementation 'net.sf.sevenzipjbinding:sevenzipjbinding:16.02-2.01'
+    implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
 
     // Natural strings comparator
     implementation 'net.grey-panther:natural-comparator:1.1'
