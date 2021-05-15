@@ -925,7 +925,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, value));
 
                 Response onlineCover = HttpHelper.getOnlineResource(
-                        content.getCoverImageUrl(),
+                        HttpHelper.fixUrl(content.getCoverImageUrl(), getStartUrl()),
                         requestHeadersList,
                         getStartSite().useMobileAgent(),
                         getStartSite().useHentoidAgent(),

@@ -27,6 +27,7 @@ import io.objectbox.annotation.Transient;
 import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
+import me.devsaki.hentoid.activities.sources.AllPornComicActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
 import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
@@ -247,6 +248,7 @@ public class Content implements Serializable {
             case MANHWA:
             case TOONILY:
             case IMHENTAI:
+            case ALLPORNCOMIC:
                 paths = url.split("/");
                 return paths[paths.length - 1];
             case DOUJINS:
@@ -334,6 +336,8 @@ public class Content implements Serializable {
                 return ImhentaiActivity.class;
             case TOONILY:
                 return ToonilyActivity.class;
+            case ALLPORNCOMIC:
+                return AllPornComicActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -367,15 +371,6 @@ public class Content implements Serializable {
                 return site.getUrl().replace("/manga/", "") + url;
             case PORNCOMIX:
                 return url;
-            case FAKKU:
-            case PANDA:
-            case MUSES:
-            case DOUJINS:
-            case HBROWSE:
-            case HENTAI2READ:
-            case MRM:
-            case MANHWA:
-            case TOONILY:
             default:
                 galleryConst = "";
         }
@@ -393,18 +388,6 @@ public class Content implements Serializable {
                 return site.getUrl() + "/gallery" + url + "1/";
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
-            case EHENTAI:               // Won't work anyway because of the temporary key
-            case EXHENTAI:              // Won't work anyway because of the temporary key
-            case NHENTAI:
-            case PANDA:
-            case DOUJINS:
-            case HBROWSE:
-            case HENTAI2READ:
-            case MRM:
-            case MANHWA:
-            case TOONILY:
-            case IMHENTAI:
-                return getGalleryUrl();
             case PURURIN:
                 return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
             case FAKKU2:
@@ -419,7 +402,7 @@ public class Content implements Serializable {
             case HENTAIFOX:
                 return site.getUrl() + "g" + url;
             default:
-                return null;
+                return getGalleryUrl();
         }
     }
 

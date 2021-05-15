@@ -122,6 +122,8 @@ public class IntentActivity extends AppCompatActivity {
             case IMHENTAI:
             case HENTAIFOX:
                 return toParse.replace("/gallery", "");
+            case PORNCOMIX:
+                return data.toString();
             case MUSES:
             case DOUJINS:
             case LUSCIOUS:
@@ -129,9 +131,8 @@ public class IntentActivity extends AppCompatActivity {
             case MRM:
             case MANHWA:
             case TOONILY:
+            case ALLPORNCOMIC:
                 return toParse;
-            case PORNCOMIX:
-                return data.toString();
             default:
                 return null;
         }
