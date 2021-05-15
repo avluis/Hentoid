@@ -25,6 +25,8 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateDetailsBinding
 import me.devsaki.hentoid.events.CommunicationEvent
+import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -53,31 +55,45 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
     private var enabled = true
 
 
-    private val ITEM_DIFF_CALLBACK: DiffCallback<DuplicateItem> = object : DiffCallback<DuplicateItem> {
-        override fun areItemsTheSame(oldItem: DuplicateItem, newItem: DuplicateItem): Boolean {
-            return oldItem.identifier == newItem.identifier
-        }
-
-        override fun areContentsTheSame(oldItem: DuplicateItem, newItem: DuplicateItem): Boolean {
-            return Objects.equals(oldItem.keep, newItem.keep)
-        }
-
-        override fun getChangePayload(oldItem: DuplicateItem, oldItemPosition: Int, newItem: DuplicateItem, newItemPosition: Int): Any? {
-            val diffBundleBuilder = DuplicateItemBundle.Builder()
-            if (!Objects.equals(oldItem.keep, newItem.keep)) {
-                diffBundleBuilder.setKeep(newItem.keep)
+    private val ITEM_DIFF_CALLBACK: DiffCallback<DuplicateItem> =
+        object : DiffCallback<DuplicateItem> {
+            override fun areItemsTheSame(oldItem: DuplicateItem, newItem: DuplicateItem): Boolean {
+                return oldItem.identifier == newItem.identifier
             }
-            return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
+
+            override fun areContentsTheSame(
+                oldItem: DuplicateItem,
+                newItem: DuplicateItem
+            ): Boolean {
+                return Objects.equals(oldItem.keep, newItem.keep)
+            }
+
+            override fun getChangePayload(
+                oldItem: DuplicateItem,
+                oldItemPosition: Int,
+                newItem: DuplicateItem,
+                newItemPosition: Int
+            ): Any? {
+                val diffBundleBuilder = DuplicateItemBundle.Builder()
+                if (!Objects.equals(oldItem.keep, newItem.keep)) {
+                    diffBundleBuilder.setKeep(newItem.keep)
+                }
+                return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
+            }
         }
-    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         check(requireActivity() is DuplicateDetectorActivity) { "Parent activity has to be a DuplicateDetectorActivity" }
-        activity = WeakReference<DuplicateDetectorActivity>(requireActivity() as DuplicateDetectorActivity)
+        activity =
+            WeakReference<DuplicateDetectorActivity>(requireActivity() as DuplicateDetectorActivity)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentDuplicateDetailsBinding.inflate(inflater, container, false)
         addCustomBackControl()
         return binding.root
@@ -100,17 +116,31 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        binding.list.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        binding.list.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         FastScrollerBuilder(binding.list).build()
         binding.list.adapter = fastAdapter
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
-        viewModel.selectedDuplicates.observe(viewLifecycleOwner, { l: List<DuplicateEntry>? -> this.onDuplicatesChanged(l) })
+        viewModel.selectedDuplicates.observe(
+            viewLifecycleOwner,
+            { l: List<DuplicateEntry>? -> this.onDuplicatesChanged(l) })
+
+        // Item click listener
+        fastAdapter.onClickListener = { _, _, item, _ ->
+            onItemClick(item)
+            false
+        }
 
         // "Keep" button click listener
         fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
-            override fun onClick(v: View, position: Int, fastAdapter: FastAdapter<DuplicateItem>, item: DuplicateItem) {
+            override fun onClick(
+                v: View,
+                position: Int,
+                fastAdapter: FastAdapter<DuplicateItem>,
+                item: DuplicateItem
+            ) {
                 onBookChoice(item.content, true)
             }
 
@@ -123,7 +153,12 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
 
         // "Delete" button click listener
         fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
-            override fun onClick(v: View, position: Int, fastAdapter: FastAdapter<DuplicateItem>, item: DuplicateItem) {
+            override fun onClick(
+                v: View,
+                position: Int,
+                fastAdapter: FastAdapter<DuplicateItem>,
+                item: DuplicateItem
+            ) {
                 onBookChoice(item.content, false)
             }
 
@@ -134,7 +169,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
             }
         })
 
-        binding.applyBtn.setOnClickListener { viewModel.applyChoices { activity.get()?.goBackToMain() } }
+        binding.applyBtn.setOnClickListener {
+            viewModel.applyChoices {
+                activity.get()?.goBackToMain()
+            }
+        }
     }
 
     private fun addCustomBackControl() {
@@ -151,6 +190,18 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         Handler(Looper.getMainLooper()).postDelayed({ activity.get()?.goBackToMain() }, 100)
     }
 
+    private fun onItemClick(item: DuplicateItem) {
+        val c: Content? = item.content
+        // Process the click
+        if (null == c) {
+            ToastHelper.toast(R.string.err_no_content)
+            return
+        }
+
+        if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
+            ToastHelper.toast(R.string.err_no_content)
+    }
+
     private fun onBookChoice(item: Content?, choice: Boolean?) {
         if (item != null)
             viewModel.setBookChoice(item, choice)
@@ -165,13 +216,15 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         // TODO update UI title
 
         // Order by relevance desc and transforms to DuplicateItem
-        val items = duplicates.sortedByDescending { it.calcTotalScore() }.map { DuplicateItem(it, DuplicateItem.ViewType.DETAILS) }.toMutableList()
+        val items = duplicates.sortedByDescending { it.calcTotalScore() }
+            .map { DuplicateItem(it, DuplicateItem.ViewType.DETAILS) }.toMutableList()
         set(itemAdapter, items, ITEM_DIFF_CALLBACK)
 
         // Update bottom bar
         val nbChoicesRemaining = items.size - duplicates.filter { it.keep != null }.count()
         if (nbChoicesRemaining > 0) {
-            binding.applyBtn.text = resources.getString(R.string.apply_processing, nbChoicesRemaining)
+            binding.applyBtn.text =
+                resources.getString(R.string.apply_processing, nbChoicesRemaining)
             binding.applyBtn.isEnabled = false
         } else {
             binding.applyBtn.text = resources.getString(R.string.apply_final)
