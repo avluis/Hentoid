@@ -28,7 +28,7 @@ public class HitomiActivity extends BaseWebActivity {
     private static final String[] RESULTS_FILTER = {"//hitomi.la[/]{0,1}$", "//hitomi.la[/]{0,1}\\?", "//hitomi.la/search.html", "//hitomi.la/index-[\\w%\\-\\.\\?]+", "//hitomi.la/(series|artist|tag|character)/[\\w%\\-\\.\\?]+"};
     private static final String[] BLOCKED_CONTENT = {"hitomi-horizontal.js", "hitomi-vertical.js", "invoke.js", "ion.sound"};
     private static final String[] JS_WHITELIST = {"galleries/[\\w%\\-]+.js$", "jquery", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap"};
-    private static final String[] BLOCKED_JS_CONTENTS = {"exoloader", "popunder"};
+    private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder"};
 
     private static final List<Pattern> whitelistUrlPattern = new ArrayList<>();
     private static final List<String> jsBlacklistCache = new ArrayList<>();
@@ -100,14 +100,16 @@ public class HitomiActivity extends BaseWebActivity {
                 if (null == body) throw new IOException("Empty body");
 
                 String jsBody = body.string().toLowerCase();
-                for (String s : BLOCKED_JS_CONTENTS)
+                for (String s : JS_CONTENT_BLACKLIST)
                     if (jsBody.contains(s)) {
+                        Timber.d(">> grey file %s BLOCKED", url);
                         jsBlacklistCache.add(url);
                         return true;
                     }
             } catch (IOException e) {
                 Timber.e(e);
             }
+            Timber.d(">> grey file %s ALLOWED", url);
 
             // Accept non-blocked (=grey) JS files
             return false;
