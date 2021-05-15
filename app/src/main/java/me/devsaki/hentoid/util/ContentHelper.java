@@ -106,6 +106,10 @@ public final class ContentHelper {
         return queueStatus;
     }
 
+    public static int[] getQueueTabStatuses() {
+        return queueTabStatus;
+    }
+
     public static boolean isInQueue(@NonNull final StatusContent status) {
         return Helper.getListFromPrimitiveArray(queueStatus).contains(status.getCode());
     }

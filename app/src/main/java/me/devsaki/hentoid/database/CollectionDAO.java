@@ -197,7 +197,11 @@ public interface CollectionDAO {
 
     List<QueueRecord> selectQueue();
 
-    LiveData<List<QueueRecord>> selectQueueContent();
+    List<QueueRecord> selectQueue(String query);
+
+    LiveData<List<QueueRecord>> selectQueueLive();
+
+    LiveData<List<QueueRecord>> selectQueueLive(String query);
 
     void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int mode, boolean isQueueActive);
 

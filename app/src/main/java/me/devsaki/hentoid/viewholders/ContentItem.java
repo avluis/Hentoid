@@ -88,6 +88,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     private final Content content;
     private final @ViewType
     int viewType;
+    private final boolean isSearchActive;
     private final boolean isEmpty;
 
     private Consumer<ContentItem> deleteAction = null;
@@ -119,14 +120,20 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     public ContentItem(@ViewType int viewType) {
         isEmpty = true;
         content = null;
+        isSearchActive = false;
         this.viewType = viewType;
         touchHelper = null;
         setIdentifier(Helper.generateIdForPlaceholder());
     }
 
     // Constructor for library and error item
-    public ContentItem(Content content, @Nullable ItemTouchHelper touchHelper, @ViewType int viewType, @Nullable final Consumer<ContentItem> deleteAction) {
+    public ContentItem(
+            Content content,
+            @Nullable ItemTouchHelper touchHelper,
+            @ViewType int viewType,
+            @Nullable final Consumer<ContentItem> deleteAction) {
         this.content = content;
+        isSearchActive = false;
         this.viewType = viewType;
         this.touchHelper = touchHelper;
         this.deleteAction = deleteAction;
@@ -137,9 +144,14 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     }
 
     // Constructor for queued item
-    public ContentItem(@NonNull QueueRecord record, ItemTouchHelper touchHelper, @Nullable final Consumer<ContentItem> deleteAction) {
+    public ContentItem(
+            @NonNull QueueRecord record,
+            boolean isSearchActive,
+            ItemTouchHelper touchHelper,
+            @Nullable final Consumer<ContentItem> deleteAction) {
         content = record.getContent().getTarget();
         viewType = ViewType.QUEUE;
+        this.isSearchActive = isSearchActive;
         this.touchHelper = touchHelper;
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
@@ -500,11 +512,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
-                boolean isFirstItem = (0 == getAbsoluteAdapterPosition());
-                ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
                 ivTop.setVisibility(View.VISIBLE);
                 ivBottom.setVisibility(View.VISIBLE);
-                ivReorder.setVisibility(View.VISIBLE);
+                ivReorder.setVisibility(item.isSearchActive ? View.INVISIBLE : View.VISIBLE);
             } else if (ViewType.ERRORS == item.viewType) {
                 ivRedownload.setVisibility(View.VISIBLE);
                 ivError.setVisibility(View.VISIBLE);

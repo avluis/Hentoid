@@ -46,6 +46,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
@@ -611,7 +612,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     private void insertQueueAndRenumber(long contentId, int order) {
-        List<QueueRecord> queue = db.selectQueue();
+        List<QueueRecord> queue = db.selectQueueRecordsQ(null).find();
         // Put in the right place
         if (order > queue.size()) queue.add(new QueueRecord(contentId, order));
         else {
@@ -637,7 +638,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             boolean bookNotCompletedOnly) {
 
         if (isUniversal) {
-            return Helper.getListFromPrimitiveArray(db.selectContentUniversalId(filter, groupId, bookFavouritesOnly, pageFavouritesOnly, orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly));
+            return Helper.getListFromPrimitiveArray(db.selectContentUniversalId(filter, groupId, bookFavouritesOnly, pageFavouritesOnly, orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly, ContentHelper.getLibraryStatuses()));
         } else {
             return Helper.getListFromPrimitiveArray(db.selectContentSearchId(filter, groupId, metadata, bookFavouritesOnly, pageFavouritesOnly, orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly));
         }
@@ -685,12 +686,22 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
-    public LiveData<List<QueueRecord>> selectQueueContent() {
-        return new ObjectBoxLiveData<>(db.selectQueueContentsQ());
+    public LiveData<List<QueueRecord>> selectQueueLive() {
+        return new ObjectBoxLiveData<>(db.selectQueueRecordsQ(null));
+    }
+
+    @Override
+    public LiveData<List<QueueRecord>> selectQueueLive(String query) {
+        return new ObjectBoxLiveData<>(db.selectQueueRecordsQ(query));
     }
 
     public List<QueueRecord> selectQueue() {
-        return db.selectQueue();
+        return db.selectQueueRecordsQ(null).find();
+    }
+
+    @Override
+    public List<QueueRecord> selectQueue(String query) {
+        return db.selectQueueRecordsQ(query).find();
     }
 
     public void updateQueue(@NonNull List<QueueRecord> queue) {
