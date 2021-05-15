@@ -33,8 +33,7 @@ public class ToonilyActivity extends BaseWebActivity {
         }
 
         /**
-         * Specific implementation to get rid of ad js files
-         * that have random names
+         * Specific implementation to get rid of ad js files that have random names
          */
         @Override
         protected boolean isUrlBlacklisted(@NonNull String url) {
