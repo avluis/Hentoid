@@ -1102,7 +1102,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
-        if (Preferences.getEndlessScroll() || null == itemAdapter) return;
+        if (null == itemAdapter) return;
 
         List<ContentItem> contentItems;
         if (iLibrary.isEmpty()) {
