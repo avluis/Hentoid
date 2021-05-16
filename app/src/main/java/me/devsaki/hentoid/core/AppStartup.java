@@ -131,6 +131,7 @@ public class AppStartup {
 //        result.add(createObservableFrom(context, AppStartupDev::testImg));
         result.add(createObservableFrom(context, AppStartup::searchForUpdates));
         result.add(createObservableFrom(context, AppStartup::sendFirebaseStats));
+        result.add(createObservableFrom(context, AppStartup::clearPictureCache));
         return result;
     }
 
@@ -253,5 +254,16 @@ public class AppStartup {
             emitter.onComplete();
         }
         Timber.i("Send Firebase stats : done");
+    }
+
+    // Clear archive picture cache (useful when user kills the app while in background with the viewer open)
+    private static void clearPictureCache(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        Timber.i("Clear picture cache : start");
+        try {
+            FileHelper.emptyCacheFolder(context, Consts.PICTURE_CACHE_FOLDER);
+        } finally {
+            emitter.onComplete();
+        }
+        Timber.i("Clear picture cache : done");
     }
 }

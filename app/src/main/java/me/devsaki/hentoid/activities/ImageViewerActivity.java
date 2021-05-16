@@ -77,16 +77,6 @@ public class ImageViewerActivity extends BaseActivity {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
     }
 
-    public void registerKeyListener(VolumeKeyListener listener) {
-        takeKeyEvents(true);
-        this.volumeKeyListener = listener;
-    }
-
-    public void unregisterKeyListener() {
-        if (volumeKeyListener != null) volumeKeyListener.clear();
-        volumeKeyListener = null;
-    }
-
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (volumeKeyListener != null) return volumeKeyListener.onKey(null, keyCode, event);
@@ -95,15 +85,20 @@ public class ImageViewerActivity extends BaseActivity {
 
     @Override
     protected void onStop() {
-        unregisterKeyListener();
-        if (viewModel != null) viewModel.emptyCacheFolder();
+        if (isFinishing()) {
+            if (viewModel != null) viewModel.emptyCacheFolder();
+            Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
+        }
         super.onStop();
     }
 
-    @Override
-    protected void onDestroy() {
-        unregisterKeyListener();
-        Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
-        super.onDestroy();
+    public void registerKeyListener(VolumeKeyListener listener) {
+        takeKeyEvents(true);
+        this.volumeKeyListener = listener;
+    }
+
+    public void unregisterKeyListener() {
+        if (volumeKeyListener != null) volumeKeyListener.clear();
+        volumeKeyListener = null;
     }
 }

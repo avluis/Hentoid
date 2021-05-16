@@ -994,6 +994,27 @@ public class FileHelper {
         return fileName.replaceAll(ILLEGAL_FILENAME_CHARS, "");
     }
 
+    // TODO doc
+    public static void emptyCacheFolder(@NonNull Context context, @NonNull String folderName) {
+        File cacheFolder = getOrCreateCacheFolder(context, folderName);
+        if (cacheFolder != null) {
+            File[] files = cacheFolder.listFiles();
+            if (files != null)
+                for (File f : files)
+                    if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
+        }
+    }
+
+    // TODO doc
+    @Nullable
+    public static File getOrCreateCacheFolder(@NonNull Context context, @NonNull String folderName) {
+        File cacheRoot = context.getCacheDir();
+        File cacheDir = new File(cacheRoot.getAbsolutePath() + File.separator + folderName);
+        if (cacheDir.exists()) return cacheDir;
+        else if (cacheDir.mkdir()) return cacheDir;
+        else return null;
+    }
+
     @FunctionalInterface
     public interface NameFilter {
 
