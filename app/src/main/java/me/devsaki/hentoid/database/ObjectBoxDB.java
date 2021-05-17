@@ -155,10 +155,9 @@ public class ObjectBoxDB {
     }
 
     public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
-        List<Content> content = selectContentByStatus(updateFrom);
-        for (int i = 0; i < content.size(); i++) content.get(i).setStatus(updateTo);
-
-        store.boxFor(Content.class).put(content);
+        List<Content> contentList = selectContentByStatus(updateFrom);
+        for (Content c : contentList) c.setStatus(updateTo);
+        store.boxFor(Content.class).put(contentList);
     }
 
     List<Content> selectContentByStatus(StatusContent status) {
@@ -205,24 +204,14 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.isBeingDeleted, true).build();
     }
 
-    void flagContentById(long[] contentId, boolean flag) {
-        Box<Content> contentBox = store.boxFor(Content.class);
-        for (long id : contentId) {
-            Content c = contentBox.get(id);
-            if (c != null) {
-                c.setFlaggedForDeletion(flag);
-                contentBox.put(c);
-            }
-        }
+    void flagContents(List<Content> contentList, boolean flag) {
+        for (Content c : contentList) c.setFlaggedForDeletion(flag);
+        store.boxFor(Content.class).put(contentList);
     }
 
-    void markContentById(long[] contentId, boolean flag) {
-        Box<Content> contentBox = store.boxFor(Content.class);
-        List<Content> contents = contentBox.get(contentId);
-        for (Content c : contents) {
-            c.setIsBeingDeleted(flag);
-            contentBox.put(c);
-        }
+    void markContents(List<Content> contentList, boolean flag) {
+        for (Content c : contentList) c.setIsBeingDeleted(flag);
+        store.boxFor(Content.class).put(contentList);
     }
 
     void deleteContentById(long contentId) {
@@ -1067,11 +1056,9 @@ public class ObjectBoxDB {
         QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
         if (updateFrom != null) query.equal(ImageFile_.status, updateFrom.getCode());
         List<ImageFile> imgs = query.equal(ImageFile_.contentId, contentId).build().find();
-
-
         if (imgs.isEmpty()) return;
 
-        for (int i = 0; i < imgs.size(); i++) imgs.get(i).setStatus(updateTo);
+        for (ImageFile img : imgs) img.setStatus(updateTo);
         store.boxFor(ImageFile.class).put(imgs);
     }
 
@@ -1323,15 +1310,9 @@ public class ObjectBoxDB {
         return store.boxFor(Group.class).query().equal(Group_.isFlaggedForDeletion, true).build();
     }
 
-    void flagGroupsById(long[] groupId, boolean flag) {
-        Box<Group> groupBox = store.boxFor(Group.class);
-        for (long id : groupId) {
-            Group g = groupBox.get(id);
-            if (g != null) {
-                g.setFlaggedForDeletion(flag);
-                groupBox.put(g);
-            }
-        }
+    void flagGroups(List<Group> groupList, boolean flag) {
+        for (Group g : groupList) g.setFlaggedForDeletion(flag);
+        store.boxFor(Group.class).put(groupList);
     }
 
     void deleteGroupItemsByGrouping(int groupingId) {
