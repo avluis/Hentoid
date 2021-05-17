@@ -419,7 +419,13 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param contents List of content to be deleted
      * @param onError  Callback to run when an error occurs
      */
-    public void deleteItems(@NonNull final List<Content> contents, @NonNull final List<Group> groups, Consumer<Object> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
+    public void deleteItems(
+            @NonNull final List<Content> contents,
+            @NonNull final List<Group> groups,
+            boolean deleteGroupsOnly,
+            Consumer<Object> onProgress,
+            Runnable onSuccess,
+            Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contents) flagContentDelete(c, true);
         // TODO do the same blinking effect for groups ?
@@ -432,7 +438,7 @@ public class LibraryViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(items)
                         .observeOn(Schedulers.io())
-                        .map(this::doDeleteItem)
+                        .map(i -> doDeleteItem(i, deleteGroupsOnly))
                         .doOnComplete(() -> {
                             if (!groups.isEmpty()) {
                                 isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
@@ -448,9 +454,9 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    private Object doDeleteItem(@NonNull final Object item) throws Exception {
+    private Object doDeleteItem(@NonNull final Object item, boolean deleteGroupsOnly) throws Exception {
         if (item instanceof Content) return doDeleteContent((Content) item);
-        else if (item instanceof Group) return doDeleteGroup((Group) item);
+        else if (item instanceof Group) return doDeleteGroup((Group) item, deleteGroupsOnly);
         else return null;
     }
 
@@ -657,19 +663,29 @@ public class LibraryViewModel extends AndroidViewModel {
      * @return Group that has been deleted
      * @throws GroupNotRemovedException When any issue occurs during removal
      */
-    private Group doDeleteGroup(@NonNull final Group group) throws GroupNotRemovedException {
+    private Group doDeleteGroup(@NonNull final Group group, boolean deleteGroupsOnly) throws GroupNotRemovedException {
         Helper.assertNonUiThread();
 
         try {
             // Check if given content still exists in DB
             Group theGroup = dao.selectGroup(group.id);
             if (theGroup != null) {
-                if (!theGroup.items.isEmpty())
-                    throw new GroupNotRemovedException(group, "Group is not empty");
-
-                dao.deleteGroup(theGroup.id);
-                Timber.d("Removed group: %s from db.", theGroup.name);
-                return theGroup;
+                // Reassign group for contained items
+                if (deleteGroupsOnly) {
+                    List<Content> containedContentList = theGroup.getContents();
+                    for (Content c : containedContentList) {
+                        Content movedContent = doMoveBook(c, null);
+                        ContentHelper.updateContentJson(getApplication(), movedContent);
+                    }
+                    theGroup = dao.selectGroup(group.id);
+                }
+                if (theGroup != null) {
+                    if (!theGroup.items.isEmpty())
+                        throw new GroupNotRemovedException(group, "Group is not empty");
+                    dao.deleteGroup(theGroup.id);
+                    Timber.d("Removed group: %s from db.", theGroup.name);
+                    return theGroup;
+                }
             }
             throw new GroupNotRemovedException(group, "Error when trying to delete : invalid group ID " + group.id);
         } catch (GroupNotRemovedException gnre) {

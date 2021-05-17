@@ -1401,7 +1401,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
         }
 
-        activity.get().deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList(), this::refreshIfNeeded);
+        activity.get().deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList(), false, this::refreshIfNeeded);
     }
 
     @Override

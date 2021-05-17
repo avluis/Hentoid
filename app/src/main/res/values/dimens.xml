@@ -17,6 +17,7 @@
     <!-- generic app-wide dimensions -->
     <dimen name="dialog_width">350dp</dimen>
     <dimen name="dialog_max_height">450dp</dimen>
+    <dimen name="dialog_padding">8dp</dimen>
 
     <!-- navigation drawer -->
     <dimen name="drawer_layout_width">320dp</dimen>

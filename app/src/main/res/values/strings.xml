@@ -261,10 +261,15 @@
     <string name="group_edit_name">Edit group name</string>
     <string name="delete_progress">Deleting books</string>
     <string name="cancel_queue_progress">Canceling queue items</string>
-    <plurals name="delete_success">
-        <item quantity="one">One book successfully deleted</item>
-        <item quantity="other">%d books successfully deleted</item>
+    <plurals name="delete_success_books">
+        <item quantity="one">1 book</item>
+        <item quantity="other">%d books</item>
     </plurals>
+    <plurals name="delete_success_groups">
+        <item quantity="one">1 group</item>
+        <item quantity="other">%d groups</item>
+    </plurals>
+    <string name="delete_success">successfuly deleted</string>
     <string name="archive_progress">Archiving books</string>
     <plurals name="archive_success">
         <item quantity="one">One book archived in your Download folder</item>
@@ -322,6 +327,19 @@
     <string name="group_new_name">New custom group name</string>
     <string name="group_remove">Detach from current group</string>
     <string name="group_name_exists">Group with that name already exists!</string>
+    <plurals name="group_delete_selected_group">
+        <item quantity="one">Delete group only</item>
+        <item quantity="other">Delete groups only</item>
+    </plurals>
+    <plurals name="group_delete_selected_book">
+        <item quantity="one">Delete %d book</item>
+        <item quantity="other">Delete %d books</item>
+    </plurals>
+    <plurals name="group_delete_selected_group_books">
+        <item quantity="one">Delete group + books</item>
+        <item quantity="other">Delete groups + books</item>
+    </plurals>
+    <string name="group_delete_nothing">Nothing to delete</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>

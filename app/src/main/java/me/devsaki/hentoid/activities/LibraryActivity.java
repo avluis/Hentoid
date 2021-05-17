@@ -983,7 +983,7 @@ public class LibraryActivity extends BaseActivity {
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect(selectExtension.getSelections());
-                            deleteItems(contents, groups, onSuccess);
+                            deleteItems(contents, groups, false, onSuccess);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
@@ -994,6 +994,7 @@ public class LibraryActivity extends BaseActivity {
     public void deleteItems(
             @NonNull final List<Content> contents,
             @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups,
+            boolean deleteGroupsOnly,
             @Nullable final Runnable onSuccess
     ) {
         DeleteNotificationChannel.init(this);
@@ -1003,10 +1004,13 @@ public class LibraryActivity extends BaseActivity {
         deleteMax = contents.size() + groups.size();
         deleteNotificationManager.notify(new DeleteStartNotification());
 
-        viewModel.deleteItems(contents, groups, this::onDeleteProgress, () -> {
-            onDeleteSuccess();
-            if (onSuccess != null) onSuccess.run();
-        }, this::onDeleteError);
+        viewModel.deleteItems(contents, groups, deleteGroupsOnly,
+                this::onDeleteProgress,
+                () -> {
+                    onDeleteSuccess(contents.size(), groups.size());
+                    if (onSuccess != null) onSuccess.run();
+                },
+                this::onDeleteError);
     }
 
     /**
@@ -1042,9 +1046,18 @@ public class LibraryActivity extends BaseActivity {
     /**
      * Callback for the success of the "delete item" action
      */
-    private void onDeleteSuccess() {
+    private void onDeleteSuccess(int nbContent, int nbGroups) {
         deleteNotificationManager.notify(new DeleteCompleteNotification(deleteProgress, false));
-        Snackbar.make(viewPager, getResources().getQuantityString(R.plurals.delete_success, deleteProgress, deleteProgress), LENGTH_LONG).show();
+        String msg = "";
+        if (nbGroups > 0)
+            msg += getResources().getQuantityString(R.plurals.delete_success_groups, nbGroups, nbGroups);
+        if (nbContent > 0) {
+            if (!msg.isEmpty()) msg += " and ";
+            msg += getResources().getQuantityString(R.plurals.delete_success_books, nbContent, nbContent);
+        }
+        msg += " " + getResources().getString(R.string.delete_success);
+
+        Snackbar.make(viewPager, msg, LENGTH_LONG).show();
     }
 
 
