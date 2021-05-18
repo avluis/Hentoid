@@ -153,7 +153,7 @@ public final class StringHelper {
             char c = formattedS.charAt(i);
             if (c == '(' || c == '[') openBracket = true;
             else if (c == ')' || c == ']') openBracket = false;
-            else if (c == '-' || c == '_' || c == '?' || c == '!' || c == ':' || c == ';' || c == ',' || c == '~' || c == '/' || c == '\\' || c == '|' || c == '.' || c == '+' || c == '#' || c == '\'' || c == '’' || c == '"' || c == '=')
+            else if (c == '-' || c == '_' || c == '?' || c == '!' || c == ':' || c == ';' || c == ',' || c == '~' || c == '/' || c == '\\' || c == '|' || c == '.' || c == '+' || c == '#' || c == '\'' || c == '’' || c == '"' || c == '=' || c == '&')
                 result.append(' ');
             else if (!openBracket) result.append(c);
         }
