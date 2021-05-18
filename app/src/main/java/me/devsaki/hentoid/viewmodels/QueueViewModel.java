@@ -28,6 +28,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
@@ -325,7 +326,11 @@ public class QueueViewModel extends AndroidViewModel {
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> onSuccess.run(),
+                                v -> {
+                                    if (Preferences.isQueueAutostart())
+                                        ContentQueueManager.getInstance().resumeQueue(getApplication());
+                                    onSuccess.run();
+                                },
                                 Timber::e
                         )
         );
