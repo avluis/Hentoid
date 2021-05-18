@@ -170,7 +170,9 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         })
 
         binding.applyBtn.setOnClickListener {
+            binding.applyBtn.isEnabled = false
             viewModel.applyChoices {
+                binding.applyBtn.isEnabled = true
                 activity.get()?.goBackToMain()
             }
         }
