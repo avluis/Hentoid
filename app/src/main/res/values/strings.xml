@@ -530,6 +530,7 @@
     <string name="duplicate_use_cover">Cover</string>
     <string name="duplicate_use_artist">Artist</string>
     <string name="duplicate_use_same_language">Same language only</string>
+    <string name="duplicate_ignore_chapters">Ignore chapters and sequels</string>
     <string name="duplicate_use_sensitivity">Sensitivity</string>
     <string-array name="duplicate_use_sensitivities">
         <item>Permissive</item>

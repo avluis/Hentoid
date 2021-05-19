@@ -30,7 +30,6 @@ import me.devsaki.hentoid.notification.duplicates.DuplicateCompleteNotification;
 import me.devsaki.hentoid.notification.duplicates.DuplicateProgressNotification;
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification;
 import me.devsaki.hentoid.util.DuplicateHelper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
@@ -101,7 +100,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
         indexDisposable = DuplicateHelper.Companion.indexCoversRx(getApplicationContext(), dao, this::notifyIndexProgress);
 
         // Initialize duplicate detection
-        detectDuplicates(inputData.getUseTitle(), inputData.getUseCover(), inputData.getUseArtist(), inputData.getUseSameLanguage(), inputData.getSensitivity());
+        detectDuplicates(inputData.getUseTitle(), inputData.getUseCover(), inputData.getUseArtist(), inputData.getUseSameLanguage(), inputData.getIgnoreChapters(), inputData.getSensitivity());
     }
 
     private void detectDuplicates(
@@ -109,6 +108,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
             boolean useCover,
             boolean useArtist,
             boolean useSameLanguage,
+            boolean ignoreChapters,
             int sensitivity) {
 
         // Mark process as incomplete until all combinations are searched
@@ -150,6 +150,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                     useCover,
                     useArtist,
                     useSameLanguage,
+                    ignoreChapters,
                     sensitivity);
             Timber.d(" >> PROCESS End reached");
 //            logs.add(new LogHelper.LogEntry("Setection End"));
@@ -184,6 +185,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                             boolean useCover,
                             boolean useSameArtist,
                             boolean useSameLanguage,
+                            boolean ignoreChapters,
                             int sensitivity) {
         List<DuplicateEntry> tempResults = new ArrayList<>();
         StringSimilarity cosine = new Cosine();
@@ -205,7 +207,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 DuplicateEntry entry = DuplicateHelper.Companion.processContent(
                         reference, candidate,
                         ignoredIds,
-                        useTitle, useCover, useSameArtist, useSameLanguage, sensitivity, cosine);
+                        useTitle, useCover, useSameArtist, useSameLanguage, ignoreChapters, sensitivity, cosine);
                 if (entry != null && processEntry(entry.getReferenceId(), entry.getDuplicateId(), matchedIds, reverseMatchedIds))
                     tempResults.add(entry);
             }

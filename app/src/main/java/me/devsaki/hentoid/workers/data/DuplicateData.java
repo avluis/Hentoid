@@ -15,6 +15,7 @@ public class DuplicateData {
     private static final String USE_COVER = "cover";
     private static final String USE_ARTIST = "artist";
     private static final String USE_SAME_LANGUAGE = "sameLanguage";
+    private static final String IGNORE_CHAPTERS = "ignoreChapters";
     private static final String USE_SENSITIVITY = "sensitivity";
 
     private DuplicateData() {
@@ -39,6 +40,10 @@ public class DuplicateData {
 
         public void setUseSameLanguage(boolean value) {
             builder.putBoolean(USE_SAME_LANGUAGE, value);
+        }
+
+        public void setIgnoreChapters(boolean value) {
+            builder.putBoolean(IGNORE_CHAPTERS, value);
         }
 
         public void setSensitivity(int value) {
@@ -72,6 +77,10 @@ public class DuplicateData {
 
         public boolean getUseSameLanguage() {
             return data.getBoolean(USE_SAME_LANGUAGE, false);
+        }
+
+        public boolean getIgnoreChapters() {
+            return data.getBoolean(IGNORE_CHAPTERS, false);
         }
 
         public int getSensitivity() {

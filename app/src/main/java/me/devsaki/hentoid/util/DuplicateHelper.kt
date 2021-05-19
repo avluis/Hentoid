@@ -167,6 +167,7 @@ class DuplicateHelper {
             useCover: Boolean,
             useSameArtist: Boolean,
             useSameLanguage: Boolean,
+            ignoreChapters: Boolean,
             sensitivity: Int,
             textComparator: StringSimilarity
         ): DuplicateEntry? {
@@ -199,6 +200,7 @@ class DuplicateHelper {
                 textComparator,
                 reference.titleCleanup, reference.titleNoDigits,
                 candidate.titleCleanup, candidate.titleNoDigits,
+                ignoreChapters,
                 sensitivity
             )
             if (useSameArtist) artistScore =
@@ -250,29 +252,32 @@ class DuplicateHelper {
             referenceTitleNoDigits: String,
             candidateTitleCleanup: String,
             candidateTitleNoDigits: String,
+            ignoreChapters: Boolean,
             sensitivity: Int
         ): Float {
             val similarity1 =
                 textComparator.similarity(referenceTitleCleanup, candidateTitleCleanup)
-            // Perfect match
-            if (similarity1 > 0.995) return similarity1.toFloat()
-            // Other cases
-            return if (similarity1 > TEXT_THRESHOLDS[sensitivity]) {
-                val similarity2 =
-                    textComparator.similarity(referenceTitleNoDigits, candidateTitleNoDigits)
-                // Cleaned up versions are identical
-                // => most probably a chapter variant -> set to 0%
-                if (similarity2 > similarity1 && similarity2 > 0.995) return 0f;
-                // Very little difference between cleaned up and original version
-                // => not a chapter variant
-                if (similarity2 - similarity1 < 0.01) {
-                    similarity1.toFloat()
+            if (ignoreChapters) {
+                // Perfect match
+                if (similarity1 > 0.995) return similarity1.toFloat()
+                // Other cases : check if both titles are chapters or sequels
+                return if (similarity1 > TEXT_THRESHOLDS[sensitivity]) {
+                    val similarity2 =
+                        textComparator.similarity(referenceTitleNoDigits, candidateTitleNoDigits)
+                    // Cleaned up versions are identical
+                    // => most probably a chapter variant -> set to 0%
+                    if (similarity2 > similarity1 && similarity2 > 0.995) return 0f;
+                    // Very little difference between cleaned up and original version
+                    // => not a chapter variant
+                    if (similarity2 - similarity1 < 0.01) {
+                        similarity1.toFloat()
+                    } else {
+                        0f // Most probably a chapter variant -> set to 0%
+                    }
                 } else {
-                    0f // Most probably a chapter variant -> set to 0%
+                    0f // Below threshold
                 }
-            } else {
-                0f // Below threshold
-            }
+            } else return if (similarity1 >= TEXT_THRESHOLDS[sensitivity]) similarity1.toFloat() else 0f
         }
 
         fun sanitizeTitle(title: String): String {

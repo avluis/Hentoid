@@ -41,7 +41,7 @@ public class TextDupeDetectorTest {
                 if (s1 == s2) continue;
                 String s2c = StringHelper.cleanup(s2);
                 String s2cp = DuplicateHelper.Companion.sanitizeTitle(s2c);
-                double score = DuplicateHelper.Companion.computeTitleScore(c, s1c, s1cp, s2c, s2cp, 0);
+                double score = DuplicateHelper.Companion.computeTitleScore(c, s1c, s1cp, s2c, s2cp, true, 0);
                 if (score > 0) {
                     double similarity1 = c.similarity(s1c, s2c);
                     double similarity2 = c.similarity(s1cp, s2cp);

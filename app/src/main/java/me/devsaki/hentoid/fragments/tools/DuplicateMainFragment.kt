@@ -114,6 +114,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.useCover.isChecked = Preferences.isDuplicateUseCover()
         binding.controls.useArtist.isChecked = Preferences.isDuplicateUseArtist()
         binding.controls.useSameLanguage.isChecked = Preferences.isDuplicateUseSameLanguage()
+        binding.controls.ignoreChapters.isChecked = Preferences.isDuplicateIgnoreChapters()
         binding.controls.useSensitivity.setItems(R.array.duplicate_use_sensitivities)
         binding.controls.useSensitivity.selectItemByIndex(Preferences.getDuplicateSensitivity())
 
@@ -181,6 +182,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         Preferences.setDuplicateUseCover(binding.controls.useCover.isChecked)
         Preferences.setDuplicateUseArtist(binding.controls.useArtist.isChecked)
         Preferences.setDuplicateUseSameLanguage(binding.controls.useSameLanguage.isChecked)
+        Preferences.setDuplicateIgnoreChapters(binding.controls.ignoreChapters.isChecked)
         Preferences.setDuplicateSensitivity(binding.controls.useSensitivity.selectedIndex)
 
         activateScanUi()
@@ -191,6 +193,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
             binding.controls.useCover.isChecked,
             binding.controls.useArtist.isChecked,
             binding.controls.useSameLanguage.isChecked,
+            binding.controls.ignoreChapters.isChecked,
             binding.controls.useSensitivity.selectedIndex
         )
     }
@@ -203,6 +206,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.useCover.isEnabled = false
         binding.controls.useArtist.isEnabled = false
         binding.controls.useSameLanguage.isEnabled = false
+        binding.controls.ignoreChapters.isEnabled = false
         binding.controls.useSensitivity.isEnabled = false
 
         val coverControlsVisibility =
@@ -225,6 +229,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         binding.controls.useCover.isEnabled = true
         binding.controls.useArtist.isEnabled = true
         binding.controls.useSameLanguage.isEnabled = true
+        binding.controls.ignoreChapters.isEnabled = true
         binding.controls.useSensitivity.isEnabled = true
 
         binding.controls.indexPicturesTxt.visibility = View.GONE

@@ -698,6 +698,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isDuplicateIgnoreChapters() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_IGNORE_CHAPTERS, Default.DUPLICATE_IGNORE_CHAPTERS);
+    }
+
+    public static void setDuplicateIgnoreChapters(boolean value) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_IGNORE_CHAPTERS, value)
+                .apply();
+    }
+
     public static int getDuplicateLastIndex() {
         return Integer.parseInt(sharedPreferences.getString(Key.DUPLICATE_LAST_INDEX, "-1") + "");
     }
@@ -818,6 +828,7 @@ public final class Preferences {
         public static final String DUPLICATE_USE_COVER = "duplicate_use_cover";
         public static final String DUPLICATE_USE_ARTIST = "duplicate_use_artist";
         public static final String DUPLICATE_USE_SAME_LANGUAGE = "duplicate_use_same_language";
+        public static final String DUPLICATE_IGNORE_CHAPTERS = "duplicate_ignore_chapters";
         public static final String DUPLICATE_LAST_INDEX = "last_index";
         public static final String DOWNLOAD_DUPLICATE_ASK = "download_duplicate_ask";
         public static final String DOWNLOAD_PLUS_DUPLICATE_TRY = "download_plus_duplicate_try";
@@ -906,6 +917,7 @@ public final class Preferences {
         static final boolean DUPLICATE_USE_COVER = false;
         static final boolean DUPLICATE_USE_ARTIST = true;
         static final boolean DUPLICATE_USE_SAME_LANGUAGE = false;
+        static final boolean DUPLICATE_IGNORE_CHAPTERS = true;
         static final boolean DOWNLOAD_DUPLICATE_ASK = true;
         static final boolean DOWNLOAD_PLUS_DUPLICATE_TRY = true;
     }

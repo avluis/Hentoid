@@ -56,6 +56,7 @@ class DuplicateViewModel(
         useCover: Boolean,
         useArtist: Boolean,
         sameLanguageOnly: Boolean,
+        ignoreChapters : Boolean,
         sensitivity: Int
     ) {
         val builder = DuplicateData.Builder()
@@ -63,6 +64,7 @@ class DuplicateViewModel(
         builder.setUseCover(useCover)
         builder.setUseArtist(useArtist)
         builder.setUseSameLanguage(sameLanguageOnly)
+        builder.setIgnoreChapters(ignoreChapters)
         builder.setSensitivity(sensitivity)
 
         DuplicateNotificationChannel.init(getApplication())
