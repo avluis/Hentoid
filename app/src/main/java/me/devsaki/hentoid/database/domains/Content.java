@@ -240,6 +240,7 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case TSUMINO:
+                return url.replace("/", "");
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
             case FAKKU2:
