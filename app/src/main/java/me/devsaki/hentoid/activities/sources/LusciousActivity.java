@@ -22,11 +22,11 @@ public class LusciousActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "luscious.net";
     public static final String[] GALLERY_FILTER = {
-            "operationName=AlbumGet", // Fetch using DB call
-            "luscious.net/[\\w\\-]+/[\\w\\-]+_[0-9]+/$", // Actual gallery page URL
+            "operationName=AlbumGet", // Fetch using GraphQL call (NB : only works for desktop; mobile version calls GraphQL using `fetch`, which transmits query data in the POST body)
+            "luscious.net/[\\w\\-]+/[\\w\\-]+_[0-9]+/$", // Actual gallery page URL (NB : only works for the first viewed gallery, or when manually reloading a page)
             "[\\w]+.luscious.net/[\\w\\-]+/[0-9]+/[\\w\\-\\.]+$" // Image URL containing album ID
     };
-    //private static final String[] DIRTY_ELEMENTS = {".ad_banner"}; <-- doesn't work; added dynamically on an element with a bogus class
+    //private static final String[] DIRTY_ELEMENTS = {".ad_banner"}; <-- doesn't work; added dynamically on an element tagged with a neutral-looking class
 
     public static final Pattern IMAGE_URL_PATTERN = Pattern.compile(GALLERY_FILTER[2]);
 
@@ -76,7 +76,6 @@ public class LusciousActivity extends BaseWebActivity {
         // Call the API without using BaseWebActivity.parseResponse
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-
             String detectedBookId = "";
 
             // If a picture is being loaded, count the number of pictures loaded for a given book ID
@@ -84,21 +83,22 @@ public class LusciousActivity extends BaseWebActivity {
             if (IMAGE_URL_PATTERN.matcher(urlStr).find()) {
                 String[] parts = urlStr.split("/");
                 String bookId = parts[4];
-                if (bookIdsCount.containsKey(bookId)) {
-                    Integer countObj = bookIdsCount.get(bookId);
-                    if (countObj != null) {
-                        int count = countObj + 1;
-                        if (count > 2) detectedBookId = bookId;
-                        bookIdsCount.put(bookId, count);
-                    }
+
+                Integer countObj = bookIdsCount.get(bookId);
+                if (countObj != null) {
+                    int count = countObj + 1;
+                    // We just need one hit, not one hit per image
+                    if (3 == count) detectedBookId = bookId;
+                    bookIdsCount.put(bookId, count);
                 } else {
                     bookIdsCount.put(bookId, 1);
                 }
                 detectDebouncer.submit(true);
             }
 
-            String theUrl = (detectedBookId.isEmpty()) ? urlStr : detectedBookId;
+            activity.onGalleryPageStarted();
 
+            String theUrl = (detectedBookId.isEmpty()) ? urlStr : detectedBookId;
             ContentParser contentParser = new LusciousContent();
             compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(theUrl))
                     .subscribeOn(Schedulers.io())

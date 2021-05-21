@@ -95,6 +95,8 @@ public class ExHentaiActivity extends BaseWebActivity {
         // We call the API without using BaseWebActivity.parseResponse
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
+            activity.onGalleryPageStarted();
+
             ContentParser contentParser = new ExhentaiContent();
             compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
                     .subscribeOn(Schedulers.io())

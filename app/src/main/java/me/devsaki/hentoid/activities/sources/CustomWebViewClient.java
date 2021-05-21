@@ -474,7 +474,7 @@ class CustomWebViewClient extends WebViewClient {
         // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
-        activity.onGalleryPageStarted();
+        if (analyzeForDownload) activity.onGalleryPageStarted();
 
         List<Pair<String, String>> requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr);
 
