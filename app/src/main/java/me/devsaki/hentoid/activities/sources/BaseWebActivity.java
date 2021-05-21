@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebHistoryItem;
@@ -35,6 +36,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
+import com.annimon.stream.function.BiConsumer;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.skydoves.balloon.ArrowOrientation;
@@ -45,8 +47,10 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.threeten.bp.Instant;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -209,6 +213,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     int seekButtonMode;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
+    // Handler for fetch interceptor
+    protected BiConsumer<String, String> fetchHandler = null;
+    protected String jsInterceptorScript = null;
 
 
     protected abstract CustomWebViewClient getWebClient();
@@ -250,7 +257,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // Webview
         animatedCheck = findViewById(R.id.animated_check);
-        initWebView();
+        initUI();
         initSwipeLayout();
         webView.loadUrl(getStartUrl());
 
@@ -424,7 +431,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void initWebView() {
+    private void initUI() {
 
         try {
             webView = new NestedScrollWebView(this);
@@ -509,13 +516,17 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
 
-        CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-        SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_container);
-        if (refreshLayout != null) refreshLayout.addView(webView, layoutParams);
+        if (fetchHandler != null)
+            webView.addJavascriptInterface(new FetchHandler(fetchHandler), "fetchHandler");
     }
 
     private void initSwipeLayout() {
+        CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        swipeLayout = findViewById(R.id.swipe_container);
+        if (null == swipeLayout) return;
+
+        swipeLayout.addView(webView, layoutParams);
+
         swipeLayout = findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(() -> {
             if (!swipeLayout.isRefreshing() || !webClient.isLoading()) {
@@ -536,6 +547,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             actionMenu.setIcon(R.drawable.selector_download_action);
             actionMenu.setEnabled(false);
         }
+
+        // Activate fetch handler
+        if (fetchHandler != null) {
+            if (null == jsInterceptorScript) jsInterceptorScript = getJsInterceptorScript();
+            webView.loadUrl(jsInterceptorScript);
+        }
+
         // Display download button tooltip if a book page has been reached
         if (isGalleryPage) showTooltip(R.string.help_web_download, false);
         // Update bookmark button
@@ -544,11 +562,18 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         updateBookmarkButton(currentBookmark.isPresent());
     }
 
+    // WARNING : This method may not be called from the UI thread
     public void onGalleryPageStarted() {
         blockedTags.clear();
         extraImages.clear();
         duplicateId = -1;
         duplicateSimilarity = 0f;
+        // Greys out the action button
+        // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious)
+        runOnUiThread(() -> {
+            actionMenu.setIcon(R.drawable.selector_download_action);
+            actionMenu.setEnabled(false);
+        });
     }
 
     public void onPageFinished(boolean isResultsPage, boolean isGalleryPage) {
@@ -1137,5 +1162,37 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         else result = result.replace("%s", getResources().getString(R.string.alert_wip));
 
         return result;
+    }
+
+    private String getJsInterceptorScript() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("javascript:");
+        try (InputStream is = getAssets().open("fetch_override.js"); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+            String sCurrentLine;
+            while ((sCurrentLine = br.readLine()) != null) {
+                sb.append(sCurrentLine);
+            }
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+        return sb.toString();
+    }
+
+    // References :
+    // https://stackoverflow.com/a/64961272/8374722
+    // https://stackoverflow.com/questions/3941969/android-intercept-ajax-call-from-webview/5742194
+    public static class FetchHandler {
+
+        private final BiConsumer<String, String> handler;
+
+        public FetchHandler(BiConsumer<String, String> handler) {
+            this.handler = handler;
+        }
+
+        @JavascriptInterface
+        public void onFetchCall(String url, String body) {
+            Timber.w("AJAX Begin %s : %s", url, body);
+            handler.accept(url, body);
+        }
     }
 }
