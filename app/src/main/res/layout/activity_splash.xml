@@ -3,8 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/transparent"
+    android:background="@color/primary_light"
     tools:context=".activities.SplashActivity">
+
+    <ImageView
+        android:id="@+id/githubIcon"
+        android:layout_width="320dp"
+        android:layout_height="320dp"
+        android:cropToPadding="true"
+        android:src="@drawable/ic_hentoid"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/quote"

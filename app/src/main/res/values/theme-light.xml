@@ -43,12 +43,6 @@
         <item name="android:windowBackground">@color/cod_gray</item>
     </style>
 
-    <!-- Splash Activity -->
-    <!-- NB : Splash activity theme can't be customized ad it belongs to the app's very first moments -->
-    <style name="Theme.Light.Splash">
-        <item name="android:windowBackground">@drawable/bg_splash</item>
-    </style>
-
     <!-- Prefs Activity -->
     <style name="Theme.Light.Prefs">
         <!-- Display action bar -->
