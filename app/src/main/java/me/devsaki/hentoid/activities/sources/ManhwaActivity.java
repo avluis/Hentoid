@@ -19,7 +19,7 @@ public class ManhwaActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new ManwhaWebViewClient(getStartSite(), GALLERY_FILTER, this);
+        CustomWebViewClient client = new ManhwaWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.addToUrlBlacklist(BLOCKED_CONTENT);
         client.addUrlWhitelist(DOMAIN_FILTER);
@@ -27,9 +27,9 @@ public class ManhwaActivity extends BaseWebActivity {
         return client;
     }
 
-    private static class ManwhaWebViewClient extends CustomWebViewClient {
+    private static class ManhwaWebViewClient extends CustomWebViewClient {
 
-        ManwhaWebViewClient(Site site, String[] filter, CustomWebActivity activity) {
+        ManhwaWebViewClient(Site site, String[] filter, CustomWebActivity activity) {
             super(site, filter, activity);
         }
 
