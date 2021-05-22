@@ -81,7 +81,7 @@ public class FakkuParser implements ImageListParser {
             return result;
         }
 
-        progress.start(content.getUrl(), info.getPages().keySet().size() + 1);
+        progress.start(content.getId(), info.getPages().keySet().size() + 1);
 
         // Process book info to get page detailed info
         String pid = null;

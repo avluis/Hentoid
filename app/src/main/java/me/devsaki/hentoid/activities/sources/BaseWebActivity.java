@@ -347,7 +347,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onDownloadPreparationEvent(DownloadPreparationEvent event) {
-        if (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.url.equalsIgnoreCase(currentContent.getUrl())) {
+        // Show progress if it's about current content or its best duplicate
+        if (
+                (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.contentId == currentContent.getId())
+                        || (duplicateId > 0 && event.contentId == duplicateId)
+        ) {
             progressBar.setMax(event.total);
             progressBar.setProgress(event.done);
             progressBar.setVisibility(event.isCompleted() ? View.GONE : View.VISIBLE);

@@ -45,7 +45,7 @@ public class AllPornComicParser extends BaseImageListParser {
         }
         Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
 
-        progressStart(content.getUrl(), chapterUrls.size());
+        progressStart(content.getId(), chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {

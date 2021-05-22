@@ -17,7 +17,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
-import me.devsaki.hentoid.util.network.HttpHelper;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
@@ -41,12 +40,13 @@ public class ToonilyParser extends BaseImageListParser {
             List<Element> chapters = doc.select("[class^=wp-manga-chapter] a");
             for (Element e : chapters) {
                 String link = e.attr("href");
-                if (!chapterUrls.contains(link)) chapterUrls.add(link); // Make sure we're not adding duplicates
+                if (!chapterUrls.contains(link))
+                    chapterUrls.add(link); // Make sure we're not adding duplicates
             }
         }
         Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
 
-        progressStart(content.getUrl(), chapterUrls.size());
+        progressStart(content.getId(), chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {

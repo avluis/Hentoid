@@ -40,7 +40,7 @@ public class MrmParser extends BaseImageListParser {
             for (Element e : chapters) chapterUrls.add(e.attr("href"));
         }
         if (chapterUrls.isEmpty()) chapterUrls.add(content.getGalleryUrl()); // "one-shot" book
-        progressStart(content.getUrl(), chapterUrls.size());
+        progressStart(content.getId(), chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {
