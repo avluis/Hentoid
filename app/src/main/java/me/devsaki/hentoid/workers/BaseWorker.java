@@ -45,6 +45,8 @@ public abstract class BaseWorker extends Worker {
             return info.isPresent();
         } catch (Exception e) {
             Timber.e(e);
+            // Restore interrupted state
+            Thread.currentThread().interrupt();
         }
         return false;
     }

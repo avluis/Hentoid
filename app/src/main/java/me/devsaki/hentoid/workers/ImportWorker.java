@@ -354,6 +354,8 @@ public class ImportWorker extends BaseWorker {
             else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
         } catch (IOException | InterruptedException e) {
             Timber.w(e);
+            // Restore interrupted state
+            Thread.currentThread().interrupt();
         } finally {
             // Write log in root folder
             DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));

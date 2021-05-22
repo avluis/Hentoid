@@ -77,7 +77,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
     @Override
     void onInterrupt() {
         if (indexDisposable != null) indexDisposable.dispose();
-        if (notificationDisposables != null) notificationDisposables.clear();
+        notificationDisposables.clear();
     }
 
     @Override
@@ -87,7 +87,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
         else Preferences.setDuplicateLastIndex(-1);
 
         if (indexDisposable != null) indexDisposable.dispose();
-        if (notificationDisposables != null) notificationDisposables.clear();
+        notificationDisposables.clear();
         dao.cleanup();
         duplicatesDAO.cleanup();
     }
@@ -161,6 +161,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
                     Thread.sleep(3000); // Don't rush in another loop
                 } catch (InterruptedException e) {
                     Timber.w(e);
+                    // Restore interrupted state
+                    Thread.currentThread().interrupt();
                 }
             }
             if (isStopped()) break;
