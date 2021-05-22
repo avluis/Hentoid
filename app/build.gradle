@@ -287,6 +287,7 @@ sonarqube {
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.language", "java"
         property "sonar.sources", "src/main/"
+        property "sonar.sourceEncoding", "UTF-8"
         property "sonar.login", "3d0dc80792bad95f0193e7ed626cf090ac83e208"
     }
 }
