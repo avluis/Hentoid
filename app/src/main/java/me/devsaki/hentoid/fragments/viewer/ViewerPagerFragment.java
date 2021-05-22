@@ -356,7 +356,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         Slider slider = binding.controlsOverlay.slideshowDelaySlider;
         slider.setValueFrom(0);
         int nbEntries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries).length;
-        slider.setValueTo(nbEntries - 1);
+        slider.setValueTo(nbEntries - 1f);
         slider.setValue(convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay()));
         slider.setLabelFormatter(value -> {
             String[] entries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries);
