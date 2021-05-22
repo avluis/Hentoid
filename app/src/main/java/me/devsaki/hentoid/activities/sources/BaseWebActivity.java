@@ -825,13 +825,19 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         if (isDownloadPlus) {
-            // Copy the content's download params to the images
+            // Copy the _current_ content's download params to the images
             String downloadParamsStr = currentContent.getDownloadParams();
             if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
                 for (ImageFile i : extraImages) i.setDownloadParams(downloadParamsStr);
             }
 
-            // Append additional pages to the current book's list of pages
+            // Determine base book : browsed downloaded book or best duplicate ?
+            if (!ContentHelper.isInLibrary(currentContent.getStatus()) && duplicateId > 0) {
+                currentContent = objectBoxDAO.selectContent(duplicateId);
+                if (null == currentContent) return;
+            }
+
+            // Append additional pages to the base book's list of pages
             List<ImageFile> updatedImgs = new ArrayList<>(); // Entire image set to update
             Set<String> existingUrls = new HashSet<>(); // URLs of known images
             if (currentContent.getImageFiles() != null) {
@@ -839,7 +845,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 updatedImgs.addAll(currentContent.getImageFiles());
             }
 
-            // Save additional detected pages references to current book, without duplicate URLs
+            // Save additional detected pages references to base book, without duplicate URLs
             List<ImageFile> additionalNonExistingImages = Stream.of(extraImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
             if (!additionalNonExistingImages.isEmpty()) {
                 updatedImgs.addAll(additionalNonExistingImages);
