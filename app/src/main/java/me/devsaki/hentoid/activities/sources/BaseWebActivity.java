@@ -736,7 +736,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     /**
      * Listener for the Action button : download content, view queue or read content
      */
-    public void onActionClick() {
+    protected void onActionClick() {
         boolean needsDuplicateAlert = Preferences.isDownloadDuplicateAsk() && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD;
         switch (actionButtonMode) {
             case ActionMode.DOWNLOAD:
