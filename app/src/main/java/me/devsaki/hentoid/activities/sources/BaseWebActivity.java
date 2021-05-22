@@ -1049,6 +1049,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     private void searchForExtraImages(@NonNull final Content storedContent) {
+        if (searchExtraImagesdisposable != null)
+            searchExtraImagesdisposable.dispose(); // Cancel previous operation
         searchExtraImagesdisposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -1087,7 +1089,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     private void onSearchForExtraImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
         searchExtraImagesdisposable.dispose();
-        if (additionalImages.isEmpty()) return;
+        if (additionalImages.isEmpty()) {
+            ToastHelper.toast(R.string.no_extra_page);
+            return;
+        }
         if (null == currentContent) return;
 
         if (currentContent.equals(storedContent) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
