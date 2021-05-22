@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.test.core.app.ApplicationProvider;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -32,6 +33,8 @@ public class TextDupeDetectorTest {
         } catch (Exception e) {
             Timber.e(e);
         }
+
+        Assert.assertFalse(vals1.isEmpty());
 
         Cosine c = new Cosine();
         for (String s1 : vals1) {
