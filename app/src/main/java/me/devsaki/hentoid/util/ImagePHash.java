@@ -6,6 +6,8 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 
+import timber.log.Timber;
+
 /**
  * pHash-like image hash.
  * Author: Elliot Shepherd (elliot@jarofworms.com)
@@ -135,7 +137,7 @@ public class ImagePHash {
         try {
             resizedBitmap = Bitmap.createScaledBitmap(bm, newWidth, newHeight, false);
         } catch (NullPointerException e) {
-            e.printStackTrace();
+            Timber.w(e);
         }
         return resizedBitmap;
     }
