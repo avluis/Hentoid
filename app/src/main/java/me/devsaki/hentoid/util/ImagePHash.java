@@ -15,8 +15,8 @@ import timber.log.Timber;
  * Based On: http://www.hackerfactor.com/blog/index.php?/archives/432-Looks-Like-It.html
  */
 public class ImagePHash {
-    private int size = 32;
-    private int smallerSize = 8;
+    private final int size;
+    private final int smallerSize;
 
     public ImagePHash(int size, int smallerSize) {
         this.size = size;
@@ -108,24 +108,15 @@ public class ImagePHash {
              * remains the same; this can survive gamma and color histogram
              * adjustments without a problem.
              */
-
-
             for (int x = 0; x < smallerSize; x++) {
                 for (int y = 0; y < smallerSize; y++) {
                     if (x != 0 && y != 0) {
-
                         hash *= 2;
-
-                        if (dctVals[x][y] > avg)
-                            hash++;
-
+                        if (dctVals[x][y] > avg) hash++;
                     }
-                }
-            }
-
-        } else {
-            return 0;
-        }
+                } // Inner loop
+            } // Outer Loop
+        } // img not null
 
         return hash;
     }
