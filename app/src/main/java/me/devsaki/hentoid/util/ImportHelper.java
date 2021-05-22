@@ -451,7 +451,7 @@ public class ImportHelper {
      * @param context      Context to use
      * @param bookFolder   Folder to analyze
      * @param explorer     FileExplorer to use
-     * @param parentNames  Names of parent folders, for formatting purposes
+     * @param parentNames  Names of parent folders, for formatting purposes; last of the list is the immediate parent of bookFolder
      * @param targetStatus Target status of the Content to create
      * @param dao          CollectionDAO to use
      * @param imageFiles   List of images to match files with; null if they have to be recreated from the files
@@ -480,13 +480,18 @@ public class ImportHelper {
             }
         }
         if (null == result) {
-            String title = bookFolder.getName();
-            if (null == title) title = "";
-            title = title.replace("_", " ");
-            // Remove expressions between []'s
-            title = title.replaceAll("\\[[^(\\[\\])]*\\]", "");
-            title = title.trim();
+            String title = cleanTitle(bookFolder.getName());
+            // Tachiyomi downloads - include parent folder name as title
+            if (title.toLowerCase().startsWith("chapter") && !parentNames.isEmpty()) {
+                // Single chapter
+                if ("chapter".equalsIgnoreCase(title))
+                    title = cleanTitle(parentNames.get(parentNames.size() - 1));
+                else // Multiple chapters
+                    title = cleanTitle(parentNames.get(parentNames.size() - 1)) + " " + title;
+            }
+
             result = new Content().setTitle(title);
+
             Site site = Site.NONE;
             if (!parentNames.isEmpty()) {
                 for (String parent : parentNames)
@@ -517,6 +522,14 @@ public class ImportHelper {
         return result;
     }
 
+    private static String cleanTitle(String s) {
+        String result = StringHelper.protect(s);
+        result = result.replace("_", " ");
+        // Remove expressions between []'s
+        result = result.replaceAll("\\[[^(\\[\\])]*\\]", "");
+        return result.trim();
+    }
+
     /**
      * Create a Content from the given parent folder and chapter subfolders, merging all "chapters" into one content
      *
@@ -524,7 +537,7 @@ public class ImportHelper {
      * @param parent         Parent folder to take into account for title and download date
      * @param chapterFolders Folders containing chapters to scan for images
      * @param explorer       FileExplorer to use
-     * @param parentNames    Names of parent folders, for formatting purposes
+     * @param parentNames    Names of parent folders, for formatting purposes; last of the list is the immediate parent of parent
      * @param dao            CollectionDAO to use
      * @param jsonFile       JSON file to use, if one has been detected upstream; null if it needs to be detected
      * @return Content created from the folder information, subfolders and files
@@ -654,7 +667,7 @@ public class ImportHelper {
      * @param context     Context to use
      * @param subFolders  Subfolders to scan for archives
      * @param explorer    FileExplorer to use
-     * @param parentNames Names of parent folders, for formatting purposes
+     * @param parentNames Names of parent folders, for formatting purposes; last of the list is the immediate parent of the scanned folders
      * @param dao         CollectionDAO to use
      * @return List of Content created from every archive inside the given subfolders
      */
@@ -699,7 +712,7 @@ public class ImportHelper {
      * @param context      Context to use
      * @param parentFolder Parent folder where the archive is located
      * @param archive      Archive file to scan
-     * @param parentNames  Names of parent folders, for formatting purposes
+     * @param parentNames  Names of parent folders, for formatting purposes; last of the list is the immediate parent of parentFolder
      * @param targetStatus Target status of the Content to create
      * @param dao          CollectionDAO to use
      * @param jsonFile     JSON file to use, if one has been detected upstream; null if it has to be detected
