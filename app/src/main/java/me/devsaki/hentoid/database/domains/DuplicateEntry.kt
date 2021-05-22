@@ -40,7 +40,7 @@ data class DuplicateEntry(
         val operands = ArrayList<android.util.Pair<Float, Float>>()
         if (titleScore > -1) operands.add(android.util.Pair<Float, Float>(titleScore, 1f))
         if (coverScore > -1) operands.add(android.util.Pair<Float, Float>(coverScore, 1f))
-        return Helper.weigthedAverage(operands) * (if (artistScore > -1) artistScore else 1f)
+        return Helper.weightedAverage(operands) * (if (artistScore > -1) artistScore else 1f)
     }
 
     fun uniqueHash(): Long {

@@ -242,7 +242,7 @@ public final class Helper {
     }
 
     // TODO doc
-    public static float weigthedAverage(List<Pair<Float, Float>> operands) {
+    public static float weightedAverage(List<Pair<Float, Float>> operands) {
         if (operands.isEmpty()) return 0;
 
         float numerator = 0;
@@ -251,7 +251,7 @@ public final class Helper {
             numerator += (operand.first * operand.second);
             denominator += operand.second;
         }
-        return numerator / denominator;
+        return (denominator > 0) ? numerator / denominator : 0;
     }
 
     // TODO doc
