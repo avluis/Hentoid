@@ -1399,17 +1399,7 @@ public class ObjectBoxDB {
         return query;
     }
 
-    Query<Content> selectNonHashedContent1() {
-        return selectNonHashedCovers()
-                .link(ImageFile_.content)
-                .in(Content_.status, new int[]{
-                        StatusContent.DOWNLOADED.getCode(),
-                        StatusContent.MIGRATED.getCode()})
-                .notNull(Content_.storageUri)
-                .notEqual(Content_.storageUri, "").build();
-    }
-
-    Query<Content> selectNonHashedContent2() {
+    Query<Content> selectNonHashedContent() {
         QueryBuilder<Content> query = store.boxFor(Content.class).query()
                 .in(Content_.status, new int[]{
                         StatusContent.DOWNLOADED.getCode(),

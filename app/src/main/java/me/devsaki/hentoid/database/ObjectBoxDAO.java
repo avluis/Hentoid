@@ -90,12 +90,12 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public long countContentWithUnhashedCovers() {
-        return db.selectNonHashedContent2().count();
+        return db.selectNonHashedContent().count();
     }
 
     @Override
     public Observable<Content> streamContentWithUnhashedCovers() {
-        Query<Content> query = db.selectNonHashedContent2();
+        Query<Content> query = db.selectNonHashedContent();
         return Observable.create(emitter -> query.forEach(new DatabaseConsumer<>(emitter)));
     }
 
