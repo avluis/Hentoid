@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="allowed_domains">
+        <item>disqus</item>
+        <item>googletagmanager.com</item>
+        <item>cloudflare</item>
+        <item>jsdelivr.net</item>
+        <item>googleapis.com</item>
+        <item>gstatic.com</item>
+    </string-array>
+</resources>

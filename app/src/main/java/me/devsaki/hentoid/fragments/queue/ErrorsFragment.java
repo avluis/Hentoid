@@ -177,8 +177,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
 
     private void customBackPress() {
         // If content is selected, deselect it
-        if (!selectExtension.getSelections().isEmpty()) {
-            selectExtension.deselect();
+        if (selectExtension != null && !selectExtension.getSelections().isEmpty()) {
+            selectExtension.deselect(selectExtension.getSelections());
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
         } else {
             callback.remove();
@@ -213,7 +213,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     public void onResume() {
         super.onResume();
 
-        if (selectExtension != null) selectExtension.deselect();
+        if (selectExtension != null) selectExtension.deselect(selectExtension.getSelections());
         initSelectionToolbar();
     }
 
@@ -251,7 +251,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
 
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);
         });
         selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
@@ -506,6 +506,11 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     }
 
     @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing; error items are not draggable
+    }
+
+    @Override
     public void itemSwiped(int position, int direction) {
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
         if (vh instanceof ISwipeableViewHolder) {
@@ -556,13 +561,13 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             activity.get().redownloadContent(contents, true, true);
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog12, which) -> {
                             dialog12.dismiss();
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .create()
@@ -604,12 +609,12 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             onDeleteBooks(items);
                         })
                 .setNegativeButton(R.string.no,
-                        (dialog, which) -> selectExtension.deselect())
-                .setOnCancelListener(dialog -> selectExtension.deselect())
+                        (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
+                .setOnCancelListener(dialog -> selectExtension.deselect(selectExtension.getSelections()))
                 .create().show();
     }
 }

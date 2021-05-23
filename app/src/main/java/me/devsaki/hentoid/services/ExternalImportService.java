@@ -34,12 +34,12 @@ import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileExplorer;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import me.devsaki.hentoid.workers.ImportWorker;
 import timber.log.Timber;
@@ -54,7 +54,7 @@ import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
  */
 public class ExternalImportService extends IntentService {
 
-    private static final int NOTIFICATION_ID = 6;
+    private static final int NOTIFICATION_ID = ExternalImportService.class.getName().hashCode();
     private static final Pattern ENDS_WITH_NUMBER = Pattern.compile(".*\\d+(\\.\\d+)?$");
 
     private static boolean running;
@@ -209,7 +209,7 @@ public class ExternalImportService extends IntentService {
         logInfo.setLogName("Import external");
         logInfo.setFileName("import_external_log");
         logInfo.setNoDataMessage("No content detected.");
-        logInfo.setLog(log);
+        logInfo.setEntries(log);
         return logInfo;
     }
 
@@ -295,7 +295,7 @@ public class ExternalImportService extends IntentService {
         String jsonName;
         if (c.isArchive()) {
             DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(this, c.getStorageUri());
-            jsonName = FileHelper.getFileNameWithoutExtension(Helper.protect(archiveFile.getName())) + ".json";
+            jsonName = FileHelper.getFileNameWithoutExtension(StringHelper.protect(archiveFile.getName())) + ".json";
         } else {
             jsonName = Consts.JSON_FILE_NAME_V2;
         }

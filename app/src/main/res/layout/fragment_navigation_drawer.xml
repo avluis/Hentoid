@@ -40,6 +40,21 @@
         app:layout_constraintTop_toTopOf="@id/drawer_header"
         tools:ignore="ContentDescription" />
 
+    <ImageView
+        android:id="@+id/drawer_tools_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_tools"
+        app:layout_constraintRight_toRightOf="@id/drawer_header"
+        app:layout_constraintTop_toBottomOf="@id/drawer_app_prefs_btn"
+        tools:ignore="ContentDescription" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drawer_list"
         android:layout_width="match_parent"

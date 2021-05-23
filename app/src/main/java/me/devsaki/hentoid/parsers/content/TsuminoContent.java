@@ -13,7 +13,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
@@ -49,7 +49,7 @@ public class TsuminoContent extends BaseContentParser {
         content.setUrl(theUrl.replace("/Read/Index", ""));
         if (!coverUrl.startsWith("http")) coverUrl = TSUMINO.getUrl() + coverUrl;
         content.setCoverImageUrl(coverUrl);
-        content.setTitle(Helper.removeNonPrintableChars(title));
+        content.setTitle(StringHelper.removeNonPrintableChars(title));
         content.setQtyPages((pages.length() > 0) ? Integer.parseInt(pages) : 0);
 
         AttributeMap attributes = new AttributeMap();

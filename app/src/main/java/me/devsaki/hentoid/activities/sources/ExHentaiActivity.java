@@ -38,7 +38,7 @@ public class ExHentaiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new ExHentaiWebClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new ExHentaiWebClient(getStartSite(), GALLERY_FILTER, this);
         CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");  // Show thumbs in results page ("extended display")
         CookieManager.getInstance().setCookie(".exhentai.org", "nw=1"); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         // ExH serves images through hosts that use http connections, which is detected as "mixed content" by the app
@@ -48,8 +48,8 @@ public class ExHentaiActivity extends BaseWebActivity {
 
     private class ExHentaiWebClient extends CustomWebViewClient {
 
-        ExHentaiWebClient(String[] filter, WebContentListener listener) {
-            super(filter, listener);
+        ExHentaiWebClient(Site site, String[] filter, CustomWebActivity activity) {
+            super(site, filter, activity);
         }
 
         @Override
@@ -95,6 +95,8 @@ public class ExHentaiActivity extends BaseWebActivity {
         // We call the API without using BaseWebActivity.parseResponse
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
+            activity.onGalleryPageStarted();
+
             ContentParser contentParser = new ExhentaiContent();
             compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
                     .subscribeOn(Schedulers.io())

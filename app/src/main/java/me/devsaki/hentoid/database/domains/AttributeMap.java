@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 
 /**
@@ -25,7 +24,7 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
             list = new ArrayList<>();
             put(type, list);
         }
-        if (list != null) list.add(attributeItem);
+        if (list != null && !list.contains(attributeItem)) list.add(attributeItem);
     }
 
     public void addAll(List<Attribute> attributeList) {

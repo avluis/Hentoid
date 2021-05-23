@@ -27,6 +27,7 @@ import io.objectbox.annotation.Transient;
 import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
+import me.devsaki.hentoid.activities.sources.AllPornComicActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
 import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
@@ -34,7 +35,6 @@ import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
-import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.ImhentaiActivity;
@@ -42,7 +42,6 @@ import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.ManhwaActivity;
 import me.devsaki.hentoid.activities.sources.MrmActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
-import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
 import me.devsaki.hentoid.activities.sources.PorncomixActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
@@ -53,8 +52,10 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ArchiveHelper;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
@@ -96,7 +97,8 @@ public class Content implements Serializable {
     @Deprecated
     private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
-    private boolean favourite;
+    private boolean favourite = false;
+    private boolean completed = false;
     private long reads = 0;
     private long lastReadDate;
     private int lastReadPageIndex = 0;
@@ -238,10 +240,7 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case TSUMINO:
-            case NEXUS:
                 return url.replace("/", "");
-            case HENTAICAFE:
-                return url.replace("/?p=", "");
             case MUSES:
                 return url.replace("/comics/album/", "").replace("/", ".");
             case FAKKU2:
@@ -250,6 +249,7 @@ public class Content implements Serializable {
             case MANHWA:
             case TOONILY:
             case IMHENTAI:
+            case ALLPORNCOMIC:
                 paths = url.split("/");
                 return paths[paths.length - 1];
             case DOUJINS:
@@ -291,8 +291,6 @@ public class Content implements Serializable {
             case EXHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
-            case HENTAICAFE:
-                return url.replace("/?p=", "") + "-" + site.getDescription();
             default:
                 return null;
         }
@@ -307,8 +305,6 @@ public class Content implements Serializable {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
                 return ASMHentaiActivity.class;
-            case HENTAICAFE:
-                return HentaiCafeActivity.class;
             case TSUMINO:
                 return TsuminoActivity.class;
             case PURURIN:
@@ -319,8 +315,6 @@ public class Content implements Serializable {
                 return ExHentaiActivity.class;
             case FAKKU2:
                 return FakkuActivity.class;
-            case NEXUS:
-                return NexusActivity.class;
             case MUSES:
                 return MusesActivity.class;
             case DOUJINS:
@@ -343,6 +337,8 @@ public class Content implements Serializable {
                 return ImhentaiActivity.class;
             case TOONILY:
                 return ToonilyActivity.class;
+            case ALLPORNCOMIC:
+                return AllPornComicActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -372,23 +368,10 @@ public class Content implements Serializable {
             case FAKKU2:
                 galleryConst = "/hentai/";
                 break;
-            case NEXUS:
-                galleryConst = "/view";
-                break;
             case LUSCIOUS:
                 return site.getUrl().replace("/manga/", "") + url;
             case PORNCOMIX:
                 return url;
-            case FAKKU:
-            case HENTAICAFE:
-            case PANDA:
-            case MUSES:
-            case DOUJINS:
-            case HBROWSE:
-            case HENTAI2READ:
-            case MRM:
-            case MANHWA:
-            case TOONILY:
             default:
                 galleryConst = "";
         }
@@ -406,26 +389,10 @@ public class Content implements Serializable {
                 return site.getUrl() + "/gallery" + url + "1/";
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
-            case EHENTAI:               // Won't work anyway because of the temporary key
-            case EXHENTAI:              // Won't work anyway because of the temporary key
-            case NHENTAI:
-            case PANDA:
-            case DOUJINS:
-            case HBROWSE:
-            case HENTAI2READ:
-            case MRM:
-            case MANHWA:
-            case TOONILY:
-            case IMHENTAI:
-                return getGalleryUrl();
-            case HENTAICAFE:
-                return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
             case PURURIN:
                 return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
             case FAKKU2:
                 return getGalleryUrl() + "/read/page/1";
-            case NEXUS:
-                return site.getUrl() + "/read" + url + "/001";
             case MUSES:
                 return site.getUrl().replace("album", "picture") + "/1";
             case LUSCIOUS:
@@ -436,7 +403,7 @@ public class Content implements Serializable {
             case HENTAIFOX:
                 return site.getUrl() + "g" + url;
             default:
-                return null;
+                return getGalleryUrl();
         }
     }
 
@@ -456,7 +423,7 @@ public class Content implements Serializable {
             String[] nameParts = parts.getFileNameNoExt().split("-");
             String[] lastPartParts = nameParts[nameParts.length - 1].split("x");
             for (String s : lastPartParts)
-                if (!Helper.isNumeric(s)) return url;
+                if (!StringHelper.isNumeric(s)) return url;
 
             nameParts = Arrays.copyOf(nameParts, nameParts.length - 1);
             return parts.getPath() + TextUtils.join("-", nameParts);
@@ -490,23 +457,8 @@ public class Content implements Serializable {
         return this;
     }
 
-    public Content populateAuthor() {
-        String authorStr = "";
-        AttributeMap attrMap = getAttributeMap();
-        if (attrMap.containsKey(AttributeType.ARTIST) && !attrMap.get(AttributeType.ARTIST).isEmpty())
-            authorStr = attrMap.get(AttributeType.ARTIST).get(0).getName();
-        if ((null == authorStr || authorStr.equals(""))
-                && attrMap.containsKey(AttributeType.CIRCLE)
-                && !attrMap.get(AttributeType.CIRCLE).isEmpty()) // Try and get Circle
-            authorStr = attrMap.get(AttributeType.CIRCLE).get(0).getName();
-
-        if (null == authorStr) authorStr = "";
-        setAuthor(authorStr);
-        return this;
-    }
-
     public String getTitle() {
-        return Helper.protect(title);
+        return StringHelper.protect(title);
     }
 
     public Content setTitle(String title) {
@@ -515,7 +467,7 @@ public class Content implements Serializable {
     }
 
     public String getAuthor() {
-        if (null == author) populateAuthor();
+        if (null == author) author = ContentHelper.formatBookAuthor(this);
         return author;
     }
 
@@ -580,7 +532,9 @@ public class Content implements Serializable {
             for (ImageFile img : images)
                 if (img.isCover()) return img;
         }
-        return new ImageFile(0, getCoverImageUrl(), StatusContent.ONLINE, 1);
+        ImageFile makeupCover = new ImageFile(0, getCoverImageUrl(), StatusContent.ONLINE, 1);
+        makeupCover.setImageHash(Long.MIN_VALUE); // Makeup cover is unhashable
+        return makeupCover;
     }
 
     public String getCoverImageUrl() {
@@ -644,9 +598,11 @@ public class Content implements Serializable {
     }
 
     private long getDownloadedPagesSize() {
-        if (imageFiles != null)
-            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
-        else return 0;
+        if (imageFiles != null) {
+            Long result = Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
+            if (result != null) return result;
+        }
+        return 0;
     }
 
     public long getSize() {
@@ -662,7 +618,16 @@ public class Content implements Serializable {
     }
 
     public void computeReadProgress() {
-        readProgress = getReadPagesCount() * 1f / Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
+        if (null == getImageFiles()) {
+            readProgress = 0;
+            return;
+        }
+        long denominator = Stream.of(getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count();
+        if (0 == denominator) {
+            readProgress = 0;
+            return;
+        }
+        readProgress = getReadPagesCount() * 1f / denominator;
     }
 
     public float getReadProgress() {
@@ -682,6 +647,7 @@ public class Content implements Serializable {
     /**
      * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public String getStorageFolder() {
         return storageFolder == null ? "" : storageFolder;
@@ -690,6 +656,7 @@ public class Content implements Serializable {
     /**
      * @deprecated Replaced by getStorageUri; accessor is kept for API29 migration
      */
+    @SuppressWarnings("deprecation")
     @Deprecated
     public void resetStorageFolder() {
         storageFolder = "";
@@ -706,6 +673,15 @@ public class Content implements Serializable {
 
     public boolean isFavourite() {
         return favourite;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public Content setCompleted(boolean completed) {
+        this.completed = completed;
+        return this;
     }
 
     public Content setFavourite(boolean favourite) {
@@ -863,22 +839,30 @@ public class Content implements Serializable {
         }
     }
 
+    // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI
+    // If not done, FastAdapter's PagedItemListImpl cache won't detect changes to the object
+    // and items won't be visually updated on screen
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
-        return getId() == content.getId() &&
-                Objects.equals(getUniqueSiteId(), content.getUniqueSiteId());
+        return isFavourite() == content.isFavourite() &&
+                isCompleted() == content.isCompleted() &&
+                getDownloadDate() == content.getDownloadDate() && // To differentiate external books that have to URL
+                getLastReadDate() == content.getLastReadDate() &&
+                isBeingDeleted() == content.isBeingDeleted() &&
+                Objects.equals(getUrl(), content.getUrl()) &&
+                Objects.equals(getCoverImageUrl(), content.getCoverImageUrl()) &&
+                getSite() == content.getSite();
     }
 
     @Override
     public int hashCode() {
-        // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(id, uniqueSiteId);
+        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSite(), isFavourite(), isCompleted(), getLastReadDate(), isBeingDeleted());
     }
 
-    public long hash64() {
+    public long uniqueHash() {
         return Helper.hash64((id + "." + uniqueSiteId).getBytes());
     }
 }

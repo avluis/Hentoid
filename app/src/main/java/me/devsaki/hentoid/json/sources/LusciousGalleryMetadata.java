@@ -6,6 +6,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 
+@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
 public class LusciousGalleryMetadata {
     private PictureData data;
 

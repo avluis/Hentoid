@@ -74,6 +74,7 @@ public class ArchiveHelper {
                 || extension.equalsIgnoreCase("epub")
                 || extension.equalsIgnoreCase("cbz")
                 || extension.equalsIgnoreCase("cbr")
+                || extension.equalsIgnoreCase("cb7")
                 || extension.equalsIgnoreCase("7z")
                 || extension.equalsIgnoreCase("rar");
     }

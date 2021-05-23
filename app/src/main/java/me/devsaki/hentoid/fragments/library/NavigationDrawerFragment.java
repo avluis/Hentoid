@@ -31,6 +31,7 @@ import me.devsaki.hentoid.activities.AboutActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.ToolsActivity;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
@@ -87,6 +88,9 @@ public final class NavigationDrawerFragment extends Fragment {
 
         btn = requireViewById(rootView, R.id.drawer_app_prefs_btn);
         btn.setOnClickListener(v -> onPrefsClick());
+
+        btn = requireViewById(rootView, R.id.drawer_tools_btn);
+        btn.setOnClickListener(v -> onToolsClick());
 
         btn = requireViewById(rootView, R.id.drawer_app_queue_btn);
         btn.setOnClickListener(v -> onQueueClick());
@@ -180,6 +184,10 @@ public final class NavigationDrawerFragment extends Fragment {
 
     private void onPrefsClick() {
         launchActivity(PrefsActivity.class);
+    }
+
+    private void onToolsClick() {
+        launchActivity(ToolsActivity.class);
     }
 
     private void onQueueClick() {

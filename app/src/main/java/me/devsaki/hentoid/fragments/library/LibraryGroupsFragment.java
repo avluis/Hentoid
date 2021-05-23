@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.library;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -42,6 +43,9 @@ import com.mikepenz.fastadapter.select.SelectExtensionFactory;
 import com.mikepenz.fastadapter.swipe.SimpleSwipeCallback;
 import com.mikepenz.fastadapter.swipe_drag.SimpleSwipeDragCallback;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
+import com.skydoves.powermenu.MenuAnimation;
+import com.skydoves.powermenu.PowerMenu;
+import com.skydoves.powermenu.PowerMenuItem;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -67,7 +71,9 @@ import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewholders.GroupDisplayItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
@@ -427,10 +433,55 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             // Don't remove non-deletable groups
             if (!Preferences.getGroupingDisplay().canDeleteGroups()) selectedGroups.clear();
 
-            if (!selectedContent.isEmpty() || !selectedGroups.isEmpty())
-                activity.get().askDeleteItems(selectedContent, selectedGroups, null, selectExtension);
-            else
-                selectExtension.deselect();
+            if (!selectedContent.isEmpty() || !selectedGroups.isEmpty()) {
+                PowerMenu.Builder powerMenuBuilder = new PowerMenu.Builder(requireContext())
+                        .setOnDismissListener(() -> selectExtension.deselect(selectExtension.getSelections()))
+                        .setWidth(getResources().getDimensionPixelSize(R.dimen.dialog_width))
+                        .setAnimation(MenuAnimation.SHOW_UP_CENTER)
+                        .setMenuRadius(10f)
+                        .setIsMaterial(true)
+                        .setLifecycleOwner(requireActivity())
+                        .setTextColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87))
+                        .setTextTypeface(Typeface.DEFAULT)
+                        .setMenuColor(ThemeHelper.getColor(requireContext(), R.color.window_background_light))
+                        .setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
+                        .setAutoDismiss(true);
+
+                if (!Preferences.getGroupingDisplay().canDeleteGroups()) {
+                    // Delete books only
+                    powerMenuBuilder.addItem(new PowerMenuItem(getResources().getQuantityString(R.plurals.group_delete_selected_book, selectedContent.size(), selectedContent.size()), R.drawable.ic_action_delete_forever, 0));
+                } else {
+                    // Delete group only
+                    if (Preferences.getGroupingDisplay().canReorderGroups())
+                        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getQuantityString(R.plurals.group_delete_selected_group, selectedGroups.size()), R.drawable.ic_folder_delete, 1));
+                    if (!selectedContent.isEmpty()) // Delete groups and books
+                        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getQuantityString(R.plurals.group_delete_selected_group_books, selectedGroups.size()), R.drawable.ic_action_delete_forever, 2));
+                }
+                powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.cancel), R.drawable.ic_close, 99));
+                PowerMenu powerMenu = powerMenuBuilder.build();
+
+                final List<Group> finalGroups = Collections.unmodifiableList(selectedGroups);
+                final List<Content> finalContent = Collections.unmodifiableList(selectedContent);
+
+                powerMenu.setOnMenuItemClickListener((position, item) -> {
+                    int tag = (Integer) item.getTag();
+                    if (0 == tag) {
+                        activity.get().deleteItems(finalContent, Collections.emptyList(), false, null);
+                    } else if (1 == tag) {
+                        activity.get().deleteItems(Collections.emptyList(), finalGroups, true, null);
+                    } else if (2 == tag) {
+                        activity.get().deleteItems(finalContent, finalGroups, false, null);
+                    } else {
+                        selectExtension.deselect(selectExtension.getSelections()); // Cancel button
+                    }
+                });
+
+                powerMenu.setIconColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87));
+                powerMenu.showAtCenter(recyclerView);
+            } else {
+                Snackbar.make(recyclerView, getResources().getString(R.string.group_delete_nothing), BaseTransientBottomBar.LENGTH_LONG).show();
+                selectExtension.deselect(selectExtension.getSelections());
+            }
         }
     }
 
@@ -536,7 +587,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void customBackPress() {
         // If content is selected, deselect it
         if (!selectExtension.getSelections().isEmpty()) {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             backButtonPressed = 0;
             return;
@@ -801,5 +852,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     @Override
     public void itemSwiped(int i, int i1) {
         // TODO
+    }
+
+    @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
     }
 }

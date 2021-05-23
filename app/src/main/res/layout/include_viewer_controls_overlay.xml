@@ -123,17 +123,22 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:text="28" />
 
-    <SeekBar
-        android:id="@+id/viewer_seekbar"
+    <com.google.android.material.slider.Slider
+        android:id="@+id/page_slider"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:colorControlActivated="?colorSecondary"
         android:padding="8dp"
         android:progressBackgroundTint="?colorOnPrimary"
         android:progressTint="?colorSecondary"
-        app:layout_constraintBottom_toTopOf="@id/viewer_favourite_action_btn"
+        app:labelBehavior="gone"
+        android:layout_marginBottom="34dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_pager_right_txt"
         app:layout_constraintStart_toEndOf="@id/viewer_pager_left_txt"
+        app:thumbColor="?colorSecondary"
+        app:tickVisible="false"
+        app:trackColor="@color/white_opacity_25"
         tools:targetApi="lollipop" />
 
     <TextView
@@ -149,7 +154,6 @@
         android:textSize="@dimen/text_body_1"
         app:layout_constraintBottom_toTopOf="@id/viewer_favourite_action_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:text="255" />
 
     <!-- Micro menus -->
@@ -160,14 +164,14 @@
         android:layout_height="40dp"
         android:alpha="0.8"
         app:layout_constraintBottom_toBottomOf="@id/viewer_info_btn"
-        app:layout_constraintStart_toStartOf="@id/viewer_info_btn"
         app:layout_constraintEnd_toEndOf="@id/viewer_info_btn"
+        app:layout_constraintStart_toStartOf="@id/viewer_info_btn"
         app:submarine_animation="scale"
         app:submarine_circleAnchor="bottom"
-        app:submarine_color="@android:color/black"
         app:submarine_circleSize="14dp"
-        app:submarine_expandSize="170dp"
+        app:submarine_color="@android:color/black"
         app:submarine_duration="250"
+        app:submarine_expandSize="170dp"
         app:submarine_orientation="vertical" />
 
     <com.skydoves.submarine.SubmarineView
@@ -176,14 +180,14 @@
         android:layout_height="40dp"
         android:alpha="0.8"
         app:layout_constraintBottom_toBottomOf="@id/viewer_favourite_action_btn"
-        app:layout_constraintStart_toStartOf="@id/viewer_favourite_action_btn"
         app:layout_constraintEnd_toEndOf="@id/viewer_favourite_action_btn"
+        app:layout_constraintStart_toStartOf="@id/viewer_favourite_action_btn"
         app:submarine_animation="scale"
         app:submarine_circleAnchor="bottom"
-        app:submarine_color="@android:color/black"
         app:submarine_circleSize="14dp"
-        app:submarine_expandSize="170dp"
+        app:submarine_color="@android:color/black"
         app:submarine_duration="250"
+        app:submarine_expandSize="170dp"
         app:submarine_orientation="vertical" />
 
     <!-- Image previews used when tracking -->
@@ -229,5 +233,25 @@
         app:menu="@menu/viewer_pager_menu"
         app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slideshow_delay_slider"
+        style="@style/App.Slider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:stepSize="1.0"
+        android:value="2.0"
+        android:valueFrom="1.0"
+        android:valueTo="5.0"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_pager_toolbar"
+        app:thumbColor="?colorSecondary"
+        app:tickColor="?colorSecondary"
+        app:tickVisible="true"
+        app:trackColor="@color/material_slider_inactive_track_color"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

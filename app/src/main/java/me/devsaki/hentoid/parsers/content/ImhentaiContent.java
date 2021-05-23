@@ -13,7 +13,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class ImhentaiContent extends BaseContentParser {
@@ -45,7 +45,7 @@ public class ImhentaiContent extends BaseContentParser {
             if (coverUrl.isEmpty()) coverUrl = cover.attr("data-cfsrc"); // Cloudflare-served image
             content.setCoverImageUrl(coverUrl);
         }
-        String str = !title.isEmpty() ? Helper.removeNonPrintableChars(title) : "";
+        String str = !title.isEmpty() ? StringHelper.removeNonPrintableChars(title) : "";
         str = ParseHelper.removeTextualTags(str);
         content.setTitle(str);
         str = pages.replace("Pages", "").replace("pages", "").replace(":", "").trim();

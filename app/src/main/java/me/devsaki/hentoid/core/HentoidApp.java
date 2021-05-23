@@ -149,12 +149,11 @@ public class HentoidApp extends Application {
 
         @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
         private void onMoveToBackground() {
-            Timber.d("Moving to background");
+            Timber.d("App moving to background");
             if (enabled && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
                 HentoidApp.setUnlocked(false);
                 HentoidApp.setLockInstant(Instant.now().toEpochMilli());
             }
         }
-
     }
 }

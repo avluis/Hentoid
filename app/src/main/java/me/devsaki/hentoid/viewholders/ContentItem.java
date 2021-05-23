@@ -60,7 +60,6 @@ import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LanguageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
@@ -89,6 +88,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     private final Content content;
     private final @ViewType
     int viewType;
+    private final boolean isSearchActive;
     private final boolean isEmpty;
 
     private Consumer<ContentItem> deleteAction = null;
@@ -120,32 +120,43 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     public ContentItem(@ViewType int viewType) {
         isEmpty = true;
         content = null;
+        isSearchActive = false;
         this.viewType = viewType;
         touchHelper = null;
         setIdentifier(Helper.generateIdForPlaceholder());
     }
 
     // Constructor for library and error item
-    public ContentItem(Content content, @Nullable ItemTouchHelper touchHelper, @ViewType int viewType, @Nullable final Consumer<ContentItem> deleteAction) {
+    public ContentItem(
+            Content content,
+            @Nullable ItemTouchHelper touchHelper,
+            @ViewType int viewType,
+            @Nullable final Consumer<ContentItem> deleteAction) {
         this.content = content;
+        isSearchActive = false;
         this.viewType = viewType;
         this.touchHelper = touchHelper;
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
         isSwipeable = (content != null && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
-        if (content != null) setIdentifier(content.hash64());
+        if (content != null) setIdentifier(content.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
     }
 
     // Constructor for queued item
-    public ContentItem(@NonNull QueueRecord record, ItemTouchHelper touchHelper, @Nullable final Consumer<ContentItem> deleteAction) {
+    public ContentItem(
+            @NonNull QueueRecord record,
+            boolean isSearchActive,
+            ItemTouchHelper touchHelper,
+            @Nullable final Consumer<ContentItem> deleteAction) {
         content = record.getContent().getTarget();
         viewType = ViewType.QUEUE;
+        this.isSearchActive = isSearchActive;
         this.touchHelper = touchHelper;
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
 //        setIdentifier(record.id);
-        if (content != null) setIdentifier(content.hash64());
+        if (content != null) setIdentifier(content.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
     }
 
@@ -219,6 +230,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private ImageView ivFavourite;
         private ImageView ivExternal;
         private CircularProgressView readingProgress;
+        private ImageView ivCompleted;
 
         // Specific to Queued content
         private ProgressBar progressBar;
@@ -251,6 +263,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivExternal = itemView.findViewById(R.id.ivExternal);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
+                ivCompleted = requireViewById(itemView, R.id.ivCompleted);
                 readingProgress = requireViewById(itemView, R.id.reading_progress);
             } else if (viewType == ViewType.LIBRARY_GRID) {
                 ivNew = itemView.findViewById(R.id.lineNew);
@@ -280,6 +293,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
                 boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.content.setFavourite(boolValue);
+                boolValue = bundleParser.isCompleted();
+                if (boolValue != null) item.content.setCompleted(boolValue);
                 Long longValue = bundleParser.getReads();
                 if (longValue != null) item.content.setReads(longValue);
                 longValue = bundleParser.getReadPagesCount();
@@ -295,18 +310,24 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             attachCover(item.content);
             attachFlag(item.content);
             attachTitle(item.content);
-            if (readingProgress != null) attachReadingProgress(item.content);
+
+            if (ivCompleted != null)
+                attachCompleted(item.content);
+            if (readingProgress != null)
+                attachReadingProgress(item.content);
             if (tvArtist != null) attachArtist(item.content);
             if (tvSeries != null) attachSeries(item.content);
             if (tvPages != null) attachPages(item.content, item.viewType);
             if (tvTags != null) attachTags(item.content);
             attachButtons(item);
 
+
             if (progressBar != null)
-                updateProgress(item.content, baseLayout, getAdapterPosition(), false);
+                updateProgress(item.content, baseLayout, getAbsoluteAdapterPosition(), false);
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
         }
+
 
         private void updateLayoutVisibility(@NonNull final ContentItem item) {
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
@@ -383,17 +404,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         }
 
         private void attachFlag(@NonNull final Content content) {
-            List<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
-            if (langAttributes != null && !langAttributes.isEmpty())
-                for (Attribute lang : langAttributes) {
-                    @DrawableRes int resId = LanguageHelper.getFlagFromLanguage(ivFlag.getContext(), lang.getName());
-                    if (resId != 0) {
-                        ivFlag.setImageResource(resId);
-                        ivFlag.setVisibility(View.VISIBLE);
-                        return;
-                    }
-                }
-            ivFlag.setVisibility(View.GONE);
+            @DrawableRes int resId = ContentHelper.getFlagResourceId(ivFlag.getContext(), content);
+            if (resId != 0) {
+                ivFlag.setImageResource(resId);
+                ivFlag.setVisibility(View.VISIBLE);
+            } else {
+                ivFlag.setVisibility(View.GONE);
+            }
         }
 
         private void attachTitle(@NonNull final Content content) {
@@ -407,37 +424,25 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvTitle.setTextColor(ThemeHelper.getColor(tvTitle.getContext(), R.color.card_title_light));
         }
 
+        private void attachCompleted(@NonNull final Content content) {
+            if (content.isCompleted()) ivCompleted.setVisibility(View.VISIBLE);
+            else ivCompleted.setVisibility(View.GONE);
+        }
+
         private void attachReadingProgress(@NonNull final Content content) {
             List<ImageFile> imgs = content.getImageFiles();
-            if (imgs != null) {
+            if (imgs != null && !content.isCompleted()) {
                 readingProgress.setVisibility(View.VISIBLE);
                 readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
                 readingProgress.setTotal(Stream.of(content.getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count());
                 readingProgress.setProgress1(content.getReadPagesCount());
+            } else {
+                readingProgress.setVisibility(View.INVISIBLE);
             }
         }
 
         private void attachArtist(@NonNull final Content content) {
-            Context context = tvArtist.getContext();
-            List<Attribute> attributes = new ArrayList<>();
-
-            List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
-            if (artistAttributes != null)
-                attributes.addAll(artistAttributes);
-            List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
-            if (circleAttributes != null)
-                attributes.addAll(circleAttributes);
-
-            if (attributes.isEmpty()) {
-                tvArtist.setText(context.getString(R.string.work_artist, context.getResources().getString(R.string.work_untitled)));
-            } else {
-                List<String> allArtists = new ArrayList<>();
-                for (Attribute attribute : attributes) {
-                    allArtists.add(attribute.getName());
-                }
-                String artists = android.text.TextUtils.join(", ", allArtists);
-                tvArtist.setText(context.getString(R.string.work_artist, artists));
-            }
+            tvArtist.setText(ContentHelper.formatArtistForDisplay(tvArtist.getContext(), content));
         }
 
 
@@ -479,7 +484,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         }
 
         private void attachTags(@NonNull final Content content) {
-            String tagTxt = ContentHelper.formatTags(content);
+            String tagTxt = ContentHelper.formatTagsForDisplay(content);
             if (tagTxt.isEmpty()) {
                 tvTags.setVisibility(View.GONE);
             } else {
@@ -507,11 +512,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
-                boolean isFirstItem = (0 == getAdapterPosition());
-                ivTop.setVisibility((isFirstItem) ? View.INVISIBLE : View.VISIBLE);
                 ivTop.setVisibility(View.VISIBLE);
                 ivBottom.setVisibility(View.VISIBLE);
-                ivReorder.setVisibility(View.VISIBLE);
+                ivReorder.setVisibility(item.isSearchActive ? View.INVISIBLE : View.VISIBLE);
             } else if (ViewType.ERRORS == item.viewType) {
                 ivRedownload.setVisibility(View.VISIBLE);
                 ivError.setVisibility(View.VISIBLE);

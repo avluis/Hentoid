@@ -474,6 +474,12 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_SLIDESHOW_DELAY, Integer.toString(Default.VIEWER_SLIDESHOW_DELAY)) + "");
     }
 
+    public static void setViewerSlideshowDelay(int value) {
+        sharedPreferences.edit()
+                .putString(Key.VIEWER_SLIDESHOW_DELAY, Integer.toString(value))
+                .apply();
+    }
+
     public static int getViewerSeparatingBars() {
         return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_SEPARATING_BARS, Integer.toString(Default.VIEWER_SEPARATING_BARS)) + "");
     }
@@ -642,6 +648,97 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getDuplicateSensitivity() {
+        return Integer.parseInt(sharedPreferences.getString(Key.DUPLICATE_SENSITIVITY, Integer.toString(Default.DUPLICATE_SENSITIVITY)) + "");
+    }
+
+    public static void setDuplicateSensitivity(int duplicateSensitivity) {
+        sharedPreferences.edit()
+                .putString(Key.DUPLICATE_SENSITIVITY, Integer.toString(duplicateSensitivity))
+                .apply();
+    }
+
+    public static boolean isDuplicateUseTitle() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_TITLE, Default.DUPLICATE_USE_TITLE);
+    }
+
+    public static void setDuplicateUseTitle(boolean useTitle) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_USE_TITLE, useTitle)
+                .apply();
+    }
+
+    public static boolean isDuplicateUseCover() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_COVER, Default.DUPLICATE_USE_COVER);
+    }
+
+    public static void setDuplicateUseCover(boolean useCover) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_USE_COVER, useCover)
+                .apply();
+    }
+
+    public static boolean isDuplicateUseArtist() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_ARTIST, Default.DUPLICATE_USE_ARTIST);
+    }
+
+    public static void setDuplicateUseArtist(boolean useArtist) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_USE_ARTIST, useArtist)
+                .apply();
+    }
+
+    public static boolean isDuplicateUseSameLanguage() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_USE_SAME_LANGUAGE, Default.DUPLICATE_USE_SAME_LANGUAGE);
+    }
+
+    public static void setDuplicateUseSameLanguage(boolean useSameLanguage) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_USE_SAME_LANGUAGE, useSameLanguage)
+                .apply();
+    }
+
+    public static boolean isDuplicateIgnoreChapters() {
+        return sharedPreferences.getBoolean(Key.DUPLICATE_IGNORE_CHAPTERS, Default.DUPLICATE_IGNORE_CHAPTERS);
+    }
+
+    public static void setDuplicateIgnoreChapters(boolean value) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DUPLICATE_IGNORE_CHAPTERS, value)
+                .apply();
+    }
+
+    public static int getDuplicateLastIndex() {
+        return Integer.parseInt(sharedPreferences.getString(Key.DUPLICATE_LAST_INDEX, "-1") + "");
+    }
+
+    public static void setDuplicateLastIndex(int lastIndex) {
+        sharedPreferences.edit()
+                .putString(Key.DUPLICATE_LAST_INDEX, Integer.toString(lastIndex))
+                .apply();
+    }
+
+    public static boolean isDownloadDuplicateAsk() {
+        return sharedPreferences.getBoolean(Key.DOWNLOAD_DUPLICATE_ASK, Default.DOWNLOAD_DUPLICATE_ASK);
+    }
+
+    public static void setDownloadDuplicateAsk(boolean value) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DOWNLOAD_DUPLICATE_ASK, value)
+                .apply();
+    }
+
+    public static boolean isDownloadPlusDuplicateTry() {
+        return sharedPreferences.getBoolean(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, Default.DOWNLOAD_PLUS_DUPLICATE_TRY);
+    }
+
+    public static void setDownloadDuplicateTry(boolean value) {
+        sharedPreferences.edit()
+                .putBoolean(Key.DOWNLOAD_PLUS_DUPLICATE_TRY, value)
+                .apply();
+    }
+
+
     public static final class Key {
 
         private Key() {
@@ -655,8 +752,6 @@ public final class Preferences {
         public static final String CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
         public static final String REFRESH_LIBRARY = "pref_refresh_bookshelf";
         public static final String DELETE_ALL_EXCEPT_FAVS = "pref_delete_all_except_favs";
-        public static final String EXPORT_LIBRARY = "pref_export_library";
-        public static final String IMPORT_LIBRARY = "pref_import_library";
         static final String WELCOME_DONE = "pref_welcome_done";
         static final String VERSION_KEY = "prefs_version";
         public static final String LIBRARY_DISPLAY = "pref_library_display";
@@ -678,7 +773,6 @@ public final class Preferences {
         public static final String SETTINGS_FOLDER = "folder";
         public static final String MEMORY_USAGE = "pref_memory_usage";
         public static final String MEMORY_ALERT = "pref_memory_alert";
-        public static final String ACCESS_LATEST_LOGS = "pref_latest_logs";
         static final String WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String BROWSER_RESUME_LAST = "pref_browser_resume_last";
@@ -727,10 +821,17 @@ public final class Preferences {
         static final String DB_MAX_SIZE = "db_max_size";
         public static final String GROUPING_DISPLAY = "grouping_display";
         public static final String ARTIST_GROUP_VISIBILITY = "artist_group_visibility";
-        public static final String EXPORT_SETTINGS = "export_settings";
-        public static final String IMPORT_SETTINGS = "import_settings";
         public static final String VIEWER_DELETE_ASK_MODE = "viewer_delete_ask";
         public static final String VIEWER_DELETE_TARGET = "viewer_delete_target";
+        public static final String DUPLICATE_SENSITIVITY = "duplicate_sensitivity";
+        public static final String DUPLICATE_USE_TITLE = "duplicate_use_title";
+        public static final String DUPLICATE_USE_COVER = "duplicate_use_cover";
+        public static final String DUPLICATE_USE_ARTIST = "duplicate_use_artist";
+        public static final String DUPLICATE_USE_SAME_LANGUAGE = "duplicate_use_same_language";
+        public static final String DUPLICATE_IGNORE_CHAPTERS = "duplicate_ignore_chapters";
+        public static final String DUPLICATE_LAST_INDEX = "last_index";
+        public static final String DOWNLOAD_DUPLICATE_ASK = "download_duplicate_ask";
+        public static final String DOWNLOAD_PLUS_DUPLICATE_TRY = "download_plus_duplicate_try";
 
         // Deprecated values kept for housekeeping/migration
         static final String ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -784,7 +885,7 @@ public final class Preferences {
         static final boolean VIEWER_INVERT_VOLUME_ROCKER = false;
         static final int VIEWER_SEPARATING_BARS = Constant.VIEWER_SEPARATING_BARS_OFF;
         static final int VIEWER_READ_THRESHOLD = Constant.VIEWER_READ_THRESHOLD_1;
-        static final int VIEWER_SLIDESHOW_DELAY = Constant.VIEWER_SLIDESHOW_DELAY_2;
+        public static final int VIEWER_SLIDESHOW_DELAY = Constant.VIEWER_SLIDESHOW_DELAY_2;
         static final boolean VIEWER_HOLD_TO_ZOOM = false;
         static final int VIEWER_CAP_TAP_ZOOM = Constant.VIEWER_CAP_TAP_ZOOM_NONE;
         static final boolean VIEWER_AUTO_ROTATE = false;
@@ -811,6 +912,14 @@ public final class Preferences {
         static final int ARTIST_GROUP_VISIBILITY = Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
         static final int VIEWER_DELETE_ASK_MODE = Constant.VIEWER_DELETE_ASK_AGAIN;
         static final int VIEWER_DELETE_TARGET = Constant.VIEWER_DELETE_TARGET_PAGE;
+        static final int DUPLICATE_SENSITIVITY = 1;
+        static final boolean DUPLICATE_USE_TITLE = true;
+        static final boolean DUPLICATE_USE_COVER = false;
+        static final boolean DUPLICATE_USE_ARTIST = true;
+        static final boolean DUPLICATE_USE_SAME_LANGUAGE = false;
+        static final boolean DUPLICATE_IGNORE_CHAPTERS = true;
+        static final boolean DOWNLOAD_DUPLICATE_ASK = true;
+        static final boolean DOWNLOAD_PLUS_DUPLICATE_TRY = true;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml

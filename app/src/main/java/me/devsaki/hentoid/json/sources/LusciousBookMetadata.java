@@ -5,13 +5,14 @@ import androidx.annotation.NonNull;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 
+@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
 public class LusciousBookMetadata {
     private BookData data;
 
@@ -57,25 +58,25 @@ public class LusciousBookMetadata {
 
         content.setUrl(info.url);
 
-        content.setTitle(Helper.removeNonPrintableChars(info.title));
+        content.setTitle(StringHelper.removeNonPrintableChars(info.title));
 
 //        result.setQtyPages(info.number_of_pictures);  <-- does not reflect the actual number of pictures reachable via the Luscious API / website
         content.setCoverImageUrl(info.cover.url);
 
         AttributeMap attributes = new AttributeMap();
         if (info.language != null) {
-            String name = Helper.removeNonPrintableChars(info.language.title.replace(" Language", ""));
+            String name = StringHelper.removeNonPrintableChars(info.language.title.replace(" Language", ""));
             Attribute attribute = new Attribute(AttributeType.LANGUAGE, name, RELATIVE_URL_PREFIX + info.language.url, Site.LUSCIOUS);
             attributes.add(attribute);
         }
 
         if (info.tags != null) for (TagInfo tag : info.tags) {
-            String name = Helper.removeNonPrintableChars(tag.text);
+            String name = StringHelper.removeNonPrintableChars(tag.text);
             if (name.contains(":"))
                 name = name.substring(name.indexOf(':') + 1).trim(); // Clean all tags starting with "Type :" (e.g. "Artist : someguy")
             AttributeType type = AttributeType.TAG;
             if (tag.url.startsWith("/tags/artist:")) type = AttributeType.ARTIST;
-//            else if (tag.url.startsWith("/tags/parody:")) type = AttributeType.SERIE;  <-- duplicate with series
+            else if (tag.url.startsWith("/tags/parody:")) type = AttributeType.SERIE;
             else if (tag.url.startsWith("/tags/character:")) type = AttributeType.CHARACTER;
             else if (tag.url.startsWith("/tags/series:")) type = AttributeType.SERIE;
             else if (tag.url.startsWith("/tags/group:")) type = AttributeType.ARTIST;

@@ -36,7 +36,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Debouncer;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -144,7 +144,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         // Image that displays current metadata type title (e.g. "Character search")
         TextView tagWaitTitle = requireViewById(rootView, R.id.tag_wait_title);
-        tagWaitTitle.setText(format("%s search", Helper.capitalizeString(mainAttr.name())));
+        tagWaitTitle.setText(format("%s search", StringHelper.capitalizeString(mainAttr.name())));
 
         tagWaitPanel = requireViewById(rootView, R.id.tag_wait_panel);
         tagWaitMessage = requireViewById(rootView, R.id.tag_wait_description);

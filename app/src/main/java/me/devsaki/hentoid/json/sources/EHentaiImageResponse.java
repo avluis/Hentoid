@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.json.sources;
 
+@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
 public class EHentaiImageResponse {
     private String lf;
     private String ls;

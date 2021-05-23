@@ -21,8 +21,8 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.FakkuGalleryMetadata;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.ResponseBody;
@@ -81,7 +81,7 @@ public class FakkuParser implements ImageListParser {
             return result;
         }
 
-        progress.start(content.getUrl(), info.getPages().keySet().size() + 1);
+        progress.start(content.getId(), info.getPages().keySet().size() + 1);
 
         // Process book info to get page detailed info
         String pid = null;
@@ -103,7 +103,7 @@ public class FakkuParser implements ImageListParser {
 
         List<PageInfo> pageInfo = null;
         if (info.getKeyData() != null)
-            pageInfo = FakkuDecode.getBookPageData(info.getKeyHash(), new String(Helper.decode64(info.getKeyData())), pid, BuildConfig.FK_TOKEN);
+            pageInfo = FakkuDecode.getBookPageData(info.getKeyHash(), new String(StringHelper.decode64(info.getKeyData())), pid, BuildConfig.FK_TOKEN);
         progress.advance();
 
         result = new ArrayList<>();

@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -116,7 +116,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
                 DragDropUtil.bindDragHandle(this, item);
             }
 
-            title.setText(Helper.capitalizeString(item.text));
+            title.setText(StringHelper.capitalizeString(item.text));
             if (item.centered) title.setGravity(Gravity.CENTER);
         }
 

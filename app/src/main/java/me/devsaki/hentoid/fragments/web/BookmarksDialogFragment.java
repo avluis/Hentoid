@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.web;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -394,6 +394,11 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         if (viewHolder instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) viewHolder).onDragged();
         }
+    }
+
+    @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
     }
 
     public interface Parent {

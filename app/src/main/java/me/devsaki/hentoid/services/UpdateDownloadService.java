@@ -21,6 +21,7 @@ import me.devsaki.hentoid.notification.update.UpdateFailedNotification;
 import me.devsaki.hentoid.notification.update.UpdateInstallNotification;
 import me.devsaki.hentoid.notification.update.UpdateProgressNotification;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
+import me.devsaki.hentoid.workers.ContentDownloadWorker;
 import timber.log.Timber;
 
 import static java.util.Objects.requireNonNull;
@@ -32,7 +33,7 @@ import static java.util.Objects.requireNonNull;
  */
 public class UpdateDownloadService extends Service implements DownloadStatusListenerV1 {
 
-    private static final int NOTIFICATION_ID = 8;
+    private static final int NOTIFICATION_ID = UpdateDownloadService.class.getName().hashCode();
 
     private static boolean running;
 

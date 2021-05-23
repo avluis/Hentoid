@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
@@ -260,25 +259,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void emptyCacheFolder() {
         emptyCacheDisposable =
-                Completable.fromRunnable(this::doEmptyCacheFolder)
+                Completable.fromRunnable(() -> FileHelper.emptyCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 () -> emptyCacheDisposable.dispose(),
                                 Timber::e
                         );
-    }
-
-    private void doEmptyCacheFolder() {
-        Helper.assertNonUiThread();
-
-        File cachePicFolder = getOrCreatePictureCacheFolder();
-        if (cachePicFolder != null) {
-            File[] files = cachePicFolder.listFiles();
-            if (files != null)
-                for (File f : files)
-                    if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
-        }
     }
 
     private synchronized void processArchiveImages(
@@ -294,7 +281,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         List<ImageFile> currentImages = databaseImages.getValue();
         if ((!newImages.isEmpty() && loadedContentId != newImages.get(0).getContent().getTargetId()) || null == currentImages) { // Load a new book
             // TODO create a smarter cache that works with a window of a given size
-            File cachePicFolder = getOrCreatePictureCacheFolder();
+            File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
             if (cachePicFolder != null) {
                 // Empty the cache folder where previous cached images might be
                 File[] files = cachePicFolder.listFiles();
@@ -777,15 +764,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Cache the URI of the JSON to the database
         content.setJsonUri(foundFile.getUri().toString());
         collectionDao.insertContent(content);
-    }
-
-    @Nullable
-    private File getOrCreatePictureCacheFolder() {
-        File cacheDir = getApplication().getCacheDir();
-        File pictureCacheDir = new File(cacheDir.getAbsolutePath() + File.separator + Consts.PICTURE_CACHE_FOLDER);
-        if (pictureCacheDir.exists()) return pictureCacheDir;
-        else if (pictureCacheDir.mkdir()) return pictureCacheDir;
-        else return null;
     }
 
     public void markPageAsRead(int pageNumber) {

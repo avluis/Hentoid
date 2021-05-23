@@ -23,7 +23,7 @@ import me.devsaki.hentoid.adapters.SelectedAttributeAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
@@ -185,7 +185,7 @@ public class SearchActivity extends BaseActivity {
         int count = 0;
         for (AttributeType type : types) count += attrCount.get(type.getCode(), 0);
 
-        button.setText(format("%s (%s)", Helper.capitalizeString(types[0].getDisplayName()), count));
+        button.setText(format("%s (%s)", StringHelper.capitalizeString(types[0].getDisplayName()), count));
         button.setEnabled(count > 0);
     }
 

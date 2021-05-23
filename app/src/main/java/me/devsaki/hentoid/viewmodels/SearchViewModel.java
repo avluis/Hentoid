@@ -124,6 +124,8 @@ public class SearchViewModel extends ViewModel {
                         query,
                         selectedAttributes.getValue(),
                         false,
+                        false,
+                        false,
                         pageNum,
                         itemsPerPage,
                         attributeSortOrder
@@ -204,7 +206,7 @@ public class SearchViewModel extends ViewModel {
     private void updateSelectionResult() {
         if (currentSelectedContentCountInternal != null)
             selectedContentCount.removeSource(currentSelectedContentCountInternal);
-        currentSelectedContentCountInternal = collectionDAO.countBooks("", selectedGroup, selectedAttributes.getValue(), false);
+        currentSelectedContentCountInternal = collectionDAO.countBooks("", selectedGroup, selectedAttributes.getValue(), false, false, false);
         selectedContentCount.addSource(currentSelectedContentCountInternal, selectedContentCount::setValue);
     }
 }

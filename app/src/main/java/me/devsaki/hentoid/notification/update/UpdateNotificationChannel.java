@@ -19,6 +19,7 @@ public class UpdateNotificationChannel {
     private static final String ID_OLD2 = "update2";
     static final String ID = "update3";
 
+    // IMPORTANT : ALWAYS INIT THE CHANNEL BEFORE FIRING NOTIFICATIONS !
     public static void init(@NonNull Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String name = "Updates";

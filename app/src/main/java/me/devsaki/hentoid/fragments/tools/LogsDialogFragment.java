@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.preferences;
+package me.devsaki.hentoid.fragments.tools;
 
 import android.graphics.Typeface;
 import android.os.Bundle;

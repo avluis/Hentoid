@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item"
+    android:layout_width="match_parent"
+    android:layout_height="130dp"
+    android:layout_marginBottom="@dimen/default_cardview_margin"
+    android:clickable="true"
+    android:focusable="true"
+    android:longClickable="true"
+    tools:targetApi="o">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_card"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_book_card"
+        android:clickable="false"
+        android:elevation="6dp"
+        android:focusable="false">
+
+        <ImageView
+            android:id="@+id/ivCover"
+            android:layout_width="75dp"
+            android:layout_height="100dp"
+            android:adjustViewBounds="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_hentoid_trans"
+            tools:tint="@color/light_gray" />
+
+        <ImageView
+            android:id="@+id/ivFlag"
+            android:layout_width="16dp"
+            android:layout_height="12dp"
+            android:adjustViewBounds="true"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/ivCover"
+            app:layout_constraintEnd_toEndOf="@id/ivCover"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/flag_cn"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="middle"
+            android:singleLine="true"
+            android:textColor="@color/card_tags_light"
+            android:textSize="@dimen/text_subtitle_2"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivCover"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@string/book_title" />
+
+        <TextView
+            android:id="@+id/tvLaunchCode"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="@color/card_tags_light"
+            android:textSize="@dimen/caption"
+            app:layout_constraintEnd_toEndOf="@id/guideline_middle"
+            app:layout_constraintStart_toEndOf="@id/ivCover"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            tools:text="@string/book_launchcode" />
+
+        <TextView
+            android:id="@+id/tvArtist"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="@color/card_tags_light"
+            android:textSize="@dimen/caption"
+            app:layout_constraintEnd_toEndOf="@id/guideline_middle"
+            app:layout_constraintStart_toEndOf="@id/ivCover"
+            app:layout_constraintTop_toBottomOf="@id/tvLaunchCode"
+            tools:text="@string/book_artist" />
+
+        <TextView
+            android:id="@+id/tvPages"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:textColor="@color/card_tags_light"
+            android:textSize="@dimen/caption"
+            app:layout_constraintEnd_toEndOf="@id/guideline_middle"
+            app:layout_constraintStart_toStartOf="@id/tvArtist"
+            app:layout_constraintTop_toBottomOf="@id/tvArtist"
+            tools:text="@string/book_pages_queue" />
+
+        <ImageView
+            android:id="@+id/ivSite"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_menu_nhentai"
+            android:tooltipText="@string/view_source_help"
+            app:layout_constraintEnd_toEndOf="@id/guideline_middle"
+            app:layout_constraintTop_toBottomOf="@id/tvPages"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/ivFavourite"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_fav_empty"
+            android:tooltipText="@string/book_favourite_success"
+            app:layout_constraintEnd_toStartOf="@id/ivSite"
+            app:layout_constraintTop_toTopOf="@id/ivSite"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
+            android:id="@+id/ivExternal"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_external_library"
+            android:tooltipText="@string/external_help"
+            android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@id/ivFavourite"
+            app:layout_constraintTop_toTopOf="@id/ivSite"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/keep_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="4dp"
+            android:layout_weight="1"
+            android:drawablePadding="4dp"
+            android:gravity="center"
+            android:singleLine="true"
+            android:text="@string/duplicate_keep"
+            android:textAllCaps="true"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/caption"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_check"
+            app:drawableTint="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivCover" />
+
+        <TextView
+            android:id="@+id/delete_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="4dp"
+            android:layout_weight="1"
+            android:drawablePadding="4dp"
+            android:gravity="center"
+            android:singleLine="true"
+            android:text="@string/duplicate_delete"
+            android:textAllCaps="true"
+            android:textColor="?colorSecondary"
+            android:textSize="@dimen/caption"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_delete_sweep"
+            app:drawableTint="?colorSecondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/keep_btn" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_middle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.70" />
+
+        <TextView
+            android:id="@+id/title_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/duplicate_title_score"
+            android:textColor="@color/medium_gray"
+            android:textSize="@dimen/caption"
+            app:layout_constraintStart_toStartOf="@id/guideline_middle"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            tools:text="Title : 96%" />
+
+        <TextView
+            android:id="@+id/cover_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/duplicate_cover_score"
+            android:textColor="@color/medium_gray"
+            android:textSize="@dimen/caption"
+            app:layout_constraintStart_toStartOf="@id/guideline_middle"
+            app:layout_constraintTop_toBottomOf="@id/title_score"
+            tools:text="Cover : No data" />
+
+        <TextView
+            android:id="@+id/artist_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/duplicate_artist_score"
+            android:textColor="@color/medium_gray"
+            android:textSize="@dimen/caption"
+            app:layout_constraintStart_toStartOf="@id/guideline_middle"
+            app:layout_constraintTop_toBottomOf="@id/cover_score"
+            tools:text="Artist : No data" />
+
+        <TextView
+            android:id="@+id/total_score"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/duplicate_total_score"
+            android:textColor="@color/medium_gray"
+            android:textSize="@dimen/text_subtitle_1"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/guideline_middle"
+            app:layout_constraintTop_toBottomOf="@id/artist_score"
+            tools:text="96%" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/scores"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:constraint_referenced_ids="title_score,cover_score,artist_score,total_score" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

@@ -1,4 +1,5 @@
 <resources>
+
     <style name="TextButton">
         <item name="android:padding">16dp</item>
         <item name="android:textAllCaps">true</item>
@@ -77,4 +78,18 @@
         <item name="android:background">?colorPrimary</item>
     </style>
 
+    <style name="App.Slider" parent="@style/Widget.MaterialComponents.Slider">
+        <item name="labelStyle">@style/App.Tooltip</item>
+    </style>
+
+    <style name="App.Tooltip" parent="Widget.MaterialComponents.Tooltip">
+        <!-- background color of the Tooltip -->
+        <item name="backgroundTint">@color/medium_gray</item>
+        <!-- textAppearance of the Tooltip -->
+        <item name="android:textAppearance">@style/TextAppearance.App.Tooltip</item>
+    </style>
+
+    <style name="TextAppearance.App.Tooltip" parent="TextAppearance.MaterialComponents.Tooltip">
+        <item name="android:textColor">@color/white_opacity_87</item>
+    </style>
 </resources>

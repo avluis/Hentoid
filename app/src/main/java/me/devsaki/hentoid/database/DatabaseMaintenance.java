@@ -38,6 +38,7 @@ public class DatabaseMaintenance {
      */
     public static List<Observable<Float>> getPreLaunchCleanupTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
+        result.add(createObservableFrom(context, DatabaseMaintenance::setDefaultPropertiesOneShot));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
@@ -69,16 +70,16 @@ public class DatabaseMaintenance {
 
             // Unflag all books marked for deletion
             Timber.i("Unflag books : start");
-            long[] ids = db.selectAllFlaggedBooksQ().findIds();
-            Timber.i("Unflag books : %s books detected", ids.length);
-            db.flagContentById(ids, false);
+            List<Content> contentList = db.selectAllFlaggedBooksQ().find();
+            Timber.i("Unflag books : %s books detected", contentList.size());
+            db.flagContents(contentList, false);
             Timber.i("Unflag books : done");
 
             // Unflag all books signaled as being deleted
             Timber.i("Unmark books as being deleted : start");
-            ids = db.selectAllMarkedBooksQ().findIds();
-            Timber.i("Unmark books as being deleted : %s books detected", ids.length);
-            db.markContentById(ids, false);
+            contentList = db.selectAllMarkedBooksQ().find();
+            Timber.i("Unmark books as being deleted : %s books detected", contentList.size());
+            db.markContents(contentList, false);
             Timber.i("Unmark books as being deleted : done");
 
             // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
@@ -185,6 +186,27 @@ public class DatabaseMaintenance {
         }
     }
 
+    private static void setDefaultPropertiesOneShot(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Set default values for new ObjectBox properties that are values as null by default (see https://github.com/objectbox/objectbox-java/issues/157)
+            Timber.i("Set default ObjectBox properties : start");
+            List<Content> contents = db.selectContentWithNullCompleteField();
+            Timber.i("Set default ObjectBox properties : %s books detected", contents.size());
+            int max = contents.size();
+            float pos = 1;
+            for (Content c : contents) {
+                c.setCompleted(false);
+                db.insertContent(c);
+                emitter.onNext(pos++ / max);
+            }
+            Timber.i("Set default ObjectBox properties : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
     private static void computeContentSize(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         try {
@@ -220,8 +242,8 @@ public class DatabaseMaintenance {
             List<ImmutableTriple<Group, Attribute, List<Content>>> toInsert = new ArrayList<>();
             for (Grouping g : groupingsToProcess) {
                 if (g.equals(Grouping.ARTIST)) {
-                    List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0);
-                    artists.addAll(db.selectAvailableAttributes(AttributeType.CIRCLE, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0));
+                    List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0, false, false);
+                    artists.addAll(db.selectAvailableAttributes(AttributeType.CIRCLE, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0, false, false));
                     int order = 1;
                     for (Attribute a : artists) {
                         Group group = new Group(Grouping.ARTIST, a.getName(), order++);

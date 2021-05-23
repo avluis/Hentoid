@@ -11,7 +11,6 @@ public class ManhwaActivity extends BaseWebActivity {
     private static final String[] GALLERY_FILTER = {"//manhwahentai.me/[\\w\\-]+/[\\w\\-]+/$"};
     private static final String[] DIRTY_ELEMENTS = {".c-ads"};
     private static final String[] BLOCKED_CONTENT = {".cloudfront.net"};
-    private static final String[] JS_WHITELIST = {"//manhwahentai.me/", "disqus", "googletagmanager.com", "cloudflare"};
 
 
     Site getStartSite() {
@@ -20,31 +19,34 @@ public class ManhwaActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        addContentBlockFilter(BLOCKED_CONTENT);
-        addDirtyElements(DIRTY_ELEMENTS);
-        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new ManhwaWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
+        client.addToUrlBlacklist(BLOCKED_CONTENT);
+        client.addUrlWhitelist(DOMAIN_FILTER);
+        client.addDirtyElements(DIRTY_ELEMENTS);
         return client;
     }
 
-    /**
-     * Specific implementation to get rid of ad js files
-     * that have random names
-     */
-    @Override
-    protected boolean isUrlForbidden(@NonNull String url) {
-        // 1- Process usual blacklist
-        if (super.isUrlForbidden(url)) return true;
+    private static class ManhwaWebViewClient extends CustomWebViewClient {
 
-        // 2- Accept non-JS files
-        if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
-
-        // 3- Accept JS files defined in the whitelist
-        for (String s : JS_WHITELIST) {
-            if (url.toLowerCase().contains(s)) return false;
+        ManhwaWebViewClient(Site site, String[] filter, CustomWebActivity activity) {
+            super(site, filter, activity);
         }
 
-        // 4- Block all other JS files
-        return true;
+        /**
+         * Specific implementation to get rid of ad js files that have random names
+         */
+        @Override
+        protected boolean isUrlBlacklisted(@NonNull String url) {
+            // 1- Process usual blacklist
+            if (super.isUrlBlacklisted(url)) return true;
+
+            // 2- Accept non-JS files
+            if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
+
+            // 3- Accept JS files defined in the whitelist; block others
+            return !super.isUrlWhitelisted(url);
+        }
     }
+
 }

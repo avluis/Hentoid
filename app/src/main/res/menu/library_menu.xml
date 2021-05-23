@@ -21,6 +21,14 @@
         android:visible="false"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_completed_filter"
+        android:checkable="true"
+        android:checked="false"
+        android:icon="@drawable/ic_completed_filter_off"
+        android:title="@string/menu_comp"
+        android:tooltipText="@string/menu_comp"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_favourites"
         android:checkable="true"
         android:checked="false"

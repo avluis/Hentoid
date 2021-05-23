@@ -7,15 +7,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Pair;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
@@ -24,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -46,6 +48,7 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.DuplicateEntry;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -62,13 +65,14 @@ import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.string_similarity.Cosine;
+import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
-import static com.annimon.stream.Collectors.toList;
 import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 
 /**
@@ -77,7 +81,6 @@ import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 public final class ContentHelper {
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
-    private static final String ILLEGAL_CHARS = "[/\\\\]";
     private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
     private static final int[] queueStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode()};
     private static final int[] queueTabStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode()};
@@ -101,6 +104,10 @@ public final class ContentHelper {
 
     public static int[] getQueueStatuses() {
         return queueStatus;
+    }
+
+    public static int[] getQueueTabStatuses() {
+        return queueTabStatus;
     }
 
     public static boolean isInQueue(@NonNull final StatusContent status) {
@@ -150,7 +157,7 @@ public final class ContentHelper {
 
         DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
         if (null == file)
-            throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
+            throw new IllegalArgumentException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
         try {
             JsonHelper.updateJson(context, JsonContent.fromEntity(content), JsonContent.class, file);
@@ -318,7 +325,7 @@ public final class ContentHelper {
             File[] images = appFolder.listFiles((dir, name) -> FileHelper.getFileNameWithoutExtension(name).equals(content.getId() + ""));
             if (images != null)
                 for (File f : images) FileHelper.removeFile(f);
-        } else if (isInLibrary(content.getStatus()) && !content.getStorageUri().isEmpty()) { // Remove a folder and its content
+        } else if (/*isInLibrary(content.getStatus()) &&*/ !content.getStorageUri().isEmpty()) { // Remove a folder and its content
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
             DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
             if (null == folder)
@@ -368,7 +375,6 @@ public final class ContentHelper {
             @NonNull final Context context,
             @NonNull final CollectionDAO dao,
             @NonNull final Content content) {
-        content.populateAuthor();
         long newContentId = dao.insertContent(content);
         content.setId(newContentId);
 
@@ -517,7 +523,7 @@ public final class ContentHelper {
      * @return Created directory
      */
     @Nullable
-    public static DocumentFile createContentDownloadDir(@NonNull Context context, @NonNull Content content) {
+    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content) {
         DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
         if (null == siteDownloadDir) return null;
 
@@ -539,18 +545,19 @@ public final class ContentHelper {
 
     /**
      * Format the download directory path of the given content according to current user preferences
-     * TODO update
      *
      * @param content Content to get the path from
-     * @return Canonical download directory path of the given content, according to current user preferences
+     * @return Pair containing the canonical naming of the given content :
+     * - Left side : Naming convention allowing non-ANSI characters
+     * - Right side : Old naming convention with ANSI characters alone
      */
     public static ImmutablePair<String, String> formatBookFolderName(@NonNull final Content content) {
         String title = content.getTitle();
         title = (null == title) ? "" : title;
-        String author = content.getAuthor().toLowerCase();
+        String author = formatBookAuthor(content).toLowerCase();
 
         return new ImmutablePair<>(
-                formatBookFolderName(content, title.replaceAll(ILLEGAL_CHARS, ""), author.replaceAll(ILLEGAL_CHARS, "")),
+                formatBookFolderName(content, FileHelper.cleanFileName(title), FileHelper.cleanFileName(author)),
                 formatBookFolderName(content, title.replaceAll(UNAUTHORIZED_CHARS, "_"), author.replaceAll(UNAUTHORIZED_CHARS, "_"))
         );
     }
@@ -598,8 +605,26 @@ public final class ContentHelper {
         String id = content.getUniqueSiteId();
         // For certain sources (8muses, fakku), unique IDs are strings that may be very long
         // => shorten them by using their hashCode
-        if (id.length() > 10) id = Helper.formatIntAsStr(Math.abs(id.hashCode()), 10);
+        if (id.length() > 10) id = StringHelper.formatIntAsStr(Math.abs(id.hashCode()), 10);
         return "[" + id + "]";
+    }
+
+    public static String formatBookAuthor(@NonNull final Content content) {
+        String result = "";
+        AttributeMap attrMap = content.getAttributeMap();
+        // Try and get first Artist
+        List<Attribute> artistAttributes = attrMap.get(AttributeType.ARTIST);
+        if (artistAttributes != null && !artistAttributes.isEmpty())
+            result = artistAttributes.get(0).getName();
+
+        // If no Artist found, try and get first Circle
+        if (null == result || result.isEmpty()) {
+            List<Attribute> circleAttributes = attrMap.get(AttributeType.CIRCLE);
+            if (circleAttributes != null && !circleAttributes.isEmpty())
+                result = circleAttributes.get(0).getName();
+        }
+
+        return StringHelper.protect(result);
     }
 
     /**
@@ -726,15 +751,13 @@ public final class ContentHelper {
         // Look up similar names between images and file names
         for (ImageFile img : images) {
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
-            if (fileNameProperties.containsKey(imgName)) {
-                ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
-                if (property != null) {
-                    if (imgName.equals(Consts.THUMB_FILE_NAME)) {
-                        coverFound = true;
-                        img.setIsCover(true);
-                    }
-                    result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
+            ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
+            if (property != null) {
+                if (imgName.equals(Consts.THUMB_FILE_NAME)) {
+                    coverFound = true;
+                    img.setIsCover(true);
                 }
+                result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
             } else
                 Timber.i(">> img dropped %s", imgName);
         }
@@ -787,7 +810,7 @@ public final class ContentHelper {
         int order = startingOrder;
         boolean coverFound = false;
         // Sort files by anything that resembles a number inside their names
-        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberFileComparator()).collect(toList());
+        List<DocumentFile> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberFileComparator()).toList();
         for (DocumentFile f : fileList) {
             String name = namePrefix + ((f.getName() != null) ? f.getName() : "");
             ImageFile img = new ImageFile();
@@ -824,7 +847,7 @@ public final class ContentHelper {
         List<ImageFile> result = new ArrayList<>();
         int order = startingOrder;
         // Sort files by anything that resembles a number inside their names (default entry order from ZipInputStream is chaotic)
-        List<ArchiveHelper.ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).collect(toList());
+        List<ArchiveHelper.ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).toList();
         for (ArchiveHelper.ArchiveEntry f : fileList) {
             String name = namePrefix + f.path;
             String path = archiveFileUri.toString() + File.separator + f.path;
@@ -869,7 +892,7 @@ public final class ContentHelper {
             List<String> tags = Stream.of(content.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG)).map(Attribute::getName).toList();
             for (String blocked : Preferences.getBlockedTags())
                 for (String tag : tags)
-                    if (blocked.equalsIgnoreCase(tag) || Helper.isPresentAsWord(blocked, tag)) {
+                    if (blocked.equalsIgnoreCase(tag) || StringHelper.isPresentAsWord(blocked, tag)) {
                         if (result.isEmpty()) result = new ArrayList<>();
                         result.add(tag);
                         break;
@@ -878,12 +901,26 @@ public final class ContentHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Update the given content's properties by parsing its webpage
+     *
+     * @param content Content to parse again from its online source
+     * @return Content updated from its online source
+     * @throws IOException If something horrible happens during parsing
+     */
     public static Content reparseFromScratch(@NonNull final Content content) throws IOException {
         return reparseFromScratch(content, content.getGalleryUrl());
     }
 
-    // TODO visual feedback to warn the user about redownload "from scratch" having failed (whenever the original content is returned)
+    /**
+     * Parse the given webpage to update the given Content's properties
+     *
+     * @param content Content which properties to update
+     * @param url     Webpage to parse to update the given Content's properties
+     * @return Content with updated properties
+     * TODO feedback to warn the user about redownload "from scratch" having failed (whenever the original content is returned)
+     * @throws IOException If something horrible happens during parsing
+     */
     private static Content reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
         Helper.assertNonUiThread();
 
@@ -894,13 +931,13 @@ public final class ContentHelper {
         if (!cookieStr.isEmpty())
             requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
 
-        Response response = HttpHelper.getOnlineResource(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(),content.getSite().useWebviewAgent());
+        Response response = HttpHelper.getOnlineResource(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
 
         // Scram if the response is a redirection or an error
         if (response.code() >= 300) return content;
 
         // Scram if the response is something else than html
-        Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
+        Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")));
         if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
             return content;
 
@@ -932,7 +969,13 @@ public final class ContentHelper {
         return newContent;
     }
 
-    // TODO doc
+    /**
+     * Remove all files (including JSON and cover thumb) from the given Content's folder
+     * The folder itself is left empty
+     *
+     * @param context Context to use
+     * @param content Content to remove files from
+     */
     public static void purgeFiles(@NonNull final Context context, @NonNull final Content content) {
         DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
@@ -942,7 +985,13 @@ public final class ContentHelper {
         }
     }
 
-    public static String formatTags(@NonNull final Content content) {
+    /**
+     * Format the given Content's tags for display
+     *
+     * @param content Content to get the formatted tags for
+     * @return Given Content's tags formatted for display
+     */
+    public static String formatTagsForDisplay(@NonNull final Content content) {
         List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes == null) return "";
 
@@ -957,12 +1006,101 @@ public final class ContentHelper {
     }
 
     /**
+     * Get the resource ID for the given Content's language flag
+     *
+     * @param context Context to use
+     * @param content Content to get the flag resource ID for
+     * @return Resource ID (DrawableRes) of the given Content's language flag; 0 if no matching flag found
+     */
+    public static @DrawableRes
+    int getFlagResourceId(@NonNull final Context context, @NonNull final Content content) {
+        List<Attribute> langAttributes = content.getAttributeMap().get(AttributeType.LANGUAGE);
+        if (langAttributes != null && !langAttributes.isEmpty())
+            for (Attribute lang : langAttributes) {
+                @DrawableRes int resId = LanguageHelper.getFlagFromLanguage(context, lang.getName());
+                if (resId != 0) return resId;
+            }
+        return 0;
+    }
+
+    /**
+     * Format the given Content's artists for display
+     *
+     * @param context Context to use
+     * @param content Content to get the formatted artists for
+     * @return Given Content's artists formatted for display
+     */
+    public static String formatArtistForDisplay(@NonNull final Context context, @NonNull final Content content) {
+        List<Attribute> attributes = new ArrayList<>();
+
+        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
+        if (artistAttributes != null)
+            attributes.addAll(artistAttributes);
+        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
+        if (circleAttributes != null)
+            attributes.addAll(circleAttributes);
+
+        if (attributes.isEmpty()) {
+            return context.getString(R.string.work_artist, context.getResources().getString(R.string.work_untitled));
+        } else {
+            List<String> allArtists = new ArrayList<>();
+            for (Attribute attribute : attributes) {
+                allArtists.add(attribute.getName());
+            }
+            String artists = android.text.TextUtils.join(", ", allArtists);
+            return context.getString(R.string.work_artist, artists);
+        }
+    }
+
+    /**
+     * Find the best match for the given Content inside the library and queue
+     *
+     * @param dao     CollectionDao to use
+     * @param content Content to find the duplicate for
+     *                // TOD update
+     * @return Pair containing
+     * left side : Best match for the given Content inside the library and queue
+     * Right side : Similarity score (between 0 and 1; 1=100%)
+     */
+    @Nullable
+    public static ImmutablePair<Content, Float> findDuplicate(@NonNull final CollectionDAO dao, @NonNull final Content content, long pHash) {
+        // First find good rough candidates by searching for the longest word in the title
+        String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
+        Optional<String> longestWord = Stream.of(words).sorted((o1, o2) -> Integer.compare(o1.length(), o2.length())).findLast();
+        if (longestWord.isEmpty()) return null;
+
+        int[] contentStatuses = ArrayUtils.addAll(libraryStatus, queueTabStatus);
+        List<Content> roughCandidates = dao.searchTitlesWith(longestWord.get(), contentStatuses);
+        if (roughCandidates.isEmpty()) return null;
+
+        // Refine by running the actual duplicate detection algorithm against the rough candidates
+        List<DuplicateEntry> entries = new ArrayList<>();
+        StringSimilarity cosine = new Cosine();
+        // TODO make useLanguage a setting ?
+        DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, true, true, false, pHash);
+        List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, true, true, false, Long.MIN_VALUE)).toList();
+        for (DuplicateHelper.DuplicateCandidate candidate : candidates) {
+            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, null, true, true, true, false, true, 2, cosine);
+            if (entry != null) entries.add(entry);
+        }
+        // Sort by similarity and size (unfortunately, Comparator.comparing is API24...)
+        Optional<DuplicateEntry> bestMatch = Stream.of(entries).sorted(DuplicateEntry::compareTo).findFirst();
+        if (bestMatch.isPresent()) {
+            Content resultContent = dao.selectContent(bestMatch.get().getDuplicateId());
+            float resultScore = bestMatch.get().calcTotalScore();
+            return new ImmutablePair<>(resultContent, resultScore);
+        }
+
+        return null;
+    }
+
+    /**
      * Comparator to be used to sort files according to their names
      */
     private static class InnerNameNumberFileComparator implements Comparator<DocumentFile> {
         @Override
         public int compare(@NonNull DocumentFile o1, @NonNull DocumentFile o2) {
-            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(Helper.protect(o1.getName()), Helper.protect(o2.getName()));
+            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(StringHelper.protect(o1.getName()), StringHelper.protect(o2.getName()));
         }
     }
 

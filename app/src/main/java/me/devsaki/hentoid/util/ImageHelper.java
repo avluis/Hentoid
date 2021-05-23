@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -13,8 +14,11 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
@@ -25,7 +29,12 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 public final class ImageHelper {
 
     private static final Charset CHARSET_LATIN_1 = StandardCharsets.ISO_8859_1;
+
     public static final String MIME_IMAGE_GENERIC = "image/*";
+    public static final String MIME_IMAGE_WEBP = "image/webp";
+    public static final String MIME_IMAGE_JPEG = "image/jpeg";
+    public static final String MIME_IMAGE_GIF = "image/gif";
+
 
     private static FileHelper.NameFilter imageNamesFilter;
 
@@ -76,7 +85,7 @@ public final class ImageHelper {
         // In Java, byte type is signed !
         // => Converting all raw values to byte to be sure they are evaluated as expected
         if ((byte) 0xFF == binary[0] && (byte) 0xD8 == binary[1] && (byte) 0xFF == binary[2])
-            return "image/jpeg";
+            return MIME_IMAGE_JPEG;
         else if ((byte) 0x89 == binary[0] && (byte) 0x50 == binary[1] && (byte) 0x4E == binary[2]) {
             // Detect animated PNG : To be recognized as APNG an 'acTL' chunk must appear in the stream before any 'IDAT' chunks
             int acTlPos = FileHelper.findSequencePosition(binary, 0, "acTL".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
@@ -86,10 +95,10 @@ public final class ImageHelper {
             }
             return "image/png";
         } else if ((byte) 0x47 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2])
-            return "image/gif";
+            return MIME_IMAGE_GIF;
         else if ((byte) 0x52 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2] && (byte) 0x46 == binary[3]
                 && (byte) 0x57 == binary[8] && (byte) 0x45 == binary[9] && (byte) 0x42 == binary[10] && (byte) 0x50 == binary[11])
-            return "image/webp";
+            return MIME_IMAGE_WEBP;
         else if ((byte) 0x42 == binary[0] && (byte) 0x4D == binary[1]) return "image/bmp";
         else return MIME_IMAGE_GENERIC;
     }
@@ -131,5 +140,71 @@ public final class ImageHelper {
         canvas.drawBitmap(bitmap, 0, 0, p);
 
         return b;
+    }
+
+    /**
+     * Calculate sample size to load the picture with, according to raw and required dimensions
+     *
+     * @param rawWidth     Raw width of the picture, in pixels
+     * @param rawHeight    Raw height of the picture, in pixels
+     * @param targetWidth  Target width of the picture, in pixels
+     * @param targetHeight Target height of the picture, in pixels
+     * @return Sample size to use to load the picture with
+     */
+    public static int calculateInSampleSize(int rawWidth, int rawHeight, int targetWidth, int targetHeight) {
+        // Raw height and width of image
+        int inSampleSize = 1;
+
+        if (rawHeight > targetHeight || rawWidth > targetWidth) {
+
+            final int halfHeight = rawHeight / 2;
+            final int halfWidth = rawWidth / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= targetHeight
+                    && (halfWidth / inSampleSize) >= targetWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
+    /**
+     * Create a Bitmap from the given InputStream, optimizing resources according to the given required width and height
+     *
+     * @param stream       Stream to load the bitmap from
+     * @param targetWidth  Target picture width, in pixels
+     * @param targetHeight Target picture height, in pixels
+     * @return Bitmap created from the given InputStream
+     * @throws IOException If anything bad happens at load-time
+     */
+    public static Bitmap decodeSampledBitmapFromStream(@NonNull InputStream stream, int targetWidth, int targetHeight) throws IOException {
+        List<InputStream> streams = Helper.duplicateInputStream(stream, 2);
+        InputStream workStream1 = streams.get(0);
+        InputStream workStream2 = streams.get(1);
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(workStream1, null, options);
+        if (null == workStream2) {
+            workStream1.reset();
+            workStream2 = workStream1;
+        } else {
+            workStream1.close();
+        }
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options.outWidth, options.outHeight, targetWidth, targetHeight);
+
+        // Decode final bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        try {
+            return BitmapFactory.decodeStream(workStream2, null, options);
+        } finally {
+            workStream2.close();
+        }
     }
 }
