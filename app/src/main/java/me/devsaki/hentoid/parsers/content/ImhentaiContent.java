@@ -21,7 +21,7 @@ public class ImhentaiContent extends BaseContentParser {
     private Element cover;
     @Selector(value = "div.right_details h1", defValue = "")
     private String title;
-    @Selector("li.pages")
+    @Selector(value = "li.pages", defValue = "")
     private String pages;
     @Selector(value = "ul.galleries_info a[href*='/artist']")
     private List<Element> artists;
@@ -48,8 +48,10 @@ public class ImhentaiContent extends BaseContentParser {
         String str = !title.isEmpty() ? StringHelper.removeNonPrintableChars(title) : "";
         str = ParseHelper.removeTextualTags(str);
         content.setTitle(str);
-        str = pages.replace("Pages", "").replace("pages", "").replace(":", "").trim();
-        content.setQtyPages(Integer.parseInt(str));
+        if (!pages.isEmpty()) {
+            str = pages.replace("Pages", "").replace("pages", "").replace(":", "").trim();
+            content.setQtyPages(Integer.parseInt(str));
+        }
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.IMHENTAI);
