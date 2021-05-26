@@ -24,12 +24,15 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DuplicatesDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.DuplicateEntry;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.notification.duplicates.DuplicateCompleteNotification;
 import me.devsaki.hentoid.notification.duplicates.DuplicateProgressNotification;
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
@@ -59,7 +62,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
     public DuplicateDetectorWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
-        super(context, parameters, R.id.duplicate_detector_service);
+        super(context, parameters, R.id.duplicate_detector_service, "duplicate_detector");
 
         dao = new ObjectBoxDAO(getApplicationContext());
         duplicatesDAO = new DuplicatesDAO(getApplicationContext());
@@ -97,7 +100,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
         DuplicateData.Parser inputData = new DuplicateData.Parser(input);
 
         // Run cover indexing in the background
-        indexDisposable = DuplicateHelper.Companion.indexCoversRx(getApplicationContext(), dao, this::notifyIndexProgress);
+        recordLog(new LogHelper.LogEntry("Covers to index : " + dao.countContentWithUnhashedCovers()));
+        indexDisposable = DuplicateHelper.Companion.indexCoversRx(getApplicationContext(), dao, this::notifyIndexProgress, this::indexContentInfo, this::indexError);
 
         // Initialize duplicate detection
         detectDuplicates(inputData.getUseTitle(), inputData.getUseCover(), inputData.getUseArtist(), inputData.getUseSameLanguage(), inputData.getIgnoreChapters(), inputData.getSensitivity());
@@ -131,13 +135,13 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
         boolean isReRun = false;
         do {
-//            logs.add(new LogHelper.LogEntry("Preparation started"));
+            recordLog(new LogHelper.LogEntry("Preparation started"));
             // Pre-compute all book entries as DuplicateCandidates
             List<DuplicateHelper.DuplicateCandidate> candidates = new ArrayList<>();
             dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true,
                     content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useSameLanguage, Long.MIN_VALUE)));
 
-//            logs.add(new LogHelper.LogEntry("Detection started"));
+            recordLog(new LogHelper.LogEntry("Detection started"));
             processAll(
                     duplicatesDAO,
                     candidates,
@@ -153,9 +157,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
                     ignoreChapters,
                     sensitivity);
             Timber.d(" >> PROCESS End reached");
-//            logs.add(new LogHelper.LogEntry("Setection End"));
+            recordLog(new LogHelper.LogEntry("Setection End"));
             if (isStopped()) break;
             if (!ignoredIds.isEmpty()) {
+                recordLog(new LogHelper.LogEntry("Ignored IDs size : " + ignoredIds.size()));
                 try {
                     //noinspection BusyWait
                     Thread.sleep(3000); // Don't rush in another loop
@@ -170,7 +175,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
         } while (!ignoredIds.isEmpty());
 
         setComplete(ignoredIds.isEmpty());
-//        logs.add(new LogHelper.LogEntry("Final End reached (complete=%s)", isComplete()));
+        recordLog(new LogHelper.LogEntry("Final End reached (complete=%s)", isComplete()));
 
         ignoredIds.clear();
         matchedIds.clear();
@@ -236,6 +241,17 @@ public class DuplicateDetectorWorker extends BaseWorker {
         } else {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, progressPc, 0, 10000));
         }
+    }
+
+    private void indexContentInfo(Content c) {
+        recordLog(new LogHelper.LogEntry("Indexing " + c.getSite().name() + "/" + ContentHelper.formatBookFolderName(c).left));
+    }
+
+    private void indexError(Throwable t) {
+        Timber.w(t);
+        String message = t.getMessage();
+        if (message != null)
+            recordLog(new LogHelper.LogEntry("Indexing error : " + message));
     }
 
     private boolean processEntry(

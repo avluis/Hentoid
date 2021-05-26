@@ -76,7 +76,7 @@ public class ImportWorker extends BaseWorker {
     public ImportWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
-        super(context, parameters, R.id.import_service);
+        super(context, parameters, R.id.import_service, null);
     }
 
     public static boolean isRunning(@NonNull Context context) {

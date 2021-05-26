@@ -108,7 +108,7 @@ public class ContentDownloadWorker extends BaseWorker {
     public ContentDownloadWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
-        super(context, parameters, R.id.download_service);
+        super(context, parameters, R.id.download_service, null);
 
         EventBus.getDefault().register(this);
         dao = new ObjectBoxDAO(context);

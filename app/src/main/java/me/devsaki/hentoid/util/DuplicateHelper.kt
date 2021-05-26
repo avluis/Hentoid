@@ -77,7 +77,9 @@ class DuplicateHelper {
         fun indexCoversRx(
             context: Context,
             dao: CollectionDAO,
-            progress: Consumer<Float>
+            progress: Consumer<Float>,
+            info: Consumer<Content>,
+            error: Consumer<Throwable>
         ): Disposable {
 
             val hash = getHashEngine()
@@ -87,7 +89,10 @@ class DuplicateHelper {
             return dao.streamContentWithUnhashedCovers()
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map { content -> Pair(content, getCoverBitmapFromContent(context, content)) }
+                .map {
+                    info.accept(it)
+                    Pair(it, getCoverBitmapFromContent(context, it))
+                }
                 .observeOn(Schedulers.computation())
                 .map {
                     val pHash = calcPhash(hash, it.second)
@@ -105,7 +110,7 @@ class DuplicateHelper {
                 }
                 .subscribeBy(
                     onNext = { progress.accept(++index * 1f / nbContent) },
-                    onError = { t -> Timber.w(t) },
+                    onError = { t -> error.accept(t) },
                     onComplete = { progress.accept(1f) }
                 )
 
