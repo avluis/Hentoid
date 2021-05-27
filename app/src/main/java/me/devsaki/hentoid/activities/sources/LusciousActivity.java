@@ -16,7 +16,6 @@ import me.devsaki.hentoid.json.sources.LusciousQuery;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.LusciousContent;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 public class LusciousActivity extends BaseWebActivity {
@@ -37,7 +36,7 @@ public class LusciousActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         LusciousWebClient client = new LusciousWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        client.addUrlWhitelist(DOMAIN_FILTER);
+        client.adBlocker.addUrlWhitelist(DOMAIN_FILTER);
         //client.addDirtyElements(DIRTY_ELEMENTS);
 
         // Init fetch handler here for convenience
@@ -61,21 +60,6 @@ public class LusciousActivity extends BaseWebActivity {
             } catch (IOException e) {
                 Timber.e(e);
             }
-        }
-
-        /**
-         * Specific implementation to get rid of ad js files that have random names
-         */
-        @Override
-        protected boolean isUrlBlacklisted(@NonNull String url) {
-            // 1- Process usual blacklist
-            if (super.isUrlBlacklisted(url)) return true;
-
-            // 2- Accept non-JS files
-            if (!HttpHelper.getExtensionFromUri(url).equals("js")) return false;
-
-            // 3- Accept JS files defined in the whitelist; block others
-            return !super.isUrlWhitelisted(url);
         }
 
         // Call the API without using BaseWebActivity.parseResponse
