@@ -28,6 +28,7 @@ public class AdBlocker {
     // List of blocked URLs (ads or annoying images) -- will be replaced by a blank stream
     // Universal lists (applied to all sites)
     private static final Set<String> universalUrlBlacklist = new HashSet<>();
+    private static final Set<String> universalUrlWhitelist = new HashSet<>();
     // Local lists (applied to current site)
     private List<String> localUrlBlacklist;
     private final List<Pattern> jsWhitelistUrlPatternList = new ArrayList<>();
@@ -39,14 +40,14 @@ public class AdBlocker {
     static {
         String[] appUrlBlacklist = HentoidApp.getInstance().getResources().getStringArray(R.array.blocked_domains);
         universalUrlBlacklist.addAll(Arrays.asList(appUrlBlacklist));
+        String[] appUrlWhitelist = HentoidApp.getInstance().getResources().getStringArray(R.array.allowed_domains);
+        universalUrlWhitelist.addAll(Arrays.asList(appUrlWhitelist));
     }
 
 
-    public AdBlocker(Site s) {
-        this.site = s;
-
-        String[] appUrlWhitelist = HentoidApp.getInstance().getResources().getStringArray(R.array.allowed_domains);
-        addUrlWhitelist(appUrlWhitelist);
+    public AdBlocker(Site site) {
+        this.site = site;
+        for (String s : universalUrlWhitelist) addUrlWhitelist(s);
     }
 
     /**
@@ -103,6 +104,10 @@ public class AdBlocker {
         if (isUrlBlacklisted(url)) return true;
         if (jsBlacklistCache.contains(url)) return true;
 
+        // If no specific whitelist has been defined, stop there
+        if (jsWhitelistUrlPatternList.size() == universalUrlWhitelist.size()) return false;
+
+
         // 2- Accept non-JS files
         String extension = HttpHelper.getExtensionFromUri(url);
         if (!extension.equals("js") && !extension.isEmpty())
@@ -114,10 +119,11 @@ public class AdBlocker {
             if (matcher.find()) return false;
         }
 
-        // 4a- If no grey list is defined, block them as they are not whitelisted
+        // If no grey list has been defined, block url as it has not been whitelisted
         if (jsContentBlacklist.isEmpty()) return true;
 
-        // 4b- If a grey list is defined, block them if they _contain_ keywords
+
+        // 4- If a grey list has been defined, block them if they _contain_ keywords
         if (Looper.getMainLooper().getThread() != Thread.currentThread()) { // No network call on UI thread
             Timber.d(">> examining grey file %s", url);
             try {

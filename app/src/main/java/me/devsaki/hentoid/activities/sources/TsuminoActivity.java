@@ -28,7 +28,6 @@ public class TsuminoActivity extends BaseWebActivity {
         client.restrictTo(DOMAIN_FILTER);
         client.addDirtyElements(DIRTY_ELEMENTS);
         client.adBlocker.addToUrlBlacklist(blockedContent);
-        client.adBlocker.addUrlWhitelist(DOMAIN_FILTER);
 
         return client;
     }
