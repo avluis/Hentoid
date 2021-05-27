@@ -20,11 +20,12 @@
 	  {"sourceName":"ASMHENTAI", "status":"RED", "fixedByBuild":"255"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"257"},
 	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"284"},
-	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
-	  {"sourceName":"NEXUS", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"BLACK", "fixedByBuild":"350"},
 	  {"sourceName":"TSUMINO", "status":"RED", "fixedByBuild":"309"},
-	  {"sourceName":"NEXUS", "status":"RED", "fixedByBuild":"329"}
+	  {"sourceName":"NEXUS", "status":"RED", "fixedByBuild":"329"},
+	  {"sourceName":"HENTAIFOX", "status":"RED"},
+	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
+	  {"sourceName":"NEXUS", "status":"BLACK"}
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },
