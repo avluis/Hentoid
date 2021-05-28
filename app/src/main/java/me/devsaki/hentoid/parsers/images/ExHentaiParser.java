@@ -36,6 +36,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.parsers.images.EHentaiParser.MPV_LINK_CSS;
 import static me.devsaki.hentoid.parsers.images.EHentaiParser.getCookieStr;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
@@ -77,10 +78,14 @@ public class ExHentaiParser implements ImageListParser {
             Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent, useWebviewAgent);
             if (galleryDoc != null) {
                 // Detect if multipage viewer is on
-                Elements elements = galleryDoc.select(".gm a[href*='/mpv/']");
+                Elements elements = galleryDoc.select(MPV_LINK_CSS);
                 if (!elements.isEmpty()) {
                     String mpvUrl = elements.get(0).attr("href");
-                    result = loadMpv(content, mpvUrl, headers, useHentoidAgent, useWebviewAgent);
+                    try {
+                        result = loadMpv(content, mpvUrl, headers, useHentoidAgent, useWebviewAgent);
+                    } catch (EmptyResultException e) {
+                        result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
+                    }
                 } else {
                     result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
                 }
