@@ -30,19 +30,21 @@ public class EmergencyRestartHandler implements
 
         // Log the exception
         Timber.i("Logging crash exception");
-        List<LogHelper.LogEntry> log = new ArrayList<>();
-        log.add(new LogHelper.LogEntry(StringHelper.protect(exception.getMessage())));
-        log.add(new LogHelper.LogEntry(getStackTraceString(exception)));
+        try {
+            List<LogHelper.LogEntry> log = new ArrayList<>();
+            log.add(new LogHelper.LogEntry(StringHelper.protect(exception.getMessage())));
+            log.add(new LogHelper.LogEntry(getStackTraceString(exception)));
 
-        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-        logInfo.setEntries(log);
-        logInfo.setLogName("latest-crash");
-        LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
-
-        // Restart the Activity
-        Timber.i("Restart %s", myActivityClass.getSimpleName());
-        Intent intent = new Intent(myContext, myActivityClass);
-        myContext.startActivity(intent);
+            LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
+            logInfo.setEntries(log);
+            logInfo.setLogName("latest-crash");
+            LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
+        } finally {
+            // Restart the Activity
+            Timber.i("Restart %s", myActivityClass.getSimpleName());
+            Intent intent = new Intent(myContext, myActivityClass);
+            myContext.startActivity(intent);
+        }
 
         Timber.i("Kill current process");
         Process.killProcess(Process.myPid());
