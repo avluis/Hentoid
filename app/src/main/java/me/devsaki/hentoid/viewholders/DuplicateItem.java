@@ -82,7 +82,8 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     private Float coverScore = -1f;
     private Float artistScore = -1f;
     private Float totalScore = -1f;
-    private Boolean keep = true;
+    private boolean keep = true;
+    private boolean isBeingDeleted = false;
 
     static {
         Context context = HentoidApp.getInstance();
@@ -105,10 +106,9 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     public DuplicateItem(DuplicateEntry result, @ViewType int viewType) {
         this.viewType = viewType;
         isEmpty = (null == result);
-        if (result != null) setIdentifier(result.uniqueHash());
-        else setIdentifier(Helper.generateIdForPlaceholder());
 
         if (result != null) {
+            setIdentifier(result.uniqueHash());
             if (viewType == ViewType.MAIN) {
                 content = result.getReferenceContent();
             } else {
@@ -118,9 +118,11 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 artistScore = result.getArtistScore();
                 totalScore = result.calcTotalScore();
                 keep = result.getKeep();
+                isBeingDeleted = result.isBeingDeleted();
             }
             nbDuplicates = result.getNbDuplicates();
         } else {
+            setIdentifier(Helper.generateIdForPlaceholder());
             content = null;
         }
         isReferenceItem = (titleScore > 1f);
@@ -149,11 +151,13 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         return R.id.duplicate;
     }
 
-    @Nullable
-    public Boolean getKeep() {
+    public boolean getKeep() {
         return keep;
     }
 
+    public boolean isBeingDeleted() {
+        return isBeingDeleted;
+    }
 
     public static class ContentViewHolder extends FastAdapter.ViewHolder<DuplicateItem> {
 
@@ -220,6 +224,8 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
 
                 Boolean boolValue = bundleParser.getKeep();
                 if (boolValue != null) item.keep = boolValue;
+                boolValue = bundleParser.isBeingDeleted();
+                if (boolValue != null) item.isBeingDeleted = boolValue;
             }
 
             updateLayoutVisibility(item);
@@ -236,6 +242,11 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         private void updateLayoutVisibility(@NonNull final DuplicateItem item) {
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
 
+            if (item.isBeingDeleted)
+                baseLayout.startAnimation(new BlinkAnimation(500, 250));
+            else
+                baseLayout.clearAnimation();
+
             if (Preferences.Constant.LIBRARY_DISPLAY_GRID == Preferences.getLibraryDisplay()) {
                 ViewGroup.LayoutParams layoutParams = baseLayout.getLayoutParams();
                 if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
@@ -244,11 +255,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 }
                 baseLayout.setLayoutParams(layoutParams);
             }
-
-            if (item.getContent() != null && item.getContent().isBeingDeleted())
-                baseLayout.startAnimation(new BlinkAnimation(500, 250));
-            else
-                baseLayout.clearAnimation();
         }
 
         private void attachCover(@NonNull final Content content) {

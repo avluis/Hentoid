@@ -56,7 +56,7 @@ class DuplicateViewModel(
         useCover: Boolean,
         useArtist: Boolean,
         sameLanguageOnly: Boolean,
-        ignoreChapters : Boolean,
+        ignoreChapters: Boolean,
         sensitivity: Int
     ) {
         val builder = DuplicateData.Builder()
@@ -112,6 +112,14 @@ class DuplicateViewModel(
     fun applyChoices(onComplete: Runnable) {
         val selectedDupes = ArrayList(selectedDuplicates.value)
 
+        // Mark as "is being deleted" to trigger blink animation
+        val toRemove = selectedDupes.toMutableList()
+        for (entry in toRemove) {
+            if (!entry.keep) entry.isBeingDeleted = true
+        }
+        selectedDuplicates.postValue(toRemove)
+
+        // Actually delete
         compositeDisposable.add(
             Observable.fromIterable(selectedDupes)
                 .observeOn(Schedulers.io())

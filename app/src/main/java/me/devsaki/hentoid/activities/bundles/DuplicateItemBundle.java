@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
  */
 public class DuplicateItemBundle {
     private static final String KEY_KEEP = "keep";
+    private static final String KEY_IS_BEING_DELETED = "isBeingDeleted";
 
     private DuplicateItemBundle() {
         throw new UnsupportedOperationException();
@@ -25,6 +26,11 @@ public class DuplicateItemBundle {
         public void setKeep(Boolean value) {
             if (value != null)
                 bundle.putBoolean(KEY_KEEP, value);
+        }
+
+        public void setIsBeingDeleted(Boolean value) {
+            if (value != null)
+                bundle.putBoolean(KEY_IS_BEING_DELETED, value);
         }
 
         public boolean isEmpty() {
@@ -46,7 +52,15 @@ public class DuplicateItemBundle {
 
         @Nullable
         public Boolean getKeep() {
-            return bundle.getBoolean(KEY_KEEP, true);
+            if (bundle.containsKey(KEY_KEEP)) return bundle.getBoolean(KEY_KEEP);
+            else return null;
+        }
+
+        @Nullable
+        public Boolean isBeingDeleted() {
+            if (bundle.containsKey(KEY_IS_BEING_DELETED))
+                return bundle.getBoolean(KEY_IS_BEING_DELETED);
+            else return null;
         }
     }
 }

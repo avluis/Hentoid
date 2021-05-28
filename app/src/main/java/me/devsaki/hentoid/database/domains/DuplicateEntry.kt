@@ -32,6 +32,9 @@ data class DuplicateEntry(
     @Transient
     var keep: Boolean = true
 
+    @Transient
+    var isBeingDeleted: Boolean = false
+
 
     fun calcTotalScore(): Float {
         // Try to fetch pre-calculated score, if present
