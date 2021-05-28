@@ -95,6 +95,7 @@ public class LogHelper {
          */
         public void setFileName(@NonNull String fileName) {
             this.fileName = fileName;
+            if (this.logName.isEmpty()) logName = fileName;
         }
 
         /**
@@ -104,6 +105,7 @@ public class LogHelper {
          */
         public void setLogName(@NonNull String logName) {
             this.logName = logName;
+            if (this.fileName.isEmpty()) this.fileName = logName;
         }
 
         /**
