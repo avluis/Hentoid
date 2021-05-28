@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.annimon.stream.Objects
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.DiffCallback
@@ -133,6 +134,25 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
             false
         }
 
+        // "Keep/delete" switch click listener
+        fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
+            override fun onClick(
+                v: View,
+                position: Int,
+                fastAdapter: FastAdapter<DuplicateItem>,
+                item: DuplicateItem
+            ) {
+                onBookChoice(item.content, !(v as SwitchMaterial).isChecked)
+            }
+
+            override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+                return if (viewHolder is DuplicateItem.ContentViewHolder) {
+                    viewHolder.keepDeleteSwitch
+                } else super.onBind(viewHolder)
+            }
+        })
+
+        /*
         // "Keep" button click listener
         fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
             override fun onClick(
@@ -168,6 +188,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
                 } else super.onBind(viewHolder)
             }
         })
+         */
 
         binding.applyBtn.setOnClickListener {
             binding.applyBtn.isEnabled = false
@@ -204,7 +225,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
             ToastHelper.toast(R.string.err_no_content)
     }
 
-    private fun onBookChoice(item: Content?, choice: Boolean?) {
+    private fun onBookChoice(item: Content?, choice: Boolean) {
         if (item != null)
             viewModel.setBookChoice(item, choice)
     }
@@ -223,15 +244,9 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         set(itemAdapter, items, ITEM_DIFF_CALLBACK)
 
         // Update bottom bar
-        val nbChoicesRemaining = items.size - duplicates.filter { it.keep != null }.count()
-        if (nbChoicesRemaining > 0) {
-            binding.applyBtn.text =
-                resources.getString(R.string.apply_processing, nbChoicesRemaining)
-            binding.applyBtn.isEnabled = false
-        } else {
-            binding.applyBtn.text = resources.getString(R.string.apply_final)
-            binding.applyBtn.isEnabled = true
-        }
+        // TODO put that on the XML
+        binding.applyBtn.text = resources.getString(R.string.apply_final)
+        binding.applyBtn.isEnabled = true
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

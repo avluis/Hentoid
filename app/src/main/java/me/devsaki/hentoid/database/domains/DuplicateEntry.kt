@@ -30,7 +30,7 @@ data class DuplicateEntry(
     var duplicateContent: Content? = null
 
     @Transient
-    var keep: Boolean? = null
+    var keep: Boolean = true
 
 
     fun calcTotalScore(): Float {

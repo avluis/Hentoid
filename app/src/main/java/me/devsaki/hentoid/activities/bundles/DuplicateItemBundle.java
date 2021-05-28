@@ -46,9 +46,7 @@ public class DuplicateItemBundle {
 
         @Nullable
         public Boolean getKeep() {
-            if (bundle.containsKey(KEY_KEEP))
-                return bundle.getBoolean(KEY_KEEP);
-            else return null;
+            return bundle.getBoolean(KEY_KEEP, true);
         }
     }
 }

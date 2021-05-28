@@ -101,7 +101,7 @@ class DuplicateViewModel(
         selectedDuplicates.postValue(selectedDupes)
     }
 
-    fun setBookChoice(content: Content, choice: Boolean?) {
+    fun setBookChoice(content: Content, choice: Boolean) {
         val selectedDupes = ArrayList(selectedDuplicates.value)
         for (dupe in selectedDupes) {
             if (dupe.duplicateId == content.id) dupe.keep = choice
@@ -116,12 +116,12 @@ class DuplicateViewModel(
             Observable.fromIterable(selectedDupes)
                 .observeOn(Schedulers.io())
                 .map {
-                    if (it.keep == false) doRemove(it.duplicateId)
+                    if (!it.keep) doRemove(it.duplicateId)
                     it
                 }
                 .doOnNext {
                     // Update UI
-                    if (it.keep == false) {
+                    if (!it.keep) {
                         val newList = selectedDupes.toMutableList()
                         newList.remove(it)
                         selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on

@@ -23,11 +23,11 @@ import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.Group;
 import androidx.core.content.ContextCompat;
 
-import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
+import me.devsaki.hentoid.activities.bundles.DuplicateItemBundle;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.DuplicateEntry;
@@ -54,7 +54,6 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
@@ -83,7 +82,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     private Float coverScore = -1f;
     private Float artistScore = -1f;
     private Float totalScore = -1f;
-    private Boolean keep = null;
+    private Boolean keep = true;
 
     static {
         Context context = HentoidApp.getInstance();
@@ -168,7 +167,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         private final ImageView ivSite;
         private final ImageView ivFavourite;
         private final ImageView ivExternal;
-        private CircularProgressView readingProgress;
         // Specific to main screen
         private TextView viewDetails;
         // Specific to details screen
@@ -180,6 +178,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         private TextView totalScore;
         private TextView keepButton;
         private TextView deleteButton;
+        private SwitchMaterial keepDeleteSwitch;
 
 
         ContentViewHolder(View view, @ViewType int viewType) {
@@ -206,6 +205,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 totalScore = itemView.findViewById(R.id.total_score);
                 keepButton = itemView.findViewById(R.id.keep_btn);
                 deleteButton = itemView.findViewById(R.id.delete_btn);
+                keepDeleteSwitch = itemView.findViewById(R.id.keep_delete);
             }
         }
 
@@ -216,25 +216,16 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             // Payloads are set when the content stays the same but some properties alone change
             if (!payloads.isEmpty()) {
                 Bundle bundle = (Bundle) payloads.get(0);
-                ContentItemBundle.Parser bundleParser = new ContentItemBundle.Parser(bundle);
+                DuplicateItemBundle.Parser bundleParser = new DuplicateItemBundle.Parser(bundle);
 
-                Boolean boolValue = bundleParser.isBeingDeleted();
-                if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
-                boolValue = bundleParser.isFavourite();
-                if (boolValue != null) item.content.setFavourite(boolValue);
-                Long longValue = bundleParser.getReads();
-                if (longValue != null) item.content.setReads(longValue);
-                longValue = bundleParser.getReadPagesCount();
-                if (longValue != null) item.content.setReadPagesCount(longValue.intValue());
-                String stringValue = bundleParser.getCoverUri();
-                if (stringValue != null) item.content.getCover().setFileUri(stringValue);
+                Boolean boolValue = bundleParser.getKeep();
+                if (boolValue != null) item.keep = boolValue;
             }
 
             updateLayoutVisibility(item);
             attachCover(item.content);
             attachFlag(item.content);
             attachTitle(item.content);
-            if (readingProgress != null) attachReadingProgress(item.content);
             if (tvLaunchCode != null) attachLaunchCode(item.content);
             if (tvArtist != null) attachArtist(item.content);
             if (tvPages != null) attachPages(item.content);
@@ -338,16 +329,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             tvLaunchCode.setText(res.getString(R.string.book_launchcode, content.getUniqueSiteId()));
         }
 
-        private void attachReadingProgress(@NonNull final Content content) {
-            List<ImageFile> imgs = content.getImageFiles();
-            if (imgs != null) {
-                readingProgress.setVisibility(View.VISIBLE);
-                readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
-                readingProgress.setTotal(Stream.of(content.getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count());
-                readingProgress.setProgress1(content.getReadPagesCount());
-            }
-        }
-
         private void attachArtist(@NonNull final Content content) {
             tvArtist.setText(ContentHelper.formatArtistForDisplay(tvArtist.getContext(), content));
         }
@@ -420,37 +401,42 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
 
             // Keep and delete buttons
             if (keepButton != null) {
-                @ColorInt int targetColor = (item.keep == null || item.keep) ?
+                @ColorInt int targetColor = (item.keep) ?
                         ThemeHelper.getColor(context, R.color.secondary_light) :
                         ContextCompat.getColor(context, R.color.medium_gray);
                 keepButton.setTextColor(targetColor);
-                Drawable[] drawables = keepButton.getCompoundDrawables();
+                Drawable[] drawables = keepButton.getCompoundDrawablesRelative();
                 if (drawables[0] != null) {
                     drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
                 }
+                keepButton.setOnClickListener(v -> {
+                    keepDeleteSwitch.setChecked(false);
+                    keepDeleteSwitch.callOnClick();
+                });
             }
             if (deleteButton != null) {
-                @ColorInt int targetColor = (item.keep == null || !item.keep) ?
+                @ColorInt int targetColor = (!item.keep) ?
                         ThemeHelper.getColor(context, R.color.secondary_light) :
                         ContextCompat.getColor(context, R.color.medium_gray);
                 deleteButton.setTextColor(targetColor);
-                Drawable[] drawables = deleteButton.getCompoundDrawables();
+                Drawable[] drawables = deleteButton.getCompoundDrawablesRelative();
                 if (drawables[0] != null) {
                     drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
                 }
+                deleteButton.setOnClickListener(v -> {
+                    keepDeleteSwitch.setChecked(true);
+                    keepDeleteSwitch.callOnClick();
+                });
             }
+            if (keepDeleteSwitch != null) keepDeleteSwitch.setChecked(!item.keep);
         }
 
         public View getViewDetailsButton() {
             return viewDetails;
         }
 
-        public View getKeepButton() {
-            return keepButton;
-        }
-
-        public View getDeleteButton() {
-            return deleteButton;
+        public SwitchMaterial getKeepDeleteSwitch() {
+            return keepDeleteSwitch;
         }
 
         @Override

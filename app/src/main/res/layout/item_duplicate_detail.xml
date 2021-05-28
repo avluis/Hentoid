@@ -155,7 +155,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
             android:layout_marginBottom="4dp"
             android:layout_weight="1"
             android:drawablePadding="4dp"
@@ -171,12 +170,20 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivCover" />
 
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/keep_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="24dp"
+            android:checked="false"
+            app:layout_constraintStart_toEndOf="@id/keep_btn"
+            app:layout_constraintBottom_toBottomOf="parent"
+             />
+
         <TextView
             android:id="@+id/delete_btn"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="4dp"
             android:layout_weight="1"
@@ -185,13 +192,13 @@
             android:singleLine="true"
             android:text="@string/duplicate_delete"
             android:textAllCaps="true"
-            android:textColor="?colorSecondary"
+            android:textColor="@color/medium_gray"
             android:textSize="@dimen/caption"
             android:textStyle="bold"
             app:drawableStartCompat="@drawable/ic_delete_sweep"
-            app:drawableTint="?colorSecondary"
+            app:drawableTint="@color/medium_gray"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/keep_btn" />
+            app:layout_constraintStart_toEndOf="@id/keep_delete" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_middle"
