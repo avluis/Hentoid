@@ -59,6 +59,12 @@ class DuplicateHelper {
             "kouhen",
             "後編",
             "ex",
+            // Circled numerals (yes, some books do use them)
+            "①",
+            "②",
+            "③",
+            "④",
+            "⑤",
             // Roman numerals (yes they can be present)
             "i",
             "v",
