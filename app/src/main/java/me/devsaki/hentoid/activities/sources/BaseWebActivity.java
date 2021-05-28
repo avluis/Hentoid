@@ -390,7 +390,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (currentContent != null && url != null && getWebClient().isGalleryPage(url)) {
             if (processContentDisposable != null)
                 processContentDisposable.dispose(); // Cancel whichever process was happening before
-            processContentDisposable = Single.fromCallable(() -> processContent(currentContent))
+            processContentDisposable = Single.fromCallable(() -> processContent(currentContent, false))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
@@ -933,7 +933,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * @return The status of the Content after being processed
      */
     private @ContentStatus
-    int processContent(@NonNull Content content) {
+    int processContent(@NonNull Content content, boolean quickDownload) {
         Helper.assertNonUiThread();
         if (content.getUrl().isEmpty()) return ContentStatus.UNKNOWN;
 
@@ -983,7 +983,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 // Content ID of the duplicate candidate of the currently viewed Content
                 boolean duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
                 // Same site and similar => download by default, but look for extra pics just in case
-                if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry())
+                if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload)
                     searchForExtraImages(duplicateResult.left);
             }
 
@@ -1000,7 +1000,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         currentContent = content;
 
         if (isInCollection) {
-            searchForExtraImages(currentContent);
+            if (!quickDownload) searchForExtraImages(currentContent);
             return ContentStatus.IN_COLLECTION;
         }
         if (isInQueue) return ContentStatus.IN_QUEUE;
@@ -1010,7 +1010,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     public void onResultReady(@NonNull Content result, boolean quickDownload) {
         if (processContentDisposable != null)
             processContentDisposable.dispose(); // Cancel whichever process was happening before
-        processContentDisposable = Single.fromCallable(() -> processContent(result))
+        processContentDisposable = Single.fromCallable(() -> processContent(result, quickDownload))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(

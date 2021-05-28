@@ -356,7 +356,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         Slider slider = binding.controlsOverlay.slideshowDelaySlider;
         slider.setValueFrom(0);
         int nbEntries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries).length;
-        slider.setValueTo(nbEntries - 1f);
+        slider.setValueTo(Math.max(1, nbEntries - 1f));
         slider.setValue(convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay()));
         slider.setLabelFormatter(value -> {
             String[] entries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries);
@@ -388,22 +388,22 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         // Page slider and preview
         binding.controlsOverlay.pageSlider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
-                                                                           @Override
-                                                                           public void onStartTrackingTouch(@NonNull Slider slider) {
-                                                                               binding.controlsOverlay.imagePreviewLeft.setVisibility(View.VISIBLE);
-                                                                               binding.controlsOverlay.imagePreviewCenter.setVisibility(View.VISIBLE);
-                                                                               binding.controlsOverlay.imagePreviewRight.setVisibility(View.VISIBLE);
-                                                                               binding.recyclerView.setVisibility(View.INVISIBLE);
-                                                                           }
+                                                                        @Override
+                                                                        public void onStartTrackingTouch(@NonNull Slider slider) {
+                                                                            binding.controlsOverlay.imagePreviewLeft.setVisibility(View.VISIBLE);
+                                                                            binding.controlsOverlay.imagePreviewCenter.setVisibility(View.VISIBLE);
+                                                                            binding.controlsOverlay.imagePreviewRight.setVisibility(View.VISIBLE);
+                                                                            binding.recyclerView.setVisibility(View.INVISIBLE);
+                                                                        }
 
-                                                                           @Override
-                                                                           public void onStopTrackingTouch(@NonNull Slider slider) {
-                                                                               binding.controlsOverlay.imagePreviewLeft.setVisibility(View.INVISIBLE);
-                                                                               binding.controlsOverlay.imagePreviewCenter.setVisibility(View.INVISIBLE);
-                                                                               binding.controlsOverlay.imagePreviewRight.setVisibility(View.INVISIBLE);
-                                                                               binding.recyclerView.setVisibility(View.VISIBLE);
-                                                                           }
-                                                                       }
+                                                                        @Override
+                                                                        public void onStopTrackingTouch(@NonNull Slider slider) {
+                                                                            binding.controlsOverlay.imagePreviewLeft.setVisibility(View.INVISIBLE);
+                                                                            binding.controlsOverlay.imagePreviewCenter.setVisibility(View.INVISIBLE);
+                                                                            binding.controlsOverlay.imagePreviewRight.setVisibility(View.INVISIBLE);
+                                                                            binding.recyclerView.setVisibility(View.VISIBLE);
+                                                                        }
+                                                                    }
         );
 
         binding.controlsOverlay.pageSlider.addOnChangeListener((slider1, value, fromUser) -> {
@@ -590,7 +590,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void differEndCallback() {
         if (null == binding) return;
 
-        maxPosition = adapter.getItemCount() - 1;
+        maxPosition = Math.max(1, adapter.getItemCount() - 1);
         binding.controlsOverlay.pageSlider.setValueTo(maxPosition);
 
         // Can't access the gallery when there's no page to display
