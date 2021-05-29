@@ -244,6 +244,7 @@
     <string name="redownload_generating_log_file">Generating log file…</string>
 
     <!-- Library fragment -->
+    <string name="resume_closed">Resume reading where you left?</string>
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
     <string name="ask_filter_completed">How would you like to filter completed books?</string>

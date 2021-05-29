@@ -48,6 +48,8 @@ import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Grouping;
@@ -64,6 +66,7 @@ import me.devsaki.hentoid.notification.delete.DeleteCompleteNotification;
 import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel;
 import me.devsaki.hentoid.notification.delete.DeleteProgressNotification;
 import me.devsaki.hentoid.notification.delete.DeleteStartNotification;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.PermissionHelper;
@@ -101,7 +104,7 @@ public class LibraryActivity extends BaseActivity {
 
     // ======== UI
     // Action view associated with search menu button
-    private SearchView mainSearchView;
+    private SearchView actionSearchView;
 
     // ==== Advanced search / sort bar
     // Grey background of the advanced search / sort bar
@@ -360,6 +363,28 @@ public class LibraryActivity extends BaseActivity {
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        final long previouslyViewedContent = Preferences.getViewerCurrentContent();
+        final int previouslyViewedPage = Preferences.getViewerCurrentPageNum();
+        if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ImageViewerActivity.isRunning) {
+            Snackbar snackbar = Snackbar.make(viewPager, R.string.resume_closed, BaseTransientBottomBar.LENGTH_LONG);
+            snackbar.setAction(R.string.resume, v -> {
+                Timber.i("Reopening books %d from page %d", previouslyViewedContent, previouslyViewedPage);
+                CollectionDAO dao = new ObjectBoxDAO(this);
+                try {
+                    Content c = dao.selectContent(previouslyViewedContent);
+                    if (c != null)
+                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, null);
+                } finally {
+                    dao.cleanup();
+                }
+            });
+            snackbar.show();
+        }
+    }
+
     /**
      * Initialize the UI components
      */
@@ -390,7 +415,7 @@ public class LibraryActivity extends BaseActivity {
         searchClearButton.setOnClickListener(v -> {
             query = "";
             metadata.clear();
-            mainSearchView.setQuery("", false);
+            actionSearchView.setQuery("", false);
             hideSearchSortBar(false);
             signalCurrentFragment(EV_SEARCH, "");
         });
@@ -440,7 +465,7 @@ public class LibraryActivity extends BaseActivity {
                     // Without that handler the view displays with an empty value
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         invalidateNextQueryTextChange = true;
-                        mainSearchView.setQuery(query, false);
+                        actionSearchView.setQuery(query, false);
                     }, 100);
 
                 return true;
@@ -464,16 +489,16 @@ public class LibraryActivity extends BaseActivity {
         newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
         sortMenu = toolbar.getMenu().findItem(R.id.action_order);
 
-        mainSearchView = (SearchView) searchMenu.getActionView();
-        mainSearchView.setIconifiedByDefault(true);
-        mainSearchView.setQueryHint(getString(R.string.search_hint));
+        actionSearchView = (SearchView) searchMenu.getActionView();
+        actionSearchView.setIconifiedByDefault(true);
+        actionSearchView.setQueryHint(getString(R.string.search_hint));
         // Change display when text query is typed
-        mainSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        actionSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 query = s;
                 signalCurrentFragment(EV_SEARCH, query);
-                mainSearchView.clearFocus();
+                actionSearchView.clearFocus();
 
                 return true;
             }

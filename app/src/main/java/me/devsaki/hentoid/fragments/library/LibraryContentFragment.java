@@ -1226,7 +1226,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (selectExtension.getSelections().isEmpty()) {
             if (item.getContent() != null && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
-                ContentHelper.openHentoidViewer(requireContext(), item.getContent(), viewModel.getSearchManagerBundle());
+                ContentHelper.openHentoidViewer(requireContext(), item.getContent(), -1, viewModel.getSearchManagerBundle());
             }
             return true;
         }

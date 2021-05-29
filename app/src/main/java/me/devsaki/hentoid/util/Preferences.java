@@ -738,6 +738,26 @@ public final class Preferences {
                 .apply();
     }
 
+    public static long getViewerCurrentContent() {
+        return Long.parseLong(sharedPreferences.getString(Key.VIEWER_CURRENT_CONTENT, "-1") + "");
+    }
+
+    public static void setViewerCurrentContent(long value) {
+        sharedPreferences.edit()
+                .putString(Key.VIEWER_CURRENT_CONTENT, Long.toString(value))
+                .apply();
+    }
+
+    public static int getViewerCurrentPageNum() {
+        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_CURRENT_PAGENUM, "-1") + "");
+    }
+
+    public static void setViewerCurrentPageNum(int value) {
+        sharedPreferences.edit()
+                .putString(Key.VIEWER_CURRENT_PAGENUM, Integer.toString(value))
+                .apply();
+    }
+
 
     public static final class Key {
 
@@ -823,6 +843,8 @@ public final class Preferences {
         public static final String ARTIST_GROUP_VISIBILITY = "artist_group_visibility";
         public static final String VIEWER_DELETE_ASK_MODE = "viewer_delete_ask";
         public static final String VIEWER_DELETE_TARGET = "viewer_delete_target";
+        public static final String VIEWER_CURRENT_CONTENT = "viewer_current_content";
+        public static final String VIEWER_CURRENT_PAGENUM = "viewer_current_pagenum";
         public static final String DUPLICATE_SENSITIVITY = "duplicate_sensitivity";
         public static final String DUPLICATE_USE_TITLE = "duplicate_use_title";
         public static final String DUPLICATE_USE_COVER = "duplicate_use_cover";

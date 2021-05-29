@@ -14,6 +14,7 @@ public class ImageViewerActivityBundle {
     private static final String KEY_CONTENT_ID = "contentId";
     private static final String KEY_SEARCH_PARAMS = "searchParams";
     private static final String KEY_IMAGE_INDEX = "imageIndex";
+    private static final String KEY_IMAGE_NUMBER = "imageNumber";
     private static final String KEY_SCALE = "scale";
 
     private ImageViewerActivityBundle() {
@@ -34,6 +35,10 @@ public class ImageViewerActivityBundle {
 
         public void setImageIndex(int imageIndex) {
             bundle.putInt(KEY_IMAGE_INDEX, imageIndex);
+        }
+
+        public void setPageNumber(int imageNumber) {
+            bundle.putInt(KEY_IMAGE_NUMBER, imageNumber);
         }
 
         public void setScale(float scale) {
@@ -63,6 +68,10 @@ public class ImageViewerActivityBundle {
 
         public int getImageIndex() {
             return bundle.getInt(KEY_IMAGE_INDEX, -1);
+        }
+
+        public int getPageNumber() {
+            return bundle.getInt(KEY_IMAGE_NUMBER, -1);
         }
 
         public float getScale() {
