@@ -47,7 +47,12 @@ class AboutActivity : BaseActivity() {
 
             it.changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
 
-            it.licensesButton.setOnClickListener { LibsBuilder().start(this) }
+            it.licensesButton.setOnClickListener {
+                LibsBuilder()
+                    .withLicenseShown(true)
+                    .withSearchEnabled(true)
+                    .start(this)
+            }
         }
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
