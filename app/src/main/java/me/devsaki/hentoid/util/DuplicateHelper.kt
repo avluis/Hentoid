@@ -80,6 +80,42 @@ class DuplicateHelper {
             return ImagePHash(resolution, 8)
         }
 
+        fun indexCovers(
+            context: Context,
+            dao: CollectionDAO,
+            info: Consumer<Content>,
+            progress: Consumer<Float>,
+            error: Consumer<Throwable>
+        ) {
+            val hashEngine = getHashEngine()
+            val contentToIndex = dao.selectContentWithUnhashedCovers()
+            val nbContent = contentToIndex.size
+
+            for ((index, c) in contentToIndex.withIndex()) {
+                try {
+                    info.accept(c)
+                    indexContent(context, dao, c, hashEngine)
+                    progress.accept((index + 1) * 1f / nbContent)
+                } catch (t: Throwable) {
+                    // Don't break the loop
+                    error.accept(t);
+                }
+            }
+            progress.accept(1f)
+        }
+
+        private fun indexContent(
+            context: Context,
+            dao: CollectionDAO,
+            content: Content,
+            hashEngine: ImagePHash,
+        ) {
+            val bitmap = getCoverBitmapFromContent(context, content)
+            val pHash = calcPhash(hashEngine, bitmap)
+            bitmap?.recycle()
+            savePhash(context, dao, content, pHash)
+        }
+
         fun indexCoversRx(
             context: Context,
             dao: CollectionDAO,
@@ -153,6 +189,7 @@ class DuplicateHelper {
             content.cover.imageHash = pHash
             // Update the picture in DB
             dao.insertImageFile(content.cover)
+            // The following block has to be abandoned if the cost of retaining all Content in memory is too high
             try {
                 // Update the book JSON if the book folder still exists
                 if (content.storageUri.isNotEmpty()) {
@@ -173,7 +210,6 @@ class DuplicateHelper {
         fun processContent(
             reference: DuplicateCandidate,
             candidate: DuplicateCandidate,
-            ignoredIds: HashSet<Pair<Long, Long>>?,
             useTitle: Boolean,
             useCover: Boolean,
             useSameArtist: Boolean,
@@ -197,15 +233,8 @@ class DuplicateHelper {
                     reference.coverHash, candidate.coverHash,
                     sensitivity
                 )
-                val key = Pair(reference.id, candidate.id)
-                if (ignoredIds != null) {
-                    if (coverScore == -2f) { // Ignored cover
-                        ignoredIds.add(key)
-                        return null
-                    } else {
-                        ignoredIds.remove(key)
-                    }
-                }
+                // Ignored cover
+                if (coverScore == -2f) return null
             }
             if (useTitle) titleScore = computeTitleScore(
                 textComparator,
@@ -277,7 +306,7 @@ class DuplicateHelper {
                         textComparator.similarity(referenceTitleNoDigits, candidateTitleNoDigits)
                     // Cleaned up versions are identical
                     // => most probably a chapter variant -> set to 0%
-                    if (similarity2 > similarity1 && similarity2 > 0.995) return 0f;
+                    if (similarity2 > similarity1 && similarity2 > 0.995) return 0f
                     // Very little difference between cleaned up and original version
                     // => not a chapter variant
                     if (similarity2 - similarity1 < 0.01) {

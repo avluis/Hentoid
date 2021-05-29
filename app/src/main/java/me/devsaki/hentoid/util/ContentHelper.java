@@ -1080,7 +1080,7 @@ public final class ContentHelper {
         DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, true, true, false, pHash);
         List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, true, true, false, Long.MIN_VALUE)).toList();
         for (DuplicateHelper.DuplicateCandidate candidate : candidates) {
-            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, null, true, true, true, false, true, 2, cosine);
+            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, true, true, true, false, true, 2, cosine);
             if (entry != null) entries.add(entry);
         }
         // Sort by similarity and size (unfortunately, Comparator.comparing is API24...)

@@ -10,7 +10,6 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,7 +18,6 @@ import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import kotlin.Pair;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DuplicatesDAO;
@@ -96,12 +94,18 @@ public class DuplicateDetectorWorker extends BaseWorker {
     }
 
     @Override
-    void getToWork(@NonNull Data input) {
+    void getToWork(@NonNull Data input) throws InterruptedException {
         DuplicateData.Parser inputData = new DuplicateData.Parser(input);
 
         // Run cover indexing in the background
         recordLog(new LogHelper.LogEntry("Covers to index : " + dao.countContentWithUnhashedCovers()));
-        indexDisposable = DuplicateHelper.Companion.indexCoversRx(getApplicationContext(), dao, this::notifyIndexProgress, this::indexContentInfo, this::indexError);
+
+        Timber.i(">> preparing indexing");
+
+        DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao,
+                this::indexContentInfo, this::notifyIndexProgress, this::indexError);
+
+        Timber.i(">> indexing terminated");
 
         // Initialize duplicate detection
         detectDuplicates(inputData.getUseTitle(), inputData.getUseCover(), inputData.getUseArtist(), inputData.getUseSameLanguage(), inputData.getIgnoreChapters(), inputData.getSensitivity());
@@ -119,7 +123,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
         // to support abort and retry
         setComplete(false);
 
-        HashSet<Pair<Long, Long>> ignoredIds = new HashSet<>();
         Map<Long, List<Long>> matchedIds = new HashMap<>();
         Map<Long, List<Long>> reverseMatchedIds = new HashMap<>();
 
@@ -133,61 +136,37 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 processEntry(entry.getReferenceId(), entry.getDuplicateId(), matchedIds, reverseMatchedIds);
         }
 
-        boolean isReRun = false;
-        do {
-            recordLog(new LogHelper.LogEntry("Preparation started"));
-            // Pre-compute all book entries as DuplicateCandidates
-            List<DuplicateHelper.DuplicateCandidate> candidates = new ArrayList<>();
-            dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true,
-                    content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useSameLanguage, Long.MIN_VALUE)));
+        recordLog(new LogHelper.LogEntry("Preparation started"));
+        // Pre-compute all book entries as DuplicateCandidates
+        List<DuplicateHelper.DuplicateCandidate> candidates = new ArrayList<>();
+        dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true,
+                content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useSameLanguage, Long.MIN_VALUE)));
 
-            recordLog(new LogHelper.LogEntry("Detection started"));
-            processAll(
-                    duplicatesDAO,
-                    candidates,
-                    ignoredIds,
-                    matchedIds,
-                    reverseMatchedIds,
-                    startIndex,
-                    isReRun,
-                    useTitle,
-                    useCover,
-                    useArtist,
-                    useSameLanguage,
-                    ignoreChapters,
-                    sensitivity);
-            Timber.d(" >> PROCESS End reached");
-            recordLog(new LogHelper.LogEntry("Setection End"));
-            if (isStopped()) break;
-            if (!ignoredIds.isEmpty()) {
-                recordLog(new LogHelper.LogEntry("Ignored IDs size : " + ignoredIds.size()));
-                try {
-                    //noinspection BusyWait
-                    Thread.sleep(3000); // Don't rush in another loop
-                } catch (InterruptedException e) {
-                    Timber.w(e);
-                    // Restore interrupted state
-                    Thread.currentThread().interrupt();
-                }
-            }
-            if (isStopped()) break;
-            isReRun = true;
-        } while (!ignoredIds.isEmpty());
+        recordLog(new LogHelper.LogEntry("Detection started"));
+        processAll(
+                duplicatesDAO,
+                candidates,
+                matchedIds,
+                reverseMatchedIds,
+                startIndex,
+                useTitle,
+                useCover,
+                useArtist,
+                useSameLanguage,
+                ignoreChapters,
+                sensitivity);
 
-        setComplete(ignoredIds.isEmpty());
         recordLog(new LogHelper.LogEntry("Final End reached (complete=%s)", isComplete()));
 
-        ignoredIds.clear();
+        setComplete(true);
         matchedIds.clear();
     }
 
     private void processAll(DuplicatesDAO duplicatesDao,
                             List<DuplicateHelper.DuplicateCandidate> library,
-                            HashSet<Pair<Long, Long>> ignoredIds,
                             Map<Long, List<Long>> matchedIds,
                             Map<Long, List<Long>> reverseMatchedIds,
                             int startIndex,
-                            boolean isReRun,
                             boolean useTitle,
                             boolean useCover,
                             boolean useSameArtist,
@@ -197,8 +176,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
         List<DuplicateEntry> tempResults = new ArrayList<>();
         StringSimilarity cosine = new Cosine();
         for (int i = startIndex; i < library.size(); i++) {
-            if (ignoredIds.size() > 1e6)
-                break; // Better to wait rather than saturating the ignored IDs map
             if (isStopped()) return;
 
             DuplicateHelper.DuplicateCandidate reference = library.get(i);
@@ -207,13 +184,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 if (isStopped()) return;
                 DuplicateHelper.DuplicateCandidate candidate = library.get(j);
 
-                // For re-runs, check if that combination has been ignored in the past and has to be matched
-                if (isReRun && !ignoredIds.contains(new Pair<>(reference.getId(), candidate.getId())))
-                    continue;
-
                 DuplicateEntry entry = DuplicateHelper.Companion.processContent(
                         reference, candidate,
-                        ignoredIds,
                         useTitle, useCover, useSameArtist, useSameLanguage, ignoreChapters, sensitivity, cosine);
                 if (entry != null && processEntry(entry.getReferenceId(), entry.getDuplicateId(), matchedIds, reverseMatchedIds))
                     tempResults.add(entry);
@@ -236,6 +208,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
     private void notifyIndexProgress(Float progress) {
         int progressPc = Math.round(progress * 10000);
+        Timber.i(">> indexing progress %s", progress);
         if (progressPc < 10000) {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progressPc, 0, 10000));
         } else {
