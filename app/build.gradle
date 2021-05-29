@@ -13,6 +13,10 @@ if (file('signing.gradle').exists()) {
 aboutLibraries {
     exclusionPatterns = [~"com_google_android.*",~"android.*",~"com_mikepenz__fastadapter-extensions.*"]
     configPath = "about-config"
+    additionalLicenses {
+        LGPL_2_1_or_later
+        BSD_3_Clause
+    }
 }
 
 android {
