@@ -109,11 +109,11 @@ public class ImportWorker extends BaseWorker {
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, step, booksOK, booksKO, nbBooks));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary, step, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, Object... t) {

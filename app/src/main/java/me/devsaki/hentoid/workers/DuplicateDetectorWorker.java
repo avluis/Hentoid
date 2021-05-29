@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DuplicatesDAO;
@@ -201,18 +202,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
         }
     }
 
-    private void notifyIndexProgress(Float progress) {
-        int progressPc = Math.round(progress * 10000);
-        Timber.i(">> indexing progress %s", progress);
-        if (progressPc < 10000) {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_COVER_INDEX, progressPc, 0, 10000));
-        } else {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_COVER_INDEX, progressPc, 0, 10000));
-        }
-    }
-
     private void indexContentInfo(Content c) {
-        recordLog(new LogHelper.LogEntry("Indexing " + c.getSite().name() + "/" + ContentHelper.formatBookFolderName(c).left));
+        // No need for that unless we're debugging
+        if (BuildConfig.DEBUG)
+            recordLog(new LogHelper.LogEntry("Indexing " + c.getSite().name() + "/" + ContentHelper.formatBookFolderName(c).left));
     }
 
     private void indexError(Throwable t) {
@@ -261,6 +254,16 @@ public class DuplicateDetectorWorker extends BaseWorker {
         return false;
     }
 
+    private void notifyIndexProgress(Float progress) {
+        int progressPc = Math.round(progress * 10000);
+        Timber.i(">> indexing progress %s", progress);
+        if (progressPc < 10000) {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.duplicate_index, STEP_COVER_INDEX, progressPc, 0, 10000));
+        } else {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_index, STEP_COVER_INDEX, progressPc, 0, 10000));
+        }
+    }
+
     private void notifyProcessProgress(Float progress) {
         notificationDisposables.add(Completable.fromRunnable(() -> doNotifyProcessProgress(progress))
                 .subscribeOn(Schedulers.computation())
@@ -274,10 +277,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
         int progressPc = Math.round(progress * 10000);
         if (progressPc < 10000) {
             setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateProgressNotification(progressPc, 10000)));
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, STEP_DUPLICATES, progressPc, 0, 10000));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.duplicate_detect, STEP_DUPLICATES, progressPc, 0, 10000));
         } else {
             setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateCompleteNotification(0)));
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, STEP_DUPLICATES, progressPc, 0, 10000));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_detect, STEP_DUPLICATES, progressPc, 0, 10000));
         }
     }
 }

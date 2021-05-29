@@ -41,6 +41,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -200,14 +201,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     .subscribe(
                             imageFile -> {
                                 nbProcessed.getAndIncrement();
-                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbProcessed.get(), 0, newImages.size()));
+                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
                             },
                             t -> {
                                 Timber.e(t);
-                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, newImages.size()));
+                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
                             },
                             () -> {
-                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbProcessed.get(), 0, newImages.size()));
+                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
                                 for (ImageFile img : newImages)
                                     imageLocations.put(img.getOrder(), img.getFileUri());
                                 initViewer(theContent, newImages);

@@ -323,6 +323,9 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEvent(ProcessEvent event) {
+        if (event.processId != R.id.import_external && event.processId != R.id.import_primary)
+            return;
+
         ProgressBar progressBar;
         switch (event.step) {
             case (ImportWorker.STEP_2_BOOK_FOLDERS):
