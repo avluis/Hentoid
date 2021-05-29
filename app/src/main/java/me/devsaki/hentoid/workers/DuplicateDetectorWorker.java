@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
@@ -51,7 +50,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private final CollectionDAO dao;
     private final DuplicatesDAO duplicatesDAO;
 
-    private Disposable indexDisposable = null;
     private final CompositeDisposable notificationDisposables = new CompositeDisposable();
 
     private final AtomicInteger currentIndex = new AtomicInteger(0);
@@ -77,7 +75,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
     @Override
     void onInterrupt() {
-        if (indexDisposable != null) indexDisposable.dispose();
         notificationDisposables.clear();
     }
 
@@ -87,25 +84,22 @@ public class DuplicateDetectorWorker extends BaseWorker {
             Preferences.setDuplicateLastIndex(currentIndex.get());
         else Preferences.setDuplicateLastIndex(-1);
 
-        if (indexDisposable != null) indexDisposable.dispose();
         notificationDisposables.clear();
         dao.cleanup();
         duplicatesDAO.cleanup();
     }
 
     @Override
-    void getToWork(@NonNull Data input) throws InterruptedException {
+    void getToWork(@NonNull Data input) {
         DuplicateData.Parser inputData = new DuplicateData.Parser(input);
 
         // Run cover indexing in the background
         recordLog(new LogHelper.LogEntry("Covers to index : " + dao.countContentWithUnhashedCovers()));
 
-        Timber.i(">> preparing indexing");
-
         DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao,
                 this::indexContentInfo, this::notifyIndexProgress, this::indexError);
 
-        Timber.i(">> indexing terminated");
+        recordLog(new LogHelper.LogEntry("Indexing done"));
 
         // Initialize duplicate detection
         detectDuplicates(inputData.getUseTitle(), inputData.getUseCover(), inputData.getUseArtist(), inputData.getUseSameLanguage(), inputData.getIgnoreChapters(), inputData.getSensitivity());
@@ -130,6 +124,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
         int startIndex = Preferences.getDuplicateLastIndex() + 1;
         if (0 == startIndex) duplicatesDAO.clearEntries();
         else {
+            recordLog(new LogHelper.LogEntry("Resuming from index %d", startIndex));
             // Pre-populate matchedIds and reverseMatchedIds using existing duplicates
             List<DuplicateEntry> entries = duplicatesDAO.getEntries();
             for (DuplicateEntry entry : entries)
@@ -142,7 +137,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
         dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true,
                 content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useSameLanguage, Long.MIN_VALUE)));
 
-        recordLog(new LogHelper.LogEntry("Detection started"));
+        recordLog(new LogHelper.LogEntry("Detection started for %d books", candidates.size()));
         processAll(
                 duplicatesDAO,
                 candidates,
@@ -156,7 +151,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 ignoreChapters,
                 sensitivity);
 
-        recordLog(new LogHelper.LogEntry("Final End reached (complete=%s)", isComplete()));
+        recordLog(new LogHelper.LogEntry("Final End reached (currentIndex=%d, complete=%s)", currentIndex.get(), isComplete()));
 
         setComplete(true);
         matchedIds.clear();
