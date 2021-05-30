@@ -11,7 +11,9 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
@@ -54,6 +56,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private final CompositeDisposable notificationDisposables = new CompositeDisposable();
 
     private final AtomicInteger currentIndex = new AtomicInteger(0);
+    private final AtomicBoolean stopped = new AtomicBoolean(false);
 
 
     public DuplicateDetectorWorker(
@@ -85,6 +88,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
             Preferences.setDuplicateLastIndex(currentIndex.get());
         else Preferences.setDuplicateLastIndex(-1);
 
+        stopped.set(true);
         notificationDisposables.clear();
         dao.cleanup();
         duplicatesDAO.cleanup();
@@ -97,10 +101,13 @@ public class DuplicateDetectorWorker extends BaseWorker {
         // Run cover indexing in the background
         recordLog(new LogHelper.LogEntry("Covers to index : " + dao.countContentWithUnhashedCovers()));
 
-        DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao,
+        DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, stopped,
                 this::indexContentInfo, this::notifyIndexProgress, this::indexError);
 
         recordLog(new LogHelper.LogEntry("Indexing done"));
+
+        // No need to continue if the process has already been stopped
+        if (isStopped()) return;
 
         // Initialize duplicate detection
         detectDuplicates(inputData.getUseTitle(), inputData.getUseCover(), inputData.getUseArtist(), inputData.getUseSameLanguage(), inputData.getIgnoreChapters(), inputData.getSensitivity());
@@ -113,7 +120,6 @@ public class DuplicateDetectorWorker extends BaseWorker {
             boolean useSameLanguage,
             boolean ignoreChapters,
             int sensitivity) {
-
         // Mark process as incomplete until all combinations are searched
         // to support abort and retry
         setComplete(false);
@@ -152,7 +158,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 ignoreChapters,
                 sensitivity);
 
-        recordLog(new LogHelper.LogEntry("Final End reached (currentIndex=%d, complete=%s)", currentIndex.get(), isComplete()));
+        recordLog(new LogHelper.LogEntry(String.format(Locale.ENGLISH, "Final End reached (currentIndex=%d, complete=%s)", currentIndex.get(), isComplete())));
 
         setComplete(true);
         matchedIds.clear();
@@ -195,10 +201,8 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
             currentIndex.set(i);
 
-            if (0 == i % 10) {
-                float progress = i * 1f / (library.size() - 1);
-                notifyProcessProgress(progress); // Only update every 10 iterations for performance
-            }
+            if (0 == i % 10)
+                notifyProcessProgress(i, (library.size() - 1)); // Only update every 10 iterations for performance
         }
     }
 
@@ -254,18 +258,17 @@ public class DuplicateDetectorWorker extends BaseWorker {
         return false;
     }
 
-    private void notifyIndexProgress(Float progress) {
-        int progressPc = Math.round(progress * 10000);
-        Timber.i(">> indexing progress %s", progress);
-        if (progressPc < 10000) {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.duplicate_index, STEP_COVER_INDEX, progressPc, 0, 10000));
+    private void notifyIndexProgress(int progress, int max) {
+        Timber.i(">> indexing progress %s", progress * 1f / max);
+        if (progress < max) {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.duplicate_index, STEP_COVER_INDEX, progress, 0, max));
         } else {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_index, STEP_COVER_INDEX, progressPc, 0, 10000));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_index, STEP_COVER_INDEX, progress, 0, max));
         }
     }
 
-    private void notifyProcessProgress(Float progress) {
-        notificationDisposables.add(Completable.fromRunnable(() -> doNotifyProcessProgress(progress))
+    private void notifyProcessProgress(int progress, int max) {
+        notificationDisposables.add(Completable.fromRunnable(() -> doNotifyProcessProgress(progress, max))
                 .subscribeOn(Schedulers.computation())
                 .subscribe(
                         notificationDisposables::clear
@@ -273,14 +276,13 @@ public class DuplicateDetectorWorker extends BaseWorker {
         );
     }
 
-    private void doNotifyProcessProgress(Float progress) {
-        int progressPc = Math.round(progress * 10000);
-        if (progressPc < 10000) {
-            setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateProgressNotification(progressPc, 10000)));
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.duplicate_detect, STEP_DUPLICATES, progressPc, 0, 10000));
+    private void doNotifyProcessProgress(int progress, int max) {
+        if (progress < max) {
+            setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateProgressNotification(progress, max)));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.duplicate_detect, STEP_DUPLICATES, progress, 0, max));
         } else {
             setForegroundAsync(notificationManager.buildForegroundInfo(new DuplicateCompleteNotification(0)));
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_detect, STEP_DUPLICATES, progressPc, 0, 10000));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.duplicate_detect, STEP_DUPLICATES, progress, 0, max));
         }
     }
 }

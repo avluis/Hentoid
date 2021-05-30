@@ -572,6 +572,7 @@
     <string name="duplicate_alert_similarity">Similarity : %.0f%%</string>
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
+    <string name="duplicate_wait_index">Please wait while indexing</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

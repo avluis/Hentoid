@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.util.Consumer
+import com.annimon.stream.function.BiConsumer
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
@@ -16,6 +17,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 class DuplicateHelper {
 
@@ -65,7 +67,7 @@ class DuplicateHelper {
             "③",
             "④",
             "⑤",
-            // Roman numerals (yes they can be present)
+            // Roman numerals (yes, some books do use them)
             "i",
             "v",
             "x",
@@ -83,8 +85,9 @@ class DuplicateHelper {
         fun indexCovers(
             context: Context,
             dao: CollectionDAO,
+            stopped: AtomicBoolean,
             info: Consumer<Content>,
-            progress: Consumer<Float>,
+            progress: BiConsumer<Int, Int>,
             error: Consumer<Throwable>
         ) {
             val hashEngine = getHashEngine()
@@ -95,13 +98,14 @@ class DuplicateHelper {
                 try {
                     info.accept(c)
                     indexContent(context, dao, c, hashEngine)
-                    progress.accept((index + 1) * 1f / nbContent)
+                    progress.accept(index + 1, nbContent)
                 } catch (t: Throwable) {
                     // Don't break the loop
-                    error.accept(t);
+                    error.accept(t)
                 }
+                if (stopped.get()) break
             }
-            progress.accept(1f)
+            progress.accept(nbContent, nbContent)
         }
 
         private fun indexContent(
@@ -114,6 +118,13 @@ class DuplicateHelper {
             val pHash = calcPhash(hashEngine, bitmap)
             bitmap?.recycle()
             savePhash(context, dao, content, pHash)
+// TODO temp
+            try {
+                Thread.sleep(1000)
+            } catch (e: InterruptedException) {
+                Timber.w(e)
+                Thread.currentThread().interrupt()
+            }
         }
 
         fun indexCoversRx(
