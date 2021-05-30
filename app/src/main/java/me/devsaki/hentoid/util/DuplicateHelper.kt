@@ -118,13 +118,6 @@ class DuplicateHelper {
             val pHash = calcPhash(hashEngine, bitmap)
             bitmap?.recycle()
             savePhash(context, dao, content, pHash)
-// TODO temp
-            try {
-                Thread.sleep(1000)
-            } catch (e: InterruptedException) {
-                Timber.w(e)
-                Thread.currentThread().interrupt()
-            }
         }
 
         fun indexCoversRx(
