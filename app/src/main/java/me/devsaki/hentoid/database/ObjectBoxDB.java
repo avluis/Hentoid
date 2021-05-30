@@ -1409,6 +1409,8 @@ public class ObjectBoxDB {
 
         QueryBuilder<ImageFile> imageQuery = query.backlink(ImageFile_.content);
         imageQuery.equal(ImageFile_.isCover, true)
+                .isNull(ImageFile_.imageHash)
+                .or()
                 .in(ImageFile_.imageHash, new long[]{0, -1})
                 .notEqual(ImageFile_.status, StatusContent.ONLINE.getCode());
 
