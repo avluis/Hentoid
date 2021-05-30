@@ -98,13 +98,15 @@ public class DuplicateDetectorWorker extends BaseWorker {
     void getToWork(@NonNull Data input) {
         DuplicateData.Parser inputData = new DuplicateData.Parser(input);
 
-        // Run cover indexing in the background
-        recordLog(new LogHelper.LogEntry("Covers to index : " + dao.countContentWithUnhashedCovers()));
+        if (inputData.getUseCover()) {
+            // Run cover indexing in the background
+            recordLog(new LogHelper.LogEntry("Covers to index : " + dao.countContentWithUnhashedCovers()));
 
-        DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, stopped,
-                this::indexContentInfo, this::notifyIndexProgress, this::indexError);
+            DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, stopped,
+                    this::indexContentInfo, this::notifyIndexProgress, this::indexError);
 
-        recordLog(new LogHelper.LogEntry("Indexing done"));
+            recordLog(new LogHelper.LogEntry("Indexing done"));
+        }
 
         // No need to continue if the process has already been stopped
         if (isStopped()) return;
