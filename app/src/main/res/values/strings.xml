@@ -244,6 +244,7 @@
     <string name="redownload_generating_log_file">Generating log file…</string>
 
     <!-- Library fragment -->
+    <string name="resume_closed">Resume reading where you left?</string>
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
     <string name="ask_filter_completed">How would you like to filter completed books?</string>
@@ -550,7 +551,7 @@
     <string name="duplicate_artist_score_nodata">Artist : no data</string>
     <string name="duplicate_total_score">%.0f%%</string>
     <string name="apply_processing">Apply (%d remaining choices)</string>
-    <string name="apply_final">Apply</string>
+    <string name="apply_final">Apply choices</string>
     <string name="duplicate_notif_start">Starting duplicate detection</string>
     <string name="duplicate_notif_complete_title">Duplicate detection complete</string>
     <string name="duplicate_notif_complete_desc">%d duplicates detected successfully</string>
@@ -571,6 +572,7 @@
     <string name="duplicate_alert_similarity">Similarity : %.0f%%</string>
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
+    <string name="duplicate_wait_index">Please wait while indexing</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

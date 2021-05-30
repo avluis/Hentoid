@@ -390,7 +390,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     private boolean onItemClick(ContentItem item) {
         if (null == selectExtension || selectExtension.getSelections().isEmpty()) {
             Content c = item.getContent();
-            if (c != null && !ContentHelper.openHentoidViewer(requireContext(), c, null))
+            if (c != null && !ContentHelper.openHentoidViewer(requireContext(), c, -1, null))
                 ToastHelper.toast(R.string.err_no_content);
 
             return true;

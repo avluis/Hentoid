@@ -25,7 +25,6 @@ import io.objectbox.BoxStore;
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
 import io.objectbox.query.Query;
-import io.objectbox.query.QueryBuilder;
 import io.objectbox.query.QueryConsumer;
 import io.objectbox.relation.ToOne;
 import io.reactivex.Emitter;
@@ -90,24 +89,30 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public long countContentWithUnhashedCovers() {
-        return db.selectNonHashedContent2().count();
+        return db.selectNonHashedContent().count();
     }
 
     @Override
     public Observable<Content> streamContentWithUnhashedCovers() {
-        Query<Content> query = db.selectNonHashedContent2();
+        Query<Content> query = db.selectNonHashedContent();
         return Observable.create(emitter -> query.forEach(new DatabaseConsumer<>(emitter)));
     }
 
-    // TODO make that observable fire onComplete event
-    public Observable<Content> streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
-        QueryBuilder<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc);
-        return Observable.create(emitter -> query.build().forEach(new DatabaseConsumer<>(emitter)));
+    @Override
+    public List<Content> selectContentWithUnhashedCovers() {
+        return db.selectNonHashedContent().find();
     }
 
+    @Override
+    public void streamContentWithUnhashedCovers(Consumer<Content> consumer) {
+        Query<Content> query = db.selectNonHashedContent();
+        query.forEach(consumer::accept);
+    }
+
+    @Override
     public void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer) {
-        QueryBuilder<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc);
-        query.build().forEach(consumer::accept);
+        Query<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc).build();
+        query.forEach(consumer::accept);
     }
 
     @Override

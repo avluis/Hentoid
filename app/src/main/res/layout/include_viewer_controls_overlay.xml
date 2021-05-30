@@ -32,10 +32,10 @@
         android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_info"
-        android:tint="?colorOnPrimary"
         android:tooltipText="@string/information_help"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:tint="?colorOnPrimary"
         tools:ignore="ContentDescription" />
 
     <ImageButton
@@ -47,12 +47,12 @@
         android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_action_previous_item"
-        android:tint="?colorOnPrimary"
         android:tooltipText="@string/previous_book_help"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_favourite_action_btn"
         app:layout_constraintStart_toEndOf="@id/viewer_info_btn"
+        app:tint="?colorOnPrimary"
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
 
@@ -65,11 +65,11 @@
         android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_fav_toggle"
-        android:tint="?colorOnPrimary"
         android:tooltipText="@string/fav_help"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_next_book_btn"
         app:layout_constraintStart_toEndOf="@id/viewer_prev_book_btn"
+        app:tint="?colorOnPrimary"
         tools:ignore="ContentDescription" />
 
     <ImageButton
@@ -81,12 +81,12 @@
         android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_action_next_item"
-        android:tint="?colorOnPrimary"
         android:tooltipText="@string/next_book_help"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_gallery_btn"
         app:layout_constraintStart_toEndOf="@id/viewer_favourite_action_btn"
+        app:tint="?colorOnPrimary"
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
 
@@ -100,10 +100,10 @@
         android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_action_gallery"
-        android:tint="?colorOnPrimary"
         android:tooltipText="@string/gallery_help"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:tint="?colorOnPrimary"
         tools:ignore="ContentDescription" />
 
     <!-- Progress bar -->
@@ -127,18 +127,22 @@
         android:id="@+id/page_slider"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="34dp"
         android:colorControlActivated="?colorSecondary"
         android:padding="8dp"
         android:progressBackgroundTint="?colorOnPrimary"
         android:progressTint="?colorSecondary"
+        android:value="2"
+        android:valueFrom="0"
+        android:valueTo="10"
         app:labelBehavior="gone"
-        android:layout_marginBottom="34dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_pager_right_txt"
         app:layout_constraintStart_toEndOf="@id/viewer_pager_left_txt"
         app:thumbColor="?colorSecondary"
         app:tickVisible="false"
-        app:trackColor="@color/white_opacity_25"
+        app:trackColorActive="@color/accent_red"
+        app:trackColorInactive="@color/white_opacity_25"
         tools:targetApi="lollipop" />
 
     <TextView

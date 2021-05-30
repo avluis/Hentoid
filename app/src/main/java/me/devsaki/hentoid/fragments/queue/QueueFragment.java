@@ -792,7 +792,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
 
             if (c != null) {
-                if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
+                if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null))
                     ToastHelper.toast(R.string.err_no_content);
                 return true;
             } else return false;

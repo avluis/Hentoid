@@ -225,10 +225,11 @@ public final class ContentHelper {
      *
      * @param context      Context to use for the action
      * @param content      Content to view
+     * @param pageNumber   Page number to view
      * @param searchParams Current search parameters (so that the next/previous book feature
      *                     is faithful to the library screen's order)
      */
-    public static boolean openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
+    public static boolean openHentoidViewer(@NonNull Context context, @NonNull Content content, int pageNumber, Bundle searchParams) {
         // Check if the book has at least its own folder
         if (content.getStorageUri().isEmpty()) return false;
 
@@ -237,6 +238,7 @@ public final class ContentHelper {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
+        if (pageNumber > -1) builder.setPageNumber(pageNumber);
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);
         viewer.putExtras(builder.getBundle());
@@ -1080,7 +1082,7 @@ public final class ContentHelper {
         DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, true, true, false, pHash);
         List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, true, true, false, Long.MIN_VALUE)).toList();
         for (DuplicateHelper.DuplicateCandidate candidate : candidates) {
-            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, null, true, true, true, false, true, 2, cosine);
+            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, true, true, true, false, true, 2, cosine);
             if (entry != null) entries.add(entry);
         }
         // Sort by similarity and size (unfortunately, Comparator.comparing is API24...)

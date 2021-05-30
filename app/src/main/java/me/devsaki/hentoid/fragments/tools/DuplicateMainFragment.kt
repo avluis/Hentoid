@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -23,6 +24,7 @@ import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
+import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
@@ -163,15 +165,19 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
                     if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
                 binding.controls.indexPicturesTxt.visibility = coverControlsVisibility
                 binding.controls.indexPicturesPb.visibility = coverControlsVisibility
+                binding.controls.indexPicturesPbTxt.visibility = View.GONE
                 binding.controls.detectBooksTxt.visibility = View.VISIBLE
                 binding.controls.detectBooksPb.visibility = View.VISIBLE
+                binding.controls.detectBooksPbTxt.visibility = View.GONE
             } else {
                 binding.controls.scanFab.visibility = View.VISIBLE
                 binding.controls.stopFab.visibility = View.INVISIBLE
                 binding.controls.indexPicturesTxt.visibility = View.GONE
                 binding.controls.indexPicturesPb.visibility = View.GONE
+                binding.controls.indexPicturesPbTxt.visibility = View.GONE
                 binding.controls.detectBooksTxt.visibility = View.GONE
                 binding.controls.detectBooksPb.visibility = View.GONE
+                binding.controls.detectBooksPbTxt.visibility = View.GONE
             }
         }
         binding.controls.root.visibility = result
@@ -234,8 +240,10 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         binding.controls.indexPicturesTxt.visibility = View.GONE
         binding.controls.indexPicturesPb.visibility = View.GONE
+        binding.controls.indexPicturesPbTxt.visibility = View.GONE
         binding.controls.detectBooksTxt.visibility = View.GONE
         binding.controls.detectBooksPb.visibility = View.GONE
+        binding.controls.detectBooksPbTxt.visibility = View.GONE
     }
 
     private fun onMainCriteriaChanged() {
@@ -292,17 +300,37 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
+        if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
+
         val progressBar: ProgressBar =
             if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
+        val progressBarTxt: TextView =
+            if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPbTxt else binding.controls.detectBooksPbTxt
+
+        if (STEP_COVER_INDEX == event.step) {
+            if (null == binding.controls.detectBooksPbTxt.animation) {
+                binding.controls.detectBooksPbTxt.startAnimation(BlinkAnimation(750, 20))
+                binding.controls.detectBooksPbTxt.text =
+                    resources.getText(R.string.duplicate_wait_index)
+                binding.controls.detectBooksPbTxt.visibility = View.VISIBLE
+            }
+        } else {
+            binding.controls.detectBooksPbTxt.clearAnimation()
+        }
+
         progressBar.max = event.elementsTotal
         progressBar.progress = event.elementsOK + event.elementsKO
+        progressBarTxt.text = String.format("%d / %d", progressBar.progress, progressBar.max)
+        progressBarTxt.visibility = View.VISIBLE
         if (ProcessEvent.EventType.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
             setSettingsPanelVisibility(false)
             disableScanUi()
         } else if (binding.controls.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
                 requireContext()
             )
-        ) activateScanUi()
+        ) {
+            activateScanUi()
+        }
     }
 
     /**

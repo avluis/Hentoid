@@ -3,10 +3,20 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.sonarqube'
 apply plugin: 'com.google.firebase.crashlytics'
+apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
     apply from: 'signing.gradle'
+}
+
+aboutLibraries {
+    exclusionPatterns = [~"com_google_android.*",~"android.*",~"com_mikepenz__fastadapter_extensions.*"]
+    configPath = "about-config"
+    additionalLicenses {
+        LGPL_2_1_or_later
+        BSD_3_Clause
+    }
 }
 
 android {
@@ -24,7 +34,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.14.5'
+        versionName '1.14.6'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -178,6 +188,11 @@ dependencies {
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android:flexbox:2.0.1'
+
+    def auto_about_version = '8.9.0'
+    implementation "com.mikepenz:aboutlibraries-core:$auto_about_version"
+    implementation "com.mikepenz:aboutlibraries:$auto_about_version"
+
 
     /**
      * NETWORKING

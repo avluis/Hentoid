@@ -46,6 +46,8 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class EHentaiParser implements ImageListParser {
 
+    public static final String MPV_LINK_CSS = "#gmid a[href*='/mpv/']";
+
     private final ParseProgress progress = new ParseProgress();
 
     private boolean processHalted = false;
@@ -90,10 +92,14 @@ public class EHentaiParser implements ImageListParser {
             if (galleryDoc != null) {
                 // Detect if multipage viewer is on
 //                result = loadMpv("https://e-hentai.org/mpv/530350/8b3c7e4a21/", headers, useHentoidAgent);
-                Elements elements = galleryDoc.select(".gm a[href*='/mpv/']");
+                Elements elements = galleryDoc.select(MPV_LINK_CSS);
                 if (!elements.isEmpty()) {
                     String mpvUrl = elements.get(0).attr("href");
-                    result = loadMpv(content, mpvUrl, headers, useHentoidAgent, useWebviewAgent);
+                    try {
+                        result = loadMpv(content, mpvUrl, headers, useHentoidAgent, useWebviewAgent);
+                    } catch (EmptyResultException e) {
+                        result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
+                    }
                 } else {
                     result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
                 }
