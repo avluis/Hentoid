@@ -477,6 +477,14 @@
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_viewer_separating_bars"
                 app:iconSpaceReserved="false" />
+            <ListPreference
+                android:defaultValue="@string/pref_viewer_gallery_columns_default"
+                android:entries="@array/pref_viewer_gallery_columns_values"
+                android:entryValues="@array/pref_viewer_gallery_columns_values"
+                android:key="viewer_gallery_columns"
+                android:summary="@string/pref_generic_summary"
+                android:title="@string/pref_viewer_gallery_columns"
+                app:iconSpaceReserved="false" />
         </PreferenceScreen>
 
         <PreferenceScreen

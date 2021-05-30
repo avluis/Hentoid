@@ -215,6 +215,8 @@
     <bool name="pref_viewer_auto_rotate_default" translatable="false">false</bool>
     <string name="pref_viewer_auto_rotate_summary_off">Pictures are not rotated</string>
     <string name="pref_viewer_auto_rotate_summary_on">Pictures are rotated to best occupy the screen</string>
+    <string name="pref_viewer_gallery_columns">Number of columns for gallery</string>
+    <string name="pref_viewer_gallery_columns_default" translatable="false">4</string>
 
     <string name="pref_viewer_navigation">Navigation &amp; behaviour</string>
     <string name="pref_viewer_resume_last_left_title">Resume reading when reopening books</string>
