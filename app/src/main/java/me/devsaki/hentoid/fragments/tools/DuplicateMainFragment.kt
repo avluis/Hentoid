@@ -292,6 +292,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onProcessEvent(event: ProcessEvent) {
+        if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
+
         val progressBar: ProgressBar =
             if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
         progressBar.max = event.elementsTotal

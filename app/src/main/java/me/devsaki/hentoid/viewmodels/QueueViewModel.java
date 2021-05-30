@@ -20,6 +20,7 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -244,14 +245,14 @@ public class QueueViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> {
                                     nbDeleted.getAndIncrement();
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbDeleted.get(), 0, content.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, nbDeleted.get(), 0, content.size()));
                                 },
                                 t -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, content.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, content.size()));
                                     onError.accept(t);
                                 },
                                 () -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, content.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, content.size()));
                                     onComplete.run();
                                 }
                         )
@@ -275,14 +276,14 @@ public class QueueViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> {
                                     nbDeleted.getAndIncrement();
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, nbDeleted.get(), 0, localQueue.size()));
                                 },
                                 t -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, localQueue.size()));
                                     onError.accept(t);
                                 },
                                 () -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, localQueue.size()));
                                     onComplete.run();
                                 }
                         )

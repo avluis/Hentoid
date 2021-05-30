@@ -31,7 +31,7 @@ public class StartupWorker extends BaseWorker {
     public StartupWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
-        super(context, parameters, R.id.startup_service);
+        super(context, parameters, R.id.startup_service, null);
     }
 
     @Override

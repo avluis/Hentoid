@@ -281,6 +281,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
         if (null == binding) return;
+        if (event.processId != R.id.viewer_load) return;
+
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             // Empty display until loading is complete
             if (adapter.getItemCount() > 0) adapter.submitList(Collections.emptyList());

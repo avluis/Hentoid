@@ -26,6 +26,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -100,11 +101,11 @@ public class API29MigrationService extends IntentService {
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, step, booksOK, booksKO, nbBooks));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.migrate_api29, step, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.migrate_api29, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, String... t) {

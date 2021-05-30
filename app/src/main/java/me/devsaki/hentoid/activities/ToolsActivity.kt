@@ -47,9 +47,13 @@ class ToolsActivity : BaseActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onImportEventComplete(event: ProcessEvent) {
-        if (ProcessEvent.EventType.COMPLETE == event.eventType && event.logFile != null) {
+        if (ProcessEvent.EventType.COMPLETE == event.eventType
+            && event.logFile != null
+            && (event.processId == R.id.import_external || event.processId == R.id.import_primary)
+        ) {
             val contentView = findViewById<View>(android.R.id.content)
-            val snackbar = Snackbar.make(contentView, R.string.task_done, BaseTransientBottomBar.LENGTH_LONG)
+            val snackbar =
+                Snackbar.make(contentView, R.string.task_done, BaseTransientBottomBar.LENGTH_LONG)
             snackbar.setAction("READ LOG") { FileHelper.openFile(this, event.logFile) }
             snackbar.show()
         }

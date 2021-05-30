@@ -7,6 +7,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposables
 import io.reactivex.schedulers.Schedulers
+import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.events.ProcessEvent
@@ -18,7 +19,8 @@ import org.greenrobot.eventbus.EventBus
 import timber.log.Timber
 import java.io.File
 
-class PreferencesViewModel(application: Application, val dao: CollectionDAO) : AndroidViewModel(application) {
+class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
+    AndroidViewModel(application) {
 
     private var deleteDisposable = Disposables.empty()
 
@@ -37,7 +39,8 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) : A
 
         // Remove all images stored in the app's persistent folder (archive covers)
         val appFolder: File = context.filesDir
-        val images = appFolder.listFiles { _: File?, name: String? -> ImageHelper.isSupportedImage(name!!) }
+        val images =
+            appFolder.listFiles { _: File?, name: String? -> ImageHelper.isSupportedImage(name!!) }
         if (images != null) for (f in images) FileHelper.removeFile(f)
     }
 
@@ -46,17 +49,17 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) : A
         var nbDeleted = 0
 
         deleteDisposable = Observable.fromIterable(items)
-                .observeOn(Schedulers.io())
-                .map { c: Content -> this.deleteItem(context, c) }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        {
-                            nbDeleted++
-                            this.onDeleteProgress(nbDeleted, items.size)
-                        },
-                        { t: Throwable? -> Timber.w(t) },
-                        { this.onDeleteComplete(nbDeleted, items.size) }
-                )
+            .observeOn(Schedulers.io())
+            .map { c: Content -> this.deleteItem(context, c) }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                {
+                    nbDeleted++
+                    this.onDeleteProgress(nbDeleted, items.size)
+                },
+                { t: Throwable? -> Timber.w(t) },
+                { this.onDeleteComplete(nbDeleted, items.size) }
+            )
     }
 
     @Throws(ContentNotRemovedException::class)
@@ -65,11 +68,13 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) : A
     }
 
     private fun onDeleteProgress(num: Int, max: Int) {
-        EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, num, 0, max))
+        EventBus.getDefault()
+            .post(ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, num, 0, max))
     }
 
     private fun onDeleteComplete(num: Int, max: Int) {
         deleteDisposable.dispose()
-        EventBus.getDefault().post(ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, num, 0, max))
+        EventBus.getDefault()
+            .post(ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, num, 0, max))
     }
 }
