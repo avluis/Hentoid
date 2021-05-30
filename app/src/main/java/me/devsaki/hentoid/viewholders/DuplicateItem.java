@@ -416,7 +416,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                     drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
                 }
                 keepButton.setOnClickListener(v -> {
-                    keepDeleteSwitch.setChecked(false);
+                    keepDeleteSwitch.setChecked(true);
                     keepDeleteSwitch.callOnClick();
                 });
             }
@@ -430,11 +430,11 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                     drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
                 }
                 deleteButton.setOnClickListener(v -> {
-                    keepDeleteSwitch.setChecked(true);
+                    keepDeleteSwitch.setChecked(false);
                     keepDeleteSwitch.callOnClick();
                 });
             }
-            if (keepDeleteSwitch != null) keepDeleteSwitch.setChecked(!item.keep);
+            if (keepDeleteSwitch != null) keepDeleteSwitch.setChecked(item.keep);
         }
 
         public View getViewDetailsButton() {

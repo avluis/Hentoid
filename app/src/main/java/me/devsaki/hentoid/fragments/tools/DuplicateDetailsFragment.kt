@@ -145,7 +145,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
                 fastAdapter: FastAdapter<DuplicateItem>,
                 item: DuplicateItem
             ) {
-                onBookChoice(item.content, !(v as SwitchMaterial).isChecked)
+                onBookChoice(item.content, (v as SwitchMaterial).isChecked)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
