@@ -306,6 +306,17 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (item.deleteAction != null)
                 deleteActionRunnable = () -> item.deleteAction.accept(item);
 
+            // Important to trigger the ViewHolder's global onClick/onLongClick events
+            bookCard.setOnClickListener(v -> {
+                if (v.getParent() instanceof View)
+                    ((View) v.getParent()).performClick();
+            });
+            bookCard.setOnLongClickListener(v -> {
+                if (v.getParent() instanceof View)
+                    ((View) v.getParent()).performLongClick();
+                return false;
+            });
+
             updateLayoutVisibility(item);
             attachCover(item.content);
             attachFlag(item.content);
@@ -508,8 +519,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivSite.setVisibility(View.GONE);
             }
 
-            if (deleteButton != null)
+            if (deleteButton != null) {
                 deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
+                deleteButton.setOnLongClickListener(v -> {
+                    deleteActionRunnable.run();
+                    return true;
+                });
+            }
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 ivTop.setVisibility(View.VISIBLE);
@@ -628,12 +644,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         @Override
         public void onSwiped() {
-            if (deleteButton != null) deleteButton.setVisibility(View.VISIBLE);
+            // Nothing
         }
 
         @Override
         public void onUnswiped() {
-            if (deleteButton != null) deleteButton.setVisibility(View.GONE);
+            // Nothing
         }
     }
 }
