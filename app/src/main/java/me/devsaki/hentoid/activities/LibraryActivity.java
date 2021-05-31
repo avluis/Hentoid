@@ -382,6 +382,9 @@ public class LibraryActivity extends BaseActivity {
                 }
             });
             snackbar.show();
+            // Only show that once
+            Preferences.setViewerCurrentContent(-1);
+            Preferences.setViewerCurrentPageNum(-1);
         }
     }
 
