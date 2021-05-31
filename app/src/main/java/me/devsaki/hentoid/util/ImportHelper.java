@@ -22,6 +22,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.squareup.moshi.JsonDataException;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.threeten.bp.Instant;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -502,7 +503,8 @@ public class ImportHelper {
                         }
             }
             result.setSite(site);
-            result.setDownloadDate(bookFolder.lastModified());
+            long downloadDate = bookFolder.lastModified();
+            result.setDownloadDate((downloadDate > 0) ? downloadDate : Instant.now().toEpochMilli());
             result.addAttributes(parentNamesAsTags(parentNames));
         }
         if (targetStatus.equals(StatusContent.EXTERNAL))
@@ -564,7 +566,8 @@ public class ImportHelper {
         }
         if (null == result) {
             result = new Content().setSite(Site.NONE).setTitle((null == parent.getName()) ? "" : parent.getName()).setUrl("");
-            result.setDownloadDate(parent.lastModified());
+            long downloadDate = parent.lastModified();
+            result.setDownloadDate((downloadDate > 0) ? downloadDate : Instant.now().toEpochMilli());
             result.addAttributes(parentNamesAsTags(parentNames));
         }
         result.addAttributes(newExternalAttribute());
@@ -758,7 +761,8 @@ public class ImportHelper {
         // Create content envelope
         if (null == result) {
             result = new Content().setSite(Site.NONE).setTitle((null == archive.getName()) ? "" : FileHelper.getFileNameWithoutExtension(archive.getName())).setUrl("");
-            result.setDownloadDate(archive.lastModified());
+            long downloadDate = archive.lastModified();
+            result.setDownloadDate((downloadDate > 0) ? downloadDate : Instant.now().toEpochMilli());
             result.addAttributes(parentNamesAsTags(parentNames));
             result.addAttributes(newExternalAttribute());
         }
