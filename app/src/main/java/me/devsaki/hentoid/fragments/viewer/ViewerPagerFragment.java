@@ -64,6 +64,7 @@ import me.devsaki.hentoid.databinding.FragmentViewerPagerBinding;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -359,9 +360,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         // Slideshow slider
         Slider slider = binding.controlsOverlay.slideshowDelaySlider;
         slider.setValueFrom(0);
+        int sliderValue = convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay());
         int nbEntries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries).length;
-        slider.setValueTo(Math.max(1, nbEntries - 1f));
-        slider.setValue(convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay()));
+        nbEntries = Math.max(1, nbEntries - 1);
+        // TODO at some point we'd need to better synch images and book loading to avoid that
+        slider.setValue(Helper.coerceIn(sliderValue, 0, nbEntries));
+        slider.setValueTo(nbEntries);
         slider.setLabelFormatter(value -> {
             String[] entries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries);
             return entries[(int) value];
@@ -594,7 +598,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void differEndCallback() {
         if (null == binding) return;
 
+        // TODO at some point we'd need to better synch images and book loading to avoid that
         maxPosition = Math.max(1, adapter.getItemCount() - 1);
+        binding.controlsOverlay.pageSlider.setValue(Helper.coerceIn(binding.controlsOverlay.pageSlider.getValue(), 0, maxPosition));
         binding.controlsOverlay.pageSlider.setValueTo(maxPosition);
 
         // Can't access the gallery when there's no page to display
