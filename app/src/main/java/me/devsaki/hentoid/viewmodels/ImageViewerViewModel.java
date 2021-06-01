@@ -109,8 +109,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         collectionDao.cleanup();
-        searchDisposable.dispose();
         compositeDisposable.clear();
+        searchDisposable.dispose();
         super.onCleared();
     }
 
@@ -363,7 +363,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 int index = 0;
                 for (ImageFile img : imageFiles) {
                     if (img.getOrder() == pageNumber) {
-                        startingIndex = index +1;
+                        startingIndex = index + 1;
                         break;
                     }
                     index++;
@@ -443,6 +443,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         List<ImageFile> theImages = databaseImages.getValue();
         Content theContent = collectionDao.selectContent(loadedContentId);
         if (null == theImages || null == theContent) return;
+
+        // Stop any ongoing picture loading
+        unarchiveDisposable.dispose();
+        imageLoadDisposable.dispose();
+        isArchiveExtracting = false;
 
         int nbReadablePages = (int) Stream.of(theImages).filter(ImageFile::isReadable).count();
         int readThresholdPref = Preferences.getViewerReadThreshold();
