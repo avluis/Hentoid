@@ -428,7 +428,8 @@ public final class ContentHelper {
                             archive,
                             Stream.of(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, "")).toList(),
                             context.getFilesDir(),
-                            Stream.of(newContentId + "").toList())
+                            Stream.of(newContentId + "").toList(),
+                            null)
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .subscribe(
