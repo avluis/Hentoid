@@ -503,14 +503,14 @@ public class ImportHelper {
                         }
             }
             result.setSite(site);
-            long downloadDate = bookFolder.lastModified();
-            result.setDownloadDate((downloadDate > 0) ? downloadDate : Instant.now().toEpochMilli());
+            result.setDownloadDate(bookFolder.lastModified());
             result.addAttributes(parentNamesAsTags(parentNames));
         }
         if (targetStatus.equals(StatusContent.EXTERNAL))
             result.addAttributes(newExternalAttribute());
 
         result.setStatus(targetStatus).setStorageUri(bookFolder.getUri().toString());
+        if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
         List<ImageFile> images = new ArrayList<>();
         scanImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles);
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
@@ -566,13 +566,13 @@ public class ImportHelper {
         }
         if (null == result) {
             result = new Content().setSite(Site.NONE).setTitle((null == parent.getName()) ? "" : parent.getName()).setUrl("");
-            long downloadDate = parent.lastModified();
-            result.setDownloadDate((downloadDate > 0) ? downloadDate : Instant.now().toEpochMilli());
+            result.setDownloadDate(parent.lastModified());
             result.addAttributes(parentNamesAsTags(parentNames));
         }
         result.addAttributes(newExternalAttribute());
 
         result.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.getUri().toString());
+        if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
         List<ImageFile> images = new ArrayList<>();
         // Scan pages across all subfolders
         for (DocumentFile chapterFolder : chapterFolders)
@@ -761,12 +761,12 @@ public class ImportHelper {
         // Create content envelope
         if (null == result) {
             result = new Content().setSite(Site.NONE).setTitle((null == archive.getName()) ? "" : FileHelper.getFileNameWithoutExtension(archive.getName())).setUrl("");
-            long downloadDate = archive.lastModified();
-            result.setDownloadDate((downloadDate > 0) ? downloadDate : Instant.now().toEpochMilli());
+            result.setDownloadDate(archive.lastModified());
             result.addAttributes(parentNamesAsTags(parentNames));
             result.addAttributes(newExternalAttribute());
         }
         result.setStatus(targetStatus).setStorageUri(archive.getUri().toString()); // Here storage URI is a file URI, not a folder
+        if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
         result.setArchiveLocationUri(parentFolder.getUri().toString());
 
         result.setImageFiles(images);
