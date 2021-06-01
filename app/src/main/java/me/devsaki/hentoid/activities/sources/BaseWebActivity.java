@@ -945,46 +945,48 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
 
         if (!isInCollection && !isInQueue) {
-            // Index the content's cover picture
-            long pHash = Long.MIN_VALUE;
-            try {
-                List<Pair<String, String>> requestHeadersList = new ArrayList<>();
-                Map<String, String> downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
+            if (Preferences.isDownloadDuplicateAsk()) {
+                // Index the content's cover picture
+                long pHash = Long.MIN_VALUE;
+                try {
+                    List<Pair<String, String>> requestHeadersList = new ArrayList<>();
+                    Map<String, String> downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
 
-                String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                if (value != null)
-                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, value));
+                    String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                    if (value != null)
+                        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, value));
 
-                value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
-                if (value != null)
-                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, value));
+                    value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                    if (value != null)
+                        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, value));
 
-                Response onlineCover = HttpHelper.getOnlineResource(
-                        HttpHelper.fixUrl(content.getCoverImageUrl(), getStartUrl()),
-                        requestHeadersList,
-                        getStartSite().useMobileAgent(),
-                        getStartSite().useHentoidAgent(),
-                        getStartSite().useWebviewAgent()
-                );
-                ResponseBody coverBody = onlineCover.body();
-                if (coverBody != null) {
-                    InputStream bodyStream = coverBody.byteStream();
-                    Bitmap b = DuplicateHelper.Companion.getCoverBitmapFromStream(bodyStream);
-                    pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), b);
+                    Response onlineCover = HttpHelper.getOnlineResource(
+                            HttpHelper.fixUrl(content.getCoverImageUrl(), getStartUrl()),
+                            requestHeadersList,
+                            getStartSite().useMobileAgent(),
+                            getStartSite().useHentoidAgent(),
+                            getStartSite().useWebviewAgent()
+                    );
+                    ResponseBody coverBody = onlineCover.body();
+                    if (coverBody != null) {
+                        InputStream bodyStream = coverBody.byteStream();
+                        Bitmap b = DuplicateHelper.Companion.getCoverBitmapFromStream(bodyStream);
+                        pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), b);
+                    }
+                } catch (IOException e) {
+                    Timber.w(e);
                 }
-            } catch (IOException e) {
-                Timber.w(e);
-            }
-            // Look for duplicates
-            ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(objectBoxDAO, content, pHash);
-            if (duplicateResult != null) {
-                duplicateId = duplicateResult.left.getId();
-                duplicateSimilarity = duplicateResult.right;
-                // Content ID of the duplicate candidate of the currently viewed Content
-                boolean duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
-                // Same site and similar => download by default, but look for extra pics just in case
-                if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload)
-                    searchForExtraImages(duplicateResult.left);
+                // Look for duplicates
+                ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(objectBoxDAO, content, pHash);
+                if (duplicateResult != null) {
+                    duplicateId = duplicateResult.left.getId();
+                    duplicateSimilarity = duplicateResult.right;
+                    // Content ID of the duplicate candidate of the currently viewed Content
+                    boolean duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
+                    // Same site and similar => download by default, but look for extra pics just in case
+                    if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload)
+                        searchForExtraImages(duplicateResult.left);
+                }
             }
 
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
