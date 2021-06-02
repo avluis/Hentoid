@@ -258,7 +258,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         setSystemBarsVisible(binding.controlsOverlay.getRoot().getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
         if (Preferences.Constant.VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             ViewerBrowseModeDialogFragment.invoke(this);
-        updatePageDisplay();
+        updatePageControls();
     }
 
     // Make sure position is saved when app is closed by the user
@@ -608,7 +608,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         else binding.controlsOverlay.viewerGalleryBtn.setVisibility(View.GONE);
 
         if (targetStartingIndex > -1) applyStartingIndex(targetStartingIndex);
-        else updatePageDisplay();
+        else updatePageControls();
 
         isComputingImageList = false;
     }
@@ -619,8 +619,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * @param startingIndex Book's starting image index
      */
     private void onStartingIndexChanged(Integer startingIndex) {
-        if (!isComputingImageList) applyStartingIndex(startingIndex);
-        else targetStartingIndex = startingIndex;
+        if (!isComputingImageList) applyStartingIndex(startingIndex); // Return from gallery screen
+        else targetStartingIndex = startingIndex; // Loading a new book
     }
 
     private void applyStartingIndex(int startingIndex) {
@@ -715,6 +715,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                 isScrollLTR = false;
             adapter.setScrollLTR(isScrollLTR);
             hidePendingMicroMenus();
+
+            // Resets zoom if we're using horizontal (independent pages) mode
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
+                adapter.resetScaleAtPosition(scrollPosition);
         }
 
         imageIndex = scrollPosition;
@@ -725,18 +729,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             isPageFavourite = currentImage.isFavourite();
         }
 
-        // Resets zoom if we're using horizontal (independent pages) mode
-        if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
-            adapter.resetScaleAtPosition(scrollPosition);
-
-        updatePageDisplay();
+        updatePageControls();
         updateFavouriteButtonIcon();
     }
 
     /**
      * Update the display of page position controls (text and bar)
      */
-    private void updatePageDisplay() {
+    private void updatePageControls() {
         ImageFile img = adapter.getImageAt(imageIndex);
         if (null == img) {
             Timber.w("No image at position %s", imageIndex);
@@ -767,7 +767,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         else binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.VISIBLE);
 
         maxPageNumber = content.getQtyPages();
-        updatePageDisplay();
+        updatePageControls();
     }
 
     /**

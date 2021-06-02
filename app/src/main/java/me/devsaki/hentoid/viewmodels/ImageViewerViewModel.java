@@ -176,7 +176,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void setReaderStartingIndex(int index) {
-        startingIndex.setValue(index);
+        startingIndex.postValue(index);
     }
 
     private void setImages(@NonNull Content theContent, int pageNumber, @NonNull List<ImageFile> newImages) {
