@@ -203,7 +203,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
             currentIndex.set(i);
 
-            if (0 == i % 10)
+            if (0 == i % 10 || i == (library.size() - 1))
                 notifyProcessProgress(i, (library.size() - 1)); // Only update every 10 iterations for performance
         }
     }
