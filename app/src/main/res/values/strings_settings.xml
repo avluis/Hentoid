@@ -43,9 +43,9 @@
     <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
     <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
     <string name="pref_browser_augmented_default" translatable="false">true</string>
-    <string name="pref_browser_duplicate_ask_title">Always download potential duplicates ?</string>
-    <string name="pref_browser_duplicate_ask_off">Always download</string>
-    <string name="pref_browser_duplicate_ask_on">Ask before downloading</string>
+    <string name="pref_browser_duplicate_ask_title">Duplicates checking</string>
+    <string name="pref_browser_duplicate_ask_off">No : always download</string>
+    <string name="pref_browser_duplicate_ask_on">Yes : ask before downloading</string>
     <string name="pref_browser_duplicate_ask_default" translatable="false">true</string>
     <string name="pref_browser_duplicate_try_pages_title">Try finding extra pages on potential duplicates ?</string>
     <string name="pref_browser_duplicate_try_pages_off">Only try finding extra pages on the original book</string>
