@@ -179,6 +179,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                             int sensitivity) {
         List<DuplicateEntry> tempResults = new ArrayList<>();
         StringSimilarity cosine = new Cosine();
+        int max = library.size() - 1;
         for (int i = startIndex; i < library.size(); i++) {
             if (isStopped()) return;
 
@@ -203,9 +204,10 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
             currentIndex.set(i);
 
-            if (0 == i % 10 || i == (library.size() - 1))
-                notifyProcessProgress(i, (library.size() - 1)); // Only update every 10 iterations for performance
+            if (0 == i % 10)
+                notifyProcessProgress(i, max); // Only update every 10 iterations for performance
         }
+        notifyProcessProgress(max, max);
     }
 
     private void indexContentInfo(Content c) {
