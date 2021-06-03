@@ -892,7 +892,10 @@ public final class ContentHelper {
     public static List<String> getBlockedTags(@NonNull final Content content) {
         List<String> result = Collections.emptyList();
         if (!Preferences.getBlockedTags().isEmpty()) {
-            List<String> tags = Stream.of(content.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG)).map(Attribute::getName).toList();
+            List<String> tags = Stream.of(content.getAttributes())
+                    .filter(a -> a.getType().equals(AttributeType.TAG) || a.getType().equals(AttributeType.LANGUAGE))
+                    .map(Attribute::getName)
+                    .toList();
             for (String blocked : Preferences.getBlockedTags())
                 for (String tag : tags)
                     if (blocked.equalsIgnoreCase(tag) || StringHelper.isPresentAsWord(blocked, tag)) {
