@@ -123,7 +123,7 @@ public class Group {
         return Objects.hash(grouping, name);
     }
 
-    public long hash64() {
+    public long uniqueHash() {
         return Helper.hash64((grouping + "." + name).getBytes());
     }
 

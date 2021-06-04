@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.pm.PackageInfo.INSTALL_LOCATION_AUTO
 import android.content.pm.PackageInstaller
 import android.net.Uri
-import androidx.documentfile.provider.DocumentFile
 import me.devsaki.hentoid.receiver.InstallCompletedReceiver
 
 /*
@@ -35,8 +34,7 @@ class ApkInstall {
         val resolver = app.contentResolver
 
         resolver.openInputStream(apkUri)?.use { apkStream ->
-            val length =
-                    DocumentFile.fromSingleUri(app, apkUri)?.length() ?: -1
+            //val length = DocumentFile.fromSingleUri(app, apkUri)?.length() ?: -1
             val params =
                     PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
             params.setInstallLocation(INSTALL_LOCATION_AUTO)

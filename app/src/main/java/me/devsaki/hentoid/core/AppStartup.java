@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
@@ -40,7 +41,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.json.JsonSiteSettings;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
-//import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
+import me.devsaki.hentoid.notification.startup.StartupNotificationChannel;
 //import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -77,7 +78,9 @@ public class AppStartup {
             onComplete.run();
             // Run post-launch tasks on a worker
             WorkManager workManager = WorkManager.getInstance(context);
-            workManager.enqueue(new OneTimeWorkRequest.Builder(StartupWorker.class).build());
+            workManager.enqueueUniqueWork(Integer.toString(R.id.startup_service),
+                    ExistingWorkPolicy.KEEP,
+                    new OneTimeWorkRequest.Builder(StartupWorker.class).build());
         });
     }
 
@@ -115,6 +118,7 @@ public class AppStartup {
      */
     public static List<Observable<Float>> getPreLaunchTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
+        result.add(createObservableFrom(context, AppStartup::stopWorkers));
         result.add(createObservableFrom(context, AppStartup::processAppUpdate));
         result.add(createObservableFrom(context, AppStartup::loadSiteProperties));
         result.add(createObservableFrom(context, AppStartup::initUtils));
@@ -123,13 +127,24 @@ public class AppStartup {
 
     public static List<Observable<Float>> getPostLaunchTasks(@NonNull final Context context) {
         List<Observable<Float>> result = new ArrayList<>();
-        //result.add(createObservableFrom(context, AppStartup::searchForUpdates));
+//        result.add(createObservableFrom(context, AppStartupDev::testImg));
         //result.add(createObservableFrom(context, AppStartup::sendFirebaseStats));
+        result.add(createObservableFrom(context, AppStartup::clearPictureCache));
         return result;
     }
 
     private static Observable<Float> createObservableFrom(@NonNull final Context context, BiConsumer<Context, ObservableEmitter<Float>> function) {
         return Observable.create(emitter -> function.accept(context, emitter));
+    }
+
+    private static void stopWorkers(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        try {
+            Timber.i("Stop workers : start");
+            WorkManager.getInstance(context).cancelAllWorkByTag(Consts.WORK_CLOSEABLE);
+            Timber.i("Stop workers : done");
+        } finally {
+            emitter.onComplete();
+        }
     }
 
     private static void loadSiteProperties(@NonNull final Context context, ObservableEmitter<Float> emitter) {
@@ -155,9 +170,9 @@ public class AppStartup {
         try {
             Timber.i("Init notifications : start");
             // Init notification channels
+            StartupNotificationChannel.init(context);
             //UpdateNotificationChannel.init(context);
             DownloadNotificationChannel.init(context);
-
             // Clears all previous notifications
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (manager != null) manager.cancelAll();
@@ -205,5 +220,16 @@ public class AppStartup {
             emitter.onComplete();
         }
         Timber.i("Process app update : done");
+    }
+
+    // Clear archive picture cache (useful when user kills the app while in background with the viewer open)
+    private static void clearPictureCache(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        Timber.i("Clear picture cache : start");
+        try {
+            FileHelper.emptyCacheFolder(context, Consts.PICTURE_CACHE_FOLDER);
+        } finally {
+            emitter.onComplete();
+        }
+        Timber.i("Clear picture cache : done");
     }
 }

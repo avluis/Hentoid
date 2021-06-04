@@ -17,6 +17,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -25,7 +26,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
-import com.annimon.stream.function.BiConsumer;
 import com.annimon.stream.function.Consumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -76,6 +76,7 @@ import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
@@ -111,6 +112,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private WeakReference<QueueActivity> activity;
 
     // UI ELEMENTS
+    private SearchView mainSearchView;  // Action view associated with search menu button
     private View rootView;
     private Toolbar selectionToolbar;
     private MenuItem errorStatsMenu;    // Toolbar menu item for error stats
@@ -141,6 +143,12 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private boolean isCancelingAll = false;
 
     // === VARIABLES
+    // Current text search query
+    private String query = "";
+
+    // Used to ignore native calls to onQueryTextChange
+    private boolean invalidateNextQueryTextChange = false;
+
     // Used to show a given item at first display
     private long contentHashToDisplayFirst = 0;
 
@@ -152,6 +160,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
     private int topItemPosition = -1;
     private int offsetTop = 0;
+
+    // True when a new search has been performed and its results have not been handled yet
+    // False when the refresh is passive (i.e. not from a direct user action)
+    private boolean newSearch = false;
 
 
     @Override
@@ -174,7 +186,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     public void onResume() {
         super.onResume();
 
-        if (selectExtension != null) selectExtension.deselect();
+        if (selectExtension != null) selectExtension.deselect(selectExtension.getSelections());
         initSelectionToolbar();
         update(-1);
     }
@@ -275,7 +287,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void customBackPress() {
         // If content is selected, deselect it
         if (!selectExtension.getSelections().isEmpty()) {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
         } else {
             callback.remove();
@@ -286,6 +298,58 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void initToolbar() {
         if (!(requireActivity() instanceof QueueActivity)) return;
         QueueActivity activity = (QueueActivity) requireActivity();
+
+        MenuItem searchMenu = activity.getToolbar().getMenu().findItem(R.id.action_search);
+        searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                invalidateNextQueryTextChange = true;
+
+                // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
+                if (!query.isEmpty())
+                    // Use of handler allows to set the value _after_ the UI has auto-cleared it
+                    // Without that handler the view displays with an empty value
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        invalidateNextQueryTextChange = true;
+                        mainSearchView.setQuery(query, false);
+                    }, 100);
+
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                invalidateNextQueryTextChange = true;
+                return true;
+            }
+        });
+
+        mainSearchView = (SearchView) searchMenu.getActionView();
+        mainSearchView.setIconifiedByDefault(true);
+        mainSearchView.setQueryHint(getString(R.string.search_hint));
+        // Change display when text query is typed
+        mainSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                query = s;
+                viewModel.searchQueueUniversal(query);
+                mainSearchView.clearFocus();
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
+                    invalidateNextQueryTextChange = false;
+                } else if (s.isEmpty()) {
+                    query = "";
+                    viewModel.searchQueueUniversal(query);
+                }
+
+                return true;
+            }
+        });
 
         MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
         cancelAllMenu.setOnMenuItemClickListener(item -> {
@@ -330,18 +394,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     // Process the move command while keeping scroll position in memory
     // https://stackoverflow.com/questions/27992427/recyclerview-adapter-notifyitemmoved0-1-scrolls-screen
-    private void processMove(int from, int to, @NonNull BiConsumer<Integer, Integer> consumer) {
-        topItemPosition = getTopItemPosition();
-        offsetTop = 0;
-        if (topItemPosition >= 0) {
-            View firstView = llm.findViewByPosition(topItemPosition);
-            if (firstView != null)
-                offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
-        }
-        consumer.accept(from, to);
-        recordMoveFromFirstPos(from, to);
-    }
-
     private void processMove(List<Integer> positions, @NonNull Consumer<List<Integer>> consumer) {
         topItemPosition = getTopItemPosition();
         offsetTop = 0;
@@ -351,14 +403,14 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 offsetTop = llm.getDecoratedTop(firstView) - llm.getTopDecorationHeight(firstView);
         }
         consumer.accept(positions);
-        recordMoveFromFirstPos(positions);
+        if (query.isEmpty()) recordMoveFromFirstPos(positions);
     }
 
     private void attachButtons(FastAdapter<ContentItem> fastAdapter) {
         // Site button
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
-            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+            public void onClick(@NotNull View view, int position, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
                 Content c = item.getContent();
                 if (c != null) ContentHelper.viewContentGalleryPage(view.getContext(), c);
             }
@@ -376,8 +428,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Top button
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
-            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                processMove(i, 0, viewModel::move);
+            public void onClick(@NotNull View view, int position, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                processMove(Stream.of(position).toList(), viewModel::moveTop);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -393,8 +445,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Bottom button
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
-            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
-                processMove(i, fastAdapter.getItemCount() - 1, viewModel::move);
+            public void onClick(@NotNull View view, int position, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                processMove(Stream.of(position).toList(), viewModel::moveBottom);
             }
 
             @org.jetbrains.annotations.Nullable
@@ -415,6 +467,16 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(QueueViewModel.class);
         viewModel.getQueue().observe(getViewLifecycleOwner(), this::onQueueChanged);
         viewModel.getContentHashToShowFirst().observe(getViewLifecycleOwner(), this::onContentHashToShowFirstChanged);
+        viewModel.getNewSearch().observe(getViewLifecycleOwner(), this::onNewSearch);
+    }
+
+    /**
+     * LiveData callback when a new search takes place
+     *
+     * @param b Unused parameter (always set to true)
+     */
+    private void onNewSearch(Boolean b) {
+        newSearch = b;
     }
 
     /**
@@ -505,7 +567,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             dlPreparationProgressBar.setVisibility(View.GONE);
         }
 
-        dlPreparationProgressBar.setProgress1((float) (event.total - event.done));
+        dlPreparationProgressBar.setProgress1(event.done);
     }
 
     /**
@@ -515,7 +577,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServiceDestroyed(ServiceDestroyedEvent event) {
-        if (event.service != ServiceDestroyedEvent.Service.DOWNLOAD) return;
+        if (event.service != R.id.download_service) return;
 
         isPaused = true;
         updateProgressFirstItem(true);
@@ -558,7 +620,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
                 // Update information bar
                 StringBuilder message = new StringBuilder();
-                String processedPagesFmt = Helper.formatIntAsStr(pagesOKDisplay, String.valueOf(totalPagesDisplay).length());
+                String processedPagesFmt = StringHelper.formatIntAsStr(pagesOKDisplay, String.valueOf(totalPagesDisplay).length());
                 message.append(processedPagesFmt).append("/").append(totalPagesDisplay).append(" processed");
                 if (pagesKO > 0)
                     message.append(" (").append(pagesKO).append(" errors)");
@@ -609,8 +671,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update displayed books
-        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, touchHelper, this::onCancelSwipedBook)).withoutNulls().distinct().toList();
-        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems);
+        List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, !query.isEmpty(), touchHelper, this::onCancelSwipedBook)).withoutNulls().distinct().toList();
+        if (newSearch) itemAdapter.setNewList(contentItems, false);
+        else FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems);
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
         updateControlBar();
 
@@ -619,6 +682,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             TooltipHelper.showTooltip(
                     requireContext(), R.string.help_swipe_cancel, ArrowOrientation.BOTTOM, recyclerView,
                     getViewLifecycleOwner());
+
+        newSearch = false;
     }
 
     private void onContentHashToShowFirstChanged(Long contentHash) {
@@ -727,7 +792,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
 
             if (c != null) {
-                if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
+                if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null))
                     ToastHelper.toast(R.string.err_no_content);
                 return true;
             } else return false;
@@ -743,7 +808,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 selectionToolbar.setVisibility(View.GONE);
         }
 
-        viewModel.cancel(Stream.of(item.getContent()).toList(), this::onCancelError, this::onCancelComplete);
+        if (item.getContent() != null)
+            viewModel.cancel(Stream.of(item.getContent()).toList(), this::onCancelError, this::onCancelComplete);
     }
 
     private void onCancelBooks(@NonNull List<Content> c) {
@@ -815,7 +881,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     @Override
     public void itemTouchDropped(int oldPosition, int newPosition) {
         // Save final position of item in DB
-        viewModel.move(oldPosition, newPosition);
+        viewModel.moveAbsolute(oldPosition, newPosition);
         recordMoveFromFirstPos(oldPosition, newPosition);
 
         // Delay execution of findViewHolderForAdapterPosition to give time for the new layout to
@@ -833,6 +899,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         if (viewHolder instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) viewHolder).onDragged();
         }
+    }
+
+    @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
     }
 
     @Override
@@ -874,7 +945,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         selectionToolbar = activity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);
         });
         selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
@@ -893,13 +964,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case R.id.action_select_queue_top:
                 selectedPositions = Stream.of(selectedItems).map(fastAdapter::getPosition).sorted().toList();
-                selectExtension.deselect();
+                selectExtension.deselect(selectExtension.getSelections());
                 if (!selectedPositions.isEmpty())
                     processMove(selectedPositions, viewModel::moveTop);
                 break;
             case R.id.action_select_queue_bottom:
                 selectedPositions = Stream.of(selectedItems).map(fastAdapter::getPosition).sorted().toList();
-                selectExtension.deselect();
+                selectExtension.deselect(selectExtension.getSelections());
                 if (!selectedPositions.isEmpty())
                     processMove(selectedPositions, viewModel::moveBottom);
                 break;
@@ -948,12 +1019,12 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             onCancelBooks(items);
                         })
                 .setNegativeButton(R.string.no,
-                        (dialog, which) -> selectExtension.deselect())
-                .setOnCancelListener(dialog -> selectExtension.deselect())
+                        (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
+                .setOnCancelListener(dialog -> selectExtension.deselect(selectExtension.getSelections()))
                 .create().show();
     }
 
@@ -981,13 +1052,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                             // If the 1st item is selected, visually reset its progress
                             if (selectExtension.getSelections().contains(0))
                                 updateProgress(0, 0, 1, 0, 0, true);
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog12, which) -> {
                             dialog12.dismiss();
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             selectionToolbar.setVisibility(View.GONE);
                         })
                 .create()

@@ -3,10 +3,13 @@ package me.devsaki.hentoid.fragments.library;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,6 +34,7 @@ import me.devsaki.hentoid.activities.AboutActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.ToolsActivity;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
@@ -54,6 +58,7 @@ public final class NavigationDrawerFragment extends Fragment {
 
     private View aboutBadge;
 
+    private static final String ALOVOA_URL = "https://www.alovoa.com";
 
     // Settings listener
     private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = (p, k) -> onSharedPreferenceChanged(k);
@@ -88,8 +93,14 @@ public final class NavigationDrawerFragment extends Fragment {
         btn = requireViewById(rootView, R.id.drawer_app_prefs_btn);
         btn.setOnClickListener(v -> onPrefsClick());
 
+        btn = requireViewById(rootView, R.id.drawer_tools_btn);
+        btn.setOnClickListener(v -> onToolsClick());
+
         btn = requireViewById(rootView, R.id.drawer_app_queue_btn);
         btn.setOnClickListener(v -> onQueueClick());
+
+        View header = requireViewById(rootView, R.id.drawer_header);
+        header.setOnClickListener(v -> onHeaderClick());
 
         aboutBadge = requireViewById(rootView, R.id.drawer_about_badge_btn);
 
@@ -100,6 +111,15 @@ public final class NavigationDrawerFragment extends Fragment {
         updateItems();
 
         Preferences.registerPrefsChangedListener(prefsListener);
+
+        TextView alovoaNameText = requireViewById(rootView, R.id.alovoa_name_text);
+        TextView alovoaNameSlogan = requireViewById(rootView, R.id.alovoa_slogan_text);
+
+        Typeface tfMedium = Typeface.createFromAsset( getActivity().getAssets(), "font/montserrat_medium.ttf");
+        Typeface tfExtraBold = Typeface.createFromAsset( getActivity().getAssets(), "font/montserrat_extrabold.ttf");
+
+        alovoaNameText.setTypeface(tfExtraBold);
+        alovoaNameSlogan.setTypeface(tfMedium);
 
         return rootView;
     }
@@ -182,8 +202,17 @@ public final class NavigationDrawerFragment extends Fragment {
         launchActivity(PrefsActivity.class);
     }
 
+    private void onToolsClick() {
+        launchActivity(ToolsActivity.class);
+    }
+
     private void onQueueClick() {
         launchActivity(QueueActivity.class);
+    }
+
+    private void onHeaderClick() {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(ALOVOA_URL));
+        startActivity(browserIntent);
     }
 
     /**

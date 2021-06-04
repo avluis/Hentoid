@@ -1,14 +1,11 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,14 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebHistoryItem;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -35,7 +30,6 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
@@ -43,46 +37,32 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
-import com.annimon.stream.function.BiFunction;
+import com.annimon.stream.function.BiConsumer;
 import com.google.android.material.badge.BadgeDrawable;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.skydoves.balloon.ArrowOrientation;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.threeten.bp.Instant;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import javax.annotation.Nonnull;
-
-import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
@@ -92,7 +72,6 @@ import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -107,18 +86,19 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
-import me.devsaki.hentoid.fragments.BookmarksDialogFragment;
+import me.devsaki.hentoid.fragments.web.BookmarksDialogFragment;
+import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
@@ -127,23 +107,19 @@ import me.devsaki.hentoid.views.NestedScrollWebView;
 import me.devsaki.hentoid.widget.AddQueueMenu;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import pl.droidsonroids.jspoon.HtmlAdapter;
-import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
-import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
-import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-public abstract class BaseWebActivity extends BaseActivity implements WebContentListener, BookmarksDialogFragment.Parent {
+public abstract class BaseWebActivity extends BaseActivity implements CustomWebViewClient.CustomWebActivity, BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {
 
     @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.VIEW_QUEUE, ActionMode.READ})
     @Retention(RetentionPolicy.SOURCE)
@@ -178,6 +154,18 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         int GALLERY = 1;
     }
 
+    private static final float SIMILARITY_MIN_THRESHOLD = 0.85f;
+
+
+    // === NUTS AND BOLTS
+    private CustomWebViewClient webClient;
+    // Database
+    private CollectionDAO objectBoxDAO;
+    // Disposable to be used for punctual search
+    private Disposable searchExtraImagesdisposable;
+    // Disposable to be used for content processing
+    private Disposable processContentDisposable;
+
 
     // === UI
     // Associated webview
@@ -206,12 +194,19 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     // Progress bar
     private ProgressBar progressBar;
 
-    // === VARIABLES
-    private CustomWebViewClient webClient;
-    // Currently viewed content
+    // === CURRENTLY VIEWED CONTENT-RELATED VARIABLES
     private Content currentContent = null;
-    // Database
-    private CollectionDAO objectBoxDAO;
+    // Content ID of the duplicate candidate of the currently viewed Content
+    private long duplicateId = -1;
+    // Similarity score of the duplicate candidate of the currently viewed Content
+    private float duplicateSimilarity = 0f;
+    // Blocked tags found on the currently viewed Content
+    private List<String> blockedTags = Collections.emptyList();
+    // Extra images found on the currently viewed Content
+    private List<ImageFile> extraImages = Collections.emptyList();
+
+
+    // === OTHER VARIABLES
     // Indicates which mode the download button is in
     protected @ActionMode
     int actionButtonMode;
@@ -220,43 +215,15 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     int seekButtonMode;
     // Alert to be displayed
     private UpdateInfo.SourceAlert alert;
-    // Disposable to be used for punctual search
-    private Disposable disposable;
+    // Handler for fetch interceptor
+    protected BiConsumer<String, String> fetchHandler = null;
+    protected String jsInterceptorScript = null;
 
-    // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
-    private static final Set<String> universalBlockedContent = new HashSet<>();         // Universal list (applied to all sites)
-    private List<String> localBlockedContent;                                           // Local list (applied to current site)
-    // List of "dirty" elements (CSS selector) to be cleaned before displaying the page
-    private List<String> dirtyElements;
-
-    static {
-        String[] blockedDomains = HentoidApp.getInstance().getResources().getStringArray(R.array.blocked_domains);
-        universalBlockedContent.addAll(Arrays.asList(blockedDomains));
-    }
 
     protected abstract CustomWebViewClient getWebClient();
 
     abstract Site getStartSite();
 
-    /**
-     * Add an content block filter to current site
-     *
-     * @param filter Filter to addAll to content block system
-     */
-    protected void addContentBlockFilter(String[] filter) {
-        if (null == localBlockedContent) localBlockedContent = new ArrayList<>();
-        Collections.addAll(localBlockedContent, filter);
-    }
-
-    /**
-     * Add an element filter to current site
-     *
-     * @param elements Elements (CSS selector) to addAll to page cleaner
-     */
-    protected void addDirtyElements(String[] elements) {
-        if (null == dirtyElements) dirtyElements = new ArrayList<>();
-        Collections.addAll(dirtyElements, elements);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -293,7 +260,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
         // Webview
         animatedCheck = findViewById(R.id.animated_check);
-        initWebView();
+        initUI();
         initSwipeLayout();
         webView.loadUrl(getStartUrl());
 
@@ -391,7 +358,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onDownloadPreparationEvent(DownloadPreparationEvent event) {
-        if (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.url.equalsIgnoreCase(currentContent.getUrl())) {
+        // Show progress if it's about current content or its best duplicate
+        if (
+                (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.contentId == currentContent.getId())
+                        || (duplicateId > 0 && event.contentId == duplicateId)
+        ) {
             progressBar.setMax(event.total);
             progressBar.setProgress(event.done);
             progressBar.setVisibility(event.isCompleted() ? View.GONE : View.VISIBLE);
@@ -427,8 +398,17 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         checkPermissions();
         String url = webView.getUrl();
         Timber.i(">> WebActivity resume : %s %s %s", url, currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
-        if (currentContent != null && url != null && getWebClient().isGalleryPage(url))
-            processContent(currentContent, false);
+        if (currentContent != null && url != null && getWebClient().isGalleryPage(url)) {
+            if (processContentDisposable != null)
+                processContentDisposable.dispose(); // Cancel whichever process was happening before
+            processContentDisposable = Single.fromCallable(() -> processContent(currentContent, false))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            status -> onContentProcessed(status, false),
+                            Timber::e
+                    );
+        }
     }
 
     @Override
@@ -466,7 +446,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void initWebView() {
+    private void initUI() {
 
         try {
             webView = new NestedScrollWebView(this);
@@ -551,13 +531,17 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
 
-        CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-        SwipeRefreshLayout refreshLayout = findViewById(R.id.swipe_container);
-        if (refreshLayout != null) refreshLayout.addView(webView, layoutParams);
+        if (fetchHandler != null)
+            webView.addJavascriptInterface(new FetchHandler(fetchHandler), "fetchHandler");
     }
 
     private void initSwipeLayout() {
+        CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        swipeLayout = findViewById(R.id.swipe_container);
+        if (null == swipeLayout) return;
+
+        swipeLayout.addView(webView, layoutParams);
+
         swipeLayout = findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(() -> {
             if (!swipeLayout.isRefreshing() || !webClient.isLoading()) {
@@ -569,6 +553,61 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
+    }
+
+    public void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded) {
+        refreshStopMenu.setIcon(R.drawable.ic_close);
+        progressBar.setVisibility(View.GONE);
+        if (!isHtmlLoaded) {
+            actionMenu.setIcon(R.drawable.selector_download_action);
+            actionMenu.setEnabled(false);
+        }
+
+        // Activate fetch handler
+        if (fetchHandler != null) {
+            if (null == jsInterceptorScript) jsInterceptorScript = getJsInterceptorScript();
+            webView.loadUrl(jsInterceptorScript);
+        }
+
+        // Display download button tooltip if a book page has been reached
+        if (isGalleryPage) showTooltip(R.string.help_web_download, false);
+        // Update bookmark button
+        List<SiteBookmark> bookmarks = objectBoxDAO.selectBookmarks(getStartSite());
+        Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> SiteBookmark.urlsAreSame(b.getUrl(), url)).findFirst();
+        updateBookmarkButton(currentBookmark.isPresent());
+    }
+
+    // WARNING : This method may not be called from the UI thread
+    public void onGalleryPageStarted() {
+        blockedTags.clear();
+        extraImages.clear();
+        duplicateId = -1;
+        duplicateSimilarity = 0f;
+        // Greys out the action button
+        // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious)
+        runOnUiThread(() -> {
+            actionMenu.setIcon(R.drawable.selector_download_action);
+            actionMenu.setEnabled(false);
+        });
+    }
+
+    public void onPageFinished(boolean isResultsPage, boolean isGalleryPage) {
+        refreshNavigationMenu(isResultsPage);
+        refreshStopMenu.setIcon(R.drawable.ic_action_refresh);
+
+        // Manage bottom alert banner visibility
+        if (isGalleryPage)
+            displayBottomAlertBanner(blockedTags); // Called here to be sure it is displayed on the gallery page
+        else onBottomAlertCloseClick(null);
+    }
+
+    /**
+     * Refresh the visuals of the buttons of the navigation menu
+     */
+    private void refreshNavigationMenu(boolean isResultsPage) {
+        backMenu.setEnabled(webView.canGoBack());
+        forwardMenu.setEnabled(webView.canGoForward());
+        changeSeekMode(isResultsPage ? BaseWebActivity.SeekMode.PAGE : BaseWebActivity.SeekMode.GALLERY, isResultsPage || backListContainsGallery(webView.copyBackForwardList()) > -1);
     }
 
     /**
@@ -654,7 +693,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
      * Handler for the "bookmark" top menu button of the browser
      */
     private void onBookmarkClick() {
-        BookmarksDialogFragment.invoke(this, getStartSite(), Helper.protect(webView.getTitle()), Helper.protect(webView.getUrl()));
+        BookmarksDialogFragment.invoke(this, getStartSite(), StringHelper.protect(webView.getTitle()), StringHelper.protect(webView.getUrl()));
     }
 
     /**
@@ -734,19 +773,36 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     /**
      * Listener for the Action button : download content, view queue or read content
      */
-    public void onActionClick() {
-        if (ActionMode.DOWNLOAD == actionButtonMode) processDownload(false, false);
-        else if (ActionMode.DOWNLOAD_PLUS == actionButtonMode) processDownload(false, true);
-        else if (ActionMode.VIEW_QUEUE == actionButtonMode) goToQueue();
-        else if (ActionMode.READ == actionButtonMode && currentContent != null) {
-            String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
-            currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
-            if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
-                    || StatusContent.ERROR == currentContent.getStatus()
-                    || StatusContent.MIGRATED == currentContent.getStatus()))
-                //ContentHelper.openHentoidViewer(this, currentContent, null);
-                ContentHelper.open(this, currentContent, null);
-            else actionMenu.setEnabled(false);
+    protected void onActionClick() {
+        boolean needsDuplicateAlert = Preferences.isDownloadDuplicateAsk() && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD;
+        switch (actionButtonMode) {
+            case ActionMode.DOWNLOAD:
+                if (needsDuplicateAlert)
+                    DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, false);
+                else processDownload(false, false);
+                break;
+            case ActionMode.DOWNLOAD_PLUS:
+                if (needsDuplicateAlert)
+                    DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, true);
+                else processDownload(false, true);
+                break;
+            case ActionMode.VIEW_QUEUE:
+                goToQueue();
+                break;
+            case ActionMode.READ:
+                if (currentContent != null) {
+                    String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
+                    currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
+                    if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
+                            || StatusContent.ERROR == currentContent.getStatus()
+                            || StatusContent.MIGRATED == currentContent.getStatus()))
+                        ContentHelper.openHentoidViewer(this, currentContent, -1, null);
+                    //ContentHelper.open(this, currentContent, null);
+                    else actionMenu.setEnabled(false);
+                }
+                break;
+            default:
+                // Nothing
         }
     }
 
@@ -807,6 +863,33 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         }
 
         if (isDownloadPlus) {
+            // Copy the _current_ content's download params to the images
+            String downloadParamsStr = currentContent.getDownloadParams();
+            if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
+                for (ImageFile i : extraImages) i.setDownloadParams(downloadParamsStr);
+            }
+
+            // Determine base book : browsed downloaded book or best duplicate ?
+            if (!ContentHelper.isInLibrary(currentContent.getStatus()) && duplicateId > 0) {
+                currentContent = objectBoxDAO.selectContent(duplicateId);
+                if (null == currentContent) return;
+            }
+
+            // Append additional pages to the base book's list of pages
+            List<ImageFile> updatedImgs = new ArrayList<>(); // Entire image set to update
+            Set<String> existingUrls = new HashSet<>(); // URLs of known images
+            if (currentContent.getImageFiles() != null) {
+                existingUrls.addAll(Stream.of(currentContent.getImageFiles()).map(ImageFile::getUrl).toList());
+                updatedImgs.addAll(currentContent.getImageFiles());
+            }
+
+            // Save additional detected pages references to base book, without duplicate URLs
+            List<ImageFile> additionalNonExistingImages = Stream.of(extraImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
+            if (!additionalNonExistingImages.isEmpty()) {
+                updatedImgs.addAll(additionalNonExistingImages);
+                currentContent.setImageFiles(updatedImgs);
+            }
+
             currentContent.setStatus(StatusContent.SAVED);
             objectBoxDAO.insertContent(currentContent);
         }
@@ -851,7 +934,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         Intent intent = new Intent(this, QueueActivity.class);
 
         QueueActivityBundle.Builder builder = new QueueActivityBundle.Builder();
-        builder.setContentHash(currentContent.hash64());
+        builder.setContentHash(currentContent.uniqueHash());
         builder.setIsErrorsTab(currentContent.getStatus().equals(StatusContent.ERROR));
         intent.putExtras(builder.getBundle());
 
@@ -863,7 +946,7 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
             WebBackForwardList webBFL = webView.copyBackForwardList();
-            String originalUrl = Helper.protect(webView.getOriginalUrl());
+            String originalUrl = StringHelper.protect(webView.getOriginalUrl());
             int i = webBFL.getCurrentIndex();
             do {
                 i--;
@@ -884,85 +967,144 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
     /**
      * Display webview controls according to designated content
      *
-     * @param content       Currently displayed content
-     * @param quickDownload True if the action has been triggered by a quick download
-     *                      (which means we're not on a book gallery page but on the book list page)
+     * @param content Currently displayed content
      * @return The status of the Content after being processed
      */
     private @ContentStatus
     int processContent(@NonNull Content content, boolean quickDownload) {
-        @ContentStatus int result = ContentStatus.UNKNOWN;
-        if (content.getUrl().isEmpty()) return result;
+        Helper.assertNonUiThread();
+        if (content.getUrl().isEmpty()) return ContentStatus.UNKNOWN;
 
         Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
-        String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? content.getCoverImageUrl() : "";
+        String searchUrl = ""; //getStartSite().hasCoverBasedPageUpdates() ? content.getCoverImageUrl() : "";
         Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), searchUrl);
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
 
         if (!isInCollection && !isInQueue) {
+            // Index the content's cover picture
+            long pHash = Long.MIN_VALUE;
+            try {
+                List<Pair<String, String>> requestHeadersList = new ArrayList<>();
+                Map<String, String> downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
+
+                String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                if (value != null)
+                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, value));
+
+                value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                if (value != null)
+                    requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, value));
+
+                Response onlineCover = HttpHelper.getOnlineResource(
+                        HttpHelper.fixUrl(content.getCoverImageUrl(), getStartUrl()),
+                        requestHeadersList,
+                        getStartSite().useMobileAgent(),
+                        getStartSite().useHentoidAgent(),
+                        getStartSite().useWebviewAgent()
+                );
+                ResponseBody coverBody = onlineCover.body();
+                if (coverBody != null) {
+                    InputStream bodyStream = coverBody.byteStream();
+                    Bitmap b = DuplicateHelper.Companion.getCoverBitmapFromStream(bodyStream);
+                    pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), b);
+                }
+            } catch (IOException e) {
+                Timber.w(e);
+            }
+            // Look for duplicates
+            ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(objectBoxDAO, content, pHash);
+            if (duplicateResult != null) {
+                duplicateId = duplicateResult.left.getId();
+                duplicateSimilarity = duplicateResult.right;
+                // Content ID of the duplicate candidate of the currently viewed Content
+                boolean duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
+                // Same site and similar => download by default, but look for extra pics just in case
+                if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload)
+                    searchForExtraImages(duplicateResult.left);
+            }
+
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
                 content.setStatus(StatusContent.SAVED);
                 ContentHelper.addContent(this, objectBoxDAO, content);
             } else {
                 content = contentDB;
             }
-            if (!quickDownload) changeActionMode(ActionMode.DOWNLOAD);
         } else {
-            /*
-            content.setId(contentDB.getId());
-            content.setStatus(contentDB.getStatus());
-             */
             content = contentDB;
         }
+
         currentContent = content;
 
         if (isInCollection) {
-            if (!quickDownload) changeActionMode(ActionMode.READ);
-            result = ContentStatus.IN_COLLECTION;
-            searchForMoreImages(contentDB); // Async; might switch from READ to DOWNLOAD_PLUS a couple seconds later
+            if (!quickDownload) searchForExtraImages(currentContent);
+            return ContentStatus.IN_COLLECTION;
         }
-        if (isInQueue) {
-            if (!quickDownload) changeActionMode(ActionMode.VIEW_QUEUE);
-            result = ContentStatus.IN_QUEUE;
-        }
-
-        if (webClient != null)
-            webClient.setBlockedTags(ContentHelper.getBlockedTags(content));
-
-        return result;
+        if (isInQueue) return ContentStatus.IN_QUEUE;
+        return ContentStatus.UNKNOWN;
     }
 
-    public void onResultReady(@NonNull Content results, boolean quickDownload) {
-        @ContentStatus int status = processContent(results, quickDownload);
-        if (quickDownload) {
-            if (ContentStatus.UNKNOWN == status) processDownload(true, false);
-            else if (ContentStatus.IN_COLLECTION == status)
-                ToastHelper.toast(R.string.already_downloaded);
-            else if (ContentStatus.IN_QUEUE == status) ToastHelper.toast(R.string.already_queued);
+    public void onResultReady(@NonNull Content result, boolean quickDownload) {
+        if (processContentDisposable != null)
+            processContentDisposable.dispose(); // Cancel whichever process was happening before
+        processContentDisposable = Single.fromCallable(() -> processContent(result, quickDownload))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        status -> onContentProcessed(status, quickDownload),
+                        Timber::e
+                );
+    }
+
+    private void onContentProcessed(@ContentStatus int status, boolean quickDownload) {
+        processContentDisposable.dispose();
+        switch (status) {
+            case ContentStatus.UNKNOWN:
+                if (quickDownload) {
+                    if (duplicateId > -1 && Preferences.isDownloadDuplicateAsk())
+                        DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, false);
+                    else
+                        processDownload(true, false);
+                } else changeActionMode(ActionMode.DOWNLOAD);
+                break;
+            case ContentStatus.IN_COLLECTION:
+                if (quickDownload) ToastHelper.toast(R.string.already_downloaded);
+                changeActionMode(ActionMode.READ);
+                break;
+            case ContentStatus.IN_QUEUE:
+                if (quickDownload) ToastHelper.toast(R.string.already_queued);
+                changeActionMode(ActionMode.VIEW_QUEUE);
+                break;
+            default:
+                // Nothing
         }
+        blockedTags = ContentHelper.getBlockedTags(currentContent);
     }
 
     public void onResultFailed() {
         runOnUiThread(() -> ToastHelper.toast(R.string.web_unparsable));
     }
 
-    private void searchForMoreImages(@NonNull final Content storedContent) {
-        disposable = Single.fromCallable(() -> doSearchForMoreImages(storedContent))
+    private void searchForExtraImages(@NonNull final Content storedContent) {
+        if (searchExtraImagesdisposable != null)
+            searchExtraImagesdisposable.dispose(); // Cancel previous operation
+        searchExtraImagesdisposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        l -> onSearchForMoreImagesSuccess(storedContent, l),
+                        list -> onSearchForExtraImagesSuccess(storedContent, list),
                         Timber::e
                 );
     }
 
-    private List<ImageFile> doSearchForMoreImages(@NonNull final Content storedContent) {
+    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent) {
         List<ImageFile> result = Collections.emptyList();
 
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(storedContent);
         try {
+            // Call the parser to retrieve all the pages
+            // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
             List<ImageFile> onlineImgs = parser.parseImageList(storedContent);
             if (onlineImgs.isEmpty()) return result;
 
@@ -983,39 +1125,25 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         return result;
     }
 
-    private void onSearchForMoreImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
-        disposable.dispose();
-        if (additionalImages.isEmpty()) return;
+    private void onSearchForExtraImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
+        searchExtraImagesdisposable.dispose();
+        if (additionalImages.isEmpty()) {
+            ToastHelper.toast(R.string.no_extra_page);
+            return;
+        }
+        if (null == currentContent) return;
 
-        if (currentContent != null && currentContent.equals(storedContent)) { // User hasn't left the book page since
-            // Copy the content's download params to the images
-            String downloadParamsStr = storedContent.getDownloadParams();
-            if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
-                for (ImageFile i : additionalImages) i.setDownloadParams(downloadParamsStr);
-            }
-
-            // Append additional pages to the current book's list of pages
-            // and remove duplicates
-            List<ImageFile> updatedImgs = new ArrayList<>();
-            Set<String> existingUrls = new HashSet<>();
+        if (currentContent.equals(storedContent) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
+            // Retrieve the URLs of stored pages
             Set<String> storedUrls = new HashSet<>();
             if (storedContent.getImageFiles() != null) {
-                existingUrls.addAll(Stream.of(storedContent.getImageFiles()).map(ImageFile::getUrl).toList());
                 storedUrls.addAll(Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getUrl).toList());
-                updatedImgs.addAll(storedContent.getImageFiles());
             }
 
-            // Save additional detected pages references to current book
-            List<ImageFile> additionalNonExistingImages = Stream.of(additionalImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
-            if (!additionalNonExistingImages.isEmpty()) {
-                updatedImgs.addAll(additionalNonExistingImages);
-                storedContent.setImageFiles(updatedImgs);
-                objectBoxDAO.insertContent(storedContent);
-            }
-
-            // Display the "download more" button
+            // Display the "download more" button only if extra images URLs aren't duplicates
             List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();
             if (!additionalNonDownloadedImages.isEmpty()) {
+                extraImages = additionalNonDownloadedImages;
                 changeActionMode(ActionMode.DOWNLOAD_PLUS);
                 BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
                 badge.setNumber(additionalNonDownloadedImages.size());
@@ -1040,494 +1168,11 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         TooltipHelper.showTooltip(this, resource, ArrowOrientation.BOTTOM, bottomToolbar, this, always);
     }
 
-    /**
-     * Indicates if the given URL is forbidden by the current content filters
-     *
-     * @param url URL to be examinated
-     * @return True if URL is forbidden according to current filters; false if not
-     */
-    protected boolean isUrlForbidden(@NonNull String url) {
-        for (String s : universalBlockedContent) {
-            if (url.contains(s)) return true;
-        }
-        if (localBlockedContent != null)
-            for (String s : localBlockedContent) {
-                if (url.contains(s)) return true;
-            }
-        return false;
+    @Override
+    public void onDownloadDuplicate(boolean isDownloadPlus) {
+        processDownload(false, isDownloadPlus);
     }
 
-
-    /**
-     * Analyze loaded HTML to display download button
-     * Override blocked content with empty content
-     */
-    class CustomWebViewClient extends WebViewClient {
-
-        // Pre-built object to represent an empty input stream
-        // (will be used instead of the actual stream when the requested resource is blocked)
-        private final ByteArrayInputStream NOTHING = new ByteArrayInputStream("".getBytes());
-
-        // Used to clear RxJava observers (avoiding memory leaks)
-        protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
-        // Listener to the results of the page parser
-        protected final WebContentListener listener;
-        // List of the URL patterns identifying a parsable book gallery page
-        private final List<Pattern> galleryUrlPattern = new ArrayList<>();
-        // List of the URL patterns identifying a parsable book gallery page
-        private final List<Pattern> resultsUrlPattern = new ArrayList<>();
-        // Results URL rewriter to insert page to seek to
-        private BiFunction<Uri, Integer, String> resultsUrlRewriter = null;
-        // Adapter used to parse the HTML code of book gallery pages
-        private final HtmlAdapter<? extends ContentParser> htmlAdapter;
-        // Domain name for which link navigation is restricted
-        private final List<String> restrictedDomainNames = new ArrayList<>();
-        // Loading state of the current webpage (used for the refresh/stop feature)
-        private boolean isPageLoading = false;
-        // Loading state of the HTML code of the current webpage (used to trigger the action button)
-        boolean isHtmlLoaded = false;
-        // TODO doc
-        List<String> blockedTags = Collections.emptyList();
-
-
-        CustomWebViewClient(String[] galleryUrl, WebContentListener listener) {
-            this.listener = listener;
-
-            Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
-            final Jspoon jspoon = Jspoon.create();
-            htmlAdapter = jspoon.adapter(c); // Unchecked but alright
-
-            for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
-        }
-
-        void destroy() {
-            Timber.d("WebClient destroyed");
-            compositeDisposable.clear();
-        }
-
-        void setResultsUrlPatterns(String... patterns) {
-            for (String s : patterns) resultsUrlPattern.add(Pattern.compile(s));
-        }
-
-        void setResultUrlRewriter(@NonNull BiFunction<Uri, Integer, String> rewriter) {
-            resultsUrlRewriter = rewriter;
-        }
-
-        void setBlockedTags(@NonNull final List<String> blockedTags) {
-            this.blockedTags = blockedTags;
-        }
-
-        /**
-         * Restrict link navigation to a given domain name
-         *
-         * @param s Domain name to restrict link navigation to
-         */
-        protected void restrictTo(String s) {
-            restrictedDomainNames.add(s);
-        }
-
-        void restrictTo(String... s) {
-            restrictedDomainNames.addAll(Arrays.asList(s));
-        }
-
-        private boolean isHostNotInRestrictedDomains(@NonNull String host) {
-            if (restrictedDomainNames.isEmpty()) return false;
-
-            for (String s : restrictedDomainNames) {
-                if (host.contains(s)) return false;
-            }
-
-            Timber.i("Unrestricted host detected : %s", host);
-            return true;
-        }
-
-        /**
-         * Indicates if the given URL is a book gallery page
-         *
-         * @param url URL to test
-         * @return True if the given URL represents a book gallery page
-         */
-        boolean isGalleryPage(@NonNull final String url) {
-            if (galleryUrlPattern.isEmpty()) return false;
-
-            for (Pattern p : galleryUrlPattern) {
-                Matcher matcher = p.matcher(url);
-                if (matcher.find()) return true;
-            }
-            return false;
-        }
-
-        /**
-         * Indicates if the given URL is a results page
-         *
-         * @param url URL to test
-         * @return True if the given URL represents a results page
-         */
-        boolean isResultsPage(@NonNull final String url) {
-            if (resultsUrlPattern.isEmpty()) return false;
-
-            for (Pattern p : resultsUrlPattern) {
-                Matcher matcher = p.matcher(url);
-                if (matcher.find()) return true;
-            }
-            return false;
-        }
-
-        /**
-         * Rewrite the given URL to seek the given page number
-         *
-         * @param url     URL to be rewritten
-         * @param pageNum page number to seek
-         * @return Given URL to be rewritten
-         */
-        protected String seekResultsUrl(@NonNull String url, int pageNum) {
-            if (null == resultsUrlRewriter || !isResultsPage(url) || isGalleryPage(url)) return url;
-            else return resultsUrlRewriter.apply(Uri.parse(url), pageNum);
-        }
-
-        /**
-         * Determines if the browser can use one single OkHttp request to serve HTML pages
-         * - Does not work on 4.4 & 4.4.2 because calling CookieManager.getCookie inside shouldInterceptRequest triggers a deadlock
-         * https://issuetracker.google.com/issues/36989494
-         * - Does not work on Chrome 45-71 because sameSite cookies are not published by CookieManager.getCookie (causes session issues on nHentai)
-         * https://bugs.chromium.org/p/chromium/issues/detail?id=780491
-         *
-         * @return true if HTML content can be served by a single OkHttp request,
-         * false if the webview has to handle the display (OkHttp will be used as a 2nd request for parsing)
-         */
-        private boolean canUseSingleOkHttpRequest() {
-            return (Preferences.isBrowserAugmented()
-                    && (HttpHelper.getChromeVersion() < 45 || HttpHelper.getChromeVersion() > 71)
-            );
-        }
-
-        /**
-         * @deprecated kept for API19-API23
-         */
-        @Override
-        @Deprecated
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            return shouldOverrideUrlLoadingInternal(view, url, null);
-        }
-
-        @TargetApi(Build.VERSION_CODES.N)
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            return shouldOverrideUrlLoadingInternal(view, request.getUrl().toString(), request.getRequestHeaders());
-        }
-
-        protected boolean shouldOverrideUrlLoadingInternal(
-                @NonNull final WebView view,
-                @NonNull final String url,
-                @Nullable final Map<String, String> requestHeaders) {
-            if (isUrlForbidden(url) || !url.startsWith("http")) return true;
-
-            // Download and open the torrent file
-            // NB : Opening the URL itself won't work when the tracker is private
-            // as the 3rd party torrent app doesn't have access to it
-            if (HttpHelper.getExtensionFromUri(url).equals("torrent")) {
-                disposable = Single.fromCallable(() -> downloadFile(view.getContext(), url, requestHeaders))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(uri -> {
-                            disposable.dispose();
-                            FileHelper.openFile(view.getContext(), uri);
-                        }, e -> {
-                            disposable.dispose();
-                            ToastHelper.toast("Downloading torrent failed : " + e.getMessage());
-                            Timber.w(e);
-                        });
-            }
-
-            String host = Uri.parse(url).getHost();
-            return host != null && isHostNotInRestrictedDomains(host);
-        }
-
-        /**
-         * Download the resource at the given URL to the app's cache folder
-         *
-         * @param context        Context to be used
-         * @param url            URL to load
-         * @param requestHeaders Request headers (optional)
-         * @return Saved file, if successful
-         * @throws IOException if anything horrible happens during the download
-         */
-        private File downloadFile(@NonNull final Context context,
-                                  @NonNull final String url,
-                                  @Nullable final Map<String, String> requestHeaders) throws IOException {
-            List<Pair<String, String>> requestHeadersList;
-            requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
-
-            Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent(), getStartSite().useWebviewAgent());
-            ResponseBody body = onlineFileResponse.body();
-            if (null == body)
-                throw new IOException("Empty response from server");
-
-            File cacheDir = context.getCacheDir();
-            // Using a random file name rather than the original name to avoid errors caused by path length
-            File file = new File(cacheDir.getAbsolutePath() + File.separator + new Random().nextInt(10000) + "." + getExtensionFromUri(url));
-            if (!file.createNewFile())
-                throw new IOException("Could not create file " + file.getPath());
-
-            Uri torrentFileUri = Uri.fromFile(file);
-            FileHelper.saveBinary(context, torrentFileUri, body.bytes());
-            return file;
-        }
-
-        /**
-         * Important note
-         * <p>
-         * Based on observation, for a given URL, onPageStarted seems to be called
-         * - Before {@link this.shouldInterceptRequest} when the page is not cached (1st call)
-         * - After {@link this.shouldInterceptRequest} when the page is cached (Nth call; N>1)
-         */
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            refreshStopMenu.setIcon(R.drawable.ic_close);
-            progressBar.setVisibility(View.GONE);
-            isPageLoading = true;
-            if (!isHtmlLoaded) {
-                actionMenu.setIcon(R.drawable.selector_download_action);
-                actionMenu.setEnabled(false);
-            }
-            // Display download button tooltip if a book page has been reached
-            if (isGalleryPage(url)) showTooltip(R.string.help_web_download, false);
-            // Update bookmark button
-            List<SiteBookmark> bookmarks = objectBoxDAO.selectBookmarks(getStartSite());
-            Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> SiteBookmark.urlsAreSame(b.getUrl(), url)).findFirst();
-            updateBookmarkButton(currentBookmark.isPresent());
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            isPageLoading = false;
-            isHtmlLoaded = false; // Reset for the next page
-            refreshStopMenu.setIcon(R.drawable.ic_action_refresh);
-            refreshNavigationMenu();
-        }
-
-        /**
-         * Refresh the visuals of the buttons of the navigation menu
-         */
-        private void refreshNavigationMenu() {
-            backMenu.setEnabled(webView.canGoBack());
-            forwardMenu.setEnabled(webView.canGoForward());
-            boolean isResults = isResultsPage(Helper.protect(webView.getUrl()));
-            changeSeekMode(isResults ? SeekMode.PAGE : SeekMode.GALLERY, isResults || backListContainsGallery(webView.copyBackForwardList()) > -1);
-            // Manager bottom alert banner visibility
-            if (isGalleryPage(webView.getUrl())) displayBottomAlertBanner(blockedTags);
-            else onBottomAlertCloseClick(null);
-        }
-
-        /**
-         * Note : this method is called by a non-UI thread
-         */
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull WebResourceRequest request) {
-            String url = request.getUrl().toString();
-
-            // Data fetched with POST is out of scope of analysis and adblock
-            if (!request.getMethod().equalsIgnoreCase("get")) {
-                Timber.v("[%s] ignored by interceptor; method = %s", url, request.getMethod());
-                return super.shouldInterceptRequest(view, request);
-            }
-
-            WebResourceResponse result = shouldInterceptRequestInternal(url, request.getRequestHeaders());
-            if (result != null) return result;
-            else return super.shouldInterceptRequest(view, request);
-        }
-
-        /**
-         * Determines if the page at the given URL is to be processed
-         *
-         * @param url     Called URL
-         * @param headers Request headers
-         * @return Processed response if the page has been processed;
-         * null if vanilla processing should happen instead
-         */
-        @Nullable
-        private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
-                                                                   @Nullable final Map<String, String> headers) {
-            if (isUrlForbidden(url) || !url.startsWith("http")) {
-                return new WebResourceResponse("text/plain", "utf-8", NOTHING);
-            } else {
-                if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
-
-                // If we're here to remove "dirty elements", we only do it on HTML resources (URLs without extension)
-                if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty())
-                    return parseResponse(url, headers, false, false);
-
-                return null;
-            }
-        }
-
-        /**
-         * Process the given webpage in a background thread (used by quick download)
-         *
-         * @param urlStr URL of the page to parse
-         */
-        void parseResponseAsync(@NonNull String urlStr) {
-            compositeDisposable.add(
-                    Completable.fromCallable(() -> parseResponse(urlStr, null, true, true))
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(() -> {
-                            }, Timber::e)
-            );
-        }
-
-        /**
-         * Process the webpage at the given URL
-         *
-         * @param urlStr             URL of the page to process
-         * @param requestHeaders     Request headers to use
-         * @param analyzeForDownload True if the page has to be analyzed for potential downloads;
-         *                           false if only ad removal should happen
-         * @param quickDownload      True if the present call has been triggered by a quick download action
-         * @return Processed response if the page has been actually processed;
-         * null if vanilla processing should happen instead
-         */
-        @SuppressLint("NewApi")
-        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-            Helper.assertNonUiThread();
-            // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
-            if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
-
-            blockedTags = Collections.emptyList();
-            List<Pair<String, String>> requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr);
-
-            try {
-                // Query resource here, using OkHttp
-                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, getStartSite().useMobileAgent(), getStartSite().useHentoidAgent(), getStartSite().useWebviewAgent());
-
-                // Scram if the response is a redirection or an error
-                if (response.code() >= 300) return null;
-
-                // Scram if the response is something else than html
-                Pair<String, String> contentType = HttpHelper.cleanContentType(response.header(HEADER_CONTENT_TYPE, ""));
-                if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
-                    return null;
-
-                // Scram if the response is empty
-                ResponseBody body = response.body();
-                if (null == body) throw new IOException("Empty body");
-
-                InputStream parserStream;
-                WebResourceResponse result;
-                if (canUseSingleOkHttpRequest()) {
-                    InputStream browserStream;
-                    if (analyzeForDownload) {
-                        // Response body bytestream needs to be duplicated
-                        // because Jsoup closes it, which makes it unavailable for the WebView to use
-                        List<InputStream> is = Helper.duplicateInputStream(body.byteStream(), 2);
-                        parserStream = is.get(0);
-                        browserStream = is.get(1);
-                    } else {
-                        parserStream = null;
-                        browserStream = body.byteStream();
-                    }
-
-                    // Remove dirty elements from HTML resources
-                    if (dirtyElements != null) {
-                        browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
-                        if (null == browserStream) return null;
-                    }
-
-                    // Convert OkHttp response to the expected format
-                    result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
-
-                    // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
-                    if (result.getResponseHeaders().containsKey("set-cookie") || result.getResponseHeaders().containsKey("Set-Cookie")) {
-                        String cookiesStr = result.getResponseHeaders().get("set-cookie");
-                        if (null == cookiesStr)
-                            cookiesStr = result.getResponseHeaders().get("Set-Cookie");
-                        if (cookiesStr != null) HttpHelper.setCookies(urlStr, cookiesStr);
-                    }
-                } else {
-                    parserStream = body.byteStream();
-                    result = null; // Default webview behaviour
-                }
-
-                if (analyzeForDownload)
-                    compositeDisposable.add(
-                            Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
-                                    .subscribeOn(Schedulers.computation())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(
-                                            content -> processContent(content, urlStr, quickDownload),
-                                            throwable -> {
-                                                Timber.e(throwable, "Error parsing content.");
-                                                isHtmlLoaded = true;
-                                                listener.onResultFailed();
-                                            })
-                    );
-
-                return result;
-            } catch (MalformedURLException e) {
-                Timber.e(e, "Malformed URL : %s", urlStr);
-            } catch (IOException e) {
-                Timber.e(e);
-            }
-            return null;
-        }
-
-        /**
-         * Process Content parsed from a webpage
-         *
-         * @param content       Content to be processed
-         * @param quickDownload True if the present call has been triggered by a quick download action
-         */
-        protected void processContent(@Nonnull Content content, @NonNull String url, boolean quickDownload) {
-            if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
-                return;
-
-            // Save useful download params for future use during download
-            Map<String, String> params = new HashMap<>();
-            params.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(url));
-            params.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
-
-            content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
-            isHtmlLoaded = true;
-
-            listener.onResultReady(content, quickDownload);
-        }
-
-        /**
-         * Indicate whether the current webpage is still loading or not
-         *
-         * @return True if current webpage is being loaded; false if not
-         */
-        boolean isLoading() {
-            return isPageLoading;
-        }
-
-        /**
-         * Remove nodes from the HTML document contained in the given stream, using a list of CSS selectors to identify them
-         *
-         * @param stream        Stream containing the HTML document to process
-         * @param baseUri       Base URI if the document
-         * @param dirtyElements CSS selectors of the nodes to remove
-         * @return Stream containing the HTML document stripped from the elements to remove
-         */
-        @Nullable
-        private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, @NonNull List<String> dirtyElements) {
-            try {
-                Document doc = Jsoup.parse(stream, null, baseUri);
-
-                for (String s : dirtyElements)
-                    for (Element e : doc.select(s)) {
-                        Timber.d("[%s] Removing node %s", baseUri, e.toString());
-                        e.remove();
-                    }
-                return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
-            } catch (IOException e) {
-                Timber.e(e);
-                return null;
-            }
-        }
-
-    }
 
     /**
      * Indicate if the browser's back list contains a book gallery
@@ -1570,5 +1215,37 @@ public abstract class BaseWebActivity extends BaseActivity implements WebContent
         else result = result.replace("%s", getResources().getString(R.string.alert_wip));
 
         return result;
+    }
+
+    private String getJsInterceptorScript() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("javascript:");
+        try (InputStream is = getAssets().open("fetch_override.js"); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+            String sCurrentLine;
+            while ((sCurrentLine = br.readLine()) != null) {
+                sb.append(sCurrentLine);
+            }
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+        return sb.toString();
+    }
+
+    // References :
+    // https://stackoverflow.com/a/64961272/8374722
+    // https://stackoverflow.com/questions/3941969/android-intercept-ajax-call-from-webview/5742194
+    public static class FetchHandler {
+
+        private final BiConsumer<String, String> handler;
+
+        public FetchHandler(BiConsumer<String, String> handler) {
+            this.handler = handler;
+        }
+
+        @JavascriptInterface
+        public void onFetchCall(String url, String body) {
+            Timber.w("AJAX Begin %s : %s", url, body);
+            handler.accept(url, body);
+        }
     }
 }

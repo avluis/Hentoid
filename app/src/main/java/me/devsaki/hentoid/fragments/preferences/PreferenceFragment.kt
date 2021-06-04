@@ -13,35 +13,26 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.BaseTransientBottomBar
-import com.google.android.material.snackbar.Snackbar
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import io.reactivex.disposables.Disposables
+import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.database.ObjectBoxDAO
-import me.devsaki.hentoid.enums.Theme
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
-import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.util.*
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ImportWorker
-import org.apache.commons.io.IOUtils
-import timber.log.Timber
-import java.io.IOException
-import java.nio.charset.StandardCharsets
-import java.util.*
 
 
 class PreferenceFragment : PreferenceFragmentCompat(),
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var viewModel: PreferencesViewModel
-    lateinit var exportDisposable: Disposable
     private var rootView: View? = null
 
     companion object {
@@ -115,7 +106,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.EXTERNAL_LIBRARY -> {
                     if (ExternalImportService.isRunning()) {
-                        ToastHelper.toast(getString(R.string.pref_import_running))
+                        ToastHelper.toast(R.string.pref_import_running)
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
                     }
@@ -132,7 +123,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                                 dialog1.dismiss()
                                 Preferences.setExternalLibraryUri("")
                                 viewModel.removeAllExternalContent()
-                                ToastHelper.toast(getString(R.string.prefs_external_library_detached))
+                                ToastHelper.toast(R.string.prefs_external_library_detached)
                             }
                             .setNegativeButton(R.string.no
                             ) { dialog12: DialogInterface, _: Int -> dialog12.dismiss() }
@@ -141,8 +132,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     true
                 }
                 Preferences.Key.REFRESH_LIBRARY -> {
-                    if (ImportWorker.isRunning()) {
-                        ToastHelper.toast(getString(R.string.pref_import_running))
+                    if (ImportWorker.isRunning(requireContext())) {
+                        ToastHelper.toast(R.string.pref_import_running)
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
                     }
@@ -152,22 +143,14 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     onDeleteAllExceptFavourites()
                     true
                 }
-                Preferences.Key.EXPORT_LIBRARY -> {
-                    MetaExportDialogFragment.invoke(parentFragmentManager)
-                    true
-                }
-                Preferences.Key.IMPORT_LIBRARY -> {
-                    MetaImportDialogFragment.invoke(parentFragmentManager)
-                    true
-                }
                 Preferences.Key.VIEWER_RENDERING -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
-                        ToastHelper.toast(getString(R.string.pref_viewer_rendering_no_android5))
+                        ToastHelper.toast(R.string.pref_viewer_rendering_no_android5)
                     true
                 }
                 Preferences.Key.SETTINGS_FOLDER -> {
-                    if (ImportWorker.isRunning()) {
-                        ToastHelper.toast(getString(R.string.pref_import_running))
+                    if (ImportWorker.isRunning(requireContext())) {
+                        ToastHelper.toast(R.string.pref_import_running)
                     } else {
                         LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)
                     }
@@ -175,10 +158,6 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 }
                 Preferences.Key.MEMORY_USAGE -> {
                     MemoryUsageDialogFragment.invoke(parentFragmentManager)
-                    true
-                }
-                Preferences.Key.ACCESS_LATEST_LOGS -> {
-                    LogsDialogFragment.invoke(parentFragmentManager)
                     true
                 }
                 Preferences.Key.APP_LOCK -> {
@@ -191,14 +170,6 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                     true
                 }
                 */
-                Preferences.Key.EXPORT_SETTINGS -> {
-                    onExportSettings()
-                    true
-                }
-                Preferences.Key.IMPORT_SETTINGS -> {
-                    SettingsImportDialogFragment.invoke(parentFragmentManager)
-                    true
-                }
                 else -> super.onPreferenceTreeClick(preference)
             }
 
@@ -244,7 +215,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     }
 
     private fun onPrefColorThemeChanged() {
-        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity, Theme.searchById(Preferences.getColorTheme()))
+        ThemeHelper.applyTheme(requireActivity() as AppCompatActivity)
     }
 
     private fun populateMemoryUsage() {
@@ -259,67 +230,30 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         val dao = ObjectBoxDAO(activity)
         var searchDisposable = Disposables.empty()
 
-        searchDisposable = dao.selectStoredBooks(true, false).subscribe { list ->
-            MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
-                    .setIcon(R.drawable.ic_warning)
-                    .setCancelable(false)
-                    .setTitle(R.string.app_name)
-                    .setMessage(getString(R.string.pref_ask_delete_all_except_favs, list.size))
-                    .setPositiveButton(R.string.yes
-                    ) { dialog1: DialogInterface, _: Int ->
-                        dao.cleanup()
-                        dialog1.dismiss()
-                        searchDisposable.dispose()
-                        DeleteProgressDialogFragment.invoke(parentFragmentManager, resources.getString(R.string.delete_title))
-                        viewModel.deleteItems(list)
-                    }
-                    .setNegativeButton(R.string.no
-                    ) { dialog12: DialogInterface, _: Int ->
-                        dao.cleanup()
-                        dialog12.dismiss()
-                    }
-                    .create()
-                    .show()
-        }
-    }
-
-    private fun onExportSettings() {
-        exportDisposable = io.reactivex.Single.fromCallable { getExportedSettings() }
-                .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                .observeOn(io.reactivex.schedulers.Schedulers.io())
-                .map { c: JsonSettings? -> JsonHelper.serializeToJson<JsonSettings?>(c, JsonSettings::class.java) }
+        searchDisposable = Single.fromCallable { dao.selectStoredContent(true, false, -1, false) }
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        { s: String -> onJsonSerialized(s) }, { t: Throwable? -> Timber.w(t) }
-                )
-    }
-
-    private fun getExportedSettings(): JsonSettings {
-        val jsonSettings = JsonSettings()
-
-        jsonSettings.settings = Preferences.extractPortableInformation()
-
-        return jsonSettings
-    }
-
-    private fun onJsonSerialized(json: String) {
-        exportDisposable.dispose()
-
-        // Use a random number to avoid erasing older exports by mistake
-        var targetFileName = Random().nextInt(9999).toString() + ".json"
-        targetFileName = "settings-$targetFileName"
-
-        rootView?.let {
-            try {
-                FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, JsonHelper.JSON_MIME_TYPE).use { newDownload -> IOUtils.toInputStream(json, StandardCharsets.UTF_8).use { input -> FileHelper.copy(input, newDownload) } }
-                Snackbar.make(it, R.string.copy_download_folder_success, BaseTransientBottomBar.LENGTH_LONG)
-                        .setAction("OPEN FOLDER") { FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()) }
-                        .show()
-            } catch (e: IOException) {
-                Snackbar.make(it, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
-            } catch (e: IllegalArgumentException) {
-                Snackbar.make(it, R.string.copy_download_folder_fail, BaseTransientBottomBar.LENGTH_LONG).show()
-            }
-        }
+                .subscribe { list ->
+                    MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                            .setIcon(R.drawable.ic_warning)
+                            .setCancelable(false)
+                            .setTitle(R.string.app_name)
+                            .setMessage(getString(R.string.pref_ask_delete_all_except_favs, list.size))
+                            .setPositiveButton(R.string.yes
+                            ) { dialog1: DialogInterface, _: Int ->
+                                dao.cleanup()
+                                dialog1.dismiss()
+                                searchDisposable.dispose()
+                                DeleteProgressDialogFragment.invoke(parentFragmentManager, resources.getString(R.string.delete_title))
+                                viewModel.deleteItems(list)
+                            }
+                            .setNegativeButton(R.string.no
+                            ) { dialog12: DialogInterface, _: Int ->
+                                dao.cleanup()
+                                dialog12.dismiss()
+                            }
+                            .create()
+                            .show()
+                }
     }
 }

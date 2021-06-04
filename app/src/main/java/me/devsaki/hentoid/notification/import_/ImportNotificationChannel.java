@@ -18,6 +18,7 @@ public class ImportNotificationChannel {
     private static final String ID_OLD = "import";
     static final String ID = "import2";
 
+    // IMPORTANT : ALWAYS INIT THE CHANNEL BEFORE FIRING NOTIFICATIONS !
     public static void init(@NonNull Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String name = "Library imports";

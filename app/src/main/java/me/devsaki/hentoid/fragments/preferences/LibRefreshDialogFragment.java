@@ -323,6 +323,9 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEvent(ProcessEvent event) {
+        if (event.processId != R.id.import_external && event.processId != R.id.import_primary)
+            return;
+
         ProgressBar progressBar;
         switch (event.step) {
             case (ImportWorker.STEP_2_BOOK_FOLDERS):
@@ -383,7 +386,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServiceDestroyed(ServiceDestroyedEvent event) {
-        if (event.service != ServiceDestroyedEvent.Service.IMPORT) return;
+        if (event.service != R.id.import_service) return;
         if (!isServiceGracefulClose) {
             Snackbar.make(rootView, R.string.import_unexpected, BaseTransientBottomBar.LENGTH_LONG).show();
             new Handler(Looper.getMainLooper()).postDelayed(this::dismiss, 3000);

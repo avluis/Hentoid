@@ -3,6 +3,7 @@ package me.devsaki.hentoid.parsers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ASMHentaiContent;
+import me.devsaki.hentoid.parsers.content.AllPornComicContent;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
@@ -23,6 +24,7 @@ import me.devsaki.hentoid.parsers.content.PururinContent;
 import me.devsaki.hentoid.parsers.content.ToonilyContent;
 import me.devsaki.hentoid.parsers.content.TsuminoContent;
 import me.devsaki.hentoid.parsers.images.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.images.AllPornComicParser;
 import me.devsaki.hentoid.parsers.images.DoujinsParser;
 import me.devsaki.hentoid.parsers.images.DummyParser;
 import me.devsaki.hentoid.parsers.images.EHentaiParser;
@@ -37,7 +39,6 @@ import me.devsaki.hentoid.parsers.images.LusciousParser;
 import me.devsaki.hentoid.parsers.images.ManhwaParser;
 import me.devsaki.hentoid.parsers.images.MrmParser;
 import me.devsaki.hentoid.parsers.images.MusesParser;
-//import me.devsaki.hentoid.parsers.images.NexusParser2;
 import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
@@ -97,6 +98,8 @@ public class ContentParserFactory {
                 return LusciousContent.class;
             case TOONILY:
                 return ToonilyContent.class;
+            case ALLPORNCOMIC:
+                return AllPornComicContent.class;
             default:
                 return DummyContent.class;
         }
@@ -147,6 +150,8 @@ public class ContentParserFactory {
                 return new ImhentaiParser();
             case TOONILY:
                 return new ToonilyParser();
+            case ALLPORNCOMIC:
+                return new AllPornComicParser();
             default:
                 return new DummyParser();
         }

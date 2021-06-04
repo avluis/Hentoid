@@ -28,12 +28,12 @@ public class NhentaiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        addDirtyElements(DIRTY_ELEMENTS);
-        addContentBlockFilter(BLOCKED_CONTENT);
-        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.setResultsUrlPatterns(RESULTS_FILTER);
         client.setResultUrlRewriter(this::rewriteResultsUrl);
+        client.addDirtyElements(DIRTY_ELEMENTS);
+        client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
         return client;
     }
 

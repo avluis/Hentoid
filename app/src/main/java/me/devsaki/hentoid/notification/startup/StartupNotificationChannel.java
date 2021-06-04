@@ -17,6 +17,7 @@ public class StartupNotificationChannel {
 
     static final String ID = "startup";
 
+    // IMPORTANT : ALWAYS INIT THE CHANNEL BEFORE FIRING NOTIFICATIONS !
     public static void init(@NonNull Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String name = "Startup";

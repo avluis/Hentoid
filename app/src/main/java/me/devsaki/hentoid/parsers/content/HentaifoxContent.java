@@ -8,19 +8,21 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.HentaifoxParser;
-import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HentaifoxContent extends BaseContentParser {
     @Selector(value = ".cover img", attr = "src", defValue = "")
     private String coverUrl;
+    @Selector(value = ".cover img", attr = "data-cfsrc", defValue = "")
+    private String coverUrl2;
     @Selector(value = ".info h1", defValue = "")
     private String title;
     @Selector(".info")
@@ -38,8 +40,8 @@ public class HentaifoxContent extends BaseContentParser {
         content.setUrl(url.replace(Site.HENTAIFOX.getUrl(), "").replace("/gallery", ""));
 
         content.populateUniqueSiteId();
-        content.setCoverImageUrl(coverUrl);
-        content.setTitle(Helper.removeNonPrintableChars(title));
+        content.setCoverImageUrl(coverUrl.isEmpty() ? coverUrl2 : coverUrl);
+        content.setTitle(StringHelper.removeNonPrintableChars(title));
 
         if (null == information || information.children().isEmpty()) return content;
 

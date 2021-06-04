@@ -17,6 +17,7 @@ public class ContentItemBundle {
     private static final String KEY_READS = "reads";
     private static final String KEY_READ_COUNT = "read_count";
     private static final String KEY_COVER_URI = "cover_uri";
+    private static final String KEY_COMPL_STATE = "completed";
 
     private ContentItemBundle() {
         throw new UnsupportedOperationException();
@@ -32,6 +33,10 @@ public class ContentItemBundle {
 
         public void setIsFavourite(boolean isFavourite) {
             bundle.putBoolean(KEY_FAV_STATE, isFavourite);
+        }
+
+        public void setIsCompleted(boolean isCompleted) {
+            bundle.putBoolean(KEY_COMPL_STATE, isCompleted);
         }
 
         public void setReads(long reads) {
@@ -53,6 +58,8 @@ public class ContentItemBundle {
         public Bundle getBundle() {
             return bundle;
         }
+
+
     }
 
     public static final class Parser {
@@ -76,6 +83,11 @@ public class ContentItemBundle {
             else return null;
         }
 
+        public Boolean isCompleted() {
+            if(bundle.containsKey(KEY_COMPL_STATE)) return bundle.getBoolean(KEY_COMPL_STATE);
+            else return null;
+        }
+
         @Nullable
         public Long getReads() {
             if (bundle.containsKey(KEY_READS)) return bundle.getLong(KEY_READS);
@@ -93,5 +105,7 @@ public class ContentItemBundle {
             if (bundle.containsKey(KEY_COVER_URI)) return bundle.getString(KEY_COVER_URI);
             else return null;
         }
+
+
     }
 }

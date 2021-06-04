@@ -33,8 +33,7 @@
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.SplashActivity"
-            android:noHistory="true"
-            android:theme="@style/Theme.Light.Splash">
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -59,17 +58,11 @@
             android:name=".activities.sources.ASMHentaiActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".activities.sources.HentaiCafeActivity"
-            android:configChanges="orientation|screenSize" />
-        <activity
             android:name=".activities.sources.PururinActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.EHentaiActivity"
             android:configChanges="orientation|screenSize" />
-        <!--<activity
-            android:name=".activities.sources.NexusActivity"
-            android:configChanges="orientation|screenSize" />-->
         <activity
             android:name=".activities.sources.MusesActivity"
             android:configChanges="orientation|screenSize" />
@@ -107,6 +100,9 @@
             android:name=".activities.sources.ToonilyActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.AllPornComicActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -137,6 +133,17 @@
                 android:value=".activities.LibraryActivity" />
         </activity>
         <activity
+            android:name=".activities.ToolsActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_preferences"
+            android:parentActivityName=".activities.LibraryActivity"
+            android:theme="@style/Theme.Light.Prefs"
+            tools:ignore="UnusedAttribute">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.LibraryActivity" />
+        </activity>
+        <activity
             android:name=".activities.AboutActivity"
             android:label="@string/title_activity_about"
             android:parentActivityName=".activities.LibraryActivity"
@@ -148,6 +155,10 @@
         <activity
             android:name=".activities.DrawerEditActivity"
             android:label="@string/title_activity_drawer_edit"
+            tools:ignore="UnusedAttribute" />
+        <activity
+            android:name=".activities.DuplicateDetectorActivity"
+            android:label="@string/title_activity_duplicate_detector"
             tools:ignore="UnusedAttribute" />
         <activity
             android:name=".activities.SearchActivity"
@@ -233,17 +244,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://hentai.cafe/" -->
-                <data
-                    android:host="hentai.cafe"
-                    android:pathPrefix="/hc.fyi/"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with "http://pururin.io/" -->
                 <data
                     android:host="pururin.io"
@@ -294,17 +294,6 @@
                     android:host="www.fakku.net"
                     android:pathPrefix="/stay-home"
                     android:scheme="https" />
-
-                <data
-                    android:host="hentainexus.com"
-                    android:pathPrefix="/view/"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:host="8muses.com"
@@ -439,6 +428,17 @@
                     android:pathPattern="/..*/..*"
                     android:scheme="https" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="allporncomic.com"
+                    android:pathPattern="/porncomic/..*/"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <activity
@@ -460,6 +460,8 @@
         <receiver android:name=".receiver.ArchiveNotificationSuccessReceiver" />
 
         <receiver android:name=".receiver.DownloadNotificationPauseReceiver" />
+
+        <receiver android:name=".receiver.DuplicateNotificationStopReceiver" />
 
         <receiver android:name=".receiver.InstallRunReceiver" />
 

@@ -33,6 +33,9 @@ public class ContentSearchManager {
 
     // Book favourite filter
     private boolean filterBookFavourites = false;
+    // Book completed filter
+    private boolean filterBookCompleted = false;
+    private boolean filterBookNotCompleted = false;
     // Page favourite filter
     private boolean filterPageFavourites = false;
     // Full-text query
@@ -58,6 +61,20 @@ public class ContentSearchManager {
 
     public boolean isFilterBookFavourites() {
         return filterBookFavourites;
+    }
+
+    public void setFilterBookCompleted(boolean filterBookCompleted) {
+        this.filterBookCompleted = filterBookCompleted;
+    }
+    public void setFilterBookNotCompleted(boolean filterBookNotCompleted) {
+        this.filterBookNotCompleted = filterBookNotCompleted;
+    }
+
+    public boolean isFilterBookCompleted() {
+        return filterBookCompleted;
+    }
+    public boolean isFilterBookNotCompleted() {
+        return filterBookNotCompleted;
     }
 
     public void setFilterPageFavourites(boolean filterPageFavourites) {
@@ -128,19 +145,19 @@ public class ContentSearchManager {
 
     public LiveData<PagedList<Content>> getLibrary() {
         if (!getQuery().isEmpty())
-            return collectionDAO.searchBooksUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterBookFavourites, loadAll); // Universal search
+            return collectionDAO.searchBooksUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterBookFavourites, loadAll, filterBookCompleted, filterBookNotCompleted); // Universal search
         else if (!tags.isEmpty())
-            return collectionDAO.searchBooks("", groupId, tags, contentSortField, contentSortDesc, filterBookFavourites, loadAll); // Advanced search
+            return collectionDAO.searchBooks("", groupId, tags, contentSortField, contentSortDesc, filterBookFavourites, loadAll, filterBookCompleted, filterBookNotCompleted); // Advanced search
         else
-            return collectionDAO.selectRecentBooks(groupId, contentSortField, contentSortDesc, filterBookFavourites, loadAll); // Default search (display recent)
+            return collectionDAO.selectRecentBooks(groupId, contentSortField, contentSortDesc, filterBookFavourites, loadAll, filterBookCompleted, filterBookNotCompleted); // Default search (display recent)
     }
 
     public Single<List<Long>> searchLibraryForId() {
         if (!getQuery().isEmpty())
-            return collectionDAO.searchBookIdsUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterBookFavourites, filterPageFavourites); // Universal search
+            return collectionDAO.searchBookIdsUniversal(getQuery(), groupId, contentSortField, contentSortDesc, filterBookFavourites, filterPageFavourites, filterBookCompleted, filterBookNotCompleted); // Universal search
         else if (!tags.isEmpty())
-            return collectionDAO.searchBookIds("", groupId, tags, contentSortField, contentSortDesc, filterBookFavourites, filterPageFavourites); // Advanced search
+            return collectionDAO.searchBookIds("", groupId, tags, contentSortField, contentSortDesc, filterBookFavourites, filterPageFavourites, filterBookCompleted, filterBookNotCompleted); // Advanced search
         else
-            return collectionDAO.selectRecentBookIds(groupId, contentSortField, contentSortDesc, filterBookFavourites, filterPageFavourites); // Default search (display recent)
+            return collectionDAO.selectRecentBookIds(groupId, contentSortField, contentSortDesc, filterBookFavourites, filterPageFavourites, filterBookCompleted, filterBookNotCompleted); // Default search (display recent)
     }
 }

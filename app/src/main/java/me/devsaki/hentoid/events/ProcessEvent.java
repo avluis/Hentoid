@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.events;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.lang.annotation.Retention;
@@ -21,6 +23,7 @@ public class ProcessEvent {
 
     public final @EventType
     int eventType;                              // Event type
+    public final int processId;                 // Identifier of the process the event is used for
     public final int step;                      // Step of the process
     public final String elementName;            // Name of processed element
     public final int elementsOK;                // Number of elements that have been correctly processed
@@ -34,8 +37,9 @@ public class ProcessEvent {
      * @param eventType event type code
      * @param step      step of the  process
      */
-    public ProcessEvent(@EventType int eventType, int step, String elementName) {
+    public ProcessEvent(@EventType int eventType, @IdRes int processId, int step, String elementName) {
         this.eventType = eventType;
+        this.processId = processId;
         this.step = step;
         this.elementName = elementName;
         this.logFile = null;
@@ -53,8 +57,9 @@ public class ProcessEvent {
      * @param elementsKO    elements whose processing has failed so far
      * @param elementsTotal total elements to process
      */
-    public ProcessEvent(@EventType int eventType, int step, int elementsOK, int elementsKO, int elementsTotal) {
+    public ProcessEvent(@EventType int eventType, @IdRes int processId, int step, int elementsOK, int elementsKO, int elementsTotal) {
         this.eventType = eventType;
+        this.processId = processId;
         this.step = step;
         this.elementsOK = elementsOK;
         this.elementsKO = elementsKO;
@@ -64,7 +69,7 @@ public class ProcessEvent {
     }
 
     /**
-     * Use for EventType.COMPLETE events
+     * Use for EventType.COMPLETE events with a log
      *
      * @param eventType     event type code
      * @param step          step of the process
@@ -72,8 +77,9 @@ public class ProcessEvent {
      * @param elementsKO    elements whose processing has failed so far
      * @param elementsTotal total elements to process
      */
-    public ProcessEvent(@EventType int eventType, int step, int elementsOK, int elementsKO, int elementsTotal, DocumentFile logFile) {
+    public ProcessEvent(@EventType int eventType, @IdRes int processId, int step, int elementsOK, int elementsKO, int elementsTotal, DocumentFile logFile) {
         this.eventType = eventType;
+        this.processId = processId;
         this.step = step;
         this.elementsOK = elementsOK;
         this.elementsKO = elementsKO;

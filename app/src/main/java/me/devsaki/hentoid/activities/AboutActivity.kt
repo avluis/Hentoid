@@ -4,12 +4,12 @@ package me.devsaki.hentoid.activities
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
+import com.mikepenz.aboutlibraries.LibsBuilder
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.databinding.ActivityAboutBinding
 import me.devsaki.hentoid.events.UpdateEvent
-import me.devsaki.hentoid.fragments.about.LicensesFragment
-import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.greenrobot.eventbus.EventBus
@@ -31,10 +31,20 @@ class AboutActivity : BaseActivity() {
 
             it.toolbar.setNavigationOnClickListener { onBackPressed() }
 
-            it.tvVersionName.text = getString(R.string.about_app_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
-            it.tvChromeVersionName.text = getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
+            it.tvVersionName.text = getString(
+                R.string.about_app_version,
+                BuildConfig.VERSION_NAME,
+                BuildConfig.VERSION_CODE
+            )
+            it.tvChromeVersionName.text =
+                getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
 
-            it.licensesButton.setOnClickListener { showFragment(LicensesFragment()) }
+            it.licensesButton.setOnClickListener {
+                LibsBuilder()
+                    .withLicenseShown(true)
+                    .withSearchEnabled(true)
+                    .start(this)
+            }
         }
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)

@@ -12,6 +12,7 @@ import com.annimon.stream.function.Consumer;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,6 +20,7 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -27,6 +29,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
@@ -74,9 +77,17 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     @NonNull
+    public LiveData<Boolean> getNewSearch() {
+        return newSearch;
+    }
+
+    @NonNull
     public LiveData<Long> getContentHashToShowFirst() {
         return contentHashToShowFirst;
     }
+
+    // Updated whenever a new search is performed
+    private final MediatorLiveData<Boolean> newSearch = new MediatorLiveData<>();
 
 
     // =========================
@@ -89,12 +100,20 @@ public class QueueViewModel extends AndroidViewModel {
     public void refresh() {
         // Queue
         if (currentQueueSource != null) queue.removeSource(currentQueueSource);
-        currentQueueSource = dao.selectQueueContent();
+        currentQueueSource = dao.selectQueueLive();
         queue.addSource(currentQueueSource, queue::setValue);
         // Errors
         if (currentErrorsSource != null) errors.removeSource(currentErrorsSource);
         currentErrorsSource = dao.selectErrorContent();
         errors.addSource(currentErrorsSource, errors::setValue);
+        newSearch.setValue(true);
+    }
+
+    public void searchQueueUniversal(String query) {
+        if (currentQueueSource != null) queue.removeSource(currentQueueSource);
+        currentQueueSource = dao.selectQueueLive(query);
+        queue.addSource(currentQueueSource, queue::setValue);
+        newSearch.setValue(true);
     }
 
 
@@ -102,7 +121,7 @@ public class QueueViewModel extends AndroidViewModel {
     // ========= CONTENT ACTIONS
     // =========================
 
-    public void move(@NonNull Integer oldPosition, @NonNull Integer newPosition) {
+    public void moveAbsolute(@NonNull Integer oldPosition, @NonNull Integer newPosition) {
         if (oldPosition.equals(newPosition)) return;
         Timber.d(">> move %s to %s", oldPosition, newPosition);
 
@@ -129,6 +148,57 @@ public class QueueViewModel extends AndroidViewModel {
         if (0 == newPosition || 0 == oldPosition)
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
     }
+
+    /**
+     * Move all items at given positions to top of the list
+     *
+     * @param relativePositions Adapter positions of the items to move
+     */
+    public void moveTop(List<Integer> relativePositions) {
+        List<Integer> absolutePositions = relativeToAbsolutePositions(relativePositions);
+
+        int processed = 0;
+        for (Integer oldPos : absolutePositions) {
+            moveAbsolute(oldPos, processed);
+            processed++;
+        }
+    }
+
+    /**
+     * Move all items at given positions to bottom of the list
+     *
+     * @param relativePositions Adapter positions of the items to move
+     */
+    public void moveBottom(List<Integer> relativePositions) {
+        List<Integer> absolutePositions = relativeToAbsolutePositions(relativePositions);
+
+        List<QueueRecord> dbQueue = dao.selectQueue();
+        if (null == dbQueue) return;
+        int endPos = dbQueue.size() - 1;
+        int processed = 0;
+
+        for (Integer oldPos : absolutePositions) {
+            moveAbsolute(oldPos - processed, endPos);
+            processed++;
+        }
+    }
+
+    private List<Integer> relativeToAbsolutePositions(List<Integer> relativePositions) {
+        List<Integer> result = new ArrayList<>();
+        List<QueueRecord> currentQueue = queue.getValue();
+        List<QueueRecord> dbQueue = dao.selectQueue();
+        if (null == currentQueue || null == dbQueue) return relativePositions;
+
+        for (Integer position : relativePositions) {
+            for (int i = 0; i < dbQueue.size(); i++)
+                if (dbQueue.get(i).id == currentQueue.get(position).id) {
+                    result.add(i);
+                    break;
+                }
+        }
+        return result;
+    }
+
 
     public void invertQueue() {
         // Get unpaged data to be sure we have everything in one collection
@@ -175,14 +245,14 @@ public class QueueViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> {
                                     nbDeleted.getAndIncrement();
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbDeleted.get(), 0, content.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, nbDeleted.get(), 0, content.size()));
                                 },
                                 t -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, content.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, content.size()));
                                     onError.accept(t);
                                 },
                                 () -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, content.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, content.size()));
                                     onComplete.run();
                                 }
                         )
@@ -206,14 +276,14 @@ public class QueueViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> {
                                     nbDeleted.getAndIncrement();
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, nbDeleted.get(), 0, localQueue.size()));
                                 },
                                 t -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, localQueue.size()));
                                     onError.accept(t);
                                 },
                                 () -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, 0, nbDeleted.get(), 0, localQueue.size()));
+                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, localQueue.size()));
                                     onComplete.run();
                                 }
                         )
@@ -257,7 +327,11 @@ public class QueueViewModel extends AndroidViewModel {
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> onSuccess.run(),
+                                v -> {
+                                    if (Preferences.isQueueAutostart())
+                                        ContentQueueManager.getInstance().resumeQueue(getApplication());
+                                    onSuccess.run();
+                                },
                                 Timber::e
                         )
         );
@@ -271,30 +345,5 @@ public class QueueViewModel extends AndroidViewModel {
         if (ContentHelper.updateQueueJson(getApplication().getApplicationContext(), dao))
             Timber.i("Queue JSON successfully saved");
         else Timber.w("Queue JSON saving failed");
-    }
-
-    /**
-     * Move all items at given positions to top of the list
-     *
-     * @param positions Adapter positions of the items to move
-     */
-    public void moveTop(List<Integer> positions) {
-        int processed = 0;
-        for (Integer oldPos : positions) {
-            move(oldPos, processed);
-            processed++;
-        }
-    }
-
-    public void moveBottom(List<Integer> positions) {
-        List<QueueRecord> queueRecords = queue.getValue();
-        if (null == queueRecords) return;
-        int endPos = queueRecords.size() - 1;
-        int processed = 0;
-
-        for (Integer oldPos : positions) {
-            move(oldPos - processed, endPos);
-            processed++;
-        }
     }
 }

@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.function.Consumer;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -47,6 +50,8 @@ public interface CollectionDAO {
 
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl);
+
+    List<Content> searchTitlesWith(@NonNull final String word, int[] contentStatusCodes);
 
     long insertContent(@NonNull final Content content);
 
@@ -128,21 +133,39 @@ public interface CollectionDAO {
 
     // High-level queries (internal and external locations)
 
-    Single<List<Content>> selectStoredBooks(boolean nonFavouriteOnly, boolean includeQueued);
+    List<Content> selectStoredContent(boolean nonFavouriteOnly, boolean includeQueued, int orderField, boolean orderDesc);
+
+    long countStoredContent(boolean nonFavouriteOnly, boolean includeQueued);
 
 
-    Single<List<Long>> selectRecentBookIds(long groupId, int orderField, boolean orderDesc, boolean bookFavouritesOnly, boolean pageFavouritesOnly);
+    // TODO tidy up once tested
 
-    Single<List<Long>> searchBookIds(String query, long groupId, List<Attribute> metadata, int orderField, boolean orderDesc, boolean bookFavouritesOnly, boolean pageFavouritesOnly);
+    Observable<Content> streamContentWithUnhashedCovers();
 
-    Single<List<Long>> searchBookIdsUniversal(String query, long groupId, int orderField, boolean orderDesc, boolean bookFavouritesOnly, boolean pageFavouritesOnly);
+    List<Content> selectContentWithUnhashedCovers();
+
+    void streamContentWithUnhashedCovers(Consumer<Content> consumer);
+
+    long countContentWithUnhashedCovers();
 
 
-    LiveData<PagedList<Content>> selectRecentBooks(long groupId, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
-    LiveData<PagedList<Content>> searchBooks(String query, long groupId, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
 
-    LiveData<PagedList<Content>> searchBooksUniversal(String query, long groupId, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll);
+    void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer);
+
+
+    Single<List<Long>> selectRecentBookIds(long groupId, int orderField, boolean orderDesc, boolean bookFavouritesOnly, boolean pageFavouritesOnly, boolean bookCompletedOnly, boolean bookNotCompletedOnly);
+
+    Single<List<Long>> searchBookIds(String query, long groupId, List<Attribute> metadata, int orderField, boolean orderDesc, boolean bookFavouritesOnly, boolean pageFavouritesOnly, boolean bookCompletedOnly, boolean bookNotCompletedOnly);
+
+    Single<List<Long>> searchBookIdsUniversal(String query, long groupId, int orderField, boolean orderDesc, boolean bookFavouritesOnly, boolean pageFavouritesOnly, boolean bookCompletedOnly, boolean bookNotCompletedOnly);
+
+
+    LiveData<PagedList<Content>> selectRecentBooks(long groupId, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll, boolean bookCompletedOnly, boolean bookNotCompletedOnly);
+
+    LiveData<PagedList<Content>> searchBooks(String query, long groupId, List<Attribute> metadata, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll, boolean bookCompletedOnly, boolean bookNotCompletedOnly);
+
+    LiveData<PagedList<Content>> searchBooksUniversal(String query, long groupId, int orderField, boolean orderDesc, boolean favouritesOnly, boolean loadAll, boolean bookCompletedOnly, boolean bookNotCompletedOnly);
 
 
     LiveData<List<Content>> selectErrorContent();
@@ -150,7 +173,7 @@ public interface CollectionDAO {
     List<Content> selectErrorContentList();
 
 
-    LiveData<Integer> countBooks(String query, long groupId, List<Attribute> metadata, boolean favouritesOnly);
+    LiveData<Integer> countBooks(String query, long groupId, List<Attribute> metadata, boolean favouritesOnly, boolean bookCompletedOnly, boolean bookNotCompletedOnly);
 
     LiveData<Integer> countAllBooks();
 
@@ -184,7 +207,11 @@ public interface CollectionDAO {
 
     List<QueueRecord> selectQueue();
 
-    LiveData<List<QueueRecord>> selectQueueContent();
+    List<QueueRecord> selectQueue(String query);
+
+    LiveData<List<QueueRecord>> selectQueueLive();
+
+    LiveData<List<QueueRecord>> selectQueueLive(String query);
 
     void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int mode, boolean isQueueActive);
 
@@ -202,6 +229,8 @@ public interface CollectionDAO {
             String filter,
             List<Attribute> attrs,
             boolean filterFavourites,
+            boolean bookCompletedOnly,
+            boolean bookNotCompletedOnly,
             int page,
             int booksPerPage,
             int orderStyle);

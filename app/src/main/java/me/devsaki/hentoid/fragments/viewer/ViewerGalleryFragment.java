@@ -183,7 +183,7 @@ public class ViewerGalleryFragment extends Fragment {
         selectionToolbar = requireViewById(rootView, R.id.viewer_gallery_selection_toolbar);
         itemSetCover = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
         selectionToolbar.setNavigationOnClickListener(v -> {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);
             toolbar.setVisibility(View.VISIBLE);
         });
@@ -356,11 +356,11 @@ public class ViewerGalleryFragment extends Fragment {
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             viewModel.deletePages(items, this::onDeleteError);
                         })
                 .setNegativeButton(R.string.no,
-                        (dialog, which) -> selectExtension.deselect())
+                        (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
                 .create().show();
     }
 
@@ -402,12 +402,12 @@ public class ViewerGalleryFragment extends Fragment {
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             viewModel.setCover(item);
                         })
                 .setNegativeButton(R.string.no,
-                        (dialog, which) -> selectExtension.deselect())
-                .setOnCancelListener(dialog -> selectExtension.deselect())
+                        (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
+                .setOnCancelListener(dialog -> selectExtension.deselect(selectExtension.getSelections()))
                 .create().show();
     }
 }

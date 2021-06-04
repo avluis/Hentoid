@@ -14,7 +14,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.database.domains.AttributeMap;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class ToonilyContent extends BaseContentParser {
@@ -36,7 +36,7 @@ public class ToonilyContent extends BaseContentParser {
         content.setCoverImageUrl(coverUrl);
         String title = NO_TITLE;
         if (breadcrumbs != null && !breadcrumbs.isEmpty()) {
-            title = Helper.removeNonPrintableChars(breadcrumbs.get(breadcrumbs.size() - 1).text());
+            title = StringHelper.removeNonPrintableChars(breadcrumbs.get(breadcrumbs.size() - 1).text());
         }
         content.setTitle(title);
         content.populateUniqueSiteId();

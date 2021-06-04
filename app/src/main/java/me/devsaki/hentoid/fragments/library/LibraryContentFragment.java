@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -64,6 +65,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import io.reactivex.Single;
@@ -92,6 +94,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -189,20 +192,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      * <p>
      * Created once and for all to be used by FastAdapter in endless mode (=using Android PagedList)
      */
+    // The one for the PagedList (endless mode)
     private final AsyncDifferConfig<Content> asyncDifferConfig = new AsyncDifferConfig.Builder<>(new DiffUtil.ItemCallback<Content>() {
         @Override
         public boolean areItemsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.equals(newItem);
+            return oldItem.uniqueHash() == newItem.uniqueHash();
         }
 
+        // Using equals for consistency with hashcode (see comment on Content#equals)
         @Override
         public boolean areContentsTheSame(@NonNull Content oldItem, @NonNull Content newItem) {
-            return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
-                    && oldItem.getSite().equals(newItem.getSite())
-                    && oldItem.getLastReadDate() == newItem.getLastReadDate()
-                    && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())
-//                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
-                    && oldItem.isFavourite() == newItem.isFavourite();
+            return Objects.equals(oldItem, newItem);
         }
 
         @Nullable
@@ -212,6 +212,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+            }
+            if (oldItem.isCompleted() != newItem.isCompleted()) {
+                diffBundleBuilder.setIsCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
@@ -229,7 +232,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     }).build();
 
-
+    // The one for "classic" List (paged mode)
     public static final DiffCallback<ContentItem> CONTENT_ITEM_DIFF_CALLBACK = new DiffCallback<ContentItem>() {
         @Override
         public boolean areItemsTheSame(ContentItem oldItem, ContentItem newItem) {
@@ -238,17 +241,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
         @Override
         public boolean areContentsTheSame(ContentItem oldContentItem, ContentItem newContentItem) {
-            Content oldItem = oldContentItem.getContent();
-            Content newItem = newContentItem.getContent();
-
-            if (null == oldItem || null == newItem) return false;
-
-            return oldItem.getUrl().equalsIgnoreCase(newItem.getUrl())
-                    && oldItem.getSite().equals(newItem.getSite())
-                    && oldItem.getLastReadDate() == newItem.getLastReadDate()
-                    && oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())
-//                    && oldItem.isBeingDeleted() == newItem.isBeingDeleted()
-                    && oldItem.isFavourite() == newItem.isFavourite();
+            return Objects.equals(oldContentItem.getContent(), newContentItem.getContent());
         }
 
         @Override
@@ -262,6 +255,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+            }
+            if (oldItem.isCompleted() != newItem.isCompleted()) {
+                diffBundleBuilder.setIsCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
@@ -397,7 +393,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
-            PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
+            PopupMenu popup = new PopupMenu(requireContext(), sortFieldButton, Gravity.END);
             popup.getMenuInflater()
                     .inflate(R.menu.library_books_sort_popup, popup.getMenu());
             popup.getMenu().findItem(R.id.sort_custom).setVisible(group != null && group.hasCustomBookOrder);
@@ -555,6 +551,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             case R.id.action_delete:
                 deleteSelectedItems();
                 break;
+            case R.id.action_completed:
+                markSelectedAsCompleted();
+                break;
             case R.id.action_archive:
                 archiveSelectedItems();
                 break;
@@ -568,6 +567,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 askRedownloadSelectedItemsScratch();
                 keepToolbar = true;
                 break;
+            case R.id.action_selectAll:
+                selectExtension.select();
+                keepToolbar = true;
+                break;
             case R.id.action_set_cover:
                 askSetCover();
                 break;
@@ -578,6 +581,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (!keepToolbar) activity.get().getSelectionToolbar().setVisibility(View.GONE);
         return true;
     }
+
 
     /**
      * Callback for the "share item" action button
@@ -607,6 +611,20 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     /**
+     * Callback for "book completed" action button
+     */
+    private void markSelectedAsCompleted() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        if (!selectedItems.isEmpty()) {
+            List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+            if (!selectedContent.isEmpty()) {
+                viewModel.toggleContentCompleted(selectedContent, this::refreshIfNeeded);
+                selectExtension.deselect(selectExtension.getSelections());
+            }
+        }
+    }
+
+    /**
      * Callback for the "archive item" action button
      */
     private void archiveSelectedItems() {
@@ -624,7 +642,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void moveSelectedItems() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
-        selectExtension.deselect();
+        selectExtension.deselect(selectExtension.getSelections());
         List<Long> bookIds = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getId).toList();
         ChangeGroupDialogFragment.invoke(this, Helper.getPrimitiveLongArrayFromList(bookIds));
     }
@@ -645,7 +663,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
                 DocumentFile folder = FileHelper.getFolderFromTreeUriString(requireContext(), c.getStorageUri());
                 if (folder != null) {
-                    selectExtension.deselect();
+                    selectExtension.deselect(selectExtension.getSelections());
                     activity.get().getSelectionToolbar().setVisibility(View.GONE);
                     FileHelper.openFile(requireContext(), folder);
                 }
@@ -686,7 +704,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                             dialog1.dismiss();
                             redownloadFromScratch(contents);
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
@@ -713,7 +731,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                             dialog1.dismiss();
                             viewModel.setGroupCover(group.id, content.getCover());
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
-                            selectExtension.deselect();
+                            selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
@@ -805,7 +823,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void customBackPress() {
         // If content is selected, deselect it
         if (!selectExtension.getSelections().isEmpty()) {
-            selectExtension.deselect();
+            selectExtension.deselect(selectExtension.getSelections());
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             backButtonPressed = 0;
             return;
@@ -1090,18 +1108,25 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     private void populateAllResults(@NonNull final PagedList<Content> iLibrary) {
-        if (Preferences.getEndlessScroll() || null == itemAdapter) return;
+        if (null == itemAdapter) return;
 
         List<ContentItem> contentItems;
         if (iLibrary.isEmpty()) {
             contentItems = Collections.emptyList();
         } else {
             @ContentItem.ViewType int viewType;
+
             if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay() || activity.get().isEditMode()) // Grid won't be used in edit mode
                 viewType = activity.get().isEditMode() ? ContentItem.ViewType.LIBRARY_EDIT : ContentItem.ViewType.LIBRARY;
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
-            contentItems = Stream.of(iLibrary.subList(0, iLibrary.size())).withoutNulls().map(c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook)).distinct().toList();
+
+            contentItems = Stream.of(iLibrary
+                    .subList(0, iLibrary.size()))
+                    .withoutNulls().map(c ->
+                            new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook))
+                    .distinct()
+                    .toList();
         }
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK);
 
@@ -1149,7 +1174,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         String query = getQuery();
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
-        if (newSearch && Helper.isNumeric(query)) {
+        if (newSearch && StringHelper.isNumeric(query)) {
             ArrayList<Integer> siteCodes = Stream.of(result)
                     .withoutNulls()
                     .filter(content -> query.equals(content.getUniqueSiteId()))
@@ -1207,12 +1232,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (selectExtension.getSelections().isEmpty()) {
             if (item.getContent() != null && !item.getContent().isBeingDeleted()) {
                 topItemPosition = position;
-                //ContentHelper.openHentoidViewer(requireContext(), content, viewModel.getSearchManagerBundle());
+                ContentHelper.openHentoidViewer(requireContext(), item.getContent(), -1, viewModel.getSearchManagerBundle());
             }
-                Single.fromCallable(() -> ContentHelper.open(requireContext(), item.getContent(), viewModel.getSearchManagerBundle()))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe();
             return true;
         }
         return false;
@@ -1358,6 +1379,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     @Override
+    public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
+        // Nothing
+    }
+
+    @Override
     public void itemSwiped(int position, int direction) {
         RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
         if (vh instanceof ISwipeableViewHolder) {
@@ -1381,7 +1407,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
         }
 
-        activity.get().deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList(), this::refreshIfNeeded);
+        activity.get().deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList(), false, this::refreshIfNeeded);
     }
 
     @Override

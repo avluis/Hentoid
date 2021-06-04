@@ -5,6 +5,13 @@
     tools:context=".activities.QueueActivity"
     tools:targetApi="o">
     <item
+        android:id="@+id/action_search"
+        android:icon="@drawable/ic_menu_search"
+        android:title="@string/menu_search"
+        android:tooltipText="@string/menu_search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="collapseActionView|always" />
+    <item
         android:id="@+id/action_error_stats"
         android:icon="@drawable/ic_error_outline"
         android:title="@string/err_stats_title"

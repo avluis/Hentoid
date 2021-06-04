@@ -72,6 +72,8 @@ public class DeleteProgressDialogFragment extends DialogFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
+        if (event.processId != R.id.generic_delete) return;
+
         binding.deleteBar.setMax(event.elementsTotal);
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             binding.deleteProgress.setText(getString(R.string.book_progress, event.elementsOK + event.elementsKO, event.elementsTotal));

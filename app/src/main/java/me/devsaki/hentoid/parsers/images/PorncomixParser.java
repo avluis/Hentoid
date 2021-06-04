@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
@@ -42,7 +42,7 @@ public class PorncomixParser extends BaseImageListParser {
         List<String> result = new ArrayList<>();
 
         if (mangaPagesContainer != null) {
-            String pageArray = Helper.replaceEscapedChars(mangaPagesContainer.childNode(0).toString().replace("\"", "").replace("\\/", "/"));
+            String pageArray = StringHelper.replaceEscapedChars(mangaPagesContainer.childNode(0).toString().replace("\"", "").replace("\\/", "/"));
             String[] pages = pageArray.substring(pageArray.indexOf('[') + 1, pageArray.lastIndexOf(']')).split(",");
             result.addAll(Stream.of(pages).distinct().toList()); // Preloaded images list may contain duplicates
         } else if (galleryPages != null && !galleryPages.isEmpty()) {

@@ -6,7 +6,6 @@ import java.util.Objects;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
-import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.core.Consts;
@@ -36,6 +35,7 @@ public class ImageFile {
     private ToOne<Content> content;
     private String mimeType;
     private long size = 0;
+    private long imageHash = 0;
 
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
     private String downloadParams = "";
@@ -188,6 +188,14 @@ public class ImageFile {
         return this;
     }
 
+    public long getImageHash() {
+        return imageHash;
+    }
+
+    public void setImageHash(long hash) {
+        this.imageHash = hash;
+    }
+
     public boolean isRead() {
         return read;
     }
@@ -227,13 +235,13 @@ public class ImageFile {
                 Objects.equals(getUrl(), imageFile.getUrl());
     }
 
-    public long hash64() {
-        return Helper.hash64((id + "." + url).getBytes());
-    }
-
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
         return Objects.hash(getId(), getUrl());
+    }
+
+    public long uniqueHash() {
+        return Helper.hash64((id + "." + url).getBytes());
     }
 }

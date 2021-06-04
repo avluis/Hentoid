@@ -41,7 +41,7 @@
     },
     {
       "id": "2:5880334030341287801",
-      "lastPropertyId": "25:515620137730542700",
+      "lastPropertyId": "26:72694651852852193",
       "name": "Content",
       "properties": [
         {
@@ -181,6 +181,12 @@
           "name": "readProgress",
           "type": 7,
           "flags": 4
+        },
+        {
+          "id": "26:72694651852852193",
+          "name": "completed",
+          "type": 1,
+          "flags": 4
         }
       ],
       "relations": [
@@ -193,7 +199,7 @@
     },
     {
       "id": "3:2849837771881495731",
-      "lastPropertyId": "14:2962440896788849680",
+      "lastPropertyId": "15:5135092662762413378",
       "name": "ImageFile",
       "properties": [
         {
@@ -269,6 +275,12 @@
           "id": "14:2962440896788849680",
           "name": "read",
           "type": 1,
+          "flags": 4
+        },
+        {
+          "id": "15:5135092662762413378",
+          "name": "imageHash",
+          "type": 6,
           "flags": 4
         }
       ],
@@ -561,9 +573,65 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "13:7937878460553138785",
+      "lastPropertyId": "10:4636705001081237914",
+      "name": "DuplicateEntry",
+      "properties": [
+        {
+          "id": "3:2093692672368655834",
+          "name": "titleScore",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "4:1857179527185107957",
+          "name": "coverScore",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "5:334967191803969001",
+          "name": "artistScore",
+          "type": 7,
+          "flags": 4
+        },
+        {
+          "id": "6:4769062372712151805",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "7:1098218792851277018",
+          "name": "referenceSize",
+          "type": 6,
+          "flags": 4
+        },
+        {
+          "id": "8:7706865596199564791",
+          "name": "referenceId",
+          "type": 6,
+          "flags": 4
+        },
+        {
+          "id": "9:1179341344641812936",
+          "name": "duplicateId",
+          "type": 6,
+          "flags": 4
+        },
+        {
+          "id": "10:4636705001081237914",
+          "name": "duplicateSize",
+          "type": 6,
+          "flags": 4
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "12:6339833598022566662",
+  "lastEntityId": "13:7937878460553138785",
   "lastIndexId": "16:2424237144553088526",
   "lastRelationId": "3:1412032361666532056",
   "lastSequenceId": "0:0",
@@ -591,7 +659,9 @@
     7159239942191071387,
     6300283326491520978,
     753426778229264571,
-    2206907103185425670
+    2206907103185425670,
+    6457903105882729256,
+    4015520791093060143
   ],
   "retiredRelationUids": [
     4182320255043105081,

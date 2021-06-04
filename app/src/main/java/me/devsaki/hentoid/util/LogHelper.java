@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,6 +21,9 @@ import javax.annotation.Nonnull;
 import me.devsaki.hentoid.BuildConfig;
 import timber.log.Timber;
 
+/**
+ * Helper class for log generation
+ */
 public class LogHelper {
 
     private LogHelper() {
@@ -28,15 +32,29 @@ public class LogHelper {
 
     private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
+    /**
+     * Represents a log entry
+     */
     public static class LogEntry {
         private final Instant timestamp;
         private final String message;
-        private final int chapter;
         private final boolean isError;
+        /**
+         * Chapter number can be used to organize entries in a non-chronological order
+         * (e.g. general information entries before detailed entries, regardless of their timestamp)
+         */
+        private final int chapter;
 
         public LogEntry(@NonNull String message) {
             this.timestamp = Instant.now();
             this.message = message;
+            this.chapter = 1;
+            this.isError = false;
+        }
+
+        public LogEntry(@NonNull String message, Object... formatArgs) {
+            this.timestamp = Instant.now();
+            this.message = String.format(message, formatArgs);
             this.chapter = 1;
             this.isError = false;
         }
@@ -61,47 +79,83 @@ public class LogHelper {
     }
 
     public static class LogInfo {
+        // Log file name, without the extension
         private String fileName = "";
+        // Display name of the log, for use in its header
         private String logName = "";
-        private String noDataMessage = "";
+        // Message to show when the log contains no data (to avoid creating a totally empty log file)
+        private String noDataMessage = "no data";
+        // Message to display at the very beginning of the log
         private String header = "";
-        private List<LogEntry> log = Collections.emptyList();
+        private List<LogEntry> entries = Collections.emptyList();
 
         /**
-         * Log file name, without the extension
-         * @param fileName
+         * Set the log file name, without the extension
+         *
+         * @param fileName Log file name
          */
         public void setFileName(@NonNull String fileName) {
             this.fileName = fileName;
+            if (this.logName.isEmpty()) logName = fileName;
         }
 
+        /**
+         * Set display name of the log, for use in its header
+         *
+         * @param logName Display name
+         */
         public void setLogName(@NonNull String logName) {
             this.logName = logName;
+            if (this.fileName.isEmpty()) this.fileName = logName;
         }
 
+        /**
+         * Set message to display when the log contains no data
+         * (to avoid creating a totally empty log file)
+         *
+         * @param noDataMessage Message to display when the log contains no data
+         */
         public void setNoDataMessage(@NonNull String noDataMessage) {
             this.noDataMessage = noDataMessage;
         }
 
+        /**
+         * Set message to display at the very beginning of the log
+         *
+         * @param header Message to display at the very beginning of the log
+         */
         public void setHeader(@NonNull String header) {
             this.header = header;
         }
 
-        public void setLog(@NonNull List<LogEntry> log) {
-            this.log = log;
+        /**
+         * Set log entries
+         *
+         * @param entries Log entries
+         */
+        public void setEntries(@NonNull List<LogEntry> entries) {
+            this.entries = entries;
         }
     }
 
+    /**
+     * Build the log text using the given LogInfo
+     *
+     * @param info LogInfo to build the log with
+     * @return Log text
+     */
     private static String buildLog(@Nonnull LogInfo info) {
         StringBuilder logStr = new StringBuilder();
         logStr.append(info.logName).append(" log : begin").append(LINE_SEPARATOR);
         logStr.append(String.format("Hentoid ver: %s (%s)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)).append(LINE_SEPARATOR);
-        if (info.log.isEmpty())
+        logStr.append(String.format("API: %s", Build.VERSION.SDK_INT)).append(LINE_SEPARATOR);
+        logStr.append(String.format("Device: %s / %s", Build.PRODUCT, Build.MODEL)).append(LINE_SEPARATOR);
+        if (info.entries.isEmpty())
             logStr.append("No activity to report - ").append(info.noDataMessage).append(LINE_SEPARATOR);
         else {
             // Log beginning, end and duration
-            Instant beginning = Stream.of(info.log).withoutNulls().min((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
-            Instant end = Stream.of(info.log).withoutNulls().max((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
+            Instant beginning = Stream.of(info.entries).withoutNulls().min((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
+            Instant end = Stream.of(info.entries).withoutNulls().max((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
             long durationMs = end.toEpochMilli() - beginning.toEpochMilli();
             logStr.append("Start : ").append(beginning.toString()).append(LINE_SEPARATOR);
             logStr.append("End : ").append(end.toString()).append(" (").append(Helper.formatDuration(durationMs)).append(")").append(LINE_SEPARATOR);
@@ -110,12 +164,13 @@ public class LogHelper {
             // Log header
             if (!info.header.isEmpty()) logStr.append(info.header).append(LINE_SEPARATOR);
             // Log entries in chapter order, with errors first
-            Map<Integer, List<LogEntry>> logChapters = Stream.of(info.log).collect(Collectors.groupingBy(LogEntry::getChapter));
-            for (List<LogEntry> chapter : logChapters.values()) {
-                List<LogEntry> logChapterWithErrorsFirst = Stream.of(chapter).sortBy(l -> !l.isError).toList();
-                for (LogEntry entry : logChapterWithErrorsFirst)
-                    logStr.append(entry.message).append(LINE_SEPARATOR);
-            }
+            Map<Integer, List<LogEntry>> logChapters = Stream.of(info.entries).collect(Collectors.groupingBy(LogEntry::getChapter));
+            if (logChapters != null)
+                for (List<LogEntry> chapter : logChapters.values()) {
+                    List<LogEntry> logChapterWithErrorsFirst = Stream.of(chapter).sortBy(l -> !l.isError).toList();
+                    for (LogEntry entry : logChapterWithErrorsFirst)
+                        logStr.append(entry.message).append(LINE_SEPARATOR);
+                }
         }
 
         logStr.append(info.logName).append(" log : end");
@@ -123,14 +178,21 @@ public class LogHelper {
         return logStr.toString();
     }
 
+    /**
+     * Write the given log to the app's default storage location
+     *
+     * @param context Context to use
+     * @param logInfo Log to write
+     * @return DocumentFile of the created log file; null if it couldn't be created
+     */
     @Nullable
-    public static DocumentFile writeLog(@Nonnull Context context, @Nonnull LogInfo info) {
+    public static DocumentFile writeLog(@Nonnull Context context, @Nonnull LogInfo logInfo) {
         try {
             // Create the log
-            String logFileName = info.fileName;
+            String logFileName = logInfo.fileName;
             if (!logFileName.endsWith("_log")) logFileName += "_log";
             logFileName += ".txt";
-            String log = buildLog(info);
+            String log = buildLog(logInfo);
 
             // Save it
             DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());

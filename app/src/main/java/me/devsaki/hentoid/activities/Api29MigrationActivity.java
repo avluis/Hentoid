@@ -176,6 +176,8 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMigrationEvent(ProcessEvent event) {
+        if (event.processId != R.id.migrate_api29) return;
+
         ProgressBar progressBar = (ImportWorker.STEP_2_BOOK_FOLDERS == event.step) ? step2progress : step3progress;
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             progressBar.setMax(event.elementsTotal);

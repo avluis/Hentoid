@@ -99,7 +99,7 @@ public final class ViewerPrefsDialogFragment extends DialogFragment {
         renderingItems.add(res.getString(R.string.use_app_prefs, renderingModes[Preferences.isViewerSmoothRendering() ? 1 : 0].replace(" (default)", "")));
         // Available prefs
         for (int i = 0; i < renderingModes.length; i++) {
-            // No smooth mode for Android 5
+            // No smooth mode for Androidfindview 5
             if (1 == i && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) continue;
             renderingItems.add(renderingModes[i].replace(" (default)", ""));
         }

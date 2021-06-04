@@ -1,14 +1,22 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-// apply plugin: 'io.fabric'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.sonarqube'
 //apply plugin: 'com.google.firebase.crashlytics'
-apply plugin: 'de.mobilej.unmock'
+apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
     apply from: 'signing.gradle'
+}
+
+aboutLibraries {
+    exclusionPatterns = [~"com_google_android.*",~"android.*",~"com_mikepenz__fastadapter_extensions.*"]
+    configPath = "about-config"
+    additionalLicenses {
+        LGPL_2_1_or_later
+        BSD_3_Clause
+    }
 }
 
 android {
@@ -20,14 +28,13 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
-    buildToolsVersion "31.0.0-rc2"
     defaultConfig {
         applicationId "org.nonononoki.hendroid"
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
-        versionCode 167
-        versionName '1.14.4'
+        versionCode 168
+        versionName '1.14.6'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -84,11 +91,13 @@ dependencies {
     implementation fileTree(include: ['*jar'], dir: 'libs')
     implementation fileTree(include: ['*aar'], dir: 'libs')
 
+    //implementation project(':fakkuLib')
+
     /**
      * TESTING
      */
-    testImplementation 'junit:junit:4.13.1'
-    testImplementation 'org.mockito:mockito-core:3.6.28'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:3.9.0'
     testImplementation 'androidx.test:core:1.3.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation "androidx.arch.core:core-testing:2.1.0"
@@ -99,10 +108,12 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
+
     /**
      * ANDROID FRAMEWORK
      */
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.31"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.4.32"
+
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
@@ -112,16 +123,18 @@ dependencies {
     implementation 'androidx.media:media:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
+    //implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.2'
-    implementation 'androidx.paging:paging-runtime:2.1.2'
-    implementation "androidx.fragment:fragment-ktx:1.3.1"
+    implementation 'androidx.fragment:fragment-ktx:1.3.2'
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
-    implementation "androidx.work:work-runtime:2.5.0"
+    def android_work_version = '2.5.0'
+    implementation "androidx.work:work-runtime:$android_work_version"
+    implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
     // For ViewModel to work
-    def android_lifecycle_version = "2.3.0"
+    def android_lifecycle_version = '2.3.1'
     implementation "androidx.lifecycle:lifecycle-viewmodel:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
@@ -144,7 +157,7 @@ dependencies {
      * UI
      */
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = "5.3.5"
+    def fastadapter_version = '5.4.1'
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"
@@ -159,7 +172,7 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.0.0'
 
     // Tooltips
-    implementation 'com.github.skydoves:balloon:1.3.3'
+    implementation 'com.github.skydoves:balloon:1.3.4'
 
     // Dropdown lists
     implementation "com.github.skydoves:powerspinner:1.1.7"
@@ -168,7 +181,7 @@ dependencies {
     implementation 'com.github.skydoves:powermenu:2.1.9'
 
     // Micro menu
-    implementation "com.github.skydoves:submarine:1.0.5"
+    implementation "com.github.skydoves:submarine:1.0.7"
 
     // Fast scroller
     implementation "me.zhanghai.android.fastscroll:library:1.1.5"
@@ -176,11 +189,16 @@ dependencies {
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android:flexbox:2.0.1'
 
+    def auto_about_version = '8.9.0'
+    implementation "com.mikepenz:aboutlibraries-core:$auto_about_version"
+    implementation "com.mikepenz:aboutlibraries:$auto_about_version"
+
+
     /**
      * NETWORKING
      */
     // Java serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
-    def moshi_version = '1.11.0'
+    def moshi_version = '1.12.0'
     implementation "com.squareup.moshi:moshi:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
 
@@ -214,10 +232,11 @@ dependencies {
     //    https://github.com/ReactiveX/RxJava
     implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
-    def objectbox_version = "2.8.1"
+    def objectbox_version = "2.9.1"
     if (includeObjectBoxBrowser.toBoolean()) {
         debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
         releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"
@@ -230,7 +249,7 @@ dependencies {
     implementation 'org.greenrobot:eventbus:3.2.0'
 
     // Lightweight Stream : github.com/aNNiMON/Lightweight-Stream-API
-    implementation 'com.annimon:stream:1.2.1'
+    implementation 'com.annimon:stream:1.2.2'
 
     // LeakCanary: github.com/square/leakcanary
     if (includeLeakCanary.toBoolean()) {
@@ -241,17 +260,16 @@ dependencies {
     implementation 'commons-io:commons-io:2.6'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-    implementation 'org.apache.commons:commons-lang3:3.11'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-text/
-    implementation 'org.apache.commons:commons-text:1.4'
-    // !!! Don't update that one or Lint will go mad
+    implementation 'org.apache.commons:commons-text:1.9'
 
     // Cleaner date manipulation
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.2.1'
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.3.0'
 
     // Archive management
-    implementation 'net.sf.sevenzipjbinding:sevenzipjbinding:16.02-2.01'
+    implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
 
     // Natural strings comparator
     implementation 'net.grey-panther:natural-comparator:1.1'
@@ -259,15 +277,19 @@ dependencies {
     // Efficient hashing
     implementation 'io.whitfin:siphash:2.0.0'
 
+    // Sentence similarity detection
+    implementation 'info.debatty:java-string-similarity:2.0.0'
+
 
     /**
      * ANALYTICS
      */
-    // Firebase
-    //implementation 'com.google.firebase:firebase-analytics:18.0.0'
+    // Import the BoM for the Firebase platform
+    //implementation platform('com.google.firebase:firebase-bom:27.1.0')
 
     // Crashlytics
-    //implementation 'com.google.firebase:firebase-crashlytics:17.4.0'
+    //implementation 'com.google.firebase:firebase-crashlytics'
+    //implementation 'com.google.firebase:firebase-analytics'
 
 
     implementation project(path: ':app:customssiv')
@@ -280,39 +302,10 @@ sonarqube {
         property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.language", "java"
         property "sonar.sources", "src/main/"
+        property "sonar.sourceEncoding", "UTF-8"
         property "sonar.login", "3d0dc80792bad95f0193e7ed626cf090ac83e208"
     }
 }
 
-unMock {
-    keep "android.widget.BaseAdapter"
-    keep "android.widget.ArrayAdapter"
-    keep "android.os.Bundle"
-    keepStartingWith "android.database.MatrixCursor"
-    keep "android.database.AbstractCursor"
-    keep "android.database.CrossProcessCursor"
-    keepStartingWith "android.text.TextUtils"
-    keepStartingWith "android.util."
-    keepStartingWith "android.text."
-    keepStartingWith "android.content.ContentValues"
-    keepStartingWith "android.content.ComponentName"
-    keepStartingWith "android.content.ContentUris"
-    keepStartingWith "android.content.ContentProviderOperation"
-    keepStartingWith "android.content.ContentProviderResult"
-    keepStartingWith "android.content.UriMatcher"
-    keepStartingWith "android.content.Intent"
-    keepStartingWith "android.content.IIntentReceiver"
-    keep "android.location.Location"
-    keepStartingWith "android.content.res.Configuration"
-    keepStartingWith "org."
-    keepStartingWith "libcore."
-    keepStartingWith "com.android.internal.R"
-    keepStartingWith "com.android.internal.util."
-    keep "android.net.Uri"
-    keep "android.webkit.WebSettings"
-
-    keepStartingWith "me."
-}
-
-// apply plugin: 'com.google.gms.google-services'
+//apply plugin: 'com.google.gms.google-services'
 apply plugin: 'io.objectbox' // apply last

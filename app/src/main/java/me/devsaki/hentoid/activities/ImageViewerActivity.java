@@ -23,6 +23,8 @@ import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
 
 public class ImageViewerActivity extends BaseActivity {
 
+    public static boolean isRunning = false;
+
     private VolumeKeyListener volumeKeyListener = null;
     private ImageViewerViewModel viewModel = null;
 
@@ -40,6 +42,7 @@ public class ImageViewerActivity extends BaseActivity {
         ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
         long contentId = parser.getContentId();
         if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
+        int pageNumber = parser.getPageNumber();
 
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
@@ -49,8 +52,8 @@ public class ImageViewerActivity extends BaseActivity {
 
         if (null == viewModel.getContent().getValue()) { // ViewModel hasn't loaded anything yet (fresh start)
             Bundle searchParams = parser.getSearchParams();
-            if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
-            else viewModel.loadFromContent(contentId);
+            if (searchParams != null) viewModel.loadFromSearchParams(contentId, pageNumber, searchParams);
+            else viewModel.loadFromContent(contentId, pageNumber);
         }
 
         if (!PermissionHelper.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION)) {
@@ -75,16 +78,8 @@ public class ImageViewerActivity extends BaseActivity {
 
         if (!Preferences.getRecentVisibility())
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
-    }
 
-    public void registerKeyListener(VolumeKeyListener listener) {
-        takeKeyEvents(true);
-        this.volumeKeyListener = listener;
-    }
-
-    public void unregisterKeyListener() {
-        if (volumeKeyListener != null) volumeKeyListener.clear();
-        volumeKeyListener = null;
+        isRunning = true;
     }
 
     @Override
@@ -95,15 +90,23 @@ public class ImageViewerActivity extends BaseActivity {
 
     @Override
     protected void onStop() {
-        unregisterKeyListener();
-        if (viewModel != null) viewModel.emptyCacheFolder();
+        if (isFinishing()) { // i.e. the activity is closing for good; not being paused / backgrounded
+            if (viewModel != null) viewModel.emptyCacheFolder();
+            Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
+            Preferences.setViewerCurrentPageNum(-1);
+            Preferences.setViewerCurrentContent(-1);
+            isRunning = false;
+        }
         super.onStop();
     }
 
-    @Override
-    protected void onDestroy() {
-        unregisterKeyListener();
-        Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
-        super.onDestroy();
+    public void registerKeyListener(VolumeKeyListener listener) {
+        takeKeyEvents(true);
+        this.volumeKeyListener = listener;
+    }
+
+    public void unregisterKeyListener() {
+        if (volumeKeyListener != null) volumeKeyListener.clear();
+        volumeKeyListener = null;
     }
 }

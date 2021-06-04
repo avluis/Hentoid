@@ -17,12 +17,15 @@
 
     <ImageView
         android:id="@+id/app_logo"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/drawer_image_height"
+        android:layout_width="150dp"
+        android:layout_height="152dp"
+        android:layout_marginStart="116dp"
         android:padding="12dp"
-        android:src="@drawable/ic_hentoid"
+        android:src="@drawable/ic_alovoa_logo"
         app:layout_constraintBottom_toTopOf="@id/drawer_list"
+        app:layout_constraintStart_toStartOf="@+id/drawer_list"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
         tools:ignore="ContentDescription" />
 
     <ImageView
@@ -39,6 +42,34 @@
         app:layout_constraintRight_toRightOf="@id/drawer_header"
         app:layout_constraintTop_toTopOf="@id/drawer_header"
         tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/drawer_tools_btn"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:src="@drawable/ic_tools"
+        app:layout_constraintRight_toRightOf="@id/drawer_header"
+        app:layout_constraintTop_toBottomOf="@id/drawer_app_prefs_btn"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/ad_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="17dp"
+        android:text="Ad"
+        app:layout_constraintBottom_toBottomOf="@+id/drawer_header"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/drawer_tools_btn"
+        app:layout_constraintVertical_bias="0.0" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drawer_list"
@@ -105,5 +136,32 @@
         app:tint="@color/accent_red"
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/alovoa_name_text"
+        android:layout_width="114dp"
+        android:layout_height="39dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="10dp"
+        android:gravity="center"
+        android:text="Alovoa"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toStartOf="@+id/app_logo"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/drawer_header" />
+
+    <TextView
+        android:id="@+id/alovoa_slogan_text"
+        android:layout_width="114dp"
+        android:layout_height="51dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:text="Meet amazing people, privately!"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="@+id/drawer_header"
+        app:layout_constraintTop_toBottomOf="@+id/alovoa_name_text" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

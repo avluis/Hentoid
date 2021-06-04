@@ -5,28 +5,27 @@ import android.webkit.WebResourceResponse;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.HashMap;
+import java.io.IOException;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.json.sources.LusciousQuery;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.LusciousContent;
-import me.devsaki.hentoid.util.Debouncer;
+import me.devsaki.hentoid.util.JsonHelper;
+import timber.log.Timber;
 
 public class LusciousActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "luscious.net";
     public static final String[] GALLERY_FILTER = {
-            "operationName=AlbumGet", // Fetch using DB call
-            "luscious.net/[\\w\\-]+/[\\w\\-]+_[0-9]+/$", // Actual gallery page URL
-            "[\\w]+.luscious.net/[\\w\\-]+/[0-9]+/[\\w\\-\\.]+$" // Image URL containing album ID
+            "operationName=AlbumGet", // Fetch using GraphQL call
+            "luscious.net/[\\w\\-]+/[\\w\\-]+_[0-9]+/$" // Actual gallery page URL (NB : only works for the first viewed gallery, or when manually reloading a page)
     };
-
-    public static final Pattern IMAGE_URL_PATTERN = Pattern.compile(GALLERY_FILTER[2]);
+    //private static final String[] DIRTY_ELEMENTS = {".ad_banner"}; <-- doesn't work; added dynamically on an element tagged with a neutral-looking class
 
 
     Site getStartSite() {
@@ -35,53 +34,41 @@ public class LusciousActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new LusciousWebClient(GALLERY_FILTER, this);
+        LusciousWebClient client = new LusciousWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
+        client.adBlocker.addUrlWhitelist(DOMAIN_FILTER);
+        //client.addDirtyElements(DIRTY_ELEMENTS);
+
+        // Init fetch handler here for convenience
+        fetchHandler = client::onFetchCall;
+
         return client;
     }
 
-    private class LusciousWebClient extends CustomWebViewClient {
+    private static class LusciousWebClient extends CustomWebViewClient {
 
-        private final Debouncer<Boolean> detectDebouncer;
-        private final Map<String, Integer> bookIdsCount = new HashMap<>();
-
-        LusciousWebClient(String[] filter, WebContentListener listener) {
-            super(filter, listener);
-            detectDebouncer = new Debouncer<>(getApplication(), 2000, this::clearLoadingPics);
+        LusciousWebClient(Site site, String[] filter, CustomWebActivity activity) {
+            super(site, filter, activity);
         }
 
-        private void clearLoadingPics(Boolean b) {
-            bookIdsCount.clear();
+        public void onFetchCall(String url, String body) {
+            if (!isGalleryPage(url)) return;
+            try {
+                LusciousQuery query = JsonHelper.jsonToObject(body, LusciousQuery.class);
+                String id = query.getIdVariable();
+                if (!id.isEmpty()) parseResponse(id, null, true, false);
+            } catch (IOException e) {
+                Timber.e(e);
+            }
         }
 
         // Call the API without using BaseWebActivity.parseResponse
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-
-            String detectedBookId = "";
-
-            // If a picture is being loaded, count the number of pictures loaded for a given book ID
-            // If their count within 2 seconds exceeds 2, then we're loading a gallery = we're on that specific book gallery page !
-            if (IMAGE_URL_PATTERN.matcher(urlStr).find()) {
-                String[] parts = urlStr.split("/");
-                String bookId = parts[4];
-                if (bookIdsCount.containsKey(bookId)) {
-                    Integer countObj = bookIdsCount.get(bookId);
-                    if (countObj != null) {
-                        int count = countObj + 1;
-                        if (count > 2) detectedBookId = bookId;
-                        bookIdsCount.put(bookId, count);
-                    }
-                } else {
-                    bookIdsCount.put(bookId, 1);
-                }
-                detectDebouncer.submit(true);
-            }
-
-            String theUrl = (detectedBookId.isEmpty()) ? urlStr : detectedBookId;
+            activity.onGalleryPageStarted();
 
             ContentParser contentParser = new LusciousContent();
-            compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(theUrl))
+            compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(

@@ -98,6 +98,20 @@
                 android:summaryOn="@string/pref_browser_augmented_on"
                 android:title="@string/pref_browser_augmented_title"
                 app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_duplicate_ask_default"
+                android:key="download_duplicate_ask"
+                android:summaryOff="@string/pref_browser_duplicate_ask_off"
+                android:summaryOn="@string/pref_browser_duplicate_ask_on"
+                android:title="@string/pref_browser_duplicate_ask_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_duplicate_try_pages_default"
+                android:key="download_plus_duplicate_try"
+                android:summaryOff="@string/pref_browser_duplicate_try_pages_off"
+                android:summaryOn="@string/pref_browser_duplicate_try_pages_on"
+                android:title="@string/pref_browser_duplicate_try_pages_title"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_theme"
@@ -184,20 +198,6 @@
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
-            android:title="@string/pref_cat_metadata"
-            app:iconSpaceReserved="false">
-            <Preference
-                android:key="pref_export_library"
-                android:summary="@string/pref_export_library_summary"
-                android:title="@string/pref_export_library_title"
-                app:iconSpaceReserved="false" />
-            <Preference
-                android:key="pref_import_library"
-                android:summary="@string/pref_import_library_summary"
-                android:title="@string/pref_import_library_title"
-                app:iconSpaceReserved="false" />
-        </PreferenceCategory>
-        <PreferenceCategory
             android:title="@string/pref_cat_advanced"
             app:iconSpaceReserved="false">
             <Preference
@@ -209,11 +209,6 @@
                 android:key="pref_delete_all_except_favs"
                 android:summary="@string/pref_delete_all_except_favs_summary"
                 android:title="@string/pref_delete_all_except_favs_title"
-                app:iconSpaceReserved="false" />
-            <Preference
-                android:key="pref_latest_logs"
-                android:summary="@string/pref_latest_logs_summary"
-                android:title="@string/pref_latest_logs_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
@@ -536,15 +531,12 @@
         </PreferenceCategory>
     </PreferenceScreen>
 
-    <Preference
-        android:key="export_settings"
-        android:summary="@string/pref_export_settings_summary"
-        android:title="@string/pref_export_settings_title"
-        app:iconSpaceReserved="false" />
-    <Preference
-        android:key="import_settings"
-        android:summary="@string/pref_import_settings_summary"
-        android:title="@string/pref_import_settings_title"
+    <CheckBoxPreference
+        android:defaultValue="@string/pref_app_preview_default"
+        android:key="pref_app_preview"
+        android:summaryOff="@string/pref_screenshot_summary_off"
+        android:summaryOn="@string/pref_screenshot_summary_on"
+        android:title="@string/pref_screenshot_title"
         app:iconSpaceReserved="false" />
 
 </PreferenceScreen>

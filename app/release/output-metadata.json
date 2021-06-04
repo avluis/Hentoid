@@ -5,13 +5,13 @@
     "kind": "Directory"
   },
   "applicationId": "org.nonononoki.hendroid",
-  "variantName": "processReleaseResources",
+  "variantName": "release",
   "elements": [
     {
       "type": "SINGLE",
       "filters": [],
-      "versionCode": 166,
-      "versionName": "1.14.3",
+      "versionCode": 167,
+      "versionName": "1.14.6",
       "outputFile": "app-release.apk"
     }
   ]

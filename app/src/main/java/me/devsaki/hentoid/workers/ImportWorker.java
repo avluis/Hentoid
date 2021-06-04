@@ -8,7 +8,7 @@ import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.work.Worker;
+import androidx.work.Data;
 import androidx.work.WorkerParameters;
 
 import com.annimon.stream.Optional;
@@ -26,6 +26,7 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.DuplicatesDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -38,15 +39,14 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.ContentV1;
 import me.devsaki.hentoid.json.DoujinBuilder;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.json.URLBuilder;
-import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
+import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileExplorer;
 import me.devsaki.hentoid.util.FileHelper;
@@ -56,7 +56,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ParseException;
-import me.devsaki.hentoid.util.notification.NotificationManager;
+import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.ImportData;
 import timber.log.Timber;
 
@@ -64,9 +64,7 @@ import timber.log.Timber;
 /**
  * Worker responsible for importing an existing Hentoid library.
  */
-public class ImportWorker extends Worker {
-
-    private static final int NOTIFICATION_ID = 1;
+public class ImportWorker extends BaseWorker {
 
     public static final int STEP_GROUPS = 0;
     public static final int STEP_1 = 1;
@@ -74,81 +72,52 @@ public class ImportWorker extends Worker {
     public static final int STEP_3_BOOKS = 3;
     public static final int STEP_4_QUEUE_FINAL = 4;
 
-    private static boolean running;
-    private NotificationManager notificationManager;
-
-    public static boolean isRunning() {
-        return running;
-    }
 
     public ImportWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
-        super(context, parameters);
+        super(context, parameters, R.id.import_service, null);
+    }
 
-        initNotifications(context);
-
-        Timber.w("Import worker created");
+    public static boolean isRunning(@NonNull Context context) {
+        return isRunning(context, R.id.import_service);
     }
 
     @Override
-    public void onStopped() {
-        clear();
-        super.onStopped();
+    Notification getStartNotification() {
+        return new ImportStartNotification();
     }
 
-    private void initNotifications(Context context) {
-        notificationManager = new NotificationManager(context, NOTIFICATION_ID);
-        notificationManager.cancel();
-    }
-
-    private void ensureLongRunning() {
-        String message = getApplicationContext().getResources().getString(R.string.starting_download);
-        setForegroundAsync(notificationManager.buildForegroundInfo(new DownloadProgressNotification(message, 0, 0, 0, 0, 0)));
-    }
-
-    private void clear() {
-        // Tell everyone the worker is shutting down
-        running = false;
-
-        EventBus.getDefault().post(new ServiceDestroyedEvent(ServiceDestroyedEvent.Service.IMPORT));
-        EventBus.getDefault().unregister(this);
-
-        if (notificationManager != null) notificationManager.cancel();
-
-        Timber.d("Import worker destroyed");
-    }
-
-    @NonNull
     @Override
-    public Result doWork() {
-        if (running) return Result.failure();
-        running = true;
+    void onInterrupt() {
+        // Nothing
+    }
 
-        ensureLongRunning();
-        try {
-            ImportData.Parser data = new ImportData.Parser(getInputData());
-            boolean doRename = data.getRefreshRename();
-            boolean doCleanNoJson = data.getRefreshCleanNoJson();
-            boolean doCleanNoImages = data.getRefreshCleanNoImages();
+    @Override
+    void onClear() {
+        // Nothing
+    }
 
-            startImport(doRename, doCleanNoJson, doCleanNoImages);
-        } finally {
-            clear();
-        }
-        return Result.success();
+    @Override
+    void getToWork(@NonNull Data input) {
+        ImportData.Parser data = new ImportData.Parser(getInputData());
+        boolean doRename = data.getRefreshRename();
+        boolean doCleanNoJson = data.getRefreshCleanNoJson();
+        boolean doCleanNoImages = data.getRefreshCleanNoImages();
+
+        startImport(doRename, doCleanNoJson, doCleanNoImages);
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, step, booksOK, booksKO, nbBooks));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary, step, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, step, booksOK, booksKO, nbBooks, cleanupLogFile));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_primary, step, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
-    private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, String... t) {
-        s = String.format(s, (Object[]) t);
+    private void trace(int priority, int chapter, List<LogHelper.LogEntry> memoryLog, String s, Object... t) {
+        s = String.format(s, t);
         Timber.log(priority, s);
         boolean isError = (priority > Log.INFO);
         if (null != memoryLog) memoryLog.add(new LogHelper.LogEntry(s, chapter, isError));
@@ -212,11 +181,19 @@ public class ImportWorker extends Worker {
             trace(Log.INFO, 0, log, "Remove folders with no JSONs %s", (cleanNoJSON ? enabled : disabled));
             trace(Log.INFO, 0, log, "Remove folders with no images %s", (cleanNoImages ? enabled : disabled));
 
+            // Cleanup previously detected duplicates
+            DuplicatesDAO duplicatesDAO = new DuplicatesDAO(context);
+            try {
+                duplicatesDAO.clearEntries();
+            } finally {
+                duplicatesDAO.cleanup();
+            }
             // Flag DB content for cleanup
             dao.flagAllInternalBooks();
             dao.flagAllErrorBooksWithJson();
 
             for (int i = 0; i < bookFolders.size(); i++) {
+                if (isStopped()) throw new InterruptedException();
                 DocumentFile bookFolder = bookFolders.get(i);
 
                 // Detect the presence of images if the corresponding cleanup option has been enabled
@@ -269,6 +246,8 @@ public class ImportWorker extends Worker {
                             if (!canonicalBookFolderName.left.equalsIgnoreCase(bookFolderName)) {
                                 if (renameFolder(context, bookFolder, content, explorer, canonicalBookFolderName.left)) {
                                     trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName.left);
+                                    // Rescan files inside the renamed folder
+                                    bookFiles = explorer.listFiles(context, bookFolder, null);
                                 } else {
                                     trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName.left);
                                 }
@@ -276,7 +255,6 @@ public class ImportWorker extends Worker {
                         }
 
                         // Attach image file Uri's to the book's images
-//                        List<DocumentFile> imageFiles = FileHelper.listFiles(context, bookFolder, client, imageNames);
                         List<DocumentFile> imageFiles = Stream.of(bookFiles).filter(f -> imageNames.accept(f.getName())).toList();
                         if (!imageFiles.isEmpty()) {
                             // No images described in the JSON -> recreate them
@@ -374,8 +352,10 @@ public class ImportWorker extends Worker {
             DocumentFile queueFile = explorer.findFile(context, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
             if (queueFile != null) importQueue(context, queueFile, dao, log);
             else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             Timber.w(e);
+            // Restore interrupted state
+            Thread.currentThread().interrupt();
         } finally {
             // Write log in root folder
             DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
@@ -394,7 +374,7 @@ public class ImportWorker extends Worker {
         logInfo.setLogName(cleanup ? "Cleanup" : "Import");
         logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
         logInfo.setNoDataMessage("No content detected.");
-        logInfo.setLog(log);
+        logInfo.setEntries(log);
         return logInfo;
     }
 
@@ -491,15 +471,12 @@ public class ImportWorker extends Worker {
             @NonNull DocumentFile folder,
             @NonNull List<DocumentFile> bookFiles,
             @NonNull CollectionDAO dao) throws ParseException {
-//        DocumentFile file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_V2);
         Optional<DocumentFile> file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_V2)).findFirst();
         if (file.isPresent()) return importJsonV2(context, file.get(), folder, dao);
 
-//        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME);
         file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME)).findFirst();
         if (file.isPresent()) return importJsonV1(context, file.get(), folder);
 
-//        file = FileHelper.findFile(context, folder, client, Consts.JSON_FILE_NAME_OLD);
         file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_OLD)).findFirst();
         if (file.isPresent()) return importJsonLegacy(context, file.get(), folder);
 

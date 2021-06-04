@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.json.sources;
 
+@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
 public class EHentaiImageQuery {
     private final String method = "imagedispatch";
     private final Integer gid;

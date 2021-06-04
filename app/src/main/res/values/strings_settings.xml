@@ -48,6 +48,14 @@
     <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
     <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
     <string name="pref_browser_augmented_default" translatable="false">true</string>
+    <string name="pref_browser_duplicate_ask_title">Always download potential duplicates ?</string>
+    <string name="pref_browser_duplicate_ask_off">Ask before downloading</string>
+    <string name="pref_browser_duplicate_ask_on">Always download</string>
+    <string name="pref_browser_duplicate_ask_default" translatable="false">true</string>
+    <string name="pref_browser_duplicate_try_pages_title">Try finding extra pages on potential duplicates ?</string>
+    <string name="pref_browser_duplicate_try_pages_off">Only try finding extra pages on the original book</string>
+    <string name="pref_browser_duplicate_try_pages_on">Try finding extra pages on potential duplicates</string>
+    <string name="pref_browser_duplicate_try_pages_default" translatable="false">true</string>
 
     <string name="pref_cat_theme">App theme</string>
     <string name="pref_color_theme_title">Color theme</string>
@@ -70,7 +78,7 @@
     <string name="pref_folder_trunc_summary">Book folder name truncation.\nCurrently: %s.</string>
     <string name="pref_folder_trunc_default" translatable="false">100</string>
     <string name="pref_memory_usage_title">Memory usage</string>
-    <string name="pref_memory_usage_summary">Current free space : %.2f%%</string>
+    <string name="pref_memory_usage_summary">Current free space : %.2f%% (tap for details)</string>
     <string name="pref_memory_alert_title">Alert on low memory</string>
     <string name="pref_memory_alert_default" translatable="false">110</string>
 
@@ -84,20 +92,12 @@
     <string name="pref_external_library_detach_title">Detach external library</string>
     <string name="pref_external_library_detach_summary">Don\'t include the external library into Hentoid anymore</string>
 
-    <string name="pref_cat_metadata">Metadata</string>
-    <string name="pref_export_library_title">Export metadata</string>
-    <string name="pref_export_library_summary">Export Hentoid books to a JSON file</string>
-    <string name="pref_import_library_title">Import metadata</string>
-    <string name="pref_import_library_summary">Restore exported Hentoid books from a JSON file</string>
-
     <string name="pref_cat_advanced">Advanced</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
     <string name="pref_delete_all_except_favs_title">Delete all books except favourites</string>
     <string name="pref_delete_all_except_favs_summary">Purge the library; keep favourite books only\nNB : Does not apply to the external library</string>
     <string name="pref_ask_delete_all_except_favs">Are you sure you wish to delete %d books ?</string>
-    <string name="pref_latest_logs_summary">View the app\'s latest logs</string>
-    <string name="pref_latest_logs_title">App logs</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>
@@ -153,6 +153,9 @@
     <string name="pref_app_preview_title">App preview on Recent Apps</string>
     <string name="pref_app_preview_summary_off">App preview in Recent Apps disabled.\nEnable if you need to take a screen shot.</string>
     <string name="pref_app_preview_summary_on">App preview in Recent Apps enabled.</string>
+    <string name="pref_screenshot_title">Enable screenshots</string>
+    <string name="pref_screenshot_summary_off">App preview in Recent Apps + screenshots disabled.</string>
+    <string name="pref_screenshot_summary_on">Screenshots enabled.</string>
     <string name="pref_app_preview_default" translatable="false">false</string>
     <string name="pref_check_updates_manual_checking">Checking for updates…</string>
     <string name="pref_check_updates_manual_no_new">No update found - Already using the latest version</string>
@@ -220,9 +223,4 @@
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
-
-    <string name="pref_export_settings_title">Export settings</string>
-    <string name="pref_export_settings_summary">Export settings to a JSON file</string>
-    <string name="pref_import_settings_title">Import settings</string>
-    <string name="pref_import_settings_summary">Restore exported settings from a JSON file</string>
 </resources>

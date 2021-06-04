@@ -8,8 +8,8 @@ import androidx.annotation.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.HentoidApp;
 
 public class LanguageHelper {
 
@@ -30,6 +30,19 @@ public class LanguageHelper {
     }
 
     /**
+     * Returns the country code of the given language
+     * @param language Language name, either in english or in its native spelling
+     * @return Country code of the given language, or empty string if not found
+     */
+    public static String getCountryCodeFromLanguage(@NonNull final String language) {
+        if (language.isEmpty()) return "";
+        String languageClean = language.toLowerCase().split("/")[0].split("\\(")[0].trim();
+        String countryCode = languageCodes.get(languageClean);
+        if (null == countryCode) return "";
+        else return countryCode;
+    }
+
+    /**
      * Returns the resource ID of the image of the flag representing the given language
      *
      * @param context  Context to be used
@@ -38,14 +51,9 @@ public class LanguageHelper {
      */
     public static @DrawableRes
     int getFlagFromLanguage(@NonNull Context context, @NonNull final String language) {
-        if (language.isEmpty()) return 0;
-
-        String languageClean = language.toLowerCase().split("/")[0].split("\\(")[0].trim();
-        String countryCode = languageCodes.get(languageClean);
-        if (countryCode != null)
-            return getFlagId(context, countryCode);
-        else
-            return 0;
+        String countryCode = getCountryCodeFromLanguage(language);
+        if (countryCode.isEmpty()) return 0;
+        else return getFlagId(context, countryCode);
     }
 
     /**
