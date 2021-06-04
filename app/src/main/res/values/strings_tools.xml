@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tools_title">Tools</string>
+    <string name="tools_screen_import_export">Import / Export</string>
+
+    <string name="tools_export_library_title">Export metadata</string>
+    <string name="tools_export_library_summary">Export Hentoid books to a JSON file</string>
+    <string name="tools_import_library_title">Import metadata</string>
+    <string name="tools_import_library_summary">Restore exported Hentoid books from a JSON file</string>
+    <string name="tools_screen_cat_settings">Settings</string>
+    <string name="tools_export_settings_title">Export settings</string>
+    <string name="tools_export_settings_summary">Export settings to a JSON file</string>
+    <string name="tools_import_settings_title">Import settings</string>
+    <string name="tools_import_settings_summary">Restore exported settings from a JSON file</string>
+
+    <string name="tools_duplicate_detector_title">Duplicate detector</string>
+    <string name="tools_duplicate_detector_summary">Identify and remove duplicate books</string>
+
+    <string name="tools_latest_logs_title">App logs</string>
+    <string name="tools_latest_logs_summary">View the app\'s latest logs</string>
+</resources>
