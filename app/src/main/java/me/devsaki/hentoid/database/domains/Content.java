@@ -849,7 +849,7 @@ public class Content implements Serializable {
         Content content = (Content) o;
         return isFavourite() == content.isFavourite() &&
                 isCompleted() == content.isCompleted() &&
-                getDownloadDate() == content.getDownloadDate() && // To differentiate external books that have to URL
+                getDownloadDate() == content.getDownloadDate() && // To differentiate external books that have no URL
                 getLastReadDate() == content.getLastReadDate() &&
                 isBeingDeleted() == content.isBeingDeleted() &&
                 Objects.equals(getUrl(), content.getUrl()) &&
