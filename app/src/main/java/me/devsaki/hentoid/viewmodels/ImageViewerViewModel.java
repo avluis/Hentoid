@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
@@ -86,6 +87,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // TODO doc
     private final Map<Integer, String> imageLocations = new HashMap<>();
+    // TODO doc
+    private final AtomicBoolean interruptImageLoad = new AtomicBoolean(false);
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -109,8 +112,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         collectionDao.cleanup();
-        searchDisposable.dispose();
         compositeDisposable.clear();
+        searchDisposable.dispose();
         super.onCleared();
     }
 
@@ -173,7 +176,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void setReaderStartingIndex(int index) {
-        startingIndex.setValue(index);
+        startingIndex.postValue(index);
     }
 
     private void setImages(@NonNull Content theContent, int pageNumber, @NonNull List<ImageFile> newImages) {
@@ -185,7 +188,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // e.g. page favourited
         if (imageLocations.isEmpty() || newImages.size() != imageLocations.size()) {
             if (theContent.isArchive())
-                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, emitter));
+                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptImageLoad, emitter));
             else
                 observable = Observable.create(emitter -> processDiskImages(theContent, newImages, emitter));
 
@@ -272,6 +275,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private synchronized void processArchiveImages(
             @NonNull Content theContent,
             @NonNull List<ImageFile> newImages,
+            @NonNull AtomicBoolean interrupt,
             @NonNull final ObservableEmitter<ImageFile> emitter) throws IOException {
         if (!theContent.isArchive())
             throw new IllegalArgumentException("Content must be an archive");
@@ -295,13 +299,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
                 // TODO replace that with a proper on-demand loading
                 if (archiveFile != null) {
+                    interrupt.set(false);
                     isArchiveExtracting = true;
                     unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
                             getApplication(),
                             archiveFile,
                             Stream.of(newImageFiles).filter(i -> i.getFileUri().startsWith(theContent.getStorageUri())).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
                             cachePicFolder,
-                            null)
+                            null,
+                            interrupt)
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .subscribe(
@@ -363,7 +369,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 int index = 0;
                 for (ImageFile img : imageFiles) {
                     if (img.getOrder() == pageNumber) {
-                        startingIndex = index +1;
+                        startingIndex = index + 1;
                         break;
                     }
                     index++;
@@ -436,6 +442,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
     public void onLeaveBook(int readerIndex) {
         if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
             Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
+
+        // Stop any ongoing picture loading
+        unarchiveDisposable.dispose();
+        imageLoadDisposable.dispose();
+        isArchiveExtracting = false;
+        interruptImageLoad.set(true);
 
         // Don't do anything if the Content hasn't even been loaded
         if (-1 == loadedContentId) return;

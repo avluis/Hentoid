@@ -15,6 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.IntStream;
@@ -38,6 +39,7 @@ import java.util.Set;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -158,6 +160,11 @@ public class ViewerGalleryFragment extends Fragment {
         itemAdapter.getItemFilter().setFilterPredicate((imageFileItem, charSequence) -> !charSequence.equals("true") || imageFileItem.isFavourite());
 
         recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
+
+        GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
+        if (glm != null)
+            glm.setSpanCount(Preferences.getViewerGalleryColumns());
+
         recyclerView.setAdapter(fastAdapter);
         new FastScrollerBuilder(recyclerView).build();
 

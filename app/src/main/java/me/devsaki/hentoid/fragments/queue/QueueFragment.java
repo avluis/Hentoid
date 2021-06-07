@@ -286,7 +286,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     private void customBackPress() {
         // If content is selected, deselect it
-        if (!selectExtension.getSelections().isEmpty()) {
+        if (selectExtension != null && !selectExtension.getSelections().isEmpty()) {
             selectExtension.deselect(selectExtension.getSelections());
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
         } else {

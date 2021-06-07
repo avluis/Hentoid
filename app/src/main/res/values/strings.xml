@@ -400,7 +400,7 @@
     <!-- About Activity -->
     <string name="about1"><b>Hendroid</b> is a Doujinshi &amp; H-Manga archiving app. Hendroid is a fork of the app <b>Hentoid</b>, which was originally created by <b>Cesar Arasaki</b>.</string>
     <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHendroid is a free and open-source software maintained by the Hendroid Community</string>
-    <string name="personalDataStatement2">No personal data is collected nor sent to any party.</string>
+    <string name="personalDataStatement2">No personal data is collected by the app, but may be collected by external sites.</string>
     <string name="about_licenses">Display Licenses</string>
     <string name="about_app_version">Hendroid ver: %1$s (%2$d)</string>
     <string name="about_chrome_version">Chrome v%1$d</string>

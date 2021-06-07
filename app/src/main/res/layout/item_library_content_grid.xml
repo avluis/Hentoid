@@ -24,21 +24,19 @@
         android:focusable="true"
         android:padding="8dp"
         android:src="@drawable/ic_action_delete_forever"
-        android:visibility="gone"
         app:tint="?colorSecondary"
-        tools:ignore="ContentDescription"
-        tools:visibility="visible" />
+        tools:ignore="ContentDescription" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/item_card"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/bg_book_card"
-        android:clickable="false"
+        android:clickable="true"
         android:duplicateParentState="true"
         android:elevation="6dp"
-        android:focusable="false"
-        android:longClickable="false"
+        android:focusable="true"
+        android:longClickable="true"
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- Dummy UI element to be able to attach to the top in library mode -->

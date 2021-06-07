@@ -784,6 +784,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getViewerGalleryColumns() {
+        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_GALLERY_COLUMNS, Integer.toString(Default.VIEWER_GALLERY_COLUMNS)) + "");
+    }
+
+    public static void setViewerGalleryColumns(int value) {
+        sharedPreferences.edit()
+                .putString(Key.VIEWER_GALLERY_COLUMNS, Integer.toString(value))
+                .apply();
+    }
+
 
     public static final class Key {
         //public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
@@ -873,6 +883,7 @@ public final class Preferences {
         public static final String VIEWER_DELETE_TARGET = "viewer_delete_target";
         public static final String VIEWER_CURRENT_CONTENT = "viewer_current_content";
         public static final String VIEWER_CURRENT_PAGENUM = "viewer_current_pagenum";
+        public static final String VIEWER_GALLERY_COLUMNS = "viewer_gallery_columns";
         public static final String DUPLICATE_SENSITIVITY = "duplicate_sensitivity";
         public static final String DUPLICATE_USE_TITLE = "duplicate_use_title";
         public static final String DUPLICATE_USE_COVER = "duplicate_use_cover";
@@ -970,6 +981,7 @@ public final class Preferences {
         static final int ARTIST_GROUP_VISIBILITY = Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
         static final int VIEWER_DELETE_ASK_MODE = Constant.VIEWER_DELETE_ASK_AGAIN;
         static final int VIEWER_DELETE_TARGET = Constant.VIEWER_DELETE_TARGET_PAGE;
+        static final int VIEWER_GALLERY_COLUMNS = 4;
         static final int DUPLICATE_SENSITIVITY = 1;
         static final boolean DUPLICATE_USE_TITLE = true;
         static final boolean DUPLICATE_USE_COVER = false;

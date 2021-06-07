@@ -7,11 +7,13 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -62,6 +64,7 @@ import me.devsaki.hentoid.databinding.FragmentViewerPagerBinding;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -255,7 +258,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         setSystemBarsVisible(binding.controlsOverlay.getRoot().getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
         if (Preferences.Constant.VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             ViewerBrowseModeDialogFragment.invoke(this);
-        updatePageDisplay();
+        updatePageControls();
     }
 
     // Make sure position is saved when app is closed by the user
@@ -357,9 +360,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         // Slideshow slider
         Slider slider = binding.controlsOverlay.slideshowDelaySlider;
         slider.setValueFrom(0);
+        int sliderValue = convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay());
         int nbEntries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries).length;
-        slider.setValueTo(Math.max(1, nbEntries - 1f));
-        slider.setValue(convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay()));
+        nbEntries = Math.max(1, nbEntries - 1);
+        // TODO at some point we'd need to better synch images and book loading to avoid that
+        slider.setValue(Helper.coerceIn(sliderValue, 0, nbEntries));
+        slider.setValueTo(nbEntries);
         slider.setLabelFormatter(value -> {
             String[] entries = getResources().getStringArray(R.array.pref_viewer_slideshow_delay_entries);
             return entries[(int) value];
@@ -592,7 +598,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void differEndCallback() {
         if (null == binding) return;
 
+        // TODO at some point we'd need to better synch images and book loading to avoid that
         maxPosition = Math.max(1, adapter.getItemCount() - 1);
+        binding.controlsOverlay.pageSlider.setValue(Helper.coerceIn(binding.controlsOverlay.pageSlider.getValue(), 0, maxPosition));
         binding.controlsOverlay.pageSlider.setValueTo(maxPosition);
 
         // Can't access the gallery when there's no page to display
@@ -600,7 +608,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         else binding.controlsOverlay.viewerGalleryBtn.setVisibility(View.GONE);
 
         if (targetStartingIndex > -1) applyStartingIndex(targetStartingIndex);
-        else updatePageDisplay();
+        else updatePageControls();
 
         isComputingImageList = false;
     }
@@ -611,8 +619,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * @param startingIndex Book's starting image index
      */
     private void onStartingIndexChanged(Integer startingIndex) {
-        if (!isComputingImageList) applyStartingIndex(startingIndex);
-        else targetStartingIndex = startingIndex;
+        if (!isComputingImageList) applyStartingIndex(startingIndex); // Return from gallery screen
+        else targetStartingIndex = startingIndex; // Loading a new book
     }
 
     private void applyStartingIndex(int startingIndex) {
@@ -707,6 +715,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                 isScrollLTR = false;
             adapter.setScrollLTR(isScrollLTR);
             hidePendingMicroMenus();
+
+            // Resets zoom if we're using horizontal (independent pages) mode
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
+                adapter.resetScaleAtPosition(scrollPosition);
         }
 
         imageIndex = scrollPosition;
@@ -717,18 +729,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             isPageFavourite = currentImage.isFavourite();
         }
 
-        // Resets zoom if we're using horizontal (independent pages) mode
-        if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
-            adapter.resetScaleAtPosition(scrollPosition);
-
-        updatePageDisplay();
+        updatePageControls();
         updateFavouriteButtonIcon();
     }
 
     /**
      * Update the display of page position controls (text and bar)
      */
-    private void updatePageDisplay() {
+    private void updatePageControls() {
         ImageFile img = adapter.getImageAt(imageIndex);
         if (null == img) {
             Timber.w("No image at position %s", imageIndex);
@@ -759,7 +767,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         else binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.VISIBLE);
 
         maxPageNumber = content.getQtyPages();
-        updatePageDisplay();
+        updatePageControls();
     }
 
     /**
@@ -1147,11 +1155,18 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void setSystemBarsVisible(boolean visible) {
         int uiOptions;
-        // TODO wait until androidx.core 1.5+ is out of alpha and use WindowCompat (see https://stackoverflow.com/questions/62643517/immersive-fullscreen-on-android-11)
+        Window window = requireActivity().getWindow();
+        WindowManager.LayoutParams params = window.getAttributes();
+        // TODO use androidx.core 1.6.0-beta01+ & WindowCompat (see https://stackoverflow.com/questions/62643517/immersive-fullscreen-on-android-11)
+        // TODO prepare to fiddle with paddings and margins : https://stackoverflow.com/questions/57293449/go-edge-to-edge-on-android-correctly-with-windowinsets
         if (visible) {
             uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+            // Revert to default regarding notch area
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
+            }
         } else {
             uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE
                     // Set the content to appear under the system bars so that the
@@ -1162,12 +1177,17 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     // Hide the nav bar and status bar
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_FULLSCREEN;
+            // Always display around the notch area
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+            }
         }
 
         // Defensive programming here because crash reports show that getView() sometimes is null
         // (just don't ask me why...)
         View v = getView();
         if (v != null) v.setSystemUiVisibility(uiOptions);
+        window.setAttributes(params);
     }
 
     private void onGetMaxDimensions(Point maxDimensions) {

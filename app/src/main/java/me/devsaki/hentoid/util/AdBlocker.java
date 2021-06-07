@@ -100,12 +100,15 @@ public class AdBlocker {
 
     // TODO doc
     public boolean isBlocked(@NonNull String url) {
+        // Create a snaphot of the original list to avoid concurrent iteration / modification
+        final List<Pattern> jsWhitelistUrlPatternListSnaphot = new ArrayList<>(jsWhitelistUrlPatternList);
+
         // 1- Process usual blacklist and cached dynamic blacklist
         if (isUrlBlacklisted(url)) return true;
         if (jsBlacklistCache.contains(url)) return true;
 
         // If no specific whitelist has been defined, stop there
-        if (jsWhitelistUrlPatternList.size() == universalUrlWhitelist.size()) return false;
+        if (jsWhitelistUrlPatternListSnaphot.size() == universalUrlWhitelist.size()) return false;
 
 
         // 2- Accept non-JS files
@@ -114,7 +117,7 @@ public class AdBlocker {
             return false; // obvious JS and hidden JS
 
         // 3- Accept JS files defined in the whitelist
-        for (Pattern p : jsWhitelistUrlPatternList) {
+        for (Pattern p : jsWhitelistUrlPatternListSnaphot) {
             Matcher matcher = p.matcher(url.toLowerCase());
             if (matcher.find()) return false;
         }

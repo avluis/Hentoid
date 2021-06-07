@@ -58,7 +58,7 @@ public final class NavigationDrawerFragment extends Fragment {
 
     private View aboutBadge;
 
-    private static final String ALOVOA_URL = "https://www.alovoa.com";
+    private static final String ALOVOA_URL = "https://alovoa.com";
 
     // Settings listener
     private final SharedPreferences.OnSharedPreferenceChangeListener prefsListener = (p, k) -> onSharedPreferenceChanged(k);

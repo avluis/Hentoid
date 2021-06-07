@@ -384,6 +384,9 @@ public class LibraryActivity extends BaseActivity {
                 }
             });
             snackbar.show();
+            // Only show that once
+            Preferences.setViewerCurrentContent(-1);
+            Preferences.setViewerCurrentPageNum(-1);
         }
     }
 
@@ -528,11 +531,13 @@ public class LibraryActivity extends BaseActivity {
             @NonNull final Toolbar.OnMenuItemClickListener selectionToolbarOnItemClicked
     ) {
         toolbar.setOnMenuItemClickListener(toolbarOnItemClicked);
-        selectionToolbar.setOnMenuItemClickListener(selectionToolbarOnItemClicked);
-        selectionToolbar.setNavigationOnClickListener(v -> {
-            selectExtension.deselect(selectExtension.getSelections());
-            selectionToolbar.setVisibility(View.GONE);
-        });
+        if (selectionToolbar != null) {
+            selectionToolbar.setOnMenuItemClickListener(selectionToolbarOnItemClicked);
+            selectionToolbar.setNavigationOnClickListener(v -> {
+                selectExtension.deselect(selectExtension.getSelections());
+                selectionToolbar.setVisibility(View.GONE);
+            });
+        }
     }
 
     public void sortCommandsAutoHide(boolean hideSortOnly, PopupMenu popup) {

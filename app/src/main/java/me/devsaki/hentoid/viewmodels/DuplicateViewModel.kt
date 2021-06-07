@@ -93,6 +93,7 @@ class DuplicateViewModel(
             content.id,
             content.size,
             2f,
+            2f,
             2f
         ) // Artificially give it a huge score to bring it to the top
         refEntry.referenceContent = content

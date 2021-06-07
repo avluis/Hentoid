@@ -1,0 +1,67 @@
+New
+    Picture viewer : New setting to change the number of columns on the gallery screen
+    Picture viewer : Fullscreen display around the notch area of the screen
+    Suggests resuming where you last left if you closed the app while viewing a book
+    The cause of the last crash is now logged
+    Revamped and up-to-date licenses screen
+    New source : Allporncomic
+    New "Tools" menu to separate actual settings from active tools
+    The duplicate detector has arrived !
+        New screen to detect and remove duplicate books in your collection : Tools > Duplicate detector
+        New dialog integrated to the browser to warn you about potential duplicates at download time
+    Queue screen : universal search is now available for queued books
+    Library screen : Books can be manually marked as completed and filtered with that state
+    Library screen : "Select all" is now available (when one item is already selected)
+    Picture Viewer : Slider to change slideshow delay while staying on the viewer screen
+
+Changed
+
+    Browser : You can now block languages using the tag blocker
+    Library screen : Only show "Resume where you last left ?" once
+    Picture viewer : Image thumb on the image info panel
+    Duplicate detector : Close control panel when scan is complete
+    Splash screen : Smaller logo
+    Duplicate detector : Index all pictures before detecting duplicates
+    Duplicate detector : Make indexing / duplicate detection progress easier to read
+    Duplicate detector : Default choice is "keep"; uses a switch
+    Duplicate detector : Entries blink while they are being deleted
+    Logs : Display API and device model
+    Splash screen
+    App logs moved to tools
+    Import / Export moved to tools
+    Browser : Show a toast when no extra pages found on owned books
+    Queue screen : Auto-start the queue after redownloading content if applicable
+
+Fixes
+
+    Browser : Don't look for duplicates when user doesn't want to be warned about them (speeds up quick download when "Duplicate checking" is off)
+    Library screen : fix external items displayed as duplicates
+    Library & queue screens : Improve "swipe to delete" behaviour
+    Picture viewer : Fix crash and flickering when switching books
+    Picture viewer : Interrupt unarchival process when leaving the book
+    Duplicate detector doesn't ignore covers from non-refreshed books anymore
+    Duplicate detector : Reference item is always on top
+    Hentaifox : Fixed downloads
+    Manwha Hentai : Remove ads
+    E-hentai / exhentai : Fix failing to parse gallery when links to the multipage viewer are present in the comments
+    Browser : Don't look for extra pictures when quick-downloading
+    Picture viewer : Allow reading books while detecting duplicates
+    Picture viewer : Fix crash when displaying certain books
+    Picture viewer : Coloured slider for read pages
+    Luscious : Revamped gallery detection
+    Luscious : Take the "parody" metadata into account
+    Luscious : Nuke ads
+    Queue : Removing a queued book properly deletes stored files
+    Queue : Restarting certain paused books doesn't create duplicate folders with (1), (2)...'s anymore
+    Library screen : Fix for freezes when deleting multiple books
+    Library screen : Display fixes for book information updates
+    Library and queue screens : The app doesn't freeze anymore when deleting multiple books
+    Groups : Fix items disappearing when reordering inside custom group
+    Groups : Smarter menu when deleting groups (groups only; books only; books + groups)
+    Picture viewer : Pictures from archives are now shareable
+    Picture viewer : Archives keep being readable after putting the app to background
+    Refresh library : Fix for crashes when resfreshing large collections
+    Refresh library : Images are now properly detected after auto-renaming folders
+    External library : Fix display issue for newly imported external books
+    External library : Get the actual book title when importing books from Tachiyomi
+

@@ -104,12 +104,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public void streamContentWithUnhashedCovers(Consumer<Content> consumer) {
-        Query<Content> query = db.selectNonHashedContent();
-        query.forEach(consumer::accept);
-    }
-
-    @Override
     public void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer) {
         Query<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc).build();
         query.forEach(consumer::accept);

@@ -41,6 +41,7 @@ class AboutActivity : BaseActivity() {
 
             it.licensesButton.setOnClickListener {
                 LibsBuilder()
+                    .withFields(R.string::class.java.fields)
                     .withLicenseShown(true)
                     .withSearchEnabled(true)
                     .start(this)

@@ -37,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -178,7 +179,8 @@ public class ArchiveHelper {
             @NonNull final DocumentFile file,
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames) throws IOException {
+            @Nullable final List<String> targetNames,
+            @Nullable final AtomicBoolean interrupt) throws IOException {
         Helper.assertNonUiThread();
 
         if (entriesToExtract != null && entriesToExtract.isEmpty()) return Observable.empty();
@@ -191,7 +193,7 @@ public class ArchiveHelper {
         }
         if (null == format) return Observable.empty();
 
-        return Observable.create(emitter -> extractArchiveEntries(context, file.getUri(), format, entriesToExtract, targetFolder, targetNames, emitter));
+        return Observable.create(emitter -> extractArchiveEntries(context, file.getUri(), format, entriesToExtract, targetFolder, targetNames, interrupt, emitter));
     }
 
     /**
@@ -213,6 +215,7 @@ public class ArchiveHelper {
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames,
+            @Nullable final AtomicBoolean interrupt,
             @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         Helper.assertNonUiThread();
         int targetIndex = 0;
@@ -241,7 +244,7 @@ public class ArchiveHelper {
                 }
             }
 
-            ArchiveExtractCallback callback = new ArchiveExtractCallback(targetFolder, fileNames, emitter);
+            ArchiveExtractCallback callback = new ArchiveExtractCallback(targetFolder, fileNames, interrupt, emitter);
             int[] indexes = Helper.getPrimitiveLongArrayFromInt(fileNames.keySet());
             inArchive.extract(indexes, false, callback);
         } catch (SevenZipException e) {
@@ -439,6 +442,7 @@ public class ArchiveHelper {
 
         private final File targetFolder;
         private final Map<Integer, String> fileNames;
+        private final AtomicBoolean interrupt;
         private final ObservableEmitter<Uri> emitter;
 
         private int nbProcessed;
@@ -448,9 +452,11 @@ public class ArchiveHelper {
         public ArchiveExtractCallback(
                 @NonNull final File targetFolder,
                 @NonNull final Map<Integer, String> fileNames,
+                @Nullable final AtomicBoolean interrupt,
                 @Nullable final ObservableEmitter<Uri> emitter) {
             this.targetFolder = targetFolder;
             this.fileNames = fileNames;
+            this.interrupt = interrupt;
             this.emitter = emitter;
             nbProcessed = 0;
         }
@@ -458,6 +464,11 @@ public class ArchiveHelper {
         @Override
         public ISequentialOutStream getStream(int index, ExtractAskMode extractAskMode) throws SevenZipException {
             Timber.v("Extract archive, get stream: " + index + " to: " + extractAskMode);
+
+            if (interrupt != null && interrupt.get()) {
+                Timber.v("Extract archive INTERRUPTED");
+                throw new SevenZipException("Extract archive INTERRUPTED");
+            }
 
             this.extractAskMode = extractAskMode;
             String fileName = fileNames.get(index);
@@ -488,8 +499,12 @@ public class ArchiveHelper {
         }
 
         @Override
-        public void prepareOperation(ExtractAskMode extractAskMode) {
+        public void prepareOperation(ExtractAskMode extractAskMode) throws SevenZipException {
             Timber.v("Extract archive, prepare to: %s", extractAskMode);
+            if (interrupt != null && interrupt.get()) {
+                Timber.v("Extract archive INTERRUPTED");
+                throw new SevenZipException("Extract archive INTERRUPTED");
+            }
         }
 
         @Override

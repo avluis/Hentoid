@@ -227,8 +227,6 @@ public class ObjectBoxDB {
     void deleteContentById(long[] contentId) {
         Box<ErrorRecord> errorBox = store.boxFor(ErrorRecord.class);
         Box<ImageFile> imageFileBox = store.boxFor(ImageFile.class);
-        Box<Attribute> attributeBox = store.boxFor(Attribute.class);
-        Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
         Box<Content> contentBox = store.boxFor(Content.class);
         Box<GroupItem> groupItemBox = store.boxFor(GroupItem.class);
         Box<Group> groupBox = store.boxFor(Group.class);
@@ -1365,14 +1363,6 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    QueryBuilder<ImageFile> selectNonHashedCovers() {
-        QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
-        query.equal(ImageFile_.isCover, true)
-                .equal(ImageFile_.imageHash, 0)
-                .notEqual(ImageFile_.status, StatusContent.ONLINE.getCode());
-        return query;
-    }
-
     QueryBuilder<Content> selectStoredContentQ(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         if (includeQueued)
@@ -1409,6 +1399,8 @@ public class ObjectBoxDB {
 
         QueryBuilder<ImageFile> imageQuery = query.backlink(ImageFile_.content);
         imageQuery.equal(ImageFile_.isCover, true)
+                .isNull(ImageFile_.imageHash)
+                .or()
                 .in(ImageFile_.imageHash, new long[]{0, -1})
                 .notEqual(ImageFile_.status, StatusContent.ONLINE.getCode());
 

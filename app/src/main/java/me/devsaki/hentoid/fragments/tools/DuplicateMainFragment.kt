@@ -26,6 +26,7 @@ import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -323,8 +324,9 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         progressBarTxt.text = String.format("%d / %d", progressBar.progress, progressBar.max)
         progressBarTxt.visibility = View.VISIBLE
         if (ProcessEvent.EventType.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
-            setSettingsPanelVisibility(false)
             disableScanUi()
+            setSettingsPanelVisibility(false)
+            ToastHelper.toast(requireContext(), R.string.duplicate_notif_complete_title);
         } else if (binding.controls.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
                 requireContext()
             )
