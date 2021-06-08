@@ -500,7 +500,7 @@ public class HttpHelper {
         return result;
     }
 
-    private static String cleanWebViewAgent(@NonNull final String agent) {
+    public static String cleanWebViewAgent(@NonNull final String agent) {
         String result = agent;
         int buildIndex = result.indexOf(" Build/");
         if (buildIndex > -1) {
@@ -508,6 +508,11 @@ public class HttpHelper {
             int separatorIndex = result.indexOf(";", buildIndex);
             int firstIndex = Math.min(closeIndex, separatorIndex);
             result = result.substring(0, buildIndex) + result.substring(firstIndex);
+        }
+        int versionIndex = result.indexOf(" Version/");
+        if (versionIndex > -1) {
+            int closeIndex = result.indexOf(" ", versionIndex + 1);
+            result = result.substring(0, versionIndex) + result.substring(closeIndex);
         }
         return result.replace("; wv", "");
     }
