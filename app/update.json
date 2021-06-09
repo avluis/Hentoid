@@ -24,6 +24,8 @@
 	  {"sourceName":"TSUMINO", "status":"RED", "fixedByBuild":"309"},
 	  {"sourceName":"NEXUS", "status":"RED", "fixedByBuild":"329"},
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"379"},
+	  {"sourceName":"HITOMI", "status":"RED"},
+	  {"sourceName":"FAKKU2", "status":"RED"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
   ],
