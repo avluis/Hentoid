@@ -3,11 +3,7 @@ package me.devsaki.hentoid.core;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.work.ExistingWorkPolicy;
@@ -20,7 +16,6 @@ import com.thin.downloadmanager.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -45,10 +40,8 @@ import me.devsaki.hentoid.notification.startup.StartupNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.views.NestedScrollWebView;
 import me.devsaki.hentoid.workers.StartupWorker;
 import timber.log.Timber;
 
@@ -191,6 +184,7 @@ public class AppStartup {
                 Timber.d("Process app update : update detected from %s to %s", Preferences.getLastKnownAppVersionCode(), BuildConfig.VERSION_CODE);
 
                 // Clear webview cache (needs to execute inside the activity's Looper)
+/*
                 Timber.d("Process app update : Clearing webview cache");
                 Handler h = new Handler(Looper.getMainLooper());
                 h.post(() -> {
@@ -213,7 +207,7 @@ public class AppStartup {
                 } catch (Exception e) {
                     Timber.e(e, "Error when clearing app cache upon update");
                 }
-
+*/
                 EventBus.getDefault().postSticky(new AppUpdatedEvent());
 
                 Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
