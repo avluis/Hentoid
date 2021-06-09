@@ -161,7 +161,7 @@ public class HttpHelper {
      * @param resp OkHttp {@link Response}
      * @return The {@link WebResourceResponse} converted from the given OkHttp {@link Response}
      */
-    public static WebResourceResponse okHttpResponseToWebResourceResponse(@NonNull final Response resp, @NonNull final InputStream is) {
+    public static WebResourceResponse okHttpResponseToWebkitResponse(@NonNull final Response resp, @NonNull final InputStream is) {
         final String contentTypeValue = resp.header(HEADER_CONTENT_TYPE);
 
         WebResourceResponse result;
@@ -198,17 +198,18 @@ public class HttpHelper {
     }
 
     /**
-     * Convert HTTP headers from a Webkit-compatible structure to an OkHttp-compatible structure
+     * Convert request HTTP headers from a Webkit-compatible structure to an OkHttp-compatible structure
+     * and enrich them with current cookies
      *
-     * @param webResourceHeaders HTTP Headers structured according to the convention used by Webkit
-     * @param url                Corresponding URL
-     * @return HTTP Headers structured according to the convention used by OkHttp
+     * @param webkitRequestHeaders HTTP request Headers structured according to the convention used by Webkit
+     * @param url                  Corresponding URL
+     * @return HTTP request Headers structured according to the convention used by OkHttp
      */
-    public static List<Pair<String, String>> webResourceHeadersToOkHttpHeaders(@Nullable final Map<String, String> webResourceHeaders, @Nullable String url) {
+    public static List<Pair<String, String>> webkitRequestHeadersToOkHttpHeaders(@Nullable final Map<String, String> webkitRequestHeaders, @Nullable String url) {
         List<Pair<String, String>> result = new ArrayList<>();
 
-        if (webResourceHeaders != null)
-            for (Map.Entry<String, String> entry : webResourceHeaders.entrySet())
+        if (webkitRequestHeaders != null)
+            for (Map.Entry<String, String> entry : webkitRequestHeaders.entrySet())
                 result.add(new Pair<>(entry.getKey(), entry.getValue()));
 
         String cookie = CookieManager.getInstance().getCookie(url);
@@ -273,7 +274,7 @@ public class HttpHelper {
     public static String getDomainFromUri(@NonNull String uriStr) {
         Uri uri = Uri.parse(uriStr);
         String result = uri.getHost();
-        if (result != null && result.startsWith("www")) result = result.substring(3);
+        if (result != null && result.startsWith("www")) result = result.substring(4);
         return (null == result) ? "" : result;
     }
 
@@ -347,17 +348,23 @@ public class HttpHelper {
             for (Map.Entry<String, String> entry : names.entrySet()) {
                 String key = entry.getKey();
                 String value = (null == entry.getValue()) ? "" : entry.getValue();
-                if (!existingCookies.containsKey(key)) namesToSet.add(key + "=" + value);
+                String existingValue = existingCookies.get(key);
+                if (null == existingValue || !existingValue.equals(value))
+                    namesToSet.add(key + "=" + value);
             }
         } else {
             for (Map.Entry<String, String> name : names.entrySet())
                 namesToSet.add(name.getKey() + "=" + name.getValue());
         }
 
-        StringBuilder cookieStrToSet = new StringBuilder();
+        if (namesToSet.isEmpty()) {
+            Timber.v("No new cookie to set %s", url);
+            return;
+        }
 
-        cookieStrToSet.append(TextUtils.join("; ", paramsToSet));
-        for (String name : namesToSet) cookieStrToSet.append("; ").append(name);
+        StringBuilder cookieStrToSet = new StringBuilder();
+        cookieStrToSet.append(TextUtils.join("; ", namesToSet));
+        for (String param : paramsToSet) cookieStrToSet.append("; ").append(param);
 
         mgr.setCookie(url, cookieStrToSet.toString());
         Timber.v("Setting cookie for %s : %s", url, cookieStrToSet.toString());

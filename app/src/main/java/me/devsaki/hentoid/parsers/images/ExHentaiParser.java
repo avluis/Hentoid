@@ -195,7 +195,7 @@ public class ExHentaiParser implements ImageListParser {
 
     @Nullable
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) throws Exception {
-        List<Pair<String, String>> reqHeaders = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
+        List<Pair<String, String>> reqHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url);
         Document doc = getOnlineDocument(url, reqHeaders, Site.EXHENTAI.useHentoidAgent(), Site.EXHENTAI.useWebviewAgent());
         if (doc != null) {
             String imageUrl = EHentaiParser.getDisplayedImageUrl(doc).toLowerCase();
