@@ -411,7 +411,7 @@ public class HttpHelper {
     }
 
     // TODO doc
-    public static String getCookies(@NonNull String url) {
+    public static String getCookies(@NonNull final String url) {
         String result = CookieManager.getInstance().getCookie(url);
         if (result != null) return HttpHelper.stripParams(result);
         else return "";
