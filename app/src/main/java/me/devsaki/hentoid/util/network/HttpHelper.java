@@ -438,7 +438,8 @@ public class HttpHelper {
     public static String peekCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
         try {
             Response response = getOnlineResource(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
-            List<String> cookielist = response.headers().values("Set-Cookie");
+            List<String> cookielist = response.headers("Set-Cookie");
+            if (cookielist.isEmpty()) cookielist = response.headers("Set-Cookie");
             return TextUtils.join("; ", cookielist);
         } catch (IOException e) {
             Timber.e(e);
