@@ -376,7 +376,8 @@ public class Content implements Serializable {
                 galleryConst = "";
         }
 
-        return site.getUrl() + galleryConst + url;
+        String result = site.getUrl() + galleryConst + url;
+        return result.replace("//", "/");
     }
 
     public String getReaderUrl() {
