@@ -25,6 +25,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
@@ -56,22 +57,48 @@ public class FakkuParser implements ImageListParser {
 
         // Add referer information to downloadParams
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl());
+        String readUrl = content.getGalleryUrl().replace("www", "books") + "/read";
 
-        String cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+        String cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
         if (null == cookieStr || !cookieStr.toLowerCase().contains("fakku"))
             throw new AccountException("Your have to be logged in with a Fakku account");
 
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
         headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, Site.FAKKU2.getUrl() + "/"));
-        String readUrl = content.getGalleryUrl().replace("www", "books") + "/read";
 
-        // Get the raw content of the page to detect if it's JSON (no JSON = probably trying to get a premium book with a non-premium account)
-        ResponseBody response = HttpHelper.getOnlineResource(readUrl, headers, Site.FAKKU2.useMobileAgent(), Site.FAKKU2.useHentoidAgent(), Site.FAKKU2.useWebviewAgent()).body();
-        if (null == response) throw new IOException("Could not load response");
+        if (BuildConfig.DEBUG)
+            Timber.v("Fetching book data from %s with cookie string %s", content.getReaderUrl(), cookieStr);
 
-        String rawResource = response.string().trim();
-        if (!rawResource.startsWith("{") || !rawResource.endsWith("}")) // No JSON file
+        Response response = HttpHelper.getOnlineResource(content.getReaderUrl(), headers, Site.FAKKU2.useMobileAgent(), Site.FAKKU2.useHentoidAgent(), Site.FAKKU2.useWebviewAgent());
+        ResponseBody body = response.body();
+        if (null == body) throw new IOException("Could not load response");
+
+        List<String> newCookies = response.headers("set-cookie");
+        if (newCookies.isEmpty()) newCookies = response.headers("Set-Cookie");
+        if (!newCookies.isEmpty()) {
+            for (String newCookie : newCookies) {
+                // Set-cookie might contain multiple cookies to set separated by a line feed (see HttpHelper.getValuesSeparatorFromHttpHeader)
+                String[] cookieParts = newCookie.split("\n");
+                for (String cookie : cookieParts)
+                    if (!cookie.isEmpty())
+                        HttpHelper.setCookies(content.getReaderUrl(), cookie);
+            }
+        }
+
+        // 2nd try with corrected cookies
+        cookieStr = HttpHelper.getCookies(readUrl);
+        headers.clear();
+        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, Site.FAKKU2.getUrl() + "/"));
+
+        if (BuildConfig.DEBUG)
+            Timber.v("Re-fetching book data from %s with cookie string %s", readUrl, cookieStr);
+
+        body = HttpHelper.getOnlineResource(readUrl, headers, Site.FAKKU2.useMobileAgent(), Site.FAKKU2.useHentoidAgent(), Site.FAKKU2.useWebviewAgent()).body();
+        if (null == body) throw new IOException("Could not load response");
+        String rawResource = body.string().trim();
+        if (!rawResource.startsWith("{") || !rawResource.endsWith("}")) // Still no JSON file
             throw new AccountException("Your have to be logged in with a paid Fakku account to download non-free books");
 
         // Parse the content if JSON
@@ -84,18 +111,7 @@ public class FakkuParser implements ImageListParser {
         progress.start(content.getId(), info.getPages().keySet().size() + 1);
 
         // Process book info to get page detailed info
-        String pid = null;
-        String cookie = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-        if (cookie != null) {
-            String[] cookieContent = cookie.split(";");
-            for (String s : cookieContent) {
-                String[] cookieParts = s.split("=");
-                if (cookieParts[0].toLowerCase().trim().equals("fakku_zid")) {
-                    pid = cookieParts[1];
-                    break;
-                }
-            }
-        }
+        String pid = HttpHelper.parseCookies(cookieStr).get("fakku_zid");
         if (null == pid) {
             Timber.e("Could not extract zid");
             return result;
@@ -106,6 +122,7 @@ public class FakkuParser implements ImageListParser {
             pageInfo = FakkuDecode.getBookPageData(info.getKeyHash(), new String(StringHelper.decode64(info.getKeyData())), pid, BuildConfig.FK_TOKEN);
         progress.advance();
 
+        String pageCookie = null;
         result = new ArrayList<>();
         result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
         for (String p : info.getPages().keySet()) {
@@ -122,6 +139,11 @@ public class FakkuParser implements ImageListParser {
                 else pageInfoValue = "unprotected";
 
                 downloadParams.put("pageInfo", pageInfoValue);
+                if (null == pageCookie) {
+                    pageCookie = HttpHelper.getCookies(page.getImage());
+                    Timber.v("pageCookie for %s, %s", page.getImage(), pageCookie);
+                }
+                downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, pageCookie);
                 downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
                 img.setDownloadParams(downloadParamsStr);

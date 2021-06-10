@@ -457,7 +457,7 @@ class CustomWebViewClient extends WebViewClient {
                     if (null == cookiesStr)
                         cookiesStr = result.getResponseHeaders().get("Set-Cookie");
                     if (cookiesStr != null) {
-                        // Set-cookie might contain multiple cookies to set separated by a line feed (is that a webkit convention ?!)
+                        // Set-cookie might contain multiple cookies to set separated by a line feed (see HttpHelper.getValuesSeparatorFromHttpHeader)
                         String[] cookieParts = cookiesStr.split("\n");
                         for (String cookie : cookieParts)
                             if (!cookie.isEmpty())
