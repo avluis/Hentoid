@@ -31,7 +31,7 @@ public class ToonilyParser extends BaseImageListParser {
         List<String> result = new ArrayList<>();
 
         List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
+        ParseHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
 
         // 1. Scan the gallery page for chapter URLs
         List<String> chapterUrls = new ArrayList<>();

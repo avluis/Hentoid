@@ -9,6 +9,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -18,13 +19,14 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
@@ -196,10 +198,28 @@ public class ParseHelper {
         return "";
     }
 
-    public static void addSavedCookiesToHeader(String downloadParams, List<Pair<String, String>> headers) {
+    public static void addSavedCookiesToHeader(String downloadParams, @NonNull List<Pair<String, String>> headers) {
         String cookieStr = getSavedCookieStr(downloadParams);
         if (!cookieStr.isEmpty())
             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+    }
+
+    public static void addCurrentCookiesToHeader(@NonNull final String url, @NonNull List<Pair<String, String>> headers) {
+        String cookieStr = HttpHelper.getCookies(url);
+        if (!cookieStr.isEmpty())
+            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+    }
+
+    // Save download params for future use during download
+    public static void setDownloadParams(@NonNull final List<ImageFile> imgs, @NonNull final String referrer) {
+        Map<String, String> params = new HashMap<>();
+        for (ImageFile img : imgs) {
+            params.clear();
+            String cookieStr = HttpHelper.getCookies(img.getUrl());
+            if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+            params.put(HttpHelper.HEADER_REFERER_KEY, referrer);
+            img.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
+        }
     }
 
     // TODO doc

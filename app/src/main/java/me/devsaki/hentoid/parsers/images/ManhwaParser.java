@@ -31,7 +31,7 @@ public class ManhwaParser extends BaseImageListParser {
         List<String> result = new ArrayList<>();
 
         List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
+        ParseHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
 
         // 1. Scan the gallery page for chapter URLs
         List<String> chapterUrls = new ArrayList<>();
@@ -40,7 +40,8 @@ public class ManhwaParser extends BaseImageListParser {
             List<Element> chapters = doc.select("[class^=wp-manga-chapter] a");
             for (Element e : chapters) {
                 String link = e.attr("href");
-                if (!chapterUrls.contains(link)) chapterUrls.add(link); // Make sure we're not adding duplicates
+                if (!chapterUrls.contains(link))
+                    chapterUrls.add(link); // Make sure we're not adding duplicates
             }
         }
         Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
