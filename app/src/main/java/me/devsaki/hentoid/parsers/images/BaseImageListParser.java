@@ -40,6 +40,7 @@ public abstract class BaseImageListParser implements ImageListParser {
         try {
             List<String> imgUrls = parseImages(content);
             result = ParseHelper.urlsToImageFiles(imgUrls, content.getCoverImageUrl(), StatusContent.SAVED);
+            ParseHelper.setDownloadParams(result, content.getSite().getUrl());
         } finally {
             EventBus.getDefault().unregister(this);
         }

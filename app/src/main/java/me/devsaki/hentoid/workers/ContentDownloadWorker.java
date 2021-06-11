@@ -375,21 +375,25 @@ public class ContentDownloadWorker extends BaseWorker {
         Site site = content.getSite();
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED)) {
-                if (img.isCover()) {
-                    // Enrich cover download params just in case
-                    Map<String, String> downloadParams;
-                    if (img.getDownloadParams().length() > 2)
-                        downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
-                    else
-                        downloadParams = new HashMap<>();
-                    // Add the referer, if unset
-                    if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
-                        downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
-                    // Set the 1st image of the list as a backup, if the cover URL is stale (might happen when restarting old downloads)
-                    if (images.size() > 1)
-                        downloadParams.put("backupUrl", images.get(1).getUrl());
-                    img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+                // Enrich download params just in case
+                Map<String, String> downloadParams;
+                if (img.getDownloadParams().length() > 2)
+                    downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
+                else
+                    downloadParams = new HashMap<>();
+                // Add the referer, if unset
+                if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
+                    downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
+                if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
+                    downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(img.getUrl()));
+
+                // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
+                if (img.isCover() && images.size() > 1) {
+                    downloadParams.put("backupUrl", images.get(1).getUrl());
                 }
+
+                img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+
                 requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
             }
         }
@@ -635,7 +639,7 @@ public class ContentDownloadWorker extends BaseWorker {
     private List<ImageFile> fetchImageURLs(@NonNull Content content) throws Exception {
         List<ImageFile> imgs;
 
-        // If content doesn't have any download parameters, get them from the live gallery page
+        // If content doesn't have any download parameters, get them from the cookie manager
         String contentDownloadParamsStr = content.getDownloadParams();
         if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
             String cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
@@ -650,14 +654,18 @@ public class ContentDownloadWorker extends BaseWorker {
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
 
-        // Add the content's download params to the images if they have missing information
+        // If no images found, or just the cover, image detection has failed
+        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
+            throw new EmptyResultException();
+
+        // Add the content's download params to the images only if they have missing information
         contentDownloadParamsStr = content.getDownloadParams();
         if (contentDownloadParamsStr != null && contentDownloadParamsStr.length() > 2) {
             Map<String, String> contentDownloadParams = ContentHelper.parseDownloadParams(contentDownloadParamsStr);
             for (ImageFile i : imgs) {
                 if (i.getDownloadParams() != null && i.getDownloadParams().length() > 2) {
                     Map<String, String> imageDownloadParams = ContentHelper.parseDownloadParams(i.getDownloadParams());
-                    // Content's
+                    // Content's params
                     for (Map.Entry<String, String> entry : contentDownloadParams.entrySet())
                         if (!imageDownloadParams.containsKey(entry.getKey()))
                             imageDownloadParams.put(entry.getKey(), entry.getValue());
@@ -670,10 +678,6 @@ public class ContentDownloadWorker extends BaseWorker {
                 }
             }
         }
-
-        // If no images found, or just the cover, image detection has failed
-        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
-            throw new EmptyResultException();
 
         // Cleanup generated objects
         for (ImageFile img : imgs) {
