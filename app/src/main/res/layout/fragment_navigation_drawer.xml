@@ -159,7 +159,7 @@
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:gravity="center"
-        android:text="Meet amazing people, privately!"
+        android:text="Meet new, exciting people!"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="@+id/drawer_header"
         app:layout_constraintTop_toBottomOf="@+id/alovoa_name_text" />

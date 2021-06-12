@@ -1,0 +1,5 @@
+Fixes
+
+    Hitomi : Align with new image hosts - use "redownload from scratch" to fix your queued downloads
+    External library : Fix display issue where some external books would be displayed as duplicates
+

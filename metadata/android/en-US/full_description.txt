@@ -1,3 +1,3 @@
-﻿Hendroid is an ad-free Doujinshi & H-Manga archiving and viewing app. It supports multiple popular sources across the globe.
+﻿Hendroid is a free and open-source Doujinshi & H-Manga archiving and viewing app. It supports multiple popular sources across the globe.
 
 This is a fork of Hentoid (https://github.com/avluis/Hentoid) with several improvements - including removed tracking, third-party image viewer support and more! You can now view your favorite hentai images more efficiently ( ͡° ͜ʖ ͡°)

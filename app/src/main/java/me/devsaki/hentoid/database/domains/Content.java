@@ -846,7 +846,8 @@ public class Content implements Serializable {
         Content content = (Content) o;
         return isFavourite() == content.isFavourite() &&
                 isCompleted() == content.isCompleted() &&
-                getDownloadDate() == content.getDownloadDate() && // To differentiate external books that have to URL
+                getDownloadDate() == content.getDownloadDate() && // To differentiate external books that have no URL
+                getSize() == content.getSize() && // To differentiate external books that have no URL
                 getLastReadDate() == content.getLastReadDate() &&
                 isBeingDeleted() == content.isBeingDeleted() &&
                 Objects.equals(getUrl(), content.getUrl()) &&
@@ -856,7 +857,7 @@ public class Content implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSite(), isFavourite(), isCompleted(), getLastReadDate(), isBeingDeleted());
+        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), isCompleted(), getLastReadDate(), isBeingDeleted());
     }
 
     public long uniqueHash() {

@@ -21,7 +21,7 @@ public class AllPornComicActivity extends BaseWebActivity {
         client.restrictTo(DOMAIN_FILTER);
         client.addDirtyElements(DIRTY_ELEMENTS);
         client.adBlocker.addUrlWhitelist(JS_WHITELIST);
-        for (String s : JS_WHITELIST) client.adBlocker.addJsWhitelistUrlPattern(s);
+        for (String s : JS_WHITELIST) client.adBlocker.addJsWhitelistUrlPattern(s); // TODO duplicate of above ?
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         return client;
     }
