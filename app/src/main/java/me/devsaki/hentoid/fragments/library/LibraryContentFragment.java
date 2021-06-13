@@ -19,6 +19,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.DimenRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -183,6 +186,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
     private boolean excludeClicked = false;
+
+    // Launches the search activity according to the returned result
+    private final ActivityResultLauncher<Intent> advancedSearchReturnLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::advancedSearchReturnResult);
 
     /**
      * Diff calculation rules for contents
@@ -899,21 +906,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         builder.setExcludeMode(excludeClicked);
         search.putExtras(builder.getBundle());
 
-        startActivityForResult(search, 999);
+        advancedSearchReturnLauncher.launch(search);
         activity.get().collapseSearchMenu();
     }
 
     /**
      * Called when returning from the Advanced Search screen
      */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 999
-                && resultCode == Activity.RESULT_OK
-                && data != null && data.getExtras() != null) {
-            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(data.getExtras());
+    private void advancedSearchReturnResult(final ActivityResult result) {
+        if (result.getResultCode() == Activity.RESULT_OK
+                && result.getData() != null && result.getData().getExtras() != null) {
+            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(result.getData().getExtras());
             Uri searchUri = parser.getUri();
 
             if (searchUri != null) {
