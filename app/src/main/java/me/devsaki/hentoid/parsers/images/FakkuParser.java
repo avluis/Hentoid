@@ -141,7 +141,8 @@ public class FakkuParser implements ImageListParser {
                 downloadParams.put("pageInfo", pageInfoValue);
                 if (null == pageCookie) {
                     pageCookie = HttpHelper.getCookies(page.getImage());
-                    Timber.v("pageCookie for %s, %s", page.getImage(), pageCookie);
+                    if (BuildConfig.DEBUG)
+                        Timber.v("pageCookie for %s, %s", page.getImage(), pageCookie);
                 }
                 downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, pageCookie);
                 downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
