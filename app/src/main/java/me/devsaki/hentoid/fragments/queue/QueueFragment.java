@@ -512,6 +512,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 motiveMsg = R.string.paused_dl_folder_credentials;
                 PermissionHelper.requestExternalStorageReadWritePermission(getActivity(), PermissionHelper.RQST_STORAGE_PERMISSION);
                 break;
+            case DownloadEvent.Motive.STALE_CREDENTIALS:
+                motiveMsg = R.string.paused_dl_folder_credentials;
+                break;
             case DownloadEvent.Motive.NONE:
             default: // NONE
                 motiveMsg = -1;

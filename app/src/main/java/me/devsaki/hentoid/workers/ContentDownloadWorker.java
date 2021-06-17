@@ -61,6 +61,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
+import me.devsaki.hentoid.notification.download.DownloadReviveNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
@@ -372,7 +373,6 @@ public class ContentDownloadWorker extends BaseWorker {
         // == DOWNLOAD PHASE ==
 
         // Queue image download requests
-        Site site = content.getSite();
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED)) {
                 // Enrich download params just in case
@@ -394,7 +394,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
                 img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
 
-                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
+                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content));
             }
         }
 
@@ -553,7 +553,7 @@ public class ContentDownloadWorker extends BaseWorker {
                                 Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
                                 img.setStatus(StatusContent.SAVED);
                                 dao.insertImageFile(img);
-                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite()));
+                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content));
                             }
                         return;
                     }
@@ -699,9 +699,10 @@ public class ContentDownloadWorker extends BaseWorker {
     private Request<Object> buildDownloadRequest(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
-            @NonNull final Site site) {
+            @NonNull final Content content) {
 
         String backupUrl = "";
+        Site site = content.getSite();
 
         // Apply image download parameters
         Map<String, String> requestHeaders = new HashMap<>();
@@ -727,7 +728,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 site.useHentoidAgent(),
                 site.useWebviewAgent(),
                 result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
-                error -> onRequestError(error, img, dir, backupUrlFinal, requestHeaders));
+                error -> onRequestError(error, content, img, dir, backupUrlFinal, requestHeaders));
     }
 
     private void onRequestSuccess(
@@ -767,6 +768,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
     private void onRequestError(
             VolleyError error,
+            @NonNull Content content,
             @NonNull ImageFile img,
             @NonNull DocumentFile dir,
             @NonNull String backupUrl,
@@ -778,7 +780,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         // If no backup, then process the error
-        String statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode + "" : "N/A";
+        int statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode : -1;
         String message = error.getMessage() + (img.isBackup() ? " (from backup URL)" : "");
         String cause = "";
 
@@ -800,6 +802,11 @@ public class ContentDownloadWorker extends BaseWorker {
 
         updateImageStatusUri(img, false, "");
         logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
+        if (content.getSite().isUseCloudflare() && 503 == statusCode) {
+            notificationManager.notify(new DownloadReviveNotification(content));
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.STALE_CREDENTIALS));
+            dao.clearDownloadParams(content.getId());
+        }
     }
 
     private void tryUsingBackupUrl(
@@ -821,7 +828,7 @@ public class ContentDownloadWorker extends BaseWorker {
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.computation())
                         .subscribe(
-                                imageFile -> processBackupImage(imageFile.orElse(null), img, dir, site),
+                                imageFile -> processBackupImage(imageFile.orElse(null), img, dir, content),
                                 throwable ->
                                 {
                                     updateImageStatusUri(img, false, "");
@@ -832,14 +839,16 @@ public class ContentDownloadWorker extends BaseWorker {
         );
     }
 
-    private void processBackupImage(ImageFile backupImage, @NonNull ImageFile
-            originalImage, @NonNull DocumentFile dir, Site site) {
+    private void processBackupImage(ImageFile backupImage,
+                                    @NonNull ImageFile originalImage,
+                                    @NonNull DocumentFile dir,
+                                    Content content) {
         if (backupImage != null) {
             Timber.i("Backup URL contains image @ %s; queuing", backupImage.getUrl());
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
             originalImage.setBackup(true); // Indicates the image is from a backup (for display in error logs)
             dao.insertImageFile(originalImage);
-            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, site));
+            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, content));
         } else Timber.w("Failed to parse backup URL");
     }
 
