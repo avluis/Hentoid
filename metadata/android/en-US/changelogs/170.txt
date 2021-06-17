@@ -1,0 +1,6 @@
+Fixes
+
+    Hitomi : Align with new image hosts - use "redownload from scratch" to fix your queued downloads
+    Browser : Fix crashes when feeding malformed URLs to Chromium on Android Lollipop
+
+
