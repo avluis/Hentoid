@@ -9,6 +9,9 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.documentfile.provider.DocumentFile;
@@ -30,8 +33,6 @@ import timber.log.Timber;
 
 public class Api29MigrationActivity extends AppCompatActivity {
 
-    private static final int RQST_STORAGE_PERMISSION = 3;
-
     // UI
     private View step1button;
     private TextView step1folderTxt;
@@ -43,7 +44,8 @@ public class Api29MigrationActivity extends AppCompatActivity {
     private TextView step3Txt;
     private ProgressBar step3progress;
     private View step3check;
-
+    private final ActivityResultLauncher<Intent> requestStoragePermLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::requestStoragePermResult);
 
     @SuppressWarnings("deprecation")
     @Override
@@ -110,19 +112,16 @@ public class Api29MigrationActivity extends AppCompatActivity {
         // http://stackoverflow.com/a/31334967/1615876
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
 
-        startActivityForResult(intent, RQST_STORAGE_PERMISSION);
+        requestStoragePermLauncher.launch(intent);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
+    private void requestStoragePermResult(final ActivityResult result) {
         // Return from the SAF picker
-        if (requestCode == RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) {
+        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
             // Get Uri from Storage Access Framework
-            Uri treeUri = data.getData();
+            Uri treeUri = result.getData().getData();
             if (treeUri != null) onSelectSAFRootFolder(treeUri);
-        } // Do nothing for RESULT_CANCELED, user will have to push the button again
+        }
     }
 
     // Return from SAF picker
