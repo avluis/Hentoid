@@ -513,7 +513,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 PermissionHelper.requestExternalStorageReadWritePermission(getActivity(), PermissionHelper.RQST_STORAGE_PERMISSION);
                 break;
             case DownloadEvent.Motive.STALE_CREDENTIALS:
-                motiveMsg = R.string.paused_dl_folder_credentials;
+                motiveMsg = R.string.paused_dl_stale_online_credentials;
                 break;
             case DownloadEvent.Motive.NONE:
             default: // NONE
@@ -615,7 +615,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 int pagesOKDisplay = Math.max(0, pagesOK - 1);
 
                 // Update book progress bar
-                Timber.d(">> setProgress %s", pagesOKDisplay + pagesKO);
                 content.setProgress((long) pagesOKDisplay + pagesKO);
                 content.setDownloadedBytes(downloadedSizeB);
                 content.setQtyPages(totalPagesDisplay);
