@@ -487,7 +487,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
 
-        Timber.d("Event received : %s", event.eventType);
+        Timber.v("Event received : %s", event.eventType);
         errorStatsMenu.setVisible(event.pagesKO > 0);
 
         // Display motive, if any
@@ -511,6 +511,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             case DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS:
                 motiveMsg = R.string.paused_dl_folder_credentials;
                 PermissionHelper.requestExternalStorageReadWritePermission(getActivity(), PermissionHelper.RQST_STORAGE_PERMISSION);
+                break;
+            case DownloadEvent.Motive.STALE_CREDENTIALS:
+                motiveMsg = R.string.paused_dl_stale_online_credentials;
                 break;
             case DownloadEvent.Motive.NONE:
             default: // NONE
@@ -612,7 +615,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 int pagesOKDisplay = Math.max(0, pagesOK - 1);
 
                 // Update book progress bar
-                Timber.d(">> setProgress %s", pagesOKDisplay + pagesKO);
                 content.setProgress((long) pagesOKDisplay + pagesKO);
                 content.setDownloadedBytes(downloadedSizeB);
                 content.setQtyPages(totalPagesDisplay);

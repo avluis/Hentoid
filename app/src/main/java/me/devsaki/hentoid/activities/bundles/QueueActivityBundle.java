@@ -3,6 +3,9 @@ package me.devsaki.hentoid.activities.bundles;
 import android.os.Bundle;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import me.devsaki.hentoid.enums.Site;
 
 /**
  * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.QueueActivity}
@@ -13,6 +16,8 @@ import javax.annotation.Nonnull;
 public class QueueActivityBundle {
     private static final String KEY_IS_ERROR = "isError";
     private static final String KEY_CONTENT_HASH = "contentHash";
+    private static final String KEY_REVIVE_DOWNLOAD = "reviveDownload";
+    private static final String KEY_REVIVE_OLD_COOKIE = "reviveOldCookie";
 
     private QueueActivityBundle() {
         throw new UnsupportedOperationException();
@@ -28,6 +33,14 @@ public class QueueActivityBundle {
 
         public void setContentHash(long contentHash) {
             bundle.putLong(KEY_CONTENT_HASH, contentHash);
+        }
+
+        public void setReviveDownload(Site site) {
+            bundle.putInt(KEY_REVIVE_DOWNLOAD, site.getCode());
+        }
+
+        public void setReviveOldCookie(String cookie) {
+            bundle.putString(KEY_REVIVE_OLD_COOKIE, cookie);
         }
 
         public Bundle getBundle() {
@@ -49,6 +62,17 @@ public class QueueActivityBundle {
 
         public long contentHash() {
             return bundle.getLong(KEY_CONTENT_HASH, 0);
+        }
+
+        @Nullable
+        public Site getRevivedSite() {
+            int siteId = bundle.getInt(KEY_REVIVE_DOWNLOAD, -1);
+            if (siteId > -1) return Site.searchByCode(siteId);
+            else return null;
+        }
+
+        public String getOldCookie() {
+            return bundle.getString(KEY_REVIVE_OLD_COOKIE, "");
         }
     }
 }

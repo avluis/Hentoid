@@ -58,7 +58,9 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadReviveEvent;
 import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.notification.action.UserActionNotification;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
@@ -71,6 +73,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.download.RequestQueueManager;
 import me.devsaki.hentoid.util.exception.AccountException;
@@ -84,6 +87,7 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.InputStreamVolleyRequest;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
 
 public class ContentDownloadWorker extends BaseWorker {
@@ -97,7 +101,9 @@ public class ContentDownloadWorker extends BaseWorker {
 
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
+    private boolean isCloudFlareBlocked;
 
+    private final NotificationManager userActionNotificationManager;
     private final RequestQueueManager<Object> requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -114,6 +120,7 @@ public class ContentDownloadWorker extends BaseWorker {
         dao = new ObjectBoxDAO(context);
 
         requestQueueManager = RequestQueueManager.getInstance(context);
+        userActionNotificationManager = new NotificationManager(context, R.id.user_action_notification);
     }
 
     @Override
@@ -250,6 +257,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         downloadCanceled = false;
         downloadSkipped = false;
+        isCloudFlareBlocked = false;
         dao.deleteErrorRecords(content.getId());
 
         boolean hasError = false;
@@ -372,7 +380,6 @@ public class ContentDownloadWorker extends BaseWorker {
         // == DOWNLOAD PHASE ==
 
         // Queue image download requests
-        Site site = content.getSite();
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED)) {
                 // Enrich download params just in case
@@ -381,7 +388,7 @@ public class ContentDownloadWorker extends BaseWorker {
                     downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
                 else
                     downloadParams = new HashMap<>();
-                // Add the referer, if unset
+                // Add referer and cookies, if unset
                 if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
                     downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
                 if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
@@ -394,7 +401,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
                 img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
 
-                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
+                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content));
             }
         }
 
@@ -445,7 +452,7 @@ public class ContentDownloadWorker extends BaseWorker {
             double estimateBookSizeMB = -1;
             if (pagesOK > 3 && progress > 0 && totalPages > 0) {
                 estimateBookSizeMB = sizeDownloadedMB / (progress * 1.0 / totalPages);
-                Timber.d("Estimate book size calculated for wifi check : %s MB", estimateBookSizeMB);
+                Timber.v("Estimate book size calculated for wifi check : %s MB", estimateBookSizeMB);
             }
 
             notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages, (int) sizeDownloadedMB, (int) estimateBookSizeMB, avgSpeedKbps));
@@ -553,7 +560,7 @@ public class ContentDownloadWorker extends BaseWorker {
                                 Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
                                 img.setStatus(StatusContent.SAVED);
                                 dao.insertImageFile(img);
-                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite()));
+                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content));
                             }
                         return;
                     }
@@ -699,9 +706,10 @@ public class ContentDownloadWorker extends BaseWorker {
     private Request<Object> buildDownloadRequest(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
-            @NonNull final Site site) {
+            @NonNull final Content content) {
 
         String backupUrl = "";
+        Site site = content.getSite();
 
         // Apply image download parameters
         Map<String, String> requestHeaders = new HashMap<>();
@@ -727,7 +735,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 site.useHentoidAgent(),
                 site.useWebviewAgent(),
                 result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
-                error -> onRequestError(error, img, dir, backupUrlFinal, requestHeaders));
+                error -> onRequestError(error, content, img, dir, backupUrlFinal, requestHeaders));
     }
 
     private void onRequestSuccess(
@@ -767,6 +775,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
     private void onRequestError(
             VolleyError error,
+            @NonNull Content content,
             @NonNull ImageFile img,
             @NonNull DocumentFile dir,
             @NonNull String backupUrl,
@@ -778,7 +787,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         // If no backup, then process the error
-        String statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode + "" : "N/A";
+        int statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode : -1;
         String message = error.getMessage() + (img.isBackup() ? " (from backup URL)" : "");
         String cause = "";
 
@@ -799,7 +808,19 @@ public class ContentDownloadWorker extends BaseWorker {
         Timber.w(error);
 
         updateImageStatusUri(img, false, "");
-        logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
+        logErrorRecord(content.getId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
+        // Handle cloudflare blocks
+        if (content.getSite().isUseCloudflare() && 503 == statusCode && !isCloudFlareBlocked) {
+            isCloudFlareBlocked = true; // prevent associated events & notifs to be fired more than once
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.STALE_CREDENTIALS));
+            dao.clearDownloadParams(content.getId());
+
+            final String cfcookie = StringHelper.protect(HttpHelper.parseCookies(HttpHelper.getCookies(img.getUrl())).get(Consts.CLOUDFLARE_COOKIE));
+            userActionNotificationManager.notify(new UserActionNotification(content.getSite(), cfcookie));
+
+            if (HentoidApp.isInForeground())
+                EventBus.getDefault().post(new DownloadReviveEvent(content.getSite(), cfcookie));
+        }
     }
 
     private void tryUsingBackupUrl(
@@ -821,7 +842,7 @@ public class ContentDownloadWorker extends BaseWorker {
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.computation())
                         .subscribe(
-                                imageFile -> processBackupImage(imageFile.orElse(null), img, dir, site),
+                                imageFile -> processBackupImage(imageFile.orElse(null), img, dir, content),
                                 throwable ->
                                 {
                                     updateImageStatusUri(img, false, "");
@@ -832,14 +853,16 @@ public class ContentDownloadWorker extends BaseWorker {
         );
     }
 
-    private void processBackupImage(ImageFile backupImage, @NonNull ImageFile
-            originalImage, @NonNull DocumentFile dir, Site site) {
+    private void processBackupImage(ImageFile backupImage,
+                                    @NonNull ImageFile originalImage,
+                                    @NonNull DocumentFile dir,
+                                    Content content) {
         if (backupImage != null) {
             Timber.i("Backup URL contains image @ %s; queuing", backupImage.getUrl());
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
             originalImage.setBackup(true); // Indicates the image is from a backup (for display in error logs)
             dao.insertImageFile(originalImage);
-            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, site));
+            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, content));
         } else Timber.w("Failed to parse backup URL");
     }
 
@@ -932,21 +955,21 @@ public class ContentDownloadWorker extends BaseWorker {
             // Ignore neutral binary content-type
             if (!contentType.equalsIgnoreCase("application/octet-stream")) {
                 fileExt = FileHelper.getExtensionFromMimeType(contentType);
-                Timber.d("Using content-type %s to determine file extension -> %s", contentType, fileExt);
+                Timber.v("Using content-type %s to determine file extension -> %s", contentType, fileExt);
             }
         }
         // Content-type has not been useful to determine the extension => See if the URL contains an extension
         if (null == fileExt || fileExt.isEmpty()) {
             fileExt = HttpHelper.getExtensionFromUri(img.getUrl());
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt);
-            Timber.d("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
+            Timber.v("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
         }
         // No extension detected in the URL => Read binary header of the file to detect known formats
         // If PNG, peek into the file to see if it is an animated PNG or not (no other way to do that)
         if (binaryContent != null && (fileExt.isEmpty() || fileExt.equals("png"))) {
             mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
             fileExt = FileHelper.getExtensionFromMimeType(mimeType);
-            Timber.d("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
+            Timber.v("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
         }
         // If all else fails, fall back to jpg as default
         if (null == fileExt || fileExt.isEmpty()) {

@@ -65,6 +65,8 @@ public interface CollectionDAO {
 
     void deleteErrorRecords(long contentId);
 
+    void clearDownloadParams(long contentId);
+
 
     // MASS OPERATIONS
 

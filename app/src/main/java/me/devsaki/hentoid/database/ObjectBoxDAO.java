@@ -329,6 +329,20 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public void clearDownloadParams(long contentId) {
+        Content c = db.selectContentById(contentId);
+        if (null == c) return;
+
+        c.setDownloadParams("");
+        db.insertContent(c);
+
+        List<ImageFile> imgs = c.getImageFiles();
+        if (null == imgs) return;
+        for (ImageFile img : imgs) img.setDownloadParams("");
+        db.insertImageFiles(imgs);
+    }
+
+    @Override
     public long countAllExternalBooks() {
         return db.selectAllExternalBooksQ().count();
     }

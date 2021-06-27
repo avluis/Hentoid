@@ -31,10 +31,12 @@
       "useWebviewAgent": false
     },
     "MANHWA": {
-      "hasCoverBasedPageUpdates": true
+      "hasCoverBasedPageUpdates": true,
+      "useCloudflare": true
     },
     "TOONILY": {
-      "hasCoverBasedPageUpdates": true
+      "hasCoverBasedPageUpdates": true,
+      "useCloudflare": true
     }
   }
 }
