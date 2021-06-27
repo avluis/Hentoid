@@ -5,11 +5,10 @@ import android.content.res.Resources;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
+import android.widget.OverScroller;
 
 import androidx.annotation.NonNull;
-import androidx.core.view.MotionEventCompat;
 import androidx.core.view.ViewCompat;
-import androidx.core.widget.ScrollerCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import timber.log.Timber;
@@ -30,7 +29,7 @@ public class DragSelectTouchListener implements RecyclerView.OnItemTouchListener
 
     private OnDragSelectListener mSelectListener;
     private RecyclerView mRecyclerView;
-    private ScrollerCompat mScroller;
+    private OverScroller mScroller;
     private final Runnable mScrollRunnable = new Runnable() {
         @Override
         public void run() {
@@ -179,7 +178,7 @@ public class DragSelectTouchListener implements RecyclerView.OnItemTouchListener
         if (!mIsActive || rv.getAdapter().getItemCount() == 0)
             return false;
 
-        int action = MotionEventCompat.getActionMasked(e);
+        int action = e.getActionMasked();
         switch (action) {
             case MotionEvent.ACTION_POINTER_DOWN:
             case MotionEvent.ACTION_DOWN:
@@ -210,7 +209,7 @@ public class DragSelectTouchListener implements RecyclerView.OnItemTouchListener
 
     private void initScroller(Context context) {
         if (mScroller == null)
-            mScroller = ScrollerCompat.create(context, new LinearInterpolator());
+            mScroller = new OverScroller(context, new LinearInterpolator());
     }
 
     public void stopAutoScroll() {
@@ -225,7 +224,7 @@ public class DragSelectTouchListener implements RecyclerView.OnItemTouchListener
         if (!mIsActive)
             return;
 
-        int action = MotionEventCompat.getActionMasked(e);
+        int action = e.getActionMasked();
         switch (action) {
             case MotionEvent.ACTION_MOVE:
                 if (!mInTopSpot && !mInBottomSpot)
