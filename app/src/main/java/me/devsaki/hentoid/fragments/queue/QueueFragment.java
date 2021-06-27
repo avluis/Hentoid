@@ -487,7 +487,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
 
-        Timber.d("Event received : %s", event.eventType);
+        Timber.v("Event received : %s", event.eventType);
         errorStatsMenu.setVisible(event.pagesKO > 0);
 
         // Display motive, if any

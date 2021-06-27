@@ -138,7 +138,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     private void addToRequestQueue(Request<T> request) {
         mRequestQueue.add(request);
         nbRequests++;
-        Timber.d("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
+//        Timber.d("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
     }
 
     /**
@@ -148,7 +148,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      */
     public void onRequestFinished(Request<T> request) {
         nbRequests--;
-        Timber.d("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
+//        Timber.d("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
 
 /*        if (!allowParallelDownloads) {
             // Feed the next request of the same server to the global queue
