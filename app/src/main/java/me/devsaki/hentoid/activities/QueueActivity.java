@@ -320,7 +320,7 @@ public class QueueActivity extends BaseActivity {
         rootView.addView(reviveWebview);
         reviveWebview.loadUrl(revivedSite.getUrl());
 
-        reviveProgress.setMax((int) Math.round(60 / 1.5)); // How many ticks in one minute, which is the average time for revival
+        reviveProgress.setMax((int) Math.round(90 / 1.5)); // How many ticks in 1.5 minutes, which is the maximum time for revival
         reviveProgress.setProgress(reviveProgress.getMax());
         changeReviveUIVisibility(true);
 
