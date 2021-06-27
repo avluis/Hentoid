@@ -36,6 +36,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute_;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
@@ -227,6 +228,7 @@ public class ObjectBoxDB {
     void deleteContentById(long[] contentId) {
         Box<ErrorRecord> errorBox = store.boxFor(ErrorRecord.class);
         Box<ImageFile> imageFileBox = store.boxFor(ImageFile.class);
+        Box<Chapter> chapterBox = store.boxFor(Chapter.class);
         Box<Content> contentBox = store.boxFor(Content.class);
         Box<GroupItem> groupItemBox = store.boxFor(GroupItem.class);
         Box<Group> groupBox = store.boxFor(Group.class);
@@ -238,6 +240,11 @@ public class ObjectBoxDB {
                     if (c.getImageFiles() != null) {
                         imageFileBox.remove(c.getImageFiles());
                         c.getImageFiles().clear();                                      // Clear links to all imageFiles
+                    }
+
+                    if (c.getChapters() != null) {
+                        chapterBox.remove(c.getChapters());
+                        c.getChapters().clear();                                      // Clear links to all chapters
                     }
 
                     if (c.getErrorLog() != null) {

@@ -10,9 +10,11 @@ import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +22,7 @@ import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -159,12 +162,26 @@ public class ParseHelper {
         map.add(attribute);
     }
 
-    public static ImageFile urlToImageFile(@Nonnull String imgUrl, int order, int nbPages, @NonNull final StatusContent status) {
+    public static ImageFile urlToImageFile(
+            @Nonnull String imgUrl,
+            int order,
+            int nbPages,
+            @NonNull final StatusContent status) {
+        return urlToImageFile(imgUrl, order, nbPages, status, null);
+    }
+
+    public static ImageFile urlToImageFile(
+            @Nonnull String imgUrl,
+            int order,
+            int nbPages,
+            @NonNull final StatusContent status,
+            final Chapter chapter) {
         ImageFile result = new ImageFile();
 
         int nbMaxDigits = (int) (Math.floor(Math.log10(nbPages)) + 1);
         String name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
         result.setName(name).setOrder(order).setUrl(imgUrl).setStatus(status);
+        if (chapter != null) result.setChapter(chapter);
 
         return result;
     }
@@ -174,17 +191,38 @@ public class ParseHelper {
             @NonNull String coverUrl,
             @NonNull final StatusContent status
     ) {
+        return urlsToImageFiles(imgUrls, coverUrl, status, null);
+    }
+
+    public static List<ImageFile> urlsToImageFiles(
+            @Nonnull List<String> imgUrls,
+            @NonNull String coverUrl,
+            @NonNull final StatusContent status,
+            final Chapter chapter
+    ) {
         List<ImageFile> result = new ArrayList<>();
 
-        // Cover
         result.add(ImageFile.newCover(coverUrl, status));
-        // Images
-        int order = 1;
-        for (String s : imgUrls)
-            result.add(urlToImageFile(s.trim(), order++, imgUrls.size(), status));
+        result.addAll(urlsToImageFiles(imgUrls, 1, status, chapter));
 
         return result;
     }
+
+    public static List<ImageFile> urlsToImageFiles(
+            @Nonnull List<String> imgUrls,
+            int initialOrder,
+            @NonNull final StatusContent status,
+            final Chapter chapter
+    ) {
+        List<ImageFile> result = new ArrayList<>();
+
+        int order = initialOrder;
+        for (String s : imgUrls)
+            result.add(urlToImageFile(s.trim(), order++, imgUrls.size(), status, chapter));
+
+        return result;
+    }
+
 
     public static void signalProgress(long contentId, int current, int max) {
         EventBus.getDefault().post(new DownloadPreparationEvent(contentId, current, max));
@@ -237,5 +275,23 @@ public class ParseHelper {
             }
 
         } else return "";
+    }
+
+    public static List<Chapter> getChaptersFromLinks(List<Element> chapterLinks) {
+        List<Chapter> result = new ArrayList<>();
+        Set<String> urls = new HashSet<>();
+
+        int order = 0;
+        for (Element e : chapterLinks) {
+            String url = e.attr("href");
+            String name = StringHelper.removeNonPrintableChars(e.ownText());
+            // Make sure we're not adding duplicates
+            if (!urls.contains(url)) {
+                urls.add(url);
+                result.add(new Chapter(order++, url, name));
+            }
+        }
+
+        return result;
     }
 }

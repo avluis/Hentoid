@@ -4,16 +4,18 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -22,6 +24,8 @@ public class ManhwaContent extends BaseContentParser {
     private String coverUrl;
     @Selector(value = ".breadcrumb a")
     private List<Element> breadcrumbs;
+    @Selector(value = "[class^=wp-manga-chapter] a")
+    private List<Element> chapterLinks;
     @Selector(value = ".author-content a")
     private List<Element> author;
     @Selector(value = ".artist-content a")
@@ -45,6 +49,10 @@ public class ManhwaContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.MANHWA);
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.MANHWA);
         content.putAttributes(attributes);
+
+        Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
+        List<Chapter> chapters = ParseHelper.getChaptersFromLinks(chapterLinks);
+        content.setChapters(chapters);
 
         return content;
     }

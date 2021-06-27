@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
@@ -312,7 +313,7 @@ public class EHentaiParser implements ImageListParser {
     }
 
     @Nullable
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) throws Exception {
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) throws Exception {
         List<Pair<String, String>> reqHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url);
         Document doc = getOnlineDocument(url, reqHeaders, Site.EHENTAI.useHentoidAgent(), Site.EHENTAI.useWebviewAgent());
         if (doc != null) {
@@ -321,7 +322,7 @@ public class EHentaiParser implements ImageListParser {
             if (imageUrl.contains("/509.gif"))
                 throw new LimitReachedException("Bandwidth limit reached");
             if (!imageUrl.isEmpty())
-                return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED));
+                return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED, chapter));
         }
         return Optional.empty();
     }

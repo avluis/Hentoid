@@ -15,6 +15,7 @@ import java.util.Map;
 import me.devsaki.fakku.FakkuDecode;
 import me.devsaki.fakku.PageInfo;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
@@ -159,8 +160,10 @@ public class FakkuParser implements ImageListParser {
         return result;
     }
 
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) {
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
         // This class does not use backup URLs
-        return Optional.of(new ImageFile(order, url, StatusContent.SAVED, maxPages));
+        ImageFile img = new ImageFile(order, url, StatusContent.SAVED, maxPages);
+        if (chapter != null) img.setChapter(chapter);
+        return Optional.of(img);
     }
 }

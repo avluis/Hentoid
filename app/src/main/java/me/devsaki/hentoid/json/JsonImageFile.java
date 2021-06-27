@@ -1,5 +1,13 @@
 package me.devsaki.hentoid.json;
 
+import androidx.annotation.NonNull;
+
+import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
+
+import java.util.List;
+
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 
@@ -15,6 +23,8 @@ class JsonImageFile {
     private String mimeType;
     private long pHash;
 
+    private int chapterOrder = -1;
+
     private JsonImageFile() {
     }
 
@@ -29,10 +39,12 @@ class JsonImageFile {
         result.isRead = f.isRead();
         result.mimeType = f.getMimeType();
         result.pHash = f.getImageHash();
+        if (f.getChapter() != null && f.getChapter().getTarget() != null)
+            result.chapterOrder = f.getChapter().getTarget().getOrder();
         return result;
     }
 
-    ImageFile toEntity(int maxPages) {
+    ImageFile toEntity(int maxPages, @NonNull List<Chapter> chapters) {
         ImageFile result = new ImageFile(order, url, status, maxPages);
         result.setName(name);
         result.setIsCover(isCover);
@@ -40,6 +52,12 @@ class JsonImageFile {
         result.setRead(isRead);
         result.setMimeType(mimeType);
         result.setImageHash(pHash);
+
+        if (!chapters.isEmpty() && chapterOrder > -1) {
+            Optional<Chapter> chapter = Stream.of(chapters).filter(c -> c.getOrder().equals(chapterOrder)).findFirst();
+            if (chapter.isPresent()) result.setChapter(chapter.get());
+        }
+
         return result;
     }
 }

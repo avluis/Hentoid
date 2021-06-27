@@ -50,6 +50,7 @@ import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -834,11 +835,12 @@ public class ContentDownloadWorker extends BaseWorker {
 
         Site site = content.getSite();
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
+        Chapter chp = (img.getChapter() != null) ? img.getChapter().getTarget() : null;
 
         // per Volley behaviour, this method is called on the UI thread
         // -> need to create a new thread to do a network call
         compositeDisposable.add(
-                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, requestHeaders, img.getOrder(), content.getQtyPages()))
+                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, requestHeaders, img.getOrder(), content.getQtyPages(), chp))
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.computation())
                         .subscribe(
