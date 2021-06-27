@@ -72,7 +72,7 @@ public class ManhwaParser extends BaseImageListParser {
             final Document doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
-                List<String> urls = Stream.of(images).map(i -> i.attr("src")).filterNot(String::isEmpty).toList();
+                List<String> urls = Stream.of(images).map(i -> i.attr("src").trim()).filterNot(String::isEmpty).toList();
                 result.addAll(ParseHelper.urlsToImageFiles(urls, result.size() + 1, StatusContent.SAVED, chp));
             }
             progressPlus();
