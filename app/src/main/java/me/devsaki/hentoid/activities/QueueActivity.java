@@ -50,6 +50,7 @@ import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.CloudflareWebView;
@@ -296,6 +297,10 @@ public class QueueActivity extends BaseActivity {
     // TODO doc
     private void reviveDownload(@NonNull final Site revivedSite, @NonNull final String oldCookie) {
         Timber.d(">> REVIVAL ASKED @ %s", revivedSite.getUrl());
+
+        // Remove any notification
+        NotificationManager userActionNotificationManager = new NotificationManager(this, R.id.user_action_notification);
+        userActionNotificationManager.cancel();
 
         // Nuke the cookie to force its refresh
         String domain = "." + HttpHelper.getDomainFromUri(revivedSite.getUrl());

@@ -113,7 +113,7 @@
     <string name="queue_add_bottom">Add to bottom</string>
     <string name="notification_action_title">User action needed</string>
     <string name="notification_action_dl_revive">Tap here to reactivate your download</string>
-    <string name="revive_wait">Please whait while your download is revived</string>
+    <string name="revive_wait">Please stay on this screen while your download is revived</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>

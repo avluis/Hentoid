@@ -816,12 +816,10 @@ public class ContentDownloadWorker extends BaseWorker {
             dao.clearDownloadParams(content.getId());
 
             final String cfcookie = StringHelper.protect(HttpHelper.parseCookies(HttpHelper.getCookies(img.getUrl())).get(Consts.CLOUDFLARE_COOKIE));
+            userActionNotificationManager.notify(new UserActionNotification(content.getSite(), cfcookie));
 
-            if (!HentoidApp.isInForeground()) {
-                userActionNotificationManager.notify(new UserActionNotification(content.getSite(), cfcookie));
-            } else {
+            if (HentoidApp.isInForeground())
                 EventBus.getDefault().post(new DownloadReviveEvent(content.getSite(), cfcookie));
-            }
         }
     }
 
