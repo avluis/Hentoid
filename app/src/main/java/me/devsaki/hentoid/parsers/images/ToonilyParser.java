@@ -94,7 +94,7 @@ public class ToonilyParser extends BaseImageListParser {
         // Use chapter folder as a differentiator (as the whole URL may evolve)
         List<Chapter> extraChapters = ParseHelper.getExtraChapters(storedChapters, chapters);
 
-        progressStart(content.getId(), chapters.size());
+        progressStart(content.getId(), extraChapters.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (Chapter chp : extraChapters) {

@@ -62,6 +62,11 @@ public class ManhwaParser extends BaseImageListParser {
         List<Pair<String, String>> headers = new ArrayList<>();
         ParseHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
 
+        // If the stored content has chapters already, save them for comparison
+        List<Chapter> storedChapters = content.getChapters();
+        if (storedChapters != null) storedChapters = Stream.of(storedChapters).toList();
+        else storedChapters = Collections.emptyList();
+
         // 1- Detect chapters on gallery page
         List<Chapter> chapters = new ArrayList<>();
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
@@ -72,10 +77,13 @@ public class ManhwaParser extends BaseImageListParser {
             content.setChapters(chapters);
         }
 
-        progressStart(content.getId(), chapters.size());
+        // Use chapter folder as a differentiator (as the whole URL may evolve)
+        List<Chapter> extraChapters = ParseHelper.getExtraChapters(storedChapters, chapters);
+
+        progressStart(content.getId(), extraChapters.size());
 
         // 2- Open each chapter URL and get the image data until all images are found
-        for (Chapter chp : chapters) {
+        for (Chapter chp : extraChapters) {
             if (processHalted) break;
             doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
             if (doc != null) {
