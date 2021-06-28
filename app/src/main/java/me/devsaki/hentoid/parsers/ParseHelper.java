@@ -5,6 +5,9 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
+
 import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
 
@@ -292,6 +295,31 @@ public class ParseHelper {
             }
         }
 
+        return result;
+    }
+
+    private static String getLastPathPart(@NonNull final String url) {
+        String[] parts = url.split("/");
+        return (parts[parts.length - 1].isEmpty()) ? parts[parts.length - 2] : parts[parts.length - 1];
+    }
+
+    public static List<Chapter> getExtraChapters(
+            @NonNull List<Chapter> storedChapters,
+            @NonNull List<Chapter> detectedChapters
+    ) {
+        List<Chapter> result = new ArrayList<>();
+        Map<String, List<Chapter>> storedChps = Stream.of(storedChapters).collect(Collectors.groupingBy(c -> getLastPathPart(c.getUrl())));
+        Map<String, List<Chapter>> detectedChps = Stream.of(detectedChapters).collect(Collectors.groupingBy(c -> getLastPathPart(c.getUrl())));
+
+        if (null == storedChps || null == detectedChps) return result;
+
+        Set<String> storedUrlParts = storedChps.keySet();
+        for (Map.Entry<String, List<Chapter>> detectedEntry : detectedChps.entrySet()) {
+            if (!storedUrlParts.contains(detectedEntry.getKey())) {
+                List<Chapter> chps = detectedEntry.getValue();
+                if (!chps.isEmpty()) result.add(chps.get(0));
+            }
+        }
         return result;
     }
 }

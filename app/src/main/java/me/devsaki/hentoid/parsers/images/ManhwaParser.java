@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Chapter;
@@ -61,15 +62,22 @@ public class ManhwaParser extends BaseImageListParser {
         List<Pair<String, String>> headers = new ArrayList<>();
         ParseHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
 
-        List<Chapter> chapters = content.getChapters();
-        if (null == chapters || chapters.isEmpty()) return result;
+        // 1- Detect chapters on gallery page
+        List<Chapter> chapters = new ArrayList<>();
+        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
+        if (doc != null) {
+            List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
+            Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
+            chapters = ParseHelper.getChaptersFromLinks(chapterLinks);
+            content.setChapters(chapters);
+        }
 
         progressStart(content.getId(), chapters.size());
 
-        // Open each chapter URL and get the image data until all images are found
+        // 2- Open each chapter URL and get the image data until all images are found
         for (Chapter chp : chapters) {
             if (processHalted) break;
-            final Document doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
+            doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
                 List<String> urls = Stream.of(images).map(i -> i.attr("src").trim()).filterNot(String::isEmpty).toList();

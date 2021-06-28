@@ -47,6 +47,8 @@ public class HttpHelper {
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_USER_AGENT = "User-Agent";
 
+    public static final String POST_MIME_TYPE = "application/x-www-form-urlencoded";
+
     public static final Set<String> COOKIES_STANDARD_ATTRS = new HashSet<>();
 
     // To display sites with desktop layouts
@@ -97,6 +99,20 @@ public class HttpHelper {
         return null;
     }
 
+    @Nullable
+    public static Document postOnlineDocument(
+            String url,
+            List<Pair<String, String>> headers,
+            boolean useHentoidAgent, boolean useWebviewAgent,
+            @NonNull final String body,
+            @NonNull final String mimeType) throws IOException {
+        ResponseBody resource = postOnlineResource(url, headers, true, useHentoidAgent, useWebviewAgent, body, mimeType).body();
+        if (resource != null) {
+            return Jsoup.parse(resource.string());
+        }
+        return null;
+    }
+
     /**
      * Read a resource from the given URL with HTTP GET, using the given headers and agent
      *
@@ -125,11 +141,12 @@ public class HttpHelper {
     public static Response postOnlineResource(
             @NonNull String url,
             @Nullable List<Pair<String, String>> headers,
+            boolean useMobileAgent,
             boolean useHentoidAgent,
             boolean useWebviewAgent,
             @NonNull final String body,
             @NonNull final String mimeType) throws IOException {
-        Request.Builder requestBuilder = buildRequest(url, headers, true, useHentoidAgent, useWebviewAgent);
+        Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
         Request request = requestBuilder.post(RequestBody.create(body, MediaType.parse(mimeType))).build();
         return OkHttpClientSingleton.getInstance(DEFAULT_REQUEST_TIMEOUT).newCall(request).execute();
     }

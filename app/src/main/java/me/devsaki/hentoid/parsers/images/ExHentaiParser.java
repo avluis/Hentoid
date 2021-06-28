@@ -121,7 +121,7 @@ public class ExHentaiParser implements ImageListParser {
         for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
             EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum - 1).getKey(), mpvInfo.mpvkey, pageNum);
             String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
-            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
+            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, true, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
             ResponseBody body = response.body();
             if (null == body)
                 throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body");

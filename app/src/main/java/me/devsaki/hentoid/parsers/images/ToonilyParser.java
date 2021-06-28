@@ -12,6 +12,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Chapter;
@@ -21,6 +22,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
@@ -61,15 +63,43 @@ public class ToonilyParser extends BaseImageListParser {
         List<Pair<String, String>> headers = new ArrayList<>();
         ParseHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
 
-        List<Chapter> chapters = content.getChapters();
-        if (null == chapters || chapters.isEmpty()) return result;
+        // If the stored content has chapters already, save them for comparison
+        List<Chapter> storedChapters = content.getChapters();
+        if (storedChapters != null) storedChapters = Stream.of(storedChapters).toList();
+        else storedChapters = Collections.emptyList();
+
+        // 1- Detect chapters on gallery page
+        List<Chapter> chapters = new ArrayList<>();
+        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
+        if (doc != null) {
+            // Get the book ID
+            Element idElt = doc.select(".rating-post-id").first();
+            if (null == idElt) return result;
+            String id = idElt.attr("value");
+            // Retrieve the chapters page chunk
+            doc = HttpHelper.postOnlineDocument(
+                    "https://toonily.com/wp-admin/admin-ajax.php",
+                    headers,
+                    Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent(),
+                    "action=manga_get_chapters&manga=" + id,
+                    HttpHelper.POST_MIME_TYPE
+            );
+            if (null == doc) return result;
+            List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
+            Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
+            chapters = ParseHelper.getChaptersFromLinks(chapterLinks);
+            content.setChapters(chapters);
+        }
+
+        // Use chapter folder as a differentiator (as the whole URL may evolve)
+        List<Chapter> extraChapters = ParseHelper.getExtraChapters(storedChapters, chapters);
 
         progressStart(content.getId(), chapters.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
-        for (Chapter chp : chapters) {
+        for (Chapter chp : extraChapters) {
             if (processHalted) break;
-            final Document doc = getOnlineDocument(chp.getUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
+            doc = getOnlineDocument(chp.getUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
                 List<String> urls = Stream.of(images).map(i -> i.attr("data-src").trim()).filterNot(String::isEmpty).toList();
