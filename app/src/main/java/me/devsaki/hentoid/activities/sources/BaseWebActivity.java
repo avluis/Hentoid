@@ -1072,16 +1072,20 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             List<ImageFile> onlineImgs = parser.parseImageList(storedContent);
             if (onlineImgs.isEmpty()) return result;
 
-            int coverCount = (onlineImgs.get(0).isCover()) ? 1 : 0;
-            Optional<Integer> maxImageOrder;
-            if (storedContent.getImageFiles() != null)
-                maxImageOrder = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
-            else
-                maxImageOrder = Optional.of(0);
+            int maxStoredImageOrder = 0;
+            if (storedContent.getImageFiles() != null) {
+                Optional<Integer> opt = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
+                if (opt.isPresent()) maxStoredImageOrder = opt.get();
+            }
+            final int maxStoredImageOrderFinal = maxStoredImageOrder;
+
+            int maxOnlineImageOrder = 0;
+            Optional<Integer> opt = Stream.of(onlineImgs).map(ImageFile::getOrder).max(Integer::compareTo);
+            if (opt.isPresent()) maxOnlineImageOrder = opt.get();
 
             // Online book has more pictures than stored book
-            if (maxImageOrder.isPresent() && onlineImgs.size() - coverCount > maxImageOrder.get()) {
-                return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxImageOrder.get()).distinct().toList();
+            if (maxOnlineImageOrder > maxStoredImageOrder) {
+                return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxStoredImageOrderFinal).distinct().toList();
             }
         } catch (Exception e) {
             Timber.w(e);

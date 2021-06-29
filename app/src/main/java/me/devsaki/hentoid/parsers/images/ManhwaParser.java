@@ -5,6 +5,7 @@ import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import org.greenrobot.eventbus.EventBus;
@@ -73,14 +74,23 @@ public class ManhwaParser extends BaseImageListParser {
         if (doc != null) {
             List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
             Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
-            chapters = ParseHelper.getChaptersFromLinks(chapterLinks);
-            content.setChapters(chapters);
+            chapters = ParseHelper.getChaptersFromLinks(chapterLinks, content.getId());
         }
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
         List<Chapter> extraChapters = ParseHelper.getExtraChapters(storedChapters, chapters);
 
         progressStart(content.getId(), extraChapters.size());
+        int orderOffset = 0;
+        if (!storedChapters.isEmpty()) {
+            Optional<Integer> optOrder = Stream.of(storedChapters)
+                    .map(Chapter::getImageFiles)
+                    .withoutNulls()
+                    .flatMap(Stream::of)
+                    .map(ImageFile::getOrder)
+                    .max(Integer::compareTo);
+            if (optOrder.isPresent()) orderOffset = optOrder.get();
+        }
 
         // 2- Open each chapter URL and get the image data until all images are found
         for (Chapter chp : extraChapters) {
@@ -89,7 +99,7 @@ public class ManhwaParser extends BaseImageListParser {
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
                 List<String> urls = Stream.of(images).map(i -> i.attr("src").trim()).filterNot(String::isEmpty).toList();
-                result.addAll(ParseHelper.urlsToImageFiles(urls, result.size() + 1, StatusContent.SAVED, chp));
+                result.addAll(ParseHelper.urlsToImageFiles(urls, orderOffset + result.size() + 1, StatusContent.SAVED, chp));
             }
             progressPlus();
         }

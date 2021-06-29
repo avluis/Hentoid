@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.IntStream;
@@ -29,6 +30,7 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.diff.DiffCallback;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.select.SelectExtension;
+import com.skydoves.powerspinner.PowerSpinnerView;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -38,6 +40,8 @@ import java.util.Set;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
+import me.devsaki.hentoid.database.domains.Chapter;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
@@ -62,6 +66,7 @@ public class ViewerGalleryFragment extends Fragment {
     private Toolbar selectionToolbar;
     private MenuItem itemSetCover;
     private MenuItem showFavouritePagesButton;
+    private PowerSpinnerView chaptersSelector;
     private RecyclerView recyclerView;
     private final ItemAdapter<ImageFileItem> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<ImageFileItem> fastAdapter = FastAdapter.with(itemAdapter);
@@ -196,6 +201,8 @@ public class ViewerGalleryFragment extends Fragment {
         });
         selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
 
+        chaptersSelector = requireViewById(rootView, R.id.chapter_selector);
+
         return rootView;
     }
 
@@ -211,6 +218,7 @@ public class ViewerGalleryFragment extends Fragment {
 
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
+        viewModel.getContent().observe(getViewLifecycleOwner(), this::onContentChanged);
         viewModel.getShowFavouritesOnly().observe(getViewLifecycleOwner(), this::onShowFavouriteChanged);
     }
 
@@ -222,6 +230,8 @@ public class ViewerGalleryFragment extends Fragment {
 
         if (filterFavouritesLaunchState != filterFavouritesState)
             viewModel.filterFavouriteImages(filterFavouritesLaunchState);
+
+        chaptersSelector.dismiss();
 
         super.onDestroy();
     }
@@ -236,7 +246,33 @@ public class ViewerGalleryFragment extends Fragment {
         // Remove duplicates
         imgs = Stream.of(imgs).distinct().toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs, IMAGE_DIFF_CALLBACK);
-        new Handler(Looper.getMainLooper()).postDelayed(this::moveToCurrent, 150);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> moveToIndex(startIndex, false), 150);
+    }
+
+    private void onContentChanged(Content content) {
+        if (null == content) return;
+        List<Chapter> chapters = content.getChapters();
+        if (null == chapters || chapters.isEmpty()) return;
+
+        chaptersSelector.setOnFocusChangeListener(
+                (v, hasFocus) -> {
+                    Timber.i("hasFocus %s", hasFocus);
+                }
+        );
+        chaptersSelector.setItems(Stream.of(chapters).sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).map(Chapter::getName).toList());
+        chaptersSelector.selectItemByIndex(0);
+        chaptersSelector.setOnSpinnerItemSelectedListener(
+                (oldIndex, oldItem, newIndex, newItem) -> {
+                    List<ImageFile> imgs = chapters.get(newIndex).getImageFiles();
+                    if (imgs != null && !imgs.isEmpty()) {
+                        viewModel.setReaderStartingIndex(imgs.get(0).getOrder() - 1);
+                        moveToIndex(imgs.get(0).getOrder() - 1, true);
+                    }
+                    chaptersSelector.dismiss();
+                }
+        );
+
+        chaptersSelector.setVisibility(View.VISIBLE);
     }
 
     private void onStartingIndexChanged(Integer startingIndex) {
@@ -386,10 +422,10 @@ public class ViewerGalleryFragment extends Fragment {
     /**
      * Move the list to make the currently viewed image visible
      */
-    private void moveToCurrent() {
-        if (!firstMoveDone && recyclerView != null) {
-            if (itemAdapter.getAdapterItemCount() > startIndex)
-                recyclerView.scrollToPosition(startIndex);
+    private void moveToIndex(int index, boolean force) {
+        if (recyclerView != null && (!firstMoveDone || force)) {
+            if (itemAdapter.getAdapterItemCount() > index)
+                ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(index, 0);
             else recyclerView.scrollToPosition(0);
             firstMoveDone = true;
         }

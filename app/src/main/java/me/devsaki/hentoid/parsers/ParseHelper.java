@@ -280,7 +280,7 @@ public class ParseHelper {
         } else return "";
     }
 
-    public static List<Chapter> getChaptersFromLinks(List<Element> chapterLinks) {
+    public static List<Chapter> getChaptersFromLinks(@NonNull List<Element> chapterLinks, long contentId) {
         List<Chapter> result = new ArrayList<>();
         Set<String> urls = new HashSet<>();
 
@@ -291,7 +291,9 @@ public class ParseHelper {
             // Make sure we're not adding duplicates
             if (!urls.contains(url)) {
                 urls.add(url);
-                result.add(new Chapter(order++, url, name));
+                Chapter chp = new Chapter(order++, url, name);
+                chp.setContentId(contentId);
+                result.add(chp);
             }
         }
 
@@ -320,6 +322,6 @@ public class ParseHelper {
                 if (!chps.isEmpty()) result.add(chps.get(0));
             }
         }
-        return result;
+        return Stream.of(result).sortBy(Chapter::getOrder).toList();
     }
 }
