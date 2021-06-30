@@ -176,12 +176,12 @@ public class ParseHelper {
     public static ImageFile urlToImageFile(
             @Nonnull String imgUrl,
             int order,
-            int nbPages,
+            int maxPages,
             @NonNull final StatusContent status,
             final Chapter chapter) {
         ImageFile result = new ImageFile();
 
-        int nbMaxDigits = (int) (Math.floor(Math.log10(nbPages)) + 1);
+        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
         String name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
         result.setName(name).setOrder(order).setUrl(imgUrl).setStatus(status);
         if (chapter != null) result.setChapter(chapter);
@@ -206,7 +206,7 @@ public class ParseHelper {
         List<ImageFile> result = new ArrayList<>();
 
         result.add(ImageFile.newCover(coverUrl, status));
-        result.addAll(urlsToImageFiles(imgUrls, 1, status, chapter));
+        result.addAll(urlsToImageFiles(imgUrls, 1, status, chapter, imgUrls.size()));
 
         return result;
     }
@@ -215,13 +215,14 @@ public class ParseHelper {
             @Nonnull List<String> imgUrls,
             int initialOrder,
             @NonNull final StatusContent status,
-            final Chapter chapter
+            final Chapter chapter,
+            int maxPages
     ) {
         List<ImageFile> result = new ArrayList<>();
 
         int order = initialOrder;
         for (String s : imgUrls)
-            result.add(urlToImageFile(s.trim(), order++, imgUrls.size(), status, chapter));
+            result.add(urlToImageFile(s.trim(), order++, maxPages, status, chapter));
 
         return result;
     }

@@ -95,6 +95,8 @@ public class ToonilyParser extends BaseImageListParser {
         List<Chapter> extraChapters = ParseHelper.getExtraChapters(storedChapters, chapters);
 
         progressStart(content.getId(), extraChapters.size());
+
+        // Start numbering extra images right after the last position of stored and chaptered images
         int orderOffset = 0;
         if (!storedChapters.isEmpty()) {
             Optional<Integer> optOrder = Stream.of(storedChapters)
@@ -113,7 +115,7 @@ public class ToonilyParser extends BaseImageListParser {
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
                 List<String> urls = Stream.of(images).map(i -> i.attr("data-src").trim()).filterNot(String::isEmpty).toList();
-                result.addAll(ParseHelper.urlsToImageFiles(urls, orderOffset + result.size() + 1, StatusContent.SAVED, chp));
+                result.addAll(ParseHelper.urlsToImageFiles(urls, orderOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
             }
             progressPlus();
         }
