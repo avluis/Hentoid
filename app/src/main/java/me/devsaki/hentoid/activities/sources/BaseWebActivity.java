@@ -55,6 +55,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +74,7 @@ import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -1079,11 +1081,32 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             }
             final int maxStoredImageOrderFinal = maxStoredImageOrder;
 
+            // Attach chapters to books downloaded before chapters were implemented
             int maxOnlineImageOrder = 0;
-            Optional<Integer> opt = Stream.of(onlineImgs).map(ImageFile::getOrder).max(Integer::compareTo);
-            if (opt.isPresent()) maxOnlineImageOrder = opt.get();
+            int minOnlineImageOrder = Integer.MAX_VALUE;
+            Map<Integer, Chapter> positionMap = new HashMap<>();
+            for (ImageFile img : onlineImgs) {
+                maxOnlineImageOrder = Math.max(maxOnlineImageOrder, img.getOrder());
+                minOnlineImageOrder = Math.min(minOnlineImageOrder, img.getOrder());
+                if (null != img.getChapter())
+                    positionMap.put(img.getOrder(), img.getChapter().getTarget());
+            }
 
-            // Online book has more pictures than stored book
+            List<Chapter> storedChapters = storedContent.getChapters();
+            if (!positionMap.isEmpty() && minOnlineImageOrder < maxStoredImageOrder && (null == storedChapters || storedChapters.isEmpty())) {
+                // Attach chapters to stored images
+                List<ImageFile> storedImages = storedContent.getImageFiles();
+                if (null == storedImages) storedImages = Collections.emptyList();
+                for (ImageFile img : storedImages) {
+                    if (null == img.getChapter() || img.getChapter().isNull()) {
+                        Chapter targetChapter = positionMap.get(img.getOrder());
+                        if (targetChapter != null) img.setChapter(targetChapter);
+                    }
+                }
+                objectBoxDAO.insertImageFiles(storedImages);
+            }
+
+            // Online book has more pictures than stored book -> that's what we're looking for
             if (maxOnlineImageOrder > maxStoredImageOrder) {
                 return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxStoredImageOrderFinal).distinct().toList();
             }
