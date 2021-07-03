@@ -568,11 +568,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 }
 
                 // Compute perceptual hash for the cover picture
-                Bitmap coverBitmap = DuplicateHelper.Companion.getCoverBitmapFromContent(getApplicationContext(), content);
-                long pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), coverBitmap);
-                if (coverBitmap != null) coverBitmap.recycle();
-                content.getCover().setImageHash(pHash);
-                dao.insertImageFile(content.getCover());
+                ContentHelper.computeAndSaveCoverHash(getApplicationContext(), content, dao);
 
                 // Mark content as downloaded
                 if (0 == content.getDownloadDate())

@@ -973,7 +973,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     Timber.w(e);
                 }
                 // Look for duplicates
-                ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(objectBoxDAO, content, pHash);
+                ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(this, content, pHash, objectBoxDAO);
                 if (duplicateResult != null) {
                     duplicateId = duplicateResult.left.getId();
                     duplicateSimilarity = duplicateResult.right;
