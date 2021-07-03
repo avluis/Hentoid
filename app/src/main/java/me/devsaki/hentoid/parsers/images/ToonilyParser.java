@@ -62,7 +62,7 @@ public class ToonilyParser extends BaseImageListParser {
         List<ImageFile> result = new ArrayList<>();
 
         List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
+        HttpHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
 
         // If the stored content has chapters already, save them for comparison
         List<Chapter> storedChapters = content.getChapters();

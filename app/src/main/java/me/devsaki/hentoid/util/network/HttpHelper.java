@@ -229,13 +229,17 @@ public class HttpHelper {
             for (Map.Entry<String, String> entry : webkitRequestHeaders.entrySet())
                 result.add(new Pair<>(entry.getKey(), entry.getValue()));
 
-        String cookie = CookieManager.getInstance().getCookie(url);
-        if (cookie != null) {
-            cookie = HttpHelper.stripParams(cookie);
-            result.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
-        }
+        if (url != null)
+            addCurrentCookiesToHeader(url, result);
 
         return result;
+    }
+
+    // TODO doc
+    public static void addCurrentCookiesToHeader(@NonNull final String url, @NonNull List<Pair<String, String>> headers) {
+        String cookieStr = getCookies(url);
+        if (!cookieStr.isEmpty())
+            headers.add(new Pair<>(HEADER_COOKIE_KEY, cookieStr));
     }
 
     /**

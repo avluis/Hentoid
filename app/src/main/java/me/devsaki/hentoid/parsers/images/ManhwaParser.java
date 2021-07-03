@@ -23,6 +23,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
@@ -61,7 +62,7 @@ public class ManhwaParser extends BaseImageListParser {
         List<ImageFile> result = new ArrayList<>();
 
         List<Pair<String, String>> headers = new ArrayList<>();
-        ParseHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
+        HttpHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
 
         // If the stored content has chapters already, save them for comparison
         List<Chapter> storedChapters = content.getChapters();

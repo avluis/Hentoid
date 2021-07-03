@@ -246,12 +246,6 @@ public class ParseHelper {
             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
     }
 
-    public static void addCurrentCookiesToHeader(@NonNull final String url, @NonNull List<Pair<String, String>> headers) {
-        String cookieStr = HttpHelper.getCookies(url);
-        if (!cookieStr.isEmpty())
-            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-    }
-
     // Save download params for future use during download
     public static void setDownloadParams(@NonNull final List<ImageFile> imgs, @NonNull final String referrer) {
         Map<String, String> params = new HashMap<>();
