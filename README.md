@@ -1,4 +1,4 @@
-##### `Hendroid` is an free and open-source Doujinshi & H-Manga archiving and viewing app.
+##### `Hendroid` is a free and open-source Doujinshi & H-Manga archiving and viewing app.
 ###### `Hendroid` currently supports:
 ###### [nhentai](https://nhentai.net/), [hitomi](https://hitomi.la/), [asmhentai](http://asmhentai.com/), [tsumino](http://www.tsumino.com/), [pururin](https://pururin.io/), [e-hentai](https://e-hentai.org/), [exHentai/sadpanda](https://exhentai.org), [8muses](https://www.8muses.com), [Doujins.com](https://doujins.com), [Luscious.net](https://www.luscious.net), [Porncomixonline](https://www.porncomixonline.net/), [HBrowse](https://www.hbrowse.com/), [Hentai2Read](https://hentai2read.com/), [HentaiFox](https://hentaifox.com), [Myreadingmanga](https://myreadingmanga.info/), [Manwha Hentai](https://manhwahentai.me/), [Imhentai](https://imhentai.com), [Toonily](https://toonily.com/) and [Allporncomic](https://allporncomic.com/).
 
