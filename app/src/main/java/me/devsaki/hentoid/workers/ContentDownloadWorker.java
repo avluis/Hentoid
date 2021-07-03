@@ -389,10 +389,11 @@ public class ContentDownloadWorker extends BaseWorker {
                     downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
                 else
                     downloadParams = new HashMap<>();
-                // Add referer and cookies, if unset
+                // Add referer if unset
                 if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
                     downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
-                if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
+                // Add cookies if unset or if the site needs fresh cookies
+                if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY) || content.getSite().isUseCloudflare())
                     downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(img.getUrl()));
 
                 // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
