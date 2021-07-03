@@ -953,14 +953,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 try {
                     List<Pair<String, String>> requestHeadersList = new ArrayList<>();
                     Map<String, String> downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
-
-                    String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                    if (value != null)
-                        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, value));
-
-                    value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
-                    if (value != null)
-                        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, value));
+                    downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(content.getCoverImageUrl()));
+                    downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
 
                     Response onlineCover = HttpHelper.getOnlineResource(
                             HttpHelper.fixUrl(content.getCoverImageUrl(), getStartUrl()),
