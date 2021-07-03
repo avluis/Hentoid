@@ -69,7 +69,6 @@ import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -813,11 +812,11 @@ public class ContentDownloadWorker extends BaseWorker {
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.STALE_CREDENTIALS));
             dao.clearDownloadParams(content.getId());
 
-            final String cfcookie = StringHelper.protect(HttpHelper.parseCookies(HttpHelper.getCookies(img.getUrl())).get(Consts.CLOUDFLARE_COOKIE));
-            userActionNotificationManager.notify(new UserActionNotification(content.getSite(), cfcookie));
+            final String cfCookie = StringHelper.protect(HttpHelper.parseCookies(HttpHelper.getCookies(img.getUrl())).get(Consts.CLOUDFLARE_COOKIE));
+            userActionNotificationManager.notify(new UserActionNotification(content.getSite(), cfCookie));
 
             if (HentoidApp.isInForeground())
-                EventBus.getDefault().post(new DownloadReviveEvent(content.getSite(), cfcookie));
+                EventBus.getDefault().post(new DownloadReviveEvent(content.getSite(), cfCookie));
         }
     }
 
