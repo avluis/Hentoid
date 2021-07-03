@@ -707,15 +707,15 @@ public class ContentDownloadWorker extends BaseWorker {
 
         String backupUrl = "";
         Site site = content.getSite();
+        String imageUrl = HttpHelper.fixUrl(img.getUrl(), site.getUrl());
 
         // Apply image download parameters
         Map<String, String> requestHeaders = new HashMap<>();
+        String cookieStr = null;
         Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
         if (!downloadParams.isEmpty()) {
-            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
-                String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                if (value != null) requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, value);
-            }
+            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
+                cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
             if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
                 String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
                 if (value != null) requestHeaders.put(HttpHelper.HEADER_REFERER_KEY, value);
@@ -723,11 +723,14 @@ public class ContentDownloadWorker extends BaseWorker {
             if (downloadParams.containsKey("backupUrl"))
                 backupUrl = downloadParams.get("backupUrl");
         }
+        if (null == cookieStr) cookieStr = HttpHelper.getCookies(imageUrl);
+        requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+
         final String backupUrlFinal = HttpHelper.fixUrl(backupUrl, site.getUrl());
 
         return new InputStreamVolleyRequest(
                 Request.Method.GET,
-                HttpHelper.fixUrl(img.getUrl(), site.getUrl()),
+                imageUrl,
                 requestHeaders,
                 site.useHentoidAgent(),
                 site.useWebviewAgent(),
