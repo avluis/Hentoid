@@ -147,7 +147,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         Timber.v("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
 
         if (isSimulateHumanReading && 0 == nbRequests && !waitingRequestQueue.isEmpty()) {
-            // Wait on a separate thread
+            // Wait on a separate thread as we're currently on the app's main thread
             int delayMs = 500 + new Random().nextInt(1500);
             Timber.d("Waiting requests queue ::: waiting %d ms", delayMs);
             waitDisposable = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
@@ -168,6 +168,10 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
     public void setSimulateHumanReading(boolean value) {
         isSimulateHumanReading = value;
+    }
+
+    public boolean isSimulateHumanReading() {
+        return isSimulateHumanReading;
     }
 
     /**
