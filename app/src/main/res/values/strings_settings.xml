@@ -80,7 +80,7 @@
     <string name="pref_cat_external">External library</string>
     <string name="pref_external_library_title">External library</string>
     <string name="pref_external_library_summary_empty">No external library is set</string>
-    <string name="pref_external_library_delete_title">Delete in external library</string>
+    <string name="pref_external_library_delete_title">Allow deleting external content</string>
     <string name="pref_external_library_delete_on">Hentoid can delete books and pages in the external library</string>
     <string name="pref_external_library_delete_off">Hentoid can\'t delete books nor pages in the external library</string>
     <string name="pref_external_library_delete_default" translatable="false">false</string>
