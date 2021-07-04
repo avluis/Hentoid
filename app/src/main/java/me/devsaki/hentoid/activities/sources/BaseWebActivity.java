@@ -931,17 +931,18 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     /**
      * Display webview controls according to designated content
      *
-     * @param content Currently displayed content
+     * @param onlineContent Currently displayed content
      * @return The status of the Content after being processed
      */
     private @ContentStatus
-    int processContent(@NonNull Content content, boolean quickDownload) {
+    int processContent(@NonNull Content onlineContent, boolean quickDownload) {
         Helper.assertNonUiThread();
-        if (content.getUrl().isEmpty()) return ContentStatus.UNKNOWN;
+        if (onlineContent.getUrl().isEmpty()) return ContentStatus.UNKNOWN;
+        currentContent = null;
 
-        Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
+        Timber.i("Content Site, URL : %s, %s", onlineContent.getSite().getCode(), onlineContent.getUrl());
         String searchUrl = ""; //getStartSite().hasCoverBasedPageUpdates() ? content.getCoverImageUrl() : "";
-        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), searchUrl);
+        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(onlineContent.getSite(), onlineContent.getUrl(), searchUrl);
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
@@ -952,12 +953,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 long pHash = Long.MIN_VALUE;
                 try {
                     List<Pair<String, String>> requestHeadersList = new ArrayList<>();
-                    Map<String, String> downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
-                    downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(content.getCoverImageUrl()));
-                    downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
+                    Map<String, String> downloadParams = JsonHelper.jsonToObject(onlineContent.getDownloadParams(), JsonHelper.MAP_STRINGS);
+                    downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(onlineContent.getCoverImageUrl()));
+                    downloadParams.put(HttpHelper.HEADER_REFERER_KEY, onlineContent.getSite().getUrl());
 
                     Response onlineCover = HttpHelper.getOnlineResource(
-                            HttpHelper.fixUrl(content.getCoverImageUrl(), getStartUrl()),
+                            HttpHelper.fixUrl(onlineContent.getCoverImageUrl(), getStartUrl()),
                             requestHeadersList,
                             getStartSite().useMobileAgent(),
                             getStartSite().useHentoidAgent(),
@@ -973,32 +974,32 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     Timber.w(e);
                 }
                 // Look for duplicates
-                ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(this, content, pHash, objectBoxDAO);
+                ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(this, onlineContent, pHash, objectBoxDAO);
                 if (duplicateResult != null) {
                     duplicateId = duplicateResult.left.getId();
                     duplicateSimilarity = duplicateResult.right;
                     // Content ID of the duplicate candidate of the currently viewed Content
-                    boolean duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
+                    boolean duplicateSameSite = duplicateResult.left.getSite().equals(onlineContent.getSite());
                     // Same site and similar => download by default, but look for extra pics just in case
                     if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload)
-                        searchForExtraImages(duplicateResult.left);
+                        searchForExtraImages(duplicateResult.left, onlineContent);
                 }
             }
 
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
-                content.setStatus(StatusContent.SAVED);
-                ContentHelper.addContent(this, objectBoxDAO, content);
+                onlineContent.setStatus(StatusContent.SAVED);
+                ContentHelper.addContent(this, objectBoxDAO, onlineContent);
             } else {
-                content = contentDB;
+                currentContent = contentDB;
             }
         } else {
-            content = contentDB;
+            currentContent = contentDB;
         }
 
-        currentContent = content;
+        if (null == currentContent) currentContent = onlineContent;
 
         if (isInCollection) {
-            if (!quickDownload) searchForExtraImages(currentContent);
+            if (!quickDownload) searchForExtraImages(contentDB, onlineContent);
             return ContentStatus.IN_COLLECTION;
         }
         if (isInQueue) return ContentStatus.IN_QUEUE;
@@ -1046,26 +1047,28 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         runOnUiThread(() -> ToastHelper.toast(R.string.web_unparsable));
     }
 
-    private void searchForExtraImages(@NonNull final Content storedContent) {
+    private void searchForExtraImages(
+            @NonNull final Content storedContent,
+            @NonNull final Content onlineContent) {
         if (searchExtraImagesdisposable != null)
             searchExtraImagesdisposable.dispose(); // Cancel previous operation
-        searchExtraImagesdisposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent))
+        searchExtraImagesdisposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent, onlineContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        list -> onSearchForExtraImagesSuccess(storedContent, list),
+                        list -> onSearchForExtraImagesSuccess(storedContent, onlineContent, list),
                         Timber::e
                 );
     }
 
-    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent) {
+    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent, @NonNull final Content onlineContent) {
         List<ImageFile> result = Collections.emptyList();
 
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(storedContent);
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(onlineContent);
         try {
             // Call the parser to retrieve all the pages
             // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
-            List<ImageFile> onlineImgs = parser.parseImageList(storedContent);
+            List<ImageFile> onlineImgs = parser.parseImageList(onlineContent);
             if (onlineImgs.isEmpty()) return result;
 
             int maxStoredImageOrder = 0;
@@ -1113,7 +1116,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         return result;
     }
 
-    private void onSearchForExtraImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
+    private void onSearchForExtraImagesSuccess(
+            @NonNull final Content storedContent,
+            @NonNull final Content onlineContent,
+            @NonNull final List<ImageFile> additionalImages) {
         searchExtraImagesdisposable.dispose();
         if (additionalImages.isEmpty()) {
             ToastHelper.toast(R.string.no_extra_page);
@@ -1121,7 +1127,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
         if (null == currentContent) return;
 
-        if (currentContent.equals(storedContent) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
+        if (currentContent.equals(onlineContent) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
             // Retrieve the URLs of stored pages
             Set<String> storedUrls = new HashSet<>();
             if (storedContent.getImageFiles() != null) {
