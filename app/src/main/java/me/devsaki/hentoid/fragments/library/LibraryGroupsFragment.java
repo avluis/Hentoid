@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.library;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -61,7 +62,9 @@ import java.util.Set;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
+import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.Site;
@@ -479,7 +482,19 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 powerMenu.setIconColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87));
                 powerMenu.showAtCenter(recyclerView);
             } else {
-                Snackbar.make(recyclerView, getResources().getString(R.string.group_delete_nothing), BaseTransientBottomBar.LENGTH_LONG).show();
+                Snackbar snackbar = Snackbar.make(recyclerView, getResources().getString(R.string.group_delete_nothing), BaseTransientBottomBar.LENGTH_LONG);
+                snackbar.setAction(R.string.app_settings, v -> {
+                    // Open prefs on the "storage" category
+                    Intent intent = new Intent(requireActivity(), PrefsActivity.class);
+
+                    PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
+                    builder.setIsStoragePrefs(true);
+                    intent.putExtras(builder.getBundle());
+
+                    requireContext().startActivity(intent);
+                });
+                snackbar.show();
+
                 selectExtension.deselect(selectExtension.getSelections());
             }
         }

@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 public class PrefsActivityBundle {
     private static final String KEY_IS_VIEWER_PREFS = "isViewer";
     private static final String KEY_IS_DOWNLOADER_PREFS = "isDownloader";
+    private static final String KEY_IS_STORAGE_PREFS = "isStorage";
 
     private PrefsActivityBundle() {
         throw new UnsupportedOperationException();
@@ -28,6 +29,10 @@ public class PrefsActivityBundle {
 
         public void setIsDownloaderPrefs(boolean isDownloaderPrefs) {
             bundle.putBoolean(KEY_IS_DOWNLOADER_PREFS, isDownloaderPrefs);
+        }
+
+        public void setIsStoragePrefs(boolean value) {
+            bundle.putBoolean(KEY_IS_STORAGE_PREFS, value);
         }
 
         public Bundle getBundle() {
@@ -49,6 +54,10 @@ public class PrefsActivityBundle {
 
         public boolean isDownloaderPrefs() {
             return bundle.getBoolean(KEY_IS_DOWNLOADER_PREFS, false);
+        }
+
+        public boolean isStoragePrefs() {
+            return bundle.getBoolean(KEY_IS_STORAGE_PREFS, false);
         }
     }
 }
