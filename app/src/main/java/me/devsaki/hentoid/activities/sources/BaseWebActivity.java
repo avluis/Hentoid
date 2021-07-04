@@ -1082,8 +1082,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             for (ImageFile img : onlineImgs) {
                 maxOnlineImageOrder = Math.max(maxOnlineImageOrder, img.getOrder());
                 minOnlineImageOrder = Math.min(minOnlineImageOrder, img.getOrder());
-                if (null != img.getChapter())
-                    positionMap.put(img.getOrder(), img.getChapter().getTarget());
+                if (null != img.getChapter()) {
+                    Chapter chp = img.getChapter().getTarget();
+                    if (null != chp)
+                        positionMap.put(img.getOrder(), chp);
+                }
             }
 
             List<Chapter> storedChapters = storedContent.getChapters();
