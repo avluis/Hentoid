@@ -28,7 +28,8 @@
     },
     "FAKKU2": {
       "hasImageProcessing": true,
-      "useWebviewAgent": false
+      "useWebviewAgent": false,
+      "simulateHumanReading": true
     },
     "MANHWA": {
       "hasCoverBasedPageUpdates": true,

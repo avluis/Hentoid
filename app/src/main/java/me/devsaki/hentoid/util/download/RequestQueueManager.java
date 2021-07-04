@@ -12,7 +12,14 @@ import com.android.volley.toolbox.Volley;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.VolleyOkHttp3Stack;
 import timber.log.Timber;
@@ -25,14 +32,14 @@ import timber.log.Timber;
  */
 public class RequestQueueManager<T> implements RequestQueue.RequestEventListener {
     private static RequestQueueManager mInstance;           // Instance of the singleton
-    //    private static Boolean allowParallelDownloads = null;   // True if current instance can download from the same IP with multiple simultaneous connexions
     private static final int TIMEOUT_MS = 15000;
 
     private RequestQueue mRequestQueue;                     // Volley download request queue
     private int nbRequests = 0;                             // Number of requests currently in the queue (for debug display)
 
-    // Anti-parallel downloads management
-//    private Map<String, List<Request<T>>> serverRequests;  // Stores requests for all servers to be handed down to Volley during anti-parallel mode
+    private boolean isSimulateHumanReading = false;
+    private final LinkedList<Request<T>> waitingRequestQueue = new LinkedList<>();
+    private Disposable waitDisposable = null;
 
 
     private RequestQueueManager(Context context) {
@@ -115,56 +122,52 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      * @param request Request to addAll to the queue
      */
     public void queueRequest(Request<T> request) {
-        /*
-        if (!allowParallelDownloads) {
-            String host = Uri.parse(request.getUrl()).getHost();
-            List<Request<T>> requests;
-            if (serverRequests.containsKey(host)) {
-                requests = serverRequests.get(host);
-                requests.add(request); // Will wait until the 1st of the list has been completed
-                Timber.d("Host %s queue ::: request added - current total %s", host, requests.size());
-                return;
-            } else {
-                requests = new ArrayList<>();
-                serverRequests.put(host, requests);
-                // 1st request of any server is directly feeded to the global request queue
-                // hence it is not added to the requests list
-            }
+        if (isSimulateHumanReading && nbRequests > 0) {
+            Timber.d("Waiting requests queue ::: request stored for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
+            waitingRequestQueue.add(request);
+        } else {
+            addToRequestQueue(request);
         }
-         */
-        addToRequestQueue(request);
     }
 
     private void addToRequestQueue(Request<T> request) {
         mRequestQueue.add(request);
         nbRequests++;
-//        Timber.d("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
+        Timber.v("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
     }
 
     /**
      * Generic handler called when a request is completed
+     * NB : This method is run on the app's main thread
      *
      * @param request Completed request
      */
     public void onRequestFinished(Request<T> request) {
         nbRequests--;
-//        Timber.d("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
+        Timber.v("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
 
-/*        if (!allowParallelDownloads) {
-            // Feed the next request of the same server to the global queue
-            String host = Uri.parse(request.getUrl()).getHost();
-            if (serverRequests.containsKey(host)) {
-                int hostQueueSize = serverRequests.get(host).size();
-                if (hostQueueSize > 0) {
-                    Request<T> req = serverRequests.get(host).get(0);
-                    addToRequestQueue(req);
-                    serverRequests.get(host).remove(req);
-                    hostQueueSize--;
-                }
-                if (0 == hostQueueSize) serverRequests.remove(host);
-            }
+        if (isSimulateHumanReading && 0 == nbRequests && !waitingRequestQueue.isEmpty()) {
+            // Wait on a separate thread
+            int delayMs = 500 + new Random().nextInt(1500);
+            Timber.d("Waiting requests queue ::: waiting %d ms", delayMs);
+            waitDisposable = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                            v -> {
+                                // Add the next request to the queue
+                                Timber.d("Waiting requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
+                                Request<T> req = waitingRequestQueue.removeFirst();
+                                addToRequestQueue(req);
+                                waitDisposable.dispose();
+                            },
+                            Timber::e
+                    );
         }
-        */
+    }
+
+    public void setSimulateHumanReading(boolean value) {
+        isSimulateHumanReading = value;
     }
 
     /**
@@ -173,13 +176,16 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     public void cancelQueue() {
         RequestQueue.RequestFilter filterForAll = request -> true;
         mRequestQueue.cancelAll(filterForAll);
+        waitingRequestQueue.clear();
+        isSimulateHumanReading = false;
+        if (waitDisposable != null) waitDisposable.dispose();
         Timber.d("RequestQueue ::: canceled");
     }
 
     @Override
     public void onRequestEvent(Request<?> request, int event) {
         if (event == RequestQueue.RequestEvent.REQUEST_FINISHED) {
-            onRequestFinished((Request<T>)request); // https://github.com/google/volley/issues/403
+            onRequestFinished((Request<T>) request); // https://github.com/google/volley/issues/403
         }
     }
 }

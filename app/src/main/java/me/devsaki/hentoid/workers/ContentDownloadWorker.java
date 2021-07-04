@@ -379,6 +379,8 @@ public class ContentDownloadWorker extends BaseWorker {
 
         // == DOWNLOAD PHASE ==
 
+        requestQueueManager.setSimulateHumanReading(content.getSite().isSimulateHumanReading());
+
         // Queue image download requests
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED)) {
