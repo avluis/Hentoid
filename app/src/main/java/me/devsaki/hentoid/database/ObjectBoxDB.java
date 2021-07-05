@@ -253,7 +253,7 @@ public class ObjectBoxDB {
                     }
 
                     // Clear links to all attributes
-                    // NB : Properly removing all attributes here would be too costly
+                    // NB : Properly removing all attributes here is too costly, especially on large collections
                     // It's done by calling cleanupOrphanAttributes
                     c.getAttributes().clear();
 
