@@ -572,7 +572,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 keepToolbar = true;
                 break;
             case R.id.action_selectAll:
-                selectExtension.select();
+                // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
+                int count = 0;
+                while (selectExtension.getSelections().size() < getItemAdapter().getAdapterItemCount() && ++count < 5)
+                    selectExtension.select(Stream.range(0, getItemAdapter().getAdapterItemCount()).toList());
                 keepToolbar = true;
                 break;
             case R.id.action_set_cover:
