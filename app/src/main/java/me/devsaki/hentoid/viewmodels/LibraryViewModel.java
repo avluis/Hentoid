@@ -12,6 +12,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
@@ -438,7 +439,14 @@ public class LibraryViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(items)
                         .observeOn(Schedulers.io())
-                        .map(i -> doDeleteItem(i, deleteGroupsOnly))
+                        .map(i -> {
+                            try {
+                                return doDeleteItem(i, deleteGroupsOnly);
+                            } catch (ContentNotRemovedException e) {
+                                onError.accept(e);
+                            }
+                            return Optional.empty();
+                        })
                         .doOnComplete(() -> {
                             if (!groups.isEmpty()) {
                                 isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
@@ -454,10 +462,10 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    private Object doDeleteItem(@NonNull final Object item, boolean deleteGroupsOnly) throws Exception {
+    private Optional<?> doDeleteItem(@NonNull final Object item, boolean deleteGroupsOnly) throws Exception {
         if (item instanceof Content) return doDeleteContent((Content) item);
         else if (item instanceof Group) return doDeleteGroup((Group) item, deleteGroupsOnly);
-        else return null;
+        else return Optional.empty();
     }
 
     /**
@@ -467,16 +475,15 @@ public class LibraryViewModel extends AndroidViewModel {
      * @return Content that has been deleted
      * @throws ContentNotRemovedException When any issue occurs during removal
      */
-    private Content doDeleteContent(@NonNull final Content content) throws ContentNotRemovedException {
+    private Optional<Content> doDeleteContent(@NonNull final Content content) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
         try {
             // Check if given content still exists in DB
             Content theContent = dao.selectContent(content.getId());
-
             if (theContent != null) {
                 ContentHelper.removeContent(getApplication(), dao, theContent);
                 Timber.d("Removed item: %s from db and file system.", theContent.getTitle());
-                return theContent;
+                return Optional.of(theContent);
             }
             throw new ContentNotRemovedException(content, "Error when trying to delete : invalid ContentId " + content.getId());
         } catch (ContentNotRemovedException cnre) {
@@ -663,7 +670,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * @return Group that has been deleted
      * @throws GroupNotRemovedException When any issue occurs during removal
      */
-    private Group doDeleteGroup(@NonNull final Group group, boolean deleteGroupsOnly) throws GroupNotRemovedException {
+    private Optional<Group> doDeleteGroup(@NonNull final Group group, boolean deleteGroupsOnly) throws GroupNotRemovedException {
         Helper.assertNonUiThread();
 
         try {
@@ -684,7 +691,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         throw new GroupNotRemovedException(group, "Group is not empty");
                     dao.deleteGroup(theGroup.id);
                     Timber.d("Removed group: %s from db.", theGroup.name);
-                    return theGroup;
+                    return Optional.of(theGroup);
                 }
             }
             throw new GroupNotRemovedException(group, "Error when trying to delete : invalid group ID " + group.id);
