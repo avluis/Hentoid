@@ -239,7 +239,14 @@ public class QueueViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(content)
                         .observeOn(Schedulers.io())
-                        .map(c -> doRemove(c.getId()))
+                        .map(c -> {
+                            try {
+                                return doRemove(c.getId());
+                            } catch (ContentNotRemovedException e) {
+                                onError.accept(e);
+                            }
+                            return false;
+                        })
                         .doOnComplete(this::onRemoveComplete) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -270,7 +277,14 @@ public class QueueViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(localQueue)
                         .observeOn(Schedulers.io())
-                        .map(qr -> doRemove(qr.getContent().getTargetId()))
+                        .map(qr -> {
+                            try {
+                                return doRemove(qr.getContent().getTargetId());
+                            } catch (ContentNotRemovedException e) {
+                                onError.accept(e);
+                            }
+                            return false;
+                        })
                         .doOnComplete(this::onRemoveComplete) // Done properly in the IO thread
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
