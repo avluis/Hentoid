@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.workers;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -100,8 +101,11 @@ public abstract class BaseWorker extends Worker {
         return isComplete;
     }
 
-    protected void recordLog(LogHelper.LogEntry entry) {
-        if (logs != null) logs.add(entry);
+    protected void trace(int priority, String s, Object... t) {
+        s = String.format(s, t);
+        Timber.log(priority, s);
+        boolean isError = (priority > Log.INFO);
+        if (null != logs) logs.add(new LogHelper.LogEntry(s, isError));
     }
 
     private void clear() {
