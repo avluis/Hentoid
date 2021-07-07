@@ -585,13 +585,14 @@ public class FileHelper {
         int count;
 
         try (InputStream input = new ByteArrayInputStream(binaryData)) {
-            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(context, uri))) {
-
-                while ((count = input.read(buffer)) != -1) {
-                    output.write(buffer, 0, count);
+            OutputStream out = FileHelper.getOutputStream(context, uri);
+            if (out != null) {
+                try (BufferedOutputStream output = new BufferedOutputStream(out)) {
+                    while ((count = input.read(buffer)) != -1) {
+                        output.write(buffer, 0, count);
+                    }
+                    output.flush();
                 }
-
-                output.flush();
             }
         }
     }
