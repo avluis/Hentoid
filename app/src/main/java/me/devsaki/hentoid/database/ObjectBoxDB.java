@@ -299,10 +299,6 @@ public class ObjectBoxDB {
         return result;
     }
 
-    List<QueueRecord> selectQueueRecords(long[] queueRecordIds) {
-        return store.boxFor(QueueRecord.class).get(queueRecordIds);
-    }
-
     Query<QueueRecord> selectQueueRecordsQ(String query) {
         QueryBuilder<QueueRecord> qb = store.boxFor(QueueRecord.class).query();
         // Universal search inside contents

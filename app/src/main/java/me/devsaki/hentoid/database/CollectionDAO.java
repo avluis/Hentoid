@@ -206,8 +206,6 @@ public interface CollectionDAO {
 
     List<QueueRecord> selectQueue();
 
-    List<QueueRecord> selectQueue(long[] queueRecordIds);
-
     List<QueueRecord> selectQueue(String query);
 
     LiveData<List<QueueRecord>> selectQueueLive();

@@ -719,11 +719,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public List<QueueRecord> selectQueue(long[] queueRecordIds) {
-        return db.selectQueueRecords(queueRecordIds);
-    }
-
-    @Override
     public List<QueueRecord> selectQueue(String query) {
         return db.selectQueueRecordsQ(query).find();
     }
