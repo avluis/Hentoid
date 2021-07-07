@@ -212,7 +212,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private void indexContentInfo(Content c) {
         // No need for that unless we're debugging
         if (BuildConfig.DEBUG)
-            trace(Log.DEBUG, "Indexing " + c.getSite().name() + "/" + ContentHelper.formatBookFolderName(c).left);
+            trace(Log.DEBUG, "Indexing %s/%s", c.getSite().name(), ContentHelper.formatBookFolderName(c).left);
     }
 
     private void indexError(Throwable t) {

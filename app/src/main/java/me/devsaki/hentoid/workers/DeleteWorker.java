@@ -110,7 +110,7 @@ public class DeleteWorker extends BaseWorker {
             trace(Log.WARN, "Error when trying to delete %s", content.getId());
         } catch (Exception e) {
             nbError++;
-            trace(Log.WARN, "Error when trying to delete " + content.getId() + " : " + e.getMessage(), e);
+            trace(Log.WARN, "Error when trying to delete %s : %s", content.getTitle(), e.getMessage());
         }
     }
 
@@ -159,7 +159,7 @@ public class DeleteWorker extends BaseWorker {
             }
         } catch (Exception e) {
             nbError++;
-            trace(Log.WARN, "Error when trying to delete " + group.id + " : " + e.getMessage(), e);
+            trace(Log.WARN, "Error when trying to delete group %d : %s", group.id, e.getMessage());
         }
     }
 
@@ -185,7 +185,7 @@ public class DeleteWorker extends BaseWorker {
             // Don't throw the exception if we can't remove something that isn't there
             if (!(e instanceof FileNotRemovedException && content.getStorageUri().isEmpty())) {
                 nbError++;
-                trace(Log.WARN, "Error when trying to delete queued " + content.getTitle() + " : " + e.getMessage(), e);
+                trace(Log.WARN, "Error when trying to delete queued %s : %s", content.getTitle(), e.getMessage());
             }
         }
     }
