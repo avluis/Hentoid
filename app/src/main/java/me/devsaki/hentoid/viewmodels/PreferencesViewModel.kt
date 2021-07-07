@@ -11,7 +11,6 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.ImageHelper
-import me.devsaki.hentoid.workers.ContentDownloadWorker
 import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.data.DeleteData
 import java.io.File

@@ -48,7 +48,6 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.widget.ContentSearchManager;
-import me.devsaki.hentoid.workers.ContentDownloadWorker;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
 import timber.log.Timber;
