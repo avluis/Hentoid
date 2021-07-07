@@ -366,6 +366,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public List<Group> selectGroups(long[] groupIds) {
+        return db.selectGroups(groupIds);
+    }
+
+    @Override
     public List<Group> selectGroups(int grouping) {
         return db.selectGroupsQ(grouping, null, 0, false, Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS, false).find();
     }
@@ -708,8 +713,14 @@ public class ObjectBoxDAO implements CollectionDAO {
         return new ObjectBoxLiveData<>(db.selectQueueRecordsQ(query));
     }
 
+    @Override
     public List<QueueRecord> selectQueue() {
         return db.selectQueueRecordsQ(null).find();
+    }
+
+    @Override
+    public List<QueueRecord> selectQueue(long[] queueRecordIds) {
+        return db.selectQueueRecords(queueRecordIds);
     }
 
     @Override

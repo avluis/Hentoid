@@ -68,6 +68,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
 import me.devsaki.hentoid.ui.BlinkAnimation;
@@ -81,7 +82,6 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -811,7 +811,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
 
         if (item.getContent() != null)
-            viewModel.cancel(Stream.of(item.getContent()).toList(), this::onCancelError, this::onCancelComplete);
+            viewModel.cancel(Stream.of(item.getContent()).toList());
     }
 
     private void onCancelBooks(@NonNull List<Content> c) {
@@ -819,33 +819,25 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             isCancelingAll = true;
             DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
         }
-        viewModel.cancel(c, this::onCancelError, this::onCancelComplete);
+        viewModel.cancel(c);
     }
 
     private void onCancelAll() {
         isCancelingAll = true;
         DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
-        viewModel.cancelAll(this::onCancelError, this::onCancelComplete);
+        viewModel.cancelAll();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        // Filter on cancel complete event
+        if (R.id.generic_delete != event.processId) return;
+        if (event.eventType == ProcessEvent.EventType.COMPLETE) onCancelComplete();
     }
 
     private void onCancelComplete() {
         isCancelingAll = false;
         viewModel.refresh();
-        if (null == selectExtension || selectExtension.getSelections().isEmpty())
-            selectionToolbar.setVisibility(View.GONE);
-    }
-
-    /**
-     * Callback for the failure of the "delete item" action
-     */
-    private void onCancelError(Throwable t) {
-        Timber.e(t);
-        isCancelingAll = false;
-        viewModel.refresh();
-        if (t instanceof ContentNotRemovedException) {
-            String message = (null == t.getMessage()) ? "Content removal failed" : t.getMessage();
-            Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
-        }
         if (null == selectExtension || selectExtension.getSelections().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }

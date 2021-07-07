@@ -7,14 +7,16 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
-import com.annimon.stream.function.Consumer;
+import com.annimon.stream.Stream;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -26,13 +28,11 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
-import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.workers.DeleteWorker;
+import me.devsaki.hentoid.workers.data.DeleteData;
 import timber.log.Timber;
 
 
@@ -222,101 +222,46 @@ public class QueueViewModel extends AndroidViewModel {
      *
      * @param contents Contents whose download has to be canceled
      */
-    public void cancel(@NonNull List<Content> contents, Consumer<Throwable> onError, Runnable onComplete) {
-        remove(contents, onError, onComplete);
+    public void cancel(@NonNull List<Content> contents) {
+        remove(contents);
     }
 
-    public void removeAll(Consumer<Throwable> onError, Runnable onComplete) {
+    public void removeAll() {
         List<Content> errors = dao.selectErrorContentList();
         if (errors.isEmpty()) return;
 
-        remove(errors, onError, onComplete);
+        remove(errors);
     }
 
-    public void remove(@NonNull List<Content> content, Consumer<Throwable> onError, Runnable onComplete) {
-        AtomicInteger nbDeleted = new AtomicInteger();
+    public void remove(@NonNull List<Content> contentList) {
+        DeleteData.Builder builder = new DeleteData.Builder();
+        if (!contentList.isEmpty())
+            builder.setQueueIds(Stream.of(contentList).map(Content::getId).toList());
 
-        compositeDisposable.add(
-                Observable.fromIterable(content)
-                        .observeOn(Schedulers.io())
-                        .map(c -> {
-                            try {
-                                return doRemove(c.getId());
-                            } catch (ContentNotRemovedException e) {
-                                onError.accept(e);
-                            }
-                            return false;
-                        })
-                        .doOnComplete(this::onRemoveComplete) // Done properly in the IO thread
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                v -> {
-                                    nbDeleted.getAndIncrement();
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, nbDeleted.get(), 0, content.size()));
-                                },
-                                t -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, content.size()));
-                                    onError.accept(t);
-                                },
-                                () -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, content.size()));
-                                    onComplete.run();
-                                }
-                        )
+        WorkManager workManager = WorkManager.getInstance(getApplication());
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.delete_service),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
         );
     }
 
-    public void cancelAll(Consumer<Throwable> onError, Runnable onComplete) {
+    public void cancelAll() {
         List<QueueRecord> localQueue = dao.selectQueue();
         if (localQueue.isEmpty()) return;
+        List<Long> contentIdList = Stream.of(localQueue).map(qr -> qr.getContent().getTargetId()).toList();
 
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
 
-        AtomicInteger nbDeleted = new AtomicInteger();
+        DeleteData.Builder builder = new DeleteData.Builder();
+        if (!contentIdList.isEmpty()) builder.setQueueIds(contentIdList);
 
-        compositeDisposable.add(
-                Observable.fromIterable(localQueue)
-                        .observeOn(Schedulers.io())
-                        .map(qr -> {
-                            try {
-                                return doRemove(qr.getContent().getTargetId());
-                            } catch (ContentNotRemovedException e) {
-                                onError.accept(e);
-                            }
-                            return false;
-                        })
-                        .doOnComplete(this::onRemoveComplete) // Done properly in the IO thread
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                v -> {
-                                    nbDeleted.getAndIncrement();
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, nbDeleted.get(), 0, localQueue.size()));
-                                },
-                                t -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, localQueue.size()));
-                                    onError.accept(t);
-                                },
-                                () -> {
-                                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, nbDeleted.get(), 0, localQueue.size()));
-                                    onComplete.run();
-                                }
-                        )
+        WorkManager workManager = WorkManager.getInstance(getApplication());
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.delete_service),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
         );
-    }
-
-    private boolean doRemove(long contentId) throws ContentNotRemovedException {
-        Helper.assertNonUiThread();
-        // Remove content altogether from the DB (including queue)
-        Content content = dao.selectContent(contentId);
-        if (null == content) return true;
-        try {
-            ContentHelper.removeQueuedContent(getApplication(), dao, content);
-        } catch (ContentNotRemovedException e) {
-            // Don't throw the exception if we can't remove something that isn't there
-            if (!(e instanceof FileNotRemovedException && content.getStorageUri().isEmpty()))
-                throw e;
-        }
-        return true;
     }
 
     public void redownloadContent(
@@ -353,11 +298,5 @@ public class QueueViewModel extends AndroidViewModel {
 
     public void setContentToShowFirst(long hash) {
         contentHashToShowFirst.setValue(hash);
-    }
-
-    private void onRemoveComplete() {
-        if (ContentHelper.updateQueueJson(getApplication().getApplicationContext(), dao))
-            Timber.i("Queue JSON successfully saved");
-        else Timber.w("Queue JSON saving failed");
     }
 }

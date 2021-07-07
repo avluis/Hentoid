@@ -71,6 +71,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -469,11 +470,11 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 powerMenu.setOnMenuItemClickListener((position, item) -> {
                     int tag = (Integer) item.getTag();
                     if (0 == tag) {
-                        activity.get().deleteItems(finalContent, Collections.emptyList(), false, null);
+                        viewModel.deleteItems(finalContent, Collections.emptyList(), false);
                     } else if (1 == tag) {
-                        activity.get().deleteItems(Collections.emptyList(), finalGroups, true, null);
+                        viewModel.deleteItems(Collections.emptyList(), finalGroups, true);
                     } else if (2 == tag) {
-                        activity.get().deleteItems(finalContent, finalGroups, false, null);
+                        viewModel.deleteItems(finalContent, finalGroups, false);
                     } else {
                         selectExtension.deselect(selectExtension.getSelections()); // Cancel button
                     }
@@ -498,6 +499,14 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 selectExtension.deselect(selectExtension.getSelections());
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        // Filter on delete complete event
+        if (R.id.delete_service != event.processId) return;
+        if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
+        viewModel.refreshCustomGroupingAvailable();
     }
 
     /**

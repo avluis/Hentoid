@@ -3,6 +3,7 @@
     <item name="startup_service" type="id"/>
     <item name="download_service" type="id"/>
     <item name="import_service" type="id"/>
+    <item name="delete_service" type="id"/>
     <item name="duplicate_detector_service" type="id"/>
     <item name="archive_processing" type="id"/>
     <item name="delete_processing" type="id"/>

@@ -102,6 +102,8 @@ public interface CollectionDAO {
 
     // Groups
 
+    List<Group> selectGroups(long[] groupIds);
+
     LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly);
 
     List<Group> selectGroups(int grouping);
@@ -203,6 +205,8 @@ public interface CollectionDAO {
     // QUEUE
 
     List<QueueRecord> selectQueue();
+
+    List<QueueRecord> selectQueue(long[] queueRecordIds);
 
     List<QueueRecord> selectQueue(String query);
 

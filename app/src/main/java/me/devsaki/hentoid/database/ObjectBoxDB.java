@@ -299,6 +299,10 @@ public class ObjectBoxDB {
         return result;
     }
 
+    List<QueueRecord> selectQueueRecords(long[] queueRecordIds) {
+        return store.boxFor(QueueRecord.class).get(queueRecordIds);
+    }
+
     Query<QueueRecord> selectQueueRecordsQ(String query) {
         QueryBuilder<QueueRecord> qb = store.boxFor(QueueRecord.class).query();
         // Universal search inside contents
@@ -1296,6 +1300,11 @@ public class ObjectBoxDB {
     @Nullable
     Group selectGroup(long groupId) {
         return store.boxFor(Group.class).get(groupId);
+    }
+
+    @Nullable
+    List<Group> selectGroups(long[] groupIds) {
+        return store.boxFor(Group.class).get(groupIds);
     }
 
     @Nullable

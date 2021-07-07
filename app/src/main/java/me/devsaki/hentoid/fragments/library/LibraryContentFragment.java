@@ -88,6 +88,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
@@ -111,6 +112,7 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
@@ -1406,8 +1408,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             if (selectExtension.getSelections().isEmpty())
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
         }
+        Content content = item.getContent();
+        if (content != null)
+            viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false);
+    }
 
-        activity.get().deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList(), false, this::refreshIfNeeded);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        // Filter on delete complete event
+        if (R.id.delete_service != event.processId) return;
+        if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
+        refreshIfNeeded();
     }
 
     @Override
