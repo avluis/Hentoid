@@ -361,12 +361,12 @@ public class LibraryActivity extends BaseActivity {
         if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ImageViewerActivity.isRunning) {
             Snackbar snackbar = Snackbar.make(viewPager, R.string.resume_closed, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.setAction(R.string.resume, v -> {
-                Timber.i("Reopening books %d from page %d", previouslyViewedContent, previouslyViewedPage);
+                Timber.i("Reopening book %d from page %d", previouslyViewedContent, previouslyViewedPage);
                 CollectionDAO dao = new ObjectBoxDAO(this);
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, null);
+                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle());
                 } finally {
                     dao.cleanup();
                 }
