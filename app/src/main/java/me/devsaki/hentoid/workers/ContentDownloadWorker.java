@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.annotation.Nullable;
 
@@ -378,6 +379,24 @@ public class ContentDownloadWorker extends BaseWorker {
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
 
         // == DOWNLOAD PHASE ==
+
+        // Wait a delay corresponding to book browsing if we're between two sources with "simulate human reading"
+        if (content.getSite().isSimulateHumanReading() && requestQueueManager.isSimulateHumanReading()) {
+            int delayMs = 3000 + new Random().nextInt(2000);
+            try {
+                Thread.sleep(delayMs);
+            } catch (InterruptedException e) {
+                Timber.w(e);
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        requestQueueManager.setSimulateHumanReading(content.getSite().isSimulateHumanReading());
+
+        // In case the download has been canceled while in preparation phase
+        // NB : No log of any sort because this is normal behaviour
+        if (downloadCanceled || downloadSkipped)
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
         // Queue image download requests
         for (ImageFile img : images) {
