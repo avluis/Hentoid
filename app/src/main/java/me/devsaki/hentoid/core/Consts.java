@@ -18,6 +18,7 @@ public abstract class Consts {
     public static final String JSON_FILE_NAME_V2 = "contentV2.json";
 
     public static final String QUEUE_JSON_FILE_NAME = "queue.json";
+    public static final String BOOKMARKS_JSON_FILE_NAME = "bookmarks.json";
     public static final String GROUPS_JSON_FILE_NAME = "groups.json";
 
     public static final String THUMB_FILE_NAME = "thumb";

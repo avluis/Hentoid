@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -31,7 +32,9 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.json.JsonSiteSettings;
@@ -42,6 +45,7 @@ import me.devsaki.hentoid.notification.startup.StartupNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.workers.StartupWorker;
@@ -127,6 +131,7 @@ public class AppStartup {
         result.add(createObservableFrom(context, AppStartup::searchForUpdates));
         result.add(createObservableFrom(context, AppStartup::sendFirebaseStats));
         result.add(createObservableFrom(context, AppStartup::clearPictureCache));
+        result.add(createObservableFrom(context, AppStartup::createBookmarksJson));
         return result;
     }
 
@@ -263,5 +268,30 @@ public class AppStartup {
             emitter.onComplete();
         }
         Timber.i("Clear picture cache : done");
+    }
+
+    // Creates the JSON file for bookmarks if it doesn't exist
+    private static void createBookmarksJson(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        Timber.i("Create bookmarks JSON : start");
+        try {
+            DocumentFile appRoot = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+            if (appRoot != null) {
+                DocumentFile bookmarksJson = FileHelper.findFile(context, appRoot, Consts.BOOKMARKS_JSON_FILE_NAME);
+                if (null == bookmarksJson) {
+                    Timber.i("Create bookmarks JSON : creating JSON");
+                    CollectionDAO dao = new ObjectBoxDAO(context);
+                    try {
+                        Helper.updateBookmarksJson(context, dao);
+                    } finally {
+                        dao.cleanup();
+                    }
+                } else {
+                    Timber.i("Create bookmarks JSON : already exists");
+                }
+            }
+        } finally {
+            emitter.onComplete();
+        }
+        Timber.i("Create bookmarks JSON : done");
     }
 }
