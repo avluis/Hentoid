@@ -105,10 +105,12 @@ public class HitomiParser implements ImageListParser {
 
         int nbFrontends = NUMBER_OF_FRONTENDS;
         int varG = Integer.valueOf(componentB, 16);
-        if (varG < 0x70) nbFrontends = 2;
-        if (varG < 0x49) varG = 1;
+        int varO = 0;
+        if (varG < 0x80) varO = 1;
+        if (varG < 0x40) varO = 2;
 
-        String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends, getSuffixFromExtension(extension));
+        //String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends, getSuffixFromExtension(extension));
+        String imageSubdomain = (char) (HOSTNAME_PREFIX_BASE + varO) + getSuffixFromExtension(extension);
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/" + folder + "/" + componentA + "/" + componentB + "/" + hash + "." + extension;
 
         return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
