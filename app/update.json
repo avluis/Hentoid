@@ -26,6 +26,7 @@
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"379"},
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"388"},
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"391"},
+	  {"sourceName":"HITOMI", "status":"RED"},
 	  {"sourceName":"TOONILY", "status":"ORANGE"},
 	  {"sourceName":"MANHWA", "status":"ORANGE"},
 	  {"sourceName":"FAKKU2", "status":"RED"},
