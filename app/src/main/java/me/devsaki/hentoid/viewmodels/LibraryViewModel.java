@@ -32,6 +32,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -46,6 +47,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
@@ -689,5 +691,10 @@ public class LibraryViewModel extends AndroidViewModel {
             toggleCompletedFilter();
         else if (searchManager.isFilterBookNotCompleted())
             toggleNotCompletedFilter();
+    }
+
+    public void shuffleContent() {
+        RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
+        dao.shuffleContent();
     }
 }

@@ -252,9 +252,10 @@ public class ObjectBoxDAO implements CollectionDAO {
             query = db.selectContentSearchContentQ(filter, groupId, metadata, bookFavouritesOnly, false, orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
         }
 
-        if (isRandom)
-            return new ImmutablePair<>(query.count(), new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query));
-        else return new ImmutablePair<>(query.count(), new ObjectBoxDataSource.Factory<>(query));
+        if (isRandom) {
+            List<Long> shuffledIds = db.getShuffledIds();
+            return new ImmutablePair<>(query.count(), new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query, shuffledIds));
+        } else return new ImmutablePair<>(query.count(), new ObjectBoxDataSource.Factory<>(query));
     }
 
     private ImmutablePair<Long, DataSource.Factory<Integer, Content>> getPagedContentByList(
@@ -340,6 +341,11 @@ public class ObjectBoxDAO implements CollectionDAO {
         if (null == imgs) return;
         for (ImageFile img : imgs) img.setDownloadParams("");
         db.insertImageFiles(imgs);
+    }
+
+    @Override
+    public void shuffleContent() {
+        db.shuffleContentIds();
     }
 
     @Override

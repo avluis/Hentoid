@@ -6,22 +6,24 @@ import androidx.paging.PositionalDataSource;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
 
 import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
 import io.objectbox.reactive.DataObserver;
-import me.devsaki.hentoid.core.Consts;
-import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.Helper;
 
 // Inspired from ObjectBoxDataSource
 class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
     private final Query<T> query;
     private final DataObserver<List<T>> observer;
+    private final List<Long> shuffleIds;
 
-    private ObjectBoxRandomDataSource(Query<T> query) {
+    private ObjectBoxRandomDataSource(Query<T> query, List<Long> shuffleIds) {
         this.query = query;
+        this.shuffleIds = shuffleIds;
         this.observer = data -> ObjectBoxRandomDataSource.this.invalidate();
         query.subscribe().onlyChanges().weak().observer(this.observer);
     }
@@ -52,15 +54,28 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
 
     private List<T> shuffleRandomSort(Query<T> query, int startPosition, int loadCount) {
         LazyList<T> lazyList = query.findLazy();
-        List<Integer> order = new ArrayList<>();
-        for (int i = 0; i < lazyList.size(); i++) order.add(i);
-        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
+        List<Long> queryIds = Helper.getListFromPrimitiveArray(query.findIds());
+        Map<Long, Integer> idsToIndexes = new HashMap<>();
+        for (int i = 0; i < queryIds.size(); i++) {
+            idsToIndexes.put(queryIds.get(i), i);
+        }
 
-        int maxPage = Math.min(startPosition + loadCount, order.size());
+        // Keep common IDs
+        shuffleIds.retainAll(queryIds);
+
+        // Isolate new IDs that have never been shuffled and append them at the end
+        if (shuffleIds.size() < queryIds.size()) {
+            queryIds.removeAll(shuffleIds);
+            shuffleIds.addAll(queryIds);
+        }
+
+        int maxPage = Math.min(startPosition + loadCount, shuffleIds.size());
 
         List<T> result = new ArrayList<>();
         for (int i = startPosition; i < maxPage; i++) {
-            result.add(lazyList.get(order.get(i)));
+            Integer index = idsToIndexes.get(shuffleIds.get(i));
+            if (index != null)
+                result.add(lazyList.get(index));
         }
 
         return result;
@@ -68,14 +83,16 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
 
     public static class RandomDataSourceFactory<I> extends androidx.paging.DataSource.Factory<Integer, I> {
         private final Query<I> query;
+        private final List<Long> shuffleIds;
 
-        RandomDataSourceFactory(Query<I> query) {
+        RandomDataSourceFactory(Query<I> query, List<Long> shuffleIds) {
             this.query = query;
+            this.shuffleIds = shuffleIds;
         }
 
         @NonNull
         public DataSource<Integer, I> create() {
-            return new ObjectBoxRandomDataSource<>(query);
+            return new ObjectBoxRandomDataSource<>(query, shuffleIds);
         }
     }
 

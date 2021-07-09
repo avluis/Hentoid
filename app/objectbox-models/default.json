@@ -675,10 +675,30 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "15:2260398621202196035",
+      "lastPropertyId": "2:5934700032431888672",
+      "name": "ShuffleRecord",
+      "properties": [
+        {
+          "id": "1:6481436522626559668",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5934700032431888672",
+          "name": "contentId",
+          "type": 6,
+          "flags": 2
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "14:4653544552059492176",
-  "lastIndexId": "18:7973014573351069918",
+  "lastEntityId": "15:2260398621202196035",
+  "lastIndexId": "19:372149557770070472",
   "lastRelationId": "3:1412032361666532056",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
@@ -690,7 +710,8 @@
   "retiredIndexUids": [
     9049773303925818273,
     4642610167694780718,
-    9182121386646774745
+    9182121386646774745,
+    372149557770070472
   ],
   "retiredPropertyUids": [
     1563990578201199392,

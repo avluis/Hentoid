@@ -67,6 +67,8 @@ public interface CollectionDAO {
 
     void clearDownloadParams(long contentId);
 
+    void shuffleContent();
+
 
     // MASS OPERATIONS
 

@@ -79,7 +79,6 @@ import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
-import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
@@ -94,7 +93,6 @@ import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
@@ -112,7 +110,6 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.annimon.stream.Collectors.toCollection;
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
@@ -392,7 +389,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             activity.get().sortCommandsAutoHide(true, null);
         });
         sortReshuffleButton.setOnClickListener(v -> {
-            RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
+            viewModel.shuffleContent();
             viewModel.updateContentOrder();
             activity.get().sortCommandsAutoHide(true, null);
         });
@@ -409,7 +406,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 item.setChecked(true);
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
                 if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM) {
-                    RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
+                    viewModel.shuffleContent();
                     sortDirectionButton.setVisibility(View.GONE);
                     sortReshuffleButton.setVisibility(View.VISIBLE);
                 } else {
