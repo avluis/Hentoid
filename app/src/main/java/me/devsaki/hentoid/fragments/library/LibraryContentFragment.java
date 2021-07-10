@@ -1179,7 +1179,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     .filter(content -> query.equals(content.getUniqueSiteId()))
                     .map(Content::getSite)
                     .map(Site::getCode)
-                    .collect(toCollection(ArrayList::new));
+                    .collect(toCollection(ArrayList::new)); // ArrayList is required by SearchContentIdDialogFragment.invoke
 
             SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
         }
