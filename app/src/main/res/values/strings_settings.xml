@@ -24,34 +24,6 @@
     <string name="pref_attributes_list_order_default" translatable="false">1</string>
     <string name="pref_attributes_list_order_summary">%s</string>
 
-    <string name="pref_cat_browser">Browser</string>
-    <string name="pref_browser_resume_last_title">Resume at last viewed page</string>
-    <string name="pref_browser_resume_last_off">Any site always opens on its homepage</string>
-    <string name="pref_browser_resume_last_on">Any site opens on its last viewed page</string>
-    <string name="pref_browser_resume_last_default" translatable="false">false</string>
-    <string name="pref_browser_override_overview_title">Disable Page Overview</string>
-    <string name="pref_browser_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below.</string>
-    <string name="pref_browser_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi and e-hentai.</string>
-    <string name="pref_browser_override_overview_default" translatable="false">false</string>
-    <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
-    <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
-    <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
-    <string name="pref_browser_quick_dl_title">Quick download</string>
-    <string name="pref_browser_quick_dl_summary">On the books list page, hold tap to download any book</string>
-    <string name="pref_browser_quick_dl_default" translatable="false">true</string>
-    <string name="pref_browser_augmented_title">Augmented browser</string>
-    <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
-    <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
-    <string name="pref_browser_augmented_default" translatable="false">true</string>
-    <string name="pref_browser_duplicate_ask_title">Duplicates checking</string>
-    <string name="pref_browser_duplicate_ask_off">No : always download</string>
-    <string name="pref_browser_duplicate_ask_on">Yes : ask before downloading</string>
-    <string name="pref_browser_duplicate_ask_default" translatable="false">true</string>
-    <string name="pref_browser_duplicate_try_pages_title">Try finding extra pages on potential duplicates ?</string>
-    <string name="pref_browser_duplicate_try_pages_off">Only try finding extra pages on the original book</string>
-    <string name="pref_browser_duplicate_try_pages_on">Try finding extra pages on potential duplicates</string>
-    <string name="pref_browser_duplicate_try_pages_default" translatable="false">true</string>
-
     <string name="pref_cat_theme">App theme</string>
     <string name="pref_color_theme_title">Color theme</string>
     <string name="pref_color_theme_summary">Current theme : %s</string>
@@ -93,6 +65,38 @@
     <string name="pref_delete_all_except_favs_title">Delete all books except favourites</string>
     <string name="pref_delete_all_except_favs_summary">Purge the library; keep favourite books only\nNB : Does not apply to the external library</string>
     <string name="pref_ask_delete_all_except_favs">Are you sure you wish to delete %d books ?</string>
+
+
+    <!-- Browser -->
+    <string name="pref_screen_browser">Browser</string>
+
+    <string name="pref_browser_resume_last_title">Resume at last viewed page</string>
+    <string name="pref_browser_resume_last_off">Any site always opens on its homepage</string>
+    <string name="pref_browser_resume_last_on">Any site opens on its last viewed page</string>
+    <string name="pref_browser_resume_last_default" translatable="false">false</string>
+    <string name="pref_browser_override_overview_title">Disable Page Overview</string>
+    <string name="pref_browser_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below.</string>
+    <string name="pref_browser_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi and e-hentai.</string>
+    <string name="pref_browser_override_overview_default" translatable="false">false</string>
+    <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
+    <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
+    <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
+    <string name="pref_browser_quick_dl_title">Quick download</string>
+    <string name="pref_browser_quick_dl_summary">On the books list page, hold tap to download any book</string>
+    <string name="pref_browser_quick_dl_default" translatable="false">true</string>
+    <string name="pref_browser_augmented_title">Augmented browser</string>
+    <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
+    <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
+    <string name="pref_browser_augmented_default" translatable="false">true</string>
+    <string name="pref_browser_duplicate_ask_title">Duplicates checking</string>
+    <string name="pref_browser_duplicate_ask_off">No : always download</string>
+    <string name="pref_browser_duplicate_ask_on">Yes : ask before downloading</string>
+    <string name="pref_browser_duplicate_ask_default" translatable="false">true</string>
+    <string name="pref_browser_duplicate_try_pages_title">Try finding extra pages on potential duplicates ?</string>
+    <string name="pref_browser_duplicate_try_pages_off">Only try finding extra pages on the original book</string>
+    <string name="pref_browser_duplicate_try_pages_on">Try finding extra pages on potential duplicates</string>
+    <string name="pref_browser_duplicate_try_pages_default" translatable="false">true</string>
+
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>

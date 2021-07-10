@@ -69,8 +69,10 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
+import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -332,6 +334,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 break;
             case R.id.web_menu_action:
                 this.onActionClick();
+                break;
+            case R.id.web_menu_settings:
+                this.onSettingsClick();
                 break;
             default:
                 return false;
@@ -1209,6 +1214,19 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         else result = result.replace("%s", getResources().getString(R.string.alert_wip));
 
         return result;
+    }
+
+    /**
+     * Show the viewer settings dialog
+     */
+    private void onSettingsClick() {
+        Intent intent = new Intent(this, PrefsActivity.class);
+
+        PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
+        builder.setIsBrowserPrefs(true);
+        intent.putExtras(builder.getBundle());
+
+        startActivity(intent);
     }
 
     private String getJsInterceptorScript() {

@@ -23,4 +23,11 @@
         android:title="@string/web_copy_url"
         android:tooltipText="@string/web_copy_url"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/web_menu_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/title_activity_preferences"
+        android:tooltipText="@string/title_activity_preferences"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
 </menu>

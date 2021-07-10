@@ -21,9 +21,12 @@ class PrefsActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
 
         var rootKey: String? = null
-        if (isViewerPrefs()) rootKey = "viewer"
-        else if (isDownloaderPrefs()) rootKey = "downloader"
-        else if (isStoragePrefs()) rootKey = "storage"
+        when {
+            isViewerPrefs() -> rootKey = "viewer"
+            isBrowserPrefs() -> rootKey = "browser"
+            isDownloaderPrefs() -> rootKey = "downloader"
+            isStoragePrefs() -> rootKey = "storage"
+        }
         val fragment = PreferenceFragment.newInstance(rootKey)
 
         supportFragmentManager.commit {
@@ -45,6 +48,13 @@ class PrefsActivity : BaseActivity() {
         return if (intent.extras != null) {
             val parser = PrefsActivityBundle.Parser(intent.extras!!)
             parser.isViewerPrefs
+        } else false
+    }
+
+    private fun isBrowserPrefs(): Boolean {
+        return if (intent.extras != null) {
+            val parser = PrefsActivityBundle.Parser(intent.extras!!)
+            parser.isBrowserPrefs
         } else false
     }
 
