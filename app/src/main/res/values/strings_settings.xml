@@ -81,6 +81,8 @@
     <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
     <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
     <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
+    <string name="pref_browser_dl_action_title">Download action</string>
+    <string name="pref_browser_dl_action_default" translatable="false">0</string>
     <string name="pref_browser_quick_dl_title">Quick download</string>
     <string name="pref_browser_quick_dl_summary">On the books list page, hold tap to download any book</string>
     <string name="pref_browser_quick_dl_default" translatable="false">true</string>
