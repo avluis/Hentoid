@@ -998,7 +998,7 @@ public class LibraryActivity extends BaseActivity {
         // TODO display the number of books and groups that will be deleted
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         int count = !groups.isEmpty() ? groups.size() : contents.size();
-        String title = getResources().getQuantityString(R.plurals.ask_delete_multiple, count);
+        String title = getResources().getQuantityString(R.plurals.ask_delete_multiple, count, count);
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {

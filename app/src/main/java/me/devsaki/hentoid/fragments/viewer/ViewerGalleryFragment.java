@@ -395,7 +395,7 @@ public class ViewerGalleryFragment extends Fragment {
         if (null == context) return;
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
-        String title = context.getResources().getQuantityString(R.plurals.ask_delete_multiple, items.size());
+        String title = context.getResources().getQuantityString(R.plurals.ask_delete_multiple, items.size(), items.size());
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
