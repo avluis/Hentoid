@@ -340,13 +340,13 @@ public class LibraryActivity extends BaseActivity {
 
         // Display permissions alert if required
         if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) {
-            ((TextView) findViewById(R.id.library_alert_txt)).setText(R.string.permissions_lost);
-            findViewById(R.id.library_alert_fix_btn).setOnClickListener(v -> fixPermissions());
+            alertTxt.setText(R.string.permissions_lost);
+            alertFixBtn.setOnClickListener(v -> fixPermissions());
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.VISIBLE);
             alertFixBtn.setVisibility(View.VISIBLE);
         } else if (isLowOnSpace()) { // Else display low space alert
-            ((TextView) findViewById(R.id.library_alert_txt)).setText(R.string.low_memory);
+            alertTxt.setText(R.string.low_memory);
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.VISIBLE);
             alertFixBtn.setVisibility(View.GONE);
