@@ -1181,7 +1181,12 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     .map(Site::getCode)
                     .collect(toCollection(ArrayList::new)); // ArrayList is required by SearchContentIdDialogFragment.invoke
 
-            SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
+            if (!result.isEmpty()) {
+                Snackbar snackbar = Snackbar.make(recyclerView, R.string.launchcode_present, BaseTransientBottomBar.LENGTH_LONG);
+                snackbar.setAction(R.string.menu_search, v -> SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes));
+                snackbar.show();
+            } else
+                SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
         }
 
         // If the update is the result of a new search, get back on top of the list

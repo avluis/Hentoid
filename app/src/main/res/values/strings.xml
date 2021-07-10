@@ -373,6 +373,7 @@
     <string name="show_artists">Show artists</string>
     <string name="show_groups">Show groups</string>
     <string name="show_artists_and_groups">Show artists &amp; groups</string>
+    <string name="launchcode_present">You already have this book. Search other sources ?</string>
 
     <!-- Updates -->
     <string name="checking_updates">Checking for updates</string>
