@@ -39,6 +39,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ArchiveHelper;
@@ -378,7 +379,7 @@ public class LibraryViewModel extends AndroidViewModel {
             @NonNull final List<Content> contentList,
             boolean reparseContent,
             boolean reparseImages,
-            int addMode,
+            int position,
             @NonNull final Runnable onSuccess) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
@@ -393,7 +394,10 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
                             return c;
                         })
-                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus, addMode, ContentQueueManager.getInstance().isQueueActive()))
+                        .doOnNext(c -> dao.addContentToQueue(
+                                c, targetImageStatus, position,
+                                c.getStatus().equals(StatusContent.ONLINE) ? Content.DownloadMode.ONLINE : Content.DownloadMode.DOWNLOAD,
+                                ContentQueueManager.getInstance().isQueueActive()))
                         .doOnComplete(() -> {
                             // TODO is there stuff to do on the IO thread ?
                         })

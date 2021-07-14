@@ -41,6 +41,7 @@ public class JsonContent {
     private long reads;
     private long lastReadDate;
     private int lastReadPageIndex;
+    private int downloadMode;
     private Map<String, String> bookPreferences = new HashMap<>();
 
     private Map<AttributeType, List<JsonAttribute>> attributes;
@@ -88,6 +89,7 @@ public class JsonContent {
         result.lastReadDate = c.getLastReadDate();
         result.lastReadPageIndex = c.getLastReadPageIndex();
         result.bookPreferences = c.getBookPreferences();
+        result.downloadMode = c.getDownloadMode();
 
         result.attributes = new EnumMap<>(AttributeType.class);
         for (Attribute a : c.getAttributes()) {
@@ -135,6 +137,7 @@ public class JsonContent {
         result.setLastReadDate(lastReadDate);
         result.setLastReadPageIndex(lastReadPageIndex);
         result.setBookPreferences(bookPreferences);
+        result.setDownloadMode(downloadMode);
 
         // ATTRIBUTES
         if (attributes != null) {

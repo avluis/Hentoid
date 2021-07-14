@@ -2,6 +2,7 @@ package me.devsaki.hentoid.database.domains;
 
 import android.text.TextUtils;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +12,8 @@ import com.annimon.stream.Stream;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -68,6 +71,13 @@ import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
 @SuppressWarnings("UnusedReturnValue")
 @Entity
 public class Content implements Serializable {
+
+    @IntDef({DownloadMode.DOWNLOAD, DownloadMode.ONLINE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface DownloadMode {
+        int DOWNLOAD = 0; // Download images
+        int ONLINE = 1; // Saves the book for on-demande viewing
+    }
 
     @Id
     private long id;
@@ -141,6 +151,8 @@ public class Content implements Serializable {
     private int readPagesCount = -1;  // Read pages count fed by payload; only useful to update list display
     @Transient
     private String archiveLocationUri;  // Only used when importing external archives
+    @Transient
+    private int downloadMode;  // Only used when importing queued content
 
     public Content() {
     }
@@ -595,13 +607,13 @@ public class Content implements Serializable {
 
     public long getNbDownloadedPages() {
         if (imageFiles != null)
-            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL) && i.isReadable()).count();
+            return Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL || i.getStatus() == StatusContent.ONLINE) && i.isReadable()).count();
         else return 0;
     }
 
     private long getDownloadedPagesSize() {
         if (imageFiles != null) {
-            Long result = Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
+            Long result = Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL || i.getStatus() == StatusContent.ONLINE)).collect(Collectors.summingLong(ImageFile::getSize));
             if (result != null) return result;
         }
         return 0;
@@ -832,6 +844,14 @@ public class Content implements Serializable {
             this.chapters.clear();
             this.chapters.addAll(chapters);
         }
+    }
+
+    public int getDownloadMode() {
+        return downloadMode;
+    }
+
+    public void setDownloadMode(int downloadMode) {
+        this.downloadMode = downloadMode;
     }
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {

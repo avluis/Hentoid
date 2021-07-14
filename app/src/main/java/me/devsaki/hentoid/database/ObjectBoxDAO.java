@@ -616,7 +616,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectExternalMemoryUsagePerSource();
     }
 
-    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int mode, boolean isQueueActive) {
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, int downloadMode, boolean isQueueActive) {
         if (targetImageStatus != null)
             db.updateImageContentStatus(content.getId(), null, targetImageStatus);
 
@@ -626,22 +626,22 @@ public class ObjectBoxDAO implements CollectionDAO {
 
         if (!db.isContentInQueue(content)) {
             int targetPosition;
-            if (mode == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM) {
+            if (position == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM) {
                 targetPosition = (int) db.selectMaxQueueOrder() + 1;
             } else { // Top - don't put #1 if queue is active not to interrupt current download
                 targetPosition = (isQueueActive) ? 2 : 1;
             }
-            insertQueueAndRenumber(content.getId(), targetPosition);
+            insertQueueAndRenumber(content.getId(), targetPosition, downloadMode);
         }
     }
 
-    private void insertQueueAndRenumber(long contentId, int order) {
+    private void insertQueueAndRenumber(long contentId, int order, int downloadMode) {
         List<QueueRecord> queue = db.selectQueueRecordsQ(null).find();
         // Put in the right place
-        if (order > queue.size()) queue.add(new QueueRecord(contentId, order));
+        if (order > queue.size()) queue.add(new QueueRecord(contentId, order, downloadMode));
         else {
             int newOrder = Math.min(queue.size() + 1, order);
-            queue.add(newOrder - 1, new QueueRecord(contentId, newOrder));
+            queue.add(newOrder - 1, new QueueRecord(contentId, newOrder, downloadMode));
         }
         // Renumber everything and save
         int index = 1;

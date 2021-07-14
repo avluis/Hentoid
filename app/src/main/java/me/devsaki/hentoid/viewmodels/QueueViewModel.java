@@ -268,7 +268,7 @@ public class QueueViewModel extends AndroidViewModel {
             @NonNull final List<Content> contentList,
             boolean reparseContent,
             boolean reparseImages,
-            int addMode,
+            int position,
             @NonNull final Runnable onSuccess) {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
@@ -280,7 +280,10 @@ public class QueueViewModel extends AndroidViewModel {
                             if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
                             return c;
                         })
-                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus, addMode, ContentQueueManager.getInstance().isQueueActive()))
+                        .doOnNext(c -> dao.addContentToQueue(
+                                c, targetImageStatus, position,
+                                c.getStatus().equals(StatusContent.ONLINE) ? Content.DownloadMode.ONLINE : Content.DownloadMode.DOWNLOAD,
+                                ContentQueueManager.getInstance().isQueueActive()))
                         .doOnComplete(() -> {
                             // TODO is there stuff to do on the IO thread ?
                         })

@@ -238,6 +238,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         Content content = queue.get(0).getContent().getTarget();
+        @Content.DownloadMode int downloadMode = queue.get(0).getDownloadMode();
 
         if (null == content) {
             Timber.w("Content is unavailable. Download aborted.");
@@ -248,7 +249,7 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
 
-        if (StatusContent.DOWNLOADED == content.getStatus()) {
+        if (StatusContent.DOWNLOADED == content.getStatus() || StatusContent.ONLINE == content.getStatus()) {
             Timber.w("Content is already downloaded. Download aborted.");
             dao.deleteQueue(0);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0, 0));
@@ -372,8 +373,17 @@ public class ContentDownloadWorker extends BaseWorker {
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
         if (0 == content.getQtyPages()) content.setQtyPages(images.size() - 1);
-        content.setStatus(StatusContent.DOWNLOADING);
+        if (downloadMode == Content.DownloadMode.DOWNLOAD)
+            content.setStatus(StatusContent.DOWNLOADING);
+        else if (downloadMode == Content.DownloadMode.ONLINE)
+            content.setStatus(StatusContent.ONLINE);
         dao.insertContent(content);
+
+        if (downloadMode == Content.DownloadMode.ONLINE) {
+            dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ONLINE);
+            completeDownload(content.getId(), content.getTitle(), 0, images.size(), 0);
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, content);
+        }
 
         HentoidApp.trackDownloadEvent("Added");
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());

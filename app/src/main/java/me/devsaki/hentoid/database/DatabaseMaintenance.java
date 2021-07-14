@@ -19,6 +19,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
@@ -92,7 +93,7 @@ public class DatabaseMaintenance {
                 int max = contents.size();
                 float pos = 1;
                 for (Content c : contents) {
-                    db.insertQueue(c.getId(), ++queueMaxPos);
+                    db.insertQueue(c.getId(), ++queueMaxPos, Content.DownloadMode.DOWNLOAD);
                     emitter.onNext(pos++ / max);
                 }
             }
@@ -192,12 +193,21 @@ public class DatabaseMaintenance {
             // Set default values for new ObjectBox properties that are values as null by default (see https://github.com/objectbox/objectbox-java/issues/157)
             Timber.i("Set default ObjectBox properties : start");
             List<Content> contents = db.selectContentWithNullCompleteField();
-            Timber.i("Set default ObjectBox properties : %s books detected", contents.size());
+            Timber.i("Set default value for Content.complete field : %s items detected", contents.size());
             int max = contents.size();
             float pos = 1;
             for (Content c : contents) {
                 c.setCompleted(false);
                 db.insertContent(c);
+                emitter.onNext(pos++ / max);
+            }
+            List<QueueRecord> records = db.selectQueueRecordWithNullCompleteField();
+            Timber.i("Set default value for QueueRecord.downloadMode field : %s items detected", contents.size());
+            max = records.size();
+            pos = 1;
+            for (QueueRecord qr : records) {
+                qr.setDownloadMode(Content.DownloadMode.DOWNLOAD);
+                db.insertQueueRecord(qr);
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Set default ObjectBox properties : done");

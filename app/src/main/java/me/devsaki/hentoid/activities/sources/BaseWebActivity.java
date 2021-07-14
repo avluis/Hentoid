@@ -882,16 +882,16 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // No reason to block or ignore -> actually add to the queue
         if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK)
-            AddQueueMenu.show(this, webView, this, (position, item) -> addToQueue((0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM));
+            AddQueueMenu.show(this, webView, this, (position, item) -> addToQueue((0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM, Preferences.getBrowserDlAction()));
         else
-            addToQueue(Preferences.getQueueNewDownloadPosition());
+            addToQueue(Preferences.getQueueNewDownloadPosition(), Preferences.getBrowserDlAction());
     }
 
-    private void addToQueue(int addMode) {
+    private void addToQueue(int position, int downloadMode) {
         animatedCheck.setVisibility(View.VISIBLE);
         ((Animatable) animatedCheck.getDrawable()).start();
         new Handler(getMainLooper()).postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
-        objectBoxDAO.addContentToQueue(currentContent, null, addMode, ContentQueueManager.getInstance().isQueueActive());
+        objectBoxDAO.addContentToQueue(currentContent, null, position, downloadMode, ContentQueueManager.getInstance().isQueueActive());
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
         changeActionMode(ActionMode.VIEW_QUEUE);
     }

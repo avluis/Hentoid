@@ -327,8 +327,12 @@ public class ObjectBoxDB {
         return store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.rank).max();
     }
 
-    void insertQueue(long contentId, int order) {
-        store.boxFor(QueueRecord.class).put(new QueueRecord(contentId, order));
+    void insertQueueRecord(@NonNull final QueueRecord qr) {
+        store.boxFor(QueueRecord.class).put(qr);
+    }
+
+    void insertQueue(long contentId, int order, @Content.DownloadMode int downloadMode) {
+        store.boxFor(QueueRecord.class).put(new QueueRecord(contentId, order, downloadMode));
     }
 
     void updateQueue(@NonNull final List<QueueRecord> queue) {
@@ -1197,7 +1201,7 @@ public class ObjectBoxDB {
     Query<ImageFile> selectDownloadedImagesFromContent(long id) {
         QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
         builder.equal(ImageFile_.contentId, id);
-        builder.in(ImageFile_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.EXTERNAL.getCode()});
+        builder.in(ImageFile_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.EXTERNAL.getCode(), StatusContent.ONLINE.getCode()});
         builder.order(ImageFile_.order);
         return builder.build();
     }
@@ -1377,6 +1381,11 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().isNull(Content_.completed).build().find();
     }
 
+    List<QueueRecord> selectQueueRecordWithNullCompleteField() {
+        //return store.boxFor(QueueRecord.class).query().isNull(QueueRecord_.downloadMode).build().find();
+        return null;
+    }
+
     public Query<Content> selectOldStoredContentQ() {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, new int[]{
@@ -1396,13 +1405,17 @@ public class ObjectBoxDB {
             query.in(Content_.status, new int[]{
                     StatusContent.DOWNLOADING.getCode(),
                     StatusContent.PAUSED.getCode(),
-                    StatusContent.DOWNLOADED.getCode(),
                     StatusContent.ERROR.getCode(),
-                    StatusContent.MIGRATED.getCode()});
+                    StatusContent.DOWNLOADED.getCode(),
+                    StatusContent.MIGRATED.getCode(),
+                    StatusContent.ONLINE.getCode()
+            });
         else
             query.in(Content_.status, new int[]{
                     StatusContent.DOWNLOADED.getCode(),
-                    StatusContent.MIGRATED.getCode()});
+                    StatusContent.MIGRATED.getCode(),
+                    StatusContent.ONLINE.getCode()
+            });
         query.notNull(Content_.storageUri);
         query.notEqual(Content_.storageUri, "");
         if (nonFavouritesOnly) query.equal(Content_.favourite, false);
@@ -1420,7 +1433,9 @@ public class ObjectBoxDB {
         QueryBuilder<Content> query = store.boxFor(Content.class).query()
                 .in(Content_.status, new int[]{
                         StatusContent.DOWNLOADED.getCode(),
-                        StatusContent.MIGRATED.getCode()})
+                        StatusContent.MIGRATED.getCode(),
+                        StatusContent.ONLINE.getCode()
+                })
                 .notNull(Content_.storageUri)
                 .notEqual(Content_.storageUri, "");
 

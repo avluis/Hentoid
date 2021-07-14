@@ -219,6 +219,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private final TextView tvPages;
         private final ImageView ivSite;
         private final ImageView ivError;
+        private final ImageView ivOnline;
 
         private final View bookCard;
         private final View deleteButton;
@@ -253,6 +254,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             tvArtist = itemView.findViewById(R.id.tvArtist);
             tvPages = itemView.findViewById(R.id.tvPages);
             ivError = itemView.findViewById(R.id.ivError);
+            ivOnline = itemView.findViewById(R.id.ivOnline);
             // Swipe elements
             bookCard = itemView.findViewById(R.id.item_card);
             deleteButton = itemView.findViewById(R.id.delete_btn);
@@ -526,6 +528,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                     return true;
                 });
             }
+
+            ivOnline.setVisibility(content.getStatus().equals(StatusContent.ONLINE) ? View.VISIBLE : View.GONE);
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 ivTop.setVisibility(View.VISIBLE);

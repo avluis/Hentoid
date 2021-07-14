@@ -308,7 +308,7 @@ public class MetaImportDialogFragment extends DialogFragment {
             // Insert queued content into the queue
             if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
                 List<QueueRecord> lst = new ArrayList<>();
-                lst.add(new QueueRecord(newContentId, queueSize++));
+                lst.add(new QueueRecord(newContentId, c.getDownloadMode(), queueSize++));
                 dao.updateQueue(lst);
             }
         }
