@@ -616,7 +616,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectExternalMemoryUsagePerSource();
     }
 
-    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, int downloadMode, boolean isQueueActive) {
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, boolean isQueueActive) {
         if (targetImageStatus != null)
             db.updateImageContentStatus(content.getId(), null, targetImageStatus);
 
@@ -631,17 +631,17 @@ public class ObjectBoxDAO implements CollectionDAO {
             } else { // Top - don't put #1 if queue is active not to interrupt current download
                 targetPosition = (isQueueActive) ? 2 : 1;
             }
-            insertQueueAndRenumber(content.getId(), targetPosition, downloadMode);
+            insertQueueAndRenumber(content.getId(), targetPosition);
         }
     }
 
-    private void insertQueueAndRenumber(long contentId, int order, int downloadMode) {
+    private void insertQueueAndRenumber(long contentId, int order) {
         List<QueueRecord> queue = db.selectQueueRecordsQ(null).find();
         // Put in the right place
-        if (order > queue.size()) queue.add(new QueueRecord(contentId, order, downloadMode));
+        if (order > queue.size()) queue.add(new QueueRecord(contentId, order));
         else {
             int newOrder = Math.min(queue.size() + 1, order);
-            queue.add(newOrder - 1, new QueueRecord(contentId, newOrder, downloadMode));
+            queue.add(newOrder - 1, new QueueRecord(contentId, newOrder));
         }
         // Renumber everything and save
         int index = 1;

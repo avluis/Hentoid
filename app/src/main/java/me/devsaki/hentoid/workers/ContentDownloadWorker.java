@@ -381,7 +381,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         if (downloadMode == Content.DownloadMode.ONLINE) {
             dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ONLINE);
-            completeDownload(content.getId(), content.getTitle(), 0, images.size(), 0);
+            completeDownload(content.getId(), content.getTitle(), images.size(), 0, 0);
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, content);
         }
 
@@ -602,7 +602,10 @@ public class ContentDownloadWorker extends BaseWorker {
                 // Mark content as downloaded
                 if (0 == content.getDownloadDate())
                     content.setDownloadDate(Instant.now().toEpochMilli());
-                content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+                StatusContent targetStatus = StatusContent.DOWNLOADED;
+                if (content.getDownloadMode() == Content.DownloadMode.ONLINE)
+                    targetStatus = StatusContent.ONLINE;
+                content.setStatus((0 == pagesKO && !hasError) ? targetStatus : StatusContent.ERROR);
                 // Clear download params from content
                 if (0 == pagesKO && !hasError) content.setDownloadParams("");
                 content.computeSize();

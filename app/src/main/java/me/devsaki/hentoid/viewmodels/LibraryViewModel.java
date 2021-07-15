@@ -396,7 +396,6 @@ public class LibraryViewModel extends AndroidViewModel {
                         })
                         .doOnNext(c -> dao.addContentToQueue(
                                 c, targetImageStatus, position,
-                                c.getStatus().equals(StatusContent.ONLINE) ? Content.DownloadMode.ONLINE : Content.DownloadMode.DOWNLOAD,
                                 ContentQueueManager.getInstance().isQueueActive()))
                         .doOnComplete(() -> {
                             // TODO is there stuff to do on the IO thread ?

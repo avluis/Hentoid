@@ -331,8 +331,8 @@ public class ObjectBoxDB {
         store.boxFor(QueueRecord.class).put(qr);
     }
 
-    void insertQueue(long contentId, int order, @Content.DownloadMode int downloadMode) {
-        store.boxFor(QueueRecord.class).put(new QueueRecord(contentId, order, downloadMode));
+    void insertQueue(long contentId, int order) {
+        store.boxFor(QueueRecord.class).put(new QueueRecord(contentId, order));
     }
 
     void updateQueue(@NonNull final List<QueueRecord> queue) {
@@ -1381,9 +1381,8 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().isNull(Content_.completed).build().find();
     }
 
-    List<QueueRecord> selectQueueRecordWithNullCompleteField() {
-        //return store.boxFor(QueueRecord.class).query().isNull(QueueRecord_.downloadMode).build().find();
-        return null;
+    List<Content> selectContentWithNullDlModeField() {
+        return store.boxFor(Content.class).query().isNull(Content_.downloadMode).build().find();
     }
 
     public Query<Content> selectOldStoredContentQ() {

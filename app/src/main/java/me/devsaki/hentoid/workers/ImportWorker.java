@@ -436,7 +436,7 @@ public class ImportWorker extends BaseWorker {
                     } else {
                         // Only add at the end of the queue if it isn't a duplicate
                         long newContentId = ContentHelper.addContent(context, dao, c);
-                        lst.add(new QueueRecord(newContentId, queueSize++, c.getDownloadMode()));
+                        lst.add(new QueueRecord(newContentId, queueSize++));
                     }
                 }
                 eventProgress(STEP_4_QUEUE_FINAL, queuedContent.size(), count++, 0);

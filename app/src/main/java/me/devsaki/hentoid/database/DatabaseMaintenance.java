@@ -19,7 +19,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
@@ -93,7 +92,7 @@ public class DatabaseMaintenance {
                 int max = contents.size();
                 float pos = 1;
                 for (Content c : contents) {
-                    db.insertQueue(c.getId(), ++queueMaxPos, Content.DownloadMode.DOWNLOAD);
+                    db.insertQueue(c.getId(), ++queueMaxPos);
                     emitter.onNext(pos++ / max);
                 }
             }
@@ -201,13 +200,13 @@ public class DatabaseMaintenance {
                 db.insertContent(c);
                 emitter.onNext(pos++ / max);
             }
-            List<QueueRecord> records = db.selectQueueRecordWithNullCompleteField();
-            Timber.i("Set default value for QueueRecord.downloadMode field : %s items detected", contents.size());
-            max = records.size();
+            List<Content> content = db.selectContentWithNullDlModeField();
+            Timber.i("Set default value for Content.downloadMode field : %s items detected", contents.size());
+            max = content.size();
             pos = 1;
-            for (QueueRecord qr : records) {
-                qr.setDownloadMode(Content.DownloadMode.DOWNLOAD);
-                db.insertQueueRecord(qr);
+            for (Content c : content) {
+                c.setDownloadMode(Content.DownloadMode.DOWNLOAD);
+                db.insertContent(c);
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Set default ObjectBox properties : done");

@@ -212,7 +212,7 @@ public interface CollectionDAO {
 
     LiveData<List<QueueRecord>> selectQueueLive(String query);
 
-    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, int downloadMode, boolean isQueueActive);
+    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, boolean isQueueActive);
 
     void updateQueue(@NonNull List<QueueRecord> queue);
 

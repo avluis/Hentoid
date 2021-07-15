@@ -16,10 +16,9 @@ public class QueueRecord {
     public QueueRecord() {
     }  // Required for ObjectBox to work
 
-    public QueueRecord(long id, int order, @Content.DownloadMode int downloadMode) {
+    public QueueRecord(long id, int order) {
         content.setTargetId(id);
         rank = order;
-        content.getTarget().setDownloadMode(downloadMode);
     }
 
     public ToOne<Content> getContent() {
@@ -36,10 +35,6 @@ public class QueueRecord {
 
     public void setRank(int rank) {
         this.rank = rank;
-    }
-
-    public void setDownloadMode(@Content.DownloadMode int downloadMode) {
-        content.getTarget().setDownloadMode(downloadMode);
     }
 
     public int getDownloadMode() {

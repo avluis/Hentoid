@@ -117,6 +117,9 @@ public class Content implements Serializable {
     @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
     private Map<String, String> bookPreferences = new HashMap<>();
 
+    private @DownloadMode
+    int downloadMode;
+
     // Aggregated data redundant with the sum of individual data contained in ImageFile
     // ObjectBox can't do the sum in a single Query, so here it is !
     private long size = 0;
@@ -151,8 +154,6 @@ public class Content implements Serializable {
     private int readPagesCount = -1;  // Read pages count fed by payload; only useful to update list display
     @Transient
     private String archiveLocationUri;  // Only used when importing external archives
-    @Transient
-    private int downloadMode;  // Only used when importing queued content
 
     public Content() {
     }
