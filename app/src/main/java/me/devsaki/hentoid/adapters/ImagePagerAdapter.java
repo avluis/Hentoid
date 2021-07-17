@@ -285,7 +285,9 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 @Override
                 public boolean areContentsTheSame(
                         @NonNull ImageFile oldAttr, @NonNull ImageFile newAttr) {
-                    return oldAttr.getOrder().equals(newAttr.getOrder()) && oldAttr.getStatus().equals(newAttr.getStatus());
+                    return oldAttr.getOrder().equals(newAttr.getOrder())
+                            && oldAttr.getStatus().equals(newAttr.getStatus())
+                            && oldAttr.getFileUri().equals(newAttr.getFileUri());
                 }
             };
 
@@ -439,7 +441,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         @Override
         public void onImageLoadError(Throwable e) {
             Timber.w(e, ">>>>IMG %s reloaded with Glide", img.getFileUri());
-            // Hack to fall back to glide by Manually forcing mime-type as GIF
+            // Hack to fall back to glide by manually forcing mime-type as GIF
             img.setMimeType(ImageHelper.MIME_IMAGE_GIF);
             // Reload adapter
             notifyItemChanged(getLayoutPosition());

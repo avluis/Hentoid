@@ -706,6 +706,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void onScrollPositionChange(int scrollPosition) {
         if (null == binding) return;
 
+        int scrollDirection = scrollPosition - imageIndex;
+
         if (scrollPosition != imageIndex) {
             boolean isScrollLTR = true;
             int direction = Preferences.getContentDirection(bookPreferences);
@@ -726,6 +728,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (currentImage != null) {
             Preferences.setViewerCurrentPageNum(currentImage.getOrder());
             viewModel.markPageAsRead(currentImage.getOrder());
+            viewModel.setCurrentPage(imageIndex, scrollDirection);
             isPageFavourite = currentImage.isFavourite();
         }
 

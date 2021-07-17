@@ -54,8 +54,27 @@ public class ImageFile {
     @Transient
     private boolean isBackup = false;
 
-
     public ImageFile() {
+    }
+
+    public ImageFile(ImageFile img) {
+        this.id = img.id;
+        this.order = img.order;
+        this.url = img.url;
+        this.name = img.name;
+        this.fileUri = img.fileUri;
+        this.read = img.read;
+        this.favourite = img.favourite;
+        this.isCover = img.isCover;
+        this.status = img.status;
+        this.content = img.content; // NB : That's not a deep copy
+        this.chapter = img.chapter; // NB : That's not a deep copy
+        this.mimeType = img.mimeType;
+        this.size = img.size;
+        this.imageHash = img.imageHash;
+        this.downloadParams = img.downloadParams;
+        this.displayOrder = img.displayOrder;
+        this.isBackup = img.isBackup;
     }
 
     public ImageFile(int order, String url, StatusContent status, int maxPages) {
