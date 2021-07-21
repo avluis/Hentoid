@@ -1331,7 +1331,7 @@ public class ObjectBoxDB {
      */
 
     List<Content> selectContentWithOldPururinHost() {
-        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
+        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.to/images/").build().find();
     }
 
     List<Content> selectContentWithOldTsuminoCovers() {

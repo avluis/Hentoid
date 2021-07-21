@@ -245,9 +245,9 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://pururin.io/" -->
+                <!-- Accepts URIs that begin with "http://pururin.to/" -->
                 <data
-                    android:host="pururin.io"
+                    android:host="pururin.to"
                     android:pathPrefix="/gallery"
                     android:scheme="https" />
             </intent-filter>
