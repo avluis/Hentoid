@@ -233,7 +233,7 @@ public class ImportHelper {
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
-            Timber.e("Could not create Hentoid folder in root %s", docFile.getUri().toString());
+            Timber.e("Could not create Hendroid folder in root %s", docFile.getUri().toString());
             return ProcessFolderResult.KO_CREATE_FAIL;
         }
         // Set the folder as the app's downloads folder

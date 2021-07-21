@@ -29,12 +29,12 @@
     <string name="title_activity_search">Advanced Search</string>
 
     <!-- API29 migration / library refresh screen -->
-    <string name="api29_migration_title">Hentoid v12\nFile management update</string>
-    <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
-    <string name="api29_migration_location">Current Hentoid folder location\n%s</string>
-    <string name="api29_migration_step1">Hentoid folder</string>
+    <string name="api29_migration_title">Hendroid v12\nFile management update</string>
+    <string name="api29_migration_subtitle">Hendroid is updating your collection.\nIt may require a few minutes.</string>
+    <string name="api29_migration_location">Current Hendroid folder location\n%s</string>
+    <string name="api29_migration_step1">Hendroid folder</string>
     <string name="api29_migration_step1_external">External folder</string>
-    <string name="api29_migration_step1_select">Select Hentoid folder</string>
+    <string name="api29_migration_step1_select">Select Hendroid folder</string>
     <string name="api29_migration_step1_select_external">Select external folder</string>
     <string name="api29_migration_step2">Scan site folders</string>
     <string name="api29_migration_step3_init">Library scan starting…</string>
@@ -121,7 +121,7 @@
     <string name="refresh_title">Refresh library</string>
     <string name="refresh_caption">Automatically refresh library data by rescanning files and folders.</string>
     <string name="refresh_options">Cleanup options</string>
-    <string name="refresh_location_internal">Hentoid library</string>
+    <string name="refresh_location_internal">Hendroid library</string>
     <string name="refresh_location_external">External library</string>
     <string name="refresh_options_rename">Rename all folders according to the current naming and max length preference</string>
     <string name="refresh_options_remove">Remove folders where…</string>
@@ -199,7 +199,7 @@
     <string name="import_invalid">Invalid folder selected - please select another one</string>
     <string name="import_app_folder">You cannot select the app folder as an external folder - please select another one</string>
     <string name="import_download_folder">You shouldn\'t select your device\'s download folder - please create or select another one</string>
-    <string name="import_create_fail">Hentoid folder creation failed - please select another location</string>
+    <string name="import_create_fail">Hendroid folder creation failed - please select another location</string>
     <string name="import_other">Import has stopped</string>
     <string name="import_unexpected">Import has stopped unexpectedly</string>
     <string name="task_done">Task complete - see details in the log</string>
@@ -217,8 +217,8 @@
     <string name="memory_title">Memory usage</string>
     <string name="memory_total">Total : %.2f GB</string>
     <string name="memory_free">Free : %.2f GB</string>
-    <string name="memory_hentoid_main">Hentoid (primary) : %.2f GB</string>
-    <string name="memory_hentoid_ext">Hentoid (external) : %.2f GB</string>
+    <string name="memory_hentoid_main">Hendroid (primary) : %.2f GB</string>
+    <string name="memory_hentoid_ext">Hendroid (external) : %.2f GB</string>
     <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
     <string name="memory_details">View details (primary)</string>
 
@@ -380,7 +380,7 @@
     <string name="alert_red">The download button is currently broken for this site.\n%s</string>
     <string name="alert_grey">This site currently has serious stability issues. The app has nothing to do about it. Please try again later.</string>
     <string name="alert_black">This site is currently unavailable for real. The app has nothing to do about it. Please try again later.</string>
-    <string name="alert_wip">The Hentoid dev team is working on a fix. You will be notified by the app when a new version is ready.</string>
+    <string name="alert_wip">The Hendroid dev team is working on a fix. You will be notified by the app when a new version is ready.</string>
     <string name="alert_fix_available">A fix is available on the latest version of the app. Please update.</string>
 
     <!-- App Lock -->
@@ -427,7 +427,7 @@
     <string name="bookmark_homepage">Homepage</string>
     <string name="no_extra_page">No extra pages found</string>
     <!-- Web browser (site specifics) -->
-    <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
+    <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHendroid won\'t work without.</string>
     <string name="help_web_fakku_premium">That book can\'t be viewed with your current Fakku access.</string>
     <string name="help_web_exh_account">Please use or create an ExHentai account</string>
     <string name="help_web_invalid_exh_credentials">Invalid credentials, please log in again</string>
