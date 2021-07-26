@@ -19,11 +19,11 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 /**
  * Created by robb_w on 01/31/2018.
- * Handles parsing of content from pururin.io
+ * Handles parsing of content from pururin.to
  */
 public class PururinParser extends BaseImageListParser {
 
-    private static final String IMAGE_PATH = "//cdn.pururin.io/assets/images/data/";
+    private static final String IMAGE_PATH = "//cdn.pururin.to/assets/images/data/";
 
     public static class PururinInfo {
         String image_extension;
