@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.14.10/hentoid11410-397.apk",
-  "versionCode": "397",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.15.0/hentoid1150-400.apk",
+  "versionCode": "400",
   "updateURL.beta": "https://bitrise-prod-build-storage.s3.amazonaws.com/builds/6686981f66d94c2f/artifacts/60016413/app-debug-bitrise-signed.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIV2YZWMVCNWNR2HA%2F20201223%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20201223T100310Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=0abe3c76fe6c4d6a2ff5984e2a5e25b868082e18d5d134fd75845f41fcb3ab54",
   "versionCode.beta": "1",
   "sourceAlerts":[
@@ -27,9 +27,9 @@
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"388"},
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"391"},
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"397"},
-	  {"sourceName":"TOONILY", "status":"ORANGE"},
-	  {"sourceName":"MANHWA", "status":"ORANGE"},
-	  {"sourceName":"FAKKU2", "status":"RED"},
+	  {"sourceName":"TOONILY", "status":"ORANGE", "fixedByBuild":"400"},
+	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"400"},
+	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
   ],

@@ -240,7 +240,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
             return true;
         });
 
-        MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
+        MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all_errors);
         cancelAllMenu.setOnMenuItemClickListener(item -> {
             onCancelAllClick();
             return true;

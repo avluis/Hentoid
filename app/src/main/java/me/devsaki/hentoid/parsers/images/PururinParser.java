@@ -14,16 +14,17 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.StringHelper;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 /**
  * Created by robb_w on 01/31/2018.
- * Handles parsing of content from pururin.io
+ * Handles parsing of content from pururin.to
  */
 public class PururinParser extends BaseImageListParser {
 
-    private static final String IMAGE_PATH = "//cdn.pururin.io/assets/images/data/";
+    private static final String IMAGE_PATH = "//cdn.pururin.to/assets/images/data/";
 
     public static class PururinInfo {
         String image_extension;
@@ -48,8 +49,8 @@ public class PururinParser extends BaseImageListParser {
         // 1- Get image extension from gallery data (JSON on HTML body)
         Document doc = getOnlineDocument(url, headers, Site.PURURIN.useHentoidAgent(), Site.PURURIN.useWebviewAgent());
         if (doc != null) {
-            String json = doc.select("gallery-read").attr(":gallery");
-            PururinInfo info = JsonHelper.jsonToObject(json, PururinInfo.class);
+            String json = doc.select("gallery-read").attr("encoded");
+            PururinInfo info = JsonHelper.jsonToObject(new String(StringHelper.decode64(json)), PururinInfo.class);
 
             // 2- Get imagePath from app.js => it is constant anyway, and app.js is 3 MB long => put it there as a const
             for (int i = 0; i < content.getQtyPages(); i++) {

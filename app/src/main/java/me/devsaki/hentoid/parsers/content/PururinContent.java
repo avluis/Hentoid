@@ -49,7 +49,7 @@ public class PururinContent extends BaseContentParser {
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
 
-        content.setUrl(url.replace(getProtocol(url) + "://pururin.io/gallery", ""));
+        content.setUrl(url.replace(getProtocol(url) + "://pururin.to/gallery", ""));
         content.setCoverImageUrl(getProtocol(url) + ":" + coverUrl);
         content.setTitle(!title.isEmpty() ? StringHelper.removeNonPrintableChars(title.get(0)) : "");
         int qtyPages = 0;

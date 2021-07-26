@@ -78,6 +78,7 @@ public class QueueActivity extends BaseActivity {
     private MenuItem errorStatsMenu;
     private MenuItem invertQueueMenu;
     private MenuItem cancelAllMenu;
+    private MenuItem cancelAllErrorsMenu;
     private MenuItem redownloadAllMenu;
 
     private TextView reviveOverlay;
@@ -105,6 +106,7 @@ public class QueueActivity extends BaseActivity {
         errorStatsMenu = toolbar.getMenu().findItem(R.id.action_error_stats);
         invertQueueMenu = toolbar.getMenu().findItem(R.id.action_invert_queue);
         cancelAllMenu = toolbar.getMenu().findItem(R.id.action_cancel_all);
+        cancelAllErrorsMenu = toolbar.getMenu().findItem(R.id.action_cancel_all_errors);
         redownloadAllMenu = toolbar.getMenu().findItem(R.id.action_redownload_all);
 
         reviveOverlay = findViewById(R.id.download_revive_txt);
@@ -192,7 +194,8 @@ public class QueueActivity extends BaseActivity {
         // Update permanent toolbar
         searchMenu.setVisible(0 == position);
         invertQueueMenu.setVisible(0 == position);
-        cancelAllMenu.setVisible(true);
+        cancelAllMenu.setVisible(0 == position);
+        cancelAllErrorsMenu.setVisible(1 == position);
         redownloadAllMenu.setVisible(1 == position);
         if (1 == position)
             errorStatsMenu.setVisible(false); // That doesn't mean it should be visible at all times on tab 0 !
