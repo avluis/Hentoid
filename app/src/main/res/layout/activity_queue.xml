@@ -14,7 +14,7 @@
         android:background="?colorPrimary"
         android:elevation="@dimen/toolbar_layout_elevation"
         app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/queue_menu"
+        app:menu="@menu/queue_error_menu"
         app:navigationIcon="@drawable/ic_arrow_back"
         tools:targetApi="lollipop" />
 
