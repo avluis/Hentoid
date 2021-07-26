@@ -57,6 +57,17 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <View
+            android:id="@+id/desensitiveArea"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/ivExternal"
+            app:layout_constraintTop_toTopOf="@id/ivFavourite" />
+
         <ImageView
             android:id="@+id/ivFavourite"
             android:layout_width="32dp"
