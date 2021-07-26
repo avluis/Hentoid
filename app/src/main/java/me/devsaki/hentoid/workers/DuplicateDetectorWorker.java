@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.workers;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Data;
@@ -11,7 +12,6 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,7 +32,6 @@ import me.devsaki.hentoid.notification.duplicates.DuplicateProgressNotification;
 import me.devsaki.hentoid.notification.duplicates.DuplicateStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
@@ -100,12 +99,12 @@ public class DuplicateDetectorWorker extends BaseWorker {
 
         if (inputData.getUseCover()) {
             // Run cover indexing in the background
-            recordLog(new LogHelper.LogEntry("Covers to index : " + dao.countContentWithUnhashedCovers()));
+            trace(Log.INFO, "Covers to index : %s", dao.countContentWithUnhashedCovers());
 
             DuplicateHelper.Companion.indexCovers(getApplicationContext(), dao, stopped,
                     this::indexContentInfo, this::notifyIndexProgress, this::indexError);
 
-            recordLog(new LogHelper.LogEntry("Indexing done"));
+            trace(Log.INFO, "Indexing done");
         }
 
         // No need to continue if the process has already been stopped
@@ -133,20 +132,20 @@ public class DuplicateDetectorWorker extends BaseWorker {
         int startIndex = Preferences.getDuplicateLastIndex() + 1;
         if (0 == startIndex) duplicatesDAO.clearEntries();
         else {
-            recordLog(new LogHelper.LogEntry("Resuming from index %d", startIndex));
+            trace(Log.DEBUG, "Resuming from index %d", startIndex);
             // Pre-populate matchedIds and reverseMatchedIds using existing duplicates
             List<DuplicateEntry> entries = duplicatesDAO.getEntries();
             for (DuplicateEntry entry : entries)
                 processEntry(entry.getReferenceId(), entry.getDuplicateId(), matchedIds, reverseMatchedIds);
         }
 
-        recordLog(new LogHelper.LogEntry("Preparation started"));
+        trace(Log.DEBUG, "Preparation started");
         // Pre-compute all book entries as DuplicateCandidates
         List<DuplicateHelper.DuplicateCandidate> candidates = new ArrayList<>();
         dao.streamStoredContent(false, false, Preferences.Constant.ORDER_FIELD_SIZE, true,
                 content -> candidates.add(new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useSameLanguage, Long.MIN_VALUE)));
 
-        recordLog(new LogHelper.LogEntry("Detection started for %d books", candidates.size()));
+        trace(Log.DEBUG, "Detection started for %d books", candidates.size());
         processAll(
                 duplicatesDAO,
                 candidates,
@@ -160,7 +159,7 @@ public class DuplicateDetectorWorker extends BaseWorker {
                 ignoreChapters,
                 sensitivity);
 
-        recordLog(new LogHelper.LogEntry(String.format(Locale.ENGLISH, "Final End reached (currentIndex=%d, complete=%s)", currentIndex.get(), isComplete())));
+        trace(Log.DEBUG, "Final End reached (currentIndex=%d, complete=%s)", currentIndex.get(), isComplete());
 
         setComplete(true);
         matchedIds.clear();
@@ -213,14 +212,14 @@ public class DuplicateDetectorWorker extends BaseWorker {
     private void indexContentInfo(Content c) {
         // No need for that unless we're debugging
         if (BuildConfig.DEBUG)
-            recordLog(new LogHelper.LogEntry("Indexing " + c.getSite().name() + "/" + ContentHelper.formatBookFolderName(c).left));
+            trace(Log.DEBUG, "Indexing %s/%s", c.getSite().name(), ContentHelper.formatBookFolderName(c).left);
     }
 
     private void indexError(Throwable t) {
         Timber.w(t);
         String message = t.getMessage();
         if (message != null)
-            recordLog(new LogHelper.LogEntry("Indexing error : " + message));
+            trace(Log.WARN, "Indexing error : %s", message);
     }
 
     private boolean processEntry(

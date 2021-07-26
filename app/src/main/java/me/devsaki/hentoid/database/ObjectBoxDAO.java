@@ -252,9 +252,10 @@ public class ObjectBoxDAO implements CollectionDAO {
             query = db.selectContentSearchContentQ(filter, groupId, metadata, bookFavouritesOnly, false, orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
         }
 
-        if (isRandom)
-            return new ImmutablePair<>(query.count(), new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query));
-        else return new ImmutablePair<>(query.count(), new ObjectBoxDataSource.Factory<>(query));
+        if (isRandom) {
+            List<Long> shuffledIds = db.getShuffledIds();
+            return new ImmutablePair<>(query.count(), new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query, shuffledIds));
+        } else return new ImmutablePair<>(query.count(), new ObjectBoxDataSource.Factory<>(query));
     }
 
     private ImmutablePair<Long, DataSource.Factory<Integer, Content>> getPagedContentByList(
@@ -329,6 +330,25 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public void clearDownloadParams(long contentId) {
+        Content c = db.selectContentById(contentId);
+        if (null == c) return;
+
+        c.setDownloadParams("");
+        db.insertContent(c);
+
+        List<ImageFile> imgs = c.getImageFiles();
+        if (null == imgs) return;
+        for (ImageFile img : imgs) img.setDownloadParams("");
+        db.insertImageFiles(imgs);
+    }
+
+    @Override
+    public void shuffleContent() {
+        db.shuffleContentIds();
+    }
+
+    @Override
     public long countAllExternalBooks() {
         return db.selectAllExternalBooksQ().count();
     }
@@ -349,6 +369,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void deleteAllExternalBooks() {
         db.deleteContentById(db.selectAllExternalBooksQ().findIds());
         db.cleanupOrphanAttributes();
+    }
+
+    @Override
+    public List<Group> selectGroups(long[] groupIds) {
+        return db.selectGroups(groupIds);
     }
 
     @Override
@@ -694,6 +719,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return new ObjectBoxLiveData<>(db.selectQueueRecordsQ(query));
     }
 
+    @Override
     public List<QueueRecord> selectQueue() {
         return db.selectQueueRecordsQ(null).find();
     }

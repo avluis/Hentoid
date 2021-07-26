@@ -65,6 +65,10 @@ public interface CollectionDAO {
 
     void deleteErrorRecords(long contentId);
 
+    void clearDownloadParams(long contentId);
+
+    void shuffleContent();
+
 
     // MASS OPERATIONS
 
@@ -99,6 +103,8 @@ public interface CollectionDAO {
     void deleteAllExternalBooks();
 
     // Groups
+
+    List<Group> selectGroups(long[] groupIds);
 
     LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly);
 

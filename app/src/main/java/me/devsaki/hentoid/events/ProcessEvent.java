@@ -2,7 +2,6 @@ package me.devsaki.hentoid.events;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.lang.annotation.Retention;
@@ -27,6 +26,8 @@ public class ProcessEvent {
     public final int step;                      // Step of the process
     public final String elementName;            // Name of processed element
     public final int elementsOK;                // Number of elements that have been correctly processed
+    public final int elementsOKOther;           // Number of other elements that have been correctly processed
+    // use case : the same processing activity processes two different elements
     public final int elementsKO;                // Number of elements whose processing has failed
     public final int elementsTotal;             // Number of elements to process
     public final DocumentFile logFile;          // Log file, if exists (for EventType.COMPLETE)
@@ -44,6 +45,7 @@ public class ProcessEvent {
         this.elementName = elementName;
         this.logFile = null;
         this.elementsOK = -1;
+        this.elementsOKOther = -1;
         this.elementsKO = -1;
         this.elementsTotal = -1;
     }
@@ -62,6 +64,7 @@ public class ProcessEvent {
         this.processId = processId;
         this.step = step;
         this.elementsOK = elementsOK;
+        this.elementsOKOther = -1;
         this.elementsKO = elementsKO;
         this.elementsTotal = elementsTotal;
         this.logFile = null;
@@ -82,6 +85,7 @@ public class ProcessEvent {
         this.processId = processId;
         this.step = step;
         this.elementsOK = elementsOK;
+        this.elementsOKOther = -1;
         this.elementsKO = elementsKO;
         this.elementsTotal = elementsTotal;
         this.logFile = logFile;

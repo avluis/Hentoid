@@ -33,6 +33,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
@@ -348,10 +349,14 @@ public class ImportWorker extends BaseWorker {
             trace(Log.INFO, STEP_3_BOOKS, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
             eventComplete(STEP_3_BOOKS, bookFolders.size(), booksOK, booksKO, null);
 
-            // 4th pass : Import queue JSON
+            // 4th pass : Import queue & bookmarks JSON
             DocumentFile queueFile = explorer.findFile(context, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
             if (queueFile != null) importQueue(context, queueFile, dao, log);
             else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
+
+            DocumentFile bookmarksFile = explorer.findFile(context, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
+            if (bookmarksFile != null) importBookmarks(context, bookmarksFile, dao, log);
+            else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No bookmarks file found");
         } catch (IOException | InterruptedException e) {
             Timber.w(e);
             // Restore interrupted state
@@ -424,7 +429,22 @@ public class ImportWorker extends BaseWorker {
             dao.updateQueue(lst);
             trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import queue succeeded");
         } else {
-            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import queue failed : Queue JSON unreadable");
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import queue failed : JSON unreadable");
+        }
+    }
+
+    private void importBookmarks(@NonNull final Context context, @NonNull DocumentFile bookmarksFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+        trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Bookmarks JSON found");
+        eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
+        JsonContentCollection contentCollection = deserialiseCollectionJson(context, bookmarksFile);
+        if (null != contentCollection) {
+            List<SiteBookmark> bookmarks = contentCollection.getBookmarks();
+            eventProgress(STEP_4_QUEUE_FINAL, bookmarks.size(), 0, 0);
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Bookmarks JSON deserialized : %s items detected", bookmarks.size() + "");
+            ImportHelper.importBookmarks(dao, bookmarks);
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import bookmarks succeeded");
+        } else {
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import bookmarks failed : JSON unreadable");
         }
     }
 

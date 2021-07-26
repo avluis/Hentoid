@@ -46,8 +46,9 @@ public enum Site {
 
     private static final Site[] INVISIBLE_SITES = {
             //NEXUS, // Dead
-            HENTAICAFE, // Removed as per Fakku request
+            //HENTAICAFE, // Removed as per Fakku request
             //FAKKU, // Old Fakku; kept for retrocompatibility
+            //FAKKU2, // Dropped after Fakku decided to flag downloading accounts and IPs
             ASMHENTAI_COMICS, // Does not work directly
             PANDA, // Dropped; kept for retrocompatibility
             NONE // Technical fallback
@@ -65,6 +66,8 @@ public enum Site {
     private boolean hasImageProcessing = false;
     private boolean hasBackupURLs = false;
     private boolean hasCoverBasedPageUpdates = false;
+    private boolean useCloudflare = false;
+    private boolean simulateHumanReading = false;
 
     Site(int code,
          String description,
@@ -146,6 +149,10 @@ public enum Site {
         return hasCoverBasedPageUpdates;
     }
 
+    public boolean isUseCloudflare() { return useCloudflare; }
+
+    public boolean isSimulateHumanReading() { return simulateHumanReading; }
+
     public boolean isVisible() {
         for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;
         return true;
@@ -170,6 +177,10 @@ public enum Site {
         if (jsonSite.hasBackupURLs != null) hasBackupURLs = jsonSite.hasBackupURLs;
         if (jsonSite.hasCoverBasedPageUpdates != null)
             hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates;
+        if (jsonSite.useCloudflare != null)
+            useCloudflare = jsonSite.useCloudflare;
+        if (jsonSite.simulateHumanReading != null)
+            simulateHumanReading = jsonSite.simulateHumanReading;
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {

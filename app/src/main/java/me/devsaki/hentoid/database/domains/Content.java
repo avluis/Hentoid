@@ -87,6 +87,8 @@ public class Content implements Serializable {
     private ToMany<ImageFile> imageFiles;
     @Backlink(to = "content")
     public ToMany<GroupItem> groupItems;
+    @Backlink(to = "content")
+    private ToMany<Chapter> chapters;
     @Index
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
@@ -368,7 +370,7 @@ public class Content implements Serializable {
                 galleryConst = "";
         }
 
-        return site.getUrl() + galleryConst + url;
+        return site.getUrl() + (galleryConst + url).replace("//", "/");
     }
 
     public String getReaderUrl() {
@@ -816,6 +818,18 @@ public class Content implements Serializable {
         readPagesCount = count;
     }
 
+    @Nullable
+    public ToMany<Chapter> getChapters() {
+        return chapters;
+    }
+
+    public void setChapters(List<Chapter> chapters) {
+        // We do want to compare array references, not content
+        if (chapters != null && chapters != this.chapters) {
+            this.chapters.clear();
+            this.chapters.addAll(chapters);
+        }
+    }
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {
         @Override

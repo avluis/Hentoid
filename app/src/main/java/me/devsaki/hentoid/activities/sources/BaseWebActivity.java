@@ -56,6 +56,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,11 +70,14 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.BaseActivity;
 import me.devsaki.hentoid.activities.LibraryActivity;
+import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -341,6 +345,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 break;
             case R.id.web_menu_action:
                 this.onActionClick();
+                break;
+            case R.id.web_menu_settings:
+                this.onSettingsClick();
                 break;
             default:
                 return false;
@@ -967,17 +974,18 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     /**
      * Display webview controls according to designated content
      *
-     * @param content Currently displayed content
+     * @param onlineContent Currently displayed content
      * @return The status of the Content after being processed
      */
     private @ContentStatus
-    int processContent(@NonNull Content content, boolean quickDownload) {
+    int processContent(@NonNull Content onlineContent, boolean quickDownload) {
         Helper.assertNonUiThread();
-        if (content.getUrl().isEmpty()) return ContentStatus.UNKNOWN;
+        if (onlineContent.getUrl().isEmpty()) return ContentStatus.UNKNOWN;
+        currentContent = null;
 
-        Timber.i("Content Site, URL : %s, %s", content.getSite().getCode(), content.getUrl());
+        Timber.i("Content Site, URL : %s, %s", onlineContent.getSite().getCode(), onlineContent.getUrl());
         String searchUrl = ""; //getStartSite().hasCoverBasedPageUpdates() ? content.getCoverImageUrl() : "";
-        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), searchUrl);
+        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(onlineContent.getSite(), onlineContent.getUrl(), searchUrl);
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
@@ -988,18 +996,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 long pHash = Long.MIN_VALUE;
                 try {
                     List<Pair<String, String>> requestHeadersList = new ArrayList<>();
-                    Map<String, String> downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
-
-                    String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                    if (value != null)
-                        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, value));
-
-                    value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
-                    if (value != null)
-                        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, value));
+                    Map<String, String> downloadParams = JsonHelper.jsonToObject(onlineContent.getDownloadParams(), JsonHelper.MAP_STRINGS);
+                    downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(onlineContent.getCoverImageUrl()));
+                    downloadParams.put(HttpHelper.HEADER_REFERER_KEY, onlineContent.getSite().getUrl());
 
                     Response onlineCover = HttpHelper.getOnlineResource(
-                            HttpHelper.fixUrl(content.getCoverImageUrl(), getStartUrl()),
+                            HttpHelper.fixUrl(onlineContent.getCoverImageUrl(), getStartUrl()),
                             requestHeadersList,
                             getStartSite().useMobileAgent(),
                             getStartSite().useHentoidAgent(),
@@ -1015,32 +1017,32 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     Timber.w(e);
                 }
                 // Look for duplicates
-                ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(objectBoxDAO, content, pHash);
+                ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(this, onlineContent, pHash, objectBoxDAO);
                 if (duplicateResult != null) {
                     duplicateId = duplicateResult.left.getId();
                     duplicateSimilarity = duplicateResult.right;
                     // Content ID of the duplicate candidate of the currently viewed Content
-                    boolean duplicateSameSite = duplicateResult.left.getSite().equals(content.getSite());
+                    boolean duplicateSameSite = duplicateResult.left.getSite().equals(onlineContent.getSite());
                     // Same site and similar => download by default, but look for extra pics just in case
                     if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload)
-                        searchForExtraImages(duplicateResult.left);
+                        searchForExtraImages(duplicateResult.left, onlineContent);
                 }
             }
 
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
-                content.setStatus(StatusContent.SAVED);
-                ContentHelper.addContent(this, objectBoxDAO, content);
+                onlineContent.setStatus(StatusContent.SAVED);
+                ContentHelper.addContent(this, objectBoxDAO, onlineContent);
             } else {
-                content = contentDB;
+                currentContent = contentDB;
             }
         } else {
-            content = contentDB;
+            currentContent = contentDB;
         }
 
-        currentContent = content;
+        if (null == currentContent) currentContent = onlineContent;
 
         if (isInCollection) {
-            if (!quickDownload) searchForExtraImages(currentContent);
+            if (!quickDownload) searchForExtraImages(contentDB, onlineContent);
             return ContentStatus.IN_COLLECTION;
         }
         if (isInQueue) return ContentStatus.IN_QUEUE;
@@ -1088,38 +1090,68 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         runOnUiThread(() -> ToastHelper.toast(R.string.web_unparsable));
     }
 
-    private void searchForExtraImages(@NonNull final Content storedContent) {
+    private void searchForExtraImages(
+            @NonNull final Content storedContent,
+            @NonNull final Content onlineContent) {
         if (searchExtraImagesdisposable != null)
             searchExtraImagesdisposable.dispose(); // Cancel previous operation
-        searchExtraImagesdisposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent))
+        searchExtraImagesdisposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent, onlineContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        list -> onSearchForExtraImagesSuccess(storedContent, list),
+                        list -> onSearchForExtraImagesSuccess(storedContent, onlineContent, list),
                         Timber::e
                 );
     }
 
-    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent) {
+    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent, @NonNull final Content onlineContent) {
         List<ImageFile> result = Collections.emptyList();
 
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(storedContent);
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(onlineContent);
         try {
             // Call the parser to retrieve all the pages
             // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
-            List<ImageFile> onlineImgs = parser.parseImageList(storedContent);
+            List<ImageFile> onlineImgs = parser.parseImageList(onlineContent);
             if (onlineImgs.isEmpty()) return result;
 
-            int coverCount = (onlineImgs.get(0).isCover()) ? 1 : 0;
-            Optional<Integer> maxImageOrder;
-            if (storedContent.getImageFiles() != null)
-                maxImageOrder = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
-            else
-                maxImageOrder = Optional.of(0);
+            int maxStoredImageOrder = 0;
+            if (storedContent.getImageFiles() != null) {
+                Optional<Integer> opt = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
+                if (opt.isPresent()) maxStoredImageOrder = opt.get();
+            }
+            final int maxStoredImageOrderFinal = maxStoredImageOrder;
 
-            // Online book has more pictures than stored book
-            if (maxImageOrder.isPresent() && onlineImgs.size() - coverCount > maxImageOrder.get()) {
-                return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxImageOrder.get()).distinct().toList();
+            // Attach chapters to books downloaded before chapters were implemented
+            int maxOnlineImageOrder = 0;
+            int minOnlineImageOrder = Integer.MAX_VALUE;
+            Map<Integer, Chapter> positionMap = new HashMap<>();
+            for (ImageFile img : onlineImgs) {
+                maxOnlineImageOrder = Math.max(maxOnlineImageOrder, img.getOrder());
+                minOnlineImageOrder = Math.min(minOnlineImageOrder, img.getOrder());
+                if (null != img.getChapter()) {
+                    Chapter chp = img.getChapter().getTarget();
+                    if (null != chp)
+                        positionMap.put(img.getOrder(), chp);
+                }
+            }
+
+            List<Chapter> storedChapters = storedContent.getChapters();
+            if (!positionMap.isEmpty() && minOnlineImageOrder < maxStoredImageOrder && (null == storedChapters || storedChapters.isEmpty())) {
+                // Attach chapters to stored images
+                List<ImageFile> storedImages = storedContent.getImageFiles();
+                if (null == storedImages) storedImages = Collections.emptyList();
+                for (ImageFile img : storedImages) {
+                    if (null == img.getChapter() || img.getChapter().isNull()) {
+                        Chapter targetChapter = positionMap.get(img.getOrder());
+                        if (targetChapter != null) img.setChapter(targetChapter);
+                    }
+                }
+                objectBoxDAO.insertImageFiles(storedImages);
+            }
+
+            // Online book has more pictures than stored book -> that's what we're looking for
+            if (maxOnlineImageOrder > maxStoredImageOrder) {
+                return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxStoredImageOrderFinal).distinct().toList();
             }
         } catch (Exception e) {
             Timber.w(e);
@@ -1127,7 +1159,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         return result;
     }
 
-    private void onSearchForExtraImagesSuccess(@NonNull final Content storedContent, @NonNull final List<ImageFile> additionalImages) {
+    private void onSearchForExtraImagesSuccess(
+            @NonNull final Content storedContent,
+            @NonNull final Content onlineContent,
+            @NonNull final List<ImageFile> additionalImages) {
         searchExtraImagesdisposable.dispose();
         if (additionalImages.isEmpty()) {
             ToastHelper.toast(R.string.no_extra_page);
@@ -1135,7 +1170,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
         if (null == currentContent) return;
 
-        if (currentContent.equals(storedContent) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
+        if (currentContent.equals(onlineContent) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
             // Retrieve the URLs of stored pages
             Set<String> storedUrls = new HashSet<>();
             if (storedContent.getImageFiles() != null) {
@@ -1217,6 +1252,19 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         else result = result.replace("%s", getResources().getString(R.string.alert_wip));
 
         return result;
+    }
+
+    /**
+     * Show the viewer settings dialog
+     */
+    private void onSettingsClick() {
+        Intent intent = new Intent(this, PrefsActivity.class);
+
+        PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
+        builder.setIsBrowserPrefs(true);
+        intent.putExtras(builder.getBundle());
+
+        startActivity(intent);
     }
 
     private String getJsInterceptorScript() {

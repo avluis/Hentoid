@@ -286,7 +286,7 @@ class CustomWebViewClient extends WebViewClient {
                               @NonNull final String url,
                               @Nullable final Map<String, String> requestHeaders) throws IOException {
         List<Pair<String, String>> requestHeadersList;
-        requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
+        requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url);
 
         Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         ResponseBody body = onlineFileResponse.body();
@@ -406,7 +406,7 @@ class CustomWebViewClient extends WebViewClient {
 
         if (analyzeForDownload) activity.onGalleryPageStarted();
 
-        List<Pair<String, String>> requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr);
+        List<Pair<String, String>> requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, urlStr);
 
         try {
             // Query resource here, using OkHttp
@@ -449,14 +449,20 @@ class CustomWebViewClient extends WebViewClient {
                 }
 
                 // Convert OkHttp response to the expected format
-                result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
+                result = HttpHelper.okHttpResponseToWebkitResponse(response, browserStream);
 
                 // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
                 if (result.getResponseHeaders().containsKey("set-cookie") || result.getResponseHeaders().containsKey("Set-Cookie")) {
                     String cookiesStr = result.getResponseHeaders().get("set-cookie");
                     if (null == cookiesStr)
                         cookiesStr = result.getResponseHeaders().get("Set-Cookie");
-                    if (cookiesStr != null) HttpHelper.setCookies(urlStr, cookiesStr);
+                    if (cookiesStr != null) {
+                        // Set-cookie might contain multiple cookies to set separated by a line feed (see HttpHelper.getValuesSeparatorFromHttpHeader)
+                        String[] cookieParts = cookiesStr.split("\n");
+                        for (String cookie : cookieParts)
+                            if (!cookie.isEmpty())
+                                HttpHelper.setCookies(urlStr, cookie);
+                    }
                 }
             } else {
                 parserStream = body.byteStream();

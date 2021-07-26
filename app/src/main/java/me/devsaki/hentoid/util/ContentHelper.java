@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -1056,15 +1057,19 @@ public final class ContentHelper {
     /**
      * Find the best match for the given Content inside the library and queue
      *
-     * @param dao     CollectionDao to use
      * @param content Content to find the duplicate for
      *                // TOD update
+     * @param dao     CollectionDao to use
      * @return Pair containing
      * left side : Best match for the given Content inside the library and queue
      * Right side : Similarity score (between 0 and 1; 1=100%)
      */
     @Nullable
-    public static ImmutablePair<Content, Float> findDuplicate(@NonNull final CollectionDAO dao, @NonNull final Content content, long pHash) {
+    public static ImmutablePair<Content, Float> findDuplicate(
+            @NonNull final Context context,
+            @NonNull final Content content,
+            long pHash,
+            @NonNull final CollectionDAO dao) {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted((o1, o2) -> Integer.compare(o1.length(), o2.length())).findLast();
@@ -1073,6 +1078,10 @@ public final class ContentHelper {
         int[] contentStatuses = ArrayUtils.addAll(libraryStatus, queueTabStatus);
         List<Content> roughCandidates = dao.searchTitlesWith(longestWord.get(), contentStatuses);
         if (roughCandidates.isEmpty()) return null;
+
+        // Compute cover hashes for selected candidates
+        for (Content c : roughCandidates)
+            if (0 == c.getCover().getImageHash()) computeAndSaveCoverHash(context, c, dao);
 
         // Refine by running the actual duplicate detection algorithm against the rough candidates
         List<DuplicateEntry> entries = new ArrayList<>();
@@ -1093,6 +1102,18 @@ public final class ContentHelper {
         }
 
         return null;
+    }
+
+    // Compute perceptual hash for the cover picture
+    public static void computeAndSaveCoverHash(
+            @NonNull final Context context,
+            @NonNull final Content content,
+            @NonNull final CollectionDAO dao) {
+        Bitmap coverBitmap = DuplicateHelper.Companion.getCoverBitmapFromContent(context, content);
+        long pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), coverBitmap);
+        if (coverBitmap != null) coverBitmap.recycle();
+        content.getCover().setImageHash(pHash);
+        dao.insertImageFile(content.getCover());
     }
 
     /**

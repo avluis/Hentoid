@@ -12,6 +12,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -39,7 +40,8 @@ public abstract class BaseImageListParser implements ImageListParser {
         List<ImageFile> result;
         try {
             List<String> imgUrls = parseImages(content);
-            result = ParseHelper.urlsToImageFiles(imgUrls, content.getCoverImageUrl(), StatusContent.SAVED);
+            result = ParseHelper.urlsToImageFiles(imgUrls, content.getCoverImageUrl(), StatusContent.SAVED, null);
+            ParseHelper.setDownloadParams(result, content.getSite().getUrl());
         } finally {
             EventBus.getDefault().unregister(this);
         }
@@ -49,8 +51,10 @@ public abstract class BaseImageListParser implements ImageListParser {
         return result;
     }
 
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) {
-        return Optional.of(new ImageFile(order, url, StatusContent.SAVED, maxPages));
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
+        ImageFile img = new ImageFile(order, url, StatusContent.SAVED, maxPages);
+        if (chapter != null) img.setChapter(chapter);
+        return Optional.of(img);
     }
 
     void progressStart(long contentId, int maxSteps) {

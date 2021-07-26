@@ -12,10 +12,13 @@ import android.view.View;
 
 import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
+
+//import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,6 +34,11 @@ import javax.annotation.Nonnull;
 
 import io.reactivex.disposables.Disposable;
 import io.whitfin.siphash.SipHasher;
+import me.devsaki.hentoid.core.Consts;
+import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
+import me.devsaki.hentoid.json.JsonContentCollection;
+import timber.log.Timber;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
@@ -280,5 +288,36 @@ public final class Helper {
         // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
         while (result < 1e6) result = new Random().nextLong();
         return result;
+    }
+
+    /**
+     * Update the JSON file that stores bookmarks with the current bookmarks
+     *
+     * @param context Context to be used
+     * @param dao     DAO to be used
+     * @return True if the bookmarks JSON file has been updated properly; false instead
+     */
+    public static boolean updateBookmarksJson(@NonNull Context context, @NonNull CollectionDAO dao) {
+        Helper.assertNonUiThread();
+        List<SiteBookmark> bookmarks = dao.selectAllBookmarks();
+
+        JsonContentCollection contentCollection = new JsonContentCollection();
+        contentCollection.setBookmarks(bookmarks);
+
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        if (null == rootFolder) return false;
+
+        try {
+            JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
+        } catch (IOException | IllegalArgumentException e) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e);
+            // FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+            // crashlytics.recordException(e);
+            return false;
+        }
+        return true;
     }
 }

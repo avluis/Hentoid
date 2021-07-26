@@ -3,13 +3,10 @@ package me.devsaki.hentoid.core;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
-import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
@@ -20,7 +17,6 @@ import com.thin.downloadmanager.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -36,10 +32,14 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
+import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.json.JsonSiteSettings;
+import me.devsaki.hentoid.notification.action.UserActionNotificationChannel;
+import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
 import me.devsaki.hentoid.notification.startup.StartupNotificationChannel;
 //import me.devsaki.hentoid.services.UpdateCheckService;
@@ -47,7 +47,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.views.NestedScrollWebView;
 import me.devsaki.hentoid.workers.StartupWorker;
 import timber.log.Timber;
 
@@ -130,6 +129,7 @@ public class AppStartup {
 //        result.add(createObservableFrom(context, AppStartupDev::testImg));
         //result.add(createObservableFrom(context, AppStartup::sendFirebaseStats));
         result.add(createObservableFrom(context, AppStartup::clearPictureCache));
+        result.add(createObservableFrom(context, AppStartup::createBookmarksJson));
         return result;
     }
 
@@ -173,6 +173,8 @@ public class AppStartup {
             StartupNotificationChannel.init(context);
             //UpdateNotificationChannel.init(context);
             DownloadNotificationChannel.init(context);
+            UserActionNotificationChannel.init(context);
+            DeleteNotificationChannel.init(context);
             // Clears all previous notifications
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (manager != null) manager.cancelAll();
@@ -189,6 +191,7 @@ public class AppStartup {
                 Timber.d("Process app update : update detected from %s to %s", Preferences.getLastKnownAppVersionCode(), BuildConfig.VERSION_CODE);
 
                 // Clear webview cache (needs to execute inside the activity's Looper)
+/*
                 Timber.d("Process app update : Clearing webview cache");
                 Handler h = new Handler(Looper.getMainLooper());
                 h.post(() -> {
@@ -211,7 +214,7 @@ public class AppStartup {
                 } catch (Exception e) {
                     Timber.e(e, "Error when clearing app cache upon update");
                 }
-
+*/
                 EventBus.getDefault().postSticky(new AppUpdatedEvent());
 
                 Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
@@ -231,5 +234,30 @@ public class AppStartup {
             emitter.onComplete();
         }
         Timber.i("Clear picture cache : done");
+    }
+
+    // Creates the JSON file for bookmarks if it doesn't exist
+    private static void createBookmarksJson(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        Timber.i("Create bookmarks JSON : start");
+        try {
+            DocumentFile appRoot = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+            if (appRoot != null) {
+                DocumentFile bookmarksJson = FileHelper.findFile(context, appRoot, Consts.BOOKMARKS_JSON_FILE_NAME);
+                if (null == bookmarksJson) {
+                    Timber.i("Create bookmarks JSON : creating JSON");
+                    CollectionDAO dao = new ObjectBoxDAO(context);
+                    try {
+                        Helper.updateBookmarksJson(context, dao);
+                    } finally {
+                        dao.cleanup();
+                    }
+                } else {
+                    Timber.i("Create bookmarks JSON : already exists");
+                }
+            }
+        } finally {
+            emitter.onComplete();
+        }
+        Timber.i("Create bookmarks JSON : done");
     }
 }

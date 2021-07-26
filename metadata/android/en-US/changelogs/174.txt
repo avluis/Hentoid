@@ -1,0 +1,27 @@
+New
+
+    Toonily and Manhwa Hentai books are now downloaded with their chapters information
+    Existing Toonily and Manhwa Hentai books will have their chapters updated once you visit their page
+    Gallery screen now has a chapter browser
+
+Changed
+
+    FAKKU support has been disabled; downloaded books are still readable
+    Browser : You don't have to manually run cover indexing to be able to detect duplicates
+    Library and queue screen : Deleting books now happens in the background - you can now leave the app without stopping book deletion
+    Library screen : Random sorting order stays stable when items are deleted
+    Library screen : Launch code search doesn't immediately display the sources list when your library has at least one match
+    Library screen : Desensitize area around the bottom icons to avoid opening the book by mistake when using them
+    Bookmarks are now automatically saved in a JSON file and are not lost anymore when uninstalling the app
+    Settings : Browser now has its own settings category
+
+Fixed
+
+    Pururin.to now works properly for good
+    Toonily and Manhwa Hentai work again
+    Queue screen : "Cancel all" now works for the correct tab when both have been visited
+    Browser : Fix not detecting extra pages when looking at a duplicate of a downloaded book
+    Library and queue screens : "Select all" now actually selects all (!)
+    Library and queue screens : Fix selection jittering when long-tap is not long enough
+    Picture viewer : Using "resume where you left" now properly displays the "next / previous book" buttons
+

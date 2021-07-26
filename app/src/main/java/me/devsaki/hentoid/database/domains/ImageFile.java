@@ -3,6 +3,8 @@ package me.devsaki.hentoid.database.domains;
 import java.util.Locale;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -13,6 +15,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
+import timber.log.Timber;
 
 /**
  * Created by DevSaki on 10/05/2015.
@@ -33,6 +36,7 @@ public class ImageFile {
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status = StatusContent.UNHANDLED_ERROR;
     private ToOne<Content> content;
+    private ToOne<Chapter> chapter;
     private String mimeType;
     private long size = 0;
     private long imageHash = 0;
@@ -210,6 +214,19 @@ public class ImageFile {
 
     public void setContent(ToOne<Content> content) {
         this.content = content;
+    }
+
+    @Nullable
+    public ToOne<Chapter> getChapter() {
+        return chapter;
+    }
+
+    public void setChapter(Chapter chapter) {
+        if (null == this.chapter) {
+            Timber.d(">> INIT ToONE");
+            this.chapter = new ToOne<>(this, ImageFile_.chapter);
+        }
+        this.chapter.setTarget(chapter);
     }
 
     public boolean isReadable() {

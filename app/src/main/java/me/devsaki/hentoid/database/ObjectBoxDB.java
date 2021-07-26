@@ -26,7 +26,6 @@ import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.Property;
 import io.objectbox.android.AndroidObjectBrowser;
-import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import io.objectbox.relation.ToMany;
@@ -36,6 +35,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute_;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
@@ -49,6 +49,7 @@ import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
+import me.devsaki.hentoid.database.domains.ShuffleRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteBookmark_;
 import me.devsaki.hentoid.database.domains.SiteHistory;
@@ -227,6 +228,7 @@ public class ObjectBoxDB {
     void deleteContentById(long[] contentId) {
         Box<ErrorRecord> errorBox = store.boxFor(ErrorRecord.class);
         Box<ImageFile> imageFileBox = store.boxFor(ImageFile.class);
+        Box<Chapter> chapterBox = store.boxFor(Chapter.class);
         Box<Content> contentBox = store.boxFor(Content.class);
         Box<GroupItem> groupItemBox = store.boxFor(GroupItem.class);
         Box<Group> groupBox = store.boxFor(Group.class);
@@ -240,13 +242,18 @@ public class ObjectBoxDB {
                         c.getImageFiles().clear();                                      // Clear links to all imageFiles
                     }
 
+                    if (c.getChapters() != null) {
+                        chapterBox.remove(c.getChapters());
+                        c.getChapters().clear();                                      // Clear links to all chapters
+                    }
+
                     if (c.getErrorLog() != null) {
                         errorBox.remove(c.getErrorLog());
                         c.getErrorLog().clear();                                    // Clear links to all errorRecords
                     }
 
                     // Clear links to all attributes
-                    // NB : Properly removing all attributes here would be too costly
+                    // NB : Properly removing all attributes here is too costly, especially on large collections
                     // It's done by calling cleanupOrphanAttributes
                     c.getAttributes().clear();
 
@@ -716,17 +723,32 @@ public class ObjectBoxDB {
         return selectContentUniversalContentByGroupItem(queryStr, groupId, filterBookFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
     }
 
-    private static long[] shuffleRandomSortId(Query<Content> query) {
-        LazyList<Content> lazyList = query.findLazy();
-        List<Integer> order = new ArrayList<>();
-        for (int i = 0; i < lazyList.size(); i++) order.add(i);
-        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
+    public List<Long> getShuffledIds() {
+        return Stream.of(store.boxFor(ShuffleRecord.class).getAll()).map(ShuffleRecord::getContentId).toList();
+    }
 
-        List<Long> result = new ArrayList<>();
-        for (int i = 0; i < order.size(); i++) {
-            result.add(lazyList.get(order.get(i)).getId());
+    public void shuffleContentIds() {
+        Box<ShuffleRecord> shuffleStore = store.boxFor(ShuffleRecord.class);
+        shuffleStore.removeAll();
+        List<Long> allBooksIds = Helper.getListFromPrimitiveArray(selectStoredContentQ(false, false, -1, false).build().findIds());
+        Collections.shuffle(allBooksIds, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
+        shuffleStore.put(Stream.of(allBooksIds).map(ShuffleRecord::new).toList());
+    }
+
+    private long[] shuffleRandomSortId(Query<Content> query) {
+        List<Long> queryIds = Helper.getListFromPrimitiveArray(query.findIds());
+        List<Long> shuffleIds = getShuffledIds();
+
+        // Keep common IDs
+        shuffleIds.retainAll(queryIds);
+
+        // Isolate new IDs that have never been shuffled and append them at the end
+        if (shuffleIds.size() < queryIds.size()) {
+            queryIds.removeAll(shuffleIds);
+            shuffleIds.addAll(queryIds);
         }
-        return Helper.getPrimitiveLongArrayFromList(result);
+
+        return Helper.getPrimitiveLongArrayFromList(shuffleIds);
     }
 
     long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
@@ -1289,6 +1311,11 @@ public class ObjectBoxDB {
     @Nullable
     Group selectGroup(long groupId) {
         return store.boxFor(Group.class).get(groupId);
+    }
+
+    @Nullable
+    List<Group> selectGroups(long[] groupIds) {
+        return store.boxFor(Group.class).get(groupIds);
     }
 
     @Nullable

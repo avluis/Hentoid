@@ -5,26 +5,34 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
+
 import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.AttributeMap;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
@@ -157,12 +165,26 @@ public class ParseHelper {
         map.add(attribute);
     }
 
-    public static ImageFile urlToImageFile(@Nonnull String imgUrl, int order, int nbPages, @NonNull final StatusContent status) {
+    public static ImageFile urlToImageFile(
+            @Nonnull String imgUrl,
+            int order,
+            int nbPages,
+            @NonNull final StatusContent status) {
+        return urlToImageFile(imgUrl, order, nbPages, status, null);
+    }
+
+    public static ImageFile urlToImageFile(
+            @Nonnull String imgUrl,
+            int order,
+            int maxPages,
+            @NonNull final StatusContent status,
+            final Chapter chapter) {
         ImageFile result = new ImageFile();
 
-        int nbMaxDigits = (int) (Math.floor(Math.log10(nbPages)) + 1);
+        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
         String name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
         result.setName(name).setOrder(order).setUrl(imgUrl).setStatus(status);
+        if (chapter != null) result.setChapter(chapter);
 
         return result;
     }
@@ -172,17 +194,39 @@ public class ParseHelper {
             @NonNull String coverUrl,
             @NonNull final StatusContent status
     ) {
+        return urlsToImageFiles(imgUrls, coverUrl, status, null);
+    }
+
+    public static List<ImageFile> urlsToImageFiles(
+            @Nonnull List<String> imgUrls,
+            @NonNull String coverUrl,
+            @NonNull final StatusContent status,
+            final Chapter chapter
+    ) {
         List<ImageFile> result = new ArrayList<>();
 
-        // Cover
         result.add(ImageFile.newCover(coverUrl, status));
-        // Images
-        int order = 1;
-        for (String s : imgUrls)
-            result.add(urlToImageFile(s.trim(), order++, imgUrls.size(), status));
+        result.addAll(urlsToImageFiles(imgUrls, 1, status, chapter, imgUrls.size()));
 
         return result;
     }
+
+    public static List<ImageFile> urlsToImageFiles(
+            @Nonnull List<String> imgUrls,
+            int initialOrder,
+            @NonNull final StatusContent status,
+            final Chapter chapter,
+            int maxPages
+    ) {
+        List<ImageFile> result = new ArrayList<>();
+
+        int order = initialOrder;
+        for (String s : imgUrls)
+            result.add(urlToImageFile(s.trim(), order++, maxPages, status, chapter));
+
+        return result;
+    }
+
 
     public static void signalProgress(long contentId, int current, int max) {
         EventBus.getDefault().post(new DownloadPreparationEvent(contentId, current, max));
@@ -196,10 +240,22 @@ public class ParseHelper {
         return "";
     }
 
-    public static void addSavedCookiesToHeader(String downloadParams, List<Pair<String, String>> headers) {
+    public static void addSavedCookiesToHeader(String downloadParams, @NonNull List<Pair<String, String>> headers) {
         String cookieStr = getSavedCookieStr(downloadParams);
         if (!cookieStr.isEmpty())
             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+    }
+
+    // Save download params for future use during download
+    public static void setDownloadParams(@NonNull final List<ImageFile> imgs, @NonNull final String referrer) {
+        Map<String, String> params = new HashMap<>();
+        for (ImageFile img : imgs) {
+            params.clear();
+            String cookieStr = HttpHelper.getCookies(img.getUrl());
+            if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+            params.put(HttpHelper.HEADER_REFERER_KEY, referrer);
+            img.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
+        }
     }
 
     // TODO doc
@@ -217,5 +273,50 @@ public class ParseHelper {
             }
 
         } else return "";
+    }
+
+    public static List<Chapter> getChaptersFromLinks(@NonNull List<Element> chapterLinks, long contentId) {
+        List<Chapter> result = new ArrayList<>();
+        Set<String> urls = new HashSet<>();
+
+        int order = 0;
+        for (Element e : chapterLinks) {
+            String url = e.attr("href");
+            String name = StringHelper.removeNonPrintableChars(e.ownText());
+            // Make sure we're not adding duplicates
+            if (!urls.contains(url)) {
+                urls.add(url);
+                Chapter chp = new Chapter(order++, url, name);
+                chp.setContentId(contentId);
+                result.add(chp);
+            }
+        }
+
+        return result;
+    }
+
+    private static String getLastPathPart(@NonNull final String url) {
+        String[] parts = url.split("/");
+        return (parts[parts.length - 1].isEmpty()) ? parts[parts.length - 2] : parts[parts.length - 1];
+    }
+
+    public static List<Chapter> getExtraChapters(
+            @NonNull List<Chapter> storedChapters,
+            @NonNull List<Chapter> detectedChapters
+    ) {
+        List<Chapter> result = new ArrayList<>();
+        Map<String, List<Chapter>> storedChps = Stream.of(storedChapters).collect(Collectors.groupingBy(c -> getLastPathPart(c.getUrl())));
+        Map<String, List<Chapter>> detectedChps = Stream.of(detectedChapters).collect(Collectors.groupingBy(c -> getLastPathPart(c.getUrl())));
+
+        if (null == storedChps || null == detectedChps) return result;
+
+        Set<String> storedUrlParts = storedChps.keySet();
+        for (Map.Entry<String, List<Chapter>> detectedEntry : detectedChps.entrySet()) {
+            if (!storedUrlParts.contains(detectedEntry.getKey())) {
+                List<Chapter> chps = detectedEntry.getValue();
+                if (!chps.isEmpty()) result.add(chps.get(0));
+            }
+        }
+        return Stream.of(result).sortBy(Chapter::getOrder).toList();
     }
 }

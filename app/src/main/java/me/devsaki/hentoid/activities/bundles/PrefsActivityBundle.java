@@ -12,7 +12,9 @@ import javax.annotation.Nonnull;
  */
 public class PrefsActivityBundle {
     private static final String KEY_IS_VIEWER_PREFS = "isViewer";
+    private static final String KEY_IS_BROWSER_PREFS = "isBrowser";
     private static final String KEY_IS_DOWNLOADER_PREFS = "isDownloader";
+    private static final String KEY_IS_STORAGE_PREFS = "isStorage";
 
     private PrefsActivityBundle() {
         throw new UnsupportedOperationException();
@@ -22,12 +24,20 @@ public class PrefsActivityBundle {
 
         private final Bundle bundle = new Bundle();
 
-        public void setIsViewerPrefs(boolean isViewerPrefs) {
-            bundle.putBoolean(KEY_IS_VIEWER_PREFS, isViewerPrefs);
+        public void setIsViewerPrefs(boolean value) {
+            bundle.putBoolean(KEY_IS_VIEWER_PREFS, value);
         }
 
-        public void setIsDownloaderPrefs(boolean isDownloaderPrefs) {
-            bundle.putBoolean(KEY_IS_DOWNLOADER_PREFS, isDownloaderPrefs);
+        public void setIsBrowserPrefs(boolean value) {
+            bundle.putBoolean(KEY_IS_BROWSER_PREFS, value);
+        }
+
+        public void setIsDownloaderPrefs(boolean value) {
+            bundle.putBoolean(KEY_IS_DOWNLOADER_PREFS, value);
+        }
+
+        public void setIsStoragePrefs(boolean value) {
+            bundle.putBoolean(KEY_IS_STORAGE_PREFS, value);
         }
 
         public Bundle getBundle() {
@@ -47,8 +57,16 @@ public class PrefsActivityBundle {
             return bundle.getBoolean(KEY_IS_VIEWER_PREFS, false);
         }
 
+        public boolean isBrowserPrefs() {
+            return bundle.getBoolean(KEY_IS_BROWSER_PREFS, false);
+        }
+
         public boolean isDownloaderPrefs() {
             return bundle.getBoolean(KEY_IS_DOWNLOADER_PREFS, false);
+        }
+
+        public boolean isStoragePrefs() {
+            return bundle.getBoolean(KEY_IS_STORAGE_PREFS, false);
         }
     }
 }

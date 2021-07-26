@@ -55,7 +55,7 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_selectAll"
-        android:icon="@drawable/ic_folder_edit"
+        android:icon="@drawable/ic_action_select_all"
         android:title="@string/menu_select_all"
         android:tooltipText="@string/menu_select_all"
         app:showAsAction="ifRoom" />

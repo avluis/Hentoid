@@ -313,7 +313,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             });
             bookCard.setOnLongClickListener(v -> {
                 if (v.getParent() instanceof View)
-                    ((View) v.getParent()).performLongClick();
+                    return ((View) v.getParent()).performLongClick();
                 return false;
             });
 

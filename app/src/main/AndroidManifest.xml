@@ -182,7 +182,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://hitomi.la/galleries" -->
                 <data
                     android:host="hitomi.la"
                     android:pathPattern="..*/..*"
@@ -197,7 +196,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://nhentai.net/g/" -->
                 <data
                     android:host="nhentai.net"
                     android:pathPrefix="/g/"
@@ -212,7 +210,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://www.tsumino.com/Book/Info" -->
                 <data
                     android:host="www.tsumino.com"
                     android:pathPrefix="/entry/"
@@ -223,7 +220,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://asmhentai.com/g" -->
                 <data
                     android:host="asmhentai.com"
                     android:pathPrefix="/g"
@@ -234,7 +230,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://comics.asmhentai.com/g" -->
                 <data
                     android:host="comics.asmhentai.com"
                     android:pathPrefix="/g"
@@ -245,7 +240,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://pururin.to/" -->
                 <data
                     android:host="pururin.to"
                     android:pathPrefix="/gallery"
@@ -256,7 +250,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
                 <data
                     android:host="e-hentai.org"
                     android:pathPrefix="/g/"
@@ -267,7 +260,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://exhentai.org/" -->
                 <data
                     android:host="exhentai.org"
                     android:pathPrefix="/g/"
@@ -278,23 +270,6 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="www.fakku.net"
-                    android:pathPrefix="/hentai/"
-                    android:scheme="https" />
-                <data
-                    android:host="www.fakku.net"
-                    android:pathPrefix="/hentai/"
-                    android:scheme="https" />
-                <data
-                    android:host="fakku.net"
-                    android:pathPrefix="/stay-home"
-                    android:scheme="https" />
-                <data
-                    android:host="www.fakku.net"
-                    android:pathPrefix="/stay-home"
-                    android:scheme="https" />
 
                 <data
                     android:host="8muses.com"

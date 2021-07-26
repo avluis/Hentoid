@@ -72,7 +72,7 @@
     <string name="low_memory">Your device is low on memory !</string>
     <string name="fix_permissions">Fix</string>
 
-    <!-- Queue -->
+    <!-- Queue / Downloader -->
     <string name="queue_queue_tab">In progress</string>
     <string name="queue_errors_tab">Errors</string>
     <plurals name="ask_cancel_multiple">
@@ -102,6 +102,7 @@
     <string name="paused_no_dl_folder">Cannot download - No download folder. Use app settings to select one</string>
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
+    <string name="paused_dl_stale_online_credentials">Cannot download - Stale Cookies or credentials. Use the notification to regenerate them</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <plurals name="redownloaded_scratch">
         <item quantity="one">Item cleared for redownloading</item>
@@ -109,6 +110,9 @@
     </plurals>
     <string name="queue_add_top">Add on top</string>
     <string name="queue_add_bottom">Add to bottom</string>
+    <string name="notification_action_title">User action needed</string>
+    <string name="notification_action_dl_revive">Tap here to reactivate your download</string>
+    <string name="revive_wait">Please stay on this screen while your download is revived</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
@@ -252,7 +256,7 @@
     <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
-        <item quantity="other">Are you sure you wish to delete the selected items ?</item>
+        <item quantity="other">Are you sure you wish to delete the %d selected items ?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
         <item quantity="one">Are you sure you wish to archive the selected item ?</item>
@@ -341,7 +345,7 @@
         <item quantity="one">Delete group + books</item>
         <item quantity="other">Delete groups + books</item>
     </plurals>
-    <string name="group_delete_nothing">Nothing to delete</string>
+    <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
@@ -370,6 +374,7 @@
     <string name="show_artists">Show artists</string>
     <string name="show_groups">Show groups</string>
     <string name="show_artists_and_groups">Show artists &amp; groups</string>
+    <string name="launchcode_present">You already have this book. Search other sources ?</string>
 
     <string name="tap_to_retry">Tap to retry</string>
     <string name="downloading_update">Downloading update</string>

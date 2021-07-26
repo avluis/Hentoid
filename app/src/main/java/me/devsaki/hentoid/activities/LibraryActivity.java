@@ -55,6 +55,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment;
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment;
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment;
@@ -62,18 +63,12 @@ import me.devsaki.hentoid.notification.archive.ArchiveCompleteNotification;
 import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel;
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
 import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
-import me.devsaki.hentoid.notification.delete.DeleteCompleteNotification;
-import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel;
-import me.devsaki.hentoid.notification.delete.DeleteProgressNotification;
-import me.devsaki.hentoid.notification.delete.DeleteStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.TooltipHelper;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
-import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -165,10 +160,6 @@ public class LibraryActivity extends BaseActivity {
 
 
     // === NOTIFICATIONS
-    // Deletion activities
-    private NotificationManager deleteNotificationManager;
-    private int deleteProgress;
-    private int deleteMax;
     // Notification for book archival
     private NotificationManager archiveNotificationManager;
     private int archiveProgress;
@@ -334,7 +325,6 @@ public class LibraryActivity extends BaseActivity {
         Preferences.unregisterPrefsChangedListener(prefsListener);
         EventBus.getDefault().unregister(this);
         if (archiveNotificationManager != null) archiveNotificationManager.cancel();
-        if (deleteNotificationManager != null) deleteNotificationManager.cancel();
 
         // Empty all handlers to avoid leaks
         if (toolbar != null) toolbar.setOnMenuItemClickListener(null);
@@ -352,13 +342,13 @@ public class LibraryActivity extends BaseActivity {
 
         // Display permissions alert if required
         if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) {
-            ((TextView) findViewById(R.id.library_alert_txt)).setText(R.string.permissions_lost);
-            findViewById(R.id.library_alert_fix_btn).setOnClickListener(v -> fixPermissions());
+            alertTxt.setText(R.string.permissions_lost);
+            alertFixBtn.setOnClickListener(v -> fixPermissions());
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.VISIBLE);
             alertFixBtn.setVisibility(View.VISIBLE);
         } else if (isLowOnSpace()) { // Else display low space alert
-            ((TextView) findViewById(R.id.library_alert_txt)).setText(R.string.low_memory);
+            alertTxt.setText(R.string.low_memory);
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.VISIBLE);
             alertFixBtn.setVisibility(View.GONE);
@@ -373,12 +363,12 @@ public class LibraryActivity extends BaseActivity {
         if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ImageViewerActivity.isRunning) {
             Snackbar snackbar = Snackbar.make(viewPager, R.string.resume_closed, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.setAction(R.string.resume, v -> {
-                Timber.i("Reopening books %d from page %d", previouslyViewedContent, previouslyViewedPage);
+                Timber.i("Reopening book %d from page %d", previouslyViewedContent, previouslyViewedPage);
                 CollectionDAO dao = new ObjectBoxDAO(this);
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, null);
+                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle());
                 } finally {
                     dao.cleanup();
                 }
@@ -1010,12 +1000,12 @@ public class LibraryActivity extends BaseActivity {
         // TODO display the number of books and groups that will be deleted
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
         int count = !groups.isEmpty() ? groups.size() : contents.size();
-        String title = getResources().getQuantityString(R.plurals.ask_delete_multiple, count);
+        String title = getResources().getQuantityString(R.plurals.ask_delete_multiple, count, count);
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect(selectExtension.getSelections());
-                            deleteItems(contents, groups, false, onSuccess);
+                            viewModel.deleteItems(contents, groups, false);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
@@ -1023,64 +1013,14 @@ public class LibraryActivity extends BaseActivity {
                 .create().show();
     }
 
-    public void deleteItems(
-            @NonNull final List<Content> contents,
-            @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups,
-            boolean deleteGroupsOnly,
-            @Nullable final Runnable onSuccess
-    ) {
-        DeleteNotificationChannel.init(this);
-        deleteNotificationManager = new NotificationManager(this, R.id.delete_processing);
-        deleteNotificationManager.cancel();
-        deleteProgress = 0;
-        deleteMax = contents.size() + groups.size();
-        deleteNotificationManager.notify(new DeleteStartNotification());
-
-        viewModel.deleteItems(contents, groups, deleteGroupsOnly,
-                this::onDeleteProgress,
-                () -> {
-                    onDeleteSuccess(contents.size(), groups.size());
-                    if (onSuccess != null) onSuccess.run();
-                },
-                this::onDeleteError);
-    }
-
-    /**
-     * Callback for the failure of the "delete item" action
-     */
-    private void onDeleteError(Throwable t) {
-        Timber.e(t);
-        if (t instanceof ContentNotRemovedException) {
-            ContentNotRemovedException e = (ContentNotRemovedException) t;
-            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
-            Snackbar.make(viewPager, message, BaseTransientBottomBar.LENGTH_LONG).show();
-            // If the cause if not the file not being removed, keep the item on screen, not blinking
-            if (!(t instanceof FileNotRemovedException))
-                viewModel.flagContentDelete(e.getContent(), false);
-        }
-    }
-
-    /**
-     * Callback for the progress of the "delete item" action
-     */
-    private void onDeleteProgress(Object item) {
-        String title = null;
-        if (item instanceof Content) title = ((Content) item).getTitle();
-        else if (item instanceof me.devsaki.hentoid.database.domains.Group)
-            title = ((me.devsaki.hentoid.database.domains.Group) item).name;
-
-        if (title != null) {
-            deleteProgress++;
-            deleteNotificationManager.notify(new DeleteProgressNotification(title, deleteProgress, deleteMax));
-        }
-    }
-
-    /**
-     * Callback for the success of the "delete item" action
-     */
-    private void onDeleteSuccess(int nbContent, int nbGroups) {
-        deleteNotificationManager.notify(new DeleteCompleteNotification(deleteProgress, false));
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        // Filter on delete complete event
+        if (R.id.delete_service != event.processId) return;
+        if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
         String msg = "";
+        int nbGroups = event.elementsOKOther;
+        int nbContent = event.elementsOK;
         if (nbGroups > 0)
             msg += getResources().getQuantityString(R.plurals.delete_success_groups, nbGroups, nbGroups);
         if (nbContent > 0) {

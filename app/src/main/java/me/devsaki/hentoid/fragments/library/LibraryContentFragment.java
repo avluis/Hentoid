@@ -19,6 +19,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.DimenRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -79,7 +82,6 @@ import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
-import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
@@ -88,12 +90,12 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
@@ -186,6 +188,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private Debouncer<Integer> listRefreshDebouncer;
     private int itemToRefreshIndex = -1;
     private boolean excludeClicked = false;
+
+    // Launches the search activity according to the returned result
+    private final ActivityResultLauncher<Intent> advancedSearchReturnLauncher =
+            registerForActivityResult(new StartActivityForResult(), this::advancedSearchReturnResult);
 
     /**
      * Diff calculation rules for contents
@@ -386,7 +392,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             activity.get().sortCommandsAutoHide(true, null);
         });
         sortReshuffleButton.setOnClickListener(v -> {
-            RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
+            viewModel.shuffleContent();
             viewModel.updateContentOrder();
             activity.get().sortCommandsAutoHide(true, null);
         });
@@ -403,7 +409,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 item.setChecked(true);
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
                 if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM) {
-                    RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
+                    viewModel.shuffleContent();
                     sortDirectionButton.setVisibility(View.GONE);
                     sortReshuffleButton.setVisibility(View.VISIBLE);
                 } else {
@@ -568,7 +574,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 keepToolbar = true;
                 break;
             case R.id.action_selectAll:
-                selectExtension.select();
+                // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
+                int count = 0;
+                while (selectExtension.getSelections().size() < getItemAdapter().getAdapterItemCount() && ++count < 5)
+                    selectExtension.select(Stream.range(0, getItemAdapter().getAdapterItemCount()).toList());
                 keepToolbar = true;
                 break;
             case R.id.action_set_cover:
@@ -905,21 +914,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         builder.setExcludeMode(excludeClicked);
         search.putExtras(builder.getBundle());
 
-        startActivityForResult(search, 999);
+        advancedSearchReturnLauncher.launch(search);
         activity.get().collapseSearchMenu();
     }
 
     /**
      * Called when returning from the Advanced Search screen
      */
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 999
-                && resultCode == Activity.RESULT_OK
-                && data != null && data.getExtras() != null) {
-            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(data.getExtras());
+    private void advancedSearchReturnResult(final ActivityResult result) {
+        if (result.getResultCode() == Activity.RESULT_OK
+                && result.getData() != null && result.getData().getExtras() != null) {
+            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(result.getData().getExtras());
             Uri searchUri = parser.getUri();
 
             if (searchUri != null) {
@@ -1180,9 +1185,14 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     .filter(content -> query.equals(content.getUniqueSiteId()))
                     .map(Content::getSite)
                     .map(Site::getCode)
-                    .collect(toCollection(ArrayList::new));
+                    .collect(toCollection(ArrayList::new)); // ArrayList is required by SearchContentIdDialogFragment.invoke
 
-            SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
+            if (!result.isEmpty()) {
+                Snackbar snackbar = Snackbar.make(recyclerView, R.string.launchcode_present, BaseTransientBottomBar.LENGTH_LONG);
+                snackbar.setAction(R.string.menu_search, v -> SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes));
+                snackbar.show();
+            } else
+                SearchContentIdDialogFragment.invoke(requireContext(), getParentFragmentManager(), query, siteCodes);
         }
 
         // If the update is the result of a new search, get back on top of the list
@@ -1406,8 +1416,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             if (selectExtension.getSelections().isEmpty())
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
         }
+        Content content = item.getContent();
+        if (content != null)
+            viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false);
+    }
 
-        activity.get().deleteItems(Stream.of(item.getContent()).toList(), Collections.emptyList(), false, this::refreshIfNeeded);
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        // Filter on delete complete event
+        if (R.id.delete_service != event.processId) return;
+        if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
+        refreshIfNeeded();
     }
 
     @Override
