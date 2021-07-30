@@ -619,7 +619,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * @param startingIndex Book's starting image index
      */
     private void onStartingIndexChanged(Integer startingIndex) {
-        if (!isComputingImageList) applyStartingIndex(startingIndex); // Return from gallery screen
+        if (!isComputingImageList)
+            applyStartingIndex(startingIndex); // Returning from gallery screen
         else targetStartingIndex = startingIndex; // Loading a new book
     }
 
@@ -706,8 +707,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private void onScrollPositionChange(int scrollPosition) {
         if (null == binding) return;
 
-        int scrollDirection = scrollPosition - imageIndex;
-
         if (scrollPosition != imageIndex) {
             boolean isScrollLTR = true;
             int direction = Preferences.getContentDirection(bookPreferences);
@@ -723,6 +722,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                 adapter.resetScaleAtPosition(scrollPosition);
         }
 
+        int scrollDirection = scrollPosition - imageIndex;
         imageIndex = scrollPosition;
         ImageFile currentImage = adapter.getImageAt(imageIndex);
         if (currentImage != null) {

@@ -201,7 +201,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         if (holder.forceImageView != null) {
             holder.switchImageView(holder.forceImageView);
-            holder.forceImageView = null; // Reset force
+            holder.forceImageView = null; // Reset force flag
         } else holder.switchImageView(IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType);
 
         if (holder.getItemViewType() == ViewType.DEFAULT && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !holder.isImageView) {
@@ -221,8 +221,13 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
             holder.imgView.setOnTouchListener(itemTouchListener);
 
+        boolean imageAvailable = true;
         ImageFile img = getImageAt(position);
-        if (img != null) holder.setImage(img);
+        if (img != null && !img.getFileUri().isEmpty()) holder.setImage(img);
+        else imageAvailable = false;
+
+        if (holder.noImgTxt != null)
+            holder.noImgTxt.setVisibility(imageAvailable ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -416,6 +421,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         void switchImageView(boolean isImageView) {
+            Timber.d("SWITCHING to %s", isImageView ? "imageView" : "ssiv");
             ssiv.setVisibility(isImageView ? View.GONE : View.VISIBLE);
             imageView.setVisibility(isImageView ? View.VISIBLE : View.GONE);
             imgView = (isImageView) ? imageView : ssiv;

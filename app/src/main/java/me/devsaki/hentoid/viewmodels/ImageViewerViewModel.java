@@ -15,6 +15,7 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.annimon.stream.IntStream;
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
@@ -97,13 +98,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final Map<Integer, String> imageLocations = new HashMap<>();
     // TODO doc
     private final AtomicBoolean interruptImageLoad = new AtomicBoolean(false);
+    // TODO doc
+    private final Set<Integer> downloadsInProgress = new HashSet<>();
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable imageDownloadDisposable = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
     private Disposable unarchiveDisposable = Disposables.empty();
     private Disposable imageLoadDisposable = Disposables.empty();
-    private Disposable imageDownloadDisposable = Disposables.empty();
     private Disposable leaveDisposable = Disposables.empty();
     private Disposable emptyCacheDisposable = Disposables.empty();
     private boolean isArchiveExtracting = false;
@@ -456,6 +459,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         unarchiveDisposable.dispose();
         imageLoadDisposable.dispose();
         imageDownloadDisposable.dispose();
+        downloadsInProgress.clear();
         isArchiveExtracting = false;
         interruptImageLoad.set(true);
 
@@ -802,7 +806,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void setCurrentPage(int pageIndex, int direction) {
-        List<ImageFile> images = getViewerImages().getValue();
+        // TODO don't download pages 0,1 and 2 when the books is not loaded yet
+        final List<ImageFile> images = getViewerImages().getValue();
         if (null == images || images.size() <= pageIndex) return;
 
         List<Integer> indexesToLoad = new ArrayList<>();
@@ -818,11 +823,30 @@ public class ImageViewerViewModel extends AndroidViewModel {
         File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
         if (cachePicFolder != null) {
             for (int index : indexesToLoad) {
-                compositeDisposable.add(
+                imageDownloadDisposable.add( // TODO handle dynamically
                         Single.fromCallable(() -> downloadPic(index, cachePicFolder))
                                 .subscribeOn(Schedulers.io())
                                 .subscribe(
-                                        viewerImages::postValue,
+                                        resultOpt -> {
+                                            if (resultOpt.isEmpty()) return;
+
+                                            int downloadedPageIndex = resultOpt.get().first;
+                                            ImageFile downloadedPic = resultOpt.get().second;
+
+                                            synchronized (viewerImages) {
+                                                final List<ImageFile> images2 = viewerImages.getValue();
+                                                if (null == images2 || images2.size() <= downloadedPageIndex)
+                                                    return;
+
+                                                images2.remove(downloadedPageIndex);
+                                                images2.add(downloadedPageIndex, downloadedPic);
+                                                Timber.d("REPLACING INDEX %d - ORDER %d", downloadedPageIndex, downloadedPic.getOrder());
+
+                                                // Instanciate a new list to trigger an actual Adapter UI refresh
+                                                viewerImages.postValue(Stream.of(images2).toList());
+                                            }
+                                            imageLocations.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
+                                        },
                                         Timber::w
                                 )
                 );
@@ -830,10 +854,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    private List<ImageFile> downloadPic(int pageIndex, @NonNull File targetFolder) {
+    private Optional<Pair<Integer, ImageFile>> downloadPic(int pageIndex, @NonNull File targetFolder) {
         List<ImageFile> images = getViewerImages().getValue();
         Content content = getContent().getValue();
-        if (null == images || null == content || images.size() <= pageIndex) return images;
+        if (null == images || null == content || images.size() <= pageIndex)
+            return Optional.empty();
+        if (downloadsInProgress.contains(pageIndex)) return Optional.empty();
+
+        downloadsInProgress.add(pageIndex);
 
         ImageFile img = images.get(pageIndex);
         Site site = content.getSite();
@@ -841,39 +869,44 @@ public class ImageViewerViewModel extends AndroidViewModel {
         List<Pair<String, String>> headers = new ArrayList<>();
         HttpHelper.addCurrentCookiesToHeader(img.getUrl(), headers);
         try {
-            Response response = HttpHelper.getOnlineResource(img.getUrl(), headers, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-            ResponseBody body = response.body();
-            if (null == body) return images;
-
             final String targetFileName = content.getId() + "." + pageIndex + "." + HttpHelper.getExtensionFromUri(img.getUrl());
             File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
             if (existing != null) {
+                Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
+                Response response = HttpHelper.getOnlineResource(img.getUrl(), headers, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+                Timber.d("DOWNLOADING PIC - RESPONSE %s", response.code());
+                ResponseBody body = response.body();
+                if (null == body) return Optional.empty();
+
                 File targetFile;
                 if (0 == existing.length) {
                     targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
                     if (!targetFile.createNewFile())
                         throw new IOException("Could not create file " + targetFile.getPath());
-                } else {
+
+                    Timber.d("WRITING DOWNLOADED PIC TO %s", targetFile.getAbsolutePath());
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
+                        while ((len = in.read(buffer)) > -1) out.write(buffer, 0, len);
+                        out.flush();
+                    }
+                    Timber.d("DOWNLOADED PIC WRITTEN TO %s (%.2f KB)", targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+                } else { // Image is already there
                     targetFile = existing[0];
+                    Timber.d("DOWNLOADED PIC FOUND AT %s (%.2f KB)", targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
                 }
 
-                byte[] buffer = new byte[1024];
-                int len;
-                try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
-                    while ((len = in.read(buffer)) > -1) out.write(buffer, 0, len);
-                    out.flush();
-                }
                 // TODO read mime-type on the fly
-                // Instanciate a new image
+
+                // Instanciate a new image to push it to the UI
                 ImageFile newImg = new ImageFile(img);
-                newImg.setFileUri(Uri.fromFile(targetFile).toString());
-                images.remove(pageIndex);
-                images.add(pageIndex, newImg);
+                return Optional.of(new Pair<>(pageIndex, newImg.setFileUri(Uri.fromFile(targetFile).toString())));
             }
         } catch (IOException e) {
             Timber.w(e);
         }
-        return Stream.of(images).toList(); // Instanciate a new list to trigger an actual Adapter UI refresh
+        return Optional.empty();
     }
 
     private boolean isPictureDownloadable(int pageIndex, @NonNull List<ImageFile> images) {
