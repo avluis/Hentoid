@@ -116,6 +116,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private Debouncer<Integer> indexRefreshDebouncer;
 
     // Starting index management
+    private boolean startingIndexLoaded = false;
     private boolean isComputingImageList = false;
     private int targetStartingIndex = -1;
 
@@ -579,6 +580,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onImagesChanged(List<ImageFile> images) {
         isComputingImageList = true;
+        startingIndexLoaded = false;
         adapter.submitList(images, this::differEndCallback);
 
         if (images.isEmpty()) {
@@ -630,6 +632,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     }
 
     private void applyStartingIndexInternal(int startingIndex) {
+        startingIndexLoaded = true;
         int currentPosition = Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition());
 
         // When target position is the same as current scroll index (0), scrolling is pointless
@@ -706,6 +709,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onScrollPositionChange(int scrollPosition) {
         if (null == binding) return;
+        if (!startingIndexLoaded) return;
 
         if (scrollPosition != imageIndex) {
             boolean isScrollLTR = true;

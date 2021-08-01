@@ -806,7 +806,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void setCurrentPage(int pageIndex, int direction) {
-        // TODO don't download pages 0,1 and 2 when the books is not loaded yet
+        // TODO don't download pages 0,1 and 2 when the book is not loaded yet
         final List<ImageFile> images = getViewerImages().getValue();
         if (null == images || images.size() <= pageIndex) return;
 
