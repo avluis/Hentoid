@@ -834,16 +834,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                             ImageFile downloadedPic = resultOpt.get().second;
 
                                             synchronized (viewerImages) {
-                                                final List<ImageFile> images2 = viewerImages.getValue();
+                                                List<ImageFile> images2 = viewerImages.getValue();
                                                 if (null == images2 || images2.size() <= downloadedPageIndex)
                                                     return;
 
+                                                images2 = Stream.of(images2).toList();
                                                 images2.remove(downloadedPageIndex);
                                                 images2.add(downloadedPageIndex, downloadedPic);
                                                 Timber.d("REPLACING INDEX %d - ORDER %d", downloadedPageIndex, downloadedPic.getOrder());
 
                                                 // Instanciate a new list to trigger an actual Adapter UI refresh
-                                                viewerImages.postValue(Stream.of(images2).toList());
+                                                viewerImages.postValue(images2);
                                             }
                                             imageLocations.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
                                         },
