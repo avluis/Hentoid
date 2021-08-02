@@ -104,6 +104,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private final CompositeDisposable imageDownloadDisposable = new CompositeDisposable();
+    private final CompositeDisposable notificationDisposables = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
     private Disposable unarchiveDisposable = Disposables.empty();
     private Disposable imageLoadDisposable = Disposables.empty();
@@ -459,6 +460,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         unarchiveDisposable.dispose();
         imageLoadDisposable.dispose();
         imageDownloadDisposable.dispose();
+        notificationDisposables.dispose();
         downloadsInProgress.clear();
         isArchiveExtracting = false;
         interruptImageLoad.set(true);
@@ -873,29 +875,38 @@ public class ImageViewerViewModel extends AndroidViewModel {
             final String targetFileName = content.getId() + "." + pageIndex + "." + HttpHelper.getExtensionFromUri(img.getUrl());
             File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
             if (existing != null) {
-                Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
-                Response response = HttpHelper.getOnlineResource(img.getUrl(), headers, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-                Timber.d("DOWNLOADING PIC - RESPONSE %s", response.code());
-                ResponseBody body = response.body();
-                if (null == body) return Optional.empty();
-
                 File targetFile;
                 if (0 == existing.length) {
+                    Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
+                    Response response = HttpHelper.getOnlineResource(img.getUrl(), headers, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+                    Timber.d("DOWNLOADING PIC - RESPONSE %s", response.code());
+                    ResponseBody body = response.body();
+                    if (null == body) return Optional.empty();
+                    long size = body.contentLength();
+
                     targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
                     if (!targetFile.createNewFile())
                         throw new IOException("Could not create file " + targetFile.getPath());
 
-                    Timber.d("WRITING DOWNLOADED PIC TO %s", targetFile.getAbsolutePath());
-                    byte[] buffer = new byte[1024];
+                    Timber.d("WRITING DOWNLOADED PIC TO %s (size %.2f KB)", targetFile.getAbsolutePath(), size / 1024.0);
+                    byte[] buffer = new byte[4196];
                     int len;
+                    long processed = 0;
+                    int iteration = 0;
                     try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
-                        while ((len = in.read(buffer)) > -1) out.write(buffer, 0, len);
+                        while ((len = in.read(buffer)) > -1) {
+                            processed += len;
+                            if (0 == ++iteration % 50) // Notify every 200KB
+                                notifyDownloadProgress((processed * 100f) / size, pageIndex);
+                            out.write(buffer, 0, len);
+                        }
+                        notifyDownloadProgress(100, pageIndex);
                         out.flush();
                     }
                     Timber.d("DOWNLOADED PIC WRITTEN TO %s (%.2f KB)", targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
                 } else { // Image is already there
                     targetFile = existing[0];
-                    Timber.d("DOWNLOADED PIC FOUND AT %s (%.2f KB)", targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+                    Timber.d("PIC FOUND AT %s (%.2f KB)", targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
                 }
 
                 // TODO read mime-type on the fly
@@ -915,5 +926,23 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 && images.size() > pageIndex
                 && images.get(pageIndex).getStatus().equals(StatusContent.ONLINE)
                 && images.get(pageIndex).getFileUri().isEmpty();
+    }
+
+    private void notifyDownloadProgress(float progressPc, int pageIndex) {
+        notificationDisposables.add(Completable.fromRunnable(() -> doNotifyDownloadProgress(progressPc, pageIndex))
+                .subscribeOn(Schedulers.computation())
+                .subscribe(
+                        notificationDisposables::clear
+                )
+        );
+    }
+
+    private void doNotifyDownloadProgress(float progressPc, int pageIndex) {
+        int progress = (int) Math.floor(progressPc);
+        if (progress < 100) {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.page_download, pageIndex, progress, 0, 100));
+        } else {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.page_download, pageIndex, progress, 0, 100));
+        }
     }
 }

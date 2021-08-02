@@ -1,5 +1,13 @@
 package me.devsaki.hentoid.fragments.viewer;
 
+import static java.lang.String.format;
+import static me.devsaki.hentoid.util.Preferences.Constant;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_05;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_1;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_16;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_4;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
@@ -77,14 +85,6 @@ import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.devsaki.hentoid.widget.VolumeKeyListener;
 import timber.log.Timber;
 
-import static java.lang.String.format;
-import static me.devsaki.hentoid.util.Preferences.Constant;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_05;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_1;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_16;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_4;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8;
-
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
 //   - independent page mode (currently used for horizontal display)
@@ -116,9 +116,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private Debouncer<Integer> indexRefreshDebouncer;
 
     // Starting index management
-    private boolean startingIndexLoaded = false;
     private boolean isComputingImageList = false;
     private int targetStartingIndex = -1;
+    private boolean startingIndexLoaded = false;
+    private long contentId = -1;
 
     // == UI ==
     private FragmentViewerPagerBinding binding = null;
@@ -285,23 +286,28 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
         if (null == binding) return;
-        if (event.processId != R.id.viewer_load) return;
+        if (event.processId != R.id.viewer_load && event.processId != R.id.page_download) return;
+        if (event.processId == R.id.page_download && event.step != imageIndex) return;
 
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            // Empty display until loading is complete
-            if (adapter.getItemCount() > 0) adapter.submitList(Collections.emptyList());
+            if (event.processId == R.id.viewer_load) { // Archive unpacking
+                // Empty display until loading is complete
+                if (adapter.getItemCount() > 0) adapter.submitList(Collections.emptyList());
 
-            // Prevent switching books when archive extraction is in progress (may trigger multiple extractions at the same time)
-            // TODO make that possible in the future when unarchival is done on demand
-            binding.controlsOverlay.viewerPrevBookBtn.setEnabled(false);
-            binding.controlsOverlay.viewerNextBookBtn.setEnabled(false);
+                // Prevent switching books when archive extraction is in progress (may trigger multiple extractions at the same time)
+                // TODO make that possible in the future when unarchival is done on demand
+                binding.controlsOverlay.viewerPrevBookBtn.setEnabled(false);
+                binding.controlsOverlay.viewerNextBookBtn.setEnabled(false);
+            }
 
             binding.viewerLoadingTxt.setText(getResources().getString(R.string.loading_images, event.elementsKO + event.elementsOK, event.elementsTotal));
             binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             binding.viewerLoadingTxt.setVisibility(View.GONE);
-            binding.controlsOverlay.viewerPrevBookBtn.setEnabled(true);
-            binding.controlsOverlay.viewerNextBookBtn.setEnabled(true);
+            if (event.processId == R.id.viewer_load) {
+                binding.controlsOverlay.viewerPrevBookBtn.setEnabled(true);
+                binding.controlsOverlay.viewerNextBookBtn.setEnabled(true);
+            }
         }
     }
 
@@ -580,7 +586,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onImagesChanged(List<ImageFile> images) {
         isComputingImageList = true;
-        startingIndexLoaded = false;
         adapter.submitList(images, this::differEndCallback);
 
         if (images.isEmpty()) {
@@ -659,6 +664,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         bookPreferences = content.getBookPreferences();
         isContentArchive = content.isArchive();
         isContentFavourite = content.isFavourite();
+        // Wait for starting index only if content actually changes
+        if (content.getId() != contentId) startingIndexLoaded = false;
+        contentId = content.getId();
         onBrowseModeChange(); // TODO check if this can be optimized, as images are loaded twice when a new book is loaded
 
         updateNavigationUi(content);
