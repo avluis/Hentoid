@@ -70,7 +70,7 @@
         android:paddingTop="128dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:text="@string/loading_images"
+        android:text="@string/loading_archive"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
         android:visibility="gone"

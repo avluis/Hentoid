@@ -470,7 +470,8 @@
 
     <!-- Image viewer -->
     <string name="no_images">Could not load the book : No image found</string>
-    <string name="loading_images">Loading : %1$d/%2$d</string>
+    <string name="loading_archive">Loading : %1$d/%2$d</string>
+    <string name="loading_image">Loading image : %d%%</string>
     <string name="no_image">Image not found</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>

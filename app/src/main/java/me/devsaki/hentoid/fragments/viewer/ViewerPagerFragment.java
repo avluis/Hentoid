@@ -29,6 +29,7 @@ import android.widget.TextView;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -290,6 +291,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (event.processId == R.id.page_download && event.step != imageIndex) return;
 
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            @StringRes int msgResource = R.string.loading_image;
             if (event.processId == R.id.viewer_load) { // Archive unpacking
                 // Empty display until loading is complete
                 if (adapter.getItemCount() > 0) adapter.submitList(Collections.emptyList());
@@ -298,9 +300,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                 // TODO make that possible in the future when unarchival is done on demand
                 binding.controlsOverlay.viewerPrevBookBtn.setEnabled(false);
                 binding.controlsOverlay.viewerNextBookBtn.setEnabled(false);
+                msgResource = R.string.loading_archive;
             }
 
-            binding.viewerLoadingTxt.setText(getResources().getString(R.string.loading_images, event.elementsKO + event.elementsOK, event.elementsTotal));
+            binding.viewerLoadingTxt.setText(getResources().getString(msgResource, event.elementsKO + event.elementsOK, event.elementsTotal));
             binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             binding.viewerLoadingTxt.setVisibility(View.GONE);
