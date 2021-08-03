@@ -272,14 +272,19 @@ public class QueueViewModel extends AndroidViewModel {
             @NonNull final Runnable onSuccess) {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
+        // Non-blocking performance bottleneck; scheduled in a separate thread
+        if (reparseImages) {
+            compositeDisposable.add(
+                    Observable.fromIterable(contentList)
+                            .observeOn(Schedulers.io())
+                            .subscribe(c -> ContentHelper.purgeFiles(getApplication(), c, true))
+            );
+        }
+
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
                         .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : c)
-                        .map(c -> {
-                            if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
-                            return c;
-                        })
                         .doOnNext(c -> dao.addContentToQueue(
                                 c, targetImageStatus, position,
                                 ContentQueueManager.getInstance().isQueueActive()))

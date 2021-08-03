@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.viewmodels;
 
+import static me.devsaki.hentoid.util.GroupHelper.moveBook;
+
 import android.app.Application;
 import android.os.Bundle;
 
@@ -39,7 +41,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ArchiveHelper;
@@ -54,8 +55,6 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.GroupHelper.moveBook;
 
 
 public class LibraryViewModel extends AndroidViewModel {
@@ -386,26 +385,101 @@ public class LibraryViewModel extends AndroidViewModel {
 
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
+        // Non-blocking performance bottleneck; scheduled in a separate thread
+        if (reparseImages) {
+            compositeDisposable.add(
+                    Observable.fromIterable(contentList)
+                            .observeOn(Schedulers.io())
+                            .subscribe(c -> ContentHelper.purgeFiles(getApplication(), c, true))
+            );
+        }
+
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
                         .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : c)
-                        .map(c -> {
-                            if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
-                            return c;
-                        })
                         .doOnNext(c -> dao.addContentToQueue(
                                 c, targetImageStatus, position,
                                 ContentQueueManager.getInstance().isQueueActive()))
+                        .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
-                            // TODO is there stuff to do on the IO thread ?
+                            if (Preferences.isQueueAutostart())
+                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                            onSuccess.run();
+                        })
+                        .subscribe(
+                                v -> { // Nothing; feedback is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    public void downloadContent(
+            @NonNull final List<Content> contentList,
+            int position,
+            @NonNull final Runnable onSuccess) {
+        // Flag the content as "being deleted" (triggers blink animation)
+        for (Content c : contentList) flagContentDelete(c, true);
+
+        // TODO reparse content from scratch if images KO
+
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        .map(c -> c.setDownloadMode(Content.DownloadMode.DOWNLOAD))
+                        .doOnNext(c -> dao.addContentToQueue(
+                                c, StatusContent.SAVED, position,
+                                ContentQueueManager.getInstance().isQueueActive()))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnComplete(() -> {
+                            if (Preferences.isQueueAutostart())
+                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                            onSuccess.run();
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                    if (Preferences.isQueueAutostart())
-                                        ContentQueueManager.getInstance().resumeQueue(getApplication());
-                                    onSuccess.run();
+                                v -> { // Nothing; feedback is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    public void streamContent(@NonNull final List<Content> contentList) {
+
+        // TODO reparse content from scratch if images KO
+
+        // Non-blocking performance bottleneck; scheduled in a separate thread
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        .subscribe(c -> ContentHelper.purgeFiles(getApplication(), c, true))
+        );
+
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        .map(c -> {
+                            Content dbContent = dao.selectContent(c.getId());
+                            if (null == dbContent) return c;
+                            dbContent.setStatus(StatusContent.ONLINE);
+                            List<ImageFile> imgs = dbContent.getImageFiles();
+                            if (imgs != null) {
+                                for (ImageFile img : imgs) {
+                                    img.setFileUri("");
+                                    img.setSize(0);
+                                    img.setStatus(StatusContent.ONLINE);
+                                }
+                                dao.insertImageFiles(imgs);
+                            }
+                            dbContent.forceSize(0);
+                            dao.insertContent(dbContent);
+                            return dbContent;
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> { // Nothing; feedback is done through LiveData
                                 },
                                 Timber::e
                         )

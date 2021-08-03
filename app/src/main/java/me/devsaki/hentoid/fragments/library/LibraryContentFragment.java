@@ -570,6 +570,14 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 askRedownloadSelectedItemsScratch();
                 keepToolbar = true;
                 break;
+            case R.id.action_download:
+                askDownloadSelectedItems();
+                keepToolbar = true;
+                break;
+            case R.id.action_stream:
+                askStreamSelectedItems();
+                keepToolbar = true;
+                break;
             case R.id.action_selectAll:
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 int count = 0;
@@ -709,6 +717,91 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                             dialog1.dismiss();
                             redownloadFromScratch(contents);
                             for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.setSelectOnLongClick(true);
+                            selectExtension.deselect(selectExtension.getSelections());
+                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+                        })
+                .setNegativeButton(R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
+    }
+
+    /**
+     * Callback for the "Download" action button
+     */
+    private void askDownloadSelectedItems() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+
+        int nonOnlineContent = 0;
+        List<Content> contents = new ArrayList<>();
+        for (ContentItem ci : selectedItems) {
+            Content c = ci.getContent();
+            if (null == c) continue;
+            if (!c.getStatus().equals(StatusContent.ONLINE)) {
+                nonOnlineContent++;
+            } else {
+                contents.add(c);
+            }
+        }
+
+        String message = getResources().getQuantityString(R.plurals.download_confirm, contents.size());
+        if (nonOnlineContent > 0)
+            message = getResources().getQuantityString(R.plurals.download_non_online_content, nonOnlineContent);
+
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            download(contents);
+                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.setSelectOnLongClick(true);
+                            selectExtension.deselect(selectExtension.getSelections());
+                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+                        })
+                .setNegativeButton(R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
+    }
+
+    /**
+     * Callback for the "Switch to streaming" action button
+     */
+    private void askStreamSelectedItems() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+
+        int onlineExternalContent = 0;
+        List<Content> contents = new ArrayList<>();
+        for (ContentItem ci : selectedItems) {
+            Content c = ci.getContent();
+            if (null == c) continue;
+            if (c.getStatus().equals(StatusContent.ONLINE) || c.getStatus().equals(StatusContent.EXTERNAL)) {
+                onlineExternalContent++;
+            } else {
+                contents.add(c);
+            }
+        }
+
+        String message = getResources().getQuantityString(R.plurals.stream_confirm, contents.size());
+        if (onlineExternalContent > 0)
+            message = getResources().getQuantityString(R.plurals.stream_external_online_content, onlineExternalContent);
+
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            stream(contents);
+                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.setSelectOnLongClick(true);
                             selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
@@ -1280,6 +1373,28 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 });
     }
 
+    private void download(@NonNull final List<Content> contentList) {
+        if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+            AddQueueMenu.show(activity.get(), recyclerView, this, (position, item) ->
+                    download(contentList, (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM)
+            );
+        } else
+            download(contentList, Preferences.getQueueNewDownloadPosition());
+    }
+
+    private void download(@NonNull final List<Content> contentList, int addMode) {
+        viewModel.downloadContent(contentList, addMode,
+                () -> {
+                    String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
+                    Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
+                    snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+                    snackbar.show();
+                });
+    }
+    private void stream(@NonNull final List<Content> contentList) {
+        viewModel.streamContent(contentList);
+    }
+
     /**
      * Callback for any selection change (item added to or removed from selection)
      */
@@ -1292,7 +1407,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             selectExtension.setSelectOnLongClick(true);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount);
+            long selectedOnlineCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filter(s -> s.equals(StatusContent.ONLINE)).count();
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedOnlineCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }

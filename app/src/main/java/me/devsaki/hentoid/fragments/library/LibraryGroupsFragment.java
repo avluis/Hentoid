@@ -1,5 +1,12 @@
 package me.devsaki.hentoid.fragments.library;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -87,13 +94,6 @@ import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
-import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 
 @SuppressLint("NonConstantResourceId")
 public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
@@ -804,7 +804,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             selectExtension.setSelectOnLongClick(true);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount);
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, 0);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }

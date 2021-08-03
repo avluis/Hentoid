@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -73,8 +75,6 @@ import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 
 /**
  * Utility class for Content-related operations
@@ -980,15 +980,19 @@ public final class ContentHelper {
      * Remove all files (including JSON and cover thumb) from the given Content's folder
      * The folder itself is left empty
      *
+     * Caution : exec time is long
+     *
      * @param context Context to use
      * @param content Content to remove files from
      */
-    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content) {
+    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content, boolean removeJson) {
         DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
-            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, null); // Remove everything (incl. JSON and thumb)
+            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, null);
             if (!files.isEmpty())
-                for (DocumentFile file : files) file.delete();
+                for (DocumentFile file : files)
+                    if (removeJson || !HttpHelper.getExtensionFromUri(file.getUri().toString()).toLowerCase().endsWith("json"))
+                        file.delete();
         }
     }
 

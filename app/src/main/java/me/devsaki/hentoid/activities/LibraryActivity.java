@@ -1,5 +1,16 @@
 package me.devsaki.hentoid.activities;
 
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -74,17 +85,6 @@ import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
 
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
-import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
-import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
-import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
-
 @SuppressLint("NonConstantResourceId")
 public class LibraryActivity extends BaseActivity {
 
@@ -154,6 +154,8 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem changeGroupMenu;
     private MenuItem folderMenu;
     private MenuItem redownloadMenu;
+    private MenuItem downloadMenu;
+    private MenuItem streamMenu;
     private MenuItem coverMenu;
 
     private ViewPager2 viewPager;
@@ -427,7 +429,7 @@ public class LibraryActivity extends BaseActivity {
                 enableCurrentFragment();
                 hideSearchSortBar(false);
                 updateToolbar();
-                updateSelectionToolbar(0, 0);
+                updateSelectionToolbar(0, 0, 0);
             }
         });
 
@@ -663,9 +665,11 @@ public class LibraryActivity extends BaseActivity {
         changeGroupMenu = selectionToolbar.getMenu().findItem(R.id.action_change_group);
         folderMenu = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
+        downloadMenu = selectionToolbar.getMenu().findItem(R.id.action_download);
+        streamMenu = selectionToolbar.getMenu().findItem(R.id.action_stream);
         coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
 
-        updateSelectionToolbar(0, 0);
+        updateSelectionToolbar(0, 0, 0);
     }
 
     private Grouping getGroupingFromMenuId(@IdRes int menuId) {
@@ -938,8 +942,12 @@ public class LibraryActivity extends BaseActivity {
         signalCurrentFragment(EV_UPDATE_SORT, null);
     }
 
-    public void updateSelectionToolbar(long selectedTotalCount, long selectedLocalCount) {
+    public void updateSelectionToolbar(
+            long selectedTotalCount,
+            long selectedLocalCount,
+            long selectedOnlineCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
+        long selectedDownloadedCount = selectedLocalCount - selectedOnlineCount;
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
 
         if (isGroupDisplayed()) {
@@ -951,6 +959,8 @@ public class LibraryActivity extends BaseActivity {
             changeGroupMenu.setVisible(false);
             folderMenu.setVisible(false);
             redownloadMenu.setVisible(false);
+            downloadMenu.setVisible(false);
+            streamMenu.setVisible(false);
             coverMenu.setVisible(false);
         } else {
             editNameMenu.setVisible(false);
@@ -960,7 +970,9 @@ public class LibraryActivity extends BaseActivity {
             archiveMenu.setVisible(true);
             changeGroupMenu.setVisible(true);
             folderMenu.setVisible(!isMultipleSelection);
-            redownloadMenu.setVisible(selectedLocalCount > 0);
+            redownloadMenu.setVisible(selectedDownloadedCount > 0);
+            downloadMenu.setVisible(selectedOnlineCount > 0);
+            streamMenu.setVisible(selectedDownloadedCount > 0);
             coverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
         }
     }

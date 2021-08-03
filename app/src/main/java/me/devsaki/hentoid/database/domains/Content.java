@@ -851,8 +851,9 @@ public class Content implements Serializable {
         return downloadMode;
     }
 
-    public void setDownloadMode(int downloadMode) {
+    public Content setDownloadMode(int downloadMode) {
         this.downloadMode = downloadMode;
+        return this;
     }
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {
