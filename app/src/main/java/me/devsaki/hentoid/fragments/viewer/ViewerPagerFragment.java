@@ -735,6 +735,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             // Resets zoom if we're using horizontal (independent pages) mode
             if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
                 adapter.resetScaleAtPosition(scrollPosition);
+
+            // Don't show loading progress from previous image
+            binding.viewerLoadingTxt.setVisibility(View.GONE);
         }
 
         int scrollDirection = scrollPosition - imageIndex;
