@@ -155,12 +155,12 @@
     <TextView
         android:id="@+id/alovoa_slogan_text"
         android:layout_width="114dp"
-        android:layout_height="51dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginTop="4dp"
         android:gravity="center"
         android:text="Meet new, exciting people!"
-        android:textSize="12sp"
+        android:textSize="12dp"
         app:layout_constraintStart_toStartOf="@+id/drawer_header"
         app:layout_constraintTop_toBottomOf="@+id/alovoa_name_text" />
 
