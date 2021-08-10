@@ -972,7 +972,7 @@ public class ContentDownloadWorker extends BaseWorker {
         String fileExt = null;
         String mimeType = null;
 
-        // Check for picture validity if it's < 1KB (might be plain test or HTML if things have gone wrong... or a small GIF! )
+        // Check for picture validity if it's < 1KB (might be plain text or HTML if things have gone wrong... or a small GIF! )
         if (img.getSize() < 1024 && binaryContent != null) {
             mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
             if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
