@@ -402,7 +402,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             status -> onContentProcessed(status, false),
-                            Timber::e
+                            t -> {
+                                Timber.e(t);
+                                onContentProcessed(ContentStatus.UNKNOWN, false);
+                            }
                     );
         }
     }
@@ -765,6 +768,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
                     if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                             || StatusContent.ERROR == currentContent.getStatus()
+                            || StatusContent.ONLINE == currentContent.getStatus()
                             || StatusContent.MIGRATED == currentContent.getStatus()))
                         ContentHelper.openHentoidViewer(this, currentContent, -1, null);
                     else actionMenu.setEnabled(false);
@@ -953,7 +957,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
 
         if (!isInCollection && !isInQueue) {
-            if (Preferences.isDownloadDuplicateAsk()) {
+            if (Preferences.isDownloadDuplicateAsk() && !onlineContent.getCoverImageUrl().isEmpty()) {
                 // Index the content's cover picture
                 long pHash = Long.MIN_VALUE;
                 try {
@@ -979,15 +983,19 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     Timber.w(e);
                 }
                 // Look for duplicates
-                ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(this, onlineContent, pHash, objectBoxDAO);
-                if (duplicateResult != null) {
-                    duplicateId = duplicateResult.left.getId();
-                    duplicateSimilarity = duplicateResult.right;
-                    // Content ID of the duplicate candidate of the currently viewed Content
-                    boolean duplicateSameSite = duplicateResult.left.getSite().equals(onlineContent.getSite());
-                    // Same site and similar => download by default, but look for extra pics just in case
-                    if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload)
-                        searchForExtraImages(duplicateResult.left, onlineContent);
+                try {
+                    ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(this, onlineContent, pHash, objectBoxDAO);
+                    if (duplicateResult != null) {
+                        duplicateId = duplicateResult.left.getId();
+                        duplicateSimilarity = duplicateResult.right;
+                        // Content ID of the duplicate candidate of the currently viewed Content
+                        boolean duplicateSameSite = duplicateResult.left.getSite().equals(onlineContent.getSite());
+                        // Same site and similar => download by default, but look for extra pics just in case
+                        if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload)
+                            searchForExtraImages(duplicateResult.left, onlineContent);
+                    }
+                } catch (Exception e) {
+                    Timber.w(e);
                 }
             }
 
@@ -1019,7 +1027,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         status -> onContentProcessed(status, quickDownload),
-                        Timber::e
+                        t -> {
+                            Timber.e(t);
+                            onContentProcessed(ContentStatus.UNKNOWN, false);
+                        }
                 );
     }
 
