@@ -149,7 +149,7 @@ public class LogHelper {
         logStr.append(info.logName).append(" log : begin").append(LINE_SEPARATOR);
         logStr.append(String.format("Hentoid ver: %s (%s)", BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)).append(LINE_SEPARATOR);
         logStr.append(String.format("API: %s", Build.VERSION.SDK_INT)).append(LINE_SEPARATOR);
-        logStr.append(String.format("Device: %s / %s", Build.PRODUCT, Build.MODEL)).append(LINE_SEPARATOR);
+        logStr.append(String.format("Device: %s", Build.MODEL)).append(LINE_SEPARATOR);
         if (info.entries.isEmpty())
             logStr.append("No activity to report - ").append(info.noDataMessage).append(LINE_SEPARATOR);
         else {
