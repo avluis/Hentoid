@@ -29,6 +29,7 @@
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"397"},
 	  {"sourceName":"TOONILY", "status":"ORANGE", "fixedByBuild":"400"},
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"400"},
+	  {"sourceName":"HITOMI", "status":"ORANGE"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
