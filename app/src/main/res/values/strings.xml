@@ -538,6 +538,10 @@
     <string name="page_unfavourite_success">Page unfavourited</string>
     <string name="book_favourite_success">Book favourited</string>
     <string name="book_unfavourite_success">Book unfavourited</string>
+    <string name="viewer_fix">Fix</string>
+    <string name="viewer_reload_page">Reload page</string>
+    <string name="viewer_reparse_book">Reparse book</string>
+
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

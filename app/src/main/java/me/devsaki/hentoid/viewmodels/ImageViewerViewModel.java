@@ -59,10 +59,13 @@ import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastHelper;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import okhttp3.Response;
@@ -808,7 +811,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void setCurrentPage(int pageIndex, int direction) {
-        // TODO don't download pages 0,1 and 2 when the book is not loaded yet
         final List<ImageFile> images = getViewerImages().getValue();
         if (null == images || images.size() <= pageIndex) return;
 
@@ -830,7 +832,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                 .subscribeOn(Schedulers.io())
                                 .subscribe(
                                         resultOpt -> {
-                                            if (resultOpt.isEmpty()) return;
+                                            if (resultOpt.isEmpty()) { // Nothing to download
+                                                downloadsInProgress.remove(index);
+                                                notifyDownloadProgress(-1, index);
+                                                return;
+                                            }
 
                                             int downloadedPageIndex = resultOpt.get().first;
                                             ImageFile downloadedPic = resultOpt.get().second;
@@ -870,7 +876,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Site site = content.getSite();
 
         List<Pair<String, String>> headers = new ArrayList<>();
-        HttpHelper.addCurrentCookiesToHeader(img.getUrl(), headers);
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
+        if (content.getSite().equals(Site.EHENTAI) || content.getSite().equals(Site.EXHENTAI)) { // TODO factorize if it works
+            HttpHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
+        } else {
+            HttpHelper.addCurrentCookiesToHeader(img.getUrl(), headers);
+        }
         try {
             final String targetFileName = content.getId() + "." + pageIndex + "." + HttpHelper.getExtensionFromUri(img.getUrl());
             File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
@@ -880,9 +891,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
                     Response response = HttpHelper.getOnlineResource(img.getUrl(), headers, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
                     Timber.d("DOWNLOADING PIC - RESPONSE %s", response.code());
+                    if (response.code() >= 300) return Optional.empty();
+
                     ResponseBody body = response.body();
                     if (null == body) return Optional.empty();
+
                     long size = body.contentLength();
+                    // TODO if size can't be found (e.g. content-length header not set), guess it by looking at the size of the other downloaded pics
+                    if (size < 1) size = 1;
 
                     targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
                     if (!targetFile.createNewFile())
@@ -896,6 +912,16 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
                         while ((len = in.read(buffer)) > -1) {
                             processed += len;
+                            // Read mime-type on the fly
+                            if (0 == iteration) {
+                                String mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
+                                if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
+                                    Timber.w("Invalid mime-type received from %s (size=%.2f)", img.getUrl(), size);
+                                    return Optional.empty();
+                                } else {
+                                    img.setMimeType(mimeType);
+                                }
+                            }
                             if (0 == ++iteration % 50) // Notify every 200KB
                                 notifyDownloadProgress((processed * 100f) / size, pageIndex);
                             out.write(buffer, 0, len);
@@ -908,8 +934,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     targetFile = existing[0];
                     Timber.d("PIC FOUND AT %s (%.2f KB)", targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
                 }
-
-                // TODO read mime-type on the fly
 
                 // Instanciate a new image to push it to the UI
                 ImageFile newImg = new ImageFile(img);
@@ -928,6 +952,27 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 && images.get(pageIndex).getFileUri().isEmpty();
     }
 
+    public void reparseBook() {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Observable.fromIterable(Stream.of(theContent).toList())
+                        .observeOn(Schedulers.io())
+                        .map(ContentHelper::reparseFromScratch)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnComplete(() -> {
+                            if (Preferences.isQueueAutostart())
+                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                        })
+                        .subscribe(
+                                v -> { // Nothing; feedback is done through LiveData
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
     private void notifyDownloadProgress(float progressPc, int pageIndex) {
         notificationDisposables.add(Completable.fromRunnable(() -> doNotifyDownloadProgress(progressPc, pageIndex))
                 .subscribeOn(Schedulers.computation())
@@ -939,7 +984,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doNotifyDownloadProgress(float progressPc, int pageIndex) {
         int progress = (int) Math.floor(progressPc);
-        if (progress < 100) {
+        if (progress < 0) { // Error
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.FAILURE, R.id.page_download, pageIndex, 0, 100, 100));
+        } else if (progress < 100) {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.page_download, pageIndex, progress, 0, 100));
         } else {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.page_download, pageIndex, progress, 0, 100));

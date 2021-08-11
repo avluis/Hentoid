@@ -14,6 +14,7 @@ import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -44,6 +45,9 @@ import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.skydoves.powermenu.MenuAnimation;
+import com.skydoves.powermenu.PowerMenu;
+import com.skydoves.powermenu.PowerMenuItem;
 import com.skydoves.submarine.SubmarineItem;
 import com.skydoves.submarine.SubmarineView;
 
@@ -75,6 +79,7 @@ import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -303,6 +308,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                 msgResource = R.string.loading_archive;
             }
 
+            binding.viewerFixBtn.setVisibility(View.GONE);
             binding.viewerLoadingTxt.setText(getResources().getString(msgResource, event.elementsKO + event.elementsOK, event.elementsTotal));
             binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
@@ -311,6 +317,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                 binding.controlsOverlay.viewerPrevBookBtn.setEnabled(true);
                 binding.controlsOverlay.viewerNextBookBtn.setEnabled(true);
             }
+        } else if (ProcessEvent.EventType.FAILURE == event.eventType) {
+            binding.viewerLoadingTxt.setVisibility(View.GONE);
+            binding.viewerFixBtn.setVisibility(View.VISIBLE);
         }
     }
 
@@ -399,6 +408,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                                         }
         );
 
+        // Fix page button
+        binding.viewerFixBtn.setOnClickListener(v -> fixPage());
 
         // Next/previous book
         binding.controlsOverlay.viewerPrevBookBtn.setOnClickListener(v -> previousBook());
@@ -738,6 +749,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
             // Don't show loading progress from previous image
             binding.viewerLoadingTxt.setVisibility(View.GONE);
+            binding.viewerFixBtn.setVisibility(View.GONE);
         }
 
         int scrollDirection = scrollPosition - imageIndex;
@@ -921,6 +933,40 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         } else {
             return LinearLayoutManager.VERTICAL;
         }
+    }
+
+    /**
+     * Handler for the "fix" button
+     */
+    private void fixPage() {
+        PowerMenu.Builder powerMenuBuilder = new PowerMenu.Builder(requireContext())
+                .setWidth(getResources().getDimensionPixelSize(R.dimen.dialog_width))
+                .setAnimation(MenuAnimation.SHOW_UP_CENTER)
+                .setMenuRadius(10f)
+                .setIsMaterial(true)
+                .setLifecycleOwner(requireActivity())
+                .setTextColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87))
+                .setTextTypeface(Typeface.DEFAULT)
+                .setMenuColor(ThemeHelper.getColor(requireContext(), R.color.window_background_light))
+                .setTextSize(Helper.dimensAsDp(requireContext(), R.dimen.text_subtitle_1))
+                .setAutoDismiss(true);
+
+        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.viewer_reload_page), R.drawable.ic_action_refresh, 0));
+        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.viewer_reparse_book), R.drawable.ic_attribute_source, 1));
+
+        PowerMenu powerMenu = powerMenuBuilder.build();
+
+        powerMenu.setOnMenuItemClickListener((position, item) -> {
+            int tag = (Integer) item.getTag();
+            if (0 == tag) {
+                viewModel.setCurrentPage(imageIndex, 0);
+            } else if (1 == tag) {
+                viewModel.reparseBook();
+            }
+        });
+
+        powerMenu.setIconColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87));
+        powerMenu.showAtCenter(binding.recyclerView);
     }
 
     /**

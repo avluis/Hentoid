@@ -952,13 +952,11 @@ public final class ContentHelper {
         ResponseBody body = response.body();
         if (null == body) return content;
 
-        InputStream parserStream = body.byteStream();
-
         Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(content.getSite());
         final Jspoon jspoon = Jspoon.create();
         HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
-        ContentParser contentParser = htmlAdapter.fromInputStream(parserStream, new URL(url));
+        ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(url));
         Content newContent = contentParser.update(content, url);
 
         if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {

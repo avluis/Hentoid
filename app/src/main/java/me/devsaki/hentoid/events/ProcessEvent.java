@@ -13,11 +13,12 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class ProcessEvent {
 
-    @IntDef({EventType.PROGRESS, EventType.COMPLETE})
+    @IntDef({EventType.PROGRESS, EventType.COMPLETE, EventType.FAILURE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface EventType {
         int PROGRESS = 0; // Processing in progress (1 element done)
-        int COMPLETE = 1; // Processing complete
+        int COMPLETE = 1; // Processing complete (possibly with a % of errors)
+        int FAILURE = 2; // Processing failed entirely
     }
 
     public final @EventType
