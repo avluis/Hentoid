@@ -304,14 +304,19 @@ public class HttpHelper {
      *
      * @param cookiesStr Cookie string, as set in HTTP headers
      * @return Parsed cookies
+     * TODO parsed as WHAT ?
      */
     public static Map<String, String> parseCookies(@NonNull String cookiesStr) {
         Map<String, String> result = new HashMap<>();
 
         String[] cookiesParts = cookiesStr.split(";");
         for (String cookie : cookiesParts) {
-            String[] cookieParts = cookie.trim().split("=");
-            result.put(cookieParts[0], (1 == cookieParts.length) ? "" : cookieParts[1]);
+            cookie = cookie.trim();
+            // Don't use split as the value of the cookie may contain an '='
+            int equalsIndex = cookie.indexOf('=');
+            if (equalsIndex > -1)
+                result.put(cookie.substring(0, equalsIndex), cookie.substring(equalsIndex + 1));
+            else result.put(cookie, "");
         }
 
         return result;
