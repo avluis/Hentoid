@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.preferences;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +23,6 @@ import com.annimon.stream.Stream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import me.devsaki.hentoid.R;
@@ -31,8 +32,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.CircularProgressView;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 05/2020
@@ -82,8 +81,11 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         } finally {
             dao.cleanup();
         }
-        double hentoidPrimaryUsageGb = Stream.of(primaryMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight)) * 1.0 / (1024 * 1024 * 1024);
-        double hentoidExternalUsageGb = Stream.of(externalMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight)) * 1.0 / (1024 * 1024 * 1024);
+        long hentoidPrimaryUsageByte = Stream.of(primaryMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight));
+        long hentoidExternalUsageByte = Stream.of(externalMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight));
+
+        double hentoidPrimaryUsageGb = hentoidPrimaryUsageByte * 1.0 / (1024 * 1024 * 1024);
+        double hentoidExternalUsageGb = hentoidExternalUsageByte * 1.0 / (1024 * 1024 * 1024);
 
         CircularProgressView donut = requireViewById(rootView, R.id.memory_global_graph);
         donut.setTotalColor(requireContext(), R.color.primary_light);
@@ -98,8 +100,8 @@ public class MemoryUsageDialogFragment extends DialogFragment {
 
         ((TextView) requireViewById(rootView, R.id.memory_total)).setText(getResources().getString(R.string.memory_total, deviceTotalGb));
         ((TextView) requireViewById(rootView, R.id.memory_free)).setText(getResources().getString(R.string.memory_free, deviceFreeGb));
-        ((TextView) requireViewById(rootView, R.id.memory_hentoid_main)).setText(getResources().getString(R.string.memory_hentoid_main, hentoidPrimaryUsageGb));
-        ((TextView) requireViewById(rootView, R.id.memory_hentoid_ext)).setText(getResources().getString(R.string.memory_hentoid_ext, hentoidExternalUsageGb));
+        ((TextView) requireViewById(rootView, R.id.memory_hentoid_main)).setText(getResources().getString(R.string.memory_hentoid_main, FileHelper.formatHumanReadableSize(hentoidPrimaryUsageByte)));
+        ((TextView) requireViewById(rootView, R.id.memory_hentoid_ext)).setText(getResources().getString(R.string.memory_hentoid_ext, FileHelper.formatHumanReadableSize(hentoidExternalUsageByte)));
 
         table = requireViewById(rootView, R.id.memory_details_table);
         addRow(table, "Source", "Books", "Size");
@@ -107,7 +109,7 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         // Sort sources by largest size
         List<Map.Entry<Site, ImmutablePair<Integer, Long>>> sitesBySize = Stream.of(primaryMemUsage).sortBy(entry -> -entry.getValue().right).toList();
         for (Map.Entry<Site, ImmutablePair<Integer, Long>> entry : sitesBySize) {
-            addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", String.format(Locale.ENGLISH, "%.1f MB", entry.getValue().right / (1024.0 * 1024)));
+            addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", FileHelper.formatHumanReadableSize(entry.getValue().right));
         }
 
         // Make details fold/unfold
