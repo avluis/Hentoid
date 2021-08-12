@@ -174,7 +174,7 @@ public class ContentDownloadWorker extends BaseWorker {
      *
      * @return 1st book of the download queue; null if no book is available to download
      */
-    @SuppressLint("TimberExceptionLogging")
+    @SuppressLint({"TimberExceptionLogging", "TimberArgCount"})
     @NonNull
     private ImmutablePair<QueuingResult, Content> downloadFirstInQueue() {
         final String CONTENT_PART_IMAGE_LIST = "Image list";

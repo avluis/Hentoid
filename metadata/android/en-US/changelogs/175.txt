@@ -1,0 +1,12 @@
+
+Fixed
+
+    Hitomi : Align with new image hosts
+    NHentai, MyReadingManga : Download button shouldn't be greyed out anymore (if it still is, clear app data)
+    MyReadingManga : Removed ad pictures
+
+Changed
+
+    Memory usage screen : Sizes are easier to read
+
+
