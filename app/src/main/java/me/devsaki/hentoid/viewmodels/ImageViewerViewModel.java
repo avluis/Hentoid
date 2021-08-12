@@ -19,6 +19,7 @@ import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
@@ -65,7 +66,6 @@ import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
-import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import okhttp3.Response;
@@ -830,6 +830,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 imageDownloadDisposable.add( // TODO handle dynamically
                         Single.fromCallable(() -> downloadPic(index, cachePicFolder))
                                 .subscribeOn(Schedulers.io())
+                                .observeOn(Schedulers.computation())
                                 .subscribe(
                                         resultOpt -> {
                                             if (resultOpt.isEmpty()) { // Nothing to download
@@ -838,8 +839,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                                 return;
                                             }
 
-                                            int downloadedPageIndex = resultOpt.get().first;
-                                            ImageFile downloadedPic = resultOpt.get().second;
+                                            int downloadedPageIndex = resultOpt.get().left;
 
                                             synchronized (viewerImages) {
                                                 List<ImageFile> images2 = viewerImages.getValue();
@@ -847,14 +847,20 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                                     return;
 
                                                 images2 = Stream.of(images2).toList();
+
+                                                // Instanciate a new ImageFile not to modify the one used by the UI
+                                                ImageFile downloadedPic = new ImageFile(images2.get(downloadedPageIndex));
+                                                downloadedPic.setFileUri(resultOpt.get().middle);
+                                                downloadedPic.setMimeType(resultOpt.get().right);
+
                                                 images2.remove(downloadedPageIndex);
                                                 images2.add(downloadedPageIndex, downloadedPic);
                                                 Timber.d("REPLACING INDEX %d - ORDER %d", downloadedPageIndex, downloadedPic.getOrder());
 
                                                 // Instanciate a new list to trigger an actual Adapter UI refresh
                                                 viewerImages.postValue(images2);
+                                                imageLocations.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
                                             }
-                                            imageLocations.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
                                         },
                                         Timber::w
                                 )
@@ -863,7 +869,16 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    private Optional<Pair<Integer, ImageFile>> downloadPic(int pageIndex, @NonNull File targetFolder) {
+    private boolean isPictureDownloadable(int pageIndex, @NonNull List<ImageFile> images) {
+        return pageIndex > -1
+                && images.size() > pageIndex
+                && images.get(pageIndex).getStatus().equals(StatusContent.ONLINE)
+                && images.get(pageIndex).getFileUri().isEmpty();
+    }
+
+    // TODO doc
+    // returns pageIndex and a the URI of the downloaded file
+    private Optional<ImmutableTriple<Integer, String, String>> downloadPic(int pageIndex, @NonNull File targetFolder) {
         List<ImageFile> images = getViewerImages().getValue();
         Content content = getContent().getValue();
         if (null == images || null == content || images.size() <= pageIndex)
@@ -873,6 +888,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         downloadsInProgress.add(pageIndex);
 
         ImageFile img = images.get(pageIndex);
+        // Already downloaded
+        if (!img.getFileUri().isEmpty())
+            return Optional.of(new ImmutableTriple<>(pageIndex, img.getFileUri(), img.getMimeType()));
+
+        // Initiate download
         Site site = content.getSite();
 
         List<Pair<String, String>> headers = new ArrayList<>();
@@ -885,12 +905,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
         try {
             final String targetFileName = content.getId() + "." + pageIndex + "." + HttpHelper.getExtensionFromUri(img.getUrl());
             File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
+            String mimeType = ImageHelper.MIME_IMAGE_GENERIC;
             if (existing != null) {
                 File targetFile;
                 if (0 == existing.length) {
                     Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
                     Response response = HttpHelper.getOnlineResource(img.getUrl(), headers, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-                    Timber.d("DOWNLOADING PIC - RESPONSE %s", response.code());
+                    Timber.d("DOWNLOADING PIC %d - RESPONSE %s", pageIndex, response.code());
                     if (response.code() >= 300) return Optional.empty();
 
                     ResponseBody body = response.body();
@@ -904,7 +925,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     if (!targetFile.createNewFile())
                         throw new IOException("Could not create file " + targetFile.getPath());
 
-                    Timber.d("WRITING DOWNLOADED PIC TO %s (size %.2f KB)", targetFile.getAbsolutePath(), size / 1024.0);
+                    Timber.d("WRITING DOWNLOADED PIC %d TO %s (size %.2f KB)", pageIndex, targetFile.getAbsolutePath(), size / 1024.0);
                     byte[] buffer = new byte[4196];
                     int len;
                     long processed = 0;
@@ -914,12 +935,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             processed += len;
                             // Read mime-type on the fly
                             if (0 == iteration) {
-                                String mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
+                                mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
                                 if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
                                     Timber.w("Invalid mime-type received from %s (size=%.2f)", img.getUrl(), size);
                                     return Optional.empty();
-                                } else {
-                                    img.setMimeType(mimeType);
                                 }
                             }
                             if (0 == ++iteration % 50) // Notify every 200KB
@@ -929,27 +948,18 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         notifyDownloadProgress(100, pageIndex);
                         out.flush();
                     }
-                    Timber.d("DOWNLOADED PIC WRITTEN TO %s (%.2f KB)", targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+                    Timber.d("DOWNLOADED PIC %d WRITTEN TO %s (%.2f KB)", pageIndex, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
                 } else { // Image is already there
                     targetFile = existing[0];
-                    Timber.d("PIC FOUND AT %s (%.2f KB)", targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+                    Timber.d("PIC %d FOUND AT %s (%.2f KB)", pageIndex, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
                 }
 
-                // Instanciate a new image to push it to the UI
-                ImageFile newImg = new ImageFile(img);
-                return Optional.of(new Pair<>(pageIndex, newImg.setFileUri(Uri.fromFile(targetFile).toString())));
+                return Optional.of(new ImmutableTriple<>(pageIndex, Uri.fromFile(targetFile).toString(), mimeType));
             }
         } catch (IOException e) {
             Timber.w(e);
         }
         return Optional.empty();
-    }
-
-    private boolean isPictureDownloadable(int pageIndex, @NonNull List<ImageFile> images) {
-        return pageIndex > -1
-                && images.size() > pageIndex
-                && images.get(pageIndex).getStatus().equals(StatusContent.ONLINE)
-                && images.get(pageIndex).getFileUri().isEmpty();
     }
 
     public void reparseBook() {
