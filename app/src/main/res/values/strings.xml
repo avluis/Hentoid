@@ -223,8 +223,8 @@
     <string name="memory_title">Memory usage</string>
     <string name="memory_total">Total : %.2f GB</string>
     <string name="memory_free">Free : %.2f GB</string>
-    <string name="memory_hentoid_main">Hentoid (primary) : %.2f GB</string>
-    <string name="memory_hentoid_ext">Hentoid (external) : %.2f GB</string>
+    <string name="memory_hentoid_main">Hentoid (primary) : %s</string>
+    <string name="memory_hentoid_ext">Hentoid (external) : %s</string>
     <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
     <string name="memory_details">View details (primary)</string>
 
