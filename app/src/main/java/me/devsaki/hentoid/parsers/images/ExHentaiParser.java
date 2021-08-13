@@ -13,12 +13,10 @@ import com.annimon.stream.Optional;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -104,6 +102,7 @@ public class ExHentaiParser implements ImageListParser {
         return result;
     }
 
+    @SuppressWarnings("BusyWait")
     private List<ImageFile> loadMpv(
             @NonNull Content content,
             @NonNull final String mpvUrl,
@@ -189,16 +188,6 @@ public class ExHentaiParser implements ImageListParser {
         for (String pageUrl : pageUrls) {
             result.add(ImageFile.fromPageUrl(order++, pageUrl, StatusContent.SAVED, pageUrls.size()));
         }
-
-        /*
-        int order = 1;
-        for (String pageUrl : pageUrls) {
-            if (processHalted) break;
-            ImageFile img = EHentaiParser.parsePicturePage(pageUrl, headers, useHentoidAgent, useWebviewAgent, order++, pageUrls.size());
-            if (img != null) result.add(img);
-            progress.advance();
-        }
-         */
 
         return result;
     }

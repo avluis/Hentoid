@@ -13,13 +13,11 @@ import com.squareup.moshi.Types;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -119,6 +117,7 @@ public class EHentaiParser implements ImageListParser {
         return result;
     }
 
+    @SuppressWarnings("BusyWait")
     private List<ImageFile> loadMpv(
             @NonNull Content content,
             @NonNull final String mpvUrl,
@@ -206,16 +205,6 @@ public class EHentaiParser implements ImageListParser {
             result.add(ImageFile.fromPageUrl(order++, pageUrl, StatusContent.SAVED, pageUrls.size()));
         }
 
-        /*
-        int order = 1;
-        for (String pageUrl : pageUrls) {
-            if (processHalted) break;
-            ImageFile img = parsePicturePage(pageUrl, headers, useHentoidAgent, useWebviewAgent, order++, pageUrls.size());
-            if (img != null) result.add(img);
-            progress.advance();
-        }
-         */
-
         return result;
     }
 
@@ -258,40 +247,6 @@ public class EHentaiParser implements ImageListParser {
         }
         return Optional.empty();
     }
-
-    /*
-    @Nullable
-    static ImageFile parsePicturePage(
-            @NonNull final String url,
-            @NonNull final List<Pair<String, String>> headers,
-            boolean useHentoidAgent,
-            boolean useWebviewAgent,
-            int order,
-            int nbPages
-    ) throws IOException, LimitReachedException {
-        ImageFile img = null;
-        Document doc = getOnlineDocument(url, headers, useHentoidAgent, useWebviewAgent);
-        if (doc != null) {
-            // Displayed image
-            String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
-            if (!imageUrl.isEmpty()) {
-                // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
-                if (imageUrl.contains("/509.gif"))
-                    throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
-                img = ParseHelper.urlToImageFile(imageUrl, order, nbPages, StatusContent.SAVED);
-
-                Optional<String> backupUrl = getBackupPageUrl(doc, url);
-                if (backupUrl.isPresent()) {
-                    Map<String, String> targetDownloadParams = new HashMap<>();
-                    targetDownloadParams.put("backupUrl", backupUrl.get());
-                    String downloadParamsStr = JsonHelper.serializeToJson(targetDownloadParams, JsonHelper.MAP_STRINGS);
-                    img.setDownloadParams(downloadParamsStr);
-                }
-            }
-        }
-        return img;
-    }
-     */
 
     @Nullable
     static MpvInfo parseMpvPage(@NonNull final String url,
