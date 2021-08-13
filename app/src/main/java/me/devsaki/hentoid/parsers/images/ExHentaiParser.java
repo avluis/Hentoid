@@ -208,7 +208,7 @@ public class ExHentaiParser implements ImageListParser {
     }
 
     @Override
-    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull Map<String, String> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
         return EHentaiParser.parseImagePageEh(url, requestHeaders);
     }
 

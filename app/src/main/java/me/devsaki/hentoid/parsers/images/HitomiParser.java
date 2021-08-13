@@ -11,7 +11,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,7 +93,7 @@ public class HitomiParser implements ImageListParser {
     }
 
     @Override
-    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull Map<String, String> requestHeaders) {
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) {
         throw new NotImplementedException();
     }
 

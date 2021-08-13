@@ -10,7 +10,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -167,9 +166,10 @@ public class FakkuParser implements ImageListParser {
     }
 
     @Override
-    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull Map<String, String> requestHeaders) {
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
         throw new NotImplementedException();
     }
+
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
         // This class does not use backup URLs

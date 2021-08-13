@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.images;
 
+import android.util.Pair;
 import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
@@ -12,7 +13,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +63,7 @@ public abstract class BaseImageListParser implements ImageListParser {
         return Optional.of(img);
     }
 
-    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull Map<String, String> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
         throw new NotImplementedException();
     }
 

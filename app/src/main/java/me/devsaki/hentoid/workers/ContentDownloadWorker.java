@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Pair;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
@@ -767,8 +768,9 @@ public class ContentDownloadWorker extends BaseWorker {
         requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
 
         try {
+            List<Pair<String, String>> reqHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.getPageUrl());
             ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content.getSite());
-            ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(img.getPageUrl(), requestHeaders);
+            ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(img.getPageUrl(), reqHeaders);
             img.setUrl(pages.left);
             // Set backup URL
             if (pages.right.isPresent()) img.setBackupUrl(pages.right.get());

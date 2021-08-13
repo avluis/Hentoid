@@ -19,6 +19,7 @@ import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.greenrobot.eventbus.EventBus;
 
@@ -32,6 +33,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -56,6 +58,8 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
+import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -66,6 +70,9 @@ import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.exception.LimitReachedException;
+import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import okhttp3.Response;
@@ -869,6 +876,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
+    // TODO doc
     private boolean isPictureDownloadable(int pageIndex, @NonNull List<ImageFile> images) {
         return pageIndex > -1
                 && images.size() > pageIndex
@@ -879,6 +887,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // TODO doc
     // returns pageIndex and a the URI of the downloaded file
     private Optional<ImmutableTriple<Integer, String, String>> downloadPic(int pageIndex, @NonNull File targetFolder) {
+        Helper.assertNonUiThread();
         List<ImageFile> images = getViewerImages().getValue();
         Content content = getContent().getValue();
         if (null == images || null == content || images.size() <= pageIndex)
@@ -893,62 +902,29 @@ public class ImageViewerViewModel extends AndroidViewModel {
             return Optional.of(new ImmutableTriple<>(pageIndex, img.getFileUri(), img.getMimeType()));
 
         // Initiate download
-        Site site = content.getSite();
-
-        List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
-        if (content.getSite().equals(Site.EHENTAI) || content.getSite().equals(Site.EXHENTAI)) { // TODO factorize if it works
-            HttpHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
-        } else {
-            HttpHelper.addCurrentCookiesToHeader(img.getUrl(), headers);
-        }
         try {
             final String targetFileName = content.getId() + "." + pageIndex + "." + HttpHelper.getExtensionFromUri(img.getUrl());
             File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
             String mimeType = ImageHelper.MIME_IMAGE_GENERIC;
             if (existing != null) {
                 File targetFile;
+                // No cached image -> fetch online
                 if (0 == existing.length) {
-                    Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
-                    Response response = HttpHelper.getOnlineResource(img.getUrl(), headers, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-                    Timber.d("DOWNLOADING PIC %d - RESPONSE %s", pageIndex, response.code());
-                    if (response.code() >= 300) return Optional.empty();
-
-                    ResponseBody body = response.body();
-                    if (null == body) return Optional.empty();
-
-                    long size = body.contentLength();
-                    // TODO if size can't be found (e.g. content-length header not set), guess it by looking at the size of the other downloaded pics
-                    if (size < 1) size = 1;
-
-                    targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
-                    if (!targetFile.createNewFile())
-                        throw new IOException("Could not create file " + targetFile.getPath());
-
-                    Timber.d("WRITING DOWNLOADED PIC %d TO %s (size %.2f KB)", pageIndex, targetFile.getAbsolutePath(), size / 1024.0);
-                    byte[] buffer = new byte[4196];
-                    int len;
-                    long processed = 0;
-                    int iteration = 0;
-                    try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
-                        while ((len = in.read(buffer)) > -1) {
-                            processed += len;
-                            // Read mime-type on the fly
-                            if (0 == iteration) {
-                                mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
-                                if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
-                                    Timber.w("Invalid mime-type received from %s (size=%.2f)", img.getUrl(), size);
-                                    return Optional.empty();
-                                }
-                            }
-                            if (0 == ++iteration % 50) // Notify every 200KB
-                                notifyDownloadProgress((processed * 100f) / size, pageIndex);
-                            out.write(buffer, 0, len);
-                        }
-                        notifyDownloadProgress(100, pageIndex);
-                        out.flush();
+                    List<Pair<String, String>> headers = new ArrayList<>();
+                    headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
+                    if (content.getSite().equals(Site.EHENTAI) || content.getSite().equals(Site.EXHENTAI)) { // TODO factorize if it works
+                        HttpHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
+                    } else {
+                        HttpHelper.addCurrentCookiesToHeader(img.getUrl(), headers);
                     }
-                    Timber.d("DOWNLOADED PIC %d WRITTEN TO %s (%.2f KB)", pageIndex, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+
+                    ImmutablePair<File, String> result;
+                    if (img.needsPageParsing())
+                        result = downloadPictureFromPage(content, img, pageIndex, headers, targetFolder, targetFileName);
+                    else
+                        result = downloadPictureToCachedFile(content, img, pageIndex, headers, targetFolder, targetFileName);
+                    targetFile = result.left;
+                    mimeType = result.right;
                 } else { // Image is already there
                     targetFile = existing[0];
                     Timber.d("PIC %d FOUND AT %s (%.2f KB)", pageIndex, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
@@ -956,12 +932,107 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
                 return Optional.of(new ImmutableTriple<>(pageIndex, Uri.fromFile(targetFile).toString(), mimeType));
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             Timber.w(e);
         }
+            /*
+        } catch (UnsupportedOperationException | IllegalArgumentException e) {
+            Timber.w(e, "Could not read image from page %s", pageUrl);
+            logErrorRecord(content.getId(), ErrorType.PARSING, pageUrl, "Page " + img.getName(), "Could not read image from page " + pageUrl + " " + e.getMessage());
+        } catch (IOException ioe) {
+            Timber.w(ioe, "Could not read page data from %s", pageUrl);
+            logErrorRecord(content.getId(), ErrorType.IO, pageUrl, "Page " + img.getName(), "Could not read page data from " + pageUrl + " " + ioe.getMessage());
+        } catch (LimitReachedException lre) {
+            String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
+            logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Page " + img.getName(), description);
+        } catch (EmptyResultException ere) {
+            Timber.w(ere, "No images have been found while parsing %s", content.getTitle());
+            logErrorRecord(content.getId(), ErrorType.PARSING, pageUrl, "Page " + img.getName(), "No images have been found. Error = " + ere.getMessage());
+        }
+             */
         return Optional.empty();
     }
 
+    // TODO doc
+    private ImmutablePair<File, String> downloadPictureFromPage(@NonNull Content content,
+                                                                @NonNull ImageFile img,
+                                                                int pageIndex,
+                                                                List<Pair<String, String>> requestHeaders,
+                                                                @NonNull File targetFolder,
+                                                                @NonNull String targetFileName) throws
+            UnsupportedContentException, IOException, LimitReachedException, EmptyResultException {
+        Site site = content.getSite();
+        String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content.getSite());
+        ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
+        img.setUrl(pages.left);
+        // Download the picture
+        try {
+            return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName);
+        } catch (IOException e) {
+            if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
+            else throw e;
+        }
+        // Trying with backup URL
+        img.setUrl(pages.right.get());
+        return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName);
+    }
+
+    private ImmutablePair<File, String> downloadPictureToCachedFile(
+            @NonNull Content content,
+            @NonNull ImageFile img,
+            int pageIndex,
+            List<Pair<String, String>> requestHeaders,
+            @NonNull File targetFolder,
+            @NonNull String targetFileName) throws IOException, UnsupportedContentException {
+
+        Site site = content.getSite();
+        Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
+        Response response = HttpHelper.getOnlineResource(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        Timber.d("DOWNLOADING PIC %d - RESPONSE %s", pageIndex, response.code());
+        if (response.code() >= 300) throw new IOException("Network error " + response.code());
+
+        ResponseBody body = response.body();
+        if (null == body)
+            throw new IOException("Could not read response : empty body for " + img.getUrl());
+
+        long size = body.contentLength();
+        // TODO if size can't be found (e.g. content-length header not set), guess it by looking at the size of the other downloaded pics
+        if (size < 1) size = 1;
+
+        File targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
+        String mimeType = "";
+        if (!targetFile.createNewFile())
+            throw new IOException("Could not create file " + targetFile.getPath());
+
+        Timber.d("WRITING DOWNLOADED PIC %d TO %s (size %.2f KB)", pageIndex, targetFile.getAbsolutePath(), size / 1024.0);
+        byte[] buffer = new byte[4196];
+        int len;
+        long processed = 0;
+        int iteration = 0;
+        try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
+            while ((len = in.read(buffer)) > -1) {
+                processed += len;
+                // Read mime-type on the fly
+                if (0 == iteration) {
+                    mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
+                    if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
+                        String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", img.getUrl(), size);
+                        throw new UnsupportedContentException(message);
+                    }
+                }
+                if (0 == ++iteration % 50) // Notify every 200KB
+                    notifyDownloadProgress((processed * 100f) / size, pageIndex);
+                out.write(buffer, 0, len);
+            }
+            notifyDownloadProgress(100, pageIndex);
+            out.flush();
+        }
+        Timber.d("DOWNLOADED PIC %d WRITTEN TO %s (%.2f KB)", pageIndex, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+        return new ImmutablePair<>(targetFile, mimeType);
+    }
+
+    // TODO doc
     public void reparseBook() {
         Content theContent = content.getValue();
         if (null == theContent) return;
@@ -983,6 +1054,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
+    // TODO doc
     private void notifyDownloadProgress(float progressPc, int pageIndex) {
         notificationDisposables.add(Completable.fromRunnable(() -> doNotifyDownloadProgress(progressPc, pageIndex))
                 .subscribeOn(Schedulers.computation())
@@ -992,6 +1064,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
+    // TODO doc
     private void doNotifyDownloadProgress(float progressPc, int pageIndex) {
         int progress = (int) Math.floor(progressPc);
         if (progress < 0) { // Error
