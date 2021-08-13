@@ -28,6 +28,7 @@ public class ImageFile {
     private long id;
     private Integer order = -1;
     private String url = "";
+    private String pageUrl = "";
     private String name = "";
     private String fileUri = "";
     private boolean read = false;
@@ -47,10 +48,13 @@ public class ImageFile {
 
     // Runtime attributes; no need to expose them nor to persist them
 
-    // Display order of the image in the image viewer
+    // Display order of the image in the image viewer (view-time only)
     @Transient
     private int displayOrder;
-    // Has the image been read from a backup URL ?
+    // Backup URL for that picture (download-time only)
+    @Transient
+    private String backupUrl = "";
+    // Has the image been read from a backup URL ? (download-time only)
     @Transient
     private boolean isBackup = false;
 
@@ -61,6 +65,7 @@ public class ImageFile {
         this.id = img.id;
         this.order = img.order;
         this.url = img.url;
+        this.pageUrl = img.pageUrl;
         this.name = img.name;
         this.fileUri = img.fileUri;
         this.read = img.read;
@@ -74,23 +79,37 @@ public class ImageFile {
         this.imageHash = img.imageHash;
         this.downloadParams = img.downloadParams;
         this.displayOrder = img.displayOrder;
+        this.backupUrl = img.backupUrl;
         this.isBackup = img.isBackup;
     }
 
-    public ImageFile(int order, String url, StatusContent status, int maxPages) {
-        this.order = order;
+    public static ImageFile fromImageUrl(int order, String url, StatusContent status, int maxPages) {
+        ImageFile result = new ImageFile();
+        init(result, order, status, maxPages);
+        result.url = url;
+        return result;
+    }
 
-        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
-        this.name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
-
-        this.url = url;
-        this.status = status;
+    public static ImageFile fromPageUrl(int order, String url, StatusContent status, int maxPages) {
+        ImageFile result = new ImageFile();
+        init(result, order, status, maxPages);
+        result.pageUrl = url;
+        return result;
     }
 
     public static ImageFile newCover(String url, StatusContent status) {
         ImageFile result = new ImageFile().setOrder(0).setUrl(url).setStatus(status);
         result.setName(Consts.THUMB_FILE_NAME).setIsCover(true);
         return result;
+    }
+
+    private static void init(ImageFile imgFile, int order, StatusContent status, int maxPages) {
+        imgFile.order = order;
+
+        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
+        imgFile.name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
+
+        imgFile.status = status;
     }
 
     public long getId() {
@@ -117,6 +136,14 @@ public class ImageFile {
     public ImageFile setUrl(String url) {
         this.url = url;
         return this;
+    }
+
+    public String getPageUrl() {
+        return pageUrl;
+    }
+
+    public void setPageUrl(String pageUrl) {
+        this.pageUrl = pageUrl;
     }
 
     public String getName() {
@@ -187,6 +214,14 @@ public class ImageFile {
 
     public void setBackup(boolean backup) {
         isBackup = backup;
+    }
+
+    public String getBackupUrl() {
+        return backupUrl;
+    }
+
+    public void setBackupUrl(String backupUrl) {
+        this.backupUrl = backupUrl;
     }
 
     public String getMimeType() {
@@ -262,22 +297,28 @@ public class ImageFile {
         return result;
     }
 
+    public boolean needsPageParsing() {
+        return (pageUrl != null && !pageUrl.isEmpty() && (null == url || url.isEmpty()));
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ImageFile imageFile = (ImageFile) o;
         return getId() == imageFile.getId() &&
-                Objects.equals(getUrl(), imageFile.getUrl());
+                Objects.equals(getUrl(), imageFile.getUrl())
+                &&
+                Objects.equals(getPageUrl(), imageFile.getPageUrl());
     }
 
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getUrl());
+        return Objects.hash(getId(), getPageUrl(), getUrl());
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + url).getBytes());
+        return Helper.hash64((id + "." + pageUrl + "." + url).getBytes());
     }
 }

@@ -51,12 +51,12 @@ public class DoujinsContent extends BaseContentParser {
             int index = 0;
             List<ImageFile> imgs = new ArrayList<>();
             // Cover
-            ImageFile cover = new ImageFile(index++, content.getCoverImageUrl(), StatusContent.SAVED, images.size());
+            ImageFile cover = ImageFile.fromImageUrl(index++, content.getCoverImageUrl(), StatusContent.SAVED, images.size());
             cover.setIsCover(true);
             imgs.add(cover);
             // Images
             for (Element e : images)
-                imgs.add(new ImageFile(index++, e.attr("data-file"), StatusContent.SAVED, images.size()));
+                imgs.add(ImageFile.fromImageUrl(index++, e.attr("data-file"), StatusContent.SAVED, images.size()));
             content.setImageFiles(imgs);
         }
 

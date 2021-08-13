@@ -943,6 +943,7 @@ public class FileHelper {
         return "";
     }
 
+    // TODO doc; must only be used for text files
     public static String readStreamAsString(@NonNull final InputStream str) throws IOException, IllegalArgumentException {
         StringBuilder result = new StringBuilder();
         String sCurrentLine;

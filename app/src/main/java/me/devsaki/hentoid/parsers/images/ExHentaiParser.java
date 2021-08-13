@@ -1,17 +1,24 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.parsers.images.EHentaiParser.MPV_LINK_CSS;
+import static me.devsaki.hentoid.parsers.images.EHentaiParser.getCookieStr;
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
 import com.annimon.stream.Optional;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,10 +43,6 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.parsers.images.EHentaiParser.MPV_LINK_CSS;
-import static me.devsaki.hentoid.parsers.images.EHentaiParser.getCookieStr;
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class ExHentaiParser implements ImageListParser {
 
@@ -154,7 +157,7 @@ public class ExHentaiParser implements ImageListParser {
             @NonNull final Document galleryDoc,
             @NonNull final List<Pair<String, String>> headers,
             boolean useHentoidAgent,
-            boolean useWebviewAgent) throws IOException, LimitReachedException {
+            boolean useWebviewAgent) throws IOException {
         List<ImageFile> result = new ArrayList<>();
 
         // A.1- Detect the number of pages of the gallery
@@ -164,7 +167,7 @@ public class ExHentaiParser implements ImageListParser {
         int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
         int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
-        progress.start(content.getId(), nbGalleryPages + content.getQtyPages());
+        progress.start(content.getId(), nbGalleryPages);
 
         // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
         List<String> pageUrls = new ArrayList<>();
@@ -179,10 +182,15 @@ public class ExHentaiParser implements ImageListParser {
             }
         }
 
-        // 3- Open all pages and
-        //    - grab the URL of the displayed image
-        //    - grab the alternate URL of the "Click here if the image fails loading" link
+        // 3- Add all pages for the downloader to parse
         result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+
+        int order = 1;
+        for (String pageUrl : pageUrls) {
+            result.add(ImageFile.fromPageUrl(order++, pageUrl, StatusContent.SAVED, pageUrls.size()));
+        }
+
+        /*
         int order = 1;
         for (String pageUrl : pageUrls) {
             if (processHalted) break;
@@ -190,6 +198,7 @@ public class ExHentaiParser implements ImageListParser {
             if (img != null) result.add(img);
             progress.advance();
         }
+         */
 
         return result;
     }
@@ -207,6 +216,23 @@ public class ExHentaiParser implements ImageListParser {
                 return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED, chapter));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull InputStream pageData, @NonNull String baseUri) throws IOException, LimitReachedException, EmptyResultException {
+        Document doc = Jsoup.parse(pageData, null, baseUri);
+        if (doc != null) {
+            String imageUrl = EHentaiParser.getDisplayedImageUrl(doc).toLowerCase();
+            // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
+            if (imageUrl.contains("/509.gif"))
+                throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
+
+            Optional<String> backupUrl = EHentaiParser.getBackupPageUrl(doc, baseUri);
+
+            if (!imageUrl.isEmpty())
+                return new ImmutablePair<>(imageUrl, backupUrl);
+        }
+        throw new EmptyResultException("Page contains no picture data : " + baseUri);
     }
 
     /**

@@ -205,7 +205,7 @@
     },
     {
       "id": "3:2849837771881495731",
-      "lastPropertyId": "16:5043947488067507192",
+      "lastPropertyId": "17:4756936261641767706",
       "name": "ImageFile",
       "properties": [
         {
@@ -296,6 +296,11 @@
           "type": 11,
           "flags": 1548,
           "relationTarget": "Chapter"
+        },
+        {
+          "id": "17:4756936261641767706",
+          "name": "pageUrl",
+          "type": 9
         }
       ],
       "relations": []

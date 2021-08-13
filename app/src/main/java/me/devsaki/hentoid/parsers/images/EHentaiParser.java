@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 import android.webkit.URLUtil;
 
@@ -8,16 +10,18 @@ import androidx.annotation.NonNull;
 import com.annimon.stream.Optional;
 import com.squareup.moshi.Types;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,8 +46,6 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class EHentaiParser implements ImageListParser {
 
@@ -169,7 +171,7 @@ public class EHentaiParser implements ImageListParser {
             @NonNull final Document galleryDoc,
             @NonNull final List<Pair<String, String>> headers,
             boolean useHentoidAgent,
-            boolean useWebviewAgent) throws IOException, LimitReachedException {
+            boolean useWebviewAgent) throws IOException {
         List<ImageFile> result = new ArrayList<>();
 
         // A.1- Detect the number of pages of the gallery
@@ -179,7 +181,7 @@ public class EHentaiParser implements ImageListParser {
         int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
         int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
-        progress.start(content.getId(), nbGalleryPages + content.getQtyPages());
+        progress.start(content.getId(), nbGalleryPages);
 
         // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
         List<String> pageUrls = new ArrayList<>();
@@ -198,6 +200,13 @@ public class EHentaiParser implements ImageListParser {
         //    - grab the URL of the displayed image
         //    - grab the alternate URL of the "Click here if the image fails loading" link
         result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+
+        int order = 1;
+        for (String pageUrl : pageUrls) {
+            result.add(ImageFile.fromPageUrl(order++, pageUrl, StatusContent.SAVED, pageUrls.size()));
+        }
+
+        /*
         int order = 1;
         for (String pageUrl : pageUrls) {
             if (processHalted) break;
@@ -205,6 +214,7 @@ public class EHentaiParser implements ImageListParser {
             if (img != null) result.add(img);
             progress.advance();
         }
+         */
 
         return result;
     }
@@ -227,6 +237,29 @@ public class EHentaiParser implements ImageListParser {
         return "";
     }
 
+    static Optional<String> getBackupPageUrl(@NonNull Document doc, @NonNull String queryUrl) {
+        // "Click here if the image fails loading" link
+        // -> add backup info to the image's downloadParams
+        Elements elements = doc.select("#loadfail");
+        if (!elements.isEmpty()) {
+            Element e = elements.first();
+            String arg = e.attr("onclick");
+            // Get the argument between 's
+            int quoteBegin = arg.indexOf('\'');
+            int quoteEnd = arg.indexOf('\'', quoteBegin + 1);
+            arg = arg.substring(quoteBegin + 1, quoteEnd);
+            // Get the query URL
+            String backupUrl = queryUrl;
+            if (backupUrl.contains("?")) backupUrl += "&";
+            else backupUrl += "?";
+            backupUrl += "nl=" + arg;
+            // Get the final URL
+            if (URLUtil.isValidUrl(backupUrl)) return Optional.of(backupUrl);
+        }
+        return Optional.empty();
+    }
+
+    /*
     @Nullable
     static ImageFile parsePicturePage(
             @NonNull final String url,
@@ -247,33 +280,18 @@ public class EHentaiParser implements ImageListParser {
                     throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
                 img = ParseHelper.urlToImageFile(imageUrl, order, nbPages, StatusContent.SAVED);
 
-                // "Click here if the image fails loading" link
-                // -> add backup info to the image's downloadParams
-                Elements elements = doc.select("#loadfail");
-                if (!elements.isEmpty()) {
-                    Element e = elements.first();
-                    String arg = e.attr("onclick");
-                    // Get the argument between 's
-                    int quoteBegin = arg.indexOf('\'');
-                    int quoteEnd = arg.indexOf('\'', quoteBegin + 1);
-                    arg = arg.substring(quoteBegin + 1, quoteEnd);
-                    // Get the query URL
-                    String backupUrl = url;
-                    if (backupUrl.contains("?")) backupUrl += "&";
-                    else backupUrl += "?";
-                    backupUrl += "nl=" + arg;
-                    // Get the final URL
-                    if (URLUtil.isValidUrl(backupUrl)) {
-                        Map<String, String> targetDownloadParams = new HashMap<>();
-                        targetDownloadParams.put("backupUrl", backupUrl);
-                        String downloadParamsStr = JsonHelper.serializeToJson(targetDownloadParams, JsonHelper.MAP_STRINGS);
-                        img.setDownloadParams(downloadParamsStr);
-                    }
+                Optional<String> backupUrl = getBackupPageUrl(doc, url);
+                if (backupUrl.isPresent()) {
+                    Map<String, String> targetDownloadParams = new HashMap<>();
+                    targetDownloadParams.put("backupUrl", backupUrl.get());
+                    String downloadParamsStr = JsonHelper.serializeToJson(targetDownloadParams, JsonHelper.MAP_STRINGS);
+                    img.setDownloadParams(downloadParamsStr);
                 }
             }
         }
         return img;
     }
+     */
 
     @Nullable
     static MpvInfo parseMpvPage(@NonNull final String url,
@@ -325,6 +343,23 @@ public class EHentaiParser implements ImageListParser {
                 return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED, chapter));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull InputStream pageData, @NonNull String baseUri) throws IOException, LimitReachedException, EmptyResultException {
+        Document doc = Jsoup.parse(pageData, null, baseUri);
+        if (doc != null) {
+            String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
+            // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
+            if (imageUrl.contains("/509.gif"))
+                throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
+
+            Optional<String> backupUrl = getBackupPageUrl(doc, baseUri);
+
+            if (!imageUrl.isEmpty())
+                return new ImmutablePair<>(imageUrl, backupUrl);
+        }
+        throw new EmptyResultException("Page contains no picture data : " + baseUri);
     }
 
     /**

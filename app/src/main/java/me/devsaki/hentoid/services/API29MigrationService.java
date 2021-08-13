@@ -228,7 +228,7 @@ public class API29MigrationService extends IntentService {
                                 if (!contentImages.isEmpty() && StatusContent.UNHANDLED_ERROR == content.getCover().getStatus()) {
                                     Optional<DocumentFile> file = Stream.of(imageFiles).filter(f -> f.getName() != null && f.getName().startsWith(Consts.THUMB_FILE_NAME)).findFirst();
                                     if (file.isPresent()) {
-                                        ImageFile cover = new ImageFile(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
+                                        ImageFile cover = ImageFile.fromImageUrl(0, content.getCoverImageUrl(), StatusContent.DOWNLOADED, content.getQtyPages());
                                         cover.setName(Consts.THUMB_FILE_NAME);
                                         cover.setFileUri(file.get().getUri().toString());
                                         cover.setIsCover(true);

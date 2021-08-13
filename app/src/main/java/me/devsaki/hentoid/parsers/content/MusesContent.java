@@ -121,7 +121,7 @@ public class MusesContent extends BaseContentParser {
         int index = 0;
         List<ImageFile> images = new ArrayList<>();
         // Cover
-        ImageFile cover = new ImageFile(index++, Site.MUSES.getUrl() + imagesUrls.get(0), StatusContent.SAVED, nbImages);
+        ImageFile cover = ImageFile.fromImageUrl(index++, Site.MUSES.getUrl() + imagesUrls.get(0), StatusContent.SAVED, nbImages);
         content.setCoverImageUrl(cover.getUrl());
         cover.setIsCover(true);
         images.add(cover);
@@ -131,7 +131,7 @@ public class MusesContent extends BaseContentParser {
             if (thumbParts.length > 3) {
                 thumbParts[2] = "fl"; // Large dimensions; there's also a medium variant available (fm)
                 String imgUrl = Site.MUSES.getUrl() + "/" + thumbParts[1] + "/" + thumbParts[2] + "/" + thumbParts[3];
-                images.add(new ImageFile(index++, imgUrl, StatusContent.SAVED, nbImages)); // We infer actual book page images have the same format as their thumbs
+                images.add(ImageFile.fromImageUrl(index++, imgUrl, StatusContent.SAVED, nbImages)); // We infer actual book page images have the same format as their thumbs
             }
         }
         content.setImageFiles(images);

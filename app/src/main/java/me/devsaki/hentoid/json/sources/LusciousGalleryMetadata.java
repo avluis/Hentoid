@@ -45,7 +45,7 @@ public class LusciousGalleryMetadata {
         int order = offset;
         List<PictureMetadata> imageList = data.picture.list.items;
         for (PictureMetadata pm : imageList)
-            result.add(new ImageFile(++order, pm.url_to_original, StatusContent.SAVED, imageList.size()));
+            result.add(ImageFile.fromImageUrl(++order, pm.url_to_original, StatusContent.SAVED, imageList.size()));
 
         return result;
     }

@@ -6,9 +6,12 @@ import androidx.annotation.NonNull;
 
 import com.annimon.stream.Optional;
 
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -90,6 +93,11 @@ public class HitomiParser implements ImageListParser {
         return result;
     }
 
+    @Override
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull InputStream pageData, @NonNull String baseUri) {
+        throw new NotImplementedException();
+    }
+
     private ImageFile buildWebpPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
         return buildHashPicture(page, order, maxPages, "webp", "webp");
     }
@@ -134,7 +142,7 @@ public class HitomiParser implements ImageListParser {
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
         // Hitomi does not use backup URLs
-        ImageFile img = new ImageFile(order, url, StatusContent.SAVED, maxPages);
+        ImageFile img = ImageFile.fromImageUrl(order, url, StatusContent.SAVED, maxPages);
         if (chapter != null) img.setChapter(chapter);
         return Optional.of(img);
     }

@@ -4,6 +4,10 @@ import androidx.annotation.NonNull;
 
 import com.annimon.stream.Optional;
 
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +22,11 @@ public class DummyParser implements ImageListParser {
     @Override
     public List<ImageFile> parseImageList(@NonNull Content content) {
         return (null == content.getImageFiles()) ? new ArrayList<>() : new ArrayList<>(content.getImageFiles());
+    }
+
+    @Override
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull InputStream pageData, @NonNull String baseUri) {
+        throw new NotImplementedException();
     }
 
     @Override
