@@ -345,21 +345,26 @@ public class EHentaiParser implements ImageListParser {
         return Optional.empty();
     }
 
-    @Override
-    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull InputStream pageData, @NonNull String baseUri) throws IOException, LimitReachedException, EmptyResultException {
-        Document doc = Jsoup.parse(pageData, null, baseUri);
+    static ImmutablePair<String, Optional<String>> parseImagePageEh(@NonNull String url, @NonNull Map<String, String> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+        List<Pair<String, String>> reqHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url);
+        Document doc = getOnlineDocument(url, reqHeaders, Site.EHENTAI.useHentoidAgent(), Site.EHENTAI.useWebviewAgent());
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
             if (imageUrl.contains("/509.gif"))
                 throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
 
-            Optional<String> backupUrl = getBackupPageUrl(doc, baseUri);
+            Optional<String> backupUrl = getBackupPageUrl(doc, url);
 
             if (!imageUrl.isEmpty())
                 return new ImmutablePair<>(imageUrl, backupUrl);
         }
-        throw new EmptyResultException("Page contains no picture data : " + baseUri);
+        throw new EmptyResultException("Page contains no picture data : " + url);
+    }
+
+    @Override
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull Map<String, String> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+        return parseImagePageEh(url, requestHeaders);
     }
 
     /**

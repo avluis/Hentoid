@@ -30,9 +30,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.threeten.bp.Instant;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,6 +41,7 @@ import java.util.Random;
 
 import javax.annotation.Nullable;
 
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -411,6 +410,8 @@ public class ContentDownloadWorker extends BaseWorker {
         if (downloadCanceled || downloadSkipped)
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
+        List<ImageFile> pagesToParse = new ArrayList<>();
+
         // Queue image download requests
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED)) {
@@ -432,12 +433,23 @@ public class ContentDownloadWorker extends BaseWorker {
                 // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
                 if (img.isCover() && images.size() > 1) img.setBackupUrl(images.get(1).getUrl());
 
-                if (img.needsPageParsing())
-                    requestQueueManager.queueRequest(buildPageDownloadRequest(img, dir, content));
-                else
-                    requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
+                if (img.needsPageParsing()) pagesToParse.add(img);
+                else requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
             }
         }
+
+        // Parse pages for images
+        if (!pagesToParse.isEmpty()) {
+            final Content contentFinal = content;
+            compositeDisposable.add(
+                    Observable.fromIterable(pagesToParse)
+                            .observeOn(Schedulers.io())
+                            .subscribe(
+                                    img -> parsePageforImage(img, dir, contentFinal)
+                            )
+            );
+        }
+
 
         if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
             Timber.i("Queue JSON successfully saved");
@@ -730,7 +742,8 @@ public class ContentDownloadWorker extends BaseWorker {
     }
 
     // TODO doc
-    private Request<Object> buildPageDownloadRequest(
+    @SuppressLint("TimberArgCount")
+    private void parsePageforImage(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
             @NonNull final Content content) {
@@ -753,14 +766,32 @@ public class ContentDownloadWorker extends BaseWorker {
         if (null == cookieStr) cookieStr = HttpHelper.getCookies(pageUrl);
         requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
 
-        return new InputStreamVolleyRequest(
-                Request.Method.GET,
-                pageUrl,
-                requestHeaders,
-                site.useHentoidAgent(),
-                site.useWebviewAgent(),
-                result -> onPageRequestSuccess(result, content, img, dir),
-                error -> onRequestError(error, content, img, dir, "", requestHeaders));
+        try {
+            ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content.getSite());
+            ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(img.getPageUrl(), requestHeaders);
+            img.setUrl(pages.left);
+            // Set backup URL
+            if (pages.right.isPresent()) img.setBackupUrl(pages.right.get());
+            // Queue the picture
+            requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
+        } catch (UnsupportedOperationException | IllegalArgumentException e) {
+            Timber.w(e, "Could not read image from page %s", img.getPageUrl());
+            updateImageStatusUri(img, false, "");
+            logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "Could not read image from page " + img.getPageUrl() + " " + e.getMessage());
+        } catch (IOException ioe) {
+            Timber.w(ioe, "Could not read page data from %s", img.getPageUrl());
+            updateImageStatusUri(img, false, "");
+            logErrorRecord(content.getId(), ErrorType.IO, img.getPageUrl(), "Page " + img.getName(), "Could not read page data from " + img.getPageUrl() + " " + ioe.getMessage());
+        } catch (LimitReachedException lre) {
+            String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
+            Timber.w(lre, description);
+            updateImageStatusUri(img, false, "");
+            logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Page " + img.getName(), description);
+        } catch (EmptyResultException ere) {
+            Timber.w(ere, "No images have been found while parsing %s", content.getTitle());
+            updateImageStatusUri(img, false, "");
+            logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "No images have been found. Error = " + ere.getMessage());
+        }
     }
 
     private Request<Object> buildImageDownloadRequest(
@@ -796,46 +827,6 @@ public class ContentDownloadWorker extends BaseWorker {
                 site.useWebviewAgent(),
                 result -> onImageRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
                 error -> onRequestError(error, content, img, dir, backupUrlFinal, requestHeaders));
-    }
-
-    @SuppressLint("TimberArgCount")
-    private void onPageRequestSuccess(
-            Map.Entry<byte[], Map<String, String>> result,
-            @NonNull Content content,
-            @NonNull ImageFile img,
-            @NonNull DocumentFile dir) {
-        try {
-            if (result != null) {
-                ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content.getSite());
-                try (InputStream input = new ByteArrayInputStream(result.getKey())) {
-                    ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(input, img.getPageUrl());
-                    img.setUrl(pages.left);
-                    // Set backup URL
-                    if (pages.right.isPresent()) img.setBackupUrl(pages.right.get());
-                    requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
-                }
-            } else {
-                updateImageStatusUri(img, false, "");
-                logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "No page (result is null)");
-            }
-        } catch (UnsupportedOperationException | IllegalArgumentException e) {
-            Timber.w(e, "Could not read image from page %s", img.getPageUrl());
-            updateImageStatusUri(img, false, "");
-            logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "Could not read image from page " + img.getPageUrl() + " " + e.getMessage());
-        } catch (IOException ioe) {
-            Timber.w(ioe, "Could not read page data from %s", img.getPageUrl());
-            updateImageStatusUri(img, false, "");
-            logErrorRecord(content.getId(), ErrorType.IO, img.getPageUrl(), "Page " + img.getName(), "Could not read page data from " + img.getPageUrl() + " " + ioe.getMessage());
-        } catch (LimitReachedException lre) {
-            String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
-            Timber.w(lre, description);
-            updateImageStatusUri(img, false, "");
-            logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Page " + img.getName(), description);
-        } catch (EmptyResultException ere) {
-            Timber.w(ere, "No images have been found while parsing %s", content.getTitle());
-            updateImageStatusUri(img, false, "");
-            logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "No images have been found. Error = " + ere.getMessage());
-        }
     }
 
     private void onImageRequestSuccess(

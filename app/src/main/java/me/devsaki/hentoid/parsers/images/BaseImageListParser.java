@@ -63,7 +63,7 @@ public abstract class BaseImageListParser implements ImageListParser {
         return Optional.of(img);
     }
 
-    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull InputStream pageData, @NonNull String baseUri) throws IOException, LimitReachedException, EmptyResultException {
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull Map<String, String> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
         throw new NotImplementedException();
     }
 
