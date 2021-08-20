@@ -30,6 +30,7 @@
 	  {"sourceName":"TOONILY", "status":"ORANGE", "fixedByBuild":"400"},
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"400"},
 	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"401"},
+	  {"sourceName":"MANHWA", "status":"RED"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
