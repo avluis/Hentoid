@@ -83,7 +83,7 @@ import timber.log.Timber;
 public class ImageViewerViewModel extends AndroidViewModel {
 
     // Collection DAO
-    private final CollectionDAO collectionDao;
+    private final CollectionDAO dao;
     private final ContentSearchManager searchManager;
 
     // Collection data
@@ -125,8 +125,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
-        collectionDao = collectionDAO;
-        searchManager = new ContentSearchManager(collectionDao);
+        dao = collectionDAO;
+        searchManager = new ContentSearchManager(dao);
 
         showFavouritesOnly.postValue(false);
         shuffled.postValue(false);
@@ -134,7 +134,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     @Override
     protected void onCleared() {
-        collectionDao.cleanup();
+        dao.cleanup();
         compositeDisposable.clear();
         searchDisposable.dispose();
         super.onCleared();
@@ -173,7 +173,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void loadFromContent(long contentId, int pageNumber) {
         if (contentId > 0) {
-            Content loadedContent = collectionDao.selectContent(contentId);
+            Content loadedContent = dao.selectContent(contentId);
             if (loadedContent != null)
                 processContent(loadedContent, pageNumber);
         }
@@ -269,7 +269,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 if (newImages.isEmpty()) {
                     newImageFiles = ContentHelper.createImageListFromFiles(pictureFiles);
                     theContent.setImageFiles(newImageFiles);
-                    collectionDao.insertContent(theContent);
+                    dao.insertContent(theContent);
                 } else {
                     // Match files for viewer display; no need to persist that
                     ContentHelper.matchFilesToImageList(pictureFiles, newImageFiles);
@@ -479,7 +479,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (-1 == loadedContentId) return;
 
         List<ImageFile> theImages = databaseImages.getValue();
-        Content theContent = collectionDao.selectContent(loadedContentId);
+        Content theContent = dao.selectContent(loadedContentId);
         if (null == theImages || null == theContent) return;
 
         int nbReadablePages = (int) Stream.of(theImages).filter(ImageFile::isReadable).count();
@@ -581,7 +581,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
 
         if (images.isEmpty()) return;
-        Content theContent = collectionDao.selectContent(images.get(0).getContent().getTargetId());
+        Content theContent = dao.selectContent(images.get(0).getContent().getTargetId());
         if (null == theContent) return;
 
         // We can't work on the given objects as they are tied to the UI (part of ImageFileItem)
@@ -596,7 +596,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 }
 
         // Persist in DB
-        collectionDao.insertImageFiles(dbImages);
+        dao.insertImageFiles(dbImages);
 
         // Persist new values in JSON
         theContent.setImageFiles(dbImages);
@@ -633,7 +633,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         content.setFavourite(!content.isFavourite());
 
         // Persist in DB
-        collectionDao.insertContent(content);
+        dao.insertContent(content);
 
         // Persist new values in JSON
         Context context = getApplication().getApplicationContext();
@@ -643,7 +643,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void deleteBook(Consumer<Throwable> onError) {
-        Content targetContent = collectionDao.selectContent(loadedContentId);
+        Content targetContent = dao.selectContent(loadedContentId);
         if (null == targetContent) return;
 
         // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
@@ -678,7 +678,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doDeleteBook(@NonNull Content targetContent) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
-        ContentHelper.removeQueuedContent(getApplication(), collectionDao, targetContent);
+        ContentHelper.removeQueuedContent(getApplication(), dao, targetContent);
     }
 
     public void deletePage(int pageViewerIndex, Consumer<Throwable> onError) {
@@ -705,7 +705,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doDeletePages(@NonNull List<ImageFile> pages) {
         Helper.assertNonUiThread();
-        ContentHelper.removePages(pages, collectionDao, getApplication());
+        ContentHelper.removePages(pages, dao, getApplication());
     }
 
     public void setCover(ImageFile page) {
@@ -723,7 +723,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doSetCover(@NonNull ImageFile page) {
         Helper.assertNonUiThread();
-        ContentHelper.setContentCover(page, collectionDao, getApplication());
+        ContentHelper.setContentCover(page, dao, getApplication());
     }
 
     public void loadNextContent(int readerIndex) {
@@ -760,7 +760,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
-        currentImageSource = collectionDao.selectDownloadedImagesFromContent(theContent.getId());
+        currentImageSource = dao.selectDownloadedImagesFromContent(theContent.getId());
         databaseImages.addSource(currentImageSource, imgs -> setImages(theContent, pageNumber, imgs));
     }
 
@@ -779,12 +779,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private Content doUpdateContentPreferences(@NonNull final Context context, long contentId, @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
-        Content theContent = collectionDao.selectContent(contentId);
+        Content theContent = dao.selectContent(contentId);
         if (null == theContent) return null;
 
         theContent.setBookPreferences(newPrefs);
         // Persist in DB
-        collectionDao.insertContent(theContent);
+        dao.insertContent(theContent);
 
         // Persist in JSON
         if (!theContent.getJsonUri().isEmpty())
@@ -810,7 +810,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Cache the URI of the JSON to the database
         content.setJsonUri(foundFile.getUri().toString());
-        collectionDao.insertContent(content);
+        dao.insertContent(content);
     }
 
     public void markPageAsRead(int pageNumber) {
@@ -1041,6 +1041,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 Observable.fromIterable(Stream.of(theContent).toList())
                         .observeOn(Schedulers.io())
                         .map(ContentHelper::reparseFromScratch)
+                        .doOnNext(c -> {
+                            if (c.isEmpty()) throw new EmptyResultException();
+                            dao.addContentToQueue(
+                                    c.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP,
+                                    ContentQueueManager.getInstance().isQueueActive());
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())

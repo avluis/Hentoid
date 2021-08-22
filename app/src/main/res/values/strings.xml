@@ -107,6 +107,7 @@
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
     <string name="paused_dl_stale_online_credentials">Cannot download - Stale Cookies or credentials. Use the notification to regenerate them</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
+    <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <plurals name="redownloaded_scratch">
         <item quantity="one">Item cleared for redownloading</item>
         <item quantity="other">%d items cleared for redownloading</item>

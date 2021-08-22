@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Pair;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
@@ -28,7 +29,8 @@ import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -80,6 +82,13 @@ import timber.log.Timber;
  * Utility class for Content-related operations
  */
 public final class ContentHelper {
+
+    @IntDef({QueuePosition.TOP, QueuePosition.BOTTOM})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface QueuePosition {
+        int TOP = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
+        int BOTTOM = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+    }
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
     private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode(), StatusContent.ONLINE.getCode()};
@@ -915,7 +924,7 @@ public final class ContentHelper {
      * @return Content updated from its online source
      * @throws IOException If something horrible happens during parsing
      */
-    public static Content reparseFromScratch(@NonNull final Content content) throws IOException {
+    public static Optional<Content> reparseFromScratch(@NonNull final Content content) throws IOException {
         return reparseFromScratch(content, content.getGalleryUrl());
     }
 
@@ -928,7 +937,7 @@ public final class ContentHelper {
      * TODO feedback to warn the user about redownload "from scratch" having failed (whenever the original content is returned)
      * @throws IOException If something horrible happens during parsing
      */
-    private static Content reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
+    private static Optional<Content> reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
         Helper.assertNonUiThread();
 
         String readerUrl = content.getReaderUrl();
@@ -941,16 +950,16 @@ public final class ContentHelper {
         Response response = HttpHelper.getOnlineResource(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
 
         // Scram if the response is a redirection or an error
-        if (response.code() >= 300) return content;
+        if (response.code() >= 300) return Optional.empty();
 
         // Scram if the response is something else than html
         Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")));
         if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
-            return content;
+            return Optional.empty();
 
         // Scram if the response is empty
         ResponseBody body = response.body();
-        if (null == body) return content;
+        if (null == body) return Optional.empty();
 
         Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(content.getSite());
         final Jspoon jspoon = Jspoon.create();
@@ -963,7 +972,7 @@ public final class ContentHelper {
             String canonicalUrl = contentParser.getCanonicalUrl();
             if (!canonicalUrl.isEmpty() && !canonicalUrl.equalsIgnoreCase(url))
                 return reparseFromScratch(content, canonicalUrl);
-            else return content;
+            else return Optional.empty();
         }
 
         // Save cookies for future calls during download
@@ -971,13 +980,13 @@ public final class ContentHelper {
         if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
 
         newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
-        return newContent;
+        return Optional.of(newContent);
     }
 
     /**
      * Remove all files (including JSON and cover thumb) from the given Content's folder
      * The folder itself is left empty
-     *
+     * <p>
      * Caution : exec time is long
      *
      * @param context Context to use

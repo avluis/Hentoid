@@ -17,6 +17,7 @@ import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
@@ -51,6 +52,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
@@ -379,7 +381,8 @@ public class LibraryViewModel extends AndroidViewModel {
             boolean reparseContent,
             boolean reparseImages,
             int position,
-            @NonNull final Runnable onSuccess) {
+            @NonNull final Runnable onSuccess,
+            @NonNull final Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
 
@@ -397,10 +400,13 @@ public class LibraryViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
-                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : c)
-                        .doOnNext(c -> dao.addContentToQueue(
-                                c, targetImageStatus, position,
-                                ContentQueueManager.getInstance().isQueueActive()))
+                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : Optional.of(c))
+                        .doOnNext(c -> {
+                            if (c.isEmpty()) throw new EmptyResultException();
+                            dao.addContentToQueue(
+                                    c.get(), targetImageStatus, position,
+                                    ContentQueueManager.getInstance().isQueueActive());
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
@@ -410,7 +416,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> { // Nothing; feedback is done through LiveData
                                 },
-                                Timber::e
+                                onError::accept
                         )
         );
     }

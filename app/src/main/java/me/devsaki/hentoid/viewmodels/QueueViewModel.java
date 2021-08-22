@@ -11,7 +11,9 @@ import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
+import com.annimon.stream.function.Consumer;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -31,6 +33,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
 import timber.log.Timber;
@@ -269,7 +272,8 @@ public class QueueViewModel extends AndroidViewModel {
             boolean reparseContent,
             boolean reparseImages,
             int position,
-            @NonNull final Runnable onSuccess) {
+            @NonNull final Runnable onSuccess,
+            @NonNull final Consumer<Throwable> onError) {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
         // Non-blocking performance bottleneck; scheduled in a separate thread
@@ -284,21 +288,24 @@ public class QueueViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
-                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : c)
-                        .doOnNext(c -> dao.addContentToQueue(
-                                c, targetImageStatus, position,
-                                ContentQueueManager.getInstance().isQueueActive()))
-                        .doOnComplete(() -> {
-                            // TODO is there stuff to do on the IO thread ?
+                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : Optional.of(c))
+                        .doOnNext(c -> {
+                            if (c.isEmpty()) throw new EmptyResultException();
+                            dao.addContentToQueue(
+                                    c.get(), targetImageStatus, position,
+                                    ContentQueueManager.getInstance().isQueueActive());
                         })
                         .observeOn(AndroidSchedulers.mainThread())
+                        .doOnComplete(() -> {
+                            if (Preferences.isQueueAutostart())
+                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                            onSuccess.run();
+                        })
                         .subscribe(
                                 v -> {
-                                    if (Preferences.isQueueAutostart())
-                                        ContentQueueManager.getInstance().resumeQueue(getApplication());
-                                    onSuccess.run();
+                                    // Nothing specific to update on the UI
                                 },
-                                Timber::e
+                                onError::accept
                         )
         );
     }

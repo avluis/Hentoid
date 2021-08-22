@@ -1370,6 +1370,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.setAction("VIEW QUEUE", v -> viewQueue());
                     snackbar.show();
+                },
+                t -> {
+                    Timber.w(t);
+                    Snackbar.make(recyclerView, R.string.redownloaded_error, BaseTransientBottomBar.LENGTH_LONG).show();
                 });
     }
 
