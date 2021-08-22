@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 import android.webkit.URLUtil;
 
@@ -25,8 +27,6 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 /**
  * Created by robb_w on 2020/11
@@ -73,6 +73,22 @@ public class ManhwaParser extends BaseImageListParser {
         List<Chapter> chapters = new ArrayList<>();
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
         if (doc != null) {
+            // Get the canonical URL
+            String canonicalUrl = doc.select("head [rel=canonical]").first().attr("href");
+
+            // Get the book ID
+            Element idElt = doc.select(".rating-post-id").first();
+            if (null == idElt) return result;
+            String id = idElt.attr("value");
+            // Retrieve the chapters page chunk
+            doc = HttpHelper.postOnlineDocument(
+                    canonicalUrl + "ajax/chapters/",
+                    headers,
+                    Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent(),
+                    "",
+                    HttpHelper.POST_MIME_TYPE
+            );
+            if (null == doc) return result;
             List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
             Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
             chapters = ParseHelper.getChaptersFromLinks(chapterLinks, content.getId());
