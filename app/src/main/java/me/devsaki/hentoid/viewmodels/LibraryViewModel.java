@@ -388,14 +388,9 @@ public class LibraryViewModel extends AndroidViewModel {
 
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
-        // Non-blocking performance bottleneck; scheduled in a separate thread
-        if (reparseImages) {
-            compositeDisposable.add(
-                    Observable.fromIterable(contentList)
-                            .observeOn(Schedulers.io())
-                            .subscribe(c -> ContentHelper.purgeFiles(getApplication(), c, true))
-            );
-        }
+        // Non-blocking performance bottleneck; run in a dedicated worker
+        // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
+        if (reparseImages) purgeItems(contentList);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
@@ -457,11 +452,7 @@ public class LibraryViewModel extends AndroidViewModel {
         // TODO reparse content from scratch if images KO
 
         // Non-blocking performance bottleneck; scheduled in a separate thread
-        compositeDisposable.add(
-                Observable.fromIterable(contentList)
-                        .observeOn(Schedulers.io())
-                        .subscribe(c -> ContentHelper.purgeFiles(getApplication(), c, true))
-        );
+        purgeItems(contentList);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
@@ -481,6 +472,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             }
                             dbContent.forceSize(0);
                             dao.insertContent(dbContent);
+                            ContentHelper.updateContentJson(getApplication(), dbContent);
                             return dbContent;
                         })
                         .observeOn(AndroidSchedulers.mainThread())
@@ -517,6 +509,24 @@ public class LibraryViewModel extends AndroidViewModel {
             builder.setContentIds(Stream.of(contents).map(Content::getId).toList());
         if (!groups.isEmpty()) builder.setGroupIds(Stream.of(groups).map(Group::getId).toList());
         builder.setDeleteGroupsOnly(deleteGroupsOnly);
+
+        WorkManager workManager = WorkManager.getInstance(getApplication());
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.delete_service),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
+        );
+    }
+
+    /**
+     * Purge the given list of content
+     *
+     * @param contentList List of content to be purged
+     */
+    public void purgeItems(@NonNull final List<Content> contentList) {
+        DeleteData.Builder builder = new DeleteData.Builder();
+        if (!contentList.isEmpty())
+            builder.setContentPurgeIds(Stream.of(contentList).map(Content::getId).toList());
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueueUniqueWork(

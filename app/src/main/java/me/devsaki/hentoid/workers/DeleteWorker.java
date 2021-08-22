@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.workers;
 
+import static me.devsaki.hentoid.util.GroupHelper.moveBook;
+
 import android.content.Context;
 import android.util.Log;
 
@@ -28,17 +30,21 @@ import me.devsaki.hentoid.util.exception.FileNotRemovedException;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.DeleteData;
 
-import static me.devsaki.hentoid.util.GroupHelper.moveBook;
-
 
 /**
  * Worker responsible for deleting content in the background
  */
 public class DeleteWorker extends BaseWorker {
 
+    private final long[] contentIds;
+    private final long[] contentPurgeIds;
+    private final long[] groupIds;
+    private final long[] queueIds;
+    private final int deleteMax;
+    private final boolean isDeleteGroupsOnly;
+
     private int deleteProgress;
     private int nbError;
-    private int deleteMax;
 
     private final CollectionDAO dao;
 
@@ -46,12 +52,21 @@ public class DeleteWorker extends BaseWorker {
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
         super(context, parameters, R.id.delete_service, "delete");
+
+        DeleteData.Parser inputData = new DeleteData.Parser(getInputData());
+        contentIds = inputData.getContentIds();
+        contentPurgeIds = inputData.getContentPurgeIds();
+        groupIds = inputData.getGroupIds();
+        queueIds = inputData.getQueueIds();
+        isDeleteGroupsOnly = inputData.isDeleteGroupsOnly();
+        deleteMax = contentIds.length + contentPurgeIds.length + groupIds.length + queueIds.length;
+
         dao = new ObjectBoxDAO(context);
     }
 
     @Override
     Notification getStartNotification() {
-        return new DeleteStartNotification();
+        return new DeleteStartNotification(deleteMax, (deleteMax == contentPurgeIds.length));
     }
 
     @Override
@@ -66,17 +81,13 @@ public class DeleteWorker extends BaseWorker {
 
     @Override
     void getToWork(@NonNull Data input) {
-        DeleteData.Parser inputData = new DeleteData.Parser(input);
-        long[] contentIds = inputData.getContentIds();
-        long[] groupIds = inputData.getGroupIds();
-        long[] queueIds = inputData.getQueueIds();
-        deleteMax = contentIds.length + groupIds.length + queueIds.length;
         deleteProgress = 0;
         nbError = 0;
 
         // First chain contents, then groups (to be sure to delete empty groups only)
         if (contentIds.length > 0) removeContentList(contentIds);
-        if (groupIds.length > 0) removeGroups(groupIds, inputData.isDeleteGroupsOnly());
+        if (contentPurgeIds.length > 0) purgeContentList(contentPurgeIds);
+        if (groupIds.length > 0) removeGroups(groupIds, isDeleteGroupsOnly);
         if (queueIds.length > 0) removeQueue(queueIds);
 
         progressDone();
@@ -101,9 +112,9 @@ public class DeleteWorker extends BaseWorker {
      */
     private void deleteContent(@NonNull final Content content) {
         Helper.assertNonUiThread();
+        progressItem(content, false);
         try {
             ContentHelper.removeContent(getApplicationContext(), dao, content);
-            progressItem(content);
             trace(Log.INFO, "Removed item: %s from database and file system.", content.getTitle());
         } catch (ContentNotRemovedException cnre) {
             nbError++;
@@ -111,6 +122,31 @@ public class DeleteWorker extends BaseWorker {
         } catch (Exception e) {
             nbError++;
             trace(Log.WARN, "Error when trying to delete %s : %s", content.getTitle(), e.getMessage());
+        }
+    }
+
+    private void purgeContentList(long[] ids) {
+        List<Content> contents = dao.selectContent(ids);
+        for (Content c : contents) {
+            purgeContent(c);
+            if (isStopped()) break;
+        }
+    }
+
+    /**
+     * Purge the given content
+     *
+     * @param content Content to be purged
+     */
+    private void purgeContent(@NonNull final Content content) {
+        Helper.assertNonUiThread();
+        progressItem(content, true);
+        try {
+            ContentHelper.purgeFiles(getApplicationContext(), content, false);
+            trace(Log.INFO, "Purged item: %s.", content.getTitle());
+        } catch (Exception e) {
+            nbError++;
+            trace(Log.WARN, "Error when trying to purge %s : %s", content.getTitle(), e.getMessage());
         }
     }
 
@@ -137,6 +173,8 @@ public class DeleteWorker extends BaseWorker {
         Helper.assertNonUiThread();
 
         Group theGroup = group;
+        progressItem(theGroup, false);
+
         try {
             // Reassign group for contained items
             if (deleteGroupsOnly) {
@@ -154,7 +192,6 @@ public class DeleteWorker extends BaseWorker {
                     return;
                 }
                 dao.deleteGroup(theGroup.id);
-                progressItem(theGroup);
                 trace(Log.INFO, "Removed group: %s from database.", theGroup.name);
             }
         } catch (Exception e) {
@@ -179,8 +216,8 @@ public class DeleteWorker extends BaseWorker {
 
     private void removeQueuedContent(@NonNull final Content content) {
         try {
+            progressItem(content, false);
             ContentHelper.removeQueuedContent(getApplicationContext(), dao, content);
-            progressItem(content);
         } catch (ContentNotRemovedException e) {
             // Don't throw the exception if we can't remove something that isn't there
             if (!(e instanceof FileNotRemovedException && content.getStorageUri().isEmpty())) {
@@ -190,7 +227,7 @@ public class DeleteWorker extends BaseWorker {
         }
     }
 
-    private void progressItem(Object item) {
+    private void progressItem(Object item, boolean isPurge) {
         String title = null;
         if (item instanceof Content) title = ((Content) item).getTitle();
         else if (item instanceof me.devsaki.hentoid.database.domains.Group)
@@ -198,7 +235,7 @@ public class DeleteWorker extends BaseWorker {
 
         if (title != null) {
             deleteProgress++;
-            notificationManager.notify(new DeleteProgressNotification(title, deleteProgress + nbError, deleteMax));
+            notificationManager.notify(new DeleteProgressNotification(title, deleteProgress + nbError, deleteMax, isPurge));
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, deleteProgress, nbError, deleteMax));
         }
     }

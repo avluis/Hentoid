@@ -249,6 +249,19 @@ public class QueueViewModel extends AndroidViewModel {
         );
     }
 
+    public void purge(@NonNull List<Content> contentList) {
+        DeleteData.Builder builder = new DeleteData.Builder();
+        if (!contentList.isEmpty())
+            builder.setContentPurgeIds(Stream.of(contentList).map(Content::getId).toList());
+
+        WorkManager workManager = WorkManager.getInstance(getApplication());
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.delete_service),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
+        );
+    }
+
     public void cancelAll() {
         List<QueueRecord> localQueue = dao.selectQueue();
         if (localQueue.isEmpty()) return;
@@ -277,13 +290,8 @@ public class QueueViewModel extends AndroidViewModel {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
         // Non-blocking performance bottleneck; scheduled in a separate thread
-        if (reparseImages) {
-            compositeDisposable.add(
-                    Observable.fromIterable(contentList)
-                            .observeOn(Schedulers.io())
-                            .subscribe(c -> ContentHelper.purgeFiles(getApplication(), c, true))
-            );
-        }
+        // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
+        if (reparseImages) purge(contentList);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
