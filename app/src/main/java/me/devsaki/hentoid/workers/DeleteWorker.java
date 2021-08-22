@@ -139,7 +139,6 @@ public class DeleteWorker extends BaseWorker {
      * @param content Content to be purged
      */
     private void purgeContent(@NonNull final Content content) {
-        Helper.assertNonUiThread();
         progressItem(content, true);
         try {
             ContentHelper.purgeFiles(getApplicationContext(), content, false);
