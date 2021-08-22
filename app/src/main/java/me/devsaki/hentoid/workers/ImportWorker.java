@@ -642,11 +642,6 @@ public class ImportWorker extends BaseWorker {
             result.setJsonUri(json.getUri().toString());
             result.setStorageUri(parentFolder.getUri().toString());
 
-            if (result.getStatus() != StatusContent.DOWNLOADED
-                    && result.getStatus() != StatusContent.ERROR) {
-                result.setStatus(StatusContent.MIGRATED);
-            }
-
             return result;
         } catch (IOException | JsonDataException e) {
             Timber.e(e, "Error reading JSON (v2) file");
