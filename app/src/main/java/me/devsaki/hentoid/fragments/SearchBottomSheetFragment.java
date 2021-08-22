@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.fragments;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static java.lang.String.format;
+
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
@@ -41,9 +44,6 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static java.lang.String.format;
 
 /**
  * Bottom fragment that displays the available attributes in the advanced search screen
@@ -144,7 +144,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         // Image that displays current metadata type title (e.g. "Character search")
         TextView tagWaitTitle = requireViewById(rootView, R.id.tag_wait_title);
-        tagWaitTitle.setText(format("%s search", StringHelper.capitalizeString(mainAttr.name())));
+        tagWaitTitle.setText(format("%s search", StringHelper.capitalizeString(mainAttr.getDisplayName())));
 
         tagWaitPanel = requireViewById(rootView, R.id.tag_wait_panel);
         tagWaitMessage = requireViewById(rootView, R.id.tag_wait_description);
