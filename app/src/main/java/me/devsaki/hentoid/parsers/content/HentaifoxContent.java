@@ -33,7 +33,7 @@ public class HentaifoxContent extends BaseContentParser {
     private List<Element> scripts;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.HENTAIFOX);
         if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
@@ -75,7 +75,8 @@ public class HentaifoxContent extends BaseContentParser {
         }
         content.putAttributes(attributes);
 
-        content.setImageFiles(ParseHelper.urlsToImageFiles(HentaifoxParser.parseImages(content, thumbs, scripts), content.getCoverImageUrl(), StatusContent.SAVED));
+        if (updateImages)
+            content.setImageFiles(ParseHelper.urlsToImageFiles(HentaifoxParser.parseImages(content, thumbs, scripts), content.getCoverImageUrl(), StatusContent.SAVED));
 
         return content;
     }

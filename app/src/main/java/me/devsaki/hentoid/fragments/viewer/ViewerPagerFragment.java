@@ -961,7 +961,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             if (0 == tag) {
                 viewModel.setCurrentPage(imageIndex, 0);
             } else if (1 == tag) {
-                viewModel.reparseBook();
+                viewModel.reparseBook(
+                        t -> {
+                            Timber.w(t);
+                            binding.viewerLoadingTxt.setText(getResources().getString(R.string.redownloaded_error));
+                        }
+                );
+                binding.viewerLoadingTxt.setText(getResources().getString(R.string.please_wait));
+                binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
             }
         });
 

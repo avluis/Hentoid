@@ -9,6 +9,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -16,7 +17,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -54,7 +54,7 @@ public class PorncomixContent extends BaseContentParser {
     private List<Element> bestPages;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.PORNCOMIX);
 
         title = title.trim();
@@ -88,9 +88,11 @@ public class PorncomixContent extends BaseContentParser {
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, false, Site.PORNCOMIX);
         content.putAttributes(attributes);
 
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages), content.getCoverImageUrl(), StatusContent.SAVED);
-        content.setImageFiles(images);
-        content.setQtyPages(images.size() - 1);  // Keep final result after deduplicating; don't count the cover
+        if (updateImages) {
+            List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages), content.getCoverImageUrl(), StatusContent.SAVED);
+            content.setImageFiles(images);
+            content.setQtyPages(images.size() - 1);  // Keep final result after deduplicating; don't count the cover
+        }
 
         return content;
     }

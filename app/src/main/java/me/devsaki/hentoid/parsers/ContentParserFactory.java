@@ -9,7 +9,6 @@ import me.devsaki.hentoid.parsers.content.DoujinsContent;
 import me.devsaki.hentoid.parsers.content.DummyContent;
 import me.devsaki.hentoid.parsers.content.EhentaiContent;
 import me.devsaki.hentoid.parsers.content.ExhentaiContent;
-import me.devsaki.hentoid.parsers.content.FakkuContent;
 import me.devsaki.hentoid.parsers.content.HbrowseContent;
 import me.devsaki.hentoid.parsers.content.Hentai2ReadContent;
 import me.devsaki.hentoid.parsers.content.HentaifoxContent;
@@ -30,7 +29,6 @@ import me.devsaki.hentoid.parsers.images.DoujinsParser;
 import me.devsaki.hentoid.parsers.images.DummyParser;
 import me.devsaki.hentoid.parsers.images.EHentaiParser;
 import me.devsaki.hentoid.parsers.images.ExHentaiParser;
-import me.devsaki.hentoid.parsers.images.FakkuParser;
 import me.devsaki.hentoid.parsers.images.HbrowseParser;
 import me.devsaki.hentoid.parsers.images.Hentai2ReadParser;
 import me.devsaki.hentoid.parsers.images.HentaifoxParser;
@@ -72,8 +70,6 @@ public class ContentParserFactory {
                 return TsuminoContent.class;
             case PURURIN:
                 return PururinContent.class;
-            case FAKKU2:
-                return FakkuContent.class;
             case MUSES:
                 return MusesContent.class;
             case DOUJINS:
@@ -126,8 +122,6 @@ public class ContentParserFactory {
                 return new EHentaiParser();
             case EXHENTAI:
                 return new ExHentaiParser();
-            case FAKKU2:
-                return new FakkuParser();
             case LUSCIOUS:
                 return new LusciousParser();
             case PORNCOMIX:

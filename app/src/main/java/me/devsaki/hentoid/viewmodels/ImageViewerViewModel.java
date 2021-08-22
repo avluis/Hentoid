@@ -1033,7 +1033,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     // TODO doc
-    public void reparseBook() {
+    public void reparseBook(Consumer<Throwable> onError) {
         Content theContent = content.getValue();
         if (null == theContent) return;
 
@@ -1055,7 +1055,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> { // Nothing; feedback is done through LiveData
                                 },
-                                Timber::e
+                                onError::accept
                         )
         );
     }

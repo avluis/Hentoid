@@ -2,6 +2,7 @@ package me.devsaki.hentoid.json.sources;
 
 import androidx.annotation.NonNull;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -17,8 +18,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 public class EHentaiGalleriesMetadata {
     private List<EHentaiGalleryMetadata> gmetadata;
 
-    public Content update(@NonNull Content content, @Nonnull String url, @NonNull Site site) {
-        return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).update(content, url, site) : new Content();
+    public Content update(@NonNull Content content, @Nonnull String url, @NonNull Site site, boolean updatePages) {
+        return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).update(content, url, site, updatePages) : new Content();
     }
 
 
@@ -32,14 +33,18 @@ public class EHentaiGalleriesMetadata {
         private List<String> tags;
 
 
-        public Content update(@NonNull Content content, @Nonnull String url, @NonNull Site site) {
+        public Content update(@NonNull Content content, @Nonnull String url, @NonNull Site site, boolean updatePages) {
             content.setSite(site);
 
             content.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
                     .setCoverImageUrl(thumb)
                     .setTitle(title)
-                    .setQtyPages(Integer.parseInt(filecount))
                     .setStatus(StatusContent.SAVED);
+
+            if (updatePages) {
+                content.setQtyPages(Integer.parseInt(filecount));
+                content.setImageFiles(Collections.emptyList());
+            }
 
             AttributeMap attributes = new AttributeMap();
             String[] tagParts;

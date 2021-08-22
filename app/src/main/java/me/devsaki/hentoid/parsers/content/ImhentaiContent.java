@@ -4,15 +4,16 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -35,7 +36,7 @@ public class ImhentaiContent extends BaseContentParser {
     private List<Element> categories;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.IMHENTAI);
 
         content.setUrl(url.replace(Site.IMHENTAI.getUrl(), "").replace("/gallery", ""));
@@ -48,9 +49,13 @@ public class ImhentaiContent extends BaseContentParser {
         String str = !title.isEmpty() ? StringHelper.removeNonPrintableChars(title) : "";
         str = ParseHelper.removeTextualTags(str);
         content.setTitle(str);
-        if (!pages.isEmpty()) {
-            str = pages.replace("Pages", "").replace("pages", "").replace(":", "").trim();
-            content.setQtyPages(Integer.parseInt(str));
+
+        if (updateImages) {
+            if (!pages.isEmpty()) {
+                str = pages.replace("Pages", "").replace("pages", "").replace(":", "").trim();
+                content.setQtyPages(Integer.parseInt(str));
+            }
+            content.setImageFiles(Collections.emptyList());
         }
 
         AttributeMap attributes = new AttributeMap();

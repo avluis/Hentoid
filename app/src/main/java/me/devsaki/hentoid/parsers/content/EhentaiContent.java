@@ -18,13 +18,13 @@ import timber.log.Timber;
 public class EhentaiContent extends BaseContentParser {
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         String[] galleryUrlParts = url.split("/");
         EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
 
         try {
             EHentaiGalleriesMetadata metadata = EHentaiServer.EHENTAI_API.getGalleryMetadata(query, null).execute().body();
-            return metadata.update(content, url, Site.EHENTAI);
+            return metadata.update(content, url, Site.EHENTAI, updateImages);
         } catch (IOException e) {
             Timber.e(e, "Error parsing content.");
             return new Content().setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED);

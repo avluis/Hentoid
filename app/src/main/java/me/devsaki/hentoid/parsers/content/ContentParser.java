@@ -9,5 +9,5 @@ import me.devsaki.hentoid.database.domains.Content;
 public interface ContentParser {
     String getCanonicalUrl();
     Content toContent(@Nonnull String url);
-    Content update(@NonNull final Content content, @Nonnull String url);
+    Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages);
 }

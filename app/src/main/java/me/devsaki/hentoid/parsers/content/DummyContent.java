@@ -12,7 +12,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 public class DummyContent extends BaseContentParser {
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         return content.setSite(Site.NONE).setStatus(StatusContent.IGNORED);
     }
 }

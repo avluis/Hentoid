@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -28,7 +29,7 @@ public class ManhwaContent extends BaseContentParser {
     private List<Element> artist;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.MANHWA);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
@@ -45,6 +46,8 @@ public class ManhwaContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artist, false, Site.MANHWA);
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, author, false, Site.MANHWA);
         content.putAttributes(attributes);
+
+        if (updateImages) content.setImageFiles(Collections.emptyList());
 
         return content;
     }

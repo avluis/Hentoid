@@ -2,6 +2,7 @@ package me.devsaki.hentoid.json.sources;
 
 import androidx.annotation.NonNull;
 
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -50,7 +51,7 @@ public class LusciousBookMetadata {
 
     private static final String RELATIVE_URL_PREFIX = "https://luscious.net";
 
-    public Content update(@NonNull Content content) {
+    public Content update(@NonNull Content content, boolean updateImages) {
         content.setSite(Site.LUSCIOUS);
 
         AlbumInfo info = data.album.get;
@@ -84,6 +85,8 @@ public class LusciousBookMetadata {
             attributes.add(attribute);
         }
         content.putAttributes(attributes);
+
+        if (updateImages) content.setImageFiles(Collections.emptyList());
 
         return content;
     }

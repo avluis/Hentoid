@@ -4,19 +4,17 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.DoujinsParser;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -31,7 +29,7 @@ public class DoujinsContent extends BaseContentParser {
     private List<Element> tags;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.DOUJINS);
         if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
@@ -47,22 +45,12 @@ public class DoujinsContent extends BaseContentParser {
             String coverUrl = images.get(0).attr("data-thumb2");
             content.setCoverImageUrl(coverUrl);
 
-            // Images
-            int index = 0;
-            List<ImageFile> imgs = new ArrayList<>();
-            // Cover
-            ImageFile cover = ImageFile.fromImageUrl(index++, content.getCoverImageUrl(), StatusContent.SAVED, images.size());
-            cover.setIsCover(true);
-            imgs.add(cover);
-            // Images
-            for (Element e : images)
-                imgs.add(ImageFile.fromImageUrl(index++, e.attr("data-file"), StatusContent.SAVED, images.size()));
-            content.setImageFiles(imgs);
+            if (updateImages) {
+                List<String> imageUrls = DoujinsParser.parseImages(images);
+                content.setQtyPages(imageUrls.size() - 1); // Don't count the cover
+                content.setImageFiles(ParseHelper.urlsToImageFiles(imageUrls, content.getCoverImageUrl(), StatusContent.SAVED));
+            }
         }
-
-        List<String> imageUrls = DoujinsParser.parseImages(images);
-        content.setQtyPages(imageUrls.size() - 1); // Don't count the cover
-        content.setImageFiles(ParseHelper.urlsToImageFiles(imageUrls, content.getCoverImageUrl(), StatusContent.SAVED));
 
         // Deduplicate tags
         AttributeMap attributes = new AttributeMap();

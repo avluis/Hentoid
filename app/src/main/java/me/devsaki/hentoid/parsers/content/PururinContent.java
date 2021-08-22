@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -44,7 +45,7 @@ public class PururinContent extends BaseContentParser {
         return url.startsWith("https") ? "https" : "http";
     }
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.PURURIN);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
         if (url.endsWith("/")) url = url.substring(0, url.length() - 1);
@@ -52,16 +53,20 @@ public class PururinContent extends BaseContentParser {
         content.setUrl(url.replace(getProtocol(url) + "://pururin.to/gallery", ""));
         content.setCoverImageUrl(getProtocol(url) + ":" + coverUrl);
         content.setTitle(!title.isEmpty() ? StringHelper.removeNonPrintableChars(title.get(0)) : "");
-        int qtyPages = 0;
-        boolean pagesFound = false;
-        for (String s : pages) {
-            if (pagesFound) {
-                qtyPages = Integer.parseInt(ParseHelper.removeBrackets(s));
-                break;
+
+        if (updateImages) {
+            int qtyPages = 0;
+            boolean pagesFound = false;
+            for (String s : pages) {
+                if (pagesFound) {
+                    qtyPages = Integer.parseInt(ParseHelper.removeBrackets(s));
+                    break;
+                }
+                if (s.trim().equalsIgnoreCase("pages")) pagesFound = true;
             }
-            if (s.trim().equalsIgnoreCase("pages")) pagesFound = true;
+            content.setQtyPages(qtyPages);
+            content.setImageFiles(Collections.emptyList());
         }
-        content.setQtyPages(qtyPages);
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.PURURIN);
