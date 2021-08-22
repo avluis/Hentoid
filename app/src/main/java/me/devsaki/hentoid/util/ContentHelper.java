@@ -921,7 +921,7 @@ public final class ContentHelper {
      * Update the given content's properties by parsing its webpage
      *
      * @param content Content to parse again from its online source
-     * @return Content updated from its online source
+     * @return Content updated from its online source, or Optional.empty when something went wrong
      * @throws IOException If something horrible happens during parsing
      */
     public static Optional<Content> reparseFromScratch(@NonNull final Content content) throws IOException {
@@ -933,8 +933,7 @@ public final class ContentHelper {
      *
      * @param content Content which properties to update
      * @param url     Webpage to parse to update the given Content's properties
-     * @return Content with updated properties
-     * TODO feedback to warn the user about redownload "from scratch" having failed (whenever the original content is returned)
+     * @return Content with updated properties, or Optional.empty when something went wrong
      * @throws IOException If something horrible happens during parsing
      */
     private static Optional<Content> reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
