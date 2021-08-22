@@ -235,7 +235,12 @@ public class HttpHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Add current cookies of the given URL to the given headers structure
+     *
+     * @param url     URL to get cookies for
+     * @param headers Structure to populate
+     */
     public static void addCurrentCookiesToHeader(@NonNull final String url, @NonNull List<Pair<String, String>> headers) {
         String cookieStr = getCookies(url);
         if (!cookieStr.isEmpty())
@@ -303,8 +308,7 @@ public class HttpHelper {
      * Parse the given cookie String
      *
      * @param cookiesStr Cookie string, as set in HTTP headers
-     * @return Parsed cookies
-     * TODO parsed as WHAT ?
+     * @return Parsed cookies (key and value of each cookie; key only if there's no value)
      */
     public static Map<String, String> parseCookies(@NonNull String cookiesStr) {
         Map<String, String> result = new HashMap<>();
@@ -436,14 +440,29 @@ public class HttpHelper {
         return result;
     }
 
-    // TODO doc
+    /**
+     * Get current cookie headers for the given URL
+     *
+     * @param url URL to get cookies from
+     * @return Raw cookies string for the given URL
+     */
     public static String getCookies(@NonNull final String url) {
         String result = CookieManager.getInstance().getCookie(url);
         if (result != null) return HttpHelper.stripParams(result);
         else return "";
     }
 
-    // TODO doc
+    /**
+     * Get current cookie headers for the given URL
+     * If the app doesn't have any, load the given URL to get them
+     *
+     * @param url             URL to get cookies from
+     * @param headers         Headers to call the URL with
+     * @param useMobileAgent  True if mobile agent should be used
+     * @param useHentoidAgent True if Hentoid user agent should be used
+     * @param useWebviewAgent True if webview user agent should be used
+     * @return Raw cookies string for the given URL
+     */
     public static String getCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
         String result = getCookies(url);
         if (result != null) return result;
@@ -451,16 +470,25 @@ public class HttpHelper {
     }
 
     /**
-     * Get cookie headers set by the page at the given URL
+     * Get cookie headers set by the page at the given URL by calling that page
      *
-     * @param url Url to peek cookies from
+     * @param url URL to peek cookies from
      * @return Raw cookies string
      */
     public static String peekCookies(@NonNull final String url) {
         return peekCookies(url, null, true, false, true);
     }
 
-    // TODO doc
+    /**
+     * Get cookie headers set by the page at the given URL by calling that page
+     *
+     * @param url             URL to peek cookies from
+     * @param headers         Headers to call the URL with
+     * @param useMobileAgent  True if mobile user agent should be used
+     * @param useHentoidAgent True if Hentoid user agent should be used
+     * @param useWebviewAgent True if webview user agent should be used
+     * @return Raw cookies string for the given URL
+     */
     public static String peekCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
         try {
             Response response = getOnlineResource(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
