@@ -1,0 +1,7 @@
+
+Fixed
+
+    Manhwa Hentai : Align with new chapter layout (downloads are working again)
+    Browser : Fix detecting extra pages on existing books
+
+

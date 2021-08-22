@@ -1181,7 +1181,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
         if (null == currentContent) return;
 
-        if (currentContent.equals(onlineContent) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
+        if (currentContent.getUrl().equalsIgnoreCase(onlineContent.getUrl()) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
             // Retrieve the URLs of stored pages
             Set<String> storedUrls = new HashSet<>();
             if (storedContent.getImageFiles() != null) {
