@@ -286,7 +286,8 @@ public class ContentDownloadWorker extends BaseWorker {
                 || (nbErrors > 0 && content.getSite().hasBackupURLs())
         ) {
             try {
-                List<ImageFile> newImages = fetchImageURLs(content);
+                StatusContent targetStatus = (downloadMode == Content.DownloadMode.DOWNLOAD) ? StatusContent.SAVED : StatusContent.ONLINE;
+                List<ImageFile> newImages = ContentHelper.fetchImageURLs(content, targetStatus);
                 // Cases 1 and 2 : Replace existing images with the parsed images
                 if (images.isEmpty() || nbErrors == images.size()) images = newImages;
                 // Case 3 : Replace images in ERROR state with the parsed images at the same position
@@ -383,7 +384,6 @@ public class ContentDownloadWorker extends BaseWorker {
         dao.insertContent(content);
 
         if (downloadMode == Content.DownloadMode.ONLINE) {
-            dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ONLINE);
             completeDownload(content.getId(), content.getTitle(), images.size(), 0, 0);
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, content);
         }
@@ -681,65 +681,6 @@ public class ContentDownloadWorker extends BaseWorker {
         } else {
             Timber.d("Content download skipped : %s [%s]", title, contentId);
         }
-    }
-
-    /**
-     * Query source to fetch all image file names and URLs of a given book
-     *
-     * @param content Book whose pages to retrieve
-     * @return List of pages with original URLs and file name
-     */
-    private List<ImageFile> fetchImageURLs(@NonNull Content content) throws Exception {
-        List<ImageFile> imgs;
-
-        // If content doesn't have any download parameters, get them from the cookie manager
-        String contentDownloadParamsStr = content.getDownloadParams();
-        if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
-            String cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
-            if (!cookieStr.isEmpty()) {
-                Map<String, String> downloadParams = new HashMap<>();
-                downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
-                content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
-            }
-        }
-
-        // Use ImageListParser to query the source
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
-        imgs = parser.parseImageList(content);
-
-        // If no images found, or just the cover, image detection has failed
-        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
-            throw new EmptyResultException();
-
-        // Add the content's download params to the images only if they have missing information
-        contentDownloadParamsStr = content.getDownloadParams();
-        if (contentDownloadParamsStr != null && contentDownloadParamsStr.length() > 2) {
-            Map<String, String> contentDownloadParams = ContentHelper.parseDownloadParams(contentDownloadParamsStr);
-            for (ImageFile i : imgs) {
-                if (i.getDownloadParams() != null && i.getDownloadParams().length() > 2) {
-                    Map<String, String> imageDownloadParams = ContentHelper.parseDownloadParams(i.getDownloadParams());
-                    // Content's params
-                    for (Map.Entry<String, String> entry : contentDownloadParams.entrySet())
-                        if (!imageDownloadParams.containsKey(entry.getKey()))
-                            imageDownloadParams.put(entry.getKey(), entry.getValue());
-                    // Referer, just in case
-                    if (!imageDownloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
-                        imageDownloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
-                    i.setDownloadParams(JsonHelper.serializeToJson(imageDownloadParams, JsonHelper.MAP_STRINGS));
-                } else {
-                    i.setDownloadParams(contentDownloadParamsStr);
-                }
-            }
-        }
-
-        // Cleanup generated objects
-        for (ImageFile img : imgs) {
-            img.setId(0);
-            img.setStatus(StatusContent.SAVED);
-            img.setContentId(content.getId());
-        }
-
-        return imgs;
     }
 
     // TODO doc
