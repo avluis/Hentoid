@@ -84,6 +84,7 @@ import timber.log.Timber;
 
 public class ImageViewerViewModel extends AndroidViewModel {
 
+    // Number of concurrent image downloads
     private static final int CONCURRENT_DOWNLOADS = 3;
 
     // Collection DAO
@@ -110,11 +111,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // TODO doc
     private final Map<Integer, String> imageLocations = new HashMap<>();
-    // TODO doc
+    // Switch to interrupt unarchiving when leaving the activity
     private final AtomicBoolean interruptArchiveLoad = new AtomicBoolean(false);
-    // TODO doc
+    // Page indexes that are being downloaded
     private final Set<Integer> downloadsInProgress = Collections.synchronizedSet(new HashSet<>());
-    // TODO doc
+    // FIFO switches to interrupt downloads when browsing the book
     private final Queue<AtomicBoolean> downloadsQueue = new ConcurrentLinkedQueue<>();
 
     // Technical
@@ -326,7 +327,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 // Extract the images if they are contained within an archive
                 // Unzip the archive in the app's cache folder
                 DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
-                // TODO replace that with a proper on-demand loading
+                // TODO replace that with a proper on-demand loading - see #706
                 if (archiveFile != null) {
                     interrupt.set(false);
                     isArchiveExtracting = true;
@@ -368,7 +369,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    // TODO doc
+    /**
+     * Map the given file Uri to its corresponding ImageFile in the given list, using their display name
+     *
+     * @param imageFiles List of ImageFiles to map the given Uri to
+     * @param uri        File Uri to map to one of the elements of the given list
+     * @return Matched ImageFile with the valued Uri if found; empty ImageFile if not found
+     */
     private ImageFile mapUriToImageFile(@NonNull final List<ImageFile> imageFiles, @NonNull final Uri uri) {
         String path = uri.getPath();
         if (null == path) return new ImageFile();
@@ -827,8 +834,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         final List<ImageFile> images = getViewerImages().getValue();
         if (null == images || images.size() <= pageIndex) return;
 
-        Timber.i("SCP %s %s", pageIndex, direction);
-
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
         if (isPictureDownloadable(pageIndex, images)) indexesToLoad.add(pageIndex);
@@ -844,8 +849,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
             for (int index : indexesToLoad) {
                 if (downloadsInProgress.contains(index)) continue;
                 downloadsInProgress.add(index);
-
-                Timber.i("INITIATING PIC %s", index);
 
                 // Adjust the current queue
                 while (downloadsQueue.size() >= CONCURRENT_DOWNLOADS) {
@@ -896,7 +899,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    // TODO doc
+    /**
+     * Indicate if the given page index is a downloadable picture in the given list
+     *
+     * @param pageIndex Index to test
+     * @param images    List of pictures to test against
+     * @return True if the given index is a downloadable picture; false if not
+     */
     private boolean isPictureDownloadable(int pageIndex, @NonNull List<ImageFile> images) {
         return pageIndex > -1
                 && images.size() > pageIndex
@@ -904,8 +913,19 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 && images.get(pageIndex).getFileUri().isEmpty();
     }
 
-    // TODO doc
-    // returns pageIndex and a the URI of the downloaded file
+    /**
+     * Download the picture at the given index to the given folder
+     *
+     * @param pageIndex    Index of the picture to download
+     * @param targetFolder Folder to download to
+     * @param stopDownload Switch to interrupt the download
+     * @return Optional triple with
+     * - The page index
+     * - The Uri of the downloaded file
+     * - The Mime-type of the downloaded file
+     * <p>
+     * The return value is empty if the download fails
+     */
     private Optional<ImmutableTriple<Integer, String, String>> downloadPic(
             int pageIndex,
             @NonNull File targetFolder,
@@ -916,14 +936,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (null == images || null == content || images.size() <= pageIndex)
             return Optional.empty();
 
-        Timber.i("INITIATING PIC %s DL 1", pageIndex);
-
         ImageFile img = images.get(pageIndex);
         // Already downloaded
         if (!img.getFileUri().isEmpty())
             return Optional.of(new ImmutableTriple<>(pageIndex, img.getFileUri(), img.getMimeType()));
-
-        Timber.i("INITIATING PIC %s DL 2", pageIndex);
 
         // Initiate download
         try {
@@ -998,6 +1014,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
     }
 
+    // TODO doc
     private ImmutablePair<File, String> downloadPictureToCachedFile(
             @NonNull Content content,
             @NonNull ImageFile img,
@@ -1056,7 +1073,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return new ImmutablePair<>(targetFile, mimeType);
     }
 
-    // TODO doc
+    /**
+     * Send the current book to the queue to be reparsed from scratch
+     *
+     * @param onError Consumer to call in case reparsing fails
+     */
     public void reparseBook(Consumer<Throwable> onError) {
         Content theContent = content.getValue();
         if (null == theContent) return;
@@ -1084,7 +1105,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    // TODO doc
+    /**
+     * Notify the download progress of the given page
+     *
+     * @param progressPc % progress to display
+     * @param pageIndex  Index of downloaded page
+     */
     private void notifyDownloadProgress(float progressPc, int pageIndex) {
         notificationDisposables.add(Completable.fromRunnable(() -> doNotifyDownloadProgress(progressPc, pageIndex))
                 .subscribeOn(Schedulers.computation())
@@ -1094,7 +1120,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    // TODO doc
+    /**
+     * Notify the download progress of the given page
+     *
+     * @param progressPc % progress to display
+     * @param pageIndex  Index of downloaded page
+     */
     private void doNotifyDownloadProgress(float progressPc, int pageIndex) {
         int progress = (int) Math.floor(progressPc);
         if (progress < 0) { // Error
