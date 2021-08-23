@@ -35,8 +35,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -82,6 +84,8 @@ import timber.log.Timber;
 
 public class ImageViewerViewModel extends AndroidViewModel {
 
+    private static final int CONCURRENT_DOWNLOADS = 3;
+
     // Collection DAO
     private final CollectionDAO dao;
     private final ContentSearchManager searchManager;
@@ -107,9 +111,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // TODO doc
     private final Map<Integer, String> imageLocations = new HashMap<>();
     // TODO doc
-    private final AtomicBoolean interruptImageLoad = new AtomicBoolean(false);
+    private final AtomicBoolean interruptArchiveLoad = new AtomicBoolean(false);
     // TODO doc
-    private final Set<Integer> downloadsInProgress = new HashSet<>();
+    private final Set<Integer> downloadsInProgress = Collections.synchronizedSet(new HashSet<>());
+    // TODO doc
+    private final Queue<AtomicBoolean> downloadsQueue = new ConcurrentLinkedQueue<>();
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -211,7 +217,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // e.g. page favourited
         if (imageLocations.isEmpty() || newImages.size() != imageLocations.size()) {
             if (theContent.isArchive())
-                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptImageLoad, emitter));
+                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptArchiveLoad, emitter));
             else
                 observable = Observable.create(emitter -> processDiskImages(theContent, newImages, emitter));
 
@@ -473,7 +479,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         notificationDisposables.dispose();
         downloadsInProgress.clear();
         isArchiveExtracting = false;
-        interruptImageLoad.set(true);
+        interruptArchiveLoad.set(true);
 
         // Don't do anything if the Content hasn't even been loaded
         if (-1 == loadedContentId) return;
@@ -817,9 +823,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         readPageNumbers.add(pageNumber);
     }
 
-    public void setCurrentPage(int pageIndex, int direction) {
+    public synchronized void setCurrentPage(int pageIndex, int direction) {
         final List<ImageFile> images = getViewerImages().getValue();
         if (null == images || images.size() <= pageIndex) return;
+
+        Timber.i("SCP %s %s", pageIndex, direction);
 
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
@@ -834,8 +842,20 @@ public class ImageViewerViewModel extends AndroidViewModel {
         File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
         if (cachePicFolder != null) {
             for (int index : indexesToLoad) {
-                imageDownloadDisposable.add( // TODO handle dynamically
-                        Single.fromCallable(() -> downloadPic(index, cachePicFolder))
+                if (downloadsInProgress.contains(index)) continue;
+                downloadsInProgress.add(index);
+
+                Timber.i("INITIATING PIC %s", index);
+
+                // Adjust the current queue
+                while (downloadsQueue.size() >= CONCURRENT_DOWNLOADS) {
+                    AtomicBoolean stopDownload = downloadsQueue.poll();
+                    if (stopDownload != null) stopDownload.set(true);
+                }
+                // Schedule a new download
+                AtomicBoolean stopDownload = new AtomicBoolean(false);
+                imageDownloadDisposable.add(
+                        Single.fromCallable(() -> downloadPic(index, cachePicFolder, stopDownload))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(Schedulers.computation())
                                 .subscribe(
@@ -886,24 +906,28 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // TODO doc
     // returns pageIndex and a the URI of the downloaded file
-    private Optional<ImmutableTriple<Integer, String, String>> downloadPic(int pageIndex, @NonNull File targetFolder) {
+    private Optional<ImmutableTriple<Integer, String, String>> downloadPic(
+            int pageIndex,
+            @NonNull File targetFolder,
+            @NonNull final AtomicBoolean stopDownload) {
         Helper.assertNonUiThread();
         List<ImageFile> images = getViewerImages().getValue();
         Content content = getContent().getValue();
         if (null == images || null == content || images.size() <= pageIndex)
             return Optional.empty();
-        if (downloadsInProgress.contains(pageIndex)) return Optional.empty();
 
-        downloadsInProgress.add(pageIndex);
+        Timber.i("INITIATING PIC %s DL 1", pageIndex);
 
         ImageFile img = images.get(pageIndex);
         // Already downloaded
         if (!img.getFileUri().isEmpty())
             return Optional.of(new ImmutableTriple<>(pageIndex, img.getFileUri(), img.getMimeType()));
 
+        Timber.i("INITIATING PIC %s DL 2", pageIndex);
+
         // Initiate download
         try {
-            final String targetFileName = content.getId() + "." + pageIndex + "." + HttpHelper.getExtensionFromUri(img.getUrl());
+            final String targetFileName = content.getId() + "." + pageIndex;
             File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
             String mimeType = ImageHelper.MIME_IMAGE_GENERIC;
             if (existing != null) {
@@ -912,17 +936,27 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 if (0 == existing.length) {
                     List<Pair<String, String>> headers = new ArrayList<>();
                     headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
-                    if (content.getSite().equals(Site.EHENTAI) || content.getSite().equals(Site.EXHENTAI)) { // TODO factorize if it works
-                        HttpHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
-                    } else {
-                        HttpHelper.addCurrentCookiesToHeader(img.getUrl(), headers);
-                    }
 
                     ImmutablePair<File, String> result;
-                    if (img.needsPageParsing())
-                        result = downloadPictureFromPage(content, img, pageIndex, headers, targetFolder, targetFileName);
-                    else
-                        result = downloadPictureToCachedFile(content, img, pageIndex, headers, targetFolder, targetFileName);
+                    if (img.needsPageParsing()) {
+                        // Get cookies from the app jar
+                        String cookieStr = HttpHelper.getCookies(img.getPageUrl());
+                        // If nothing found, peek from the site
+                        if (cookieStr.isEmpty())
+                            cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                        if (!cookieStr.isEmpty())
+                            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                        result = downloadPictureFromPage(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
+                    } else {
+                        // Get cookies from the app jar
+                        String cookieStr = HttpHelper.getCookies(img.getUrl());
+                        // If nothing found, peek from the site
+                        if (cookieStr.isEmpty())
+                            cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+                        if (!cookieStr.isEmpty())
+                            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                        result = downloadPictureToCachedFile(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
+                    }
                     targetFile = result.left;
                     mimeType = result.right;
                 } else { // Image is already there
@@ -935,21 +969,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         } catch (Exception e) {
             Timber.w(e);
         }
-            /*
-        } catch (UnsupportedOperationException | IllegalArgumentException e) {
-            Timber.w(e, "Could not read image from page %s", pageUrl);
-            logErrorRecord(content.getId(), ErrorType.PARSING, pageUrl, "Page " + img.getName(), "Could not read image from page " + pageUrl + " " + e.getMessage());
-        } catch (IOException ioe) {
-            Timber.w(ioe, "Could not read page data from %s", pageUrl);
-            logErrorRecord(content.getId(), ErrorType.IO, pageUrl, "Page " + img.getName(), "Could not read page data from " + pageUrl + " " + ioe.getMessage());
-        } catch (LimitReachedException lre) {
-            String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
-            logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Page " + img.getName(), description);
-        } catch (EmptyResultException ere) {
-            Timber.w(ere, "No images have been found while parsing %s", content.getTitle());
-            logErrorRecord(content.getId(), ErrorType.PARSING, pageUrl, "Page " + img.getName(), "No images have been found. Error = " + ere.getMessage());
-        }
-             */
         return Optional.empty();
     }
 
@@ -959,8 +978,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                                                 int pageIndex,
                                                                 List<Pair<String, String>> requestHeaders,
                                                                 @NonNull File targetFolder,
-                                                                @NonNull String targetFileName) throws
-            UnsupportedContentException, IOException, LimitReachedException, EmptyResultException {
+                                                                @NonNull String targetFileName,
+                                                                @NonNull final AtomicBoolean stopDownload) throws
+            UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, InterruptedException {
         Site site = content.getSite();
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content.getSite());
@@ -968,14 +988,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         img.setUrl(pages.left);
         // Download the picture
         try {
-            return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName);
+            return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
         } catch (IOException e) {
             if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
             else throw e;
         }
         // Trying with backup URL
         img.setUrl(pages.right.get());
-        return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName);
+        return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
     }
 
     private ImmutablePair<File, String> downloadPictureToCachedFile(
@@ -984,7 +1004,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
             int pageIndex,
             List<Pair<String, String>> requestHeaders,
             @NonNull File targetFolder,
-            @NonNull String targetFileName) throws IOException, UnsupportedContentException {
+            @NonNull String targetFileName,
+            @NonNull final AtomicBoolean stopDownload) throws IOException, UnsupportedContentException, InterruptedException {
+
+        if (stopDownload.get()) throw new InterruptedException("Download interrupted");
 
         Site site = content.getSite();
         Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
@@ -1012,6 +1035,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         int iteration = 0;
         try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
             while ((len = in.read(buffer)) > -1) {
+                if (stopDownload.get()) throw new InterruptedException("Download interrupted");
                 processed += len;
                 // Read mime-type on the fly
                 if (0 == iteration) {
