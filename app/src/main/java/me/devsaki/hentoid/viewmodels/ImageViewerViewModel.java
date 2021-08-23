@@ -1041,7 +1041,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 if (0 == iteration) {
                     mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
                     if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
-                        String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", img.getUrl(), size);
+                        String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", img.getUrl(), size / 1024.0);
                         throw new UnsupportedContentException(message);
                     }
                 }
