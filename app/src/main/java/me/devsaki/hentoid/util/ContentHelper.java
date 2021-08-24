@@ -923,11 +923,15 @@ public final class ContentHelper {
      * Update the given content's properties by parsing its webpage
      *
      * @param content Content to parse again from its online source
-     * @return Content updated from its online source, or Optional.empty when something went wrong
-     * @throws IOException If something horrible happens during parsing
+     * @return Content updated from its online source, or Optional.empty if something went wrong
      */
-    public static Optional<Content> reparseFromScratch(@NonNull final Content content) throws IOException {
-        return reparseFromScratch(content, content.getGalleryUrl());
+    public static Optional<Content> reparseFromScratch(@NonNull final Content content) {
+        try {
+            return reparseFromScratch(content, content.getGalleryUrl());
+        } catch (IOException e) {
+            Timber.w(e);
+            return Optional.empty();
+        }
     }
 
     /**
@@ -935,7 +939,7 @@ public final class ContentHelper {
      *
      * @param content Content which properties to update
      * @param url     Webpage to parse to update the given Content's properties
-     * @return Content with updated properties, or Optional.empty when something went wrong
+     * @return Content with updated properties, or Optional.empty if something went wrong
      * @throws IOException If something horrible happens during parsing
      */
     private static Optional<Content> reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
