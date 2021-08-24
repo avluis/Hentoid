@@ -444,23 +444,25 @@ public class LibraryViewModel extends AndroidViewModel {
                         .observeOn(Schedulers.io())
                         .map(c -> {
                             // Reparse content from scratch if images KO
-                            if (!arePagesReachable(c)) {
+                            if (!isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
                                 Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
-                                // TODO don't cancel everything in case of error, just skip the current item
-                                if (newContent.isEmpty()) {
-                                    for (Content c2 : contentList) flagContentDelete(c2, false);
-                                    throw new EmptyResultException();
-                                }
-                                return newContent.get();
+                                if (newContent.isEmpty()) flagContentDelete(c, false);
+                                return newContent;
                             }
-                            return c;
+                            return Optional.of(c);
                         })
-                        .map(c -> c.setDownloadMode(Content.DownloadMode.DOWNLOAD))
-                        .doOnNext(c -> dao.addContentToQueue(
-                                c, StatusContent.SAVED, position,
-                                ContentQueueManager.getInstance().isQueueActive()))
+                        .doOnNext(c -> {
+                            if (c.isPresent()) {
+                                c.get().setDownloadMode(Content.DownloadMode.DOWNLOAD);
+                                dao.addContentToQueue(
+                                        c.get(), StatusContent.SAVED, position,
+                                        ContentQueueManager.getInstance().isQueueActive());
+                            } else {
+                                onError.accept(new EmptyResultException("Content unreachable"));
+                            }
+                        })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
@@ -487,45 +489,46 @@ public class LibraryViewModel extends AndroidViewModel {
                         .map(c -> {
                             Timber.d("Checking pages availability");
                             // Reparse content from scratch if images KO
-                            if (!arePagesReachable(c)) {
+                            if (!isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
                                 Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
-                                // TODO don't cancel everything in case of error, just skip the current item
                                 if (newContent.isEmpty()) {
-                                    for (Content c2 : contentList) flagContentDelete(c2, false);
-                                    throw new EmptyResultException();
+                                    flagContentDelete(c, false);
+                                    return newContent;
+                                } else {
+                                    Content reparsedContent = newContent.get();
+                                    // Reparse pages
+                                    List<ImageFile> newImages = ContentHelper.fetchImageURLs(reparsedContent, StatusContent.ONLINE);
+                                    dao.replaceImageList(reparsedContent.getId(), newImages);
+                                    return Optional.of(reparsedContent.setImageFiles(newImages));
                                 }
-                                Content reparsedContent = newContent.get();
-                                // Reparse pages
-                                List<ImageFile> newImages = ContentHelper.fetchImageURLs(reparsedContent, StatusContent.ONLINE);
-                                dao.replaceImageList(reparsedContent.getId(), newImages);
-                                return reparsedContent.setImageFiles(newImages);
                             }
-                            return c;
+                            return Optional.of(c);
                         })
-                        .map(c -> {
-                            // Non-blocking performance bottleneck; scheduled in a dedicated worker
-                            purgeItem(c);
-                            return c;
-                        })
-                        .map(c -> {
-                            Content dbContent = dao.selectContent(c.getId());
-                            if (null == dbContent) return c;
-                            dbContent.setStatus(StatusContent.ONLINE);
-                            List<ImageFile> imgs = dbContent.getImageFiles();
-                            if (imgs != null) {
-                                for (ImageFile img : imgs) {
-                                    img.setFileUri("");
-                                    img.setSize(0);
-                                    img.setStatus(StatusContent.ONLINE);
+                        .doOnNext(c -> {
+                            if (c.isPresent()) {
+                                Content dbContent = dao.selectContent(c.get().getId());
+                                if (null == dbContent) return;
+                                // Non-blocking performance bottleneck; scheduled in a dedicated worker
+                                purgeItem(c.get());
+                                dbContent.setStatus(StatusContent.ONLINE);
+                                List<ImageFile> imgs = dbContent.getImageFiles();
+                                if (imgs != null) {
+                                    for (ImageFile img : imgs) {
+                                        img.setFileUri("");
+                                        img.setSize(0);
+                                        img.setStatus(StatusContent.ONLINE);
+                                    }
+                                    dao.insertImageFiles(imgs);
                                 }
-                                dao.insertImageFiles(imgs);
+                                dbContent.forceSize(0);
+                                dbContent.setIsBeingDeleted(false);
+                                dao.insertContent(dbContent);
+                                ContentHelper.updateContentJson(getApplication(), dbContent);
+                            } else {
+                                onError.accept(new EmptyResultException("Content unreachable"));
                             }
-                            dbContent.forceSize(0);
-                            dao.insertContent(dbContent);
-                            ContentHelper.updateContentJson(getApplication(), dbContent);
-                            return dbContent;
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -536,7 +539,14 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    private boolean arePagesReachable(@NonNull final Content content) {
+    /**
+     * Test if online pages for the given Content are downloadable
+     * NB : Implementation does not test all pages but one page picked randomly
+     *
+     * @param content Content whose pages to test
+     * @return True if pages are downloadable; false if they aren't
+     */
+    private boolean isDownloadable(@NonNull final Content content) {
         List<ImageFile> images = content.getImageFiles();
         if (null == images) return false;
 
@@ -556,7 +566,7 @@ public class LibraryViewModel extends AndroidViewModel {
                     cookieStr = HttpHelper.peekCookies(img.getPageUrl());
                 if (!cookieStr.isEmpty())
                     headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-                return testDownloadPictureFromPage(content, img, headers);
+                return testDownloadPictureFromPage(content.getSite(), img, headers);
             } else {
                 // Get cookies from the app jar
                 String cookieStr = HttpHelper.getCookies(img.getUrl());
@@ -565,7 +575,7 @@ public class LibraryViewModel extends AndroidViewModel {
                     cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
                 if (!cookieStr.isEmpty())
                     headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-                return testDownloadPicture(content, img, headers);
+                return testDownloadPicture(content.getSite(), img, headers);
             }
         } catch (IOException | LimitReachedException | EmptyResultException e) {
             Timber.w(e);
@@ -573,33 +583,50 @@ public class LibraryViewModel extends AndroidViewModel {
         return false;
     }
 
-    private boolean testDownloadPictureFromPage(@NonNull Content content,
+    /**
+     * Test if the given picture is downloadable using its page URL
+     *
+     * @param site           Corresponding Site
+     * @param img            Picture to test
+     * @param requestHeaders Request headers to use
+     * @return True if the given picture is downloadable; false if not
+     * @throws IOException           If something happens during the download attempt
+     * @throws LimitReachedException If the site's download limit has been reached
+     * @throws EmptyResultException  If no picture has been detected
+     */
+    private boolean testDownloadPictureFromPage(@NonNull Site site,
                                                 @NonNull ImageFile img,
                                                 List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
-        Site site = content.getSite();
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content.getSite());
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
         ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
         img.setUrl(pages.left);
         // Download the picture
         try {
-            return testDownloadPicture(content, img, requestHeaders);
+            return testDownloadPicture(site, img, requestHeaders);
         } catch (IOException e) {
             if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
             else throw e;
         }
         // Trying with backup URL
         img.setUrl(pages.right.get());
-        return testDownloadPicture(content, img, requestHeaders);
+        return testDownloadPicture(site, img, requestHeaders);
     }
 
-    // TODO doc
+    /**
+     * Test if the given picture is downloadable using its own URL
+     *
+     * @param site           Corresponding Site
+     * @param img            Picture to test
+     * @param requestHeaders Request headers to use
+     * @return True if the given picture is downloadable; false if not
+     * @throws IOException If something happens during the download attempt
+     */
     private boolean testDownloadPicture(
-            @NonNull Content content,
+            @NonNull Site site,
             @NonNull ImageFile img,
             List<Pair<String, String>> requestHeaders) throws IOException {
 
-        Site site = content.getSite();
         Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         if (response.code() >= 300) throw new IOException("Network error " + response.code());
 
