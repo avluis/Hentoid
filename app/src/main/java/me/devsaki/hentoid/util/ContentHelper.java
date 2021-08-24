@@ -948,7 +948,7 @@ public final class ContentHelper {
         if (!cookieStr.isEmpty())
             requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
 
-        Response response = HttpHelper.getOnlineResource(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
+        Response response = HttpHelper.getOnlineResourceFast(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
 
         // Scram if the response is a redirection or an error
         if (response.code() >= 300) return Optional.empty();

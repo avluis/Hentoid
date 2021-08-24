@@ -1,5 +1,17 @@
 package me.devsaki.hentoid.fragments.library;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static com.annimon.stream.Collectors.toCollection;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -39,6 +51,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
+import com.annimon.stream.function.Consumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -107,18 +120,6 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static com.annimon.stream.Collectors.toCollection;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
-import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
 
 @SuppressLint("NonConstantResourceId")
 public class LibraryContentFragment extends Fragment implements ChangeGroupDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
@@ -716,7 +717,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             redownloadFromScratch(contents);
-                            for (ContentItem ci : selectedItems) ci.setSelected(false);
                             selectExtension.setSelectOnLongClick(true);
                             selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
@@ -757,8 +757,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            download(contents);
-                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            download(contents, this::onDownloadError);
                             selectExtension.setSelectOnLongClick(true);
                             selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
@@ -767,6 +766,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                         (dialog12, which) -> dialog12.dismiss())
                 .create()
                 .show();
+    }
+
+    private void onDownloadError(Throwable t) {
+        Timber.w(t);
+        Snackbar.make(recyclerView, R.string.download_canceled, BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     /**
@@ -799,16 +803,20 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            stream(contents);
-                            for (ContentItem ci : selectedItems) ci.setSelected(false);
                             selectExtension.setSelectOnLongClick(true);
                             selectExtension.deselect(selectExtension.getSelections());
+                            stream(contents, this::onStreamError);
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
                 .create()
                 .show();
+    }
+
+    private void onStreamError(Throwable t) {
+        Timber.w(t);
+        Snackbar.make(recyclerView, R.string.stream_canceled, BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     /**
@@ -828,7 +836,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             viewModel.setGroupCover(group.id, content.getCover());
-                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.setSelectOnLongClick(true);
                             selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
@@ -1377,26 +1385,28 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 });
     }
 
-    private void download(@NonNull final List<Content> contentList) {
+    private void download(@NonNull final List<Content> contentList, @NonNull Consumer<Throwable> onError) {
         if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             AddQueueMenu.show(activity.get(), recyclerView, this, (position, item) ->
-                    download(contentList, (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM)
+                    download(contentList, (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM, onError)
             );
         } else
-            download(contentList, Preferences.getQueueNewDownloadPosition());
+            download(contentList, Preferences.getQueueNewDownloadPosition(), onError);
     }
 
-    private void download(@NonNull final List<Content> contentList, int addMode) {
+    private void download(@NonNull final List<Content> contentList, int addMode, @NonNull Consumer<Throwable> onError) {
         viewModel.downloadContent(contentList, addMode,
                 () -> {
                     String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.setAction("VIEW QUEUE", v -> viewQueue());
                     snackbar.show();
-                });
+                },
+                onError);
     }
-    private void stream(@NonNull final List<Content> contentList) {
-        viewModel.streamContent(contentList);
+
+    private void stream(@NonNull final List<Content> contentList, @NonNull Consumer<Throwable> onError) {
+        viewModel.streamContent(contentList, onError);
     }
 
     /**

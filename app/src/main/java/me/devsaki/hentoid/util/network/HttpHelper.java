@@ -128,6 +128,12 @@ public class HttpHelper {
         return OkHttpClientSingleton.getInstance(DEFAULT_REQUEST_TIMEOUT).newCall(request).execute();
     }
 
+    public static Response getOnlineResourceFast(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) throws IOException {
+        Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
+        Request request = requestBuilder.get().build();
+        return OkHttpClientSingleton.getInstance(2000,10000).newCall(request).execute();
+    }
+
     /**
      * Read a resource from the given URL with HTTP POST, using the given headers and agent
      *
@@ -491,7 +497,7 @@ public class HttpHelper {
      */
     public static String peekCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
         try {
-            Response response = getOnlineResource(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
+            Response response = getOnlineResourceFast(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
             List<String> cookielist = response.headers("Set-Cookie");
             if (cookielist.isEmpty()) cookielist = response.headers("Set-Cookie");
             return TextUtils.join("; ", cookielist);

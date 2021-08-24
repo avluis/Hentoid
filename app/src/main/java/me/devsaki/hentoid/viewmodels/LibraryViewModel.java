@@ -400,6 +400,8 @@ public class LibraryViewModel extends AndroidViewModel {
 
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
+        // TODO reuse page availability detection here
+
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
@@ -429,11 +431,11 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    // TODO feedback in case it fails
     public void downloadContent(
             @NonNull final List<Content> contentList,
             int position,
-            @NonNull final Runnable onSuccess) {
+            @NonNull final Runnable onSuccess,
+            @NonNull final Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
 
@@ -446,7 +448,11 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
                                 Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
-                                if (newContent.isEmpty()) throw new EmptyResultException();
+                                // TODO don't cancel everything in case of error, just skip the current item
+                                if (newContent.isEmpty()) {
+                                    for (Content c2 : contentList) flagContentDelete(c2, false);
+                                    throw new EmptyResultException();
+                                }
                                 return newContent.get();
                             }
                             return c;
@@ -465,24 +471,31 @@ public class LibraryViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> { // Nothing; feedback is done through LiveData
                                 },
-                                Timber::e
+                                onError::accept
                         )
         );
     }
 
-    // TODO feedback in case it fails
-    public void streamContent(@NonNull final List<Content> contentList) {
+    public void streamContent(@NonNull final List<Content> contentList, @NonNull final Consumer<Throwable> onError) {
+
+        // Flag the content as "being deleted" (triggers blink animation)
+        for (Content c : contentList) flagContentDelete(c, true);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
                         .map(c -> {
+                            Timber.d("Checking pages availability");
                             // Reparse content from scratch if images KO
                             if (!arePagesReachable(c)) {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
                                 Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
-                                if (newContent.isEmpty()) throw new EmptyResultException();
+                                // TODO don't cancel everything in case of error, just skip the current item
+                                if (newContent.isEmpty()) {
+                                    for (Content c2 : contentList) flagContentDelete(c2, false);
+                                    throw new EmptyResultException();
+                                }
                                 Content reparsedContent = newContent.get();
                                 // Reparse pages
                                 List<ImageFile> newImages = ContentHelper.fetchImageURLs(reparsedContent, StatusContent.ONLINE);
@@ -518,7 +531,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .subscribe(
                                 v -> { // Nothing; feedback is done through LiveData
                                 },
-                                Timber::e
+                                onError::accept
                         )
         );
     }
@@ -587,8 +600,7 @@ public class LibraryViewModel extends AndroidViewModel {
             List<Pair<String, String>> requestHeaders) throws IOException {
 
         Site site = content.getSite();
-        // TODO do that with a much smaller timeout than the default 30s (!)
-        Response response = HttpHelper.getOnlineResource(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         if (response.code() >= 300) throw new IOException("Network error " + response.code());
 
         ResponseBody body = response.body();

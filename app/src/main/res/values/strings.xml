@@ -284,6 +284,8 @@
         <item quantity="one">One book archived in your Download folder</item>
         <item quantity="other">%d books archived in your Download folder</item>
     </plurals>
+    <string name="stream_canceled">Streaming canceled - book unavailable online</string>
+    <string name="download_canceled">Download canceled - book unavailable online</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
     <string name="queue_empty">Why am I empty?</string>
     <string name="errors_empty">No errors detected among downloads</string>
