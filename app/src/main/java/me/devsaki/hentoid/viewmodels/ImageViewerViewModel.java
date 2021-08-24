@@ -1069,7 +1069,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             notifyDownloadProgress(100, pageIndex);
             out.flush();
         }
-        Timber.d("DOWNLOADED PIC %d WRITTEN TO %s (%.2f KB)", pageIndex, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+        Timber.d("DOWNLOADED PIC %d [%s] WRITTEN TO %s (%.2f KB)", pageIndex, mimeType, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
         return new ImmutablePair<>(targetFile, mimeType);
     }
 
