@@ -4,6 +4,7 @@ import static me.devsaki.hentoid.util.FileExplorer.createNameFilterEquals;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.usage.StorageStatsManager;
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -15,8 +16,12 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
 import android.os.storage.StorageManager;
+import android.os.storage.StorageVolume;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.StructStatVfs;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -43,6 +48,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
@@ -60,7 +66,7 @@ public class FileHelper {
 
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
-    private static final String PRIMARY_VOLUME_NAME = "primary";
+    private static final String PRIMARY_VOLUME_NAME = "primary"; // DocumentsContract.PRIMARY_VOLUME_NAME
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
 
     private static final String ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"; // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
@@ -105,20 +111,19 @@ public class FileHelper {
      * <p>
      * Credits go to https://stackoverflow.com/questions/34927748/android-5-0-documentfile-from-tree-uri/36162691#36162691
      *
-     * @param context  Context to use for the conversion
-     * @param uri      Uri to get the full path from
-     * @param isFolder true if the given Uri represents a folder; false if it represents a file
+     * @param context Context to use for the conversion
+     * @param uri     Uri to get the full path from
      * @return Full, human-readable access path from the given Uri
      */
-    public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri, boolean isFolder) {
+    public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri) {
         if (uri.toString().isEmpty()) return "";
 
-        String volumePath = getVolumePath(context, getVolumeIdFromUri(uri, isFolder));
+        String volumePath = getVolumePath(context, getVolumeIdFromUri(uri));
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
             volumePath = volumePath.substring(0, volumePath.length() - 1);
 
-        String documentPath = getDocumentPathFromUri(uri, isFolder);
+        String documentPath = getDocumentPathFromUri(uri);
         if (documentPath.endsWith(File.separator))
             documentPath = documentPath.substring(0, documentPath.length() - 1);
 
@@ -138,6 +143,7 @@ public class FileHelper {
      * @return Human-readable access path of the given volume ID
      */
     @SuppressLint("ObsoleteSdkInt")
+    @Nullable
     private static String getVolumePath(@NonNull Context context, final String volumeId) {
         try {
             // StorageVolume exist since API21, but only visible since API24
@@ -175,14 +181,17 @@ public class FileHelper {
     /**
      * Get the volume ID of the given Uri
      *
-     * @param uri      Uri to get the volume ID for
-     * @param isFolder true if the given Uri represents a folder; false if it represents a file
+     * @param uri Uri to get the volume ID for
      * @return Volume ID of the given Uri
      */
-    private static String getVolumeIdFromUri(final Uri uri, boolean isFolder) {
-        final String docId;
-        if (isFolder) docId = DocumentsContract.getTreeDocumentId(uri);
-        else docId = DocumentsContract.getDocumentId(uri);
+    @Nullable
+    private static String getVolumeIdFromUri(final Uri uri) {
+        String docId;
+        try {
+            docId = DocumentsContract.getTreeDocumentId(uri);
+        } catch (IllegalArgumentException e) {
+            docId = DocumentsContract.getDocumentId(uri);
+        }
 
         final String[] split = docId.split(":");
         if (split.length > 0) return split[0];
@@ -192,14 +201,16 @@ public class FileHelper {
     /**
      * Get the human-readable document path of the given Uri
      *
-     * @param uri      Uri to get the path for
-     * @param isFolder true if the given Uri represents a folder; false if it represents a file
+     * @param uri Uri to get the path for
      * @return Human-readable document path of the given Uri
      */
-    private static String getDocumentPathFromUri(final Uri uri, boolean isFolder) {
-        final String docId;
-        if (isFolder) docId = DocumentsContract.getTreeDocumentId(uri);
-        else docId = DocumentsContract.getDocumentId(uri);
+    private static String getDocumentPathFromUri(final Uri uri) {
+        String docId;
+        try {
+            docId = DocumentsContract.getTreeDocumentId(uri);
+        } catch (IllegalArgumentException e) {
+            docId = DocumentsContract.getDocumentId(uri);
+        }
 
         final String[] split = docId.split(":");
         if ((split.length >= 2) && (split[1] != null)) return split[1];
@@ -809,28 +820,85 @@ public class FileHelper {
      * Class to use to obtain information about memory usage
      */
     public static class MemoryUsageFigures {
-        private final long freeMemBytes;
-        private final long totalMemBytes;
+        private long freeMemBytes = 0;
+        private long totalMemBytes = 0;
 
         /**
          * Get memory usage figures for the volume containing the given folder
+         * NB1 : If we ever go to API24, we might use StorageManager.getStorageVolumes
+         * NB2 : If we ever go to API26, we might use StorageStatsManager
          *
          * @param context Context to use
          * @param f       Folder to get the figures from
          */
-        // TODO - encapsulate the reflection trick used by getVolumePath
         public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
-            String fullPath = getFullPathFromTreeUri(context, f.getUri(), true); // Oh so dirty !!
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                init26(context, f);
+            }
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || 0 == totalMemBytes) {
+                Timber.d(">> using legacy mode");
+                init21(context, f);
+            }
+        }
+
+        private void init21(@NonNull Context context, @NonNull DocumentFile f) {
+            String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
             if (fullPath != null) {
                 StatFs stat = new StatFs(fullPath);
 
                 long blockSize = stat.getBlockSizeLong();
                 totalMemBytes = stat.getBlockCountLong() * blockSize;
                 freeMemBytes = stat.getAvailableBlocksLong() * blockSize;
-            } else {
-                freeMemBytes = 0;
-                totalMemBytes = 0;
             }
+        }
+
+        // Inspired by https://github.com/Cheticamp/Storage_Volumes/
+        @TargetApi(26)
+        private void init26(@NonNull Context context, @NonNull DocumentFile f) {
+
+            String volumeId = getVolumeIdFromUri(f.getUri());
+
+            StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+
+            for (StorageVolume v : mgr.getStorageVolumes()) {
+                Timber.d(">> %s %s", v.getUuid(), volumeId);
+                if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
+                    if (v.isPrimary()) {
+                        Timber.d(">> %s PRIMARY", v.getUuid());
+                        // Special processing for primary volume. "Total" should equal size advertised
+                        // on retail packaging and we get that from StorageStatsManager
+                        UUID uuid = StorageManager.UUID_DEFAULT;
+                        StorageStatsManager storageStatsManager =
+                                (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
+                        try {
+                            totalMemBytes = storageStatsManager.getTotalBytes(uuid);
+                            freeMemBytes = storageStatsManager.getFreeBytes(uuid);
+                        } catch (IOException e) {
+                            Timber.w(e);
+                        }
+                    } else {
+                        Timber.d(">> %s NOT PRIMARY", v.getUuid());
+                        // StorageStatsManager doesn't work for volumes other than the primary volume since
+                        // the "UUID" available for non-primary volumes is not acceptable to
+                        // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
+                        try {
+                            StructStatVfs stats = Os.statvfs(getVolumePath(context, v.getUuid()));
+                            long blockSize = stats.f_bsize;
+                            totalMemBytes = stats.f_blocks * blockSize;
+                            freeMemBytes = stats.f_bavail * blockSize;
+                        } catch (ErrnoException e) {
+                            Timber.w(e);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        @TargetApi(26)
+        private boolean volumeIdMatch(@NonNull final StorageVolume volume, @NonNull final String treeId) {
+            if (StringHelper.protect(volume.getUuid()).equals(treeId)) return true;
+            else return (volume.isPrimary() && treeId.equals(PRIMARY_VOLUME_NAME));
         }
 
         /**

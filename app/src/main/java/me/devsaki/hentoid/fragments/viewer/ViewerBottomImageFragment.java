@@ -158,9 +158,9 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
             int lastSeparator = filePath.lastIndexOf('/');
             String archiveUri = filePath.substring(0, lastSeparator);
             String fileName = filePath.substring(lastSeparator);
-            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(archiveUri), false) + fileName;
+            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(archiveUri)) + fileName;
         } else {
-            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false);
+            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()));
         }
         imgPath.setText(filePath);
 

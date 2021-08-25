@@ -198,13 +198,13 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     private fun onHentoidFolderChanged() {
         val storageFolderPref: Preference? = findPreference(Preferences.Key.SETTINGS_FOLDER) as Preference?
         val uri = Uri.parse(Preferences.getStorageUri())
-        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri, true)
+        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri)
     }
 
     private fun onExternalFolderChanged() {
         val storageFolderPref: Preference? = findPreference(Preferences.Key.EXTERNAL_LIBRARY) as Preference?
         val uri = Uri.parse(Preferences.getExternalLibraryUri())
-        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri, true)
+        storageFolderPref?.summary = FileHelper.getFullPathFromTreeUri(requireContext(), uri)
         // Enable/disable sub-prefs
         val deleteExternalLibrary: Preference? = findPreference(Preferences.Key.EXTERNAL_LIBRARY_DELETE) as Preference?
         deleteExternalLibrary?.isEnabled = (uri.toString().isNotEmpty())
