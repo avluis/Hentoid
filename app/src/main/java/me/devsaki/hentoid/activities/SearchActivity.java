@@ -124,8 +124,9 @@ public class SearchActivity extends BaseActivity {
         sourceTypeButton = findViewById(R.id.textCategorySource);
         sourceTypeButton.setOnClickListener(v -> onAttrButtonClick(excludeClicked, AttributeType.SOURCE));
 
-        CheckBox checkBox = (CheckBox) findViewById(R.id.checkBox);
-        checkBox.setChecked(excludeClicked);
+        CheckBox excludeCheckBox = (CheckBox) findViewById(R.id.checkBox);
+        excludeCheckBox.setOnClickListener(this::onExcludeClick);
+        excludeCheckBox.setChecked(excludeClicked);
 
 
         searchTags = findViewById(R.id.search_tags);
