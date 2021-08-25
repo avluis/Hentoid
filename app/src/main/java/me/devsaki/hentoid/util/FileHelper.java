@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import static me.devsaki.hentoid.util.FileExplorer.createNameFilterEquals;
+
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ActivityNotFoundException;
@@ -11,6 +13,7 @@ import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.StatFs;
 import android.os.storage.StorageManager;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -44,8 +47,6 @@ import java.util.Locale;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.FileExplorer.createNameFilterEquals;
 
 /**
  * Created by avluis on 08/05/2016.
@@ -817,18 +818,18 @@ public class FileHelper {
          * @param context Context to use
          * @param f       Folder to get the figures from
          */
-        // Check https://stackoverflow.com/questions/56663624/how-to-get-free-and-total-size-of-each-storagevolume
-        // to see if a better solution compatible with API21 has been found
         // TODO - encapsulate the reflection trick used by getVolumePath
         public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
             String fullPath = getFullPathFromTreeUri(context, f.getUri(), true); // Oh so dirty !!
             if (fullPath != null) {
-                File file = new File(fullPath);
-                this.freeMemBytes = file.getFreeSpace();
-                this.totalMemBytes = file.getTotalSpace();
+                StatFs stat = new StatFs(fullPath);
+
+                long blockSize = stat.getBlockSizeLong();
+                totalMemBytes = stat.getBlockCountLong() * blockSize;
+                freeMemBytes = stat.getAvailableBlocksLong() * blockSize;
             } else {
-                this.freeMemBytes = 0;
-                this.totalMemBytes = 0;
+                freeMemBytes = 0;
+                totalMemBytes = 0;
             }
         }
 
