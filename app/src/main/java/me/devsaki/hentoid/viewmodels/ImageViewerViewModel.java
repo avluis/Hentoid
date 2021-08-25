@@ -100,6 +100,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Pictures data
     private LiveData<List<ImageFile>> currentImageSource;
     private final MediatorLiveData<List<ImageFile>> databaseImages = new MediatorLiveData<>();  // Set of image of current content
+    private final List<ImageFile> viewerImagesInternal = Collections.synchronizedList(new ArrayList<>());
     private final MutableLiveData<List<ImageFile>> viewerImages = new MutableLiveData<>();     // Currently displayed set of images (reprocessed from databaseImages)
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
     private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // Shuffle state of the current book
@@ -472,7 +473,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
 
-        viewerImages.postValue(imgs);
+        viewerImagesInternal.clear();
+        viewerImagesInternal.addAll(imgs);
+        viewerImages.postValue(viewerImagesInternal);
     }
 
     public void onLeaveBook(int readerIndex) {
@@ -565,12 +568,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void toggleImageFavourite(int viewerIndex, @NonNull Consumer<Boolean> successCallback) {
-        List<ImageFile> list = viewerImages.getValue();
-        if (list != null) {
-            ImageFile file = list.get(viewerIndex);
-            boolean newState = !file.isFavourite();
-            toggleImageFavourite(Stream.of(file).toList(), () -> successCallback.accept(newState));
-        }
+        ImageFile file = viewerImagesInternal.get(viewerIndex);
+        boolean newState = !file.isFavourite();
+        toggleImageFavourite(Stream.of(file).toList(), () -> successCallback.accept(newState));
     }
 
     public void toggleImageFavourite(List<ImageFile> images, @NonNull Runnable successCallback) {
@@ -695,8 +695,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void deletePage(int pageViewerIndex, Consumer<Throwable> onError) {
-        List<ImageFile> imageFiles = viewerImages.getValue();
-        if (imageFiles != null && imageFiles.size() > pageViewerIndex && pageViewerIndex > -1)
+        List<ImageFile> imageFiles = viewerImagesInternal;
+        if (imageFiles.size() > pageViewerIndex && pageViewerIndex > -1)
             deletePages(Stream.of(imageFiles.get(pageViewerIndex)).toList(), onError);
     }
 
@@ -831,8 +831,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public synchronized void setCurrentPage(int pageIndex, int direction) {
-        final List<ImageFile> images = getViewerImages().getValue();
-        if (null == images || images.size() <= pageIndex) return;
+        final List<ImageFile> images = viewerImagesInternal;
+        if (images.size() <= pageIndex) return;
 
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
@@ -871,24 +871,21 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
                                             int downloadedPageIndex = resultOpt.get().left;
 
-                                            synchronized (viewerImages) {
-                                                List<ImageFile> images2 = viewerImages.getValue();
-                                                if (null == images2 || images2.size() <= downloadedPageIndex)
+                                            synchronized (viewerImagesInternal) {
+                                                if (viewerImagesInternal.size() <= downloadedPageIndex)
                                                     return;
 
-                                                images2 = Stream.of(images2).toList();
-
                                                 // Instanciate a new ImageFile not to modify the one used by the UI
-                                                ImageFile downloadedPic = new ImageFile(images2.get(downloadedPageIndex));
+                                                ImageFile downloadedPic = new ImageFile(viewerImagesInternal.get(downloadedPageIndex));
                                                 downloadedPic.setFileUri(resultOpt.get().middle);
                                                 downloadedPic.setMimeType(resultOpt.get().right);
 
-                                                images2.remove(downloadedPageIndex);
-                                                images2.add(downloadedPageIndex, downloadedPic);
-                                                Timber.d("REPLACING INDEX %d - ORDER %d", downloadedPageIndex, downloadedPic.getOrder());
+                                                viewerImagesInternal.remove(downloadedPageIndex);
+                                                viewerImagesInternal.add(downloadedPageIndex, downloadedPic);
+                                                Timber.d("REPLACING INDEX %d - ORDER %d -> %s", downloadedPageIndex, downloadedPic.getOrder(), downloadedPic.getFileUri());
 
                                                 // Instanciate a new list to trigger an actual Adapter UI refresh
-                                                viewerImages.postValue(images2);
+                                                viewerImages.postValue(Stream.of(viewerImagesInternal).toList());
                                                 imageLocations.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
                                             }
                                         },
@@ -931,10 +928,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull File targetFolder,
             @NonNull final AtomicBoolean stopDownload) {
         Helper.assertNonUiThread();
-        List<ImageFile> images = getViewerImages().getValue();
+        List<ImageFile> images = viewerImagesInternal;
         Content content = getContent().getValue();
-        if (null == images || null == content || images.size() <= pageIndex)
-            return Optional.empty();
+        if (null == content || images.size() <= pageIndex) return Optional.empty();
 
         ImageFile img = images.get(pageIndex);
         // Already downloaded
