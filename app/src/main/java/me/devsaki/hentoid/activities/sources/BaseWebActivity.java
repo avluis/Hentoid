@@ -273,6 +273,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         topAlertBanner = findViewById(R.id.top_alert);
         topAlertIcon = findViewById(R.id.top_alert_icon);
         topAlertMessage = findViewById(R.id.top_alert_txt);
+        // Banner close buttons
+        View topAlertCloseButton = findViewById(R.id.top_alert_close_btn);
+        topAlertCloseButton.setOnClickListener(this::onTopAlertCloseClick);
+        View bottomAlertCloseButton = findViewById(R.id.bottom_alert_close_btn);
+        bottomAlertCloseButton.setOnClickListener(this::onBottomAlertCloseClick);
 
         bottomAlertBanner = findViewById(R.id.bottom_alert);
         bottomAlertMessage = findViewById(R.id.bottom_alert_txt);
