@@ -19,7 +19,6 @@ import android.os.storage.StorageManager;
 import android.os.storage.StorageVolume;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.system.ErrnoException;
 import android.system.Os;
 import android.system.StructStatVfs;
 import android.webkit.MimeTypeMap;
@@ -819,7 +818,7 @@ public class FileHelper {
                 init26(context, f);
             }
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || 0 == totalMemBytes) {
-                Timber.d(">> using legacy mode");
+                Timber.v("MemoryUsageFigures using legacy mode");
                 init21(context, f);
             }
         }
@@ -844,10 +843,10 @@ public class FileHelper {
             StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
 
             for (StorageVolume v : mgr.getStorageVolumes()) {
-                Timber.d(">> %s %s", v.getUuid(), volumeId);
+                Timber.v(">> %s %s", v.getUuid(), volumeId);
                 if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
                     if (v.isPrimary()) {
-                        Timber.d(">> %s PRIMARY", v.getUuid());
+                        Timber.v(">> %s PRIMARY", v.getUuid());
                         // Special processing for primary volume
                         UUID uuid = StorageManager.UUID_DEFAULT;
                         try {
@@ -856,10 +855,10 @@ public class FileHelper {
                             totalMemBytes = storageStatsManager.getTotalBytes(uuid);
                             freeMemBytes = storageStatsManager.getFreeBytes(uuid);
                         } catch (IOException e) {
-                            Timber.w(e);
+                            Timber.e(e);
                         }
                     } else {
-                        Timber.d(">> %s NOT PRIMARY", v.getUuid());
+                        Timber.v(">> %s NOT PRIMARY", v.getUuid());
                         // StorageStatsManager doesn't work for volumes other than the primary volume since
                         // the "UUID" available for non-primary volumes is not acceptable to
                         // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
@@ -868,8 +867,8 @@ public class FileHelper {
                             long blockSize = stats.f_bsize;
                             totalMemBytes = stats.f_blocks * blockSize;
                             freeMemBytes = stats.f_bavail * blockSize;
-                        } catch (ErrnoException e) {
-                            Timber.w(e);
+                        } catch (Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
+                            Timber.e(e);
                         }
                     }
                     break;
