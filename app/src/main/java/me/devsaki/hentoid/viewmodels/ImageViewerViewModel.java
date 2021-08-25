@@ -81,7 +81,14 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
-
+/**
+ * ViewModel for the image viewer
+ * <p>
+ * Upon loading a new Content, LiveData updates are done in the following sequence :
+ * 1. Content
+ * 2. Images
+ * 3. Starting index
+ */
 public class ImageViewerViewModel extends AndroidViewModel {
 
     // Number of concurrent image downloads
