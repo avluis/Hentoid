@@ -510,7 +510,7 @@ public class FileHelper {
      * @param uri     Uri of the resource to be opened
      */
     public static void openUri(@NonNull Context context, @NonNull Uri uri) {
-        tryOpenFile(context, uri, uri.getLastPathSegment(), false);
+        tryOpenFile(context, uri, StringHelper.protect(uri.getLastPathSegment()), false);
     }
 
     /**
@@ -678,24 +678,12 @@ public class FileHelper {
      * @return Position of the sequence in the data array; -1 if not found within the given initial position and limit
      */
     static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
-//        int BUFFER_SIZE = 64;
-//        byte[] readBuffer = new byte[BUFFER_SIZE];
-
         int remainingBytes;
-//        int bytesToRead;
-//        int dataPos = 0;
         int iSequence = 0;
 
         if (initialPos < 0 || initialPos > data.length) return -1;
 
         remainingBytes = (limit > 0) ? Math.min(data.length - initialPos, limit) : data.length;
-
-//        while (remainingBytes > 0) {
-//            bytesToRead = Math.min(remainingBytes, BUFFER_SIZE);
-//            System.arraycopy(data, dataPos, readBuffer, 0, bytesToRead);
-//            dataPos += bytesToRead;
-
-//            stream.Read(readBuffer, 0, bytesToRead);
 
         for (int i = initialPos; i < remainingBytes; i++) {
             if (sequence[iSequence] == data[i]) iSequence++;
@@ -703,9 +691,6 @@ public class FileHelper {
 
             if (sequence.length == iSequence) return i - sequence.length;
         }
-
-//            remainingBytes -= bytesToRead;
-//        }
 
         // Target sequence not found
         return -1;
@@ -825,8 +810,6 @@ public class FileHelper {
 
         /**
          * Get memory usage figures for the volume containing the given folder
-         * NB1 : If we ever go to API24, we might use StorageManager.getStorageVolumes
-         * NB2 : If we ever go to API26, we might use StorageStatsManager
          *
          * @param context Context to use
          * @param f       Folder to get the figures from
@@ -841,6 +824,7 @@ public class FileHelper {
             }
         }
 
+        // Init for API 21 to 25
         private void init21(@NonNull Context context, @NonNull DocumentFile f) {
             String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
             if (fullPath != null) {
@@ -852,12 +836,11 @@ public class FileHelper {
             }
         }
 
+        // Init for API 26+
         // Inspired by https://github.com/Cheticamp/Storage_Volumes/
         @TargetApi(26)
         private void init26(@NonNull Context context, @NonNull DocumentFile f) {
-
             String volumeId = getVolumeIdFromUri(f.getUri());
-
             StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
 
             for (StorageVolume v : mgr.getStorageVolumes()) {
@@ -865,12 +848,11 @@ public class FileHelper {
                 if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
                     if (v.isPrimary()) {
                         Timber.d(">> %s PRIMARY", v.getUuid());
-                        // Special processing for primary volume. "Total" should equal size advertised
-                        // on retail packaging and we get that from StorageStatsManager
+                        // Special processing for primary volume
                         UUID uuid = StorageManager.UUID_DEFAULT;
-                        StorageStatsManager storageStatsManager =
-                                (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
                         try {
+                            StorageStatsManager storageStatsManager =
+                                    (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
                             totalMemBytes = storageStatsManager.getTotalBytes(uuid);
                             freeMemBytes = storageStatsManager.getFreeBytes(uuid);
                         } catch (IOException e) {
@@ -1059,12 +1041,22 @@ public class FileHelper {
         return -1;
     }
 
-    // TODO doc
+    /**
+     * Remove all illegal characters from the given string to make it a valid Android file name
+     *
+     * @param fileName String to clean up
+     * @return Cleaned string
+     */
     public static String cleanFileName(@NonNull final String fileName) {
         return fileName.replaceAll(ILLEGAL_FILENAME_CHARS, "");
     }
 
-    // TODO doc
+    /**
+     * Empty the given subfolder inside the cache folder
+     *
+     * @param context    Context to use
+     * @param folderName Name of the subfolder to empty
+     */
     public static void emptyCacheFolder(@NonNull Context context, @NonNull String folderName) {
         File cacheFolder = getOrCreateCacheFolder(context, folderName);
         if (cacheFolder != null) {
@@ -1075,7 +1067,13 @@ public class FileHelper {
         }
     }
 
-    // TODO doc
+    /**
+     * Retrieve or create the subfolder with the given name inside the cache folder
+     *
+     * @param context    Context to use
+     * @param folderName Name of the subfolder to retrieve or create
+     * @return Subfolder as a File, or null if it couldn't be found nor created
+     */
     @Nullable
     public static File getOrCreateCacheFolder(@NonNull Context context, @NonNull String folderName) {
         File cacheRoot = context.getCacheDir();
