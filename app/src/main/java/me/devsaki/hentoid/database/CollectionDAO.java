@@ -143,8 +143,6 @@ public interface CollectionDAO {
 
     long countStoredContent(boolean nonFavouriteOnly, boolean includeQueued);
 
-    Observable<Content> streamContentWithUnhashedCovers();
-
     List<Content> selectContentWithUnhashedCovers();
 
     long countContentWithUnhashedCovers();

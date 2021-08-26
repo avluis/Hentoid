@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database;
 
+import static com.annimon.stream.Collectors.toList;
+
 import android.content.Context;
 import android.util.SparseIntArray;
 
@@ -8,6 +10,7 @@ import androidx.annotation.NonNull;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
 
@@ -64,12 +67,12 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import timber.log.Timber;
 
-import static com.annimon.stream.Collectors.toList;
-
 public class ObjectBoxDB {
 
     // Status displayed in the library view (all books of the library; both internal and external)
     private static final int[] libraryStatus = ContentHelper.getLibraryStatuses();
+    private static final int[] queueStatus = ContentHelper.getQueueStatuses();
+    private static final int[] libraryQueueStatus = ArrayUtils.addAll(libraryStatus, queueStatus);
 
     private static final long DAY_IN_MILLIS = 1000L * 60 * 60 * 24;
 
@@ -728,8 +731,10 @@ public class ObjectBoxDB {
     }
 
     public void shuffleContentIds() {
+        // Clear previous shuffled list
         Box<ShuffleRecord> shuffleStore = store.boxFor(ShuffleRecord.class);
         shuffleStore.removeAll();
+        // Populate with a new list
         List<Long> allBooksIds = Helper.getListFromPrimitiveArray(selectStoredContentQ(false, false, -1, false).build().findIds());
         Collections.shuffle(allBooksIds, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
         shuffleStore.put(Stream.of(allBooksIds).map(ShuffleRecord::new).toList());
@@ -868,14 +873,6 @@ public class ObjectBoxDB {
 
         return Helper.getPrimitiveLongArrayFromList(results);
     }
-
-    /*
-    private long[] selectContentWithPageFavs() {
-        QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
-        builder.equal(ImageFile_.favourite, true);
-        return builder.build().property(ImageFile_.contentId).distinct().findLongs();
-    }
-     */
 
     private void filterWithPageFavs(QueryBuilder<Content> builder) {
         builder.link(Content_.imageFiles).equal(ImageFile_.favourite, true);
@@ -1382,8 +1379,8 @@ public class ObjectBoxDB {
         query.in(Content_.status, new int[]{
                 StatusContent.DOWNLOADING.getCode(),
                 StatusContent.PAUSED.getCode(),
-                StatusContent.DOWNLOADED.getCode(),
                 StatusContent.ERROR.getCode(),
+                StatusContent.DOWNLOADED.getCode(),
                 StatusContent.MIGRATED.getCode()});
         query.notNull(Content_.storageFolder);
         query.notEqual(Content_.storageFolder, "");
@@ -1393,16 +1390,9 @@ public class ObjectBoxDB {
     QueryBuilder<Content> selectStoredContentQ(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         if (includeQueued)
-            query.in(Content_.status, new int[]{
-                    StatusContent.DOWNLOADING.getCode(),
-                    StatusContent.PAUSED.getCode(),
-                    StatusContent.DOWNLOADED.getCode(),
-                    StatusContent.ERROR.getCode(),
-                    StatusContent.MIGRATED.getCode()});
+            query.in(Content_.status, libraryQueueStatus);
         else
-            query.in(Content_.status, new int[]{
-                    StatusContent.DOWNLOADED.getCode(),
-                    StatusContent.MIGRATED.getCode()});
+            query.in(Content_.status, libraryStatus);
         query.notNull(Content_.storageUri);
         query.notEqual(Content_.storageUri, "");
         if (nonFavouritesOnly) query.equal(Content_.favourite, false);
