@@ -176,9 +176,9 @@ public class DatabaseMaintenance {
         try {
             // Detect duplicate bookmarks (host/someurl and host/someurl/)
             Timber.i("Detecting duplicate bookmarks : start");
-            Query<SiteBookmark> contents = db.selectAllDuplicateBookmarks();
-            Timber.i("Detecting duplicate bookmarks : %d favourites detected", contents.count());
-            contents.remove();
+            Query<SiteBookmark> entries = db.selectAllDuplicateBookmarks();
+            Timber.i("Detecting duplicate bookmarks : %d bookmarks detected", entries.count());
+            entries.remove();
             Timber.i("Detecting duplicate bookmarks : done");
         } finally {
             db.closeThreadResources();

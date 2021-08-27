@@ -284,14 +284,23 @@ public class ObjectBoxDB {
         Box<Attribute> attributeBox = store.boxFor(Attribute.class);
         Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
 
-        List<Attribute> attrs = attributeBox.getAll();
-        for (Attribute attr : attrs) {
-            if (attr.contents.isEmpty()) {
-                Timber.i(">> Found empty attr : %s", attr.getName());
-                locationBox.remove(attr.getLocations());
-                attr.getLocations().clear();                                           // Clear location links
-                attributeBox.remove(attr);                                             // Delete the attribute itself
-            }
+        // Stream the collection to get the attributes to clean
+        List<Attribute> attrsToClean = new ArrayList<>();
+        Query<Attribute> attrQuery = attributeBox.query().build();
+        attrQuery.forEach(
+                attr -> {
+                    if (attr.contents.isEmpty()) {
+                        Timber.i(">> Found empty attr : %s", attr.getName());
+                        attrsToClean.add(attr);
+                    }
+                }
+        );
+
+        // Clean the attributes
+        for (Attribute attr : attrsToClean) {
+            locationBox.remove(attr.getLocations());
+            attr.getLocations().clear();                                           // Clear location links
+            attributeBox.remove(attr);                                             // Delete the attribute itself
         }
     }
 
