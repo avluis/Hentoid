@@ -187,9 +187,9 @@ public class FileHelper {
     private static String getVolumeIdFromUri(final Uri uri) {
         String docId;
         try {
-            docId = DocumentsContract.getTreeDocumentId(uri);
-        } catch (IllegalArgumentException e) {
             docId = DocumentsContract.getDocumentId(uri);
+        } catch (IllegalArgumentException e) {
+            docId = DocumentsContract.getTreeDocumentId(uri);
         }
 
         final String[] split = docId.split(":");
@@ -206,9 +206,9 @@ public class FileHelper {
     private static String getDocumentPathFromUri(final Uri uri) {
         String docId;
         try {
-            docId = DocumentsContract.getTreeDocumentId(uri);
-        } catch (IllegalArgumentException e) {
             docId = DocumentsContract.getDocumentId(uri);
+        } catch (IllegalArgumentException e) {
+            docId = DocumentsContract.getTreeDocumentId(uri);
         }
 
         final String[] split = docId.split(":");
