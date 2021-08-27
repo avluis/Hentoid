@@ -249,16 +249,17 @@ public class ImageFile {
         if (o == null || getClass() != o.getClass()) return false;
         ImageFile imageFile = (ImageFile) o;
         return getId() == imageFile.getId() &&
-                Objects.equals(getUrl(), imageFile.getUrl());
+                Objects.equals(getUrl(), imageFile.getUrl()) &&
+                Objects.equals(isCover(), imageFile.isCover()); // Sometimes the thumb picture has the same URL as the 1st page
     }
 
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getUrl());
+        return Objects.hash(getId(), getUrl(), isCover());
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + url).getBytes());
+        return Helper.hash64((id + "." + url + "." + isCover).getBytes());
     }
 }

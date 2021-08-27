@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -73,8 +75,6 @@ import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 
 /**
  * Utility class for Content-related operations
@@ -753,8 +753,28 @@ public final class ContentHelper {
             fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
 
         // Look up similar names between images and file names
+        int order;
+        int previousOrder = -1;
         for (ImageFile img : images) {
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
+
+            // Detect gaps inside image numbering
+            order = img.getOrder();
+            // Look for files named with the forgotten number
+            if (previousOrder > -1 && previousOrder != order - 1) {
+                Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
+                for (int i = previousOrder + 1; i < order; i++) {
+                    ImmutablePair<String, Long> property = fileNameProperties.get(i + "");
+                    if (property != null) {
+                        Timber.i("Numbering gap filled with a file : %d", i);
+                        ImageFile newImage = new ImageFile(i, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
+                        newImage.setFileUri(property.left).setSize(property.right);
+                        result.add(i, newImage);
+                    }
+                }
+            }
+            previousOrder = order;
+
             ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
             if (property != null) {
                 if (imgName.equals(Consts.THUMB_FILE_NAME)) {
@@ -763,7 +783,7 @@ public final class ContentHelper {
                 }
                 result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
             } else
-                Timber.i(">> img dropped %s", imgName);
+                Timber.i(">> image not found among files : %s", imgName);
         }
 
         // If no thumb found, set the 1st image as cover
