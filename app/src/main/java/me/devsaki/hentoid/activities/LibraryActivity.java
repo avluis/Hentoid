@@ -566,7 +566,7 @@ public class LibraryActivity extends BaseActivity {
                     isGroupFavsChecked = menuItem.isChecked();
                     viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
                 } else
-                    viewModel.toggleContentFavouriteFilter();
+                    viewModel.setContentFavouriteFilter(menuItem.isChecked());
                 break;
             case R.id.action_order:
                 showSearchSortBar(null, null, true);

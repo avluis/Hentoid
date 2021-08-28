@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.viewmodels;
 
+import static me.devsaki.hentoid.util.GroupHelper.moveBook;
+
 import android.app.Application;
 import android.os.Bundle;
 
@@ -53,8 +55,6 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.GroupHelper.moveBook;
 
 
 public class LibraryViewModel extends AndroidViewModel {
@@ -230,8 +230,8 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Toggle the books favourite filter
      */
-    public void toggleContentFavouriteFilter() {
-        searchManager.setFilterBookFavourites(!searchManager.isFilterBookFavourites());
+    public void setContentFavouriteFilter(boolean value) {
+        searchManager.setFilterBookFavourites(value);
         newSearch.setValue(true);
         doSearchContent();
     }
