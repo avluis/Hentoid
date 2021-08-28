@@ -7,12 +7,12 @@ import com.mikepenz.aboutlibraries.LibsBuilder
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consts
+import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.databinding.ActivityAboutBinding
 import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.fragments.about.ChangelogFragment
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.network.HttpHelper
-import me.devsaki.hentoid.util.startBrowserActivity
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
