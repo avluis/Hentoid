@@ -190,6 +190,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="hitomi.la"
                     android:pathPattern="..*/..*"
@@ -204,6 +205,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="nhentai.net"
                     android:pathPrefix="/g/"
@@ -218,6 +220,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="www.tsumino.com"
                     android:pathPrefix="/entry/"
@@ -228,6 +231,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="asmhentai.com"
                     android:pathPrefix="/g"
@@ -238,6 +242,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="comics.asmhentai.com"
                     android:pathPrefix="/g"
@@ -248,6 +253,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="pururin.to"
                     android:pathPrefix="/gallery"
@@ -258,6 +264,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="e-hentai.org"
                     android:pathPrefix="/g/"
@@ -268,6 +275,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="exhentai.org"
                     android:pathPrefix="/g/"
@@ -449,11 +457,11 @@
         <receiver android:name=".receiver.DownloadNotificationPauseReceiver" />
 
         <receiver android:name=".receiver.DuplicateNotificationStopReceiver" />
+        <!--
+                <receiver android:name=".receiver.InstallRunReceiver" />
 
-        <receiver android:name=".receiver.InstallRunReceiver" />
-
-        <receiver android:name=".receiver.InstallCompletedReceiver" />
-
+                <receiver android:name=".receiver.InstallCompletedReceiver" />
+        -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider.FileProvider"

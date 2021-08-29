@@ -1040,6 +1040,15 @@ public class FileHelper {
         return -1;
     }
 
+    // TODO doc
+    public static Uri getFileUri(@NonNull final Context context, @NonNull final File file) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return FileProvider.getUriForFile(context, AUTHORITY, file);
+        } else {
+            return Uri.fromFile(file);
+        }
+    }
+
     /**
      * Remove all illegal characters from the given string to make it a valid Android file name
      *

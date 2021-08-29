@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.services;
 
+import static java.util.Objects.requireNonNull;
+
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -20,11 +22,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.notification.update.UpdateFailedNotification;
 import me.devsaki.hentoid.notification.update.UpdateInstallNotification;
 import me.devsaki.hentoid.notification.update.UpdateProgressNotification;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
-import me.devsaki.hentoid.workers.ContentDownloadWorker;
 import timber.log.Timber;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * Service responsible for downloading an update APK.
@@ -91,10 +91,12 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
         Timber.w(this.getResources().getString(R.string.starting_download));
 
         File apkFile = new File(getExternalCacheDir(), "hentoid.apk");
-        Uri destinationUri = Uri.fromFile(apkFile);
+//        Uri destinationUri = Uri.fromFile(apkFile);
+        Uri apkFileUri = FileHelper.getFileUri(this, apkFile);
+        Timber.d(">> apkUri %s", apkFileUri.toString());
 
         DownloadRequest downloadRequest = new DownloadRequest(updateUri)
-                .setDestinationURI(destinationUri)
+                .setDestinationURI(/*destinationUri*/apkFileUri)
                 .setPriority(DownloadRequest.Priority.HIGH)
                 .setDeleteDestinationFileOnFailure(false)
                 .setStatusListener(this);
@@ -110,8 +112,9 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
         stopForeground(true);
         stopSelf();
 
-        Uri apkUri = downloadRequest.getDestinationURI();
-        notificationManager.notify(new UpdateInstallNotification(apkUri));
+        Uri downloadUri = downloadRequest.getDestinationURI();
+        Timber.d(">> destinationUriComplete %s", downloadUri.toString());
+        notificationManager.notify(new UpdateInstallNotification(downloadUri));
     }
 
     @Override
@@ -122,6 +125,7 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
         stopSelf();
 
         Uri downloadUri = downloadRequest.getUri();
+        Timber.d(">> destinationUriFail %s", downloadUri.toString());
         notificationManager.notify(new UpdateFailedNotification(downloadUri));
     }
 
