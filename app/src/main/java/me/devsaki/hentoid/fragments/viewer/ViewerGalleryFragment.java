@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.viewer;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
@@ -53,11 +55,7 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
-import static androidx.core.view.ViewCompat.requireViewById;
-
 public class ViewerGalleryFragment extends Fragment {
-
-    private static final String KEY_FILTER_FAVOURITES = "filter_favourites";
 
     private ImageViewerViewModel viewModel;
 
@@ -81,7 +79,6 @@ public class ViewerGalleryFragment extends Fragment {
     private boolean firstMoveDone = false;
 
     private boolean filterFavouritesLaunchState = false;
-    private boolean filterFavouritesLaunchRequest = false;
     private boolean filterFavouritesState = false;
 
 
@@ -120,21 +117,13 @@ public class ViewerGalleryFragment extends Fragment {
     };
 
 
-    static ViewerGalleryFragment newInstance(boolean filterFavourites) {
-        ViewerGalleryFragment fragment = new ViewerGalleryFragment();
-        Bundle args = new Bundle();
-        args.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
-        fragment.setArguments(args);
-        return fragment;
+    static ViewerGalleryFragment newInstance() {
+        return new ViewerGalleryFragment();
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
-
-        Bundle arguments = getArguments();
-        if (arguments != null)
-            filterFavouritesLaunchRequest = arguments.getBoolean(KEY_FILTER_FAVOURITES, false);
 
         setHasOptionsMenu(true);
 
@@ -213,9 +202,6 @@ public class ViewerGalleryFragment extends Fragment {
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
 
-        if (filterFavouritesLaunchRequest && filterFavouritesLaunchRequest != filterFavouritesLaunchState)
-            viewModel.filterFavouriteImages(filterFavouritesLaunchRequest);
-
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
         viewModel.getContent().observe(getViewLifecycleOwner(), this::onContentChanged);
@@ -255,9 +241,7 @@ public class ViewerGalleryFragment extends Fragment {
         if (null == chapters || chapters.isEmpty()) return;
 
         chaptersSelector.setOnFocusChangeListener(
-                (v, hasFocus) -> {
-                    Timber.i("hasFocus %s", hasFocus);
-                }
+                (v, hasFocus) -> Timber.i("hasFocus %s", hasFocus)
         );
         chaptersSelector.setItems(Stream.of(chapters).sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).map(Chapter::getName).toList());
         chaptersSelector.selectItemByIndex(0);
@@ -424,9 +408,10 @@ public class ViewerGalleryFragment extends Fragment {
      */
     private void moveToIndex(int index, boolean force) {
         if (recyclerView != null && (!firstMoveDone || force)) {
-            if (itemAdapter.getAdapterItemCount() > index)
-                ((LinearLayoutManager) recyclerView.getLayoutManager()).scrollToPositionWithOffset(index, 0);
-            else recyclerView.scrollToPosition(0);
+            if (itemAdapter.getAdapterItemCount() > index) {
+                LinearLayoutManager llm = ((LinearLayoutManager) recyclerView.getLayoutManager());
+                if (llm != null) llm.scrollToPositionWithOffset(index, 0);
+            } else recyclerView.scrollToPosition(0);
             firstMoveDone = true;
         }
     }

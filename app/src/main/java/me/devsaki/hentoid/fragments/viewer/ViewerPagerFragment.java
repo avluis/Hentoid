@@ -1,5 +1,13 @@
 package me.devsaki.hentoid.fragments.viewer;
 
+import static java.lang.String.format;
+import static me.devsaki.hentoid.util.Preferences.Constant;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_05;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_1;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_16;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_4;
+import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
@@ -77,14 +85,6 @@ import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.devsaki.hentoid.widget.VolumeKeyListener;
 import timber.log.Timber;
 
-import static java.lang.String.format;
-import static me.devsaki.hentoid.util.Preferences.Constant;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_05;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_1;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_16;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_4;
-import static me.devsaki.hentoid.util.Preferences.Constant.VIEWER_SLIDESHOW_DELAY_8;
-
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
 //   - independent page mode (currently used for horizontal display)
@@ -131,11 +131,17 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private TextView pageCurrentNumber;
     private TextView pageMaxNumber;
 
+    // Debouncer for the slideshow slider
+    private Debouncer<Integer> slideshowSliderDebouncer;
+
 
     @SuppressLint("NonConstantResourceId")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentViewerPagerBinding.inflate(inflater, container, false);
+
+        indexRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::applyStartingIndexInternal);
+        slideshowSliderDebouncer = new Debouncer<>(requireContext(), 2500, this::onSlideShowSliderChosen);
 
         Preferences.registerPrefsChangedListener(listener);
 
@@ -159,8 +165,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     onShuffleClick();
                     break;
                 case R.id.action_slideshow:
-                    binding.controlsOverlay.slideshowDelaySlider.setValue(convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay()));
+                    int startIndex = convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay());
+                    binding.controlsOverlay.slideshowDelaySlider.setValue(startIndex);
                     binding.controlsOverlay.slideshowDelaySlider.setVisibility(View.VISIBLE);
+                    slideshowSliderDebouncer.submit(startIndex);
                     break;
                 case R.id.action_delete_book:
                     if (Constant.VIEWER_DELETE_ASK_AGAIN == Preferences.getViewerDeleteAskMode())
@@ -176,14 +184,13 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         showFavoritePagesButton = binding.controlsOverlay.viewerPagerToolbar.getMenu().findItem(R.id.action_show_favorite_pages);
         shuffleButton = binding.controlsOverlay.viewerPagerToolbar.getMenu().findItem(R.id.action_shuffle);
 
-        indexRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::applyStartingIndexInternal);
-
         return binding.getRoot();
     }
 
     @Override
     public void onDestroyView() {
         indexRefreshDebouncer.clear();
+        slideshowSliderDebouncer.clear();
         binding.recyclerView.setAdapter(null);
         binding = null;
         super.onDestroyView();
@@ -377,14 +384,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         slider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
                                             @Override
                                             public void onStartTrackingTouch(@NonNull Slider slider) {
-                                                // Nothing
+                                                slideshowSliderDebouncer.clear();
                                             }
 
                                             @Override
                                             public void onStopTrackingTouch(@NonNull Slider slider) {
-                                                Preferences.setViewerSlideshowDelay(convertSliderPositionToPrefsDelay((int) slider.getValue()));
-                                                slider.setVisibility(View.GONE);
-                                                startSlideshow(true);
+                                                onSlideShowSliderChosen((int) slider.getValue());
                                             }
                                         }
         );
@@ -440,7 +445,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.favouriteMicroMenu.dips());
 
         // Gallery
-        binding.controlsOverlay.viewerGalleryBtn.setOnClickListener(v -> displayGallery(false));
+        binding.controlsOverlay.viewerGalleryBtn.setOnClickListener(v -> displayGallery());
     }
 
     private int convertPrefsDelayToSliderPosition(int prefsDelay) {
@@ -825,6 +830,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     /**
      * Re-create and re-bind all Viewholders
      */
+    @SuppressLint("NotifyDataSetChanged")
     private void onUpdateImageDisplay() {
         adapter.refreshPrefs(bookPreferences);
 
@@ -1130,10 +1136,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     /**
      * Display the viewer gallery
-     *
-     * @param filterFavourites True if only favourite pages have to be shown; false for all pages
      */
-    private void displayGallery(boolean filterFavourites) {
+    private void displayGallery() {
         hasGalleryBeenShown = true;
         viewModel.setReaderStartingIndex(imageIndex); // Memorize the current page
 
@@ -1142,7 +1146,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         } else { // Pager mode (Library -> pager -> gallery -> pager)
             getParentFragmentManager()
                     .beginTransaction()
-                    .replace(android.R.id.content, ViewerGalleryFragment.newInstance(filterFavourites))
+                    .replace(android.R.id.content, ViewerGalleryFragment.newInstance())
                     .addToBackStack(null)
                     .commit();
         }
@@ -1192,6 +1196,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     private void onGetMaxDimensions(Point maxDimensions) {
         adapter.setMaxDimensions(maxDimensions.x, maxDimensions.y);
+    }
+
+    private void onSlideShowSliderChosen(int sliderIndex) {
+        Preferences.setViewerSlideshowDelay(convertSliderPositionToPrefsDelay(sliderIndex));
+        binding.controlsOverlay.slideshowDelaySlider.setVisibility(View.GONE);
+        startSlideshow(true);
     }
 
     private void startSlideshow(boolean showToast) {
