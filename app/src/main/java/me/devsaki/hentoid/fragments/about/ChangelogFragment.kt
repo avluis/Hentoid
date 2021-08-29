@@ -54,11 +54,13 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
             var latestTagName = ""
             var latestApkUrl = ""
             for (r in releasesInfo) {
-                val release = GitHubReleaseItem(r)
-                if (release.isTagPrior(BuildConfig.VERSION_NAME)) releases.add(release)
-                if (latestTagName.isEmpty()) {
-                    latestTagName = release.tagName
-                    latestApkUrl = release.apkUrl
+                if (r.isPublished) {
+                    val release = GitHubReleaseItem(r)
+                    if (release.isTagPrior(BuildConfig.VERSION_NAME)) releases.add(release)
+                    if (latestTagName.isEmpty()) {
+                        latestTagName = release.tagName
+                        latestApkUrl = release.apkUrl
+                    }
                 }
             }
             val itemAdapter = ItemAdapter<GitHubReleaseItem>()
