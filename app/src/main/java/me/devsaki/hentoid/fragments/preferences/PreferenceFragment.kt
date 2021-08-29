@@ -26,7 +26,6 @@ import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
 import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.services.UpdateCheckService
-import me.devsaki.hentoid.services.UpdateDownloadService
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
@@ -34,6 +33,7 @@ import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ImportWorker
+import me.devsaki.hentoid.workers.UpdateDownloadWorker
 
 
 class PreferenceFragment : PreferenceFragmentCompat(),
@@ -196,7 +196,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     }
 
     private fun onCheckUpdatePrefClick() {
-        if (!UpdateDownloadService.isRunning()) {
+        if (!UpdateDownloadWorker.isRunning(requireContext())) {
             val intent = UpdateCheckService.makeIntent(requireContext(), true)
             requireContext().startService(intent)
         }

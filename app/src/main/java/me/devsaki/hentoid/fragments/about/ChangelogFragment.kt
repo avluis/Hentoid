@@ -13,9 +13,10 @@ import com.mikepenz.fastadapter.adapters.ItemAdapter
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.databinding.FragmentChangelogBinding
-import me.devsaki.hentoid.services.UpdateDownloadService
+import me.devsaki.hentoid.util.AppHelper
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem
 import me.devsaki.hentoid.viewmodels.ChangelogViewModel
+import me.devsaki.hentoid.workers.UpdateDownloadWorker
 import timber.log.Timber
 import java.util.*
 
@@ -27,7 +28,11 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
 
     private val viewModel by viewModels<ChangelogViewModel>()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentChangelogBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -60,13 +65,24 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
             itemAdapter.add(releases)
             binding.changelogRecycler.adapter = FastAdapter.with(itemAdapter)
             if (releasesInfo.size > releases.size) {
-                binding.changelogDownloadLatestText.text = getString(R.string.get_latest, latestTagName)
+                binding.changelogDownloadLatestText.text =
+                    getString(R.string.get_latest, latestTagName)
                 binding.changelogDownloadLatestText.visibility = View.VISIBLE
                 binding.changelogDownloadLatestButton.visibility = View.VISIBLE
 
                 // TODO these 2 should be in a container layout which should be used for click listeners
-                binding.changelogDownloadLatestText.setOnClickListener { onDownloadClick(view.context, latestApkUrl) }
-                binding.changelogDownloadLatestButton.setOnClickListener { onDownloadClick(view.context, latestApkUrl) }
+                binding.changelogDownloadLatestText.setOnClickListener {
+                    onDownloadClick(
+                        view.context,
+                        latestApkUrl
+                    )
+                }
+                binding.changelogDownloadLatestButton.setOnClickListener {
+                    onDownloadClick(
+                        view.context,
+                        latestApkUrl
+                    )
+                }
             }
             // TODO show RecyclerView
         }
@@ -79,10 +95,9 @@ class ChangelogFragment : Fragment(R.layout.fragment_changelog) {
 
     private fun onDownloadClick(context: Context, apkUrl: String) {
         // Download the latest update (equivalent to tapping the "Update available" notification)
-        if (!UpdateDownloadService.isRunning() && apkUrl.isNotEmpty()) {
+        if (!UpdateDownloadWorker.isRunning(context) && apkUrl.isNotEmpty()) {
             Toast.makeText(context, R.string.downloading_update, Toast.LENGTH_SHORT).show()
-            val intent = UpdateDownloadService.makeIntent(requireContext(), apkUrl)
-            requireContext().startService(intent)
+            AppHelper.runUpdateDownloadWorker(context, apkUrl)
         }
     }
 }

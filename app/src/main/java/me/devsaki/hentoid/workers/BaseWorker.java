@@ -38,6 +38,7 @@ public abstract class BaseWorker extends Worker {
     private final @IdRes
     int serviceId;
     private boolean isComplete = true;
+    private boolean cancelNotificationOnClear = true;
 
     protected final String logName;
     private final List<LogHelper.LogEntry> logs;
@@ -108,6 +109,10 @@ public abstract class BaseWorker extends Worker {
         if (null != logs) logs.add(new LogHelper.LogEntry(s, isError));
     }
 
+    protected void maintainNotificationsOnClear() {
+        cancelNotificationOnClear = false;
+    }
+
     private void clear() {
         onClear();
 
@@ -124,7 +129,10 @@ public abstract class BaseWorker extends Worker {
         // Tell everyone the worker is shutting down
         EventBus.getDefault().post(new ServiceDestroyedEvent(serviceId));
 
-        if (notificationManager != null) notificationManager.cancel();
+        if (cancelNotificationOnClear && notificationManager != null) {
+            notificationManager.cancel();
+            Timber.d("%s worker : notifications canceled", this.getClass().getSimpleName());
+        }
 
         Timber.d("%s worker destroyed", this.getClass().getSimpleName());
     }

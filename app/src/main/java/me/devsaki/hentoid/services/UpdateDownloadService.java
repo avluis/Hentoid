@@ -6,24 +6,26 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 
 import androidx.annotation.Nullable;
 
-import com.thin.downloadmanager.DownloadRequest;
-import com.thin.downloadmanager.DownloadStatusListenerV1;
 import com.thin.downloadmanager.ThinDownloadManager;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.notification.update.UpdateFailedNotification;
 import me.devsaki.hentoid.notification.update.UpdateInstallNotification;
 import me.devsaki.hentoid.notification.update.UpdateProgressNotification;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -31,7 +33,7 @@ import timber.log.Timber;
  *
  * @see UpdateCheckService
  */
-public class UpdateDownloadService extends Service implements DownloadStatusListenerV1 {
+public class UpdateDownloadService extends Service {
 
     private static final int NOTIFICATION_ID = UpdateDownloadService.class.getName().hashCode();
 
@@ -51,9 +53,6 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
 
     private ServiceNotificationManager notificationManager;
 
-    private Handler progressHandler;
-
-    private int progress;
 
     @Override
     public void onCreate() {
@@ -63,7 +62,6 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
         notificationManager.startForeground(new UpdateProgressNotification());
 
-        progressHandler = new Handler(Looper.getMainLooper());
         Timber.w("Service created");
     }
 
@@ -83,64 +81,54 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Uri updateUri = requireNonNull(intent.getData());
-        downloadUpdate(updateUri);
+        try {
+            downloadUpdate(updateUri);
+        } catch (IOException e) {
+            Timber.w(e, "Update download failed");
+            notificationManager.notify(new UpdateFailedNotification(updateUri.toString()));
+        }
         return START_NOT_STICKY;
     }
 
-    private void downloadUpdate(Uri updateUri) {
+    private void downloadUpdate(Uri updateUri) throws IOException {
         Timber.w(this.getResources().getString(R.string.starting_download));
 
-        File apkFile = new File(getExternalCacheDir(), "hentoid.apk");
-//        Uri destinationUri = Uri.fromFile(apkFile);
-        Uri apkFileUri = FileHelper.getFileUri(this, apkFile);
-        Timber.d(">> apkUri %s", apkFileUri.toString());
+        File file = new File(getExternalCacheDir(), "hentoid.apk");
+        if (!file.createNewFile())
+            Timber.w("Could not create file %s", file.getPath());
 
-        DownloadRequest downloadRequest = new DownloadRequest(updateUri)
-                .setDestinationURI(/*destinationUri*/apkFileUri)
-                .setPriority(DownloadRequest.Priority.HIGH)
-                .setDeleteDestinationFileOnFailure(false)
-                .setStatusListener(this);
 
-        downloadManager.add(downloadRequest);
-        updateNotificationProgress();
+        Response response = HttpHelper.getOnlineResource(updateUri.toString(), null, false, false, false);
+        Timber.d("DOWNLOADING APK - RESPONSE %s", response.code());
+        if (response.code() >= 300) throw new IOException("Network error " + response.code());
+
+        ResponseBody body = response.body();
+        if (null == body)
+            throw new IOException("Could not read response : empty body for " + updateUri.toString());
+
+        long size = body.contentLength();
+        if (size < 1) size = 1;
+
+        Timber.d("WRITING DOWNLOADED APK TO %s (size %.2f KB)", file.getAbsolutePath(), size / 1024.0);
+        byte[] buffer = new byte[4196];
+        int len;
+        long processed = 0;
+        int iteration = 0;
+        try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(file)) {
+            while ((len = in.read(buffer)) > -1) {
+                processed += len;
+                // Read mime-type on the fly
+                if (0 == ++iteration % 50) // Notify every 200KB
+                    updateNotificationProgress(Math.round(processed * 100f / size));
+                out.write(buffer, 0, len);
+            }
+            out.flush();
+        }
+        notificationManager.notify(new UpdateInstallNotification(FileHelper.getFileUri(this, file)));
     }
 
-    @Override
-    public void onDownloadComplete(DownloadRequest downloadRequest) {
-        Timber.w("Download complete");
-        progressHandler.removeCallbacksAndMessages(null);
-        stopForeground(true);
-        stopSelf();
-
-        Uri downloadUri = downloadRequest.getDestinationURI();
-        Timber.d(">> destinationUriComplete %s", downloadUri.toString());
-        notificationManager.notify(new UpdateInstallNotification(downloadUri));
-    }
-
-    @Override
-    public void onDownloadFailed(DownloadRequest downloadRequest, int errorCode, String errorMessage) {
-        Timber.w("Download failed. code: %s message: %s", errorCode, errorMessage);
-        progressHandler.removeCallbacksAndMessages(null);
-        stopForeground(true);
-        stopSelf();
-
-        Uri downloadUri = downloadRequest.getUri();
-        Timber.d(">> destinationUriFail %s", downloadUri.toString());
-        notificationManager.notify(new UpdateFailedNotification(downloadUri));
-    }
-
-    /**
-     * Only sets {@link UpdateDownloadService#progress}.
-     * Actual progress update is done in {@link UpdateDownloadService#updateNotificationProgress()}.
-     */
-    @Override
-    public void onProgress(DownloadRequest downloadRequest, long totalBytes, long downloadedBytes, int progress) {
-        this.progress = progress;
-    }
-
-    private void updateNotificationProgress() {
-        Timber.w("Download progress: %s", progress);
-        notificationManager.notify(new UpdateProgressNotification(progress));
-        progressHandler.postDelayed(this::updateNotificationProgress, 1000);
+    private void updateNotificationProgress(int processPc) {
+        Timber.w("Download progress: %s%%", processPc);
+        notificationManager.notify(new UpdateProgressNotification(processPc));
     }
 }

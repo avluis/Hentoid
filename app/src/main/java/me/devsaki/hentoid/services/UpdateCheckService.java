@@ -33,8 +33,8 @@ import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
  * <p>
  * Can be run silently or with toast notifications using "isManualCheck" flag.
  * <p>
- * Make sure to check if {@link UpdateDownloadService} is running before running this service by
- * calling {@link UpdateDownloadService#isRunning()} or it will result in undefined notification
+ * Make sure to check if {@link me.devsaki.hentoid.workers.UpdateDownloadWorker} is running before running this service by
+ * calling {@link me.devsaki.hentoid.workers.UpdateDownloadWorker}.isRunning or it will result in undefined notification
  * behavior.
  */
 public class UpdateCheckService extends Service {
