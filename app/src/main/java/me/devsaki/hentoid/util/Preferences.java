@@ -814,7 +814,7 @@ public final class Preferences {
         static final String WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String BROWSER_RESUME_LAST = "pref_browser_resume_last";
         static final String BROWSER_AUGMENTED = "pref_browser_augmented";
-        static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
+        public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
         static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
         static final String FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
@@ -1010,7 +1010,7 @@ public final class Preferences {
         public static final int DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1;
 
         public static final int DL_ACTION_DL_PAGES = 0;
-        public static final int DL_ACTION_SAVE_BOOK = 1;
+        public static final int DL_ACTION_STREAM = 1;
 
         static final int TRUNCATE_FOLDER_100 = 100;
 

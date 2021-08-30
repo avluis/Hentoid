@@ -58,6 +58,7 @@ import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
@@ -75,8 +76,8 @@ public class Content implements Serializable {
     @IntDef({DownloadMode.DOWNLOAD, DownloadMode.STREAM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DownloadMode {
-        int DOWNLOAD = 0; // Download images
-        int STREAM = 1; // Saves the book for on-demande viewing
+        int DOWNLOAD = Preferences.Constant.DL_ACTION_DL_PAGES; // Download images
+        int STREAM = Preferences.Constant.DL_ACTION_STREAM; // Saves the book for on-demande viewing
     }
 
     @Id

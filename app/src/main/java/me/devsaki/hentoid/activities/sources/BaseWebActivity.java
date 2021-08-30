@@ -1,7 +1,13 @@
 package me.devsaki.hentoid.activities.sources;
 
+import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
@@ -112,11 +118,6 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
-
 /**
  * Browser activity which allows the user to navigate a supported source.
  * No particular source should be filtered/defined here.
@@ -169,6 +170,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // Disposable to be used for content processing
     private Disposable processContentDisposable;
 
+    private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
 
     // === UI
     // Associated webview
@@ -183,6 +185,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private MenuItem forwardMenu;
     private MenuItem seekMenu;
     private MenuItem actionMenu;
+    private @DrawableRes
+    int downloadIcon;
     // Swipe layout
     private SwipeRefreshLayout swipeLayout;
     // Animated check (visual confirmation for quick download)
@@ -234,6 +238,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         objectBoxDAO = new ObjectBoxDAO(this);
+        Preferences.registerPrefsChangedListener(listener);
 
         setContentView(R.layout.activity_base_web);
 
@@ -283,6 +288,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         bottomAlertMessage = findViewById(R.id.bottom_alert_txt);
 
         progressBar = findViewById(R.id.progress_bar);
+
+        downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
 
         displayTopAlertBanner();
     }
@@ -437,6 +444,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             webView = null;
         }
 
+        Preferences.unregisterPrefsChangedListener(listener);
+
         if (objectBoxDAO != null) objectBoxDAO.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         super.onDestroy();
@@ -563,7 +572,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         refreshStopMenu.setIcon(R.drawable.ic_close);
         progressBar.setVisibility(View.GONE);
         if (!isHtmlLoaded) {
-            actionMenu.setIcon(R.drawable.selector_download_action);
+            actionMenu.setIcon(downloadIcon);
             actionMenu.setEnabled(false);
         }
 
@@ -590,7 +599,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // Greys out the action button
         // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious)
         runOnUiThread(() -> {
-            actionMenu.setIcon(R.drawable.selector_download_action);
+            actionMenu.setIcon(downloadIcon);
             actionMenu.setEnabled(false);
         });
     }
@@ -788,12 +797,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      *
      * @param mode Mode to switch to
      */
-    private void changeActionMode(@ActionMode int mode) {
+    private void setActionMode(@ActionMode int mode) {
         @DrawableRes int resId = R.drawable.ic_info;
-        if (ActionMode.DOWNLOAD == mode) {
-            resId = R.drawable.selector_download_action;
-        } else if (ActionMode.DOWNLOAD_PLUS == mode) {
-            resId = R.drawable.ic_action_download_plus;
+        if (ActionMode.DOWNLOAD == mode || ActionMode.DOWNLOAD_PLUS == mode) {
+            resId = downloadIcon;
         } else if (ActionMode.VIEW_QUEUE == mode) {
             resId = R.drawable.ic_action_queue;
         } else if (ActionMode.READ == mode) {
@@ -835,7 +842,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         if (!isDownloadPlus && StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastHelper.toast(R.string.already_downloaded);
-            if (!quickDownload) changeActionMode(ActionMode.READ);
+            if (!quickDownload) setActionMode(ActionMode.READ);
             return;
         }
 
@@ -883,7 +890,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 currentContent.setStatus(StatusContent.ERROR);
                 objectBoxDAO.insertContent(currentContent);
                 ToastHelper.toast(getResources().getString(R.string.blocked_tag_queued, blockedTags.get(0)));
-                changeActionMode(ActionMode.VIEW_QUEUE);
+                setActionMode(ActionMode.VIEW_QUEUE);
             }
             return;
         }
@@ -902,7 +909,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         currentContent.setDownloadMode(downloadMode);
         objectBoxDAO.addContentToQueue(currentContent, null, position, ContentQueueManager.getInstance().isQueueActive());
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
-        changeActionMode(ActionMode.VIEW_QUEUE);
+        setActionMode(ActionMode.VIEW_QUEUE);
     }
 
     /**
@@ -1048,15 +1055,15 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                         DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, false);
                     else
                         processDownload(true, false);
-                } else changeActionMode(ActionMode.DOWNLOAD);
+                } else setActionMode(ActionMode.DOWNLOAD);
                 break;
             case ContentStatus.IN_COLLECTION:
                 if (quickDownload) ToastHelper.toast(R.string.already_downloaded);
-                changeActionMode(ActionMode.READ);
+                setActionMode(ActionMode.READ);
                 break;
             case ContentStatus.IN_QUEUE:
                 if (quickDownload) ToastHelper.toast(R.string.already_queued);
-                changeActionMode(ActionMode.VIEW_QUEUE);
+                setActionMode(ActionMode.VIEW_QUEUE);
                 break;
             default:
                 // Nothing
@@ -1159,7 +1166,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             List<ImageFile> additionalNonDownloadedImages = Stream.of(additionalImages).filterNot(i -> storedUrls.contains(i.getUrl())).toList();
             if (!additionalNonDownloadedImages.isEmpty()) {
                 extraImages = additionalNonDownloadedImages;
-                changeActionMode(ActionMode.DOWNLOAD_PLUS);
+                setActionMode(ActionMode.DOWNLOAD_PLUS);
                 BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
                 badge.setNumber(additionalNonDownloadedImages.size());
             }
@@ -1175,7 +1182,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
         if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
-            changeActionMode(ActionMode.READ);
+            setActionMode(ActionMode.READ);
         }
     }
 
@@ -1243,6 +1250,19 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         intent.putExtras(builder.getBundle());
 
         startActivity(intent);
+    }
+
+    /**
+     * Listener for preference changes (from the settings dialog)
+     *
+     * @param prefs Shared preferences object
+     * @param key   Key that has been changed
+     */
+    private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        if (Preferences.Key.BROWSER_DL_ACTION.equals(key)) {
+            downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
+            setActionMode(actionButtonMode);
+        }
     }
 
     private String getJsInterceptorScript() {

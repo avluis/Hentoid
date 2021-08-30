@@ -56,7 +56,7 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_stream"
-        android:icon="@drawable/ic_attribute_source"
+        android:icon="@drawable/ic_action_download_stream"
         android:title="@string/menu_stream"
         android:tooltipText="@string/menu_stream"
         app:showAsAction="ifRoom" />

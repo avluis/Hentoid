@@ -230,7 +230,7 @@
             android:layout_height="32dp"
             android:layout_marginEnd="8dp"
             android:background="@color/transparent"
-            android:src="@drawable/ic_attribute_source"
+            android:src="@drawable/ic_action_download_stream"
             android:tooltipText="@string/menu_redownload"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@id/ivCover"

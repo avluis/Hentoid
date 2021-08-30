@@ -128,7 +128,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
-            android:src="@drawable/ic_attribute_source"
+            android:src="@drawable/ic_action_download_stream"
             android:tooltipText="@string/external_help"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/ivExternal"
