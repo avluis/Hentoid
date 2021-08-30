@@ -138,7 +138,7 @@
 
     <string-array name="pref_viewer_dl_action_entries">
         <item>Download all pages</item>
-        <item>Only save the book</item>
+        <item>Stream the pages when reading</item>
     </string-array>
     <string-array name="pref_viewer_dl_action_values">
         <item>0</item>
