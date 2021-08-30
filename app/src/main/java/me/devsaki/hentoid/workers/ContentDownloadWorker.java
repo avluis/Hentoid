@@ -280,14 +280,14 @@ public class ContentDownloadWorker extends BaseWorker {
             images = new ArrayList<>(images); // Safe copy of the original list
 
         for (ImageFile img : images) if (img.getStatus().equals(StatusContent.ERROR)) nbErrors++;
+        StatusContent targetImageStatus = (downloadMode == Content.DownloadMode.DOWNLOAD) ? StatusContent.SAVED : StatusContent.ONLINE;
 
         if (images.isEmpty()
                 || nbErrors == images.size()
                 || (nbErrors > 0 && content.getSite().hasBackupURLs())
         ) {
             try {
-                StatusContent targetStatus = (downloadMode == Content.DownloadMode.DOWNLOAD) ? StatusContent.SAVED : StatusContent.ONLINE;
-                List<ImageFile> newImages = ContentHelper.fetchImageURLs(content, targetStatus);
+                List<ImageFile> newImages = ContentHelper.fetchImageURLs(content, targetImageStatus);
                 // Cases 1 and 2 : Replace existing images with the parsed images
                 if (images.isEmpty() || nbErrors == images.size()) images = newImages;
                 // Case 3 : Replace images in ERROR state with the parsed images at the same position
@@ -339,7 +339,10 @@ public class ContentDownloadWorker extends BaseWorker {
             }
         } else if (nbErrors > 0) {
             // Other cases : Reset ERROR status of images to mark them as "to be downloaded" (in DB and in memory)
-            dao.updateImageContentStatus(content.getId(), StatusContent.ERROR, StatusContent.SAVED);
+            dao.updateImageContentStatus(content.getId(), StatusContent.ERROR, targetImageStatus);
+        } else {
+            if (downloadMode == Content.DownloadMode.STREAM)
+                dao.updateImageContentStatus(content.getId(), null, StatusContent.ONLINE);
         }
 
         if (hasError) {
@@ -367,7 +370,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
-            dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ERROR);
+            dao.updateImageContentStatus(content.getId(), targetImageStatus, StatusContent.ERROR);
             completeDownload(content.getId(), content.getTitle(), 0, images.size(), 0);
             return new ImmutablePair<>(QueuingResult.CONTENT_FAILED, content);
         }
