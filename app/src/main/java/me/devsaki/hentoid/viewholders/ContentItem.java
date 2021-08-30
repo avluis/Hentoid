@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.viewholders;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -66,9 +69,6 @@ import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
 public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable, ISwipeable {
 
@@ -241,6 +241,9 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         private Runnable deleteActionRunnable = null;
 
+        // Extra info to display in stacktraces
+        private String debugStr = "[no data]";
+
 
         ContentViewHolder(View view, @ViewType int viewType) {
             super(view);
@@ -282,7 +285,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         @Override
         public void bindView(@NotNull ContentItem item, @NotNull List<?> payloads) {
-            if (item.isEmpty || null == item.content) return; // Ignore placeholders from PagedList
+            if (item.isEmpty || null == item.content) {
+                debugStr = "empty item";
+                return; // Ignore placeholders from PagedList
+            }
 
             // Payloads are set when the content stays the same but some properties alone change
             if (!payloads.isEmpty()) {
@@ -302,9 +308,21 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) item.content.getCover().setFileUri(stringValue);
             }
+            debugStr = "objectBox ID=" + item.content.getId() + "; site ID=" + item.content.getUniqueSiteId() + "; hashCode=" + item.content.hashCode();
 
             if (item.deleteAction != null)
                 deleteActionRunnable = () -> item.deleteAction.accept(item);
+
+            // Important to trigger the ViewHolder's global onClick/onLongClick events
+            bookCard.setOnClickListener(v -> {
+                if (v.getParent() instanceof View)
+                    ((View) v.getParent()).performClick();
+            });
+            bookCard.setOnLongClickListener(v -> {
+                if (v.getParent() instanceof View)
+                    return ((View) v.getParent()).performLongClick();
+                return false;
+            });
 
             updateLayoutVisibility(item);
             attachCover(item.content);
@@ -508,8 +526,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivSite.setVisibility(View.GONE);
             }
 
-            if (deleteButton != null)
+            if (deleteButton != null) {
                 deleteButton.setOnClickListener(v -> deleteActionRunnable.run());
+                deleteButton.setOnLongClickListener(v -> {
+                    deleteActionRunnable.run();
+                    return true;
+                });
+            }
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 ivTop.setVisibility(View.VISIBLE);
@@ -603,6 +626,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         @Override
         public void unbindView(@NotNull ContentItem item) {
             deleteActionRunnable = null;
+            debugStr = "[no data]";
             bookCard.setTranslationX(0f);
             if (ivCover != null && Helper.isValidContextForGlide(ivCover))
                 Glide.with(ivCover).clear(ivCover);
@@ -628,12 +652,17 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         @Override
         public void onSwiped() {
-            if (deleteButton != null) deleteButton.setVisibility(View.VISIBLE);
+            // Nothing
         }
 
         @Override
         public void onUnswiped() {
-            if (deleteButton != null) deleteButton.setVisibility(View.GONE);
+            // Nothing
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + " " + debugStr;
         }
     }
 }

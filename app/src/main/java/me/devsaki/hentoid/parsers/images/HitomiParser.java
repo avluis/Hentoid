@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
@@ -104,10 +105,12 @@ public class HitomiParser implements ImageListParser {
 
         int nbFrontends = NUMBER_OF_FRONTENDS;
         int varG = Integer.valueOf(componentB, 16);
-        if (varG < 0x30) nbFrontends = 2;
-        if (varG < 0x09) varG = 1;
+        int varO = 0;
+        if (varG < 0x88) varO = 1;
+        if (varG < 0x44) varO = 2;
 
-        String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends, getSuffixFromExtension(extension));
+        //String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends, getSuffixFromExtension(extension));
+        String imageSubdomain = (char) (HOSTNAME_PREFIX_BASE + varO) + getSuffixFromExtension(extension);
         String pageUrl = "https://" + imageSubdomain + ".hitomi.la/" + folder + "/" + componentA + "/" + componentB + "/" + hash + "." + extension;
 
         return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
@@ -129,8 +132,10 @@ public class HitomiParser implements ImageListParser {
         return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % nbFrontends))) + suffix;
     }
 
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) {
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
         // Hitomi does not use backup URLs
-        return Optional.of(new ImageFile(order, url, StatusContent.SAVED, maxPages));
+        ImageFile img = new ImageFile(order, url, StatusContent.SAVED, maxPages);
+        if (chapter != null) img.setChapter(chapter);
+        return Optional.of(img);
     }
 }

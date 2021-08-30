@@ -4,9 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.util.Consumer
-import io.reactivex.disposables.Disposable
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
+import com.annimon.stream.function.BiConsumer
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
@@ -16,6 +14,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 class DuplicateHelper {
 
@@ -59,7 +58,13 @@ class DuplicateHelper {
             "kouhen",
             "後編",
             "ex",
-            // Roman numerals (yes they can be present)
+            // Circled numerals (yes, some books do use them)
+            "①",
+            "②",
+            "③",
+            "④",
+            "⑤",
+            // Roman numerals (yes, some books do use them)
             "i",
             "v",
             "x",
@@ -74,41 +79,42 @@ class DuplicateHelper {
             return ImagePHash(resolution, 8)
         }
 
-        fun indexCoversRx(
+        fun indexCovers(
             context: Context,
             dao: CollectionDAO,
-            progress: Consumer<Float>
-        ): Disposable {
+            stopped: AtomicBoolean,
+            info: Consumer<Content>,
+            progress: BiConsumer<Int, Int>,
+            error: Consumer<Throwable>
+        ) {
+            val hashEngine = getHashEngine()
+            val contentToIndex = dao.selectContentWithUnhashedCovers()
+            val nbContent = contentToIndex.size
 
-            val hash = getHashEngine()
-            var index = 0
-            val nbContent = dao.countContentWithUnhashedCovers()
-
-            return dao.streamContentWithUnhashedCovers()
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .map { content -> Pair(content, getCoverBitmapFromContent(context, content)) }
-                .observeOn(Schedulers.computation())
-                .map {
-                    val pHash = calcPhash(hash, it.second)
-                    it.second?.recycle()
-                    Pair(it.first, pHash)
+            for ((index, c) in contentToIndex.withIndex()) {
+                try {
+                    info.accept(c)
+                    indexContent(context, dao, c, hashEngine)
+                    progress.accept(index + 1, nbContent)
+                } catch (t: Throwable) {
+                    // Don't break the loop
+                    error.accept(t)
                 }
-                .observeOn(Schedulers.io())
-                .map { contentHash ->
-                    savePhash(
-                        context,
-                        dao,
-                        contentHash.first,
-                        contentHash.second
-                    )
-                }
-                .subscribeBy(
-                    onNext = { progress.accept(++index * 1f / nbContent) },
-                    onError = { t -> Timber.w(t) },
-                    onComplete = { progress.accept(1f) }
-                )
+                if (stopped.get()) break
+            }
+            progress.accept(nbContent, nbContent)
+        }
 
+        private fun indexContent(
+            context: Context,
+            dao: CollectionDAO,
+            content: Content,
+            hashEngine: ImagePHash,
+        ) {
+            val bitmap = getCoverBitmapFromContent(context, content)
+            val pHash = calcPhash(hashEngine, bitmap)
+            bitmap?.recycle()
+            savePhash(context, dao, content, pHash)
         }
 
         fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
@@ -142,6 +148,7 @@ class DuplicateHelper {
             content.cover.imageHash = pHash
             // Update the picture in DB
             dao.insertImageFile(content.cover)
+            // The following block has to be abandoned if the cost of retaining all Content in memory is too high
             try {
                 // Update the book JSON if the book folder still exists
                 if (content.storageUri.isNotEmpty()) {
@@ -162,7 +169,6 @@ class DuplicateHelper {
         fun processContent(
             reference: DuplicateCandidate,
             candidate: DuplicateCandidate,
-            ignoredIds: HashSet<Pair<Long, Long>>?,
             useTitle: Boolean,
             useCover: Boolean,
             useSameArtist: Boolean,
@@ -186,15 +192,8 @@ class DuplicateHelper {
                     reference.coverHash, candidate.coverHash,
                     sensitivity
                 )
-                val key = Pair(reference.id, candidate.id)
-                if (ignoredIds != null) {
-                    if (coverScore == -2f) { // Ignored cover
-                        ignoredIds.add(key)
-                        return null
-                    } else {
-                        ignoredIds.remove(key)
-                    }
-                }
+                // Ignored cover
+                if (coverScore == -2f) return null
             }
             if (useTitle) titleScore = computeTitleScore(
                 textComparator,
@@ -219,7 +218,7 @@ class DuplicateHelper {
         }
 
 
-        fun containsSameLanguage(
+        private fun containsSameLanguage(
             referenceCodes: List<String>?,
             candidateCodes: List<String>?
         ): Boolean {
@@ -232,7 +231,7 @@ class DuplicateHelper {
             return true
         }
 
-        fun computeCoverScore(
+        private fun computeCoverScore(
             referenceHash: Long,
             candidateHash: Long,
             sensitivity: Int
@@ -266,7 +265,7 @@ class DuplicateHelper {
                         textComparator.similarity(referenceTitleNoDigits, candidateTitleNoDigits)
                     // Cleaned up versions are identical
                     // => most probably a chapter variant -> set to 0%
-                    if (similarity2 > similarity1 && similarity2 > 0.995) return 0f;
+                    if (similarity2 > similarity1 && similarity2 > 0.995) return 0f
                     // Very little difference between cleaned up and original version
                     // => not a chapter variant
                     if (similarity2 - similarity1 < 0.01) {
@@ -286,7 +285,7 @@ class DuplicateHelper {
             return result
         }
 
-        fun computeArtistScore(
+        private fun computeArtistScore(
             referenceArtistsCleanup: List<String>?,
             candidateArtistsCleanup: List<String>?
         ): Float {

@@ -6,7 +6,7 @@ public class MrmActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "myreadingmanga.info";
     private static final String[] GALLERY_FILTER = {"myreadingmanga.info/[%\\w\\-]+/$"};
-    private static final String[] DIRTY_ELEMENTS = {"center.imgtop"};
+    private static final String[] DIRTY_ELEMENTS = {"center.imgtop","a[rel^='nofollow noopener']"};
 
     Site getStartSite() {
         return Site.MRM;

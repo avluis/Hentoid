@@ -1,12 +1,19 @@
-package me.devsaki.hentoid.util
+package me.devsaki.hentoid.core
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.util.FileHelper
+import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.views.NestedScrollWebView
 import timber.log.Timber
 
 /**
@@ -26,4 +33,28 @@ fun Context.startBrowserActivity(url: String) {
 
 inline fun <reified T : Activity> Context.startLocalActivity() {
     startActivity(Intent(this, T::class.java))
+}
+
+fun Context.clearWebviewCache() {
+    // Clear webview cache (needs to execute inside the activity's Looper)
+    val h = Handler(Looper.getMainLooper())
+    h.post {
+        val webView = try {
+            NestedScrollWebView(this)
+        } catch (e: Resources.NotFoundException) {
+            // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
+            // Creating with the application Context fixes this, but is not generally recommended for view creation
+            NestedScrollWebView(Helper.getFixedContext(this))
+        }
+        webView.clearCache(true);
+    }
+}
+
+fun Context.clearAppCache() {
+    try {
+        val dir = this.cacheDir
+        FileHelper.removeFile(dir)
+    } catch (e: Exception) {
+        Timber.e(e, "Error when clearing app cache upon update")
+    }
 }

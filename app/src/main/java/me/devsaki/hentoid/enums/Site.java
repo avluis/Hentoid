@@ -17,7 +17,7 @@ public enum Site {
 
     // NOTE : to maintain compatiblity with saved JSON files and prefs, do _not_ edit either existing names or codes
     FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_menu_fakku), // Legacy support for old fakku archives
-    PURURIN(1, "Pururin", "https://pururin.io", R.drawable.ic_menu_pururin),
+    PURURIN(1, "Pururin", "https://pururin.to", R.drawable.ic_menu_pururin),
     HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_menu_hitomi),
     NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_menu_nhentai),
     TSUMINO(4, "tsumino", "https://www.tsumino.com", R.drawable.ic_menu_tsumino),
@@ -48,6 +48,7 @@ public enum Site {
             NEXUS, // Dead
             HENTAICAFE, // Removed as per Fakku request
             FAKKU, // Old Fakku; kept for retrocompatibility
+            FAKKU2, // Dropped after Fakku decided to flag downloading accounts and IPs
             ASMHENTAI_COMICS, // Does not work directly
             PANDA, // Dropped; kept for retrocompatibility
             NONE // Technical fallback
@@ -65,6 +66,8 @@ public enum Site {
     private boolean hasImageProcessing = false;
     private boolean hasBackupURLs = false;
     private boolean hasCoverBasedPageUpdates = false;
+    private boolean useCloudflare = false;
+    private boolean simulateHumanReading = false;
 
     Site(int code,
          String description,
@@ -146,6 +149,10 @@ public enum Site {
         return hasCoverBasedPageUpdates;
     }
 
+    public boolean isUseCloudflare() { return useCloudflare; }
+
+    public boolean isSimulateHumanReading() { return simulateHumanReading; }
+
     public boolean isVisible() {
         for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;
         return true;
@@ -173,6 +180,10 @@ public enum Site {
         if (jsonSite.hasBackupURLs != null) hasBackupURLs = jsonSite.hasBackupURLs;
         if (jsonSite.hasCoverBasedPageUpdates != null)
             hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates;
+        if (jsonSite.useCloudflare != null)
+            useCloudflare = jsonSite.useCloudflare;
+        if (jsonSite.simulateHumanReading != null)
+            simulateHumanReading = jsonSite.simulateHumanReading;
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {

@@ -73,7 +73,7 @@
     <string name="low_memory">Your device is low on memory !</string>
     <string name="fix_permissions">Fix</string>
 
-    <!-- Queue -->
+    <!-- Queue / Downloader -->
     <string name="queue_queue_tab">In progress</string>
     <string name="queue_errors_tab">Errors</string>
     <plurals name="ask_cancel_multiple">
@@ -103,6 +103,7 @@
     <string name="paused_no_dl_folder">Cannot download - No download folder. Use app settings to select one</string>
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
+    <string name="paused_dl_stale_online_credentials">Cannot download - Stale Cookies or credentials. Use the notification to regenerate them</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <plurals name="redownloaded_scratch">
         <item quantity="one">Item cleared for redownloading</item>
@@ -110,6 +111,9 @@
     </plurals>
     <string name="queue_add_top">Add on top</string>
     <string name="queue_add_bottom">Add to bottom</string>
+    <string name="notification_action_title">User action needed</string>
+    <string name="notification_action_dl_revive">Tap here to reactivate your download</string>
+    <string name="revive_wait">Please stay on this screen while your download is revived</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
@@ -217,8 +221,8 @@
     <string name="memory_title">Memory usage</string>
     <string name="memory_total">Total : %.2f GB</string>
     <string name="memory_free">Free : %.2f GB</string>
-    <string name="memory_hentoid_main">Hentoid (primary) : %.2f GB</string>
-    <string name="memory_hentoid_ext">Hentoid (external) : %.2f GB</string>
+    <string name="memory_hentoid_main">Hentoid (primary) : %s</string>
+    <string name="memory_hentoid_ext">Hentoid (external) : %s</string>
     <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
     <string name="memory_details">View details (primary)</string>
 
@@ -244,6 +248,7 @@
     <string name="redownload_generating_log_file">Generating log file…</string>
 
     <!-- Library fragment -->
+    <string name="resume_closed">Resume reading where you left?</string>
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
     <string name="ask_filter_completed">How would you like to filter completed books?</string>
@@ -251,7 +256,7 @@
     <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
-        <item quantity="other">Are you sure you wish to delete the selected items ?</item>
+        <item quantity="other">Are you sure you wish to delete the %d selected items ?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
         <item quantity="one">Are you sure you wish to archive the selected item ?</item>
@@ -339,7 +344,7 @@
         <item quantity="one">Delete group + books</item>
         <item quantity="other">Delete groups + books</item>
     </plurals>
-    <string name="group_delete_nothing">Nothing to delete</string>
+    <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
@@ -368,6 +373,7 @@
     <string name="show_artists">Show artists</string>
     <string name="show_groups">Show groups</string>
     <string name="show_artists_and_groups">Show artists &amp; groups</string>
+    <string name="launchcode_present">You already have this book. Search other sources ?</string>
 
     <!-- Updates -->
     <string name="checking_updates">Checking for updates</string>
@@ -550,7 +556,7 @@
     <string name="duplicate_artist_score_nodata">Artist : no data</string>
     <string name="duplicate_total_score">%.0f%%</string>
     <string name="apply_processing">Apply (%d remaining choices)</string>
-    <string name="apply_final">Apply</string>
+    <string name="apply_final">Apply choices</string>
     <string name="duplicate_notif_start">Starting duplicate detection</string>
     <string name="duplicate_notif_complete_title">Duplicate detection complete</string>
     <string name="duplicate_notif_complete_desc">%d duplicates detected successfully</string>
@@ -571,6 +577,7 @@
     <string name="duplicate_alert_similarity">Similarity : %.0f%%</string>
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
+    <string name="duplicate_wait_index">Please wait while indexing</string>
 
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>

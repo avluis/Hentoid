@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database;
 
+import static com.annimon.stream.Collectors.toList;
+
 import android.content.Context;
 import android.util.SparseIntArray;
 
@@ -8,6 +10,7 @@ import androidx.annotation.NonNull;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
 
@@ -26,7 +29,6 @@ import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.Property;
 import io.objectbox.android.AndroidObjectBrowser;
-import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import io.objectbox.relation.ToMany;
@@ -36,6 +38,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute_;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
@@ -49,6 +52,7 @@ import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
+import me.devsaki.hentoid.database.domains.ShuffleRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteBookmark_;
 import me.devsaki.hentoid.database.domains.SiteHistory;
@@ -63,12 +67,12 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import timber.log.Timber;
 
-import static com.annimon.stream.Collectors.toList;
-
 public class ObjectBoxDB {
 
     // Status displayed in the library view (all books of the library; both internal and external)
     private static final int[] libraryStatus = ContentHelper.getLibraryStatuses();
+    private static final int[] queueStatus = ContentHelper.getQueueStatuses();
+    private static final int[] libraryQueueStatus = ArrayUtils.addAll(libraryStatus, queueStatus);
 
     private static final long DAY_IN_MILLIS = 1000L * 60 * 60 * 24;
 
@@ -227,8 +231,7 @@ public class ObjectBoxDB {
     void deleteContentById(long[] contentId) {
         Box<ErrorRecord> errorBox = store.boxFor(ErrorRecord.class);
         Box<ImageFile> imageFileBox = store.boxFor(ImageFile.class);
-        Box<Attribute> attributeBox = store.boxFor(Attribute.class);
-        Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
+        Box<Chapter> chapterBox = store.boxFor(Chapter.class);
         Box<Content> contentBox = store.boxFor(Content.class);
         Box<GroupItem> groupItemBox = store.boxFor(GroupItem.class);
         Box<Group> groupBox = store.boxFor(Group.class);
@@ -242,13 +245,18 @@ public class ObjectBoxDB {
                         c.getImageFiles().clear();                                      // Clear links to all imageFiles
                     }
 
+                    if (c.getChapters() != null) {
+                        chapterBox.remove(c.getChapters());
+                        c.getChapters().clear();                                      // Clear links to all chapters
+                    }
+
                     if (c.getErrorLog() != null) {
                         errorBox.remove(c.getErrorLog());
                         c.getErrorLog().clear();                                    // Clear links to all errorRecords
                     }
 
                     // Clear links to all attributes
-                    // NB : Properly removing all attributes here would be too costly
+                    // NB : Properly removing all attributes here is too costly, especially on large collections
                     // It's done by calling cleanupOrphanAttributes
                     c.getAttributes().clear();
 
@@ -276,14 +284,23 @@ public class ObjectBoxDB {
         Box<Attribute> attributeBox = store.boxFor(Attribute.class);
         Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
 
-        List<Attribute> attrs = attributeBox.getAll();
-        for (Attribute attr : attrs) {
-            if (attr.contents.isEmpty()) {
-                Timber.i(">> Found empty attr : %s", attr.getName());
-                locationBox.remove(attr.getLocations());
-                attr.getLocations().clear();                                           // Clear location links
-                attributeBox.remove(attr);                                             // Delete the attribute itself
-            }
+        // Stream the collection to get the attributes to clean
+        List<Attribute> attrsToClean = new ArrayList<>();
+        Query<Attribute> attrQuery = attributeBox.query().build();
+        attrQuery.forEach(
+                attr -> {
+                    if (attr.contents.isEmpty()) {
+                        Timber.i(">> Found empty attr : %s", attr.getName());
+                        attrsToClean.add(attr);
+                    }
+                }
+        );
+
+        // Clean the attributes
+        for (Attribute attr : attrsToClean) {
+            locationBox.remove(attr.getLocations());
+            attr.getLocations().clear();                                           // Clear location links
+            attributeBox.remove(attr);                                             // Delete the attribute itself
         }
     }
 
@@ -718,17 +735,34 @@ public class ObjectBoxDB {
         return selectContentUniversalContentByGroupItem(queryStr, groupId, filterBookFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
     }
 
-    private static long[] shuffleRandomSortId(Query<Content> query) {
-        LazyList<Content> lazyList = query.findLazy();
-        List<Integer> order = new ArrayList<>();
-        for (int i = 0; i < lazyList.size(); i++) order.add(i);
-        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
+    public List<Long> getShuffledIds() {
+        return Stream.of(store.boxFor(ShuffleRecord.class).getAll()).map(ShuffleRecord::getContentId).toList();
+    }
 
-        List<Long> result = new ArrayList<>();
-        for (int i = 0; i < order.size(); i++) {
-            result.add(lazyList.get(order.get(i)).getId());
+    public void shuffleContentIds() {
+        // Clear previous shuffled list
+        Box<ShuffleRecord> shuffleStore = store.boxFor(ShuffleRecord.class);
+        shuffleStore.removeAll();
+        // Populate with a new list
+        List<Long> allBooksIds = Helper.getListFromPrimitiveArray(selectStoredContentQ(false, false, -1, false).build().findIds());
+        Collections.shuffle(allBooksIds, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_CONTENT)));
+        shuffleStore.put(Stream.of(allBooksIds).map(ShuffleRecord::new).toList());
+    }
+
+    private long[] shuffleRandomSortId(Query<Content> query) {
+        List<Long> queryIds = Helper.getListFromPrimitiveArray(query.findIds());
+        List<Long> shuffleIds = getShuffledIds();
+
+        // Keep common IDs
+        shuffleIds.retainAll(queryIds);
+
+        // Isolate new IDs that have never been shuffled and append them at the end
+        if (shuffleIds.size() < queryIds.size()) {
+            queryIds.removeAll(shuffleIds);
+            shuffleIds.addAll(queryIds);
         }
-        return Helper.getPrimitiveLongArrayFromList(result);
+
+        return Helper.getPrimitiveLongArrayFromList(shuffleIds);
     }
 
     long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
@@ -848,14 +882,6 @@ public class ObjectBoxDB {
 
         return Helper.getPrimitiveLongArrayFromList(results);
     }
-
-    /*
-    private long[] selectContentWithPageFavs() {
-        QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
-        builder.equal(ImageFile_.favourite, true);
-        return builder.build().property(ImageFile_.contentId).distinct().findLongs();
-    }
-     */
 
     private void filterWithPageFavs(QueryBuilder<Content> builder) {
         builder.link(Content_.imageFiles).equal(ImageFile_.favourite, true);
@@ -1294,6 +1320,11 @@ public class ObjectBoxDB {
     }
 
     @Nullable
+    List<Group> selectGroups(long[] groupIds) {
+        return store.boxFor(Group.class).get(groupIds);
+    }
+
+    @Nullable
     Group selectGroupByName(int grouping, @NonNull final String name) {
         return store.boxFor(Group.class).query().equal(Group_.grouping, grouping).equal(Group_.name, name, QueryBuilder.StringOrder.CASE_INSENSITIVE).build().findFirst();
     }
@@ -1357,35 +1388,20 @@ public class ObjectBoxDB {
         query.in(Content_.status, new int[]{
                 StatusContent.DOWNLOADING.getCode(),
                 StatusContent.PAUSED.getCode(),
-                StatusContent.DOWNLOADED.getCode(),
                 StatusContent.ERROR.getCode(),
+                StatusContent.DOWNLOADED.getCode(),
                 StatusContent.MIGRATED.getCode()});
         query.notNull(Content_.storageFolder);
         query.notEqual(Content_.storageFolder, "");
         return query.build();
     }
 
-    QueryBuilder<ImageFile> selectNonHashedCovers() {
-        QueryBuilder<ImageFile> query = store.boxFor(ImageFile.class).query();
-        query.equal(ImageFile_.isCover, true)
-                .equal(ImageFile_.imageHash, 0)
-                .notEqual(ImageFile_.status, StatusContent.ONLINE.getCode());
-        return query;
-    }
-
     QueryBuilder<Content> selectStoredContentQ(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         if (includeQueued)
-            query.in(Content_.status, new int[]{
-                    StatusContent.DOWNLOADING.getCode(),
-                    StatusContent.PAUSED.getCode(),
-                    StatusContent.DOWNLOADED.getCode(),
-                    StatusContent.ERROR.getCode(),
-                    StatusContent.MIGRATED.getCode()});
+            query.in(Content_.status, libraryQueueStatus);
         else
-            query.in(Content_.status, new int[]{
-                    StatusContent.DOWNLOADED.getCode(),
-                    StatusContent.MIGRATED.getCode()});
+            query.in(Content_.status, libraryStatus);
         query.notNull(Content_.storageUri);
         query.notEqual(Content_.storageUri, "");
         if (nonFavouritesOnly) query.equal(Content_.favourite, false);
@@ -1399,17 +1415,7 @@ public class ObjectBoxDB {
         return query;
     }
 
-    Query<Content> selectNonHashedContent1() {
-        return selectNonHashedCovers()
-                .link(ImageFile_.content)
-                .in(Content_.status, new int[]{
-                        StatusContent.DOWNLOADED.getCode(),
-                        StatusContent.MIGRATED.getCode()})
-                .notNull(Content_.storageUri)
-                .notEqual(Content_.storageUri, "").build();
-    }
-
-    Query<Content> selectNonHashedContent2() {
+    Query<Content> selectNonHashedContent() {
         QueryBuilder<Content> query = store.boxFor(Content.class).query()
                 .in(Content_.status, new int[]{
                         StatusContent.DOWNLOADED.getCode(),
@@ -1419,6 +1425,8 @@ public class ObjectBoxDB {
 
         QueryBuilder<ImageFile> imageQuery = query.backlink(ImageFile_.content);
         imageQuery.equal(ImageFile_.isCover, true)
+                .isNull(ImageFile_.imageHash)
+                .or()
                 .in(ImageFile_.imageHash, new long[]{0, -1})
                 .notEqual(ImageFile_.status, StatusContent.ONLINE.getCode());
 

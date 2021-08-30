@@ -1,7 +1,10 @@
 package me.devsaki.hentoid.util;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
+
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -73,15 +76,13 @@ import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
-
 /**
  * Utility class for Content-related operations
  */
 public final class ContentHelper {
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
-    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
+    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode(), StatusContent.ONLINE.getCode()};
     private static final int[] queueStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode()};
     private static final int[] queueTabStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode()};
 
@@ -225,10 +226,11 @@ public final class ContentHelper {
      *
      * @param context      Context to use for the action
      * @param content      Content to view
+     * @param pageNumber   Page number to view
      * @param searchParams Current search parameters (so that the next/previous book feature
      *                     is faithful to the library screen's order)
      */
-    public static boolean openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
+    public static boolean openHentoidViewer(@NonNull Context context, @NonNull Content content, int pageNumber, Bundle searchParams) {
         // Check if the book has at least its own folder
         if (content.getStorageUri().isEmpty()) return false;
 
@@ -237,6 +239,7 @@ public final class ContentHelper {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
+        if (pageNumber > -1) builder.setPageNumber(pageNumber);
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);
         viewer.putExtras(builder.getBundle());
@@ -426,7 +429,8 @@ public final class ContentHelper {
                             archive,
                             Stream.of(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, "")).toList(),
                             context.getFilesDir(),
-                            Stream.of(newContentId + "").toList())
+                            Stream.of(newContentId + "").toList(),
+                            null)
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .subscribe(
@@ -749,8 +753,28 @@ public final class ContentHelper {
             fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
 
         // Look up similar names between images and file names
+        int order;
+        int previousOrder = -1;
         for (ImageFile img : images) {
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
+
+            // Detect gaps inside image numbering
+            order = img.getOrder();
+            // Look for files named with the forgotten number
+            if (previousOrder > -1 && previousOrder != order - 1) {
+                Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
+                for (int i = previousOrder + 1; i < order; i++) {
+                    ImmutablePair<String, Long> property = fileNameProperties.get(i + "");
+                    if (property != null) {
+                        Timber.i("Numbering gap filled with a file : %d", i);
+                        ImageFile newImage = new ImageFile(i, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
+                        newImage.setFileUri(property.left).setSize(property.right);
+                        result.add(i, newImage);
+                    }
+                }
+            }
+            previousOrder = order;
+
             ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
             if (property != null) {
                 if (imgName.equals(Consts.THUMB_FILE_NAME)) {
@@ -759,7 +783,7 @@ public final class ContentHelper {
                 }
                 result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
             } else
-                Timber.i(">> img dropped %s", imgName);
+                Timber.i(">> image not found among files : %s", imgName);
         }
 
         // If no thumb found, set the 1st image as cover
@@ -889,7 +913,10 @@ public final class ContentHelper {
     public static List<String> getBlockedTags(@NonNull final Content content) {
         List<String> result = Collections.emptyList();
         if (!Preferences.getBlockedTags().isEmpty()) {
-            List<String> tags = Stream.of(content.getAttributes()).filter(a -> a.getType().equals(AttributeType.TAG)).map(Attribute::getName).toList();
+            List<String> tags = Stream.of(content.getAttributes())
+                    .filter(a -> a.getType().equals(AttributeType.TAG) || a.getType().equals(AttributeType.LANGUAGE))
+                    .map(Attribute::getName)
+                    .toList();
             for (String blocked : Preferences.getBlockedTags())
                 for (String tag : tags)
                     if (blocked.equalsIgnoreCase(tag) || StringHelper.isPresentAsWord(blocked, tag)) {
@@ -1055,15 +1082,19 @@ public final class ContentHelper {
     /**
      * Find the best match for the given Content inside the library and queue
      *
-     * @param dao     CollectionDao to use
      * @param content Content to find the duplicate for
      *                // TOD update
+     * @param dao     CollectionDao to use
      * @return Pair containing
      * left side : Best match for the given Content inside the library and queue
      * Right side : Similarity score (between 0 and 1; 1=100%)
      */
     @Nullable
-    public static ImmutablePair<Content, Float> findDuplicate(@NonNull final CollectionDAO dao, @NonNull final Content content, long pHash) {
+    public static ImmutablePair<Content, Float> findDuplicate(
+            @NonNull final Context context,
+            @NonNull final Content content,
+            long pHash,
+            @NonNull final CollectionDAO dao) {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted((o1, o2) -> Integer.compare(o1.length(), o2.length())).findLast();
@@ -1073,6 +1104,10 @@ public final class ContentHelper {
         List<Content> roughCandidates = dao.searchTitlesWith(longestWord.get(), contentStatuses);
         if (roughCandidates.isEmpty()) return null;
 
+        // Compute cover hashes for selected candidates
+        for (Content c : roughCandidates)
+            if (0 == c.getCover().getImageHash()) computeAndSaveCoverHash(context, c, dao);
+
         // Refine by running the actual duplicate detection algorithm against the rough candidates
         List<DuplicateEntry> entries = new ArrayList<>();
         StringSimilarity cosine = new Cosine();
@@ -1080,7 +1115,7 @@ public final class ContentHelper {
         DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, true, true, false, pHash);
         List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, true, true, false, Long.MIN_VALUE)).toList();
         for (DuplicateHelper.DuplicateCandidate candidate : candidates) {
-            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, null, true, true, true, false, true, 2, cosine);
+            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, true, true, true, false, true, 2, cosine);
             if (entry != null) entries.add(entry);
         }
         // Sort by similarity and size (unfortunately, Comparator.comparing is API24...)
@@ -1092,6 +1127,18 @@ public final class ContentHelper {
         }
 
         return null;
+    }
+
+    // Compute perceptual hash for the cover picture
+    public static void computeAndSaveCoverHash(
+            @NonNull final Context context,
+            @NonNull final Content content,
+            @NonNull final CollectionDAO dao) {
+        Bitmap coverBitmap = DuplicateHelper.Companion.getCoverBitmapFromContent(context, content);
+        long pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), coverBitmap);
+        if (coverBitmap != null) coverBitmap.recycle();
+        content.getCover().setImageHash(pHash);
+        dao.insertImageFile(content.getCover());
     }
 
     /**

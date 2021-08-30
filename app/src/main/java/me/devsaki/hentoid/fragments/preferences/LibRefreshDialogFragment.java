@@ -227,7 +227,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
             step1FolderButton.setOnClickListener(v -> pickFolder.launch(0));
             pickFolder.launch(0); // Ask right away, there's no reason why the user should click again
         } else {
-            ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
+            ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri())));
             rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
             rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
             step2progress.setIndeterminate(true);
@@ -313,7 +313,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
     }
 
     private void updateOnSelectFolder() {
-        ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true));
+        ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri())));
         step1FolderButton.setVisibility(View.INVISIBLE);
         rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
         rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
@@ -323,6 +323,9 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEvent(ProcessEvent event) {
+        if (event.processId != R.id.import_external && event.processId != R.id.import_primary)
+            return;
+
         ProgressBar progressBar;
         switch (event.step) {
             case (ImportWorker.STEP_2_BOOK_FOLDERS):

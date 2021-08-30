@@ -37,13 +37,33 @@
         app:barrierDirection="bottom"
         app:constraint_referenced_ids="viewer_gallery_selection_toolbar,viewer_gallery_toolbar" />
 
+    <com.skydoves.powerspinner.PowerSpinnerView
+        android:id="@+id/chapter_selector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/bg_spinner_border"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
+        app:spinner_arrow_gravity="end"
+        app:spinner_arrow_padding="8dp"
+        app:spinner_arrow_tint="@color/white_opacity_66"
+        app:spinner_divider_show="true"
+        app:spinner_divider_size="0.4dp"
+        app:spinner_popup_background="@color/dark_gray"
+        app:spinner_popup_elevation="14dp"
+        tools:visibility="visible" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/viewer_gallery_recycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
+        app:layout_constraintTop_toBottomOf="@id/chapter_selector"
         app:spanCount="4"
         tools:listitem="@layout/item_viewer_gallery_image" />
 

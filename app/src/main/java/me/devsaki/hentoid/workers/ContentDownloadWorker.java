@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.annotation.Nullable;
 
@@ -50,6 +51,7 @@ import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -58,7 +60,9 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadReviveEvent;
 import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.notification.action.UserActionNotification;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
@@ -66,11 +70,11 @@ import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.download.RequestQueueManager;
 import me.devsaki.hentoid.util.exception.AccountException;
@@ -84,6 +88,7 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.InputStreamVolleyRequest;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.util.notification.Notification;
+import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
 
 public class ContentDownloadWorker extends BaseWorker {
@@ -97,7 +102,9 @@ public class ContentDownloadWorker extends BaseWorker {
 
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
+    private boolean isCloudFlareBlocked;
 
+    private final NotificationManager userActionNotificationManager;
     private final RequestQueueManager<Object> requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -108,12 +115,13 @@ public class ContentDownloadWorker extends BaseWorker {
     public ContentDownloadWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
-        super(context, parameters, R.id.download_service);
+        super(context, parameters, R.id.download_service, null);
 
         EventBus.getDefault().register(this);
         dao = new ObjectBoxDAO(context);
 
         requestQueueManager = RequestQueueManager.getInstance(context);
+        userActionNotificationManager = new NotificationManager(context, R.id.user_action_notification);
     }
 
     @Override
@@ -166,7 +174,7 @@ public class ContentDownloadWorker extends BaseWorker {
      *
      * @return 1st book of the download queue; null if no book is available to download
      */
-    @SuppressLint("TimberExceptionLogging")
+    @SuppressLint({"TimberExceptionLogging", "TimberArgCount"})
     @NonNull
     private ImmutablePair<QueuingResult, Content> downloadFirstInQueue() {
         final String CONTENT_PART_IMAGE_LIST = "Image list";
@@ -250,6 +258,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         downloadCanceled = false;
         downloadSkipped = false;
+        isCloudFlareBlocked = false;
         dao.deleteErrorRecords(content.getId());
 
         boolean hasError = false;
@@ -371,26 +380,48 @@ public class ContentDownloadWorker extends BaseWorker {
 
         // == DOWNLOAD PHASE ==
 
+        // Wait a delay corresponding to book browsing if we're between two sources with "simulate human reading"
+        if (content.getSite().isSimulateHumanReading() && requestQueueManager.isSimulateHumanReading()) {
+            int delayMs = 3000 + new Random().nextInt(2000);
+            try {
+                Thread.sleep(delayMs);
+            } catch (InterruptedException e) {
+                Timber.w(e);
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        requestQueueManager.setSimulateHumanReading(content.getSite().isSimulateHumanReading());
+
+        // In case the download has been canceled while in preparation phase
+        // NB : No log of any sort because this is normal behaviour
+        if (downloadCanceled || downloadSkipped)
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
+
         // Queue image download requests
-        Site site = content.getSite();
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED)) {
-                if (img.isCover()) {
-                    // Enrich cover download params just in case
-                    Map<String, String> downloadParams;
-                    if (img.getDownloadParams().length() > 2)
-                        downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
-                    else
-                        downloadParams = new HashMap<>();
-                    // Add the referer, if unset
-                    if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
-                        downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
-                    // Set the 1st image of the list as a backup, if the cover URL is stale (might happen when restarting old downloads)
-                    if (images.size() > 1)
-                        downloadParams.put("backupUrl", images.get(1).getUrl());
-                    img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+                // Enrich download params just in case
+                Map<String, String> downloadParams;
+                if (img.getDownloadParams().length() > 2)
+                    downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
+                else
+                    downloadParams = new HashMap<>();
+                // Add referer if unset
+                if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
+                    downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
+                // Add cookies if unset or if the site needs fresh cookies
+                if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY) || content.getSite().isUseCloudflare())
+                    downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(img.getUrl()));
+
+                // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
+                if (img.isCover() && images.size() > 1) {
+                    downloadParams.put("backupUrl", images.get(1).getUrl());
                 }
-                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site));
+
+                img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+
+                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content));
             }
         }
 
@@ -441,7 +472,7 @@ public class ContentDownloadWorker extends BaseWorker {
             double estimateBookSizeMB = -1;
             if (pagesOK > 3 && progress > 0 && totalPages > 0) {
                 estimateBookSizeMB = sizeDownloadedMB / (progress * 1.0 / totalPages);
-                Timber.d("Estimate book size calculated for wifi check : %s MB", estimateBookSizeMB);
+                Timber.v("Estimate book size calculated for wifi check : %s MB", estimateBookSizeMB);
             }
 
             notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages, (int) sizeDownloadedMB, (int) estimateBookSizeMB, avgSpeedKbps));
@@ -549,18 +580,14 @@ public class ContentDownloadWorker extends BaseWorker {
                                 Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
                                 img.setStatus(StatusContent.SAVED);
                                 dao.insertImageFile(img);
-                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content.getSite()));
+                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content));
                             }
                         return;
                     }
                 }
 
                 // Compute perceptual hash for the cover picture
-                Bitmap coverBitmap = DuplicateHelper.Companion.getCoverBitmapFromContent(getApplicationContext(), content);
-                long pHash = DuplicateHelper.Companion.calcPhash(DuplicateHelper.Companion.getHashEngine(), coverBitmap);
-                if (coverBitmap != null) coverBitmap.recycle();
-                content.getCover().setImageHash(pHash);
-                dao.insertImageFile(content.getCover());
+                ContentHelper.computeAndSaveCoverHash(getApplicationContext(), content, dao);
 
                 // Mark content as downloaded
                 if (0 == content.getDownloadDate())
@@ -635,7 +662,7 @@ public class ContentDownloadWorker extends BaseWorker {
     private List<ImageFile> fetchImageURLs(@NonNull Content content) throws Exception {
         List<ImageFile> imgs;
 
-        // If content doesn't have any download parameters, get them from the live gallery page
+        // If content doesn't have any download parameters, get them from the cookie manager
         String contentDownloadParamsStr = content.getDownloadParams();
         if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
             String cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
@@ -650,14 +677,18 @@ public class ContentDownloadWorker extends BaseWorker {
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
 
-        // Add the content's download params to the images if they have missing information
+        // If no images found, or just the cover, image detection has failed
+        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
+            throw new EmptyResultException();
+
+        // Add the content's download params to the images only if they have missing information
         contentDownloadParamsStr = content.getDownloadParams();
         if (contentDownloadParamsStr != null && contentDownloadParamsStr.length() > 2) {
             Map<String, String> contentDownloadParams = ContentHelper.parseDownloadParams(contentDownloadParamsStr);
             for (ImageFile i : imgs) {
                 if (i.getDownloadParams() != null && i.getDownloadParams().length() > 2) {
                     Map<String, String> imageDownloadParams = ContentHelper.parseDownloadParams(i.getDownloadParams());
-                    // Content's
+                    // Content's params
                     for (Map.Entry<String, String> entry : contentDownloadParams.entrySet())
                         if (!imageDownloadParams.containsKey(entry.getKey()))
                             imageDownloadParams.put(entry.getKey(), entry.getValue());
@@ -670,10 +701,6 @@ public class ContentDownloadWorker extends BaseWorker {
                 }
             }
         }
-
-        // If no images found, or just the cover, image detection has failed
-        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
-            throw new EmptyResultException();
 
         // Cleanup generated objects
         for (ImageFile img : imgs) {
@@ -695,18 +722,19 @@ public class ContentDownloadWorker extends BaseWorker {
     private Request<Object> buildDownloadRequest(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
-            @NonNull final Site site) {
+            @NonNull final Content content) {
 
         String backupUrl = "";
+        Site site = content.getSite();
+        String imageUrl = HttpHelper.fixUrl(img.getUrl(), site.getUrl());
 
         // Apply image download parameters
         Map<String, String> requestHeaders = new HashMap<>();
+        String cookieStr = null;
         Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
         if (!downloadParams.isEmpty()) {
-            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
-                String value = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                if (value != null) requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, value);
-            }
+            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
+                cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
             if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
                 String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
                 if (value != null) requestHeaders.put(HttpHelper.HEADER_REFERER_KEY, value);
@@ -714,16 +742,19 @@ public class ContentDownloadWorker extends BaseWorker {
             if (downloadParams.containsKey("backupUrl"))
                 backupUrl = downloadParams.get("backupUrl");
         }
+        if (null == cookieStr) cookieStr = HttpHelper.getCookies(imageUrl);
+        requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+
         final String backupUrlFinal = HttpHelper.fixUrl(backupUrl, site.getUrl());
 
         return new InputStreamVolleyRequest(
                 Request.Method.GET,
-                HttpHelper.fixUrl(img.getUrl(), site.getUrl()),
+                imageUrl,
                 requestHeaders,
                 site.useHentoidAgent(),
                 site.useWebviewAgent(),
                 result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
-                error -> onRequestError(error, img, dir, backupUrlFinal, requestHeaders));
+                error -> onRequestError(error, content, img, dir, backupUrlFinal, requestHeaders));
     }
 
     private void onRequestSuccess(
@@ -763,6 +794,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
     private void onRequestError(
             VolleyError error,
+            @NonNull Content content,
             @NonNull ImageFile img,
             @NonNull DocumentFile dir,
             @NonNull String backupUrl,
@@ -774,7 +806,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         // If no backup, then process the error
-        String statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode + "" : "N/A";
+        int statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode : -1;
         String message = error.getMessage() + (img.isBackup() ? " (from backup URL)" : "");
         String cause = "";
 
@@ -795,7 +827,19 @@ public class ContentDownloadWorker extends BaseWorker {
         Timber.w(error);
 
         updateImageStatusUri(img, false, "");
-        logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
+        logErrorRecord(content.getId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
+        // Handle cloudflare blocks
+        if (content.getSite().isUseCloudflare() && 503 == statusCode && !isCloudFlareBlocked) {
+            isCloudFlareBlocked = true; // prevent associated events & notifs to be fired more than once
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.STALE_CREDENTIALS));
+            dao.clearDownloadParams(content.getId());
+
+            final String cfCookie = StringHelper.protect(HttpHelper.parseCookies(HttpHelper.getCookies(img.getUrl())).get(Consts.CLOUDFLARE_COOKIE));
+            userActionNotificationManager.notify(new UserActionNotification(content.getSite(), cfCookie));
+
+            if (HentoidApp.isInForeground())
+                EventBus.getDefault().post(new DownloadReviveEvent(content.getSite(), cfCookie));
+        }
     }
 
     private void tryUsingBackupUrl(
@@ -809,15 +853,16 @@ public class ContentDownloadWorker extends BaseWorker {
 
         Site site = content.getSite();
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
+        Chapter chp = (img.getChapter() != null) ? img.getChapter().getTarget() : null;
 
         // per Volley behaviour, this method is called on the UI thread
         // -> need to create a new thread to do a network call
         compositeDisposable.add(
-                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, requestHeaders, img.getOrder(), content.getQtyPages()))
+                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, requestHeaders, img.getOrder(), content.getQtyPages(), chp))
                         .subscribeOn(Schedulers.io())
                         .observeOn(Schedulers.computation())
                         .subscribe(
-                                imageFile -> processBackupImage(imageFile.orElse(null), img, dir, site),
+                                imageFile -> processBackupImage(imageFile.orElse(null), img, dir, content),
                                 throwable ->
                                 {
                                     updateImageStatusUri(img, false, "");
@@ -828,14 +873,16 @@ public class ContentDownloadWorker extends BaseWorker {
         );
     }
 
-    private void processBackupImage(ImageFile backupImage, @NonNull ImageFile
-            originalImage, @NonNull DocumentFile dir, Site site) {
+    private void processBackupImage(ImageFile backupImage,
+                                    @NonNull ImageFile originalImage,
+                                    @NonNull DocumentFile dir,
+                                    Content content) {
         if (backupImage != null) {
             Timber.i("Backup URL contains image @ %s; queuing", backupImage.getUrl());
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
             originalImage.setBackup(true); // Indicates the image is from a backup (for display in error logs)
             dao.insertImageFile(originalImage);
-            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, site));
+            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, content));
         } else Timber.w("Failed to parse backup URL");
     }
 
@@ -928,21 +975,21 @@ public class ContentDownloadWorker extends BaseWorker {
             // Ignore neutral binary content-type
             if (!contentType.equalsIgnoreCase("application/octet-stream")) {
                 fileExt = FileHelper.getExtensionFromMimeType(contentType);
-                Timber.d("Using content-type %s to determine file extension -> %s", contentType, fileExt);
+                Timber.v("Using content-type %s to determine file extension -> %s", contentType, fileExt);
             }
         }
         // Content-type has not been useful to determine the extension => See if the URL contains an extension
         if (null == fileExt || fileExt.isEmpty()) {
             fileExt = HttpHelper.getExtensionFromUri(img.getUrl());
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt);
-            Timber.d("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
+            Timber.v("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
         }
         // No extension detected in the URL => Read binary header of the file to detect known formats
         // If PNG, peek into the file to see if it is an animated PNG or not (no other way to do that)
         if (binaryContent != null && (fileExt.isEmpty() || fileExt.equals("png"))) {
             mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
             fileExt = FileHelper.getExtensionFromMimeType(mimeType);
-            Timber.d("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
+            Timber.v("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
         }
         // If all else fails, fall back to jpg as default
         if (null == fileExt || fileExt.isEmpty()) {

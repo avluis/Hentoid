@@ -190,7 +190,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://hitomi.la/galleries" -->
+
                 <data
                     android:host="hitomi.la"
                     android:pathPattern="..*/..*"
@@ -205,7 +205,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://nhentai.net/g/" -->
+
                 <data
                     android:host="nhentai.net"
                     android:pathPrefix="/g/"
@@ -220,7 +220,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://www.tsumino.com/Book/Info" -->
+
                 <data
                     android:host="www.tsumino.com"
                     android:pathPrefix="/entry/"
@@ -231,7 +231,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://asmhentai.com/g" -->
+
                 <data
                     android:host="asmhentai.com"
                     android:pathPrefix="/g"
@@ -242,7 +242,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://comics.asmhentai.com/g" -->
+
                 <data
                     android:host="comics.asmhentai.com"
                     android:pathPrefix="/g"
@@ -253,9 +253,9 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://pururin.io/" -->
+
                 <data
-                    android:host="pururin.io"
+                    android:host="pururin.to"
                     android:pathPrefix="/gallery"
                     android:scheme="https" />
             </intent-filter>
@@ -264,7 +264,7 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
+
                 <data
                     android:host="e-hentai.org"
                     android:pathPrefix="/g/"
@@ -275,33 +275,10 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://exhentai.org/" -->
+
                 <data
                     android:host="exhentai.org"
                     android:pathPrefix="/g/"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="fakku.net"
-                    android:pathPrefix="/hentai/"
-                    android:scheme="https" />
-                <data
-                    android:host="www.fakku.net"
-                    android:pathPrefix="/hentai/"
-                    android:scheme="https" />
-                <data
-                    android:host="fakku.net"
-                    android:pathPrefix="/stay-home"
-                    android:scheme="https" />
-                <data
-                    android:host="www.fakku.net"
-                    android:pathPrefix="/stay-home"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -465,13 +442,15 @@
                 android:value=".activities.LibraryActivity" />
         </activity>
 
-        <service android:name=".services.UpdateCheckService" />
+        <!-- Services -->
 
-        <service android:name=".services.UpdateDownloadService" />
+        <service android:name=".services.UpdateCheckService" />
 
         <service android:name=".services.ExternalImportService" />
 
         <service android:name=".services.API29MigrationService" />
+
+        <!-- Receivers -->
 
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
@@ -481,9 +460,9 @@
 
         <receiver android:name=".receiver.DuplicateNotificationStopReceiver" />
 
-        <receiver android:name=".receiver.InstallRunReceiver" />
+        <receiver android:name=".receiver.AppUpdateDownloadReceiver" />
 
-        <receiver android:name=".receiver.InstallCompletedReceiver" />
+        <!-- Providers -->
 
         <provider
             android:name="androidx.core.content.FileProvider"

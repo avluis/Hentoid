@@ -7,6 +7,7 @@ import com.annimon.stream.Optional;
 import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 
@@ -17,5 +18,6 @@ public interface ImageListParser {
             @NonNull String url,
             @NonNull Map<String, String> requestHeaders,
             int order,
-            int maxPages) throws Exception;
+            int maxPages,
+            Chapter chapter) throws Exception;
 }

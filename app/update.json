@@ -1,8 +1,8 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.14.3/hentoid1143-351.apk",
-  "versionCode": "351",
-  "updateURL.beta": "https://bitrise-prod-build-storage.s3.amazonaws.com/builds/6686981f66d94c2f/artifacts/60016413/app-debug-bitrise-signed.apk?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIV2YZWMVCNWNR2HA%2F20201223%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20201223T100310Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=0abe3c76fe6c4d6a2ff5984e2a5e25b868082e18d5d134fd75845f41fcb3ab54",
-  "versionCode.beta": "1",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.15.2/hentoid1152-402.apk",
+  "versionCode": "402",
+  "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/test1/v415.apk",
+  "versionCode.beta": "500",
   "sourceAlerts":[
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"189" },
@@ -20,11 +20,20 @@
 	  {"sourceName":"ASMHENTAI", "status":"RED", "fixedByBuild":"255"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"257"},
 	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"284"},
-	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
-	  {"sourceName":"NEXUS", "status":"BLACK"},
 	  {"sourceName":"IMHENTAI", "status":"BLACK", "fixedByBuild":"350"},
 	  {"sourceName":"TSUMINO", "status":"RED", "fixedByBuild":"309"},
-	  {"sourceName":"NEXUS", "status":"RED", "fixedByBuild":"329"}
+	  {"sourceName":"NEXUS", "status":"RED", "fixedByBuild":"329"},
+	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"379"},
+	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"388"},
+	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"391"},
+	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"397"},
+	  {"sourceName":"TOONILY", "status":"ORANGE", "fixedByBuild":"400"},
+	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"400"},
+	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"401"},
+	  {"sourceName":"MANHWA", "status":"RED", "fixedByBuild":"402"},
+	  {"sourceName":"FAKKU2", "status":"BLACK"},
+	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
+	  {"sourceName":"NEXUS", "status":"BLACK"}
   ],
   "sourceAlerts.beta":[
 	  {"sourceName":"TSUMINO", "status":"ORANGE", "fixedByBuild":"163" },

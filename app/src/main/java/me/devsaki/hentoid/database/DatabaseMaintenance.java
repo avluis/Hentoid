@@ -133,10 +133,10 @@ public class DatabaseMaintenance {
             int max = contents.size();
             float pos = 1;
             for (Content c : contents) {
-                c.setCoverImageUrl(c.getCoverImageUrl().replace("api.pururin.io/images/", "cdn.pururin.io/assets/images/data/"));
+                c.setCoverImageUrl(c.getCoverImageUrl().replace("api.pururin.to/images/", "cdn.pururin.to/assets/images/data/"));
                 if (c.getImageFiles() != null)
                     for (ImageFile i : c.getImageFiles()) {
-                        db.updateImageFileUrl(i.setUrl(i.getUrl().replace("api.pururin.io/images/", "cdn.pururin.io/assets/images/data/")));
+                        db.updateImageFileUrl(i.setUrl(i.getUrl().replace("api.pururin.to/images/", "cdn.pururin.to/assets/images/data/")));
                     }
                 db.insertContent(c);
                 emitter.onNext(pos++ / max);
@@ -176,9 +176,9 @@ public class DatabaseMaintenance {
         try {
             // Detect duplicate bookmarks (host/someurl and host/someurl/)
             Timber.i("Detecting duplicate bookmarks : start");
-            Query<SiteBookmark> contents = db.selectAllDuplicateBookmarks();
-            Timber.i("Detecting duplicate bookmarks : %d favourites detected", contents.count());
-            contents.remove();
+            Query<SiteBookmark> entries = db.selectAllDuplicateBookmarks();
+            Timber.i("Detecting duplicate bookmarks : %d bookmarks detected", entries.count());
+            entries.remove();
             Timber.i("Detecting duplicate bookmarks : done");
         } finally {
             db.closeThreadResources();

@@ -25,11 +25,7 @@ import io.objectbox.BoxStore;
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
 import io.objectbox.query.Query;
-import io.objectbox.query.QueryBuilder;
-import io.objectbox.query.QueryConsumer;
 import io.objectbox.relation.ToOne;
-import io.reactivex.Emitter;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -90,24 +86,18 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public long countContentWithUnhashedCovers() {
-        return db.selectNonHashedContent2().count();
+        return db.selectNonHashedContent().count();
     }
 
     @Override
-    public Observable<Content> streamContentWithUnhashedCovers() {
-        Query<Content> query = db.selectNonHashedContent2();
-        return Observable.create(emitter -> query.forEach(new DatabaseConsumer<>(emitter)));
+    public List<Content> selectContentWithUnhashedCovers() {
+        return db.selectNonHashedContent().find();
     }
 
-    // TODO make that observable fire onComplete event
-    public Observable<Content> streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
-        QueryBuilder<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc);
-        return Observable.create(emitter -> query.build().forEach(new DatabaseConsumer<>(emitter)));
-    }
-
+    @Override
     public void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer) {
-        QueryBuilder<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc);
-        query.build().forEach(consumer::accept);
+        Query<Content> query = db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc).build();
+        query.forEach(consumer::accept);
     }
 
     @Override
@@ -253,9 +243,10 @@ public class ObjectBoxDAO implements CollectionDAO {
             query = db.selectContentSearchContentQ(filter, groupId, metadata, bookFavouritesOnly, false, orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
         }
 
-        if (isRandom)
-            return new ImmutablePair<>(query.count(), new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query));
-        else return new ImmutablePair<>(query.count(), new ObjectBoxDataSource.Factory<>(query));
+        if (isRandom) {
+            List<Long> shuffledIds = db.getShuffledIds();
+            return new ImmutablePair<>(query.count(), new ObjectBoxRandomDataSource.RandomDataSourceFactory<>(query, shuffledIds));
+        } else return new ImmutablePair<>(query.count(), new ObjectBoxDataSource.Factory<>(query));
     }
 
     private ImmutablePair<Long, DataSource.Factory<Integer, Content>> getPagedContentByList(
@@ -330,6 +321,25 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public void clearDownloadParams(long contentId) {
+        Content c = db.selectContentById(contentId);
+        if (null == c) return;
+
+        c.setDownloadParams("");
+        db.insertContent(c);
+
+        List<ImageFile> imgs = c.getImageFiles();
+        if (null == imgs) return;
+        for (ImageFile img : imgs) img.setDownloadParams("");
+        db.insertImageFiles(imgs);
+    }
+
+    @Override
+    public void shuffleContent() {
+        db.shuffleContentIds();
+    }
+
+    @Override
     public long countAllExternalBooks() {
         return db.selectAllExternalBooksQ().count();
     }
@@ -350,6 +360,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void deleteAllExternalBooks() {
         db.deleteContentById(db.selectAllExternalBooksQ().findIds());
         db.cleanupOrphanAttributes();
+    }
+
+    @Override
+    public List<Group> selectGroups(long[] groupIds) {
+        return db.selectGroups(groupIds);
     }
 
     @Override
@@ -695,6 +710,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return new ObjectBoxLiveData<>(db.selectQueueRecordsQ(query));
     }
 
+    @Override
     public List<QueueRecord> selectQueue() {
         return db.selectQueueRecordsQ(null).find();
     }
@@ -759,6 +775,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
 
+    // API29 migration query
     @Override
     public Single<List<Long>> selectOldStoredBookIds() {
         return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectOldStoredContentQ().findIds()))
@@ -766,22 +783,9 @@ public class ObjectBoxDAO implements CollectionDAO {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    // API29 migration query
     @Override
     public long countOldStoredContent() {
         return db.selectOldStoredContentQ().count();
-    }
-
-    public static class DatabaseConsumer<T> implements QueryConsumer<T> {
-
-        private final Emitter<T> emitter;
-
-        public DatabaseConsumer(Emitter<T> emitter) {
-            this.emitter = emitter;
-        }
-
-        @Override
-        public void accept(@NonNull T data) {
-            emitter.onNext(data);
-        }
     }
 }

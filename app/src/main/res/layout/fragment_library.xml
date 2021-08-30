@@ -36,6 +36,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/advanced_search_background" />
 
-    <include layout="@layout/include_library_alert_bar" />
+    <include layout="@layout/include_library_alert_banner" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

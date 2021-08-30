@@ -13,5 +13,7 @@ public class JsonSiteSettings {
         public Boolean hasImageProcessing = null;
         public Boolean hasBackupURLs = null;
         public Boolean hasCoverBasedPageUpdates = null;
+        public Boolean useCloudflare = null;
+        public Boolean simulateHumanReading = null;
     }
 }

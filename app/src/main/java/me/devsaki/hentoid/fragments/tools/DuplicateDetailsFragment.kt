@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.annimon.stream.Objects
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.DiffCallback
@@ -65,7 +65,8 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
                 oldItem: DuplicateItem,
                 newItem: DuplicateItem
             ): Boolean {
-                return Objects.equals(oldItem.keep, newItem.keep)
+                return (oldItem.keep == newItem.keep)
+                        && (oldItem.isBeingDeleted == newItem.isBeingDeleted)
             }
 
             override fun getChangePayload(
@@ -75,8 +76,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
                 newItemPosition: Int
             ): Any? {
                 val diffBundleBuilder = DuplicateItemBundle.Builder()
-                if (!Objects.equals(oldItem.keep, newItem.keep)) {
+                if (oldItem.keep != newItem.keep) {
                     diffBundleBuilder.setKeep(newItem.keep)
+                }
+                if (oldItem.isBeingDeleted != newItem.isBeingDeleted) {
+                    diffBundleBuilder.setIsBeingDeleted(newItem.isBeingDeleted)
                 }
                 return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
             }
@@ -133,7 +137,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
             false
         }
 
-        // "Keep" button click listener
+        // "Keep/delete" switch click listener
         fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
             override fun onClick(
                 v: View,
@@ -141,30 +145,12 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
                 fastAdapter: FastAdapter<DuplicateItem>,
                 item: DuplicateItem
             ) {
-                onBookChoice(item.content, true)
+                onBookChoice(item.content, (v as SwitchMaterial).isChecked)
             }
 
             override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
                 return if (viewHolder is DuplicateItem.ContentViewHolder) {
-                    viewHolder.keepButton
-                } else super.onBind(viewHolder)
-            }
-        })
-
-        // "Delete" button click listener
-        fastAdapter.addEventHook(object : ClickEventHook<DuplicateItem>() {
-            override fun onClick(
-                v: View,
-                position: Int,
-                fastAdapter: FastAdapter<DuplicateItem>,
-                item: DuplicateItem
-            ) {
-                onBookChoice(item.content, false)
-            }
-
-            override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
-                return if (viewHolder is DuplicateItem.ContentViewHolder) {
-                    viewHolder.deleteButton
+                    viewHolder.keepDeleteSwitch
                 } else super.onBind(viewHolder)
             }
         })
@@ -200,11 +186,11 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
             return
         }
 
-        if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
+        if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null))
             ToastHelper.toast(R.string.err_no_content)
     }
 
-    private fun onBookChoice(item: Content?, choice: Boolean?) {
+    private fun onBookChoice(item: Content?, choice: Boolean) {
         if (item != null)
             viewModel.setBookChoice(item, choice)
     }
@@ -221,17 +207,6 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         val items = duplicates.sortedByDescending { it.calcTotalScore() }
             .map { DuplicateItem(it, DuplicateItem.ViewType.DETAILS) }.toMutableList()
         set(itemAdapter, items, ITEM_DIFF_CALLBACK)
-
-        // Update bottom bar
-        val nbChoicesRemaining = items.size - duplicates.filter { it.keep != null }.count()
-        if (nbChoicesRemaining > 0) {
-            binding.applyBtn.text =
-                resources.getString(R.string.apply_processing, nbChoicesRemaining)
-            binding.applyBtn.isEnabled = false
-        } else {
-            binding.applyBtn.text = resources.getString(R.string.apply_final)
-            binding.applyBtn.isEnabled = true
-        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

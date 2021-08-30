@@ -51,6 +51,10 @@ public class Group {
         this.order = order;
     }
 
+    public long getId() {
+        return this.id;
+    }
+
     public List<Content> getContents() {
         return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContent).withoutNulls().toList();
     }

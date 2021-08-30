@@ -41,4 +41,9 @@
         android:title="@string/redownload_all"
         android:tooltipText="@string/redownload_all"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_cancel_all_errors"
+        android:title="@string/cancel_all"
+        android:tooltipText="@string/cancel_all"
+        app:showAsAction="never" />
 </menu>

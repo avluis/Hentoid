@@ -47,6 +47,8 @@ public class HttpHelper {
     public static final String HEADER_CONTENT_TYPE = "Content-Type";
     public static final String HEADER_USER_AGENT = "User-Agent";
 
+    public static final String POST_MIME_TYPE = "application/x-www-form-urlencoded";
+
     public static final Set<String> COOKIES_STANDARD_ATTRS = new HashSet<>();
 
     // To display sites with desktop layouts
@@ -97,6 +99,20 @@ public class HttpHelper {
         return null;
     }
 
+    @Nullable
+    public static Document postOnlineDocument(
+            String url,
+            List<Pair<String, String>> headers,
+            boolean useHentoidAgent, boolean useWebviewAgent,
+            @NonNull final String body,
+            @NonNull final String mimeType) throws IOException {
+        ResponseBody resource = postOnlineResource(url, headers, true, useHentoidAgent, useWebviewAgent, body, mimeType).body();
+        if (resource != null) {
+            return Jsoup.parse(resource.string());
+        }
+        return null;
+    }
+
     /**
      * Read a resource from the given URL with HTTP GET, using the given headers and agent
      *
@@ -125,11 +141,12 @@ public class HttpHelper {
     public static Response postOnlineResource(
             @NonNull String url,
             @Nullable List<Pair<String, String>> headers,
+            boolean useMobileAgent,
             boolean useHentoidAgent,
             boolean useWebviewAgent,
             @NonNull final String body,
             @NonNull final String mimeType) throws IOException {
-        Request.Builder requestBuilder = buildRequest(url, headers, true, useHentoidAgent, useWebviewAgent);
+        Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
         Request request = requestBuilder.post(RequestBody.create(body, MediaType.parse(mimeType))).build();
         return OkHttpClientSingleton.getInstance(DEFAULT_REQUEST_TIMEOUT).newCall(request).execute();
     }
@@ -161,7 +178,7 @@ public class HttpHelper {
      * @param resp OkHttp {@link Response}
      * @return The {@link WebResourceResponse} converted from the given OkHttp {@link Response}
      */
-    public static WebResourceResponse okHttpResponseToWebResourceResponse(@NonNull final Response resp, @NonNull final InputStream is) {
+    public static WebResourceResponse okHttpResponseToWebkitResponse(@NonNull final Response resp, @NonNull final InputStream is) {
         final String contentTypeValue = resp.header(HEADER_CONTENT_TYPE);
 
         WebResourceResponse result;
@@ -198,26 +215,36 @@ public class HttpHelper {
     }
 
     /**
-     * Convert HTTP headers from a Webkit-compatible structure to an OkHttp-compatible structure
+     * Convert request HTTP headers from a Webkit-compatible structure to an OkHttp-compatible structure
+     * and enrich them with current cookies
      *
-     * @param webResourceHeaders HTTP Headers structured according to the convention used by Webkit
-     * @param url                Corresponding URL
-     * @return HTTP Headers structured according to the convention used by OkHttp
+     * @param webkitRequestHeaders HTTP request Headers structured according to the convention used by Webkit
+     * @param url                  Corresponding URL
+     * @return HTTP request Headers structured according to the convention used by OkHttp
      */
-    public static List<Pair<String, String>> webResourceHeadersToOkHttpHeaders(@Nullable final Map<String, String> webResourceHeaders, @Nullable String url) {
+    public static List<Pair<String, String>> webkitRequestHeadersToOkHttpHeaders(@Nullable final Map<String, String> webkitRequestHeaders, @Nullable String url) {
         List<Pair<String, String>> result = new ArrayList<>();
 
-        if (webResourceHeaders != null)
-            for (Map.Entry<String, String> entry : webResourceHeaders.entrySet())
+        if (webkitRequestHeaders != null)
+            for (Map.Entry<String, String> entry : webkitRequestHeaders.entrySet())
                 result.add(new Pair<>(entry.getKey(), entry.getValue()));
 
-        String cookie = CookieManager.getInstance().getCookie(url);
-        if (cookie != null) {
-            cookie = HttpHelper.stripParams(cookie);
-            result.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
-        }
+        if (url != null)
+            addCurrentCookiesToHeader(url, result);
 
         return result;
+    }
+
+    /**
+     * Add current cookies of the given URL to the given headers structure
+     *
+     * @param url     URL to get cookies for
+     * @param headers Structure to populate
+     */
+    public static void addCurrentCookiesToHeader(@NonNull final String url, @NonNull List<Pair<String, String>> headers) {
+        String cookieStr = getCookies(url);
+        if (!cookieStr.isEmpty())
+            headers.add(new Pair<>(HEADER_COOKIE_KEY, cookieStr));
     }
 
     /**
@@ -273,7 +300,7 @@ public class HttpHelper {
     public static String getDomainFromUri(@NonNull String uriStr) {
         Uri uri = Uri.parse(uriStr);
         String result = uri.getHost();
-        if (result != null && result.startsWith("www")) result = result.substring(3);
+        if (result != null && result.startsWith("www")) result = result.substring(4);
         return (null == result) ? "" : result;
     }
 
@@ -281,15 +308,19 @@ public class HttpHelper {
      * Parse the given cookie String
      *
      * @param cookiesStr Cookie string, as set in HTTP headers
-     * @return Parsed cookies
+     * @return Parsed cookies (key and value of each cookie; key only if there's no value)
      */
     public static Map<String, String> parseCookies(@NonNull String cookiesStr) {
         Map<String, String> result = new HashMap<>();
 
         String[] cookiesParts = cookiesStr.split(";");
         for (String cookie : cookiesParts) {
-            String[] cookieParts = cookie.trim().split("=");
-            result.put(cookieParts[0], (1 == cookieParts.length) ? "" : cookieParts[1]);
+            cookie = cookie.trim();
+            // Don't use split as the value of the cookie may contain an '='
+            int equalsIndex = cookie.indexOf('=');
+            if (equalsIndex > -1)
+                result.put(cookie.substring(0, equalsIndex), cookie.substring(equalsIndex + 1));
+            else result.put(cookie, "");
         }
 
         return result;
@@ -347,17 +378,23 @@ public class HttpHelper {
             for (Map.Entry<String, String> entry : names.entrySet()) {
                 String key = entry.getKey();
                 String value = (null == entry.getValue()) ? "" : entry.getValue();
-                if (!existingCookies.containsKey(key)) namesToSet.add(key + "=" + value);
+                String existingValue = existingCookies.get(key);
+                if (null == existingValue || !existingValue.equals(value))
+                    namesToSet.add(key + "=" + value);
             }
         } else {
             for (Map.Entry<String, String> name : names.entrySet())
                 namesToSet.add(name.getKey() + "=" + name.getValue());
         }
 
-        StringBuilder cookieStrToSet = new StringBuilder();
+        if (namesToSet.isEmpty()) {
+            Timber.v("No new cookie to set %s", url);
+            return;
+        }
 
-        cookieStrToSet.append(TextUtils.join("; ", paramsToSet));
-        for (String name : namesToSet) cookieStrToSet.append("; ").append(name);
+        StringBuilder cookieStrToSet = new StringBuilder();
+        cookieStrToSet.append(TextUtils.join("; ", namesToSet));
+        for (String param : paramsToSet) cookieStrToSet.append("; ").append(param);
 
         mgr.setCookie(url, cookieStrToSet.toString());
         Timber.v("Setting cookie for %s : %s", url, cookieStrToSet.toString());
@@ -403,14 +440,29 @@ public class HttpHelper {
         return result;
     }
 
-    // TODO doc
-    public static String getCookies(@NonNull String url) {
+    /**
+     * Get current cookie headers for the given URL
+     *
+     * @param url URL to get cookies from
+     * @return Raw cookies string for the given URL
+     */
+    public static String getCookies(@NonNull final String url) {
         String result = CookieManager.getInstance().getCookie(url);
         if (result != null) return HttpHelper.stripParams(result);
         else return "";
     }
 
-    // TODO doc
+    /**
+     * Get current cookie headers for the given URL
+     * If the app doesn't have any, load the given URL to get them
+     *
+     * @param url             URL to get cookies from
+     * @param headers         Headers to call the URL with
+     * @param useMobileAgent  True if mobile agent should be used
+     * @param useHentoidAgent True if Hentoid user agent should be used
+     * @param useWebviewAgent True if webview user agent should be used
+     * @return Raw cookies string for the given URL
+     */
     public static String getCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
         String result = getCookies(url);
         if (result != null) return result;
@@ -418,20 +470,30 @@ public class HttpHelper {
     }
 
     /**
-     * Get cookie headers set by the page at the given URL
+     * Get cookie headers set by the page at the given URL by calling that page
      *
-     * @param url Url to peek cookies from
+     * @param url URL to peek cookies from
      * @return Raw cookies string
      */
     public static String peekCookies(@NonNull final String url) {
         return peekCookies(url, null, true, false, true);
     }
 
-    // TODO doc
+    /**
+     * Get cookie headers set by the page at the given URL by calling that page
+     *
+     * @param url             URL to peek cookies from
+     * @param headers         Headers to call the URL with
+     * @param useMobileAgent  True if mobile user agent should be used
+     * @param useHentoidAgent True if Hentoid user agent should be used
+     * @param useWebviewAgent True if webview user agent should be used
+     * @return Raw cookies string for the given URL
+     */
     public static String peekCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
         try {
             Response response = getOnlineResource(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
-            List<String> cookielist = response.headers().values("Set-Cookie");
+            List<String> cookielist = response.headers("Set-Cookie");
+            if (cookielist.isEmpty()) cookielist = response.headers("Set-Cookie");
             return TextUtils.join("; ", cookielist);
         } catch (IOException e) {
             Timber.e(e);
@@ -500,7 +562,7 @@ public class HttpHelper {
         return result;
     }
 
-    private static String cleanWebViewAgent(@NonNull final String agent) {
+    public static String cleanWebViewAgent(@NonNull final String agent) {
         String result = agent;
         int buildIndex = result.indexOf(" Build/");
         if (buildIndex > -1) {
@@ -508,6 +570,11 @@ public class HttpHelper {
             int separatorIndex = result.indexOf(";", buildIndex);
             int firstIndex = Math.min(closeIndex, separatorIndex);
             result = result.substring(0, buildIndex) + result.substring(firstIndex);
+        }
+        int versionIndex = result.indexOf(" Version/");
+        if (versionIndex > -1) {
+            int closeIndex = result.indexOf(" ", versionIndex + 1);
+            result = result.substring(0, versionIndex) + result.substring(closeIndex);
         }
         return result.replace("; wv", "");
     }

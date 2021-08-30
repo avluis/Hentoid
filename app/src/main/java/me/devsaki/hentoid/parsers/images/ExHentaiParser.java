@@ -19,6 +19,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
@@ -36,6 +37,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.parsers.images.EHentaiParser.MPV_LINK_CSS;
 import static me.devsaki.hentoid.parsers.images.EHentaiParser.getCookieStr;
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
@@ -77,10 +79,14 @@ public class ExHentaiParser implements ImageListParser {
             Document galleryDoc = getOnlineDocument(content.getGalleryUrl(), headers, useHentoidAgent, useWebviewAgent);
             if (galleryDoc != null) {
                 // Detect if multipage viewer is on
-                Elements elements = galleryDoc.select(".gm a[href*='/mpv/']");
+                Elements elements = galleryDoc.select(MPV_LINK_CSS);
                 if (!elements.isEmpty()) {
                     String mpvUrl = elements.get(0).attr("href");
-                    result = loadMpv(content, mpvUrl, headers, useHentoidAgent, useWebviewAgent);
+                    try {
+                        result = loadMpv(content, mpvUrl, headers, useHentoidAgent, useWebviewAgent);
+                    } catch (EmptyResultException e) {
+                        result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
+                    }
                 } else {
                     result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
                 }
@@ -115,7 +121,7 @@ public class ExHentaiParser implements ImageListParser {
         for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
             EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum - 1).getKey(), mpvInfo.mpvkey, pageNum);
             String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
-            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
+            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, true, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
             ResponseBody body = response.body();
             if (null == body)
                 throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body");
@@ -189,8 +195,8 @@ public class ExHentaiParser implements ImageListParser {
     }
 
     @Nullable
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages) throws Exception {
-        List<Pair<String, String>> reqHeaders = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) throws Exception {
+        List<Pair<String, String>> reqHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url);
         Document doc = getOnlineDocument(url, reqHeaders, Site.EXHENTAI.useHentoidAgent(), Site.EXHENTAI.useWebviewAgent());
         if (doc != null) {
             String imageUrl = EHentaiParser.getDisplayedImageUrl(doc).toLowerCase();
@@ -198,7 +204,7 @@ public class ExHentaiParser implements ImageListParser {
             if (imageUrl.contains("/509.gif"))
                 throw new LimitReachedException("Exhentai download points regenerate over time or can be bought on e-hentai if you're in a hurry");
             if (!imageUrl.isEmpty())
-                return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED));
+                return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED, chapter));
         }
         return Optional.empty();
     }

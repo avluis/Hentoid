@@ -68,6 +68,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
 import me.devsaki.hentoid.ui.BlinkAnimation;
@@ -81,7 +82,6 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -286,7 +286,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
     private void customBackPress() {
         // If content is selected, deselect it
-        if (!selectExtension.getSelections().isEmpty()) {
+        if (selectExtension != null && !selectExtension.getSelections().isEmpty()) {
             selectExtension.deselect(selectExtension.getSelections());
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
         } else {
@@ -487,7 +487,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
 
-        Timber.d("Event received : %s", event.eventType);
+        Timber.v("Event received : %s", event.eventType);
         errorStatsMenu.setVisible(event.pagesKO > 0);
 
         // Display motive, if any
@@ -511,6 +511,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             case DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS:
                 motiveMsg = R.string.paused_dl_folder_credentials;
                 PermissionHelper.requestExternalStorageReadWritePermission(getActivity(), PermissionHelper.RQST_STORAGE_PERMISSION);
+                break;
+            case DownloadEvent.Motive.STALE_CREDENTIALS:
+                motiveMsg = R.string.paused_dl_stale_online_credentials;
                 break;
             case DownloadEvent.Motive.NONE:
             default: // NONE
@@ -612,7 +615,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 int pagesOKDisplay = Math.max(0, pagesOK - 1);
 
                 // Update book progress bar
-                Timber.d(">> setProgress %s", pagesOKDisplay + pagesKO);
                 content.setProgress((long) pagesOKDisplay + pagesKO);
                 content.setDownloadedBytes(downloadedSizeB);
                 content.setQtyPages(totalPagesDisplay);
@@ -792,7 +794,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
 
             if (c != null) {
-                if (!ContentHelper.openHentoidViewer(requireContext(), c, null))
+                if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null))
                     ToastHelper.toast(R.string.err_no_content);
                 return true;
             } else return false;
@@ -809,7 +811,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
 
         if (item.getContent() != null)
-            viewModel.cancel(Stream.of(item.getContent()).toList(), this::onCancelError, this::onCancelComplete);
+            viewModel.cancel(Stream.of(item.getContent()).toList());
     }
 
     private void onCancelBooks(@NonNull List<Content> c) {
@@ -817,33 +819,25 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             isCancelingAll = true;
             DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
         }
-        viewModel.cancel(c, this::onCancelError, this::onCancelComplete);
+        viewModel.cancel(c);
     }
 
     private void onCancelAll() {
         isCancelingAll = true;
         DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
-        viewModel.cancelAll(this::onCancelError, this::onCancelComplete);
+        viewModel.cancelAll();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        // Filter on cancel complete event
+        if (R.id.generic_delete != event.processId) return;
+        if (event.eventType == ProcessEvent.EventType.COMPLETE) onCancelComplete();
     }
 
     private void onCancelComplete() {
         isCancelingAll = false;
         viewModel.refresh();
-        if (null == selectExtension || selectExtension.getSelections().isEmpty())
-            selectionToolbar.setVisibility(View.GONE);
-    }
-
-    /**
-     * Callback for the failure of the "delete item" action
-     */
-    private void onCancelError(Throwable t) {
-        Timber.e(t);
-        isCancelingAll = false;
-        viewModel.refresh();
-        if (t instanceof ContentNotRemovedException) {
-            String message = (null == t.getMessage()) ? "Content removal failed" : t.getMessage();
-            Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
-        }
         if (null == selectExtension || selectExtension.getSelections().isEmpty())
             selectionToolbar.setVisibility(View.GONE);
     }

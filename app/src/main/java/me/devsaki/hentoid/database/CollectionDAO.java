@@ -65,6 +65,10 @@ public interface CollectionDAO {
 
     void deleteErrorRecords(long contentId);
 
+    void clearDownloadParams(long contentId);
+
+    void shuffleContent();
+
 
     // MASS OPERATIONS
 
@@ -99,6 +103,8 @@ public interface CollectionDAO {
     void deleteAllExternalBooks();
 
     // Groups
+
+    List<Group> selectGroups(long[] groupIds);
 
     LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly);
 
@@ -137,9 +143,12 @@ public interface CollectionDAO {
 
     long countStoredContent(boolean nonFavouriteOnly, boolean includeQueued);
 
-    Observable<Content> streamContentWithUnhashedCovers();
+    List<Content> selectContentWithUnhashedCovers();
 
     long countContentWithUnhashedCovers();
+
+
+
 
     void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer);
 

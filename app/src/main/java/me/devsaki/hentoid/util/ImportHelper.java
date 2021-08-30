@@ -22,6 +22,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.squareup.moshi.JsonDataException;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.threeten.bp.Instant;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -509,6 +510,7 @@ public class ImportHelper {
             result.addAttributes(newExternalAttribute());
 
         result.setStatus(targetStatus).setStorageUri(bookFolder.getUri().toString());
+        if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
         List<ImageFile> images = new ArrayList<>();
         scanImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles);
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
@@ -570,6 +572,7 @@ public class ImportHelper {
         result.addAttributes(newExternalAttribute());
 
         result.setStatus(StatusContent.EXTERNAL).setStorageUri(parent.getUri().toString());
+        if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
         List<ImageFile> images = new ArrayList<>();
         // Scan pages across all subfolders
         for (DocumentFile chapterFolder : chapterFolders)
@@ -763,6 +766,7 @@ public class ImportHelper {
             result.addAttributes(newExternalAttribute());
         }
         result.setStatus(targetStatus).setStorageUri(archive.getUri().toString()); // Here storage URI is a file URI, not a folder
+        if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
         result.setArchiveLocationUri(parentFolder.getUri().toString());
 
         result.setImageFiles(images);

@@ -22,19 +22,19 @@ public class FastAdapterPreClickSelectHelper<T extends IItem<? extends RecyclerV
 
     public Boolean onPreClickListener(View v, IAdapter<T> adapter, T item, Integer position) {
         Set<Integer> selectedPositions = selectExtension.getSelections();
-        if (selectedPositions.isEmpty()) { // No selection -> normal click
-            return false;
-        } else { // Existing selection -> toggle selection
+        // Toggle selection while select mode is on
+        if (!selectExtension.getSelectOnLongClick() && !selectedPositions.isEmpty()) {
             if (selectedPositions.contains(position) && 1 == selectedPositions.size())
                 selectExtension.setSelectOnLongClick(true);
             selectExtension.toggleSelection(position);
             return true;
         }
+        return false;
     }
 
     public Boolean onPreLongClickListener(View v, IAdapter<T> adapter, T item, Integer position) {
         Set<Integer> selectedPositions = selectExtension.getSelections();
-        if (selectedPositions.isEmpty()) { // No selection -> select things
+        if (selectedPositions.isEmpty() && selectExtension.getSelectOnLongClick()) { // No selection -> select things
             selectExtension.select(position);
             selectExtension.setSelectOnLongClick(false);
             return true;

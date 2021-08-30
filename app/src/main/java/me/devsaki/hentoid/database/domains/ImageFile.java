@@ -3,6 +3,8 @@ package me.devsaki.hentoid.database.domains;
 import java.util.Locale;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -13,6 +15,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
+import timber.log.Timber;
 
 /**
  * Created by DevSaki on 10/05/2015.
@@ -33,6 +36,7 @@ public class ImageFile {
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status = StatusContent.UNHANDLED_ERROR;
     private ToOne<Content> content;
+    private ToOne<Chapter> chapter;
     private String mimeType;
     private long size = 0;
     private long imageHash = 0;
@@ -212,6 +216,19 @@ public class ImageFile {
         this.content = content;
     }
 
+    @Nullable
+    public ToOne<Chapter> getChapter() {
+        return chapter;
+    }
+
+    public void setChapter(Chapter chapter) {
+        if (null == this.chapter) {
+            Timber.d(">> INIT ToONE");
+            this.chapter = new ToOne<>(this, ImageFile_.chapter);
+        }
+        this.chapter.setTarget(chapter);
+    }
+
     public boolean isReadable() {
         return !name.equals(Consts.THUMB_FILE_NAME);
     }
@@ -232,16 +249,17 @@ public class ImageFile {
         if (o == null || getClass() != o.getClass()) return false;
         ImageFile imageFile = (ImageFile) o;
         return getId() == imageFile.getId() &&
-                Objects.equals(getUrl(), imageFile.getUrl());
+                Objects.equals(getUrl(), imageFile.getUrl()) &&
+                Objects.equals(isCover(), imageFile.isCover()); // Sometimes the thumb picture has the same URL as the 1st page
     }
 
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getUrl());
+        return Objects.hash(getId(), getUrl(), isCover());
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + url).getBytes());
+        return Helper.hash64((id + "." + url + "." + isCover).getBytes());
     }
 }

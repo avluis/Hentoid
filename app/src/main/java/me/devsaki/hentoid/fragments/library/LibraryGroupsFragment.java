@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.library;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -61,13 +62,16 @@ import java.util.Set;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
+import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -466,11 +470,11 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 powerMenu.setOnMenuItemClickListener((position, item) -> {
                     int tag = (Integer) item.getTag();
                     if (0 == tag) {
-                        activity.get().deleteItems(finalContent, Collections.emptyList(), false, null);
+                        viewModel.deleteItems(finalContent, Collections.emptyList(), false);
                     } else if (1 == tag) {
-                        activity.get().deleteItems(Collections.emptyList(), finalGroups, true, null);
+                        viewModel.deleteItems(Collections.emptyList(), finalGroups, true);
                     } else if (2 == tag) {
-                        activity.get().deleteItems(finalContent, finalGroups, false, null);
+                        viewModel.deleteItems(finalContent, finalGroups, false);
                     } else {
                         selectExtension.deselect(selectExtension.getSelections()); // Cancel button
                     }
@@ -479,10 +483,30 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 powerMenu.setIconColor(ContextCompat.getColor(requireContext(), R.color.white_opacity_87));
                 powerMenu.showAtCenter(recyclerView);
             } else {
-                Snackbar.make(recyclerView, getResources().getString(R.string.group_delete_nothing), BaseTransientBottomBar.LENGTH_LONG).show();
+                Snackbar snackbar = Snackbar.make(recyclerView, getResources().getString(R.string.group_delete_nothing), BaseTransientBottomBar.LENGTH_LONG);
+                snackbar.setAction(R.string.app_settings, v -> {
+                    // Open prefs on the "storage" category
+                    Intent intent = new Intent(requireActivity(), PrefsActivity.class);
+
+                    PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
+                    builder.setIsStoragePrefs(true);
+                    intent.putExtras(builder.getBundle());
+
+                    requireContext().startActivity(intent);
+                });
+                snackbar.show();
+
                 selectExtension.deselect(selectExtension.getSelections());
             }
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        // Filter on delete complete event
+        if (R.id.delete_service != event.processId) return;
+        if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
+        viewModel.refreshCustomGroupingAvailable();
     }
 
     /**

@@ -15,6 +15,8 @@ public class GithubRelease {
     @Json(name = "created_at")
     public Date creationDate;
     public List<GithubAsset> assets;
+    public boolean prerelease;
+    public boolean draft;
 
     public String getName() {
         return name;
@@ -22,6 +24,10 @@ public class GithubRelease {
 
     public String getBody() {
         return body;
+    }
+
+    public boolean isPublished() {
+        return !prerelease && !draft;
     }
 
     public String getApkAssetUrl() {

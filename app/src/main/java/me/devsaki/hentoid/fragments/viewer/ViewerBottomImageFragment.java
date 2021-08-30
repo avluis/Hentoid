@@ -2,8 +2,11 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,6 +20,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -30,6 +35,7 @@ import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
@@ -40,8 +46,11 @@ import timber.log.Timber;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
+import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
 public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
+
+    private static final RequestOptions glideRequestOptions;
 
     private ImageViewerViewModel viewModel;
 
@@ -51,6 +60,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
     // UI
     private View rootView;
+    private ImageView imgThumb;
     private TextView imgPath;
     private TextView imgStats;
 
@@ -59,6 +69,18 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
     private ImageView shareButton;
     private ImageView deleteButton;
 
+
+    static {
+        Context context = HentoidApp.getInstance();
+        int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
+
+        Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
+        Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
+
+        glideRequestOptions = new RequestOptions()
+                .centerInside()
+                .error(d);
+    }
 
     public static void invoke(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
@@ -92,6 +114,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.include_viewer_image_info, container, false);
 
+        imgThumb = requireViewById(rootView, R.id.ivThumb);
         imgPath = requireViewById(rootView, R.id.image_path);
         imgStats = requireViewById(rootView, R.id.image_stats);
 
@@ -135,9 +158,9 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
             int lastSeparator = filePath.lastIndexOf('/');
             String archiveUri = filePath.substring(0, lastSeparator);
             String fileName = filePath.substring(lastSeparator);
-            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(archiveUri), false) + fileName;
+            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(archiveUri)) + fileName;
         } else {
-            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()), false);
+            filePath = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(image.getFileUri()));
         }
         imgPath.setText(filePath);
 
@@ -152,6 +175,10 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
                 sizeStr = FileHelper.formatHumanReadableSize(size);
             }
             imgStats.setText(String.format(Locale.ENGLISH, "%s x %s (scale %.0f%%) - %s", dimensions.x, dimensions.y, scale * 100, sizeStr));
+            Glide.with(imgThumb)
+                    .load(Uri.parse(image.getFileUri()))
+                    .apply(glideRequestOptions)
+                    .into(imgThumb);
         } else {
             imgStats.setText(R.string.image_not_found);
             favoriteButton.setImageTintList(ColorStateList.valueOf(grayColor));

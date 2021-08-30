@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.core;
 
+import android.app.ActivityManager;
 import android.app.Application;
 import android.os.Bundle;
 
@@ -24,6 +25,9 @@ import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
+
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -128,6 +132,12 @@ public class HentoidApp extends Application {
         Timber.i("Init user agents : start");
         HttpHelper.initUserAgents(this);
         Timber.i("Init user agents : done");
+    }
+
+    public static boolean isInForeground() {
+        ActivityManager.RunningAppProcessInfo appProcessInfo = new ActivityManager.RunningAppProcessInfo();
+        ActivityManager.getMyMemoryState(appProcessInfo);
+        return (appProcessInfo.importance == IMPORTANCE_FOREGROUND || appProcessInfo.importance == IMPORTANCE_VISIBLE);
     }
 
     /**

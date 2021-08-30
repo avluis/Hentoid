@@ -20,6 +20,15 @@ public class HttpHelperTest {
     }
 
     @Test
+    public void getDomainFromUri() {
+        /* android.net.Uri is a stub when running unit tests :(
+        assertEquals("domain.com", HttpHelper.getDomainFromUri("http://domain.ext/aaa?ooo"));
+        assertEquals("domain.com", HttpHelper.getDomainFromUri("http://www.domain.com/u.ext"));
+        assertEquals("domain.com", HttpHelper.getDomainFromUri("www.domain.com/aa/u.1.ext"));
+         */
+    }
+
+    @Test
     public void fixUrl() {
         assertEquals("http://abc.com/images", HttpHelper.fixUrl("images", "http://abc.com"));
         assertEquals("http://abc.com/images", HttpHelper.fixUrl("images", "http://abc.com/"));
@@ -29,5 +38,10 @@ public class HttpHelperTest {
         assertEquals("http://abc.com/images", HttpHelper.fixUrl("http://abc.com/images", "http://abc.com"));
         assertEquals("https://abc.com/images", HttpHelper.fixUrl("//abc.com/images", "http://abc.com/"));
         assertEquals("https://abc.com/images", HttpHelper.fixUrl("//abc.com/images", "http://abc.com"));
+    }
+
+    @Test
+    public void cleanWebViewAgent() {
+        assertEquals("Mozilla/5.0 (Linux; Android 10; AAA-BBB) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4444.75 Mobile Safari/537.36", HttpHelper.cleanWebViewAgent("Mozilla/5.0 (Linux; Android 10; AAA-BBB; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/91.0.4444.75 Mobile Safari/537.36"));
     }
 }

@@ -32,11 +32,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,13 +46,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
+import me.devsaki.hentoid.util.AdBlocker;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -103,27 +100,14 @@ class CustomWebViewClient extends WebViewClient {
     // Loading state of the HTML code of the current webpage (used to trigger the action button)
     boolean isHtmlLoaded = false;
 
+    protected final AdBlocker adBlocker;
+
     // Disposable to be used for punctual search
     private Disposable disposable;
 
-    // List of blocked URLs (ads or annoying images) -- will be replaced by a blank stream
-    // Universal lists (applied to all sites)
-    private static final Set<String> universalUrlBlacklist = new HashSet<>();
-    private static final Set<String> universalUrlWhitelist = new HashSet<>();
-    // Local lists (applied to current site)
-    private List<String> localUrlBlacklist;
-    private List<String> localUrlWhitelist;
 
     // List of "dirty" elements (CSS selector) to be cleaned before displaying the page
     private List<String> dirtyElements;
-
-
-    static {
-        String[] appUrlBlacklist = HentoidApp.getInstance().getResources().getStringArray(R.array.blocked_domains);
-        universalUrlBlacklist.addAll(Arrays.asList(appUrlBlacklist));
-        String[] appUrlWhitelist = HentoidApp.getInstance().getResources().getStringArray(R.array.allowed_domains);
-        universalUrlWhitelist.addAll(Arrays.asList(appUrlWhitelist));
-    }
 
 
     CustomWebViewClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
@@ -134,68 +118,14 @@ class CustomWebViewClient extends WebViewClient {
         final Jspoon jspoon = Jspoon.create();
         htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
+        adBlocker = new AdBlocker(site);
+
         for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
     }
 
     void destroy() {
         Timber.d("WebClient destroyed");
         compositeDisposable.clear();
-    }
-
-    /**
-     * Indicates if the given URL is blacklisted by the current content filters
-     *
-     * @param url URL to be examinated
-     * @return True if URL is blacklisted according to current filters; false if not
-     */
-    protected boolean isUrlBlacklisted(@NonNull String url) {
-        String comparisonUrl = url.toLowerCase();
-        for (String s : universalUrlBlacklist) {
-            if (comparisonUrl.contains(s)) return true;
-        }
-        if (localUrlBlacklist != null)
-            for (String s : localUrlBlacklist) {
-                if (comparisonUrl.contains(s)) return true;
-            }
-        return false;
-    }
-
-    /**
-     * Indicates if the given URL is whitelisted by the current content filters
-     *
-     * @param url URL to be examinated
-     * @return True if URL is whitelisted according to current filters; false if not
-     */
-    protected boolean isUrlWhitelisted(@NonNull String url) {
-        String comparisonUrl = url.toLowerCase();
-        for (String s : universalUrlWhitelist) {
-            if (comparisonUrl.contains(s)) return true;
-        }
-        if (localUrlWhitelist != null)
-            for (String s : localUrlWhitelist) {
-                if (comparisonUrl.contains(s)) return true;
-            }
-        return false;
-    }
-
-    /**
-     * Add an element to current URL blacklist
-     *
-     * @param filter Filter to addAll to local blacklist
-     */
-    protected void addToUrlBlacklist(String... filter) {
-        if (null == localUrlBlacklist) localUrlBlacklist = new ArrayList<>();
-        Collections.addAll(localUrlBlacklist, filter);
-    }
-
-    /**
-     * Add an element to current URL whitelist
-     *
-     * @param filter Filter to addAll to local whitelist
-     */
-    protected void addUrlWhitelist(String... filter) {
-        if (null == localUrlWhitelist) localUrlWhitelist = new ArrayList<>();
-        Collections.addAll(localUrlWhitelist, filter);
     }
 
     /**
@@ -320,7 +250,7 @@ class CustomWebViewClient extends WebViewClient {
             @NonNull final WebView view,
             @NonNull final String url,
             @Nullable final Map<String, String> requestHeaders) {
-        if (isUrlBlacklisted(url) || !url.startsWith("http")) return true;
+        if (adBlocker.isBlocked(url) || !url.startsWith("http")) return true;
 
         // Download and open the torrent file
         // NB : Opening the URL itself won't work when the tracker is private
@@ -356,7 +286,7 @@ class CustomWebViewClient extends WebViewClient {
                               @NonNull final String url,
                               @Nullable final Map<String, String> requestHeaders) throws IOException {
         List<Pair<String, String>> requestHeadersList;
-        requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, url);
+        requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url);
 
         Response onlineFileResponse = HttpHelper.getOnlineResource(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         ResponseBody body = onlineFileResponse.body();
@@ -425,7 +355,7 @@ class CustomWebViewClient extends WebViewClient {
     @Nullable
     private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                @Nullable final Map<String, String> headers) {
-        if (isUrlBlacklisted(url) || !url.startsWith("http")) {
+        if (adBlocker.isBlocked(url) || !url.startsWith("http")) {
             return new WebResourceResponse("text/plain", "utf-8", NOTHING);
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
@@ -476,7 +406,7 @@ class CustomWebViewClient extends WebViewClient {
 
         if (analyzeForDownload) activity.onGalleryPageStarted();
 
-        List<Pair<String, String>> requestHeadersList = HttpHelper.webResourceHeadersToOkHttpHeaders(requestHeaders, urlStr);
+        List<Pair<String, String>> requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, urlStr);
 
         try {
             // Query resource here, using OkHttp
@@ -519,14 +449,20 @@ class CustomWebViewClient extends WebViewClient {
                 }
 
                 // Convert OkHttp response to the expected format
-                result = HttpHelper.okHttpResponseToWebResourceResponse(response, browserStream);
+                result = HttpHelper.okHttpResponseToWebkitResponse(response, browserStream);
 
                 // Manually set cookie if present in response header (has to be set manually because we're using OkHttp right now, not the webview)
                 if (result.getResponseHeaders().containsKey("set-cookie") || result.getResponseHeaders().containsKey("Set-Cookie")) {
                     String cookiesStr = result.getResponseHeaders().get("set-cookie");
                     if (null == cookiesStr)
                         cookiesStr = result.getResponseHeaders().get("Set-Cookie");
-                    if (cookiesStr != null) HttpHelper.setCookies(urlStr, cookiesStr);
+                    if (cookiesStr != null) {
+                        // Set-cookie might contain multiple cookies to set separated by a line feed (see HttpHelper.getValuesSeparatorFromHttpHeader)
+                        String[] cookieParts = cookiesStr.split("\n");
+                        for (String cookie : cookieParts)
+                            if (!cookie.isEmpty())
+                                HttpHelper.setCookies(urlStr, cookie);
+                    }
                 }
             } else {
                 parserStream = body.byteStream();

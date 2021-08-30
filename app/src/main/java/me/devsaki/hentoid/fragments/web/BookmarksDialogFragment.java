@@ -34,6 +34,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Set;
 
+import io.reactivex.Completable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -73,6 +76,8 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     // Bookmark ID of the current webpage
     private long bookmarkId = -1;
 
+    private Disposable disposable;
+
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private boolean invalidateNextBookClick = false;
 
@@ -108,6 +113,17 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     @Override
     public void onDestroy() {
         parent = null;
+        disposable = Completable.fromRunnable(() -> {
+                    Context context = bookmarkCurrentBtn.getContext();
+                    CollectionDAO dao = new ObjectBoxDAO(context);
+                    try {
+                        Helper.updateBookmarksJson(context, dao);
+                    } finally {
+                        dao.cleanup();
+                    }
+                }
+        ).subscribeOn(Schedulers.io())
+                .subscribe(() -> disposable.dispose());
         super.onDestroy();
     }
 
@@ -403,6 +419,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
 
     public interface Parent {
         void openUrl(@NonNull final String url);
+
         void updateBookmarkButton(boolean newValue);
     }
 }
