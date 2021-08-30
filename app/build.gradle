@@ -11,7 +11,7 @@ if (file('signing.gradle').exists()) {
 }
 
 aboutLibraries {
-    exclusionPatterns = [~"com_google_android.*",~"android.*",~"com_mikepenz__fastadapter_extensions.*"]
+    exclusionPatterns = [~"com_google_android.*", ~"android.*", ~"com_mikepenz__fastadapter_extensions.*"]
     configPath = "about-config"
     additionalLicenses {
         LGPL_2_1_or_later
@@ -132,7 +132,7 @@ dependencies {
     def android_work_version = '2.5.0'
     implementation "androidx.work:work-runtime:$android_work_version"
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
-    
+
     // For ViewModel to work
     def android_lifecycle_version = '2.3.1'
     implementation "androidx.lifecycle:lifecycle-viewmodel:$android_lifecycle_version"
@@ -201,9 +201,6 @@ dependencies {
     def moshi_version = '1.12.0'
     implementation "com.squareup.moshi:moshi:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
-
-    // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
-    implementation 'com.mani:ThinDownloadManager:1.3.0'
 
     // HTTP & HTTP/2 client: github.com/square/okhttp
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'

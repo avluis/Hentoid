@@ -13,7 +13,6 @@ import androidx.work.WorkManager;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.thin.downloadmanager.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -234,7 +233,7 @@ public class AppStartup {
             FirebaseAnalytics.getInstance(context).setUserProperty("endless", Boolean.toString(Preferences.getEndlessScroll()));
             FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
         } catch (IllegalStateException e) { // Happens during unit tests
-            Log.e("fail@init Crashlytics", e);
+            Timber.e(e, "fail@init Crashlytics");
         } finally {
             emitter.onComplete();
         }

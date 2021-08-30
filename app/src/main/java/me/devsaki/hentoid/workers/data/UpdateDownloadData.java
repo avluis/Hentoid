@@ -12,10 +12,10 @@ import javax.annotation.Nonnull;
  * <p>
  * Use Builder class to set data; use Parser class to get data
  */
-public class AppUpdateData {
+public class UpdateDownloadData {
     private static final String KEY_URL = "url";
 
-    private AppUpdateData() {
+    private UpdateDownloadData() {
         throw new UnsupportedOperationException();
     }
 

@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import me.devsaki.hentoid.util.AppHelper;
-import me.devsaki.hentoid.workers.data.AppUpdateData;
+import me.devsaki.hentoid.workers.data.UpdateDownloadData;
 import timber.log.Timber;
 
 /**
@@ -18,7 +18,7 @@ public class AppUpdateDownloadReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Bundle input = intent.getExtras();
         if (input != null) {
-            AppUpdateData.Parser data = new AppUpdateData.Parser(input);
+            UpdateDownloadData.Parser data = new UpdateDownloadData.Parser(input);
             String apkUrl = data.getUrl();
             AppHelper.Companion.runUpdateDownloadWorker(context, apkUrl);
         } else Timber.w("no data");

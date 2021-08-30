@@ -7,14 +7,14 @@ import androidx.work.WorkManager
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
-import me.devsaki.hentoid.workers.data.AppUpdateData
+import me.devsaki.hentoid.workers.data.UpdateDownloadData
 
 class AppHelper {
 
     companion object {
         fun runUpdateDownloadWorker(context: Context, apkUrl: String) {
             if (!UpdateDownloadWorker.isRunning(context) && apkUrl.isNotEmpty()) {
-                val builder = AppUpdateData.Builder()
+                val builder = UpdateDownloadData.Builder()
                 builder.setUrl(apkUrl)
 
                 val workManager = WorkManager.getInstance(context)

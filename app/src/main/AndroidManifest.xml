@@ -461,11 +461,6 @@
         <receiver android:name=".receiver.DuplicateNotificationStopReceiver" />
 
         <receiver android:name=".receiver.AppUpdateDownloadReceiver" />
-        <!--
-                <receiver android:name=".receiver.InstallRunReceiver" />
-
-                <receiver android:name=".receiver.InstallCompletedReceiver" />
-        -->
 
         <!-- Providers -->
 

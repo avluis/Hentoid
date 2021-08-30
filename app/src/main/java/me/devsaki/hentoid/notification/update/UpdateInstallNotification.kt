@@ -25,17 +25,9 @@ class UpdateInstallNotification(private val apkUri: Uri) : Notification {
             .build()
 
     private fun getIntent(context: Context): PendingIntent {
-        //val intent: Intent
-        /*
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            intent = Intent(context, InstallRunReceiver::class.java)
-            intent.putExtra(KEY_APK_PATH, apkUri.path)
-            PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT)
-        } else {*/
         val intent = Intent(Intent.ACTION_VIEW)
         intent.setDataAndType(apkUri, APK_MIMETYPE)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
         return PendingIntent.getActivity(context, 0, intent, 0)
-        //}
     }
 }

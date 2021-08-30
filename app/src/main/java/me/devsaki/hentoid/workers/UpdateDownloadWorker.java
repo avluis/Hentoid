@@ -18,7 +18,7 @@ import me.devsaki.hentoid.notification.update.UpdateProgressNotification;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.notification.Notification;
-import me.devsaki.hentoid.workers.data.AppUpdateData;
+import me.devsaki.hentoid.workers.data.UpdateDownloadData;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
@@ -56,13 +56,10 @@ public class UpdateDownloadWorker extends BaseWorker {
 
     @Override
     void getToWork(@NonNull Data input) {
-        maintainNotificationsOnClear();
-
-        AppUpdateData.Parser data = new AppUpdateData.Parser(getInputData());
+        UpdateDownloadData.Parser data = new UpdateDownloadData.Parser(getInputData());
         String apkUrl = data.getUrl();
 
         try {
-            // Download the APK
             downloadUpdate(apkUrl);
         } catch (IOException e) {
             Timber.w(e, "Update download failed");
@@ -97,7 +94,6 @@ public class UpdateDownloadWorker extends BaseWorker {
         try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(file)) {
             while ((len = in.read(buffer)) > -1) {
                 processed += len;
-                // Read mime-type on the fly
                 if (0 == ++iteration % 50) // Notify every 200KB
                     updateNotificationProgress(Math.round(processed * 100f / size));
                 out.write(buffer, 0, len);
