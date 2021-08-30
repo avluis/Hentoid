@@ -112,7 +112,7 @@ dependencies {
     /**
      * ANDROID FRAMEWORK
      */
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.10"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.21"
 
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
