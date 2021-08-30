@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.sonarqube'
+apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 
@@ -303,5 +304,4 @@ sonarqube {
     }
 }
 
-apply plugin: 'com.google.gms.google-services'
 apply plugin: 'io.objectbox' // apply last
