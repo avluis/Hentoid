@@ -72,11 +72,11 @@ import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
 @Entity
 public class Content implements Serializable {
 
-    @IntDef({DownloadMode.DOWNLOAD, DownloadMode.ONLINE})
+    @IntDef({DownloadMode.DOWNLOAD, DownloadMode.STREAM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DownloadMode {
         int DOWNLOAD = 0; // Download images
-        int ONLINE = 1; // Saves the book for on-demande viewing
+        int STREAM = 1; // Saves the book for on-demande viewing
     }
 
     @Id

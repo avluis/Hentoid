@@ -252,7 +252,7 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
 
-        if (StatusContent.DOWNLOADED == content.getStatus() || StatusContent.ONLINE == content.getStatus()) {
+        if (StatusContent.DOWNLOADED == content.getStatus()) {
             Timber.w("Content is already downloaded. Download aborted.");
             dao.deleteQueue(0);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0, 0));
@@ -377,13 +377,10 @@ public class ContentDownloadWorker extends BaseWorker {
         // Set QtyPages if the content parser couldn't do it (certain sources only)
         // Don't count the cover thumbnail in the number of pages
         if (0 == content.getQtyPages()) content.setQtyPages(images.size() - 1);
-        if (downloadMode == Content.DownloadMode.DOWNLOAD)
-            content.setStatus(StatusContent.DOWNLOADING);
-        else if (downloadMode == Content.DownloadMode.ONLINE)
-            content.setStatus(StatusContent.ONLINE);
+        content.setStatus(StatusContent.DOWNLOADING);
         dao.insertContent(content);
 
-        if (downloadMode == Content.DownloadMode.ONLINE) {
+        if (downloadMode == Content.DownloadMode.STREAM) {
             completeDownload(content.getId(), content.getTitle(), images.size(), 0, 0);
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, content);
         }
@@ -619,10 +616,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 // Mark content as downloaded
                 if (0 == content.getDownloadDate())
                     content.setDownloadDate(Instant.now().toEpochMilli());
-                StatusContent targetStatus = StatusContent.DOWNLOADED;
-                if (content.getDownloadMode() == Content.DownloadMode.ONLINE)
-                    targetStatus = StatusContent.ONLINE;
-                content.setStatus((0 == pagesKO && !hasError) ? targetStatus : StatusContent.ERROR);
+                content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
                 // Clear download params from content
                 if (0 == pagesKO && !hasError) content.setDownloadParams("");
                 content.computeSize();

@@ -738,7 +738,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
             if (null == c) continue;
-            if (!c.getStatus().equals(StatusContent.ONLINE)) {
+            if (Content.DownloadMode.STREAM != c.getDownloadMode()) {
                 nonOnlineContent++;
             } else {
                 contents.add(c);
@@ -784,7 +784,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
             if (null == c) continue;
-            if (c.getStatus().equals(StatusContent.ONLINE) || c.getStatus().equals(StatusContent.EXTERNAL)) {
+            if (c.getDownloadMode() != Content.DownloadMode.STREAM || c.getStatus().equals(StatusContent.EXTERNAL)) {
                 onlineExternalContent++;
             } else {
                 contents.add(c);
@@ -1421,7 +1421,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             selectExtension.setSelectOnLongClick(true);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
-            long selectedOnlineCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filter(s -> s.equals(StatusContent.ONLINE)).count();
+            long selectedOnlineCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
             activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedOnlineCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }

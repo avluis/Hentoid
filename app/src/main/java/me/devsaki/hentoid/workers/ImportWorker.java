@@ -210,7 +210,8 @@ public class ImportWorker extends BaseWorker {
                         try {
                             content = importJson(context, bookFolder, bookFiles, dao);
                             // Don't delete books that are _not supposed to_ have downloaded images
-                            if (content.getStatus().equals(StatusContent.ONLINE)) doRemove = false;
+                            if (content.getDownloadMode() == Content.DownloadMode.STREAM)
+                                doRemove = false;
                         } catch (ParseException e) {
                             trace(Log.WARN, STEP_1, log, "[Remove no image] Folder %s : unreadable JSON", bookFolder.getUri().toString());
                         }

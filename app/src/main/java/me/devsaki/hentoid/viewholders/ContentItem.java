@@ -536,7 +536,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 });
             }
 
-            ivOnline.setVisibility(content.getStatus().equals(StatusContent.ONLINE) ? View.VISIBLE : View.GONE);
+            ivOnline.setVisibility(content.getDownloadMode() == Content.DownloadMode.STREAM ? View.VISIBLE : View.GONE);
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 ivTop.setVisibility(View.VISIBLE);

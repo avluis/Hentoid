@@ -512,7 +512,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 if (null == dbContent) return;
                                 // Non-blocking performance bottleneck; scheduled in a dedicated worker
                                 purgeItem(c.get());
-                                dbContent.setStatus(StatusContent.ONLINE);
+                                dbContent.setDownloadMode(Content.DownloadMode.STREAM);
                                 List<ImageFile> imgs = dbContent.getImageFiles();
                                 if (imgs != null) {
                                     for (ImageFile img : imgs) {

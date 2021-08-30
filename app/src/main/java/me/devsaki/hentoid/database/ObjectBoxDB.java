@@ -180,8 +180,7 @@ public class ObjectBoxDB {
                 StatusContent.MIGRATED.getCode(),
                 StatusContent.IGNORED.getCode(),
                 StatusContent.UNHANDLED_ERROR.getCode(),
-                StatusContent.CANCELED.getCode(),
-                StatusContent.ONLINE.getCode()
+                StatusContent.CANCELED.getCode()
         };
         QueryBuilder<Content> query = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus);
         if (favsOnly) query.equal(Content_.favourite, true);
@@ -1427,8 +1426,7 @@ public class ObjectBoxDB {
         QueryBuilder<Content> query = store.boxFor(Content.class).query()
                 .in(Content_.status, new int[]{
                         StatusContent.DOWNLOADED.getCode(),
-                        StatusContent.MIGRATED.getCode(),
-                        StatusContent.ONLINE.getCode()
+                        StatusContent.MIGRATED.getCode()
                 })
                 .notNull(Content_.storageUri)
                 .notEqual(Content_.storageUri, "");
