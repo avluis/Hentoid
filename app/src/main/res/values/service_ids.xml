@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="startup_service" type="id"/>
+    <item name="update_download_service" type="id"/>
     <item name="download_service" type="id"/>
     <item name="import_service" type="id"/>
     <item name="delete_service" type="id"/>

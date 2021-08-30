@@ -58,7 +58,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
         if (locationStr.isEmpty())
             locationStr = Preferences.getSettingsFolder();
         else
-            locationStr = FileHelper.getFullPathFromTreeUri(this, Uri.parse(locationStr), true);
+            locationStr = FileHelper.getFullPathFromTreeUri(this, Uri.parse(locationStr));
 
         TextView location = findViewById(R.id.api29_location_txt);
         location.setText(getResources().getString(R.string.api29_migration_location, locationStr));
@@ -158,7 +158,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
         }
 
         // Hentoid folder is finally selected at this point -> Update UI
-        step1folderTxt.setText(FileHelper.getFullPathFromTreeUri(this, Uri.parse(Preferences.getStorageUri()), true));
+        step1folderTxt.setText(FileHelper.getFullPathFromTreeUri(this, Uri.parse(Preferences.getStorageUri())));
         step1button.setVisibility(View.GONE);
         step1check.setVisibility(View.VISIBLE);
         step2block.setVisibility(View.VISIBLE);

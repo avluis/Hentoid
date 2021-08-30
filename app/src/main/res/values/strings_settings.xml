@@ -198,7 +198,7 @@
     <string name="pref_viewer_zoom">Zoom</string>
     <string name="pref_viewer_zoom_holding">Temp zoom while holding</string>
     <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
-    <string name="pref_viewer_cap_tap_zoom">Cap double tap zoom</string>
+    <string name="pref_viewer_cap_tap_zoom">Cap double &amp; long tap zoom</string>
     <string name="pref_viewer_cap_tap_zoom_default" translatable="false">0</string>
 
     <string name="pref_viewer_visuals">Visuals</string>

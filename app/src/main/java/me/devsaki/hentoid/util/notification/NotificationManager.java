@@ -23,6 +23,14 @@ public class NotificationManager {
         managerCompat.notify(notificationId, notification.onCreateNotification(context));
     }
 
+    // To be used within workers for the last notification to be displayed
+    // so that the termination of the worker doesn't clear that notification
+    // (see https://stackoverflow.com/questions/60693832/workmanager-keep-notification-after-work-is-done)
+    public void notifyLast(@NonNull Notification notification) {
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
+        managerCompat.notify(notificationId + 1, notification.onCreateNotification(context));
+    }
+
     public ForegroundInfo buildForegroundInfo(@NonNull Notification notification) {
         return new ForegroundInfo(notificationId, notification.onCreateNotification(context));
     }

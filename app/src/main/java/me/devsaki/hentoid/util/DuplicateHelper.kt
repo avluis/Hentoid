@@ -5,9 +5,6 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.util.Consumer
 import com.annimon.stream.function.BiConsumer
-import io.reactivex.disposables.Disposable
-import io.reactivex.rxkotlin.subscribeBy
-import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
@@ -120,48 +117,6 @@ class DuplicateHelper {
             savePhash(context, dao, content, pHash)
         }
 
-        fun indexCoversRx(
-            context: Context,
-            dao: CollectionDAO,
-            progress: Consumer<Float>,
-            info: Consumer<Content>,
-            error: Consumer<Throwable>
-        ): Disposable {
-
-            val hash = getHashEngine()
-            var index = 0
-            val nbContent = dao.countContentWithUnhashedCovers()
-
-            return dao.streamContentWithUnhashedCovers()
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .map {
-                    info.accept(it)
-                    Pair(it, getCoverBitmapFromContent(context, it))
-                }
-                .observeOn(Schedulers.computation())
-                .map {
-                    val pHash = calcPhash(hash, it.second)
-                    it.second?.recycle()
-                    Pair(it.first, pHash)
-                }
-                .observeOn(Schedulers.io())
-                .map { contentHash ->
-                    savePhash(
-                        context,
-                        dao,
-                        contentHash.first,
-                        contentHash.second
-                    )
-                }
-                .subscribeBy(
-                    onNext = { progress.accept(++index * 1f / nbContent) },
-                    onError = { t -> error.accept(t) },
-                    onComplete = { progress.accept(1f) }
-                )
-
-        }
-
         fun getCoverBitmapFromContent(context: Context, content: Content): Bitmap? {
             if (content.cover.fileUri.isEmpty()) return null
 
@@ -263,7 +218,7 @@ class DuplicateHelper {
         }
 
 
-        fun containsSameLanguage(
+        private fun containsSameLanguage(
             referenceCodes: List<String>?,
             candidateCodes: List<String>?
         ): Boolean {
@@ -276,7 +231,7 @@ class DuplicateHelper {
             return true
         }
 
-        fun computeCoverScore(
+        private fun computeCoverScore(
             referenceHash: Long,
             candidateHash: Long,
             sensitivity: Int
@@ -330,7 +285,7 @@ class DuplicateHelper {
             return result
         }
 
-        fun computeArtistScore(
+        private fun computeArtistScore(
             referenceArtistsCleanup: List<String>?,
             candidateArtistsCleanup: List<String>?
         ): Float {

@@ -105,7 +105,10 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
     private fun updateOnSelectFolder() {
         mergedBinding.importStep1Button.visibility = View.INVISIBLE
-        mergedBinding.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri()), true)
+        mergedBinding.importStep1Folder.text = FileHelper.getFullPathFromTreeUri(
+            requireContext(),
+            Uri.parse(Preferences.getStorageUri())
+        )
         mergedBinding.importStep1Check.visibility = View.VISIBLE
         mergedBinding.importStep2.visibility = View.VISIBLE
         mergedBinding.importStep2Bar.isIndeterminate = true

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <PreferenceScreen
         android:icon="@drawable/ic_import_export"
-        android:key="interface"
+        android:key="import_export"
         android:title="@string/tools_screen_import_export">
         <PreferenceCategory
             android:title="@string/pref_cat_library"
@@ -39,6 +39,19 @@
         android:key="tools_duplicate_detector"
         android:summary="@string/tools_duplicate_detector_summary"
         android:title="@string/tools_duplicate_detector_title" />
+    <PreferenceScreen
+        android:icon="@drawable/ic_cache"
+        android:key="cache_management"
+        android:title="@string/tools_screen_cache">
+        <Preference
+            android:key="cache_browser"
+            android:title="@string/tools_cache_browser"
+            app:iconSpaceReserved="false" />
+        <Preference
+            android:key="cache_app"
+            android:title="@string/tools_cache_app"
+            app:iconSpaceReserved="false" />
+    </PreferenceScreen>
     <Preference
         android:icon="@drawable/ic_logs"
         android:key="tools_latest_logs"

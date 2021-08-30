@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util
+package me.devsaki.hentoid.core
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

@@ -76,10 +76,6 @@ public class ManhwaParser extends BaseImageListParser {
             // Get the canonical URL
             String canonicalUrl = doc.select("head [rel=canonical]").first().attr("href");
 
-            // Get the book ID
-            Element idElt = doc.select(".rating-post-id").first();
-            if (null == idElt) return result;
-            String id = idElt.attr("value");
             // Retrieve the chapters page chunk
             doc = HttpHelper.postOnlineDocument(
                     canonicalUrl + "ajax/chapters/",
@@ -117,8 +113,18 @@ public class ManhwaParser extends BaseImageListParser {
             doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
-                List<String> urls = Stream.of(images).map(i -> i.attr("src").trim()).filterNot(String::isEmpty).toList();
-                result.addAll(ParseHelper.urlsToImageFiles(urls, orderOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                List<String> urls = new ArrayList<>();
+                for (Element e : images) {
+                    String url = e.attr("data-src").trim();
+                    if (url.isEmpty()) url = e.attr("src").trim();
+                    if (!url.isEmpty()) urls.add(url);
+                }
+                if (!urls.isEmpty())
+                    result.addAll(ParseHelper.urlsToImageFiles(urls, orderOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                else
+                    Timber.w("Chapter parsing failed for %s : no pictures found", chp.getUrl());
+            } else {
+                Timber.w("Chapter parsing failed for %s : no response", chp.getUrl());
             }
             progressPlus();
         }

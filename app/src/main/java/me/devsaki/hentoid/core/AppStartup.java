@@ -13,7 +13,6 @@ import androidx.work.WorkManager;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.thin.downloadmanager.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -192,31 +191,13 @@ public class AppStartup {
             if (Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
                 Timber.d("Process app update : update detected from %s to %s", Preferences.getLastKnownAppVersionCode(), BuildConfig.VERSION_CODE);
 
-                // Clear webview cache (needs to execute inside the activity's Looper)
-/*
                 Timber.d("Process app update : Clearing webview cache");
-                Handler h = new Handler(Looper.getMainLooper());
-                h.post(() -> {
-                    WebView webView;
-                    try {
-                        webView = new NestedScrollWebView(context);
-                    } catch (Resources.NotFoundException e) {
-                        // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
-                        // Creating with the application Context fixes this, but is not generally recommended for view creation
-                        webView = new NestedScrollWebView(Helper.getFixedContext(context));
-                    }
-                    webView.clearCache(true);
-                });
+                ContextXKt.clearWebviewCache(context);
 
-                // Clear app cache
                 Timber.d("Process app update : Clearing app cache");
-                try {
-                    File dir = context.getCacheDir();
-                    FileHelper.removeFile(dir);
-                } catch (Exception e) {
-                    Timber.e(e, "Error when clearing app cache upon update");
-                }
-*/
+                ContextXKt.clearAppCache(context);
+
+                Timber.d("Process app update : Complete");
                 EventBus.getDefault().postSticky(new AppUpdatedEvent());
 
                 Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
@@ -252,7 +233,7 @@ public class AppStartup {
             FirebaseAnalytics.getInstance(context).setUserProperty("endless", Boolean.toString(Preferences.getEndlessScroll()));
             FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
         } catch (IllegalStateException e) { // Happens during unit tests
-            Log.e("fail@init Crashlytics", e);
+            Timber.e(e, "fail@init Crashlytics");
         } finally {
             emitter.onComplete();
         }
