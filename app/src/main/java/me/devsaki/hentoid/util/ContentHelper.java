@@ -778,7 +778,7 @@ public final class ContentHelper {
                     ImmutablePair<String, Long> property = fileNameProperties.get(i + "");
                     if (property != null) {
                         Timber.i("Numbering gap filled with a file : %d", i);
-                        ImageFile newImage = new ImageFile(i, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
+                        ImageFile newImage = ImageFile.fromImageUrl(i, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
                         newImage.setFileUri(property.left).setSize(property.right);
                         result.add(i, newImage);
                     }

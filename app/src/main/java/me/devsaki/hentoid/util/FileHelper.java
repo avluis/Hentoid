@@ -105,11 +105,11 @@ public class FileHelper {
         else return folder;
     }
 
-    public static String getFullPathFromUri(@NonNull final Context context, @NonNull final Uri uri, boolean isFolder) {
+    public static String getFullPathFromUri(@NonNull final Context context, @NonNull final Uri uri) {
         if (ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
             return uri.getPath();
         } else {
-            return getFullPathFromTreeUri(context, uri, isFolder);
+            return getFullPathFromTreeUri(context, uri);
         }
     }
 
