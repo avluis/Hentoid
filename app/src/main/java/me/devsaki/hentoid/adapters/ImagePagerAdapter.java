@@ -133,14 +133,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         this.itemTouchListener = itemTouchListener;
     }
 
-
-    public boolean isFavouritePresent() {
-        for (ImageFile img : getCurrentList())
-            if (img.isFavourite()) return true;
-
-        return false;
-    }
-
     private int getImageType(ImageFile img) {
         if (null == img) return IMG_TYPE_OTHER;
 
@@ -192,7 +184,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
             view.setMinimumHeight(PAGE_MIN_HEIGHT); // Avoid stacking 0-px tall images on screen and load all of them at the same time
 
-        return new ImageViewHolder(view, viewType);
+        return new ImageViewHolder(view);
     }
 
     @Override
@@ -312,7 +304,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         private ImageFile img;
 
-        private ImageViewHolder(@NonNull View itemView, @ViewType int viewType) {
+        private ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             rootView = itemView;
 
@@ -455,10 +447,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         @Override
         public void onImageLoadError(Throwable e) {
             Timber.w(e, ">>>>IMG %s reloaded with Glide", img.getFileUri());
-            /*
-            // Hack to fall back to glide by manually forcing mime-type as GIF
-            img.setMimeType(ImageHelper.MIME_IMAGE_GIF);
-             */
             // Fall back to Glide
             forceImageView(true);
             // Reload adapter
