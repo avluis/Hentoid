@@ -956,18 +956,24 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     List<Pair<String, String>> headers = new ArrayList<>();
                     headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
 
-                    // Get cookies from the app jar
-                    String cookieStr = HttpHelper.getCookies(img.getUrl());
-                    // If nothing found, peek from the site
-                    if (cookieStr.isEmpty())
-                        cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
-                    if (!cookieStr.isEmpty())
-                        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-
                     ImmutablePair<File, String> result;
                     if (img.needsPageParsing()) {
+                        // Get cookies from the app jar
+                        String cookieStr = HttpHelper.getCookies(img.getPageUrl());
+                        // If nothing found, peek from the site
+                        if (cookieStr.isEmpty())
+                            cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                        if (!cookieStr.isEmpty())
+                            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                         result = downloadPictureFromPage(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
                     } else {
+                        // Get cookies from the app jar
+                        String cookieStr = HttpHelper.getCookies(img.getUrl());
+                        // If nothing found, peek from the site
+                        if (cookieStr.isEmpty())
+                            cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+                        if (!cookieStr.isEmpty())
+                            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                         result = downloadPictureToCachedFile(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
                     }
                     targetFile = result.left;
