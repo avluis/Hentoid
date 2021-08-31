@@ -1373,8 +1373,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     private void redownloadFromScratch(@NonNull final List<Content> contentList, int addMode) {
         viewModel.redownloadContent(contentList, true, true, addMode,
-                () -> {
-                    String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
+                nbSuccess -> {
+                    String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.setAction("VIEW QUEUE", v -> viewQueue());
                     snackbar.show();
@@ -1396,8 +1396,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     private void download(@NonNull final List<Content> contentList, int addMode, @NonNull Consumer<Throwable> onError) {
         viewModel.downloadContent(contentList, addMode,
-                () -> {
-                    String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
+                nbSuccess -> {
+                    String message = getResources().getQuantityString(R.plurals.add_to_queue, nbSuccess, nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.setAction("VIEW QUEUE", v -> viewQueue());
                     snackbar.show();

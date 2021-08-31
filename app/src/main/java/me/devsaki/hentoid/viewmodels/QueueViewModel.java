@@ -19,6 +19,7 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -249,10 +250,9 @@ public class QueueViewModel extends AndroidViewModel {
         );
     }
 
-    private void purge(@NonNull List<Content> contentList) {
+    private void purgeItem(@NonNull Content content) {
         DeleteData.Builder builder = new DeleteData.Builder();
-        if (!contentList.isEmpty())
-            builder.setContentPurgeIds(Stream.of(contentList).map(Content::getId).toList());
+        builder.setContentPurgeIds(Stream.of(content).map(Content::getId).toList());
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueueUniqueWork(
@@ -285,33 +285,38 @@ public class QueueViewModel extends AndroidViewModel {
             boolean reparseContent,
             boolean reparseImages,
             int position,
-            @NonNull final Runnable onSuccess,
+            @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
-        // Non-blocking performance bottleneck; scheduled in a separate thread
-        // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
-        if (reparseImages) purge(contentList);
+        AtomicInteger errorCount = new AtomicInteger(0);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
                         .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : Optional.of(c))
                         .doOnNext(c -> {
-                            if (c.isEmpty()) throw new EmptyResultException();
-                            dao.addContentToQueue(
-                                    c.get(), targetImageStatus, position,
-                                    ContentQueueManager.getInstance().isQueueActive());
+                            if (c.isPresent()) {
+                                Content content = c.get();
+                                // Non-blocking performance bottleneck; run in a dedicated worker
+                                // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
+                                if (reparseImages) purgeItem(content);
+                                dao.addContentToQueue(
+                                        content, targetImageStatus, position,
+                                        ContentQueueManager.getInstance().isQueueActive());
+                            } else {
+                                errorCount.incrementAndGet();
+                                onError.accept(new EmptyResultException("Content unreachable"));
+                            }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
                                 ContentQueueManager.getInstance().resumeQueue(getApplication());
-                            onSuccess.run();
+                            onSuccess.accept(contentList.size() - errorCount.get());
                         })
                         .subscribe(
-                                v -> {
-                                    // Nothing specific to update on the UI
+                                v -> { // Nothing; feedback is done through LiveData
                                 },
                                 onError::accept
                         )

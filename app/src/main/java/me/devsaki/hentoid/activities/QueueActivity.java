@@ -271,8 +271,8 @@ public class QueueActivity extends BaseActivity {
 
     private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, int addMode) {
         viewModel.redownloadContent(contentList, reparseContent, reparseImages, addMode,
-                () -> {
-                    String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, contentList.size(), contentList.size());
+                nbSuccess -> {
+                    String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, nbSuccess, nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(tabLayout, message, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.show();
                 },

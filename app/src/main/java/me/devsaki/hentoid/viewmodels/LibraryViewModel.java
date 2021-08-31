@@ -4,7 +4,6 @@ import static me.devsaki.hentoid.util.GroupHelper.moveBook;
 
 import android.app.Application;
 import android.os.Bundle;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,12 +24,10 @@ import com.annimon.stream.function.Consumer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -47,27 +44,19 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Grouping;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
-import me.devsaki.hentoid.util.exception.LimitReachedException;
-import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 
@@ -393,35 +382,37 @@ public class LibraryViewModel extends AndroidViewModel {
             boolean reparseContent,
             boolean reparseImages,
             int position,
-            @NonNull final Runnable onSuccess,
+            @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
 
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
-
-        // TODO reuse page availability detection here
+        AtomicInteger errorCount = new AtomicInteger(0);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
                         .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : Optional.of(c))
-                        .map(c -> {
-                            if (c.isEmpty()) throw new EmptyResultException();
-                            Content content = c.get();
-                            // Non-blocking performance bottleneck; run in a dedicated worker
-                            // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
-                            if (reparseImages) purgeItem(content);
-                            return content;
+                        .doOnNext(c -> {
+                            if (c.isPresent()) {
+                                Content content = c.get();
+                                // Non-blocking performance bottleneck; run in a dedicated worker
+                                // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
+                                if (reparseImages) purgeItem(content);
+                                dao.addContentToQueue(
+                                        content, targetImageStatus, position,
+                                        ContentQueueManager.getInstance().isQueueActive());
+                            } else {
+                                errorCount.incrementAndGet();
+                                onError.accept(new EmptyResultException("Content unreachable"));
+                            }
                         })
-                        .doOnNext(c -> dao.addContentToQueue(
-                                c, targetImageStatus, position,
-                                ContentQueueManager.getInstance().isQueueActive()))
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
                                 ContentQueueManager.getInstance().resumeQueue(getApplication());
-                            onSuccess.run();
+                            onSuccess.accept(contentList.size() - errorCount.get());
                         })
                         .subscribe(
                                 v -> { // Nothing; feedback is done through LiveData
@@ -434,17 +425,18 @@ public class LibraryViewModel extends AndroidViewModel {
     public void downloadContent(
             @NonNull final List<Content> contentList,
             int position,
-            @NonNull final Runnable onSuccess,
+            @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
 
+        AtomicInteger nbErrors = new AtomicInteger(0);
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
                         .map(c -> {
                             // Reparse content from scratch if images KO
-                            if (!isDownloadable(c)) {
+                            if (!ContentHelper.isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
                                 Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
@@ -460,6 +452,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                         c.get(), StatusContent.SAVED, position,
                                         ContentQueueManager.getInstance().isQueueActive());
                             } else {
+                                nbErrors.incrementAndGet();
                                 onError.accept(new EmptyResultException("Content unreachable"));
                             }
                         })
@@ -467,7 +460,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
                                 ContentQueueManager.getInstance().resumeQueue(getApplication());
-                            onSuccess.run();
+                            onSuccess.accept(contentList.size() - nbErrors.get());
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -478,7 +471,8 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    public void streamContent(@NonNull final List<Content> contentList, @NonNull final Consumer<Throwable> onError) {
+    public void streamContent(@NonNull final List<Content> contentList,
+                              @NonNull final Consumer<Throwable> onError) {
 
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
@@ -489,7 +483,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .map(c -> {
                             Timber.d("Checking pages availability");
                             // Reparse content from scratch if images KO
-                            if (!isDownloadable(c)) {
+                            if (!ContentHelper.isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
                                 Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
@@ -540,113 +534,6 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
-     * Test if online pages for the given Content are downloadable
-     * NB : Implementation does not test all pages but one page picked randomly
-     *
-     * @param content Content whose pages to test
-     * @return True if pages are downloadable; false if they aren't
-     */
-    private boolean isDownloadable(@NonNull final Content content) {
-        List<ImageFile> images = content.getImageFiles();
-        if (null == images) return false;
-
-        // Pick a random picture
-        ImageFile img = images.get(new Random().nextInt(images.size()));
-
-        // Peek it to see if downloads work
-        List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
-
-        try {
-            if (img.needsPageParsing()) {
-                // Get cookies from the app jar
-                String cookieStr = HttpHelper.getCookies(img.getPageUrl());
-                // If nothing found, peek from the site
-                if (cookieStr.isEmpty())
-                    cookieStr = HttpHelper.peekCookies(img.getPageUrl());
-                if (!cookieStr.isEmpty())
-                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-                return testDownloadPictureFromPage(content.getSite(), img, headers);
-            } else {
-                // Get cookies from the app jar
-                String cookieStr = HttpHelper.getCookies(img.getUrl());
-                // If nothing found, peek from the site
-                if (cookieStr.isEmpty())
-                    cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
-                if (!cookieStr.isEmpty())
-                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-                return testDownloadPicture(content.getSite(), img, headers);
-            }
-        } catch (IOException | LimitReachedException | EmptyResultException e) {
-            Timber.w(e);
-        }
-        return false;
-    }
-
-    /**
-     * Test if the given picture is downloadable using its page URL
-     *
-     * @param site           Corresponding Site
-     * @param img            Picture to test
-     * @param requestHeaders Request headers to use
-     * @return True if the given picture is downloadable; false if not
-     * @throws IOException           If something happens during the download attempt
-     * @throws LimitReachedException If the site's download limit has been reached
-     * @throws EmptyResultException  If no picture has been detected
-     */
-    private boolean testDownloadPictureFromPage(@NonNull Site site,
-                                                @NonNull ImageFile img,
-                                                List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
-        String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
-        ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
-        img.setUrl(pages.left);
-        // Download the picture
-        try {
-            return testDownloadPicture(site, img, requestHeaders);
-        } catch (IOException e) {
-            if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
-            else throw e;
-        }
-        // Trying with backup URL
-        img.setUrl(pages.right.get());
-        return testDownloadPicture(site, img, requestHeaders);
-    }
-
-    /**
-     * Test if the given picture is downloadable using its own URL
-     *
-     * @param site           Corresponding Site
-     * @param img            Picture to test
-     * @param requestHeaders Request headers to use
-     * @return True if the given picture is downloadable; false if not
-     * @throws IOException If something happens during the download attempt
-     */
-    private boolean testDownloadPicture(
-            @NonNull Site site,
-            @NonNull ImageFile img,
-            List<Pair<String, String>> requestHeaders) throws IOException {
-
-        Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-        if (response.code() >= 300) throw new IOException("Network error " + response.code());
-
-        ResponseBody body = response.body();
-        if (null == body)
-            throw new IOException("Could not read response : empty body for " + img.getUrl());
-
-        byte[] buffer = new byte[50];
-        // Read mime-type on the fly
-        try (InputStream in = body.byteStream()) {
-            if (in.read(buffer) > -1) {
-                String mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
-                Timber.d("Testing online picture accessibility : found %s at %s", mimeType, img.getUrl());
-                return (!mimeType.isEmpty() && !mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC));
-            }
-        }
-        return false;
-    }
-
-    /**
      * Set the "being deleted" flag of the given content
      *
      * @param content Content whose flag to set
@@ -669,7 +556,8 @@ public class LibraryViewModel extends AndroidViewModel {
         DeleteData.Builder builder = new DeleteData.Builder();
         if (!contents.isEmpty())
             builder.setContentIds(Stream.of(contents).map(Content::getId).toList());
-        if (!groups.isEmpty()) builder.setGroupIds(Stream.of(groups).map(Group::getId).toList());
+        if (!groups.isEmpty())
+            builder.setGroupIds(Stream.of(groups).map(Group::getId).toList());
         builder.setDeleteGroupsOnly(deleteGroupsOnly);
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
@@ -692,7 +580,8 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    public void archiveContents(@NonNull final List<Content> contentList, Consumer<Content> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
+    public void archiveContents(@NonNull final List<Content> contentList, Consumer<
+            Content> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
         Timber.d("Building file list for %s books", contentList.size());
 
         compositeDisposable.add(
@@ -748,7 +637,8 @@ public class LibraryViewModel extends AndroidViewModel {
         if (localGroup != null) localGroup.picture.setAndPutTarget(cover);
     }
 
-    public void saveContentPositions(@NonNull final List<Content> orderedContent, @NonNull final Runnable onSuccess) {
+    public void saveContentPositions(@NonNull final List<Content> orderedContent,
+                                     @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
                 Completable.fromRunnable(() -> doSaveContentPositions(orderedContent))
                         .subscribeOn(Schedulers.io())
@@ -803,7 +693,8 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
-    public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
+    public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName,
+                         @NonNull final Runnable onNameExists) {
         // Check if the group already exists
         List<Group> localGroups = getGroups().getValue();
         if (null == localGroups) return;
@@ -830,7 +721,8 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
-    public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
+    public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName,
+                            @NonNull final Runnable onNameExists) {
         // Check if the group already exists
         List<Group> localGroups = getGroups().getValue();
         if (null == localGroups) return;
@@ -906,13 +798,15 @@ public class LibraryViewModel extends AndroidViewModel {
         throw new InvalidParameterException("Invalid GroupId : " + groupId);
     }
 
-    public void moveBooksToNew(long[] bookIds, String newGroupName, @NonNull final Runnable onSuccess) {
+    public void moveBooksToNew(long[] bookIds, String newGroupName,
+                               @NonNull final Runnable onSuccess) {
         Group newGroup = new Group(Grouping.CUSTOM, newGroupName.trim(), -1);
         newGroup.id = dao.insertGroup(newGroup);
         moveBooks(bookIds, newGroup, onSuccess);
     }
 
-    public void moveBooks(long[] bookIds, @Nullable final Group group, @NonNull final Runnable onSuccess) {
+    public void moveBooks(long[] bookIds, @Nullable final Group group,
+                          @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
                 Observable.fromIterable(Helper.getListFromPrimitiveArray(bookIds))
                         .observeOn(Schedulers.io())

@@ -29,6 +29,7 @@ import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
@@ -38,6 +39,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.annotation.Nonnull;
 
@@ -71,6 +73,7 @@ import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
@@ -1204,7 +1207,13 @@ public final class ContentHelper {
         return null;
     }
 
-    // Compute perceptual hash for the cover picture
+    /**
+     * Compute perceptual hash for the cover picture
+     *
+     * @param context Context to use
+     * @param content Content to process
+     * @param dao     Dao used to save cover hash
+     */
     public static void computeAndSaveCoverHash(
             @NonNull final Context context,
             @NonNull final Content content,
@@ -1214,6 +1223,113 @@ public final class ContentHelper {
         if (coverBitmap != null) coverBitmap.recycle();
         content.getCover().setImageHash(pHash);
         dao.insertImageFile(content.getCover());
+    }
+
+    /**
+     * Test if online pages for the given Content are downloadable
+     * NB : Implementation does not test all pages but one page picked randomly
+     *
+     * @param content Content whose pages to test
+     * @return True if pages are downloadable; false if they aren't
+     */
+    public static boolean isDownloadable(@NonNull final Content content) {
+        List<ImageFile> images = content.getImageFiles();
+        if (null == images) return false;
+
+        // Pick a random picture
+        ImageFile img = images.get(new Random().nextInt(images.size()));
+
+        // Peek it to see if downloads work
+        List<Pair<String, String>> headers = new ArrayList<>();
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
+
+        try {
+            if (img.needsPageParsing()) {
+                // Get cookies from the app jar
+                String cookieStr = HttpHelper.getCookies(img.getPageUrl());
+                // If nothing found, peek from the site
+                if (cookieStr.isEmpty())
+                    cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                if (!cookieStr.isEmpty())
+                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                return testDownloadPictureFromPage(content.getSite(), img, headers);
+            } else {
+                // Get cookies from the app jar
+                String cookieStr = HttpHelper.getCookies(img.getUrl());
+                // If nothing found, peek from the site
+                if (cookieStr.isEmpty())
+                    cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+                if (!cookieStr.isEmpty())
+                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                return testDownloadPicture(content.getSite(), img, headers);
+            }
+        } catch (IOException | LimitReachedException | EmptyResultException e) {
+            Timber.w(e);
+        }
+        return false;
+    }
+
+    /**
+     * Test if the given picture is downloadable using its page URL
+     *
+     * @param site           Corresponding Site
+     * @param img            Picture to test
+     * @param requestHeaders Request headers to use
+     * @return True if the given picture is downloadable; false if not
+     * @throws IOException           If something happens during the download attempt
+     * @throws LimitReachedException If the site's download limit has been reached
+     * @throws EmptyResultException  If no picture has been detected
+     */
+    public static boolean testDownloadPictureFromPage(@NonNull Site site,
+                                                @NonNull ImageFile img,
+                                                List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+        String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
+        ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
+        img.setUrl(pages.left);
+        // Download the picture
+        try {
+            return testDownloadPicture(site, img, requestHeaders);
+        } catch (IOException e) {
+            if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
+            else throw e;
+        }
+        // Trying with backup URL
+        img.setUrl(pages.right.get());
+        return testDownloadPicture(site, img, requestHeaders);
+    }
+
+    /**
+     * Test if the given picture is downloadable using its own URL
+     *
+     * @param site           Corresponding Site
+     * @param img            Picture to test
+     * @param requestHeaders Request headers to use
+     * @return True if the given picture is downloadable; false if not
+     * @throws IOException If something happens during the download attempt
+     */
+    public static boolean testDownloadPicture(
+            @NonNull Site site,
+            @NonNull ImageFile img,
+            List<Pair<String, String>> requestHeaders) throws IOException {
+
+        Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        if (response.code() >= 300) throw new IOException("Network error " + response.code());
+
+        ResponseBody body = response.body();
+        if (null == body)
+            throw new IOException("Could not read response : empty body for " + img.getUrl());
+
+        byte[] buffer = new byte[50];
+        // Read mime-type on the fly
+        try (InputStream in = body.byteStream()) {
+            if (in.read(buffer) > -1) {
+                String mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
+                Timber.d("Testing online picture accessibility : found %s at %s", mimeType, img.getUrl());
+                return (!mimeType.isEmpty() && !mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC));
+            }
+        }
+        return false;
     }
 
     /**
