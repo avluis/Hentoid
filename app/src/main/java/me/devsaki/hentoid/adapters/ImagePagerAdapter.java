@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
@@ -43,6 +44,7 @@ import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
@@ -217,9 +219,14 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         ImageFile img = getImageAt(position);
         if (img != null && !img.getFileUri().isEmpty()) holder.setImage(img);
         else imageAvailable = false;
+        boolean isStreaming = (img != null && img.getStatus().equals(StatusContent.ONLINE) && !imageAvailable);
 
-        if (holder.noImgTxt != null)
-            holder.noImgTxt.setVisibility(imageAvailable ? View.GONE : View.VISIBLE);
+        if (holder.noImgTxt != null) {
+            @StringRes int text = R.string.image_not_found;
+            if (isStreaming) text = R.string.image_streaming;
+            holder.noImgTxt.setText(text);
+            holder.noImgTxt.setVisibility(!imageAvailable ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Override
