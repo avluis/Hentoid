@@ -212,7 +212,7 @@ public final class Helper {
         long seconds = (long) Math.floor(ms / 1000f);
         int h = (int) Math.floor(seconds / 3600f);
         int m = (int) Math.floor((seconds - 3600f * h) / 60);
-        long s = seconds - (60 * m) - (3600 * h);
+        long s = seconds - (60L * m) - (3600L * h);
 
         String hStr = String.valueOf(h);
         if (1 == hStr.length()) hStr = "0" + hStr;
