@@ -249,7 +249,7 @@ public class QueueViewModel extends AndroidViewModel {
         );
     }
 
-    public void purge(@NonNull List<Content> contentList) {
+    private void purge(@NonNull List<Content> contentList) {
         DeleteData.Builder builder = new DeleteData.Builder();
         if (!contentList.isEmpty())
             builder.setContentPurgeIds(Stream.of(contentList).map(Content::getId).toList());
