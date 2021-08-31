@@ -328,6 +328,8 @@ public class ViewerGalleryFragment extends Fragment {
     }
 
     private void onFavouriteSuccess() {
+        selectExtension.deselect(selectExtension.getSelections());
+        selectExtension.setSelectOnLongClick(true);
         showFavouritePagesButton.setVisible(hasFavourite());
     }
 
