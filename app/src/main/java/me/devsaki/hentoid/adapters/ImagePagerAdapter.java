@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
+import java.util.Objects;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
@@ -95,7 +96,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private float doubleTapZoomCap;
 
     public ImagePagerAdapter(Context context) {
-        super(DIFF_CALLBACK);
+        super(IMAGE_DIFF_CALLBACK);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) rs = RenderScript.create(context);
     }
 
@@ -191,6 +192,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) { // TODO make all that method less ugly
+        Timber.d("BindViewHolder %d", position);
         int imageType = getImageType(getImageAt(position));
 
         if (holder.forceImageView != null) {
@@ -281,20 +283,18 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         this.isScrollLTR = isScrollLTR;
     }
 
-    private static final DiffUtil.ItemCallback<ImageFile> DIFF_CALLBACK =
+    private static final DiffUtil.ItemCallback<ImageFile> IMAGE_DIFF_CALLBACK =
             new DiffUtil.ItemCallback<ImageFile>() {
                 @Override
                 public boolean areItemsTheSame(
-                        @NonNull ImageFile oldAttr, @NonNull ImageFile newAttr) {
-                    return oldAttr.getId() == newAttr.getId();
+                        @NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
+                    return oldItem.uniqueHash() == newItem.uniqueHash();
                 }
 
                 @Override
                 public boolean areContentsTheSame(
-                        @NonNull ImageFile oldAttr, @NonNull ImageFile newAttr) {
-                    return oldAttr.getOrder().equals(newAttr.getOrder())
-                            && oldAttr.getStatus().equals(newAttr.getStatus())
-                            && oldAttr.getFileUri().equals(newAttr.getFileUri());
+                        @NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
+                    return Objects.equals(oldItem, newItem);
                 }
             };
 

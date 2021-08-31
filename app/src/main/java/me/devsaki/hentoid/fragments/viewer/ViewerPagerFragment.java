@@ -67,6 +67,7 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
@@ -604,6 +605,12 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * @param images Book's list of images
      */
     private void onImagesChanged(List<ImageFile> images) {
+        if (BuildConfig.DEBUG) {
+            Timber.d("IMAGES CHANGED");
+            List<String> imageUris = Stream.of(images).filterNot(img -> img.getFileUri().isEmpty()).map(img -> "[" + img.getOrder() + "] " + img.getFileUri()).toList();
+            for (String imageUri : imageUris) Timber.d("    %s", imageUri);
+        }
+
         isComputingImageList = true;
         adapter.submitList(images, this::differEndCallback);
 

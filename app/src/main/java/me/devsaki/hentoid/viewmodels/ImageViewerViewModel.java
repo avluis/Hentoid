@@ -482,7 +482,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         viewerImagesInternal.clear();
         viewerImagesInternal.addAll(imgs);
-        viewerImages.postValue(viewerImagesInternal);
+        viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
     }
 
     public void onLeaveBook(int readerIndex) {
@@ -838,15 +838,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public synchronized void setCurrentPage(int pageIndex, int direction) {
-        final List<ImageFile> images = viewerImagesInternal;
-        if (images.size() <= pageIndex) return;
+        if (viewerImagesInternal.size() <= pageIndex) return;
 
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
-        if (isPictureDownloadable(pageIndex, images)) indexesToLoad.add(pageIndex);
-        if (isPictureDownloadable(pageIndex + increment, images))
+        if (isPictureDownloadable(pageIndex, viewerImagesInternal)) indexesToLoad.add(pageIndex);
+        if (isPictureDownloadable(pageIndex + increment, viewerImagesInternal))
             indexesToLoad.add(pageIndex + increment);
-        if (isPictureDownloadable(pageIndex + 2 * increment, images))
+        if (isPictureDownloadable(pageIndex + 2 * increment, viewerImagesInternal))
             indexesToLoad.add(pageIndex + 2 * increment);
 
         if (indexesToLoad.isEmpty()) return;
@@ -871,6 +870,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                 .subscribe(
                                         resultOpt -> {
                                             if (resultOpt.isEmpty()) { // Nothing to download
+                                                Timber.d("NO IMAGE FOUND AT INDEX %d", index);
                                                 downloadsInProgress.remove(index);
                                                 notifyDownloadProgress(-1, index);
                                                 return;
@@ -892,7 +892,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                                 Timber.d("REPLACING INDEX %d - ORDER %d -> %s", downloadedPageIndex, downloadedPic.getOrder(), downloadedPic.getFileUri());
 
                                                 // Instanciate a new list to trigger an actual Adapter UI refresh
-                                                viewerImages.postValue(Stream.of(viewerImagesInternal).toList());
+                                                viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
                                                 imageLocations.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
                                             }
                                         },
@@ -935,11 +935,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull File targetFolder,
             @NonNull final AtomicBoolean stopDownload) {
         Helper.assertNonUiThread();
-        List<ImageFile> images = viewerImagesInternal;
         Content content = getContent().getValue();
-        if (null == content || images.size() <= pageIndex) return Optional.empty();
+        if (null == content || viewerImagesInternal.size() <= pageIndex) return Optional.empty();
 
-        ImageFile img = images.get(pageIndex);
+        ImageFile img = viewerImagesInternal.get(pageIndex);
         // Already downloaded
         if (!img.getFileUri().isEmpty())
             return Optional.of(new ImmutableTriple<>(pageIndex, img.getFileUri(), img.getMimeType()));
@@ -953,27 +952,22 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 File targetFile;
                 // No cached image -> fetch online
                 if (0 == existing.length) {
+                    // Prepare request headers
                     List<Pair<String, String>> headers = new ArrayList<>();
                     headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
 
+                    // Get cookies from the app jar
+                    String cookieStr = HttpHelper.getCookies(img.getUrl());
+                    // If nothing found, peek from the site
+                    if (cookieStr.isEmpty())
+                        cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+                    if (!cookieStr.isEmpty())
+                        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+
                     ImmutablePair<File, String> result;
                     if (img.needsPageParsing()) {
-                        // Get cookies from the app jar
-                        String cookieStr = HttpHelper.getCookies(img.getPageUrl());
-                        // If nothing found, peek from the site
-                        if (cookieStr.isEmpty())
-                            cookieStr = HttpHelper.peekCookies(img.getPageUrl());
-                        if (!cookieStr.isEmpty())
-                            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                         result = downloadPictureFromPage(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
                     } else {
-                        // Get cookies from the app jar
-                        String cookieStr = HttpHelper.getCookies(img.getUrl());
-                        // If nothing found, peek from the site
-                        if (cookieStr.isEmpty())
-                            cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
-                        if (!cookieStr.isEmpty())
-                            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                         result = downloadPictureToCachedFile(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
                     }
                     targetFile = result.left;
@@ -1031,7 +1025,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         Site site = content.getSite();
         Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
-        Response response = HttpHelper.getOnlineResource(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         Timber.d("DOWNLOADING PIC %d - RESPONSE %s", pageIndex, response.code());
         if (response.code() >= 300) throw new IOException("Network error " + response.code());
 
@@ -1117,9 +1111,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void notifyDownloadProgress(float progressPc, int pageIndex) {
         notificationDisposables.add(Completable.fromRunnable(() -> doNotifyDownloadProgress(progressPc, pageIndex))
                 .subscribeOn(Schedulers.computation())
-                .subscribe(
-                        notificationDisposables::clear
-                )
+                .subscribe()
         );
     }
 

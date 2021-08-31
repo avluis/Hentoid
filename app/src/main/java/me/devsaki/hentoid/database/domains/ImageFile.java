@@ -301,6 +301,9 @@ public class ImageFile {
         return (pageUrl != null && !pageUrl.isEmpty() && (null == url || url.isEmpty()));
     }
 
+    // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI
+    // If not done, FastAdapter's PagedItemListImpl cache won't detect changes to the object
+    // and items won't be visually updated on screen
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -309,13 +312,14 @@ public class ImageFile {
         return getId() == imageFile.getId() &&
                 Objects.equals(getUrl(), imageFile.getUrl())
                 && Objects.equals(getPageUrl(), imageFile.getPageUrl())
+                && Objects.equals(getFileUri(), imageFile.getFileUri())
                 && Objects.equals(isCover(), imageFile.isCover()); // Sometimes the thumb picture has the same URL as the 1st page
     }
 
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getPageUrl(), getUrl(), isCover());
+        return Objects.hash(getId(), getPageUrl(), getUrl(), getFileUri(), isCover());
     }
 
     public long uniqueHash() {
