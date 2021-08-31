@@ -389,6 +389,7 @@
     <!-- Item card tooltips -->
     <string name="drag_help">Drag item</string>
     <string name="external_help">Belongs to the external library</string>
+    <string name="streamed_help">Streamed book</string>
     <string name="view_source_help">View source in browser</string>
     <string name="fav_help">Mark/unmark as favourite</string>
     <!-- Visibility fields -->

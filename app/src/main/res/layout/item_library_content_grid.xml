@@ -149,6 +149,21 @@
             app:tint="@color/medium_gray"
             tools:ignore="ContentDescription" />
 
+        <ImageView
+            android:id="@+id/ivOnline"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:src="@drawable/ic_action_download_stream"
+            android:tooltipText="@string/streamed_help"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivExternal"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="@color/medium_gray"
+            tools:ignore="ContentDescription" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
