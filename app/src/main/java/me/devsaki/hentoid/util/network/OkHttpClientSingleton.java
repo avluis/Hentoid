@@ -60,7 +60,6 @@ public class OkHttpClientSingleton {
 
                     OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
                             .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
-                            .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                             .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                             .writeTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                             .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE));
