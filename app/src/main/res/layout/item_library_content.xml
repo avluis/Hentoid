@@ -31,6 +31,8 @@
         android:background="@drawable/bg_book_card"
         android:clickable="true"
         android:duplicateParentState="true"
+        android:paddingStart="4dp"
+        android:paddingBottom="2dp"
         android:elevation="6dp"
         android:focusable="true"
         android:longClickable="true"
