@@ -192,7 +192,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) { // TODO make all that method less ugly
-        Timber.d("BindViewHolder %d", position);
+        Timber.d("Picture %d : BindViewHolder", position);
         int imageType = getImageType(getImageAt(position));
 
         if (holder.forceImageView != null) {
@@ -325,7 +325,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             this.img = img;
             int imgType = getImageType(img);
             Uri uri = Uri.parse(img.getFileUri());
-            Timber.i(">>>>IMG %s %s", imgType, uri);
+            Timber.d("Picture %d : binding viewholder %s %s", getAbsoluteAdapterPosition(), imgType, uri);
 
             if (!isImageView) { // SubsamplingScaleImageView
                 ssiv.recycle();
@@ -420,7 +420,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         void switchImageView(boolean isImageView) {
-            Timber.d("SWITCHING to %s", isImageView ? "imageView" : "ssiv");
+            Timber.d("Picture %d : switching to %s", getAbsoluteAdapterPosition(), isImageView ? "imageView" : "ssiv");
             ssiv.setVisibility(isImageView ? View.GONE : View.VISIBLE);
             imageView.setVisibility(isImageView ? View.VISIBLE : View.GONE);
             imgView = (isImageView) ? imageView : ssiv;
@@ -453,7 +453,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         @Override
         public void onImageLoadError(Throwable e) {
-            Timber.w(e, ">>>>IMG %s reloaded with Glide", img.getFileUri());
+            Timber.d(e, "Picture %d : SSIV loading failed; reloading with Glide : %s", getAbsoluteAdapterPosition(), img.getFileUri());
             // Fall back to Glide
             forceImageView(true);
             // Reload adapter
@@ -462,7 +462,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         @Override
         public void onTileLoadError(Throwable e) {
-            Timber.w(e, ">> tileLoad error");
+            Timber.d(e, "Picture %d : tileLoad error", getAbsoluteAdapterPosition());
         }
 
         @Override
@@ -474,6 +474,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         // == GLIDE CALLBACKS
         @Override
         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+            Timber.d(e, "Picture %d : Glide loading failed : %s", getAbsoluteAdapterPosition(), img.getFileUri());
             if (noImgTxt != null) noImgTxt.setVisibility(View.VISIBLE);
             return false;
         }
