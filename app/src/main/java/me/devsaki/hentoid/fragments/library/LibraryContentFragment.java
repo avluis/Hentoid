@@ -779,21 +779,21 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void askStreamSelectedItems() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
 
-        int onlineExternalContent = 0;
+        int streamedOrExternalContent = 0;
         List<Content> contents = new ArrayList<>();
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
             if (null == c) continue;
-            if (c.getDownloadMode() != Content.DownloadMode.STREAM || c.getStatus().equals(StatusContent.EXTERNAL)) {
-                onlineExternalContent++;
+            if (c.getDownloadMode() == Content.DownloadMode.STREAM || c.getStatus().equals(StatusContent.EXTERNAL)) {
+                streamedOrExternalContent++;
             } else {
                 contents.add(c);
             }
         }
 
         String message = getResources().getQuantityString(R.plurals.stream_confirm, contents.size());
-        if (onlineExternalContent > 0)
-            message = getResources().getQuantityString(R.plurals.stream_external_streamed_content, onlineExternalContent, onlineExternalContent);
+        if (streamedOrExternalContent > 0)
+            message = getResources().getQuantityString(R.plurals.stream_external_streamed_content, streamedOrExternalContent, streamedOrExternalContent);
 
         new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                 .setIcon(R.drawable.ic_warning)
