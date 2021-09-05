@@ -747,7 +747,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
         String message = getResources().getQuantityString(R.plurals.download_confirm, contents.size());
         if (nonOnlineContent > 0)
-            message = getResources().getQuantityString(R.plurals.download_non_online_content, nonOnlineContent);
+            message = getResources().getQuantityString(R.plurals.download_non_online_content, nonOnlineContent, nonOnlineContent);
 
         new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                 .setIcon(R.drawable.ic_warning)
@@ -793,7 +793,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
         String message = getResources().getQuantityString(R.plurals.stream_confirm, contents.size());
         if (onlineExternalContent > 0)
-            message = getResources().getQuantityString(R.plurals.stream_external_online_content, onlineExternalContent);
+            message = getResources().getQuantityString(R.plurals.stream_external_online_content, onlineExternalContent, onlineExternalContent);
 
         new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                 .setIcon(R.drawable.ic_warning)
