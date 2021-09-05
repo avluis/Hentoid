@@ -195,18 +195,21 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         Timber.d("Picture %d : BindViewHolder", position);
         int imageType = getImageType(getImageAt(position));
 
-        if (holder.forceImageView != null) {
+        if (holder.forceImageView != null) { // ImageView has been forced
             holder.switchImageView(holder.forceImageView);
             holder.forceImageView = null; // Reset force flag
-        } else holder.switchImageView(IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType);
+        } else if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType) // No other choice for these formats
+            holder.switchImageView(true);
+        else holder.switchImageView(holder.getItemViewType() == ViewType.IMAGEVIEW_STRETCH);
 
+        // Initialize SSIV when required
         if (holder.getItemViewType() == ViewType.DEFAULT && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !holder.isImageView) {
             if (recyclerView != null)
                 holder.ssiv.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
             if (!Preferences.isViewerZoomTransitions())
                 holder.ssiv.setDoubleTapZoomDuration(10);
             holder.ssiv.setOffsetLeftSide(isScrollLTR);
-        } else holder.switchImageView(holder.getItemViewType() == ViewType.IMAGEVIEW_STRETCH);
+        }
 
         int layoutStyle = (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
         ViewGroup.LayoutParams layoutParams = holder.imgView.getLayoutParams();
