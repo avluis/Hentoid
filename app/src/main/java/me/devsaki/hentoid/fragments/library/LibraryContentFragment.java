@@ -866,7 +866,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (currentPosition > 0 || -1 == topItemPosition) topItemPosition = currentPosition;
 
         outState.putInt(KEY_LAST_LIST_POSITION, topItemPosition);
-        //topItemPosition = -1;
     }
 
     @Override
@@ -1372,6 +1371,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     private void redownloadFromScratch(@NonNull final List<Content> contentList, int addMode) {
+        topItemPosition = getTopItemPosition();
         viewModel.redownloadContent(contentList, true, true, addMode,
                 nbSuccess -> {
                     String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), nbSuccess, contentList.size());
@@ -1395,6 +1395,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     private void download(@NonNull final List<Content> contentList, int addMode, @NonNull Consumer<Throwable> onError) {
+        topItemPosition = getTopItemPosition();
         viewModel.downloadContent(contentList, addMode,
                 nbSuccess -> {
                     String message = getResources().getQuantityString(R.plurals.add_to_queue, nbSuccess, nbSuccess, contentList.size());
