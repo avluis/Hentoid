@@ -60,7 +60,7 @@
     <string name="menu_redownload">Redownload</string>
     <string name="menu_redownload_scratch">Redownload from scratch</string>
     <string name="menu_stream">Switch to streaming</string>
-    <string name="menu_download_online">Download</string>
+    <string name="menu_download_streamed">Download</string>
     <string name="menu_select_all">Select All</string>
     <string name="menu_share">Share</string>
     <string name="menu_share_help">Share book URL and title using another app</string>
@@ -324,13 +324,13 @@
         <item quantity="one">One of the selected books is stored in the external library and cannot be redownloaded\nThis book will be ignored.</item>
         <item quantity="other">%d selected books are stored in the external library and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
-    <plurals name="download_non_online_content">
+    <plurals name="download_non_streamed_content">
         <item quantity="one">One of the selected books is already downloaded\nThis book will be ignored.</item>
         <item quantity="other">%d selected books are already downloaded\nThey will be ignored.</item>
     </plurals>
-    <plurals name="stream_external_online_content">
-        <item quantity="one">One of the selected books is already online or external\nThis book will be ignored.</item>
-        <item quantity="other">%d selected books are already online or external\nThey will be ignored.</item>
+    <plurals name="stream_external_streamed_content">
+        <item quantity="one">One of the selected books is already streamed or external\nThis book will be ignored.</item>
+        <item quantity="other">%d selected books are already streamed or external\nThey will be ignored.</item>
     </plurals>
     <string name="about_to_delete">Book is about to be deleted…</string>
     <string name="help_search">Search anything : title, author, tag\nand launch code too !</string>

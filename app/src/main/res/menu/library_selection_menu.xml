@@ -64,8 +64,8 @@
     <item
         android:id="@+id/action_download"
         android:icon="@drawable/ic_action_download_scratch"
-        android:title="@string/menu_download_online"
-        android:tooltipText="@string/menu_download_online"
+        android:title="@string/menu_download_streamed"
+        android:tooltipText="@string/menu_download_streamed"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_set_cover"
