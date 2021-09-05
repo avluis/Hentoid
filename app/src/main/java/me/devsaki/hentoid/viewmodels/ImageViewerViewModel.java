@@ -299,7 +299,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         emitter.onComplete();
     }
 
-    public void emptyCacheFolder() {
+    public void onActivityLeave() {
+        // Dispose the composite disposables for good
+        imageDownloadDisposable.dispose();
+        notificationDisposables.dispose();
+        // Empty cache
         emptyCacheDisposable =
                 Completable.fromRunnable(() -> FileHelper.emptyCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER))
                         .subscribeOn(Schedulers.io())
@@ -492,8 +496,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Stop any ongoing picture loading
         unarchiveDisposable.dispose();
         imageLoadDisposable.dispose();
-        imageDownloadDisposable.dispose();
-        notificationDisposables.dispose();
+        // Clear the composite disposables so that they can be reused
+        imageDownloadDisposable.clear();
+        notificationDisposables.clear();
         downloadsInProgress.clear();
         isArchiveExtracting = false;
         interruptArchiveLoad.set(true);
@@ -860,9 +865,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 while (downloadsQueue.size() >= CONCURRENT_DOWNLOADS) {
                     AtomicBoolean stopDownload = downloadsQueue.poll();
                     if (stopDownload != null) stopDownload.set(true);
+                    Timber.d("Aborting a download");
                 }
                 // Schedule a new download
                 AtomicBoolean stopDownload = new AtomicBoolean(false);
+                downloadsQueue.add(stopDownload);
+
                 imageDownloadDisposable.add(
                         Single.fromCallable(() -> downloadPic(index, cachePicFolder, stopDownload))
                                 .subscribeOn(Schedulers.io())
@@ -985,6 +993,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
                 return Optional.of(new ImmutableTriple<>(pageIndex, Uri.fromFile(targetFile).toString(), mimeType));
             }
+        } catch (InterruptedException ie) {
+            Timber.d("Download interrupted");
         } catch (Exception e) {
             Timber.w(e);
         }

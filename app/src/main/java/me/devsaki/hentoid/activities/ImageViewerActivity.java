@@ -91,7 +91,7 @@ public class ImageViewerActivity extends BaseActivity {
     @Override
     protected void onStop() {
         if (isFinishing()) { // i.e. the activity is closing for good; not being paused / backgrounded
-            if (viewModel != null) viewModel.emptyCacheFolder();
+            if (viewModel != null) viewModel.onActivityLeave();
             Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
             Preferences.setViewerCurrentPageNum(-1);
             Preferences.setViewerCurrentContent(-1);
