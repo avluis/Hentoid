@@ -44,6 +44,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -822,33 +823,48 @@ public class FileHelper {
          * @param f       Folder to get the figures from
          */
         public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
+            LogHelper.LogInfo log = new LogHelper.LogInfo();
+            log.setLogName("size");
+            List<LogHelper.LogEntry> entries = new ArrayList<>();
+            log.setEntries(entries);
+
+            init21(context, f, entries);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                init26(context, f);
+                init26(context, f, entries);
             }
+            LogHelper.writeLog(context, log);
+            /*
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || 0 == totalMemBytes) {
                 Timber.v("MemoryUsageFigures using legacy mode");
                 init21(context, f);
             }
+             */
         }
 
         // Init for API 21 to 25
-        private void init21(@NonNull Context context, @NonNull DocumentFile f) {
+        private void init21(@NonNull Context context, @NonNull DocumentFile f, List<LogHelper.LogEntry> log) {
             String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
+            log.add(new LogHelper.LogEntry("init21 %s", fullPath));
             if (fullPath != null) {
                 StatFs stat = new StatFs(fullPath);
 
                 long blockSize = stat.getBlockSizeLong();
                 totalMemBytes = stat.getBlockCountLong() * blockSize;
                 freeMemBytes = stat.getAvailableBlocksLong() * blockSize;
+                log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
+                log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
+                log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
             }
         }
 
         // Init for API 26+
         // Inspired by https://github.com/Cheticamp/Storage_Volumes/
         @TargetApi(26)
-        private void init26(@NonNull Context context, @NonNull DocumentFile f) {
+        private void init26(@NonNull Context context, @NonNull DocumentFile f, List<LogHelper.LogEntry> log) {
             String volumeId = getVolumeIdFromUri(f.getUri());
             StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+
+            log.add(new LogHelper.LogEntry("init26 %s", f.getUri()));
 
             for (StorageVolume v : mgr.getStorageVolumes()) {
                 Timber.v(">> %s %s", v.getUuid(), volumeId);
@@ -862,6 +878,12 @@ public class FileHelper {
                                     (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
                             totalMemBytes = storageStatsManager.getTotalBytes(uuid);
                             freeMemBytes = storageStatsManager.getFreeBytes(uuid);
+
+                            log.add(new LogHelper.LogEntry("%s PRIMARY", v.getUuid()));
+                            log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
+                            log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
+                            log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
+
                         } catch (IOException e) {
                             Timber.e(e);
                         }
@@ -875,6 +897,12 @@ public class FileHelper {
                             long blockSize = stats.f_bsize;
                             totalMemBytes = stats.f_blocks * blockSize;
                             freeMemBytes = stats.f_bavail * blockSize;
+
+                            log.add(new LogHelper.LogEntry("%s NOT PRIMARY", v.getUuid()));
+                            log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
+                            log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
+                            log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
+
                         } catch (Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
                             Timber.e(e);
                         }
