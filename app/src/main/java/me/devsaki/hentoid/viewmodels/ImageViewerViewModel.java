@@ -994,7 +994,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 return Optional.of(new ImmutableTriple<>(pageIndex, Uri.fromFile(targetFile).toString(), mimeType));
             }
         } catch (InterruptedException ie) {
-            Timber.d("Download interrupted");
+            Timber.d("Download interrupted for pic %d", pageIndex);
         } catch (Exception e) {
             Timber.w(e);
         }
@@ -1035,9 +1035,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
             List<Pair<String, String>> requestHeaders,
             @NonNull File targetFolder,
             @NonNull String targetFileName,
-            @NonNull final AtomicBoolean stopDownload) throws IOException, UnsupportedContentException, InterruptedException {
+            @NonNull final AtomicBoolean interruptDownload) throws IOException, UnsupportedContentException, InterruptedException {
 
-        if (stopDownload.get()) throw new InterruptedException("Download interrupted");
+        if (interruptDownload.get()) throw new InterruptedException("Download interrupted");
 
         Site site = content.getSite();
         Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
@@ -1065,7 +1065,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         int iteration = 0;
         try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
             while ((len = in.read(buffer)) > -1) {
-                if (stopDownload.get()) throw new InterruptedException("Download interrupted");
+                if (interruptDownload.get()) break;
                 processed += len;
                 // Read mime-type on the fly
                 if (0 == iteration) {
@@ -1079,11 +1079,16 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     notifyDownloadProgress((processed * 100f) / size, pageIndex);
                 out.write(buffer, 0, len);
             }
-            notifyDownloadProgress(100, pageIndex);
-            out.flush();
+            if (!interruptDownload.get()) {
+                notifyDownloadProgress(100, pageIndex);
+                out.flush();
+                Timber.d("DOWNLOADED PIC %d [%s] WRITTEN TO %s (%.2f KB)", pageIndex, mimeType, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+                return new ImmutablePair<>(targetFile, mimeType);
+            }
         }
-        Timber.d("DOWNLOADED PIC %d [%s] WRITTEN TO %s (%.2f KB)", pageIndex, mimeType, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
-        return new ImmutablePair<>(targetFile, mimeType);
+        // Remove the remaining file chunk if download has been interrupted
+        FileHelper.removeFile(targetFile);
+        throw new InterruptedException("Download interrupted");
     }
 
     /**
