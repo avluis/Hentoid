@@ -446,7 +446,10 @@ public class ContentDownloadWorker extends BaseWorker {
                     Observable.fromIterable(pagesToParse)
                             .observeOn(Schedulers.io())
                             .subscribe(
-                                    img -> parsePageforImage(img, dir, contentFinal)
+                                    img -> parsePageforImage(img, dir, contentFinal),
+                                    t -> {
+                                        // Nothing; just exit the Rx chain
+                                    }
                             )
             );
         }
@@ -685,7 +688,7 @@ public class ContentDownloadWorker extends BaseWorker {
     private void parsePageforImage(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
-            @NonNull final Content content) {
+            @NonNull final Content content) throws LimitReachedException {
 
         Site site = content.getSite();
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
@@ -727,6 +730,7 @@ public class ContentDownloadWorker extends BaseWorker {
             Timber.w(lre, description);
             updateImageStatusUri(img, false, "");
             logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Page " + img.getName(), description);
+            throw lre;
         } catch (EmptyResultException ere) {
             Timber.w(ere, "No images have been found while parsing %s", content.getTitle());
             updateImageStatusUri(img, false, "");
