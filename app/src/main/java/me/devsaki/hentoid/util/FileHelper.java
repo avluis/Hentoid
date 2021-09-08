@@ -911,15 +911,18 @@ public class FileHelper {
                         // the "UUID" available for non-primary volumes is not acceptable to
                         // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
                         try {
-                            StructStatVfs stats = Os.statvfs(getVolumePath(context, v.getUuid()));
-                            long blockSize = stats.f_bsize;
-                            totalMemBytes = stats.f_blocks * blockSize;
-                            freeMemBytes = stats.f_bavail * blockSize;
+                            String volumePath = getVolumePath(context, v.getUuid());
+                            if (volumePath != null) {
+                                StructStatVfs stats = Os.statvfs(volumePath);
+                                long blockSize = stats.f_bsize;
+                                totalMemBytes = stats.f_blocks * blockSize;
+                                freeMemBytes = stats.f_bavail * blockSize;
 
-                            log.add(new LogHelper.LogEntry("%s NOT PRIMARY", v.getUuid()));
-                            log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
-                            log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
-                            log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
+                                log.add(new LogHelper.LogEntry("%s NOT PRIMARY", v.getUuid()));
+                                log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
+                                log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
+                                log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
+                            }
                         } catch (Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
                             Timber.e(e);
                         }
