@@ -154,7 +154,7 @@ public class FileHelper {
     @Nullable
     private static String getVolumePath(@NonNull Context context, final String volumeId) {
         try {
-            // StorageVolume exist since API21, but only visible since API24
+            // StorageVolume exist since API21, but is only visible since API24
             StorageManager mStorageManager =
                     (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
             Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
@@ -168,9 +168,14 @@ public class FileHelper {
             final int length = Array.getLength(result);
             for (int i = 0; i < length; i++) {
                 Object storageVolumeElement = Array.get(result, i);
-                String uuid = (String) getUuid.invoke(storageVolumeElement);
+                String uuid = StringHelper.protect((String) getUuid.invoke(storageVolumeElement));
                 Boolean primary = (Boolean) isPrimary.invoke(storageVolumeElement);
+                if (null == primary) primary = false;
 
+                if (volumeIdMatch(uuid, primary, volumeId))
+                    return (String) getPath.invoke(storageVolumeElement);
+
+                /*
                 // primary volume?
                 if (primary != null && primary && PRIMARY_VOLUME_NAME.equals(volumeId))
                     return (String) getPath.invoke(storageVolumeElement);
@@ -178,6 +183,7 @@ public class FileHelper {
                 // other volumes?
                 if (uuid != null && uuid.equals(volumeId))
                     return (String) getPath.invoke(storageVolumeElement);
+                 */
             }
             // not found.
             return null;
@@ -188,10 +194,39 @@ public class FileHelper {
 
     @TargetApi(26)
     @SuppressWarnings("JavaReflectionMemberAccess")
-    private static String getVolumePath(@NonNull StorageVolume volume) {
+    private static String getVolumePath(@NonNull StorageVolume volume, List<LogHelper.LogEntry> log) {
         String result = "";
         try {
-            return (String) volume.getClass().getMethod("getPath").invoke(volume);
+            String path = StringHelper.protect((String) volume.getClass().getMethod("getPath").invoke(volume));
+            if (log != null) log.add(new LogHelper.LogEntry("getPath %s", path));
+            String internalPath = "";
+            try {
+                internalPath = StringHelper.protect((String) volume.getClass().getMethod("getInternalPath").invoke(volume));
+                if (log != null)
+                    log.add(new LogHelper.LogEntry("getInternalPath %s", internalPath));
+            } catch (Exception e) {
+                Timber.d(e);
+            }
+            String absolutePath = "";
+            try {
+                File pathFile = (File) volume.getClass().getMethod("getPathFile").invoke(volume);
+                if (log != null) log.add(new LogHelper.LogEntry("pathFile invoked !"));
+                if (pathFile != null) {
+                    absolutePath = pathFile.getAbsolutePath();
+                    if (log != null) {
+                        log.add(new LogHelper.LogEntry("pathFile absolute %s", absolutePath));
+                        log.add(new LogHelper.LogEntry("pathFile canonical %s", pathFile.getCanonicalPath()));
+                        log.add(new LogHelper.LogEntry("pathFile total space %d", pathFile.getTotalSpace()));
+                        log.add(new LogHelper.LogEntry("pathFile free space %d", pathFile.getFreeSpace()));
+                        log.add(new LogHelper.LogEntry("pathFile usable space %d", pathFile.getUsableSpace()));
+                    }
+                }
+            } catch (Exception e) {
+                Timber.d(e);
+            }
+            if (path.isEmpty() && internalPath.isEmpty()) result = absolutePath;
+            else if (path.isEmpty()) result = internalPath;
+            else result = path;
         } catch (Exception e) {
             Timber.w(e);
         }
@@ -926,7 +961,7 @@ public class FileHelper {
                         // the "UUID" available for non-primary volumes is not acceptable to
                         // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
                         try {
-                            String volumePath = getVolumePath(v);
+                            String volumePath = getVolumePath(v, log);
                             log.add(new LogHelper.LogEntry("volumePath = %s", volumePath));
                             if (!volumePath.isEmpty()) {
                                 StructStatVfs stats = Os.statvfs(volumePath);
@@ -945,13 +980,6 @@ public class FileHelper {
                     break;
                 }
             }
-        }
-
-        // TODO doc
-        @TargetApi(26)
-        private boolean volumeIdMatch(@NonNull final StorageVolume volume, @NonNull final String treeId) {
-            if (StringHelper.protect(volume.getUuid()).equals(treeId.replace("/", ""))) return true;
-            else return (volume.isPrimary() && treeId.equals(PRIMARY_VOLUME_NAME));
         }
 
         /**
@@ -974,6 +1002,17 @@ public class FileHelper {
         public double getfreeUsageMb() {
             return freeMemBytes * 1.0 / (1024 * 1024);
         }
+    }
+
+    // TODO doc
+    @TargetApi(26)
+    private static boolean volumeIdMatch(@NonNull final StorageVolume volume, @NonNull final String treeVolumeId) {
+        return volumeIdMatch(StringHelper.protect(volume.getUuid()), volume.isPrimary(), treeVolumeId);
+    }
+
+    private static boolean volumeIdMatch(@NonNull final String volumeUuid, boolean isVolumePrimary, @NonNull final String treeVolumeId) {
+        if (volumeUuid.equals(treeVolumeId.replace("/", ""))) return true;
+        else return (isVolumePrimary && treeVolumeId.equals(PRIMARY_VOLUME_NAME));
     }
 
     /**
