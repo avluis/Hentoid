@@ -126,7 +126,7 @@ public class FileHelper {
     public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri) {
         if (uri.toString().isEmpty()) return "";
 
-        String volumePath = getVolumePath(context, getVolumeIdFromUri(uri));
+        String volumePath = getVolumePath(context, getVolumeIdFromUri(uri, null));
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
             volumePath = volumePath.substring(0, volumePath.length() - 1);
@@ -193,12 +193,14 @@ public class FileHelper {
      * @return Volume ID of the given Uri
      */
     @Nullable
-    private static String getVolumeIdFromUri(final Uri uri) {
+    private static String getVolumeIdFromUri(final Uri uri, List<LogHelper.LogEntry> log) {
         String docId;
         try {
             docId = DocumentsContract.getDocumentId(uri);
+            if (log != null) log.add(new LogHelper.LogEntry("documentId %s", docId));
         } catch (IllegalArgumentException e) {
             docId = DocumentsContract.getTreeDocumentId(uri);
+            if (log != null) log.add(new LogHelper.LogEntry("treeDocumentId %s", docId));
         }
 
         final String[] split = docId.split(":");
@@ -828,6 +830,7 @@ public class FileHelper {
             List<LogHelper.LogEntry> entries = new ArrayList<>();
             log.setEntries(entries);
 
+            initLegacy(context, f, entries);
             init21(context, f, entries);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 init26(context, f, entries);
@@ -839,6 +842,19 @@ public class FileHelper {
                 init21(context, f);
             }
              */
+        }
+
+        private void initLegacy(@NonNull Context context, @NonNull DocumentFile f, List<LogHelper.LogEntry> log) {
+            String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
+            log.add(new LogHelper.LogEntry("init legacy %s", fullPath));
+            if (fullPath != null) {
+                File file = new File(fullPath);
+                this.freeMemBytes = file.getFreeSpace();
+                this.totalMemBytes = file.getTotalSpace();
+                log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
+                log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
+                log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
+            }
         }
 
         // Init for API 21 to 25
@@ -861,13 +877,16 @@ public class FileHelper {
         // Inspired by https://github.com/Cheticamp/Storage_Volumes/
         @TargetApi(26)
         private void init26(@NonNull Context context, @NonNull DocumentFile f, List<LogHelper.LogEntry> log) {
-            String volumeId = getVolumeIdFromUri(f.getUri());
+            String volumeId = getVolumeIdFromUri(f.getUri(), log);
             StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
 
-            log.add(new LogHelper.LogEntry("init26 %s", f.getUri()));
+            log.add(new LogHelper.LogEntry("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId));
 
             for (StorageVolume v : mgr.getStorageVolumes()) {
                 Timber.v(">> %s %s", v.getUuid(), volumeId);
+
+                log.add(new LogHelper.LogEntry("Storage volume ID %s", v.getUuid()));
+
                 if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
                     if (v.isPrimary()) {
                         Timber.v(">> %s PRIMARY", v.getUuid());
@@ -883,7 +902,6 @@ public class FileHelper {
                             log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
                             log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
                             log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
-
                         } catch (IOException e) {
                             Timber.e(e);
                         }
@@ -902,7 +920,6 @@ public class FileHelper {
                             log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
                             log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
                             log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
-
                         } catch (Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
                             Timber.e(e);
                         }
@@ -914,7 +931,7 @@ public class FileHelper {
 
         @TargetApi(26)
         private boolean volumeIdMatch(@NonNull final StorageVolume volume, @NonNull final String treeId) {
-            if (StringHelper.protect(volume.getUuid()).equals(treeId)) return true;
+            if (StringHelper.protect(volume.getUuid()).equals(treeId.replace("/", ""))) return true;
             else return (volume.isPrimary() && treeId.equals(PRIMARY_VOLUME_NAME));
         }
 
