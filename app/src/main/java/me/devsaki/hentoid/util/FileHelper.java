@@ -186,6 +186,18 @@ public class FileHelper {
         }
     }
 
+    @TargetApi(26)
+    @SuppressWarnings("JavaReflectionMemberAccess")
+    private static String getVolumePath(@NonNull StorageVolume volume) {
+        String result = "";
+        try {
+            return (String) volume.getClass().getMethod("getPath").invoke(volume);
+        } catch (Exception e) {
+            Timber.w(e);
+        }
+        return result;
+    }
+
     /**
      * Get the volume ID of the given Uri
      *
@@ -849,7 +861,7 @@ public class FileHelper {
             log.add(new LogHelper.LogEntry("init legacy %s", fullPath));
             if (fullPath != null) {
                 File file = new File(fullPath);
-                this.freeMemBytes = file.getFreeSpace();
+                this.freeMemBytes = file.getFreeSpace(); // should actually have been getUsableSpace
                 this.totalMemBytes = file.getTotalSpace();
                 log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
                 log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
@@ -890,6 +902,8 @@ public class FileHelper {
                 if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
                     if (v.isPrimary()) {
                         Timber.v(">> %s PRIMARY", v.getUuid());
+                        log.add(new LogHelper.LogEntry("%s PRIMARY", v.getUuid()));
+
                         // Special processing for primary volume
                         UUID uuid = StorageManager.UUID_DEFAULT;
                         try {
@@ -898,7 +912,6 @@ public class FileHelper {
                             totalMemBytes = storageStatsManager.getTotalBytes(uuid);
                             freeMemBytes = storageStatsManager.getFreeBytes(uuid);
 
-                            log.add(new LogHelper.LogEntry("%s PRIMARY", v.getUuid()));
                             log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
                             log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
                             log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
@@ -907,18 +920,20 @@ public class FileHelper {
                         }
                     } else {
                         Timber.v(">> %s NOT PRIMARY", v.getUuid());
+                        log.add(new LogHelper.LogEntry("%s NOT PRIMARY", v.getUuid()));
+
                         // StorageStatsManager doesn't work for volumes other than the primary volume since
                         // the "UUID" available for non-primary volumes is not acceptable to
                         // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
                         try {
-                            String volumePath = getVolumePath(context, v.getUuid());
-                            if (volumePath != null) {
+                            String volumePath = getVolumePath(v);
+                            log.add(new LogHelper.LogEntry("volumePath = %s", volumePath));
+                            if (!volumePath.isEmpty()) {
                                 StructStatVfs stats = Os.statvfs(volumePath);
                                 long blockSize = stats.f_bsize;
                                 totalMemBytes = stats.f_blocks * blockSize;
                                 freeMemBytes = stats.f_bavail * blockSize;
 
-                                log.add(new LogHelper.LogEntry("%s NOT PRIMARY", v.getUuid()));
                                 log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
                                 log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
                                 log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
@@ -932,6 +947,7 @@ public class FileHelper {
             }
         }
 
+        // TODO doc
         @TargetApi(26)
         private boolean volumeIdMatch(@NonNull final StorageVolume volume, @NonNull final String treeId) {
             if (StringHelper.protect(volume.getUuid()).equals(treeId.replace("/", ""))) return true;
