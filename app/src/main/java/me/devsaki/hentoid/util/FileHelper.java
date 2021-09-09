@@ -43,7 +43,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -125,7 +124,7 @@ public class FileHelper {
     public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri) {
         if (uri.toString().isEmpty()) return "";
 
-        String volumePath = getVolumePath(context, getVolumeIdFromUri(uri, null));
+        String volumePath = getVolumePath(context, getVolumeIdFromUri(uri));
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
             volumePath = volumePath.substring(0, volumePath.length() - 1);
@@ -171,7 +170,7 @@ public class FileHelper {
                     if (null == primary) primary = false;
 
                     if (volumeIdMatch(uuid, primary, volumeId))
-                        return getVolumePath(storageVolumeElement, null);
+                        return getVolumePath(storageVolumeElement);
                 }
             }
             // not found.
@@ -186,11 +185,10 @@ public class FileHelper {
      * Returns the human-readable access path of the root of the given storage volume
      *
      * @param storageVolume android.os.storage.StorageVolume to return the path from
-     * @param log           temp
      * @return Human-readable access path of the root of the given storage volume; empty string if not found
      */
-    //    @SuppressWarnings("JavaReflectionMemberAccess") // Access to getPathFile is limited to API<30
-    private static String getVolumePath(@NonNull Object storageVolume, List<LogHelper.LogEntry> log) {
+    @SuppressWarnings("JavaReflectionMemberAccess") // Access to getPathFile is limited to API<30
+    private static String getVolumePath(@NonNull Object storageVolume) {
         String path = "";
         String absolutePath = "";
         String canonicalPath = "";
@@ -209,14 +207,6 @@ public class FileHelper {
                 path = pathFile.getPath();
                 absolutePath = pathFile.getAbsolutePath();
                 canonicalPath = pathFile.getCanonicalPath();
-                if (log != null) {
-                    log.add(new LogHelper.LogEntry("pathFile path %s", path));
-                    log.add(new LogHelper.LogEntry("pathFile absolute %s", absolutePath));
-                    log.add(new LogHelper.LogEntry("pathFile canonical %s", canonicalPath));
-                    log.add(new LogHelper.LogEntry("pathFile total space %d", pathFile.getTotalSpace()));
-                    log.add(new LogHelper.LogEntry("pathFile free space %d", pathFile.getFreeSpace()));
-                    log.add(new LogHelper.LogEntry("pathFile usable space %d", pathFile.getUsableSpace()));
-                }
             }
         } catch (Exception e) {
             Timber.w(e);
@@ -233,14 +223,12 @@ public class FileHelper {
      * @return Volume ID of the given Uri
      */
     @Nullable
-    private static String getVolumeIdFromUri(final Uri uri, List<LogHelper.LogEntry> log) {
+    private static String getVolumeIdFromUri(final Uri uri) {
         String docId;
         try {
             docId = DocumentsContract.getDocumentId(uri);
-            if (log != null) log.add(new LogHelper.LogEntry("documentId %s", docId));
         } catch (IllegalArgumentException e) {
             docId = DocumentsContract.getTreeDocumentId(uri);
-            if (log != null) log.add(new LogHelper.LogEntry("treeDocumentId %s", docId));
         }
 
         final String[] split = docId.split(":");
@@ -865,72 +853,48 @@ public class FileHelper {
          * @param f       Folder to get the figures from
          */
         public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
-            LogHelper.LogInfo log = new LogHelper.LogInfo();
-            log.setLogName("size");
-            List<LogHelper.LogEntry> entries = new ArrayList<>();
-            log.setEntries(entries);
-
-            initLegacy(context, f, entries);
-            init21(context, f, entries);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                init26(context, f, entries);
-            }
-            LogHelper.writeLog(context, log);
-            /*
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || 0 == totalMemBytes) {
-                Timber.v("MemoryUsageFigures using legacy mode");
-                init21(context, f);
-            }
-             */
+            if (Build.VERSION.SDK_INT >= 26) init26(context, f);
+            if (0 == totalMemBytes) init21(context, f);
+            if (0 == totalMemBytes) initLegacy(context, f);
         }
 
-        private void initLegacy(@NonNull Context context, @NonNull DocumentFile f, List<LogHelper.LogEntry> log) {
+        // Old way of measuring memory (inaccurate on certain devices)
+        private void initLegacy(@NonNull Context context, @NonNull DocumentFile f) {
             String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
-            log.add(new LogHelper.LogEntry("init legacy %s", fullPath));
             if (fullPath != null) {
                 File file = new File(fullPath);
                 this.freeMemBytes = file.getFreeSpace(); // should actually have been getUsableSpace
                 this.totalMemBytes = file.getTotalSpace();
-                log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
-                log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
-                log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
             }
         }
 
         // Init for API 21 to 25
-        private void init21(@NonNull Context context, @NonNull DocumentFile f, List<LogHelper.LogEntry> log) {
+        private void init21(@NonNull Context context, @NonNull DocumentFile f) {
             String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
-            log.add(new LogHelper.LogEntry("init21 %s", fullPath));
             if (fullPath != null) {
                 StatFs stat = new StatFs(fullPath);
 
                 long blockSize = stat.getBlockSizeLong();
                 totalMemBytes = stat.getBlockCountLong() * blockSize;
                 freeMemBytes = stat.getAvailableBlocksLong() * blockSize;
-                log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
-                log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
-                log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
             }
         }
 
         // Init for API 26+
         // Inspired by https://github.com/Cheticamp/Storage_Volumes/
         @TargetApi(26)
-        private void init26(@NonNull Context context, @NonNull DocumentFile f, List<LogHelper.LogEntry> log) {
-            String volumeId = getVolumeIdFromUri(f.getUri(), log);
+        private void init26(@NonNull Context context, @NonNull DocumentFile f) {
+            String volumeId = getVolumeIdFromUri(f.getUri());
             StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
 
-            log.add(new LogHelper.LogEntry("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId));
+            Timber.v("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
 
             for (StorageVolume v : mgr.getStorageVolumes()) {
-                Timber.v(">> %s %s", v.getUuid(), volumeId);
-
-                log.add(new LogHelper.LogEntry("Storage volume ID %s", v.getUuid()));
+                Timber.v("Storage volume ID %s", v.getUuid());
 
                 if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
                     if (v.isPrimary()) {
                         Timber.v(">> %s PRIMARY", v.getUuid());
-                        log.add(new LogHelper.LogEntry("%s PRIMARY", v.getUuid()));
 
                         // Special processing for primary volume
                         UUID uuid = StorageManager.UUID_DEFAULT;
@@ -939,32 +903,22 @@ public class FileHelper {
                                     (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
                             totalMemBytes = storageStatsManager.getTotalBytes(uuid);
                             freeMemBytes = storageStatsManager.getFreeBytes(uuid);
-
-                            log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
-                            log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
-                            log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
                         } catch (IOException e) {
                             Timber.e(e);
                         }
                     } else {
                         Timber.v(">> %s NOT PRIMARY", v.getUuid());
-                        log.add(new LogHelper.LogEntry("%s NOT PRIMARY", v.getUuid()));
 
                         // StorageStatsManager doesn't work for volumes other than the primary volume since
                         // the "UUID" available for non-primary volumes is not acceptable to
                         // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
                         try {
-                            String volumePath = getVolumePath(v, log);
-                            log.add(new LogHelper.LogEntry("volumePath = %s", volumePath));
+                            String volumePath = getVolumePath(v);
                             if (!volumePath.isEmpty()) {
                                 StructStatVfs stats = Os.statvfs(volumePath);
                                 long blockSize = stats.f_bsize;
                                 totalMemBytes = stats.f_blocks * blockSize;
                                 freeMemBytes = stats.f_bavail * blockSize;
-
-                                log.add(new LogHelper.LogEntry("total %d", totalMemBytes));
-                                log.add(new LogHelper.LogEntry("free %d", freeMemBytes));
-                                log.add(new LogHelper.LogEntry("%.2f%%free", freeMemBytes * 1f / totalMemBytes));
                             }
                         } catch (Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
                             Timber.e(e);
