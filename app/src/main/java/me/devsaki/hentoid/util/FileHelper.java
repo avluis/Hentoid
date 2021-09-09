@@ -2,7 +2,6 @@ package me.devsaki.hentoid.util;
 
 import static me.devsaki.hentoid.util.FileExplorer.createNameFilterEquals;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.usage.StorageStatsManager;
 import android.content.ActivityNotFoundException;
@@ -150,17 +149,15 @@ public class FileHelper {
      * @param volumeId Volume ID to get the path from
      * @return Human-readable access path of the given volume ID
      */
-    @SuppressLint("ObsoleteSdkInt")
     @Nullable
     private static String getVolumePath(@NonNull Context context, final String volumeId) {
         try {
-            // StorageVolume exist since API21, but is only visible since API24
+            // StorageVolume exists since API21, but is only visible since API24
             StorageManager mStorageManager =
                     (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
             Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
             Method getVolumeList = mStorageManager.getClass().getMethod("getVolumeList");
             Method getUuid = storageVolumeClazz.getMethod("getUuid");
-            @SuppressWarnings("JavaReflectionMemberAccess") Method getPath = storageVolumeClazz.getMethod("getPath");
             Method isPrimary = storageVolumeClazz.getMethod("isPrimary");
             Object result = getVolumeList.invoke(mStorageManager);
             if (null == result) return null;
@@ -168,69 +165,65 @@ public class FileHelper {
             final int length = Array.getLength(result);
             for (int i = 0; i < length; i++) {
                 Object storageVolumeElement = Array.get(result, i);
-                String uuid = StringHelper.protect((String) getUuid.invoke(storageVolumeElement));
-                Boolean primary = (Boolean) isPrimary.invoke(storageVolumeElement);
-                if (null == primary) primary = false;
+                if (storageVolumeElement != null) {
+                    String uuid = StringHelper.protect((String) getUuid.invoke(storageVolumeElement));
+                    Boolean primary = (Boolean) isPrimary.invoke(storageVolumeElement);
+                    if (null == primary) primary = false;
 
-                if (volumeIdMatch(uuid, primary, volumeId))
-                    return (String) getPath.invoke(storageVolumeElement);
-
-                /*
-                // primary volume?
-                if (primary != null && primary && PRIMARY_VOLUME_NAME.equals(volumeId))
-                    return (String) getPath.invoke(storageVolumeElement);
-
-                // other volumes?
-                if (uuid != null && uuid.equals(volumeId))
-                    return (String) getPath.invoke(storageVolumeElement);
-                 */
+                    if (volumeIdMatch(uuid, primary, volumeId))
+                        return getVolumePath(storageVolumeElement, null);
+                }
             }
             // not found.
             return null;
-        } catch (Exception ex) {
+        } catch (Exception e) {
+            Timber.w(e);
             return null;
         }
     }
 
-    @TargetApi(26)
-    @SuppressWarnings("JavaReflectionMemberAccess")
-    private static String getVolumePath(@NonNull StorageVolume volume, List<LogHelper.LogEntry> log) {
-        String result = "";
+    /**
+     * Returns the human-readable access path of the root of the given storage volume
+     *
+     * @param storageVolume android.os.storage.StorageVolume to return the path from
+     * @param log           temp
+     * @return Human-readable access path of the root of the given storage volume; empty string if not found
+     */
+    //    @SuppressWarnings("JavaReflectionMemberAccess") // Access to getPathFile is limited to API<30
+    private static String getVolumePath(@NonNull Object storageVolume, List<LogHelper.LogEntry> log) {
+        String path = "";
+        String absolutePath = "";
+        String canonicalPath = "";
         try {
-            String path = StringHelper.protect((String) volume.getClass().getMethod("getPath").invoke(volume));
-            if (log != null) log.add(new LogHelper.LogEntry("getPath %s", path));
-            String internalPath = "";
-            try {
-                internalPath = StringHelper.protect((String) volume.getClass().getMethod("getInternalPath").invoke(volume));
-                if (log != null)
-                    log.add(new LogHelper.LogEntry("getInternalPath %s", internalPath));
-            } catch (Exception e) {
-                Timber.d(e);
+            File pathFile;
+            Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
+            if (Build.VERSION.SDK_INT < 30) {
+                Method getPathFile = storageVolumeClazz.getMethod("getPathFile"); // Removed in API30
+                pathFile = (File) getPathFile.invoke(storageVolume);
+            } else {
+                Method getDirectory = storageVolumeClazz.getMethod("getDirectory");
+                pathFile = (File) getDirectory.invoke(storageVolume);
             }
-            String absolutePath = "";
-            try {
-                File pathFile = (File) volume.getClass().getMethod("getPathFile").invoke(volume);
-                if (log != null) log.add(new LogHelper.LogEntry("pathFile invoked !"));
-                if (pathFile != null) {
-                    absolutePath = pathFile.getAbsolutePath();
-                    if (log != null) {
-                        log.add(new LogHelper.LogEntry("pathFile absolute %s", absolutePath));
-                        log.add(new LogHelper.LogEntry("pathFile canonical %s", pathFile.getCanonicalPath()));
-                        log.add(new LogHelper.LogEntry("pathFile total space %d", pathFile.getTotalSpace()));
-                        log.add(new LogHelper.LogEntry("pathFile free space %d", pathFile.getFreeSpace()));
-                        log.add(new LogHelper.LogEntry("pathFile usable space %d", pathFile.getUsableSpace()));
-                    }
+
+            if (pathFile != null) {
+                path = pathFile.getPath();
+                absolutePath = pathFile.getAbsolutePath();
+                canonicalPath = pathFile.getCanonicalPath();
+                if (log != null) {
+                    log.add(new LogHelper.LogEntry("pathFile path %s", path));
+                    log.add(new LogHelper.LogEntry("pathFile absolute %s", absolutePath));
+                    log.add(new LogHelper.LogEntry("pathFile canonical %s", canonicalPath));
+                    log.add(new LogHelper.LogEntry("pathFile total space %d", pathFile.getTotalSpace()));
+                    log.add(new LogHelper.LogEntry("pathFile free space %d", pathFile.getFreeSpace()));
+                    log.add(new LogHelper.LogEntry("pathFile usable space %d", pathFile.getUsableSpace()));
                 }
-            } catch (Exception e) {
-                Timber.d(e);
             }
-            if (path.isEmpty() && internalPath.isEmpty()) result = absolutePath;
-            else if (path.isEmpty()) result = internalPath;
-            else result = path;
         } catch (Exception e) {
             Timber.w(e);
         }
-        return result;
+        if (path.isEmpty() && absolutePath.isEmpty()) return canonicalPath;
+        if (path.isEmpty()) return absolutePath;
+        return path;
     }
 
     /**
