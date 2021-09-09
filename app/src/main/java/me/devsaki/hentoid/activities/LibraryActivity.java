@@ -310,7 +310,7 @@ public class LibraryActivity extends BaseActivity {
         onCreated();
         sortCommandsAutoHide = new Debouncer<>(this, 3000, this::hideSearchSortBar);
 
-        EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
@@ -323,7 +323,7 @@ public class LibraryActivity extends BaseActivity {
     @Override
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
-        EventBus.getDefault().unregister(this);
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         if (archiveNotificationManager != null) archiveNotificationManager.cancel();
 
         // Empty all handlers to avoid leaks
