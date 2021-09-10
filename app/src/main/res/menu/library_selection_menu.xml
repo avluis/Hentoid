@@ -47,6 +47,7 @@
         android:title="@string/menu_open_folder"
         android:tooltipText="@string/menu_open_folder"
         app:showAsAction="ifRoom" />
+    <!-- For downloaded books only -->
     <item
         android:id="@+id/action_redownload"
         android:icon="@drawable/ic_action_download_scratch"
@@ -54,15 +55,28 @@
         android:tooltipText="@string/menu_redownload_scratch"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_selectAll"
-        android:icon="@drawable/ic_action_select_all"
-        android:title="@string/menu_select_all"
-        android:tooltipText="@string/menu_select_all"
+        android:id="@+id/action_stream"
+        android:icon="@drawable/ic_action_download_stream"
+        android:title="@string/menu_stream"
+        android:tooltipText="@string/menu_stream"
+        app:showAsAction="ifRoom" />
+    <!-- For online books only -->
+    <item
+        android:id="@+id/action_download"
+        android:icon="@drawable/ic_action_download_scratch"
+        android:title="@string/menu_download_streamed"
+        android:tooltipText="@string/menu_download_streamed"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_set_cover"
         android:icon="@drawable/ic_action_make_cover"
         android:title="@string/group_make_cover"
         android:tooltipText="@string/group_make_cover"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_selectAll"
+        android:icon="@drawable/ic_action_select_all"
+        android:title="@string/menu_select_all"
+        android:tooltipText="@string/menu_select_all"
         app:showAsAction="ifRoom" />
 </menu>

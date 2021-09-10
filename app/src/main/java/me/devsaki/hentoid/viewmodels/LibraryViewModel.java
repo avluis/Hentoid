@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.viewmodels;
 
+import static me.devsaki.hentoid.util.GroupHelper.moveBook;
+
 import android.app.Application;
 import android.os.Bundle;
 
@@ -15,6 +17,7 @@ import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
@@ -24,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -49,12 +53,11 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.GroupHelper.moveBook;
 
 
 public class LibraryViewModel extends AndroidViewModel {
@@ -230,8 +233,8 @@ public class LibraryViewModel extends AndroidViewModel {
     /**
      * Toggle the books favourite filter
      */
-    public void toggleContentFavouriteFilter() {
-        searchManager.setFilterBookFavourites(!searchManager.isFilterBookFavourites());
+    public void setContentFavouriteFilter(boolean value) {
+        searchManager.setFilterBookFavourites(value);
         newSearch.setValue(true);
         doSearchContent();
     }
@@ -378,33 +381,154 @@ public class LibraryViewModel extends AndroidViewModel {
             @NonNull final List<Content> contentList,
             boolean reparseContent,
             boolean reparseImages,
-            int addMode,
-            @NonNull final Runnable onSuccess) {
+            int position,
+            @NonNull final Consumer<Integer> onSuccess,
+            @NonNull final Consumer<Throwable> onError) {
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
 
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
+        AtomicInteger errorCount = new AtomicInteger(0);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
-                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : c)
-                        .map(c -> {
-                            if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
-                            return c;
+                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : Optional.of(c))
+                        .doOnNext(c -> {
+                            if (c.isPresent()) {
+                                Content content = c.get();
+                                // Non-blocking performance bottleneck; run in a dedicated worker
+                                // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
+                                if (reparseImages) purgeItem(content);
+                                dao.addContentToQueue(
+                                        content, targetImageStatus, position,
+                                        ContentQueueManager.getInstance().isQueueActive());
+                            } else {
+                                errorCount.incrementAndGet();
+                                onError.accept(new EmptyResultException("Content unreachable"));
+                            }
                         })
-                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus, addMode, ContentQueueManager.getInstance().isQueueActive()))
+                        .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
-                            // TODO is there stuff to do on the IO thread ?
+                            if (Preferences.isQueueAutostart())
+                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                            onSuccess.accept(contentList.size() - errorCount.get());
+                        })
+                        .subscribe(
+                                v -> { // Nothing; feedback is done through LiveData
+                                },
+                                onError::accept
+                        )
+        );
+    }
+
+    public void downloadContent(
+            @NonNull final List<Content> contentList,
+            int position,
+            @NonNull final Consumer<Integer> onSuccess,
+            @NonNull final Consumer<Throwable> onError) {
+        // Flag the content as "being deleted" (triggers blink animation)
+        for (Content c : contentList) flagContentDelete(c, true);
+
+        AtomicInteger nbErrors = new AtomicInteger(0);
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        .map(c -> {
+                            // Reparse content from scratch if images KO
+                            if (!ContentHelper.isDownloadable(c)) {
+                                Timber.d("Pages unreachable; reparsing content");
+                                // Reparse content itself
+                                Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
+                                if (newContent.isEmpty()) flagContentDelete(c, false);
+                                return newContent;
+                            }
+                            return Optional.of(c);
+                        })
+                        .doOnNext(c -> {
+                            if (c.isPresent()) {
+                                c.get().setDownloadMode(Content.DownloadMode.DOWNLOAD);
+                                dao.addContentToQueue(
+                                        c.get(), StatusContent.SAVED, position,
+                                        ContentQueueManager.getInstance().isQueueActive());
+                            } else {
+                                nbErrors.incrementAndGet();
+                                onError.accept(new EmptyResultException("Content unreachable"));
+                            }
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnComplete(() -> {
+                            if (Preferences.isQueueAutostart())
+                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                            onSuccess.accept(contentList.size() - nbErrors.get());
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> {
-                                    if (Preferences.isQueueAutostart())
-                                        ContentQueueManager.getInstance().resumeQueue(getApplication());
-                                    onSuccess.run();
+                                v -> { // Nothing; feedback is done through LiveData
                                 },
-                                Timber::e
+                                onError::accept
+                        )
+        );
+    }
+
+    public void streamContent(@NonNull final List<Content> contentList,
+                              @NonNull final Consumer<Throwable> onError) {
+
+        // Flag the content as "being deleted" (triggers blink animation)
+        for (Content c : contentList) flagContentDelete(c, true);
+
+        compositeDisposable.add(
+                Observable.fromIterable(contentList)
+                        .observeOn(Schedulers.io())
+                        .map(c -> {
+                            Timber.d("Checking pages availability");
+                            // Reparse content from scratch if images KO
+                            if (!ContentHelper.isDownloadable(c)) {
+                                Timber.d("Pages unreachable; reparsing content");
+                                // Reparse content itself
+                                Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
+                                if (newContent.isEmpty()) {
+                                    flagContentDelete(c, false);
+                                    return newContent;
+                                } else {
+                                    Content reparsedContent = newContent.get();
+                                    // Reparse pages
+                                    List<ImageFile> newImages = ContentHelper.fetchImageURLs(reparsedContent, StatusContent.ONLINE);
+                                    dao.replaceImageList(reparsedContent.getId(), newImages);
+                                    return Optional.of(reparsedContent.setImageFiles(newImages));
+                                }
+                            }
+                            return Optional.of(c);
+                        })
+                        .doOnNext(c -> {
+                            if (c.isPresent()) {
+                                Content dbContent = dao.selectContent(c.get().getId());
+                                if (null == dbContent) return;
+                                // Non-blocking performance bottleneck; scheduled in a dedicated worker
+                                purgeItem(c.get());
+                                dbContent.setDownloadMode(Content.DownloadMode.STREAM);
+                                List<ImageFile> imgs = dbContent.getImageFiles();
+                                if (imgs != null) {
+                                    for (ImageFile img : imgs) {
+                                        img.setFileUri("");
+                                        img.setSize(0);
+                                        img.setStatus(StatusContent.ONLINE);
+                                    }
+                                    dao.insertImageFiles(imgs);
+                                }
+                                dbContent.forceSize(0);
+                                dbContent.setIsBeingDeleted(false);
+                                dao.insertContent(dbContent);
+                                ContentHelper.updateContentJson(getApplication(), dbContent);
+                            } else {
+                                onError.accept(new EmptyResultException("Content unreachable"));
+                            }
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> { // Nothing; feedback is done through LiveData
+                                },
+                                onError::accept
                         )
         );
     }
@@ -432,7 +556,8 @@ public class LibraryViewModel extends AndroidViewModel {
         DeleteData.Builder builder = new DeleteData.Builder();
         if (!contents.isEmpty())
             builder.setContentIds(Stream.of(contents).map(Content::getId).toList());
-        if (!groups.isEmpty()) builder.setGroupIds(Stream.of(groups).map(Group::getId).toList());
+        if (!groups.isEmpty())
+            builder.setGroupIds(Stream.of(groups).map(Group::getId).toList());
         builder.setDeleteGroupsOnly(deleteGroupsOnly);
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
@@ -443,7 +568,20 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    public void archiveContents(@NonNull final List<Content> contentList, Consumer<Content> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
+    public void purgeItem(@NonNull final Content content) {
+        DeleteData.Builder builder = new DeleteData.Builder();
+        builder.setContentPurgeIds(Stream.of(content).map(Content::getId).toList());
+
+        WorkManager workManager = WorkManager.getInstance(getApplication());
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.delete_service),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
+        );
+    }
+
+    public void archiveContents(@NonNull final List<Content> contentList, Consumer<
+            Content> onProgress, Runnable onSuccess, Consumer<Throwable> onError) {
         Timber.d("Building file list for %s books", contentList.size());
 
         compositeDisposable.add(
@@ -499,7 +637,8 @@ public class LibraryViewModel extends AndroidViewModel {
         if (localGroup != null) localGroup.picture.setAndPutTarget(cover);
     }
 
-    public void saveContentPositions(@NonNull final List<Content> orderedContent, @NonNull final Runnable onSuccess) {
+    public void saveContentPositions(@NonNull final List<Content> orderedContent,
+                                     @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
                 Completable.fromRunnable(() -> doSaveContentPositions(orderedContent))
                         .subscribeOn(Schedulers.io())
@@ -554,7 +693,8 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
-    public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
+    public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName,
+                         @NonNull final Runnable onNameExists) {
         // Check if the group already exists
         List<Group> localGroups = getGroups().getValue();
         if (null == localGroups) return;
@@ -581,7 +721,8 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
-    public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName, @NonNull final Runnable onNameExists) {
+    public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName,
+                            @NonNull final Runnable onNameExists) {
         // Check if the group already exists
         List<Group> localGroups = getGroups().getValue();
         if (null == localGroups) return;
@@ -657,13 +798,15 @@ public class LibraryViewModel extends AndroidViewModel {
         throw new InvalidParameterException("Invalid GroupId : " + groupId);
     }
 
-    public void moveBooksToNew(long[] bookIds, String newGroupName, @NonNull final Runnable onSuccess) {
+    public void moveBooksToNew(long[] bookIds, String newGroupName,
+                               @NonNull final Runnable onSuccess) {
         Group newGroup = new Group(Grouping.CUSTOM, newGroupName.trim(), -1);
         newGroup.id = dao.insertGroup(newGroup);
         moveBooks(bookIds, newGroup, onSuccess);
     }
 
-    public void moveBooks(long[] bookIds, @Nullable final Group group, @NonNull final Runnable onSuccess) {
+    public void moveBooks(long[] bookIds, @Nullable final Group group,
+                          @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
                 Observable.fromIterable(Helper.getListFromPrimitiveArray(bookIds))
                         .observeOn(Schedulers.io())

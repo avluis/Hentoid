@@ -175,7 +175,6 @@
         android:id="@+id/import_progress_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=" "
         android:textAlignment="viewStart"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"

@@ -1,11 +1,16 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.parsers.images.EHentaiParser.MPV_LINK_CSS;
+import static me.devsaki.hentoid.parsers.images.EHentaiParser.getCookieStr;
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
 import com.annimon.stream.Optional;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.jsoup.nodes.Document;
@@ -36,10 +41,6 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.parsers.images.EHentaiParser.MPV_LINK_CSS;
-import static me.devsaki.hentoid.parsers.images.EHentaiParser.getCookieStr;
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class ExHentaiParser implements ImageListParser {
 
@@ -101,6 +102,7 @@ public class ExHentaiParser implements ImageListParser {
         return result;
     }
 
+    @SuppressWarnings("BusyWait")
     private List<ImageFile> loadMpv(
             @NonNull Content content,
             @NonNull final String mpvUrl,
@@ -154,7 +156,7 @@ public class ExHentaiParser implements ImageListParser {
             @NonNull final Document galleryDoc,
             @NonNull final List<Pair<String, String>> headers,
             boolean useHentoidAgent,
-            boolean useWebviewAgent) throws IOException, LimitReachedException {
+            boolean useWebviewAgent) throws IOException {
         List<ImageFile> result = new ArrayList<>();
 
         // A.1- Detect the number of pages of the gallery
@@ -164,7 +166,7 @@ public class ExHentaiParser implements ImageListParser {
         int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
         int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
-        progress.start(content.getId(), nbGalleryPages + content.getQtyPages());
+        progress.start(content.getId(), nbGalleryPages);
 
         // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
         List<String> pageUrls = new ArrayList<>();
@@ -179,16 +181,12 @@ public class ExHentaiParser implements ImageListParser {
             }
         }
 
-        // 3- Open all pages and
-        //    - grab the URL of the displayed image
-        //    - grab the alternate URL of the "Click here if the image fails loading" link
+        // 3- Add all pages for the downloader to parse
         result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+
         int order = 1;
         for (String pageUrl : pageUrls) {
-            if (processHalted) break;
-            ImageFile img = EHentaiParser.parsePicturePage(pageUrl, headers, useHentoidAgent, useWebviewAgent, order++, pageUrls.size());
-            if (img != null) result.add(img);
-            progress.advance();
+            result.add(ImageFile.fromPageUrl(order++, pageUrl, StatusContent.SAVED, pageUrls.size()));
         }
 
         return result;
@@ -207,6 +205,11 @@ public class ExHentaiParser implements ImageListParser {
                 return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED, chapter));
         }
         return Optional.empty();
+    }
+
+    @Override
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+        return EHentaiParser.parseImagePageEh(url, requestHeaders);
     }
 
     /**

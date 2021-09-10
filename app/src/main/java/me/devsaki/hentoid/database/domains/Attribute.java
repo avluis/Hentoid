@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Objects;
 
 import javax.annotation.Nonnull;
 
@@ -167,6 +168,9 @@ public class Attribute {
         return String.format("%s%s %s", useNamespace ? type.getDisplayName().toLowerCase() + ":" : "", getName(), getCount() > 0 ? "(" + getCount() + ")" : "");
     }
 
+    // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI
+    // If not done, FastAdapter's PagedItemListImpl cache won't detect changes to the object
+    // and items won't be visually updated on screen
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -183,9 +187,9 @@ public class Attribute {
 
     @Override
     public int hashCode() {
-        int result = name.hashCode();
-        result = 31 * result + type.hashCode();
-        result = 31 * result + externalId;
-        return result;
+        // Must be an int32, so we're bound to use Objects.hash
+        long idComp = id;
+        if (externalId != 0) idComp = externalId;
+        return Objects.hash(getName(), getType(), idComp);
     }
 }

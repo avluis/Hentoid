@@ -75,9 +75,9 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="4dp"
         android:text="@string/category_series"
-        app:layout_constraintStart_toEndOf="@id/guideline_middle"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@id/guideline_middle"
         app:layout_constraintTop_toBottomOf="@id/textCategoryLanguage" />
 
     <TextView
@@ -146,13 +146,13 @@
         android:layout_height="48dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/bg_fab_extended"
-        android:drawableStart="@drawable/ic_search"
         android:drawablePadding="12dp"
         android:gravity="center"
         android:paddingStart="12dp"
         android:paddingEnd="20dp"
         android:text="@plurals/search_button"
         android:visibility="gone"
+        app:drawableStartCompat="@drawable/ic_search"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -163,9 +163,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:onClick="onExcludeClick"
         android:text="@string/exclude"
         app:layout_constraintBottom_toTopOf="@id/textCategoryAny"
         app:layout_constraintEnd_toEndOf="@id/guideline_middle"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

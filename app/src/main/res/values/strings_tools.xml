@@ -16,6 +16,10 @@
     <string name="tools_duplicate_detector_title">Duplicate detector</string>
     <string name="tools_duplicate_detector_summary">Identify and remove duplicate books</string>
 
+    <string name="tools_screen_cache">Cache management</string>
+    <string name="tools_cache_browser">Clear browser cache</string>
+    <string name="tools_cache_app">Clear app cache</string>
+
     <string name="tools_latest_logs_title">App logs</string>
     <string name="tools_latest_logs_summary">View the app\'s latest logs</string>
 </resources>

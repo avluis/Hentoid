@@ -1,5 +1,17 @@
 package me.devsaki.hentoid.fragments.library;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static com.annimon.stream.Collectors.toCollection;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -39,6 +51,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
+import com.annimon.stream.function.Consumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -110,18 +123,6 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static com.annimon.stream.Collectors.toCollection;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
-import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
 
 @SuppressLint("NonConstantResourceId")
 public class LibraryContentFragment extends Fragment implements ChangeGroupDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
@@ -573,6 +574,14 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 askRedownloadSelectedItemsScratch();
                 keepToolbar = true;
                 break;
+            case R.id.action_download:
+                askDownloadSelectedItems();
+                keepToolbar = true;
+                break;
+            case R.id.action_stream:
+                askStreamSelectedItems();
+                keepToolbar = true;
+                break;
             case R.id.action_selectAll:
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 int count = 0;
@@ -712,7 +721,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             redownloadFromScratch(contents);
-                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.setSelectOnLongClick(true);
                             selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
@@ -720,6 +729,98 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                         (dialog12, which) -> dialog12.dismiss())
                 .create()
                 .show();
+    }
+
+    /**
+     * Callback for the "Download" action button
+     */
+    private void askDownloadSelectedItems() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+
+        int nonOnlineContent = 0;
+        List<Content> contents = new ArrayList<>();
+        for (ContentItem ci : selectedItems) {
+            Content c = ci.getContent();
+            if (null == c) continue;
+            if (Content.DownloadMode.STREAM != c.getDownloadMode()) {
+                nonOnlineContent++;
+            } else {
+                contents.add(c);
+            }
+        }
+
+        String message = getResources().getQuantityString(R.plurals.download_confirm, contents.size());
+        if (nonOnlineContent > 0)
+            message = getResources().getQuantityString(R.plurals.download_non_streamed_content, nonOnlineContent, nonOnlineContent);
+
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            download(contents, this::onDownloadError);
+                            selectExtension.setSelectOnLongClick(true);
+                            selectExtension.deselect(selectExtension.getSelections());
+                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+                        })
+                .setNegativeButton(R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
+    }
+
+    private void onDownloadError(Throwable t) {
+        Timber.w(t);
+        Snackbar.make(recyclerView, R.string.download_canceled, BaseTransientBottomBar.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Callback for the "Switch to streaming" action button
+     */
+    private void askStreamSelectedItems() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+
+        int streamedOrExternalContent = 0;
+        List<Content> contents = new ArrayList<>();
+        for (ContentItem ci : selectedItems) {
+            Content c = ci.getContent();
+            if (null == c) continue;
+            if (c.getDownloadMode() == Content.DownloadMode.STREAM || c.getStatus().equals(StatusContent.EXTERNAL)) {
+                streamedOrExternalContent++;
+            } else {
+                contents.add(c);
+            }
+        }
+
+        String message = getResources().getQuantityString(R.plurals.stream_confirm, contents.size());
+        if (streamedOrExternalContent > 0)
+            message = getResources().getQuantityString(R.plurals.stream_external_streamed_content, streamedOrExternalContent, streamedOrExternalContent);
+
+        new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
+                .setIcon(R.drawable.ic_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes,
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            selectExtension.setSelectOnLongClick(true);
+                            selectExtension.deselect(selectExtension.getSelections());
+                            stream(contents, this::onStreamError);
+                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+                        })
+                .setNegativeButton(R.string.no,
+                        (dialog12, which) -> dialog12.dismiss())
+                .create()
+                .show();
+    }
+
+    private void onStreamError(Throwable t) {
+        Timber.w(t);
+        Snackbar.make(recyclerView, R.string.stream_canceled, BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     /**
@@ -739,7 +840,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             viewModel.setGroupCover(group.id, content.getCover());
-                            for (ContentItem ci : selectedItems) ci.setSelected(false);
+                            selectExtension.setSelectOnLongClick(true);
                             selectExtension.deselect(selectExtension.getSelections());
                             activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
@@ -769,7 +870,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (currentPosition > 0 || -1 == topItemPosition) topItemPosition = currentPosition;
 
         outState.putInt(KEY_LAST_LIST_POSITION, topItemPosition);
-        //topItemPosition = -1;
     }
 
     @Override
@@ -1277,13 +1377,43 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     private void redownloadFromScratch(@NonNull final List<Content> contentList, int addMode) {
+        topItemPosition = getTopItemPosition();
         viewModel.redownloadContent(contentList, true, true, addMode,
-                () -> {
-                    String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), contentList.size());
+                nbSuccess -> {
+                    String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.setAction("VIEW QUEUE", v -> viewQueue());
                     snackbar.show();
+                },
+                t -> {
+                    Timber.w(t);
+                    Snackbar.make(recyclerView, R.string.redownloaded_error, BaseTransientBottomBar.LENGTH_LONG).show();
                 });
+    }
+
+    private void download(@NonNull final List<Content> contentList, @NonNull Consumer<Throwable> onError) {
+        if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+            AddQueueMenu.show(activity.get(), recyclerView, this, (position, item) ->
+                    download(contentList, (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM, onError)
+            );
+        } else
+            download(contentList, Preferences.getQueueNewDownloadPosition(), onError);
+    }
+
+    private void download(@NonNull final List<Content> contentList, int addMode, @NonNull Consumer<Throwable> onError) {
+        topItemPosition = getTopItemPosition();
+        viewModel.downloadContent(contentList, addMode,
+                nbSuccess -> {
+                    String message = getResources().getQuantityString(R.plurals.add_to_queue, nbSuccess, nbSuccess, contentList.size());
+                    Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
+                    snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+                    snackbar.show();
+                },
+                onError);
+    }
+
+    private void stream(@NonNull final List<Content> contentList, @NonNull Consumer<Throwable> onError) {
+        viewModel.streamContent(contentList, onError);
     }
 
     /**
@@ -1298,7 +1428,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             selectExtension.setSelectOnLongClick(true);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount);
+            long selectedOnlineCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedOnlineCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }

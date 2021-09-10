@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -38,7 +39,7 @@ public class ASMHentaiContent extends BaseContentParser {
     private List<Element> languages;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         String theUrl = canonicalUrl.isEmpty() ? url : canonicalUrl;
         if (theUrl.isEmpty())
             return new Content().setSite(Site.ASMHENTAI).setStatus(StatusContent.IGNORED);
@@ -52,7 +53,6 @@ public class ASMHentaiContent extends BaseContentParser {
         content.setCoverImageUrl("https:" + coverUrl);
 
         content.setTitle(StringHelper.removeNonPrintableChars(title));
-        content.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
 
         AttributeMap attributes = new AttributeMap();
 
@@ -63,6 +63,11 @@ public class ASMHentaiContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, "badge", Site.ASMHENTAI);
 
         content.putAttributes(attributes);
+
+        if (updateImages) {
+            content.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
+            content.setImageFiles(Collections.emptyList());
+        }
 
         return content;
     }

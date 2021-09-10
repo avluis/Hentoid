@@ -9,6 +9,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -16,7 +17,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.HbrowseParser;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HbrowseContent extends BaseContentParser {
@@ -25,7 +25,7 @@ public class HbrowseContent extends BaseContentParser {
     @Selector("table.listTable tr")
     private List<Element> information;
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.HBROWSE);
         if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
@@ -70,9 +70,11 @@ public class HbrowseContent extends BaseContentParser {
         }
         content.putAttributes(attributes);
 
-        List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(content, scripts), content.getCoverImageUrl(), StatusContent.SAVED);
-        content.setImageFiles(imgs);
-        content.setQtyPages(imgs.size() - 1);  // Don't count the cover
+        if (updateImages) {
+            List<ImageFile> imgs = ParseHelper.urlsToImageFiles(HbrowseParser.parseImages(content, scripts), content.getCoverImageUrl(), StatusContent.SAVED);
+            content.setImageFiles(imgs);
+            content.setQtyPages(imgs.size() - 1);  // Don't count the cover
+        }
 
         return content;
     }

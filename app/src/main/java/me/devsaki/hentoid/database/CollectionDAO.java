@@ -31,6 +31,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ContentHelper;
 
 public interface CollectionDAO {
 
@@ -143,13 +144,9 @@ public interface CollectionDAO {
 
     long countStoredContent(boolean nonFavouriteOnly, boolean includeQueued);
 
-    Observable<Content> streamContentWithUnhashedCovers();
-
     List<Content> selectContentWithUnhashedCovers();
 
     long countContentWithUnhashedCovers();
-
-
 
 
     void streamStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc, Consumer<Content> consumer);
@@ -214,7 +211,7 @@ public interface CollectionDAO {
 
     LiveData<List<QueueRecord>> selectQueueLive(String query);
 
-    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int mode, boolean isQueueActive);
+    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, @ContentHelper.QueuePosition int position, boolean isQueueActive);
 
     void updateQueue(@NonNull List<QueueRecord> queue);
 

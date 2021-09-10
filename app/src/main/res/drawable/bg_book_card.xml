@@ -3,21 +3,27 @@
     <!-- Standard background color -->
     <item android:state_selected="false">
         <shape android:shape="rectangle">
+            <!--
             <corners android:radius="4dp" />
+            -->
             <solid android:color="?card_surface" />
         </shape>
     </item>
     <!-- Color when the card is pressed -->
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
+            <!--
             <corners android:radius="4dp" />
+            -->
             <solid android:color="?card_pressed" />
         </shape>
     </item>
     <!-- Color when the card is selected -->
     <item android:state_pressed="false" android:state_selected="true">
         <shape android:shape="rectangle">
+            <!--
             <corners android:radius="4dp" />
+            -->
             <solid android:color="?card_selected" />
             <stroke android:width="4dp" android:color="?colorSecondary" />
         </shape>

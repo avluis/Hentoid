@@ -20,7 +20,7 @@ import timber.log.Timber;
 public class ExhentaiContent extends BaseContentParser {
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         CookieManager mgr = CookieManager.getInstance();
         String cookiesStr = mgr.getCookie(".exhentai.org");
 
@@ -29,7 +29,7 @@ public class ExhentaiContent extends BaseContentParser {
 
         try {
             EHentaiGalleriesMetadata metadata = EHentaiServer.EXHENTAI_API.getGalleryMetadata(query, cookiesStr).execute().body();
-            return metadata.update(content, url, Site.EXHENTAI);
+            return metadata.update(content, url, Site.EXHENTAI, updateImages);
         } catch (IOException e) {
             Timber.e(e, "Error parsing content.");
             return new Content().setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED);

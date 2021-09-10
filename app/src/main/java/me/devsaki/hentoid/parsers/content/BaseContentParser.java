@@ -19,8 +19,8 @@ public abstract class BaseContentParser implements ContentParser {
     }
 
     public Content toContent(@Nonnull String url) {
-        return update(new Content(), url);
+        return update(new Content(), url, true);
     }
 
-    public abstract Content update(@NonNull final Content content, @Nonnull String url);
+    public abstract Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages);
 }

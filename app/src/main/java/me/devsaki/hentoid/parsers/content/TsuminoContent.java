@@ -1,22 +1,23 @@
 package me.devsaki.hentoid.parsers.content;
 
+import static me.devsaki.hentoid.enums.Site.TSUMINO;
+
 import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
-
-import static me.devsaki.hentoid.enums.Site.TSUMINO;
 
 public class TsuminoContent extends BaseContentParser {
     @Selector(value = "div.book-page-cover a", attr = "href", defValue = "")
@@ -41,7 +42,7 @@ public class TsuminoContent extends BaseContentParser {
     private List<Element> categories;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(TSUMINO);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
         if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
@@ -50,7 +51,6 @@ public class TsuminoContent extends BaseContentParser {
         if (!coverUrl.startsWith("http")) coverUrl = TSUMINO.getUrl() + coverUrl;
         content.setCoverImageUrl(coverUrl);
         content.setTitle(StringHelper.removeNonPrintableChars(title));
-        content.setQtyPages((pages.length() > 0) ? Integer.parseInt(pages) : 0);
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, TSUMINO);
@@ -60,6 +60,11 @@ public class TsuminoContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, TSUMINO);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, TSUMINO);
         content.putAttributes(attributes);
+
+        if (updateImages) {
+            content.setImageFiles(Collections.emptyList());
+            content.setQtyPages((pages.length() > 0) ? Integer.parseInt(pages) : 0);
+        }
 
         return content;
     }

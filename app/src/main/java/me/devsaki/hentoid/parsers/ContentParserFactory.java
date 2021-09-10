@@ -70,8 +70,6 @@ public class ContentParserFactory {
                 return TsuminoContent.class;
             case PURURIN:
                 return PururinContent.class;
-            //case NEXUS:
-            //    return NexusContent.class;
             case MUSES:
                 return MusesContent.class;
             case DOUJINS:
@@ -124,8 +122,6 @@ public class ContentParserFactory {
                 return new EHentaiParser();
             case EXHENTAI:
                 return new ExHentaiParser();
-            //case NEXUS:
-            //    return new NexusParser2();
             case LUSCIOUS:
                 return new LusciousParser();
             case PORNCOMIX:

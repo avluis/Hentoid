@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -30,7 +31,7 @@ public class MrmContent extends BaseContentParser {
     private List<Element> tags;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.MRM);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
@@ -45,6 +46,8 @@ public class MrmContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, genres, false, Site.MRM);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MRM);
         content.putAttributes(attributes);
+
+        if (updateImages) content.setImageFiles(Collections.emptyList());
 
         return content;
     }

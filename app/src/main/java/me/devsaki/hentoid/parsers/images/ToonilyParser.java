@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 import android.webkit.URLUtil;
 
@@ -25,8 +27,6 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 /**
  * Created by robb_w on 2021/02
@@ -114,8 +114,18 @@ public class ToonilyParser extends BaseImageListParser {
             doc = getOnlineDocument(chp.getUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
-                List<String> urls = Stream.of(images).map(i -> i.attr("data-src").trim()).filterNot(String::isEmpty).toList();
-                result.addAll(ParseHelper.urlsToImageFiles(urls, orderOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                List<String> urls = new ArrayList<>();
+                for (Element e : images) {
+                    String url = e.attr("data-src").trim();
+                    if (url.isEmpty()) url = e.attr("src").trim();
+                    if (!url.isEmpty()) urls.add(url);
+                }
+                if (!urls.isEmpty())
+                    result.addAll(ParseHelper.urlsToImageFiles(urls, orderOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                else
+                    Timber.w("Chapter parsing failed for %s : no pictures found", chp.getUrl());
+            } else {
+                Timber.w("Chapter parsing failed for %s : no response", chp.getUrl());
             }
             progressPlus();
         }

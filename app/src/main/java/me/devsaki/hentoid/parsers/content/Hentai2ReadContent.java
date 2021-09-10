@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -28,7 +29,7 @@ public class Hentai2ReadContent extends BaseContentParser {
     private String uniqueId;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.HENTAI2READ);
         if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
@@ -75,6 +76,8 @@ public class Hentai2ReadContent extends BaseContentParser {
             }
         }
         content.putAttributes(attributes);
+
+        if (updateImages) content.setImageFiles(Collections.emptyList());
 
         return content;
     }

@@ -377,6 +377,13 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.BROWSER_AUGMENTED, Default.BROWSER_AUGMENTED_DEFAULT);
     }
 
+    public static int getBrowserDlAction() {
+        return Integer.parseInt(
+                sharedPreferences.getString(
+                        Key.BROWSER_DL_ACTION,
+                        Default.BROWSER_DL_ACTION + "") + "");
+    }
+
     public static boolean isBrowserQuickDl() {
         return sharedPreferences.getBoolean(Key.BROWSER_QUICK_DL, Default.BROWSER_QUICK_DL);
     }
@@ -835,6 +842,7 @@ public final class Preferences {
         static final String WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String BROWSER_RESUME_LAST = "pref_browser_resume_last";
         static final String BROWSER_AUGMENTED = "pref_browser_augmented";
+        public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
         static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
         static final String FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
@@ -927,6 +935,7 @@ public final class Preferences {
         public static final int WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final boolean BROWSER_RESUME_LAST_DEFAULT = false;
         static final boolean BROWSER_AUGMENTED_DEFAULT = true;
+        static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
         static final boolean BROWSER_QUICK_DL = true;
         static final int DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_100;
@@ -1035,6 +1044,9 @@ public final class Preferences {
 
         public static final int DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE = 0;
         public static final int DL_TAG_BLOCKING_BEHAVIOUR_QUEUE_ERROR = 1;
+
+        public static final int DL_ACTION_DL_PAGES = 0;
+        public static final int DL_ACTION_STREAM = 1;
 
         static final int TRUNCATE_FOLDER_100 = 100;
 

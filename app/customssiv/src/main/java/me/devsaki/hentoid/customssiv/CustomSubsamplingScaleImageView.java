@@ -766,7 +766,13 @@ public class CustomSubsamplingScaleImageView extends View {
             vCenterStart = new PointF(x, y);
             PointF sCenter = viewToSourceCoord(vCenterStart);
 
-            new AnimationBuilder(doubleTapZoomScale, sCenter).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.LONG_TAP_ZOOM).start();
+            float targetDoubleTapZoomScale = Math.min(maxScale, doubleTapZoomScale);
+            if (doubleTapZoomCap > -1) {
+                targetDoubleTapZoomScale = Math.min(targetDoubleTapZoomScale, initialScale * doubleTapZoomCap);
+                Timber.i(">> longTapZoomCap %s -> %s", initialScale, targetDoubleTapZoomScale);
+            }
+
+            new AnimationBuilder(targetDoubleTapZoomScale, sCenter).withInterruptible(false).withDuration(doubleTapZoomDuration).withOrigin(AnimOrigin.LONG_TAP_ZOOM).start();
 
             isPanning = true;
             isLongTapZooming = true;

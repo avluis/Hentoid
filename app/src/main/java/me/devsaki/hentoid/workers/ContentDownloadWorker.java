@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Pair;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
@@ -21,6 +22,7 @@ import com.android.volley.Request;
 import com.android.volley.ServerError;
 import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -40,6 +42,7 @@ import java.util.Random;
 
 import javax.annotation.Nullable;
 
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -238,6 +241,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         Content content = queue.get(0).getContent().getTarget();
+        @Content.DownloadMode int downloadMode = queue.get(0).getDownloadMode();
 
         if (null == content) {
             Timber.w("Content is unavailable. Download aborted.");
@@ -276,13 +280,14 @@ public class ContentDownloadWorker extends BaseWorker {
             images = new ArrayList<>(images); // Safe copy of the original list
 
         for (ImageFile img : images) if (img.getStatus().equals(StatusContent.ERROR)) nbErrors++;
+        StatusContent targetImageStatus = (downloadMode == Content.DownloadMode.DOWNLOAD) ? StatusContent.SAVED : StatusContent.ONLINE;
 
         if (images.isEmpty()
                 || nbErrors == images.size()
                 || (nbErrors > 0 && content.getSite().hasBackupURLs())
         ) {
             try {
-                List<ImageFile> newImages = fetchImageURLs(content);
+                List<ImageFile> newImages = ContentHelper.fetchImageURLs(content, targetImageStatus);
                 // Cases 1 and 2 : Replace existing images with the parsed images
                 if (images.isEmpty() || nbErrors == images.size()) images = newImages;
                 // Case 3 : Replace images in ERROR state with the parsed images at the same position
@@ -334,7 +339,10 @@ public class ContentDownloadWorker extends BaseWorker {
             }
         } else if (nbErrors > 0) {
             // Other cases : Reset ERROR status of images to mark them as "to be downloaded" (in DB and in memory)
-            dao.updateImageContentStatus(content.getId(), StatusContent.ERROR, StatusContent.SAVED);
+            dao.updateImageContentStatus(content.getId(), StatusContent.ERROR, targetImageStatus);
+        } else {
+            if (downloadMode == Content.DownloadMode.STREAM)
+                dao.updateImageContentStatus(content.getId(), null, StatusContent.ONLINE);
         }
 
         if (hasError) {
@@ -362,7 +370,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
             // => Create all images, flag them as failed as well as the book
-            dao.updateImageContentStatus(content.getId(), StatusContent.SAVED, StatusContent.ERROR);
+            dao.updateImageContentStatus(content.getId(), targetImageStatus, StatusContent.ERROR);
             completeDownload(content.getId(), content.getTitle(), 0, images.size(), 0);
             return new ImmutablePair<>(QueuingResult.CONTENT_FAILED, content);
         }
@@ -374,6 +382,11 @@ public class ContentDownloadWorker extends BaseWorker {
         if (0 == content.getQtyPages()) content.setQtyPages(images.size() - 1);
         content.setStatus(StatusContent.DOWNLOADING);
         dao.insertContent(content);
+
+        if (downloadMode == Content.DownloadMode.STREAM) {
+            completeDownload(content.getId(), content.getTitle(), images.size(), 0, 0);
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, content);
+        }
 
         HentoidApp.trackDownloadEvent("Added");
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
@@ -398,6 +411,8 @@ public class ContentDownloadWorker extends BaseWorker {
         if (downloadCanceled || downloadSkipped)
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
+        List<ImageFile> pagesToParse = new ArrayList<>();
+
         // Queue image download requests
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED)) {
@@ -414,16 +429,31 @@ public class ContentDownloadWorker extends BaseWorker {
                 if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY) || content.getSite().isUseCloudflare())
                     downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(img.getUrl()));
 
-                // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
-                if (img.isCover() && images.size() > 1) {
-                    downloadParams.put("backupUrl", images.get(1).getUrl());
-                }
-
                 img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
 
-                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content));
+                // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
+                if (img.isCover() && images.size() > 1) img.setBackupUrl(images.get(1).getUrl());
+
+                if (img.needsPageParsing()) pagesToParse.add(img);
+                else requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
             }
         }
+
+        // Parse pages for images
+        if (!pagesToParse.isEmpty()) {
+            final Content contentFinal = content;
+            compositeDisposable.add(
+                    Observable.fromIterable(pagesToParse)
+                            .observeOn(Schedulers.io())
+                            .subscribe(
+                                    img -> parsePageforImage(img, dir, contentFinal),
+                                    t -> {
+                                        // Nothing; just exit the Rx chain
+                                    }
+                            )
+            );
+        }
+
 
         if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
             Timber.i("Queue JSON successfully saved");
@@ -580,7 +610,7 @@ public class ContentDownloadWorker extends BaseWorker {
                                 Timber.i("Auto-retry #%s for content %s / image @ %s", content.getNumberDownloadRetries(), content.getTitle(), img.getUrl());
                                 img.setStatus(StatusContent.SAVED);
                                 dao.insertImageFile(img);
-                                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, content));
+                                requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
                             }
                         return;
                     }
@@ -653,78 +683,66 @@ public class ContentDownloadWorker extends BaseWorker {
         }
     }
 
-    /**
-     * Query source to fetch all image file names and URLs of a given book
-     *
-     * @param content Book whose pages to retrieve
-     * @return List of pages with original URLs and file name
-     */
-    private List<ImageFile> fetchImageURLs(@NonNull Content content) throws Exception {
-        List<ImageFile> imgs;
+    // TODO doc
+    @SuppressLint("TimberArgCount")
+    private void parsePageforImage(
+            @NonNull final ImageFile img,
+            @NonNull final DocumentFile dir,
+            @NonNull final Content content) throws LimitReachedException {
 
-        // If content doesn't have any download parameters, get them from the cookie manager
-        String contentDownloadParamsStr = content.getDownloadParams();
-        if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
-            String cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
-            if (!cookieStr.isEmpty()) {
-                Map<String, String> downloadParams = new HashMap<>();
-                downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
-                content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+        Site site = content.getSite();
+        String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
+
+        // Apply image download parameters
+        Map<String, String> requestHeaders = new HashMap<>();
+        String cookieStr = null;
+        Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
+        if (!downloadParams.isEmpty()) {
+            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
+                cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+            if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
+                String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                if (value != null) requestHeaders.put(HttpHelper.HEADER_REFERER_KEY, value);
             }
         }
+        if (null == cookieStr) cookieStr = HttpHelper.getCookies(pageUrl);
+        requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
 
-        // Use ImageListParser to query the source
-        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
-        imgs = parser.parseImageList(content);
-
-        // If no images found, or just the cover, image detection has failed
-        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
-            throw new EmptyResultException();
-
-        // Add the content's download params to the images only if they have missing information
-        contentDownloadParamsStr = content.getDownloadParams();
-        if (contentDownloadParamsStr != null && contentDownloadParamsStr.length() > 2) {
-            Map<String, String> contentDownloadParams = ContentHelper.parseDownloadParams(contentDownloadParamsStr);
-            for (ImageFile i : imgs) {
-                if (i.getDownloadParams() != null && i.getDownloadParams().length() > 2) {
-                    Map<String, String> imageDownloadParams = ContentHelper.parseDownloadParams(i.getDownloadParams());
-                    // Content's params
-                    for (Map.Entry<String, String> entry : contentDownloadParams.entrySet())
-                        if (!imageDownloadParams.containsKey(entry.getKey()))
-                            imageDownloadParams.put(entry.getKey(), entry.getValue());
-                    // Referer, just in case
-                    if (!imageDownloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
-                        imageDownloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
-                    i.setDownloadParams(JsonHelper.serializeToJson(imageDownloadParams, JsonHelper.MAP_STRINGS));
-                } else {
-                    i.setDownloadParams(contentDownloadParamsStr);
-                }
-            }
+        try {
+            List<Pair<String, String>> reqHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.getPageUrl());
+            ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content.getSite());
+            ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(img.getPageUrl(), reqHeaders);
+            img.setUrl(pages.left);
+            // Set backup URL
+            if (pages.right.isPresent()) img.setBackupUrl(pages.right.get());
+            // Queue the picture
+            requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
+        } catch (UnsupportedOperationException | IllegalArgumentException e) {
+            Timber.w(e, "Could not read image from page %s", img.getPageUrl());
+            updateImageStatusUri(img, false, "");
+            logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "Could not read image from page " + img.getPageUrl() + " " + e.getMessage());
+        } catch (IOException ioe) {
+            Timber.w(ioe, "Could not read page data from %s", img.getPageUrl());
+            updateImageStatusUri(img, false, "");
+            logErrorRecord(content.getId(), ErrorType.IO, img.getPageUrl(), "Page " + img.getName(), "Could not read page data from " + img.getPageUrl() + " " + ioe.getMessage());
+        } catch (LimitReachedException lre) {
+            String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
+            Timber.w(lre, description);
+            updateImageStatusUri(img, false, "");
+            logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Page " + img.getName(), description);
+            throw lre;
+        } catch (EmptyResultException ere) {
+            Timber.w(ere, "No images have been found while parsing %s", content.getTitle());
+            updateImageStatusUri(img, false, "");
+            logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "No images have been found. Error = " + ere.getMessage());
         }
-
-        // Cleanup generated objects
-        for (ImageFile img : imgs) {
-            img.setId(0);
-            img.setStatus(StatusContent.SAVED);
-            img.setContentId(content.getId());
-        }
-
-        return imgs;
     }
 
-    /**
-     * Create an image download request an its handler from a given image URL, file name and destination folder
-     *
-     * @param img Image to download
-     * @param dir Destination folder
-     * @return Volley request and its handler
-     */
-    private Request<Object> buildDownloadRequest(
+    private Request<Object> buildImageDownloadRequest(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
             @NonNull final Content content) {
 
-        String backupUrl = "";
         Site site = content.getSite();
         String imageUrl = HttpHelper.fixUrl(img.getUrl(), site.getUrl());
 
@@ -739,13 +757,11 @@ public class ContentDownloadWorker extends BaseWorker {
                 String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
                 if (value != null) requestHeaders.put(HttpHelper.HEADER_REFERER_KEY, value);
             }
-            if (downloadParams.containsKey("backupUrl"))
-                backupUrl = downloadParams.get("backupUrl");
         }
         if (null == cookieStr) cookieStr = HttpHelper.getCookies(imageUrl);
         requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
 
-        final String backupUrlFinal = HttpHelper.fixUrl(backupUrl, site.getUrl());
+        final String backupUrlFinal = HttpHelper.fixUrl(img.getBackupUrl(), site.getUrl());
 
         return new InputStreamVolleyRequest(
                 Request.Method.GET,
@@ -753,11 +769,11 @@ public class ContentDownloadWorker extends BaseWorker {
                 requestHeaders,
                 site.useHentoidAgent(),
                 site.useWebviewAgent(),
-                result -> onRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
+                result -> onImageRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
                 error -> onRequestError(error, content, img, dir, backupUrlFinal, requestHeaders));
     }
 
-    private void onRequestSuccess(
+    private void onImageRequestSuccess(
             Map.Entry<byte[], Map<String, String>> result,
             @NonNull ImageFile img,
             @NonNull DocumentFile dir,
@@ -771,7 +787,7 @@ public class ContentDownloadWorker extends BaseWorker {
                     updateImageStatusUri(img, true, imgFile.getUri().toString());
             } else {
                 updateImageStatusUri(img, false, "");
-                logErrorRecord(img.getContent().getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), "Result null");
+                logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "No picture (result is null)");
             }
         } catch (UnsupportedContentException e) {
             Timber.w(e);
@@ -779,16 +795,16 @@ public class ContentDownloadWorker extends BaseWorker {
             else {
                 Timber.w("No backup URL found - aborting this image");
                 updateImageStatusUri(img, false, "");
-                logErrorRecord(img.getContent().getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), e.getMessage());
+                logErrorRecord(img.getContent().getTargetId(), ErrorType.UNDEFINED, img.getUrl(), "Picture " + img.getName(), e.getMessage());
             }
         } catch (InvalidParameterException e) {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
             updateImageStatusUri(img, false, "");
-            logErrorRecord(img.getContent().getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), "Download params : " + img.getDownloadParams());
+            logErrorRecord(img.getContent().getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), "Picture " + img.getName(), "Download params : " + img.getDownloadParams());
         } catch (IOException | IllegalArgumentException e) {
             Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
             updateImageStatusUri(img, false, "");
-            logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
+            logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), "Picture " + img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
         }
     }
 
@@ -882,7 +898,7 @@ public class ContentDownloadWorker extends BaseWorker {
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
             originalImage.setBackup(true); // Indicates the image is from a backup (for display in error logs)
             dao.insertImageFile(originalImage);
-            requestQueueManager.queueRequest(buildDownloadRequest(originalImage, dir, content));
+            requestQueueManager.queueRequest(buildImageDownloadRequest(originalImage, dir, content));
         } else Timber.w("Failed to parse backup URL");
     }
 
@@ -964,7 +980,7 @@ public class ContentDownloadWorker extends BaseWorker {
         String fileExt = null;
         String mimeType = null;
 
-        // Check for picture validity if it's < 1KB (might be plain test or HTML if things have gone wrong... or a small GIF! )
+        // Check for picture validity if it's < 1KB (might be plain text or HTML if things have gone wrong... or a small GIF! )
         if (img.getSize() < 1024 && binaryContent != null) {
             mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
             if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {

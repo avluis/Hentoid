@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
-import android.content.ActivityNotFoundException;
+import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,6 +13,7 @@ import android.util.Pair;
 import android.widget.Toast;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
@@ -30,6 +32,8 @@ import org.threeten.bp.Instant;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
 import java.text.Collator;
 import java.util.Arrays;
@@ -39,6 +43,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.annotation.Nonnull;
 
@@ -68,8 +73,11 @@ import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
+import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
@@ -79,12 +87,17 @@ import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
-
 /**
  * Utility class for Content-related operations
  */
 public final class ContentHelper {
+
+    @IntDef({QueuePosition.TOP, QueuePosition.BOTTOM})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface QueuePosition {
+        int TOP = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
+        int BOTTOM = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+    }
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
     private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
@@ -748,8 +761,28 @@ public final class ContentHelper {
             fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
 
         // Look up similar names between images and file names
+        int order;
+        int previousOrder = -1;
         for (ImageFile img : images) {
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
+
+            // Detect gaps inside image numbering
+            order = img.getOrder();
+            // Look for files named with the forgotten number
+            if (previousOrder > -1 && previousOrder != order - 1) {
+                Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
+                for (int i = previousOrder + 1; i < order; i++) {
+                    ImmutablePair<String, Long> property = fileNameProperties.get(i + "");
+                    if (property != null) {
+                        Timber.i("Numbering gap filled with a file : %d", i);
+                        ImageFile newImage = ImageFile.fromImageUrl(i, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
+                        newImage.setFileUri(property.left).setSize(property.right);
+                        result.add(i, newImage);
+                    }
+                }
+            }
+            previousOrder = order;
+
             ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
             if (property != null) {
                 if (imgName.equals(Consts.THUMB_FILE_NAME)) {
@@ -758,7 +791,7 @@ public final class ContentHelper {
                 }
                 result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
             } else
-                Timber.i(">> img dropped %s", imgName);
+                Timber.i(">> image not found among files : %s", imgName);
         }
 
         // If no thumb found, set the 1st image as cover
@@ -907,11 +940,15 @@ public final class ContentHelper {
      * Update the given content's properties by parsing its webpage
      *
      * @param content Content to parse again from its online source
-     * @return Content updated from its online source
-     * @throws IOException If something horrible happens during parsing
+     * @return Content updated from its online source, or Optional.empty if something went wrong
      */
-    public static Content reparseFromScratch(@NonNull final Content content) throws IOException {
-        return reparseFromScratch(content, content.getGalleryUrl());
+    public static Optional<Content> reparseFromScratch(@NonNull final Content content) {
+        try {
+            return reparseFromScratch(content, content.getGalleryUrl());
+        } catch (IOException e) {
+            Timber.w(e);
+            return Optional.empty();
+        }
     }
 
     /**
@@ -919,11 +956,10 @@ public final class ContentHelper {
      *
      * @param content Content which properties to update
      * @param url     Webpage to parse to update the given Content's properties
-     * @return Content with updated properties
-     * TODO feedback to warn the user about redownload "from scratch" having failed (whenever the original content is returned)
+     * @return Content with updated properties, or Optional.empty if something went wrong
      * @throws IOException If something horrible happens during parsing
      */
-    private static Content reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
+    private static Optional<Content> reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
         Helper.assertNonUiThread();
 
         String readerUrl = content.getReaderUrl();
@@ -933,34 +969,32 @@ public final class ContentHelper {
         if (!cookieStr.isEmpty())
             requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
 
-        Response response = HttpHelper.getOnlineResource(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
+        Response response = HttpHelper.getOnlineResourceFast(url, requestHeadersList, content.getSite().useMobileAgent(), content.getSite().useHentoidAgent(), content.getSite().useWebviewAgent());
 
         // Scram if the response is a redirection or an error
-        if (response.code() >= 300) return content;
+        if (response.code() >= 300) return Optional.empty();
 
         // Scram if the response is something else than html
         Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")));
         if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
-            return content;
+            return Optional.empty();
 
         // Scram if the response is empty
         ResponseBody body = response.body();
-        if (null == body) return content;
-
-        InputStream parserStream = body.byteStream();
+        if (null == body) return Optional.empty();
 
         Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(content.getSite());
         final Jspoon jspoon = Jspoon.create();
         HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
-        ContentParser contentParser = htmlAdapter.fromInputStream(parserStream, new URL(url));
-        Content newContent = contentParser.update(content, url);
+        ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(url));
+        Content newContent = contentParser.update(content, url, true);
 
         if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
             String canonicalUrl = contentParser.getCanonicalUrl();
             if (!canonicalUrl.isEmpty() && !canonicalUrl.equalsIgnoreCase(url))
                 return reparseFromScratch(content, canonicalUrl);
-            else return content;
+            else return Optional.empty();
         }
 
         // Save cookies for future calls during download
@@ -968,22 +1002,85 @@ public final class ContentHelper {
         if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
 
         newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
-        return newContent;
+        return Optional.of(newContent);
+    }
+
+    /**
+     * Query source to fetch all image file names and URLs of a given book
+     *
+     * @param content Book whose pages to retrieve
+     * @return List of pages with original URLs and file name
+     */
+    public static List<ImageFile> fetchImageURLs(@NonNull Content content, @NonNull StatusContent targetImageStatus) throws Exception {
+        List<ImageFile> imgs;
+
+        // If content doesn't have any download parameters, get them from the cookie manager
+        String contentDownloadParamsStr = content.getDownloadParams();
+        if (null == contentDownloadParamsStr || contentDownloadParamsStr.isEmpty()) {
+            String cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
+            if (!cookieStr.isEmpty()) {
+                Map<String, String> downloadParams = new HashMap<>();
+                downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+                content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+            }
+        }
+
+        // Use ImageListParser to query the source
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
+        imgs = parser.parseImageList(content);
+
+        // If no images found, or just the cover, image detection has failed
+        if (imgs.isEmpty() || (1 == imgs.size() && imgs.get(0).isCover()))
+            throw new EmptyResultException();
+
+        // Add the content's download params to the images only if they have missing information
+        contentDownloadParamsStr = content.getDownloadParams();
+        if (contentDownloadParamsStr != null && contentDownloadParamsStr.length() > 2) {
+            Map<String, String> contentDownloadParams = ContentHelper.parseDownloadParams(contentDownloadParamsStr);
+            for (ImageFile i : imgs) {
+                if (i.getDownloadParams() != null && i.getDownloadParams().length() > 2) {
+                    Map<String, String> imageDownloadParams = ContentHelper.parseDownloadParams(i.getDownloadParams());
+                    // Content's params
+                    for (Map.Entry<String, String> entry : contentDownloadParams.entrySet())
+                        if (!imageDownloadParams.containsKey(entry.getKey()))
+                            imageDownloadParams.put(entry.getKey(), entry.getValue());
+                    // Referer, just in case
+                    if (!imageDownloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
+                        imageDownloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
+                    i.setDownloadParams(JsonHelper.serializeToJson(imageDownloadParams, JsonHelper.MAP_STRINGS));
+                } else {
+                    i.setDownloadParams(contentDownloadParamsStr);
+                }
+            }
+        }
+
+        // Cleanup generated objects
+        for (ImageFile img : imgs) {
+            img.setId(0);
+            img.setStatus(targetImageStatus);
+            img.setContentId(content.getId());
+        }
+
+        return imgs;
     }
 
     /**
      * Remove all files (including JSON and cover thumb) from the given Content's folder
      * The folder itself is left empty
+     * <p>
+     * Caution : exec time is long
      *
      * @param context Context to use
      * @param content Content to remove files from
      */
-    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content) {
+    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content, boolean removeJson) {
         DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
-            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, null); // Remove everything (incl. JSON and thumb)
+            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, null);
             if (!files.isEmpty())
-                for (DocumentFile file : files) file.delete();
+                for (DocumentFile file : files)
+                    if (removeJson || !HttpHelper.getExtensionFromUri(file.getUri().toString()).toLowerCase().endsWith("json"))
+                        file.delete();
         }
     }
 
@@ -1104,7 +1201,13 @@ public final class ContentHelper {
         return null;
     }
 
-    // Compute perceptual hash for the cover picture
+    /**
+     * Compute perceptual hash for the cover picture
+     *
+     * @param context Context to use
+     * @param content Content to process
+     * @param dao     Dao used to save cover hash
+     */
     public static void computeAndSaveCoverHash(
             @NonNull final Context context,
             @NonNull final Content content,
@@ -1114,6 +1217,113 @@ public final class ContentHelper {
         if (coverBitmap != null) coverBitmap.recycle();
         content.getCover().setImageHash(pHash);
         dao.insertImageFile(content.getCover());
+    }
+
+    /**
+     * Test if online pages for the given Content are downloadable
+     * NB : Implementation does not test all pages but one page picked randomly
+     *
+     * @param content Content whose pages to test
+     * @return True if pages are downloadable; false if they aren't
+     */
+    public static boolean isDownloadable(@NonNull final Content content) {
+        List<ImageFile> images = content.getImageFiles();
+        if (null == images) return false;
+
+        // Pick a random picture
+        ImageFile img = images.get(new Random().nextInt(images.size()));
+
+        // Peek it to see if downloads work
+        List<Pair<String, String>> headers = new ArrayList<>();
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
+
+        try {
+            if (img.needsPageParsing()) {
+                // Get cookies from the app jar
+                String cookieStr = HttpHelper.getCookies(img.getPageUrl());
+                // If nothing found, peek from the site
+                if (cookieStr.isEmpty())
+                    cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                if (!cookieStr.isEmpty())
+                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                return testDownloadPictureFromPage(content.getSite(), img, headers);
+            } else {
+                // Get cookies from the app jar
+                String cookieStr = HttpHelper.getCookies(img.getUrl());
+                // If nothing found, peek from the site
+                if (cookieStr.isEmpty())
+                    cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+                if (!cookieStr.isEmpty())
+                    headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                return testDownloadPicture(content.getSite(), img, headers);
+            }
+        } catch (IOException | LimitReachedException | EmptyResultException e) {
+            Timber.w(e);
+        }
+        return false;
+    }
+
+    /**
+     * Test if the given picture is downloadable using its page URL
+     *
+     * @param site           Corresponding Site
+     * @param img            Picture to test
+     * @param requestHeaders Request headers to use
+     * @return True if the given picture is downloadable; false if not
+     * @throws IOException           If something happens during the download attempt
+     * @throws LimitReachedException If the site's download limit has been reached
+     * @throws EmptyResultException  If no picture has been detected
+     */
+    public static boolean testDownloadPictureFromPage(@NonNull Site site,
+                                                @NonNull ImageFile img,
+                                                List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+        String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
+        ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
+        img.setUrl(pages.left);
+        // Download the picture
+        try {
+            return testDownloadPicture(site, img, requestHeaders);
+        } catch (IOException e) {
+            if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
+            else throw e;
+        }
+        // Trying with backup URL
+        img.setUrl(pages.right.get());
+        return testDownloadPicture(site, img, requestHeaders);
+    }
+
+    /**
+     * Test if the given picture is downloadable using its own URL
+     *
+     * @param site           Corresponding Site
+     * @param img            Picture to test
+     * @param requestHeaders Request headers to use
+     * @return True if the given picture is downloadable; false if not
+     * @throws IOException If something happens during the download attempt
+     */
+    public static boolean testDownloadPicture(
+            @NonNull Site site,
+            @NonNull ImageFile img,
+            List<Pair<String, String>> requestHeaders) throws IOException {
+
+        Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        if (response.code() >= 300) throw new IOException("Network error " + response.code());
+
+        ResponseBody body = response.body();
+        if (null == body)
+            throw new IOException("Could not read response : empty body for " + img.getUrl());
+
+        byte[] buffer = new byte[50];
+        // Read mime-type on the fly
+        try (InputStream in = body.byteStream()) {
+            if (in.read(buffer) > -1) {
+                String mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
+                Timber.d("Testing online picture accessibility : found %s at %s", mimeType, img.getUrl());
+                return (!mimeType.isEmpty() && !mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC));
+            }
+        }
+        return false;
     }
 
     /**

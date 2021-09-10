@@ -25,10 +25,7 @@ import io.objectbox.BoxStore;
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
 import io.objectbox.query.Query;
-import io.objectbox.query.QueryConsumer;
 import io.objectbox.relation.ToOne;
-import io.reactivex.Emitter;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -90,12 +87,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public long countContentWithUnhashedCovers() {
         return db.selectNonHashedContent().count();
-    }
-
-    @Override
-    public Observable<Content> streamContentWithUnhashedCovers() {
-        Query<Content> query = db.selectNonHashedContent();
-        return Observable.create(emitter -> query.forEach(new DatabaseConsumer<>(emitter)));
     }
 
     @Override
@@ -616,7 +607,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectExternalMemoryUsagePerSource();
     }
 
-    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int mode, boolean isQueueActive) {
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, boolean isQueueActive) {
         if (targetImageStatus != null)
             db.updateImageContentStatus(content.getId(), null, targetImageStatus);
 
@@ -626,7 +617,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
         if (!db.isContentInQueue(content)) {
             int targetPosition;
-            if (mode == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM) {
+            if (position == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM) {
                 targetPosition = (int) db.selectMaxQueueOrder() + 1;
             } else { // Top - don't put #1 if queue is active not to interrupt current download
                 targetPosition = (isQueueActive) ? 2 : 1;
@@ -784,6 +775,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     // ONE-TIME USE QUERIES (MIGRATION & CLEANUP)
 
+    // API29 migration query
     @Override
     public Single<List<Long>> selectOldStoredBookIds() {
         return Single.fromCallable(() -> Helper.getListFromPrimitiveArray(db.selectOldStoredContentQ().findIds()))
@@ -791,22 +783,9 @@ public class ObjectBoxDAO implements CollectionDAO {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    // API29 migration query
     @Override
     public long countOldStoredContent() {
         return db.selectOldStoredContentQ().count();
-    }
-
-    public static class DatabaseConsumer<T> implements QueryConsumer<T> {
-
-        private final Emitter<T> emitter;
-
-        public DatabaseConsumer(Emitter<T> emitter) {
-            this.emitter = emitter;
-        }
-
-        @Override
-        public void accept(@NonNull T data) {
-            emitter.onNext(data);
-        }
     }
 }

@@ -58,6 +58,8 @@
     <string name="menu_open_folder">Open containing folder</string>
     <string name="menu_redownload">Redownload</string>
     <string name="menu_redownload_scratch">Redownload from scratch</string>
+    <string name="menu_stream">Switch to streaming</string>
+    <string name="menu_download_streamed">Download</string>
     <string name="menu_select_all">Select All</string>
     <string name="menu_share">Share</string>
     <string name="menu_share_help">Share book URL and title using another app</string>
@@ -104,9 +106,10 @@
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
     <string name="paused_dl_stale_online_credentials">Cannot download - Stale Cookies or credentials. Use the notification to regenerate them</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
+    <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <plurals name="redownloaded_scratch">
-        <item quantity="one">Item cleared for redownloading</item>
-        <item quantity="other">%d items cleared for redownloading</item>
+        <item quantity="one">%d/%d item cleared for redownloading</item>
+        <item quantity="other">%d/%d items cleared for redownloading</item>
     </plurals>
     <string name="queue_add_top">Add on top</string>
     <string name="queue_add_bottom">Add to bottom</string>
@@ -265,6 +268,7 @@
     <string name="new_group_name">Name of the new group ?</string>
     <string name="group_edit_name">Edit group name</string>
     <string name="delete_progress">Deleting books</string>
+    <string name="purge_progress">Purging books</string>
     <string name="cancel_queue_progress">Canceling queue items</string>
     <plurals name="delete_success_books">
         <item quantity="one">1 book</item>
@@ -280,6 +284,8 @@
         <item quantity="one">One book archived in your Download folder</item>
         <item quantity="other">%d books archived in your Download folder</item>
     </plurals>
+    <string name="stream_canceled">Streaming canceled - book unavailable online</string>
+    <string name="download_canceled">Download canceled - book unavailable online</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
     <string name="queue_empty">Why am I empty?</string>
     <string name="errors_empty">No errors detected among downloads</string>
@@ -307,9 +313,25 @@
         <item quantity="one">Redownload selected book from scratch ?</item>
         <item quantity="other">Redownload selected books from scratch ?</item>
     </plurals>
+    <plurals name="download_confirm">
+        <item quantity="one">Download selected book ?</item>
+        <item quantity="other">Download selected books ?</item>
+    </plurals>
+    <plurals name="stream_confirm">
+        <item quantity="one">Switch selected book to streaming ?</item>
+        <item quantity="other">Switch selected books to streaming ?</item>
+    </plurals>
     <plurals name="redownload_external_content">
         <item quantity="one">One of the selected books is stored in the external library and cannot be redownloaded\nThis book will be ignored.</item>
-        <item quantity="other">Some of the selected books are stored in the external library and cannot be redownloaded\nThey will be ignored.</item>
+        <item quantity="other">%d selected books are stored in the external library and cannot be redownloaded\nThey will be ignored.</item>
+    </plurals>
+    <plurals name="download_non_streamed_content">
+        <item quantity="one">One of the selected books is already downloaded\nThis book will be ignored.</item>
+        <item quantity="other">%d selected books are already downloaded\nThey will be ignored.</item>
+    </plurals>
+    <plurals name="stream_external_streamed_content">
+        <item quantity="one">One of the selected books is already streamed or external\nThis book will be ignored.</item>
+        <item quantity="other">%d selected books are already streamed or external\nThey will be ignored.</item>
     </plurals>
     <string name="about_to_delete">Book is about to be deleted…</string>
     <string name="help_search">Search anything : title, author, tag\nand launch code too !</string>
@@ -368,6 +390,7 @@
     <!-- Item card tooltips -->
     <string name="drag_help">Drag item</string>
     <string name="external_help">Belongs to the external library</string>
+    <string name="streamed_help">Streamed book</string>
     <string name="view_source_help">View source in browser</string>
     <string name="fav_help">Mark/unmark as favourite</string>
     <!-- Visibility fields -->
@@ -458,7 +481,8 @@
 
     <!-- Image viewer -->
     <string name="no_images">Could not load the book : No image found</string>
-    <string name="loading_images">Loading : %1$d/%2$d</string>
+    <string name="loading_archive">Loading : %1$d/%2$d</string>
+    <string name="loading_image">Loading image : %d%%</string>
     <string name="no_image">Image not found</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
@@ -496,6 +520,7 @@
     </string-array>
     <string name="viewer_ask_cover">Set this page as book cover?</string>
     <string name="image_not_found">Image not found</string>
+    <string name="image_streaming">Streaming image…</string>
     <string name="book_prefs">Book settings</string>
     <string name="goto_app_prefs">App settings</string>
     <string name="use_app_prefs">Use app settings (%s)</string>
@@ -507,6 +532,10 @@
     <string name="page_unfavourite_success">Page unfavourited</string>
     <string name="book_favourite_success">Book favourited</string>
     <string name="book_unfavourite_success">Book unfavourited</string>
+    <string name="viewer_fix">Fix download error</string>
+    <string name="viewer_reload_page">Reload page</string>
+    <string name="viewer_reparse_book">Reparse book</string>
+
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

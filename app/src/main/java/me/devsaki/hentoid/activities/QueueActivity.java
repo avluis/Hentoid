@@ -1,5 +1,9 @@
 package me.devsaki.hentoid.activities;
 
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
+
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -56,10 +60,6 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.CloudflareWebView;
 import me.devsaki.hentoid.widget.AddQueueMenu;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
 
 /**
  * Handles hosting of QueueFragment for a single screen.
@@ -271,10 +271,14 @@ public class QueueActivity extends BaseActivity {
 
     private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, int addMode) {
         viewModel.redownloadContent(contentList, reparseContent, reparseImages, addMode,
-                () -> {
-                    String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, contentList.size(), contentList.size());
+                nbSuccess -> {
+                    String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, nbSuccess, nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(tabLayout, message, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.show();
+                },
+                t -> {
+                    Timber.w(t);
+                    Snackbar.make(tabLayout, R.string.redownloaded_error, BaseTransientBottomBar.LENGTH_LONG).show();
                 });
     }
 

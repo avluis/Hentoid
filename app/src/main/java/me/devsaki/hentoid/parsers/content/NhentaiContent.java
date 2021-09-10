@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -15,7 +16,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.NhentaiParser;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -51,7 +51,7 @@ public class NhentaiContent extends BaseContentParser {
     private List<Element> thumbs;
 
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.NHENTAI);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
 
@@ -78,9 +78,11 @@ public class NhentaiContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, "name", Site.NHENTAI);
         content.putAttributes(attributes);
 
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(content, thumbs), content.getCoverImageUrl(), StatusContent.SAVED);
-        content.setImageFiles(images);
-        content.setQtyPages(images.size() - 1);  // Don't count the cover
+        if (updateImages) {
+            List<ImageFile> images = ParseHelper.urlsToImageFiles(NhentaiParser.parseImages(content, thumbs), content.getCoverImageUrl(), StatusContent.SAVED);
+            content.setImageFiles(images);
+            content.setQtyPages(images.size() - 1);  // Don't count the cover
+        }
 
         return content;
     }

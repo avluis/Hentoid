@@ -11,12 +11,15 @@ import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
+import com.annimon.stream.function.Consumer;
 
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -31,6 +34,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
 import timber.log.Timber;
@@ -246,6 +250,18 @@ public class QueueViewModel extends AndroidViewModel {
         );
     }
 
+    private void purgeItem(@NonNull Content content) {
+        DeleteData.Builder builder = new DeleteData.Builder();
+        builder.setContentPurgeIds(Stream.of(content).map(Content::getId).toList());
+
+        WorkManager workManager = WorkManager.getInstance(getApplication());
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.delete_service),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
+        );
+    }
+
     public void cancelAll() {
         List<QueueRecord> localQueue = dao.selectQueue();
         if (localQueue.isEmpty()) return;
@@ -268,30 +284,41 @@ public class QueueViewModel extends AndroidViewModel {
             @NonNull final List<Content> contentList,
             boolean reparseContent,
             boolean reparseImages,
-            int addMode,
-            @NonNull final Runnable onSuccess) {
+            int position,
+            @NonNull final Consumer<Integer> onSuccess,
+            @NonNull final Consumer<Throwable> onError) {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
+
+        AtomicInteger errorCount = new AtomicInteger(0);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
-                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : c)
-                        .map(c -> {
-                            if (reparseImages) ContentHelper.purgeFiles(getApplication(), c);
-                            return c;
-                        })
-                        .doOnNext(c -> dao.addContentToQueue(c, targetImageStatus, addMode, ContentQueueManager.getInstance().isQueueActive()))
-                        .doOnComplete(() -> {
-                            // TODO is there stuff to do on the IO thread ?
+                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : Optional.of(c))
+                        .doOnNext(c -> {
+                            if (c.isPresent()) {
+                                Content content = c.get();
+                                // Non-blocking performance bottleneck; run in a dedicated worker
+                                // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
+                                if (reparseImages) purgeItem(content);
+                                dao.addContentToQueue(
+                                        content, targetImageStatus, position,
+                                        ContentQueueManager.getInstance().isQueueActive());
+                            } else {
+                                errorCount.incrementAndGet();
+                                onError.accept(new EmptyResultException("Content unreachable"));
+                            }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
+                        .doOnComplete(() -> {
+                            if (Preferences.isQueueAutostart())
+                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                            onSuccess.accept(contentList.size() - errorCount.get());
+                        })
                         .subscribe(
-                                v -> {
-                                    if (Preferences.isQueueAutostart())
-                                        ContentQueueManager.getInstance().resumeQueue(getApplication());
-                                    onSuccess.run();
+                                v -> { // Nothing; feedback is done through LiveData
                                 },
-                                Timber::e
+                                onError::accept
                         )
         );
     }

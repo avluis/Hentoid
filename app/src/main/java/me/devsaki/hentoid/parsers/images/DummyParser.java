@@ -1,8 +1,13 @@
 package me.devsaki.hentoid.parsers.images;
 
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 
 import com.annimon.stream.Optional;
+
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +23,11 @@ public class DummyParser implements ImageListParser {
     @Override
     public List<ImageFile> parseImageList(@NonNull Content content) {
         return (null == content.getImageFiles()) ? new ArrayList<>() : new ArrayList<>(content.getImageFiles());
+    }
+
+    @Override
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) {
+        throw new NotImplementedException();
     }
 
     @Override

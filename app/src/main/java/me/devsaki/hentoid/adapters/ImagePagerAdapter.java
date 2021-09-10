@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
@@ -37,14 +38,15 @@ import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
+import java.util.Objects;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -55,13 +57,12 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private static final int IMG_TYPE_GIF = 1;      // Static and animated GIFs -> use native Glide
     private static final int IMG_TYPE_APNG = 2;     // Animated PNGs -> use APNG4Android library
 
-    @IntDef({ViewType.IMAGEVIEW, ViewType.IMAGEVIEW_STRETCH, ViewType.SSIV_HORIZONTAL, ViewType.SSIV_VERTICAL})
+    @IntDef({ViewType.DEFAULT, ViewType.IMAGEVIEW_STRETCH, ViewType.SSIV_VERTICAL})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {
-        int IMAGEVIEW = 0;
+        int DEFAULT = 0;
         int IMAGEVIEW_STRETCH = 1;
-        int SSIV_HORIZONTAL = 2;
-        int SSIV_VERTICAL = 3;
+        int SSIV_VERTICAL = 2;
     }
 
     // Screen width and height; used to adjust dimensions of small images handled by Glide
@@ -95,7 +96,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private float doubleTapZoomCap;
 
     public ImagePagerAdapter(Context context) {
-        super(DIFF_CALLBACK);
+        super(IMAGE_DIFF_CALLBACK);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) rs = RenderScript.create(context);
     }
 
@@ -135,14 +136,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         this.itemTouchListener = itemTouchListener;
     }
 
-
-    public boolean isFavouritePresent() {
-        for (ImageFile img : getCurrentList())
-            if (img.isFavourite()) return true;
-
-        return false;
-    }
-
     private int getImageType(ImageFile img) {
         if (null == img) return IMG_TYPE_OTHER;
 
@@ -161,12 +154,12 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     int getItemViewType(int position) {
         int imageType = getImageType(getImageAt(position));
 
-        if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType) return ViewType.IMAGEVIEW;
+        if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType) return ViewType.DEFAULT;
         if (Preferences.Constant.VIEWER_DISPLAY_STRETCH == displayMode)
             return ViewType.IMAGEVIEW_STRETCH;
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
             return ViewType.SSIV_VERTICAL;
-        return ViewType.SSIV_HORIZONTAL;
+        return ViewType.DEFAULT;
     }
 
 
@@ -174,41 +167,48 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
-        View view;
-        if (ViewType.IMAGEVIEW == viewType) {
-            view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
+        View view = inflater.inflate(R.layout.item_viewer_image, viewGroup, false);
+        if (ViewType.DEFAULT == viewType) {
             // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
-                View image = view.findViewById(R.id.image);
+                View image = view.findViewById(R.id.imageview);
                 image.setClickable(false);
                 image.setFocusable(false);
             }
         } else if (ViewType.IMAGEVIEW_STRETCH == viewType) {
-            view = inflater.inflate(R.layout.item_viewer_image_simple, viewGroup, false);
-            ImageView image = view.findViewById(R.id.image);
+            ImageView image = view.findViewById(R.id.imageview);
             image.setScaleType(ImageView.ScaleType.FIT_XY);
         } else if (ViewType.SSIV_VERTICAL == viewType) {
-            view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
-            ((CustomSubsamplingScaleImageView) view).setIgnoreTouchEvents(true);
-            ((CustomSubsamplingScaleImageView) view).setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL);
-        } else {
-            view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
+            CustomSubsamplingScaleImageView image = view.findViewById(R.id.ssiv);
+            image.setIgnoreTouchEvents(true);
+            image.setDirection(CustomSubsamplingScaleImageView.Direction.VERTICAL);
         }
 
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
             view.setMinimumHeight(PAGE_MIN_HEIGHT); // Avoid stacking 0-px tall images on screen and load all of them at the same time
 
-        return new ImageViewHolder(view, viewType);
+        return new ImageViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) { // TODO make all that method less ugly
-        if (holder.getItemViewType() == ViewType.SSIV_HORIZONTAL) {
-            CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) holder.imgView;
+        Timber.d("Picture %d : BindViewHolder", position);
+        int imageType = getImageType(getImageAt(position));
+
+        if (holder.forceImageView != null) { // ImageView has been forced
+            holder.switchImageView(holder.forceImageView);
+            holder.forceImageView = null; // Reset force flag
+        } else if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType) // No other choice for these formats
+            holder.switchImageView(true);
+        else holder.switchImageView(holder.getItemViewType() == ViewType.IMAGEVIEW_STRETCH);
+
+        // Initialize SSIV when required
+        if (holder.getItemViewType() == ViewType.DEFAULT && Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation && !holder.isImageView) {
             if (recyclerView != null)
-                ssView.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
-            if (!Preferences.isViewerZoomTransitions()) ssView.setDoubleTapZoomDuration(10);
-            ssView.setOffsetLeftSide(isScrollLTR);
+                holder.ssiv.setPreloadDimensions(recyclerView.getWidth(), recyclerView.getHeight());
+            if (!Preferences.isViewerZoomTransitions())
+                holder.ssiv.setDoubleTapZoomDuration(10);
+            holder.ssiv.setOffsetLeftSide(isScrollLTR);
         }
 
         int layoutStyle = (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
@@ -217,8 +217,21 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         layoutParams.height = layoutStyle;
         holder.imgView.setLayoutParams(layoutParams);
 
+        if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
+            holder.imgView.setOnTouchListener(itemTouchListener);
+
+        boolean imageAvailable = true;
         ImageFile img = getImageAt(position);
-        if (img != null) holder.setImage(img);
+        if (img != null && !img.getFileUri().isEmpty()) holder.setImage(img);
+        else imageAvailable = false;
+        boolean isStreaming = (img != null && img.getStatus().equals(StatusContent.ONLINE) && !imageAvailable);
+
+        if (holder.noImgTxt != null) {
+            @StringRes int text = R.string.image_not_found;
+            if (isStreaming) text = R.string.image_streaming;
+            holder.noImgTxt.setText(text);
+            holder.noImgTxt.setVisibility(!imageAvailable ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Override
@@ -235,8 +248,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         // Free the SSIV's resources
-        if (ViewType.SSIV_HORIZONTAL == holder.viewType || ViewType.SSIV_VERTICAL == holder.viewType) // SubsamplingScaleImageView
-            ((CustomSubsamplingScaleImageView) holder.imgView).recycle();
+        if (!holder.isImageView) holder.ssiv.recycle();
 
         super.onViewRecycled(holder);
     }
@@ -274,70 +286,66 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         this.isScrollLTR = isScrollLTR;
     }
 
-    private static final DiffUtil.ItemCallback<ImageFile> DIFF_CALLBACK =
+    private static final DiffUtil.ItemCallback<ImageFile> IMAGE_DIFF_CALLBACK =
             new DiffUtil.ItemCallback<ImageFile>() {
                 @Override
                 public boolean areItemsTheSame(
-                        @NonNull ImageFile oldAttr, @NonNull ImageFile newAttr) {
-                    return oldAttr.getId() == newAttr.getId();
+                        @NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
+                    return oldItem.uniqueHash() == newItem.uniqueHash();
                 }
 
                 @Override
                 public boolean areContentsTheSame(
-                        @NonNull ImageFile oldAttr, @NonNull ImageFile newAttr) {
-                    return oldAttr.getOrder().equals(newAttr.getOrder()) && oldAttr.getStatus().equals(newAttr.getStatus());
+                        @NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
+                    return Objects.equals(oldItem, newItem);
                 }
             };
 
     final class ImageViewHolder extends RecyclerView.ViewHolder implements CustomSubsamplingScaleImageView.OnImageEventListener, RequestListener<Drawable> {
 
-        private final @ViewType
-        int viewType;
         private final View rootView;
-        private final View imgView;
+        private final CustomSubsamplingScaleImageView ssiv;
+        private final ImageView imageView;
+        private final TextView noImgTxt;
+
+        private View imgView;
+        private boolean isImageView;
+        private Boolean forceImageView = null;
 
         private ImageFile img;
-        private TextView noImgTxt = null;
 
-        private ImageViewHolder(@NonNull View itemView, @ViewType int viewType) {
+        private ImageViewHolder(@NonNull View itemView) {
             super(itemView);
-            this.viewType = viewType;
             rootView = itemView;
 
-            if (viewType == ViewType.IMAGEVIEW || viewType == ViewType.IMAGEVIEW_STRETCH) {
-                imgView = itemView.findViewById(R.id.image);
-                noImgTxt = itemView.findViewById(R.id.viewer_no_page_txt);
-                noImgTxt.setVisibility(View.GONE);
-            } else
-                imgView = rootView;
-
-            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == viewerOrientation)
-                imgView.setOnTouchListener(itemTouchListener);
+            ssiv = itemView.findViewById(R.id.ssiv);
+            imageView = itemView.findViewById(R.id.imageview);
+            noImgTxt = itemView.findViewById(R.id.viewer_no_page_txt);
+            noImgTxt.setVisibility(View.GONE);
         }
 
         void setImage(@NonNull ImageFile img) {
             this.img = img;
             int imgType = getImageType(img);
             Uri uri = Uri.parse(img.getFileUri());
-            Timber.i(">>>>IMG %s %s", imgType, uri);
+            Timber.d("Picture %d : binding viewholder %s %s", getAbsoluteAdapterPosition(), imgType, uri);
 
-            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType) { // SubsamplingScaleImageView
-                CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
-                ssView.recycle();
-                ssView.setMinimumScaleType(getScaleType());
-                ssView.setOnImageEventListener(this);
-                ssView.setLongTapZoomEnabled(longTapZoomEnabled);
-                ssView.setDoubleTapZoomCap(doubleTapZoomCap);
-                ssView.setAutoRotate(autoRotate);
+            if (!isImageView) { // SubsamplingScaleImageView
+                ssiv.recycle();
+                ssiv.setMinimumScaleType(getScaleType());
+                ssiv.setOnImageEventListener(this);
+                ssiv.setLongTapZoomEnabled(longTapZoomEnabled);
+                ssiv.setDoubleTapZoomCap(doubleTapZoomCap);
+                ssiv.setAutoRotate(autoRotate);
                 // 120 dpi = equivalent to the web browser's max zoom level
-                ssView.setMinimumDpi(120);
-                ssView.setDoubleTapZoomDpi(120);
-                if (maxBitmapWidth > 0) ssView.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
+                ssiv.setMinimumDpi(120);
+                ssiv.setDoubleTapZoomDpi(120);
+                if (maxBitmapWidth > 0) ssiv.setMaxTileSize(maxBitmapWidth, maxBitmapHeight);
                 if (isSmoothRendering)
-                    ssView.setRenderScript(rs);
+                    ssiv.setRenderScript(rs);
                 else
-                    ssView.setRenderScript(null);
-                ssView.setImage(ImageSource.uri(uri));
+                    ssiv.setRenderScript(null);
+                ssiv.setImage(ImageSource.uri(uri));
             } else { // ImageView
                 ImageView view = (ImageView) imgView;
                 if (IMG_TYPE_APNG == imgType) {
@@ -363,20 +371,17 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         private float getScale() {
-            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType) {
-                CustomSubsamplingScaleImageView view = (CustomSubsamplingScaleImageView) imgView;
-                return view.getScale();
+            if (!isImageView) {
+                return ssiv.getScale();
             } else { // ImageView
-                ImageView view = (ImageView) imgView;
-                return view.getScaleX(); // TODO doesn't work for Glide as it doesn't use ImageView's scaling
+                return imageView.getScaleX(); // TODO doesn't work for Glide as it doesn't use ImageView's scaling
             }
         }
 
         void resetScale() {
-            if (ViewType.SSIV_HORIZONTAL == viewType || ViewType.SSIV_VERTICAL == viewType) {
-                CustomSubsamplingScaleImageView ssView = (CustomSubsamplingScaleImageView) imgView;
-                if (ssView.isImageLoaded() && ssView.isReady() && ssView.isLaidOut())
-                    ssView.resetScale();
+            if (!isImageView) {
+                if (ssiv.isImageLoaded() && ssiv.isReady() && ssiv.isLaidOut())
+                    ssiv.resetScale();
             }
         }
 
@@ -417,6 +422,19 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             }
         }
 
+        void switchImageView(boolean isImageView) {
+            Timber.d("Picture %d : switching to %s", getAbsoluteAdapterPosition(), isImageView ? "imageView" : "ssiv");
+            ssiv.setVisibility(isImageView ? View.GONE : View.VISIBLE);
+            imageView.setVisibility(isImageView ? View.VISIBLE : View.GONE);
+            imgView = (isImageView) ? imageView : ssiv;
+            this.isImageView = isImageView;
+        }
+
+        void forceImageView(boolean isImageView) {
+            switchImageView(isImageView);
+            this.forceImageView = isImageView;
+        }
+
         // == SUBSAMPLINGSCALEVIEW CALLBACKS
         @Override
         public void onReady() {
@@ -438,16 +456,16 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         @Override
         public void onImageLoadError(Throwable e) {
-            Timber.w(e, ">>>>IMG %s reloaded with Glide", img.getFileUri());
-            // Hack to fall back to glide by Manually forcing mime-type as GIF
-            img.setMimeType(ImageHelper.MIME_IMAGE_GIF);
+            Timber.d(e, "Picture %d : SSIV loading failed; reloading with Glide : %s", getAbsoluteAdapterPosition(), img.getFileUri());
+            // Fall back to Glide
+            forceImageView(true);
             // Reload adapter
             notifyItemChanged(getLayoutPosition());
         }
 
         @Override
         public void onTileLoadError(Throwable e) {
-            Timber.w(e, ">> tileLoad error");
+            Timber.d(e, "Picture %d : tileLoad error", getAbsoluteAdapterPosition());
         }
 
         @Override
@@ -459,6 +477,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         // == GLIDE CALLBACKS
         @Override
         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+            Timber.d(e, "Picture %d : Glide loading failed : %s", getAbsoluteAdapterPosition(), img.getFileUri());
             if (noImgTxt != null) noImgTxt.setVisibility(View.VISIBLE);
             return false;
         }

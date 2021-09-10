@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -39,7 +40,7 @@ public class HitomiContent extends BaseContentParser {
     @Selector(value = "div.gallery tr a[href^='/type']")
     private List<Element> categories;
 
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
         if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
         if (coverUrl.isEmpty() && title.equals(NO_TITLE))
@@ -60,6 +61,8 @@ public class HitomiContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.HITOMI);
 
         content.putAttributes(attributes);
+
+        if (updateImages) content.setImageFiles(Collections.emptyList());
 
         return content;
     }

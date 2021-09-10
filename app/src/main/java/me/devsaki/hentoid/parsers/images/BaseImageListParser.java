@@ -1,14 +1,18 @@
 package me.devsaki.hentoid.parsers.images;
 
+import android.util.Pair;
 import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 
 import com.annimon.stream.Optional;
 
+import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +22,8 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.exception.LimitReachedException;
 import timber.log.Timber;
 
 public abstract class BaseImageListParser implements ImageListParser {
@@ -52,9 +58,13 @@ public abstract class BaseImageListParser implements ImageListParser {
     }
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
-        ImageFile img = new ImageFile(order, url, StatusContent.SAVED, maxPages);
+        ImageFile img = ImageFile.fromImageUrl(order, url, StatusContent.SAVED, maxPages);
         if (chapter != null) img.setChapter(chapter);
         return Optional.of(img);
+    }
+
+    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+        throw new NotImplementedException();
     }
 
     void progressStart(long contentId, int maxSteps) {

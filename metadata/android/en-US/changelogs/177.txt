@@ -1,0 +1,31 @@
+New
+
+Streamed books are here !
+Switch between download and stream with Settings > Browser > Download Action before queuing books
+Streamed books are marked with a "stream" icon on the library screen
+You can convert downloaded books to streamed books (and the other way around) in the library screen
+Tools : You can now manually clear app cache and browser cache
+Changed
+
+E-Hentai and ExHentai downloads preparation phase is considerably faster and doesn't burn GPs (downloading still does)
+Queue : Redownload from scratch doesn't remove book pages when the content is unavailable online
+Library screen : Books are now displayed using a flat list (no more cards with rounded corners)
+Advanced search : "Series" is now spelled correctly
+Viewer : Long tap and double tap zoom have now the same zoom cap, if set
+Viewer : Slideshow now auto-starts if you don't choose any delay for 2.5s
+Tools : App logs are now displayed by latest creation date
+
+Fixes
+
+Toonily : Improve pages and chapters detection (chapters shouldn't be missing anymore)
+Library screen : External books are sorted along with regular books when using random sorting
+Library screen : Prevent the favourite button to have an inverted behaviour in rare occurences
+Library screen : On certain devices, the library doesn't scroll to bottom anymore after redownloading from scratch
+Viewer : Fix page 1 not detected after a library refresh on certain books (requires a new library refresh to restore undetected pages)
+Viewer gallery : Making a page favourite doesn't prevent further selections anymore
+General : Remaining available storage should now be correctly calculated for all devices
+App updates : "Tap to install" notification should now work for all devices
+Technical
+Prevent crash at startup on large libraries by optimizing post-startup background processing
+Available memory should now be calculated properly on all devices
+Storage folder names should now be displayed properly on all devices

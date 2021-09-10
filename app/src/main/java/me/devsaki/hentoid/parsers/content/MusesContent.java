@@ -13,13 +13,13 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
@@ -48,7 +48,7 @@ public class MusesContent extends BaseContentParser {
     }
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         // Gallery pages are the only ones whose gallery links end with numbers
         // The others are album lists
         int nbImages = 0;
@@ -56,8 +56,7 @@ public class MusesContent extends BaseContentParser {
         for (Element thumbLink : thumbLinks) {
             String href = thumbLink.attr("href");
             int numSeparator = href.lastIndexOf('/');
-            if (StringHelper.isNumeric(href.substring(numSeparator + 1)))
-            {
+            if (StringHelper.isNumeric(href.substring(numSeparator + 1))) {
                 Element img = thumbLink.select("img").first();
                 if (null == img) continue;
                 String src = img.attr("data-src");
@@ -73,7 +72,7 @@ public class MusesContent extends BaseContentParser {
         String theUrl = canonicalUrl.isEmpty() ? url : canonicalUrl;
         if (theUrl.isEmpty() || 0 == nbImages) return content.setStatus(StatusContent.IGNORED);
 
-        content.setUrl(theUrl.replace(Site.MUSES.getUrl(), "").replace("https://comics.8muses.com",""));
+        content.setUrl(theUrl.replace(Site.MUSES.getUrl(), "").replace("https://comics.8muses.com", ""));
 
         // == Circle (publisher), Artist and Series
         AttributeMap attributes = new AttributeMap();
@@ -115,26 +114,29 @@ public class MusesContent extends BaseContentParser {
             }
             content.setTitle(StringHelper.removeNonPrintableChars(bookTitle));
         }
-        content.setQtyPages(nbImages); // Cover is duplicated in the code below; no need to decrease nbImages here
 
-        String[] thumbParts;
-        int index = 0;
-        List<ImageFile> images = new ArrayList<>();
-        // Cover
-        ImageFile cover = new ImageFile(index++, Site.MUSES.getUrl() + imagesUrls.get(0), StatusContent.SAVED, nbImages);
-        content.setCoverImageUrl(cover.getUrl());
-        cover.setIsCover(true);
-        images.add(cover);
-        // Images
-        for (String u : imagesUrls) {
-            thumbParts = u.split("/");
-            if (thumbParts.length > 3) {
-                thumbParts[2] = "fl"; // Large dimensions; there's also a medium variant available (fm)
-                String imgUrl = Site.MUSES.getUrl() + "/" + thumbParts[1] + "/" + thumbParts[2] + "/" + thumbParts[3];
-                images.add(new ImageFile(index++, imgUrl, StatusContent.SAVED, nbImages)); // We infer actual book page images have the same format as their thumbs
+        if (updateImages) {
+            content.setQtyPages(nbImages); // Cover is duplicated in the code below; no need to decrease nbImages here
+
+            String[] thumbParts;
+            int index = 0;
+            List<ImageFile> images = new ArrayList<>();
+            // Cover
+            ImageFile cover = ImageFile.fromImageUrl(index++, Site.MUSES.getUrl() + imagesUrls.get(0), StatusContent.SAVED, nbImages);
+            content.setCoverImageUrl(cover.getUrl());
+            cover.setIsCover(true);
+            images.add(cover);
+            // Images
+            for (String u : imagesUrls) {
+                thumbParts = u.split("/");
+                if (thumbParts.length > 3) {
+                    thumbParts[2] = "fl"; // Large dimensions; there's also a medium variant available (fm)
+                    String imgUrl = Site.MUSES.getUrl() + "/" + thumbParts[1] + "/" + thumbParts[2] + "/" + thumbParts[3];
+                    images.add(ImageFile.fromImageUrl(index++, imgUrl, StatusContent.SAVED, nbImages)); // We infer actual book page images have the same format as their thumbs
+                }
             }
+            content.setImageFiles(images);
         }
-        content.setImageFiles(images);
 
         // Tags are not shown on the album page, but on the picture page (!)
         try {

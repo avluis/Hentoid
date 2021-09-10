@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,22 +15,30 @@ import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.annimon.stream.IntStream;
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,23 +57,45 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
+import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastHelper;
+import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.exception.LimitReachedException;
+import me.devsaki.hentoid.util.exception.UnsupportedContentException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
-
+/**
+ * ViewModel for the image viewer
+ * <p>
+ * Upon loading a new Content, LiveData updates are done in the following sequence :
+ * 1. Content
+ * 2. Images
+ * 3. Starting index
+ */
 public class ImageViewerViewModel extends AndroidViewModel {
 
+    // Number of concurrent image downloads
+    private static final int CONCURRENT_DOWNLOADS = 3;
+
     // Collection DAO
-    private final CollectionDAO collectionDao;
+    private final CollectionDAO dao;
     private final ContentSearchManager searchManager;
 
     // Collection data
@@ -76,6 +107,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Pictures data
     private LiveData<List<ImageFile>> currentImageSource;
     private final MediatorLiveData<List<ImageFile>> databaseImages = new MediatorLiveData<>();  // Set of image of current content
+    private final List<ImageFile> viewerImagesInternal = Collections.synchronizedList(new ArrayList<>());
     private final MutableLiveData<List<ImageFile>> viewerImages = new MutableLiveData<>();     // Currently displayed set of images (reprocessed from databaseImages)
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
     private final MutableLiveData<Boolean> shuffled = new MutableLiveData<>();          // Shuffle state of the current book
@@ -87,11 +119,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // TODO doc
     private final Map<Integer, String> imageLocations = new HashMap<>();
-    // TODO doc
-    private final AtomicBoolean interruptImageLoad = new AtomicBoolean(false);
+    // Switch to interrupt unarchiving when leaving the activity
+    private final AtomicBoolean interruptArchiveLoad = new AtomicBoolean(false);
+    // Page indexes that are being downloaded
+    private final Set<Integer> downloadsInProgress = Collections.synchronizedSet(new HashSet<>());
+    // FIFO switches to interrupt downloads when browsing the book
+    private final Queue<AtomicBoolean> downloadsQueue = new ConcurrentLinkedQueue<>();
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable imageDownloadDisposable = new CompositeDisposable();
+    private final CompositeDisposable notificationDisposables = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
     private Disposable unarchiveDisposable = Disposables.empty();
     private Disposable imageLoadDisposable = Disposables.empty();
@@ -102,8 +140,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
-        collectionDao = collectionDAO;
-        searchManager = new ContentSearchManager(collectionDao);
+        dao = collectionDAO;
+        searchManager = new ContentSearchManager(dao);
 
         showFavouritesOnly.postValue(false);
         shuffled.postValue(false);
@@ -111,7 +149,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     @Override
     protected void onCleared() {
-        collectionDao.cleanup();
+        dao.cleanup();
         compositeDisposable.clear();
         searchDisposable.dispose();
         super.onCleared();
@@ -150,7 +188,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public void loadFromContent(long contentId, int pageNumber) {
         if (contentId > 0) {
-            Content loadedContent = collectionDao.selectContent(contentId);
+            Content loadedContent = dao.selectContent(contentId);
             if (loadedContent != null)
                 processContent(loadedContent, pageNumber);
         }
@@ -188,7 +226,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // e.g. page favourited
         if (imageLocations.isEmpty() || newImages.size() != imageLocations.size()) {
             if (theContent.isArchive())
-                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptImageLoad, emitter));
+                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptArchiveLoad, emitter));
             else
                 observable = Observable.create(emitter -> processDiskImages(theContent, newImages, emitter));
 
@@ -198,7 +236,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     .observeOn(Schedulers.io())
                     .doOnComplete(
                             // Called this way to properly run on io thread
-                            () -> postLoadProcessing(getApplication().getApplicationContext(), theContent)
+                            () -> cacheJson(getApplication().getApplicationContext(), theContent)
                     )
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
@@ -246,7 +284,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 if (newImages.isEmpty()) {
                     newImageFiles = ContentHelper.createImageListFromFiles(pictureFiles);
                     theContent.setImageFiles(newImageFiles);
-                    collectionDao.insertContent(theContent);
+                    dao.insertContent(theContent);
                 } else {
                     // Match files for viewer display; no need to persist that
                     ContentHelper.matchFilesToImageList(pictureFiles, newImageFiles);
@@ -261,7 +299,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         emitter.onComplete();
     }
 
-    public void emptyCacheFolder() {
+    public void onActivityLeave() {
+        // Dispose the composite disposables for good
+        imageDownloadDisposable.dispose();
+        notificationDisposables.dispose();
+        // Empty cache
         emptyCacheDisposable =
                 Completable.fromRunnable(() -> FileHelper.emptyCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER))
                         .subscribeOn(Schedulers.io())
@@ -297,7 +339,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 // Extract the images if they are contained within an archive
                 // Unzip the archive in the app's cache folder
                 DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
-                // TODO replace that with a proper on-demand loading
+                // TODO replace that with a proper on-demand loading - see #706
                 if (archiveFile != null) {
                     interrupt.set(false);
                     isArchiveExtracting = true;
@@ -339,7 +381,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    // TODO doc
+    /**
+     * Map the given file Uri to its corresponding ImageFile in the given list, using their display name
+     *
+     * @param imageFiles List of ImageFiles to map the given Uri to
+     * @param uri        File Uri to map to one of the elements of the given list
+     * @return Matched ImageFile with the valued Uri if found; empty ImageFile if not found
+     */
     private ImageFile mapUriToImageFile(@NonNull final List<ImageFile> imageFiles, @NonNull final Uri uri) {
         String path = uri.getPath();
         if (null == path) return new ImageFile();
@@ -436,7 +484,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
 
-        viewerImages.postValue(imgs);
+        viewerImagesInternal.clear();
+        viewerImagesInternal.addAll(imgs);
+        viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
     }
 
     public void onLeaveBook(int readerIndex) {
@@ -446,14 +496,18 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Stop any ongoing picture loading
         unarchiveDisposable.dispose();
         imageLoadDisposable.dispose();
+        // Clear the composite disposables so that they can be reused
+        imageDownloadDisposable.clear();
+        notificationDisposables.clear();
+        downloadsInProgress.clear();
         isArchiveExtracting = false;
-        interruptImageLoad.set(true);
+        interruptArchiveLoad.set(true);
 
         // Don't do anything if the Content hasn't even been loaded
         if (-1 == loadedContentId) return;
 
         List<ImageFile> theImages = databaseImages.getValue();
-        Content theContent = collectionDao.selectContent(loadedContentId);
+        Content theContent = dao.selectContent(loadedContentId);
         if (null == theImages || null == theContent) return;
 
         int nbReadablePages = (int) Stream.of(theImages).filter(ImageFile::isReadable).count();
@@ -526,12 +580,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void toggleImageFavourite(int viewerIndex, @NonNull Consumer<Boolean> successCallback) {
-        List<ImageFile> list = viewerImages.getValue();
-        if (list != null) {
-            ImageFile file = list.get(viewerIndex);
-            boolean newState = !file.isFavourite();
-            toggleImageFavourite(Stream.of(file).toList(), () -> successCallback.accept(newState));
-        }
+        ImageFile file = viewerImagesInternal.get(viewerIndex);
+        boolean newState = !file.isFavourite();
+        toggleImageFavourite(Stream.of(file).toList(), () -> successCallback.accept(newState));
     }
 
     public void toggleImageFavourite(List<ImageFile> images, @NonNull Runnable successCallback) {
@@ -555,7 +606,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Helper.assertNonUiThread();
 
         if (images.isEmpty()) return;
-        Content theContent = collectionDao.selectContent(images.get(0).getContent().getTargetId());
+        Content theContent = dao.selectContent(images.get(0).getContent().getTargetId());
         if (null == theContent) return;
 
         // We can't work on the given objects as they are tied to the UI (part of ImageFileItem)
@@ -570,7 +621,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 }
 
         // Persist in DB
-        collectionDao.insertImageFiles(dbImages);
+        dao.insertImageFiles(dbImages);
 
         // Persist new values in JSON
         theContent.setImageFiles(dbImages);
@@ -607,7 +658,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         content.setFavourite(!content.isFavourite());
 
         // Persist in DB
-        collectionDao.insertContent(content);
+        dao.insertContent(content);
 
         // Persist new values in JSON
         Context context = getApplication().getApplicationContext();
@@ -617,7 +668,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void deleteBook(Consumer<Throwable> onError) {
-        Content targetContent = collectionDao.selectContent(loadedContentId);
+        Content targetContent = dao.selectContent(loadedContentId);
         if (null == targetContent) return;
 
         // Unplug image source listener (avoid displaying pages as they are being deleted; it messes up with DB transactions)
@@ -652,12 +703,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doDeleteBook(@NonNull Content targetContent) throws ContentNotRemovedException {
         Helper.assertNonUiThread();
-        ContentHelper.removeQueuedContent(getApplication(), collectionDao, targetContent);
+        ContentHelper.removeQueuedContent(getApplication(), dao, targetContent);
     }
 
     public void deletePage(int pageViewerIndex, Consumer<Throwable> onError) {
-        List<ImageFile> imageFiles = viewerImages.getValue();
-        if (imageFiles != null && imageFiles.size() > pageViewerIndex && pageViewerIndex > -1)
+        List<ImageFile> imageFiles = viewerImagesInternal;
+        if (imageFiles.size() > pageViewerIndex && pageViewerIndex > -1)
             deletePages(Stream.of(imageFiles.get(pageViewerIndex)).toList(), onError);
     }
 
@@ -679,7 +730,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doDeletePages(@NonNull List<ImageFile> pages) {
         Helper.assertNonUiThread();
-        ContentHelper.removePages(pages, collectionDao, getApplication());
+        ContentHelper.removePages(pages, dao, getApplication());
     }
 
     public void setCover(ImageFile page) {
@@ -697,7 +748,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doSetCover(@NonNull ImageFile page) {
         Helper.assertNonUiThread();
-        ContentHelper.setContentCover(page, collectionDao, getApplication());
+        ContentHelper.setContentCover(page, dao, getApplication());
     }
 
     public void loadNextContent(int readerIndex) {
@@ -734,13 +785,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
-        currentImageSource = collectionDao.selectDownloadedImagesFromContent(theContent.getId());
+        currentImageSource = dao.selectDownloadedImagesFromContent(theContent.getId());
         databaseImages.addSource(currentImageSource, imgs -> setImages(theContent, pageNumber, imgs));
-    }
-
-    private void postLoadProcessing(@NonNull Context context, @NonNull Content content) {
-        // Cache images in the Json file
-        cacheJson(context, content);
     }
 
     public void updateContentPreferences(@NonNull final Map<String, String> newPrefs) {
@@ -758,12 +804,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private Content doUpdateContentPreferences(@NonNull final Context context, long contentId, @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
-        Content theContent = collectionDao.selectContent(contentId);
+        Content theContent = dao.selectContent(contentId);
         if (null == theContent) return null;
 
         theContent.setBookPreferences(newPrefs);
         // Persist in DB
-        collectionDao.insertContent(theContent);
+        dao.insertContent(theContent);
 
         // Persist in JSON
         if (!theContent.getJsonUri().isEmpty())
@@ -789,10 +835,321 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Cache the URI of the JSON to the database
         content.setJsonUri(foundFile.getUri().toString());
-        collectionDao.insertContent(content);
+        dao.insertContent(content);
     }
 
     public void markPageAsRead(int pageNumber) {
         readPageNumbers.add(pageNumber);
+    }
+
+    public synchronized void setCurrentPage(int pageIndex, int direction) {
+        if (viewerImagesInternal.size() <= pageIndex) return;
+
+        List<Integer> indexesToLoad = new ArrayList<>();
+        int increment = (direction > 0) ? 1 : -1;
+        if (isPictureDownloadable(pageIndex, viewerImagesInternal)) indexesToLoad.add(pageIndex);
+        if (isPictureDownloadable(pageIndex + increment, viewerImagesInternal))
+            indexesToLoad.add(pageIndex + increment);
+        if (isPictureDownloadable(pageIndex + 2 * increment, viewerImagesInternal))
+            indexesToLoad.add(pageIndex + 2 * increment);
+
+        if (indexesToLoad.isEmpty()) return;
+
+        File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
+        if (cachePicFolder != null) {
+            for (int index : indexesToLoad) {
+                if (downloadsInProgress.contains(index)) continue;
+                downloadsInProgress.add(index);
+
+                // Adjust the current queue
+                while (downloadsQueue.size() >= CONCURRENT_DOWNLOADS) {
+                    AtomicBoolean stopDownload = downloadsQueue.poll();
+                    if (stopDownload != null) stopDownload.set(true);
+                    Timber.d("Aborting a download");
+                }
+                // Schedule a new download
+                AtomicBoolean stopDownload = new AtomicBoolean(false);
+                downloadsQueue.add(stopDownload);
+
+                imageDownloadDisposable.add(
+                        Single.fromCallable(() -> downloadPic(index, cachePicFolder, stopDownload))
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(Schedulers.computation())
+                                .subscribe(
+                                        resultOpt -> {
+                                            if (resultOpt.isEmpty()) { // Nothing to download
+                                                Timber.d("NO IMAGE FOUND AT INDEX %d", index);
+                                                downloadsInProgress.remove(index);
+                                                notifyDownloadProgress(-1, index);
+                                                return;
+                                            }
+
+                                            int downloadedPageIndex = resultOpt.get().left;
+
+                                            synchronized (viewerImagesInternal) {
+                                                if (viewerImagesInternal.size() <= downloadedPageIndex)
+                                                    return;
+
+                                                // Instanciate a new ImageFile not to modify the one used by the UI
+                                                ImageFile downloadedPic = new ImageFile(viewerImagesInternal.get(downloadedPageIndex));
+                                                downloadedPic.setFileUri(resultOpt.get().middle);
+                                                downloadedPic.setMimeType(resultOpt.get().right);
+
+                                                viewerImagesInternal.remove(downloadedPageIndex);
+                                                viewerImagesInternal.add(downloadedPageIndex, downloadedPic);
+                                                Timber.d("REPLACING INDEX %d - ORDER %d -> %s", downloadedPageIndex, downloadedPic.getOrder(), downloadedPic.getFileUri());
+
+                                                // Instanciate a new list to trigger an actual Adapter UI refresh
+                                                viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
+                                                imageLocations.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
+                                            }
+                                        },
+                                        Timber::w
+                                )
+                );
+            }
+        }
+    }
+
+    /**
+     * Indicate if the given page index is a downloadable picture in the given list
+     *
+     * @param pageIndex Index to test
+     * @param images    List of pictures to test against
+     * @return True if the given index is a downloadable picture; false if not
+     */
+    private boolean isPictureDownloadable(int pageIndex, @NonNull List<ImageFile> images) {
+        return pageIndex > -1
+                && images.size() > pageIndex
+                && images.get(pageIndex).getStatus().equals(StatusContent.ONLINE)
+                && images.get(pageIndex).getFileUri().isEmpty();
+    }
+
+    /**
+     * Download the picture at the given index to the given folder
+     *
+     * @param pageIndex    Index of the picture to download
+     * @param targetFolder Folder to download to
+     * @param stopDownload Switch to interrupt the download
+     * @return Optional triple with
+     * - The page index
+     * - The Uri of the downloaded file
+     * - The Mime-type of the downloaded file
+     * <p>
+     * The return value is empty if the download fails
+     */
+    private Optional<ImmutableTriple<Integer, String, String>> downloadPic(
+            int pageIndex,
+            @NonNull File targetFolder,
+            @NonNull final AtomicBoolean stopDownload) {
+        Helper.assertNonUiThread();
+        Content content = getContent().getValue();
+        if (null == content || viewerImagesInternal.size() <= pageIndex) return Optional.empty();
+
+        ImageFile img = viewerImagesInternal.get(pageIndex);
+        // Already downloaded
+        if (!img.getFileUri().isEmpty())
+            return Optional.of(new ImmutableTriple<>(pageIndex, img.getFileUri(), img.getMimeType()));
+
+        // Initiate download
+        try {
+            final String targetFileName = content.getId() + "." + pageIndex;
+            File[] existing = targetFolder.listFiles((dir, name) -> name.equalsIgnoreCase(targetFileName));
+            String mimeType = ImageHelper.MIME_IMAGE_GENERIC;
+            if (existing != null) {
+                File targetFile;
+                // No cached image -> fetch online
+                if (0 == existing.length) {
+                    // Prepare request headers
+                    List<Pair<String, String>> headers = new ArrayList<>();
+                    headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
+
+                    ImmutablePair<File, String> result;
+                    if (img.needsPageParsing()) {
+                        // Get cookies from the app jar
+                        String cookieStr = HttpHelper.getCookies(img.getPageUrl());
+                        // If nothing found, peek from the site
+                        if (cookieStr.isEmpty())
+                            cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                        if (!cookieStr.isEmpty())
+                            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                        result = downloadPictureFromPage(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
+                    } else {
+                        // Get cookies from the app jar
+                        String cookieStr = HttpHelper.getCookies(img.getUrl());
+                        // If nothing found, peek from the site
+                        if (cookieStr.isEmpty())
+                            cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
+                        if (!cookieStr.isEmpty())
+                            headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+                        result = downloadPictureToCachedFile(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
+                    }
+                    targetFile = result.left;
+                    mimeType = result.right;
+                } else { // Image is already there
+                    targetFile = existing[0];
+                    Timber.d("PIC %d FOUND AT %s (%.2f KB)", pageIndex, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+                }
+
+                return Optional.of(new ImmutableTriple<>(pageIndex, Uri.fromFile(targetFile).toString(), mimeType));
+            }
+        } catch (InterruptedException ie) {
+            Timber.d("Download interrupted for pic %d", pageIndex);
+        } catch (Exception e) {
+            Timber.w(e);
+        }
+        return Optional.empty();
+    }
+
+    // TODO doc
+    private ImmutablePair<File, String> downloadPictureFromPage(@NonNull Content content,
+                                                                @NonNull ImageFile img,
+                                                                int pageIndex,
+                                                                List<Pair<String, String>> requestHeaders,
+                                                                @NonNull File targetFolder,
+                                                                @NonNull String targetFileName,
+                                                                @NonNull final AtomicBoolean stopDownload) throws
+            UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, InterruptedException {
+        Site site = content.getSite();
+        String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content.getSite());
+        ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
+        img.setUrl(pages.left);
+        // Download the picture
+        try {
+            return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
+        } catch (IOException e) {
+            if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
+            else throw e;
+        }
+        // Trying with backup URL
+        img.setUrl(pages.right.get());
+        return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
+    }
+
+    // TODO doc
+    private ImmutablePair<File, String> downloadPictureToCachedFile(
+            @NonNull Content content,
+            @NonNull ImageFile img,
+            int pageIndex,
+            List<Pair<String, String>> requestHeaders,
+            @NonNull File targetFolder,
+            @NonNull String targetFileName,
+            @NonNull final AtomicBoolean interruptDownload) throws IOException, UnsupportedContentException, InterruptedException {
+
+        if (interruptDownload.get()) throw new InterruptedException("Download interrupted");
+
+        Site site = content.getSite();
+        Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
+        Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        Timber.d("DOWNLOADING PIC %d - RESPONSE %s", pageIndex, response.code());
+        if (response.code() >= 300) throw new IOException("Network error " + response.code());
+
+        ResponseBody body = response.body();
+        if (null == body)
+            throw new IOException("Could not read response : empty body for " + img.getUrl());
+
+        long size = body.contentLength();
+        // TODO if size can't be found (e.g. content-length header not set), guess it by looking at the size of the other downloaded pics
+        if (size < 1) size = 1;
+
+        File targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
+        String mimeType = "";
+        if (!targetFile.createNewFile())
+            throw new IOException("Could not create file " + targetFile.getPath());
+
+        Timber.d("WRITING DOWNLOADED PIC %d TO %s (size %.2f KB)", pageIndex, targetFile.getAbsolutePath(), size / 1024.0);
+        byte[] buffer = new byte[4196];
+        int len;
+        long processed = 0;
+        int iteration = 0;
+        try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
+            while ((len = in.read(buffer)) > -1) {
+                if (interruptDownload.get()) break;
+                processed += len;
+                // Read mime-type on the fly
+                if (0 == iteration) {
+                    mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
+                    if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
+                        String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", img.getUrl(), size / 1024.0);
+                        throw new UnsupportedContentException(message);
+                    }
+                }
+                if (0 == ++iteration % 50) // Notify every 200KB
+                    notifyDownloadProgress((processed * 100f) / size, pageIndex);
+                out.write(buffer, 0, len);
+            }
+            if (!interruptDownload.get()) {
+                notifyDownloadProgress(100, pageIndex);
+                out.flush();
+                Timber.d("DOWNLOADED PIC %d [%s] WRITTEN TO %s (%.2f KB)", pageIndex, mimeType, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
+                return new ImmutablePair<>(targetFile, mimeType);
+            }
+        }
+        // Remove the remaining file chunk if download has been interrupted
+        FileHelper.removeFile(targetFile);
+        throw new InterruptedException("Download interrupted");
+    }
+
+    /**
+     * Send the current book to the queue to be reparsed from scratch
+     *
+     * @param onError Consumer to call in case reparsing fails
+     */
+    public void reparseBook(Consumer<Throwable> onError) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Observable.fromIterable(Stream.of(theContent).toList())
+                        .observeOn(Schedulers.io())
+                        .map(ContentHelper::reparseFromScratch)
+                        .doOnNext(c -> {
+                            if (c.isEmpty()) throw new EmptyResultException();
+                            dao.addContentToQueue(
+                                    c.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP,
+                                    ContentQueueManager.getInstance().isQueueActive());
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doOnComplete(() -> {
+                            if (Preferences.isQueueAutostart())
+                                ContentQueueManager.getInstance().resumeQueue(getApplication());
+                        })
+                        .subscribe(
+                                v -> { // Nothing; feedback is done through LiveData
+                                },
+                                onError::accept
+                        )
+        );
+    }
+
+    /**
+     * Notify the download progress of the given page
+     *
+     * @param progressPc % progress to display
+     * @param pageIndex  Index of downloaded page
+     */
+    private void notifyDownloadProgress(float progressPc, int pageIndex) {
+        notificationDisposables.add(Completable.fromRunnable(() -> doNotifyDownloadProgress(progressPc, pageIndex))
+                .subscribeOn(Schedulers.computation())
+                .subscribe()
+        );
+    }
+
+    /**
+     * Notify the download progress of the given page
+     *
+     * @param progressPc % progress to display
+     * @param pageIndex  Index of downloaded page
+     */
+    private void doNotifyDownloadProgress(float progressPc, int pageIndex) {
+        int progress = (int) Math.floor(progressPc);
+        if (progress < 0) { // Error
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.FAILURE, R.id.page_download, pageIndex, 0, 100, 100));
+        } else if (progress < 100) {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.page_download, pageIndex, progress, 0, 100));
+        } else {
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.page_download, pageIndex, progress, 0, 100));
+        }
     }
 }

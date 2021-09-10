@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.tools;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,6 +16,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Stream;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.skydoves.powermenu.MenuAnimation;
@@ -39,10 +42,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.TextItem;
 import timber.log.Timber;
 
-import static androidx.core.view.ViewCompat.requireViewById;
-
 /**
- * Created by Robb on 11/2020
  * Dialog to view app logs
  */
 public class LogsDialogFragment extends DialogFragment {
@@ -108,7 +108,11 @@ public class LogsDialogFragment extends DialogFragment {
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(requireContext(), Preferences.getStorageUri());
         if (null == rootFolder) return Collections.emptyList();
 
-        return FileHelper.listFiles(requireContext(), rootFolder, displayName -> displayName.toLowerCase().endsWith("_log.txt"));
+        List<DocumentFile> files = FileHelper.listFiles(requireContext(), rootFolder, displayName -> displayName.toLowerCase().endsWith("_log.txt"));
+        // Sort by date desc
+        files = Stream.of(files).sortBy(DocumentFile::lastModified).toList();
+        Collections.reverse(files);
+        return files;
     }
 
     private boolean onItemClick(TextItem<DocumentFile> item) {

@@ -27,7 +27,7 @@ import static me.devsaki.hentoid.activities.sources.LusciousActivity.GALLERY_FIL
 public class LusciousContent extends BaseContentParser {
 
     @Nullable
-    public Content update(@NonNull final Content content, @Nonnull String url) {
+    public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         String bookId;
 
         if (url.contains(GALLERY_FILTER[0])) { // Triggered by a graphQL request
@@ -60,7 +60,7 @@ public class LusciousContent extends BaseContentParser {
 
         try {
             LusciousBookMetadata metadata = LusciousServer.API.getBookMetadata(query).execute().body();
-            return metadata.update(content);
+            return metadata.update(content, updateImages);
         } catch (IOException e) {
             Timber.e(e, "Error parsing content.");
             return new Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED);

@@ -176,9 +176,9 @@ public class DatabaseMaintenance {
         try {
             // Detect duplicate bookmarks (host/someurl and host/someurl/)
             Timber.i("Detecting duplicate bookmarks : start");
-            Query<SiteBookmark> contents = db.selectAllDuplicateBookmarks();
-            Timber.i("Detecting duplicate bookmarks : %d favourites detected", contents.count());
-            contents.remove();
+            Query<SiteBookmark> entries = db.selectAllDuplicateBookmarks();
+            Timber.i("Detecting duplicate bookmarks : %d bookmarks detected", entries.count());
+            entries.remove();
             Timber.i("Detecting duplicate bookmarks : done");
         } finally {
             db.closeThreadResources();
@@ -192,11 +192,20 @@ public class DatabaseMaintenance {
             // Set default values for new ObjectBox properties that are values as null by default (see https://github.com/objectbox/objectbox-java/issues/157)
             Timber.i("Set default ObjectBox properties : start");
             List<Content> contents = db.selectContentWithNullCompleteField();
-            Timber.i("Set default ObjectBox properties : %s books detected", contents.size());
+            Timber.i("Set default value for Content.complete field : %s items detected", contents.size());
             int max = contents.size();
             float pos = 1;
             for (Content c : contents) {
                 c.setCompleted(false);
+                db.insertContent(c);
+                emitter.onNext(pos++ / max);
+            }
+            List<Content> content = db.selectContentWithNullDlModeField();
+            Timber.i("Set default value for Content.downloadMode field : %s items detected", contents.size());
+            max = content.size();
+            pos = 1;
+            for (Content c : content) {
+                c.setDownloadMode(Content.DownloadMode.DOWNLOAD);
                 db.insertContent(c);
                 emitter.onNext(pos++ / max);
             }

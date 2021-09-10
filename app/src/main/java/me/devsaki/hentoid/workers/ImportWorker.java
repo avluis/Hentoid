@@ -136,7 +136,8 @@ public class ImportWorker extends BaseWorker {
         int booksOK = 0;                        // Number of books imported
         int booksKO = 0;                        // Number of folders found with no valid book inside
         int nbFolders = 0;                      // Number of folders found with no content but subfolders
-        Content content = null;
+        Content content;
+        List<DocumentFile> bookFiles;
         List<LogHelper.LogEntry> log = new ArrayList<>();
         Context context = getApplicationContext();
 
@@ -196,16 +197,30 @@ public class ImportWorker extends BaseWorker {
             for (int i = 0; i < bookFolders.size(); i++) {
                 if (isStopped()) throw new InterruptedException();
                 DocumentFile bookFolder = bookFolders.get(i);
+                content = null;
+                bookFiles = null;
 
                 // Detect the presence of images if the corresponding cleanup option has been enabled
                 if (cleanNoImages) {
-                    List<DocumentFile> imageFiles = explorer.listFiles(context, bookFolder, imageNames);
+                    bookFiles = explorer.listFiles(context, bookFolder, null);
+                    long nbImages = Stream.of(bookFiles).filter(f -> ImageHelper.isSupportedImage(f.getName())).count();
                     List<DocumentFile> subfolders = explorer.listFolders(context, bookFolder);
-                    if (imageFiles.isEmpty() && subfolders.isEmpty()) { // No supported images nor subfolders
-                        booksKO++;
-                        boolean success = bookFolder.delete();
-                        trace(Log.INFO, STEP_1, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
-                        continue;
+                    if (0 == nbImages && subfolders.isEmpty()) { // No supported images nor subfolders
+                        boolean doRemove = true;
+                        try {
+                            content = importJson(context, bookFolder, bookFiles, dao);
+                            // Don't delete books that are _not supposed to_ have downloaded images
+                            if (content.getDownloadMode() == Content.DownloadMode.STREAM)
+                                doRemove = false;
+                        } catch (ParseException e) {
+                            trace(Log.WARN, STEP_1, log, "[Remove no image] Folder %s : unreadable JSON", bookFolder.getUri().toString());
+                        }
+                        if (doRemove) {
+                            booksKO++;
+                            boolean success = bookFolder.delete();
+                            trace(Log.INFO, STEP_1, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
+                            continue;
+                        }
                     }
                 }
 
@@ -214,8 +229,9 @@ public class ImportWorker extends BaseWorker {
 
                 // Detect JSON and try to parse it
                 try {
-                    List<DocumentFile> bookFiles = explorer.listFiles(context, bookFolder, null);
-                    content = importJson(context, bookFolder, bookFiles, dao);
+                    if (null == bookFiles)
+                        bookFiles = explorer.listFiles(context, bookFolder, null);
+                    if (null == content) content = importJson(context, bookFolder, bookFiles, dao);
                     if (content != null) {
                         // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
                         if (existingFlaggedContent != null)
@@ -626,11 +642,6 @@ public class ImportWorker extends BaseWorker {
             Content result = content.toEntity(dao);
             result.setJsonUri(json.getUri().toString());
             result.setStorageUri(parentFolder.getUri().toString());
-
-            if (result.getStatus() != StatusContent.DOWNLOADED
-                    && result.getStatus() != StatusContent.ERROR) {
-                result.setStatus(StatusContent.MIGRATED);
-            }
 
             return result;
         } catch (IOException | JsonDataException e) {

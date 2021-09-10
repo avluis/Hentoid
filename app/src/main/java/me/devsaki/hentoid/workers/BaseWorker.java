@@ -124,8 +124,6 @@ public abstract class BaseWorker extends Worker {
         // Tell everyone the worker is shutting down
         EventBus.getDefault().post(new ServiceDestroyedEvent(serviceId));
 
-        if (notificationManager != null) notificationManager.cancel();
-
         Timber.d("%s worker destroyed", this.getClass().getSimpleName());
     }
 

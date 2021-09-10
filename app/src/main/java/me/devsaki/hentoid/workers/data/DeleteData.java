@@ -16,6 +16,7 @@ import me.devsaki.hentoid.util.Helper;
  */
 public class DeleteData {
     private static final String KEY_CONTENT_IDS = "contentIds";
+    private static final String KEY_CONTENT_PURGE_IDS = "contentPurgeIds";
     private static final String KEY_GROUP_IDS = "groupIds";
     private static final String KEY_QUEUE_IDS = "queueIds";
     private static final String KEY_DELETE_GROUPS_ONLY = "deleteGroupsOnly";
@@ -30,6 +31,10 @@ public class DeleteData {
 
         public void setContentIds(List<Long> value) {
             builder.putLongArray(KEY_CONTENT_IDS, Helper.getPrimitiveLongArrayFromList(value));
+        }
+
+        public void setContentPurgeIds(List<Long> value) {
+            builder.putLongArray(KEY_CONTENT_PURGE_IDS, Helper.getPrimitiveLongArrayFromList(value));
         }
 
         public void setGroupIds(List<Long> value) {
@@ -59,6 +64,12 @@ public class DeleteData {
 
         public long[] getContentIds() {
             long[] storedValue = data.getLongArray(KEY_CONTENT_IDS);
+            if (null != storedValue) return storedValue;
+            else return new long[]{};
+        }
+
+        public long[] getContentPurgeIds() {
+            long[] storedValue = data.getLongArray(KEY_CONTENT_PURGE_IDS);
             if (null != storedValue) return storedValue;
             else return new long[]{};
         }
