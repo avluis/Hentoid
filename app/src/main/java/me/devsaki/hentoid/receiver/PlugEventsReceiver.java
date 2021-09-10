@@ -5,10 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.hardware.usb.UsbManager;
 
+import androidx.annotation.ArrayRes;
+
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Random;
+
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.CommunicationEvent;
-import timber.log.Timber;
 
 public class PlugEventsReceiver extends BroadcastReceiver {
 
@@ -16,16 +20,20 @@ public class PlugEventsReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         if (!isInitialStickyBroadcast()) {
-            if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action)) {
-                Timber.d("USB plugged");
-                EventBus.getDefault().post(new CommunicationEvent(CommunicationEvent.EV_BROADCAST, CommunicationEvent.RC_ALL, "usb"));
-            } else if (Intent.ACTION_POWER_CONNECTED.equals(action)) {
-                Timber.d("Power plugged");
-                EventBus.getDefault().post(new CommunicationEvent(CommunicationEvent.EV_BROADCAST, CommunicationEvent.RC_ALL, "power"));
-            } else if (Intent.ACTION_HEADSET_PLUG.equals(action)) {
-                Timber.d("Audio plugged");
-                EventBus.getDefault().post(new CommunicationEvent(CommunicationEvent.EV_BROADCAST, CommunicationEvent.RC_ALL, "audio"));
+            if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action) || Intent.ACTION_POWER_CONNECTED.equals(action)) {
+                EventBus.getDefault().post(
+                        new CommunicationEvent(CommunicationEvent.EV_BROADCAST, CommunicationEvent.RC_ALL, getRandomQuoteFrom(context, R.array.power_reactions))
+                );
+            } else if (Intent.ACTION_HEADSET_PLUG.equals(action) && intent.getIntExtra("state", 0) > 0) { // "Connect" event
+                EventBus.getDefault().post(
+                        new CommunicationEvent(CommunicationEvent.EV_BROADCAST, CommunicationEvent.RC_ALL, getRandomQuoteFrom(context, R.array.audio_reactions))
+                );
             }
         }
+    }
+
+    private String getRandomQuoteFrom(Context context, @ArrayRes int res) {
+        String[] quotes = context.getResources().getStringArray(res);
+        return quotes[new Random().nextInt(quotes.length)];
     }
 }
