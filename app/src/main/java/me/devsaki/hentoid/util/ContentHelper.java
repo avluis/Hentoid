@@ -769,7 +769,8 @@ public final class ContentHelper {
         // Look up similar names between images and file names
         int order;
         int previousOrder = -1;
-        for (ImageFile img : images) {
+        for (int i = 0; i < images.size(); i++) {
+            ImageFile img = images.get(i);
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
 
             // Detect gaps inside image numbering
@@ -777,16 +778,13 @@ public final class ContentHelper {
             // Look for files named with the forgotten number
             if (previousOrder > -1 && previousOrder != order - 1) {
                 Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
-                for (int i = previousOrder + 1; i < order; i++) {
-                    ImmutablePair<String, Long> property = fileNameProperties.get(i + "");
+                for (int j = previousOrder + 1; j < order; j++) {
+                    ImmutablePair<String, Long> property = fileNameProperties.get(j + "");
                     if (property != null) {
-                        Timber.i("Numbering gap filled with a file : %d", i);
-                        ImageFile newImage = ImageFile.fromImageUrl(i, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
+                        Timber.i("Numbering gap filled with a file : %d", j);
+                        ImageFile newImage = ImageFile.fromImageUrl(j, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
                         newImage.setFileUri(property.left).setSize(property.right);
-                        if (i < result.size())
-                            result.add(i, newImage);
-                        else
-                            result.add(newImage);
+                        result.add(result.size() - 1, newImage);
                     }
                 }
             }
