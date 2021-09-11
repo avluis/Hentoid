@@ -72,6 +72,7 @@ import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
@@ -993,7 +994,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
                 return Optional.of(new ImmutableTriple<>(pageIndex, Uri.fromFile(targetFile).toString(), mimeType));
             }
-        } catch (InterruptedException ie) {
+        } catch (DownloadInterruptedException ie) {
             Timber.d("Download interrupted for pic %d", pageIndex);
         } catch (Exception e) {
             Timber.w(e);
@@ -1009,7 +1010,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                                                 @NonNull File targetFolder,
                                                                 @NonNull String targetFileName,
                                                                 @NonNull final AtomicBoolean stopDownload) throws
-            UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, InterruptedException {
+            UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException {
         Site site = content.getSite();
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content.getSite());
@@ -1035,9 +1036,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
             List<Pair<String, String>> requestHeaders,
             @NonNull File targetFolder,
             @NonNull String targetFileName,
-            @NonNull final AtomicBoolean interruptDownload) throws IOException, UnsupportedContentException, InterruptedException {
+            @NonNull final AtomicBoolean interruptDownload) throws IOException, UnsupportedContentException, DownloadInterruptedException {
 
-        if (interruptDownload.get()) throw new InterruptedException("Download interrupted");
+        if (interruptDownload.get()) throw new DownloadInterruptedException("Download interrupted");
 
         Site site = content.getSite();
         Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
@@ -1088,7 +1089,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
         // Remove the remaining file chunk if download has been interrupted
         FileHelper.removeFile(targetFile);
-        throw new InterruptedException("Download interrupted");
+        throw new DownloadInterruptedException("Download interrupted");
     }
 
     /**
