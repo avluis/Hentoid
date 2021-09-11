@@ -86,6 +86,7 @@ public class StartupWorker extends BaseWorker {
             tasks.take().run();
         } catch (InterruptedException e) {
             Timber.w(e);
+            Thread.currentThread().interrupt();
         }
     }
 }
