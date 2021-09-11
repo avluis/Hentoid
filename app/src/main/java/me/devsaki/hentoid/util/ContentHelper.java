@@ -783,7 +783,10 @@ public final class ContentHelper {
                         Timber.i("Numbering gap filled with a file : %d", i);
                         ImageFile newImage = ImageFile.fromImageUrl(i, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
                         newImage.setFileUri(property.left).setSize(property.right);
-                        result.add(i, newImage);
+                        if (i < result.size())
+                            result.add(i, newImage);
+                        else
+                            result.add(newImage);
                     }
                 }
             }
@@ -1281,8 +1284,8 @@ public final class ContentHelper {
      * @throws EmptyResultException  If no picture has been detected
      */
     public static boolean testDownloadPictureFromPage(@NonNull Site site,
-                                                @NonNull ImageFile img,
-                                                List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+                                                      @NonNull ImageFile img,
+                                                      List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
         ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);
