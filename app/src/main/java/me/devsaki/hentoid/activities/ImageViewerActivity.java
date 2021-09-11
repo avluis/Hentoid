@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.activities;
 
+import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -18,12 +20,10 @@ import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.VolumeKeyListener;
 
-import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
-
 
 public class ImageViewerActivity extends BaseActivity {
 
-    public static boolean isRunning = false;
+    private static boolean isRunning = false;
 
     private VolumeKeyListener volumeKeyListener = null;
     private ImageViewerViewModel viewModel = null;
@@ -52,7 +52,8 @@ public class ImageViewerActivity extends BaseActivity {
 
         if (null == viewModel.getContent().getValue()) { // ViewModel hasn't loaded anything yet (fresh start)
             Bundle searchParams = parser.getSearchParams();
-            if (searchParams != null) viewModel.loadFromSearchParams(contentId, pageNumber, searchParams);
+            if (searchParams != null)
+                viewModel.loadFromSearchParams(contentId, pageNumber, searchParams);
             else viewModel.loadFromContent(contentId, pageNumber);
         }
 
@@ -108,5 +109,9 @@ public class ImageViewerActivity extends BaseActivity {
     public void unregisterKeyListener() {
         if (volumeKeyListener != null) volumeKeyListener.clear();
         volumeKeyListener = null;
+    }
+
+    public static boolean isRunning() {
+        return isRunning;
     }
 }
