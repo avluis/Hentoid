@@ -2,7 +2,7 @@
   "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.15.4/hentoid1154-431.apk",
   "versionCode": "431",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/test1/v415.apk",
-  "versionCode.beta": "500",
+  "versionCode.beta": "100",
   "sourceAlerts":[
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"172" },
       {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"189" },
