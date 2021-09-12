@@ -215,8 +215,6 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         when (event.type) {
             CommunicationEvent.EV_ENABLE -> onEnable()
             CommunicationEvent.EV_DISABLE -> onDisable()
-            else -> {
-            }
         }
     }
 
