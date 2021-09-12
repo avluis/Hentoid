@@ -1,9 +1,13 @@
 package me.devsaki.hentoid.core;
 
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
+
 import android.app.ActivityManager;
 import android.app.Application;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
@@ -26,9 +30,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
-import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
-import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE;
-
 /**
  * Created by DevSaki on 20/05/2015.
  * Initializes required components:
@@ -42,6 +43,10 @@ public class HentoidApp extends Application {
 
     public static Application getInstance() {
         return instance;
+    }
+
+    private synchronized static void setInstance(@NonNull Application value) {
+        instance = value;
     }
 
 
@@ -83,7 +88,7 @@ public class HentoidApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        instance = this;
+        setInstance(this);
 
         Timber.i("Initializing %s", R.string.app_name);
 
