@@ -13,7 +13,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.StringHelper;
 
-@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
+@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection","squid:S1172"})
 public class LusciousBookMetadata {
     private BookData data;
 
