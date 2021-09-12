@@ -16,7 +16,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
