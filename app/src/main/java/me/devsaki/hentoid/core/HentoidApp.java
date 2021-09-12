@@ -41,11 +41,11 @@ public class HentoidApp extends Application {
 
     private static Application instance;
 
-    public synchronized static Application getInstance() {
+    public static synchronized Application getInstance() {
         return instance;
     }
 
-    private synchronized static void setInstance(@NonNull Application value) {
+    private static synchronized void setInstance(@NonNull Application value) {
         instance = value;
     }
 

@@ -28,6 +28,16 @@ public class ImageViewerActivity extends BaseActivity {
     private VolumeKeyListener volumeKeyListener = null;
     private ImageViewerViewModel viewModel = null;
 
+
+    private static synchronized void setRunning(boolean value) {
+        isRunning = value;
+    }
+
+    public static synchronized boolean isRunning() {
+        return isRunning;
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,13 +119,5 @@ public class ImageViewerActivity extends BaseActivity {
     public void unregisterKeyListener() {
         if (volumeKeyListener != null) volumeKeyListener.clear();
         volumeKeyListener = null;
-    }
-
-    private synchronized static void setRunning(boolean value) {
-        isRunning = value;
-    }
-
-    public synchronized static boolean isRunning() {
-        return isRunning;
     }
 }

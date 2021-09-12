@@ -69,11 +69,11 @@ public class ExternalImportService extends IntentService {
         return new Intent(context, ExternalImportService.class);
     }
 
-    public synchronized static boolean isRunning() {
+    public static synchronized boolean isRunning() {
         return running;
     }
 
-    private synchronized static void setRunning(boolean value) {
+    private static synchronized void setRunning(boolean value) {
         running = value;
     }
 

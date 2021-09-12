@@ -40,7 +40,7 @@ public class FileExplorer implements Closeable {
     private final ContentProviderClient client;
 
 
-    private synchronized static void setTreeDocumentFileConstructor(@NonNull Constructor<?> value) {
+    private static synchronized void setTreeDocumentFileConstructor(@NonNull Constructor<?> value) {
         treeDocumentFileConstructor = value;
     }
 

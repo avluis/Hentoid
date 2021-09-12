@@ -60,7 +60,7 @@ public class AppStartup {
 
     private static boolean isInitialized = false;
 
-    private synchronized static void setInitialized() {
+    private static synchronized void setInitialized() {
         isInitialized = true;
     }
 
