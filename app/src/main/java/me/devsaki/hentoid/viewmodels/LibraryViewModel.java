@@ -405,7 +405,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                         ContentQueueManager.getInstance().isQueueActive());
                             } else {
                                 errorCount.incrementAndGet();
-                                onError.accept(new EmptyResultException("Content unreachable"));
+                                onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
                             }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
@@ -453,7 +453,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                         ContentQueueManager.getInstance().isQueueActive());
                             } else {
                                 nbErrors.incrementAndGet();
-                                onError.accept(new EmptyResultException("Content unreachable"));
+                                onError.accept(new EmptyResultException(getApplication().getString(R.string.download_canceled)));
                             }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
@@ -521,7 +521,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 dao.insertContent(dbContent);
                                 ContentHelper.updateContentJson(getApplication(), dbContent);
                             } else {
-                                onError.accept(new EmptyResultException("Content unreachable"));
+                                onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
                             }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
