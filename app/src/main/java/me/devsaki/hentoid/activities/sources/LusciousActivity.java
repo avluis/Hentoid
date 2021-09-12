@@ -21,7 +21,7 @@ import timber.log.Timber;
 public class LusciousActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "luscious.net";
-    public static final String[] GALLERY_FILTER = {
+    protected static final String[] GALLERY_FILTER = {
             "operationName=AlbumGet", // Fetch using GraphQL call
             "luscious.net/[\\w\\-]+/[\\w\\-]+_[0-9]+/$" // Actual gallery page URL (NB : only works for the first viewed gallery, or when manually reloading a page)
     };
