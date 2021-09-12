@@ -45,13 +45,13 @@ public class StartupWorker extends BaseWorker {
 
     @Override
     void onInterrupt() {
-        if (launchDisposable != null) launchDisposable.dispose();
+        launchDisposable.dispose();
     }
 
     @Override
     void onClear() {
         launchTasks.clear();
-        if (launchDisposable != null) launchDisposable.dispose();
+        launchDisposable.dispose();
     }
 
     @SuppressLint("TimberArgCount")
