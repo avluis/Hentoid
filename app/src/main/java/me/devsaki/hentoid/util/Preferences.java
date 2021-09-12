@@ -144,8 +144,8 @@ public final class Preferences {
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
     }
 
-    public static Map<String, ?> extractPortableInformation() {
-        Map<String, ?> result = new HashMap<>(sharedPreferences.getAll());
+    public static Map<String, Object> extractPortableInformation() {
+        Map<String, Object> result = new HashMap<>(sharedPreferences.getAll());
 
         // Remove non-exportable settings that make no sense on another instance
         result.remove(Key.FIRST_RUN);
