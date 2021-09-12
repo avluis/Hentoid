@@ -84,7 +84,7 @@ public class ContentItemBundle {
         }
 
         public Boolean isCompleted() {
-            if(bundle.containsKey(KEY_COMPL_STATE)) return bundle.getBoolean(KEY_COMPL_STATE);
+            if (bundle.containsKey(KEY_COMPL_STATE)) return bundle.getBoolean(KEY_COMPL_STATE);
             else return null;
         }
 
@@ -105,7 +105,5 @@ public class ContentItemBundle {
             if (bundle.containsKey(KEY_COVER_URI)) return bundle.getString(KEY_COVER_URI);
             else return null;
         }
-
-
     }
 }
