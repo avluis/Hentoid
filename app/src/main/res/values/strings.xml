@@ -117,6 +117,8 @@
     <string name="notification_action_title">User action needed</string>
     <string name="notification_action_dl_revive">Tap here to reactivate your download</string>
     <string name="revive_wait">Please stay on this screen while your download is revived</string>
+    <string name="queue_json_saved">Queue JSON successfully saved</string>
+    <string name="queue_json_failed">Queue JSON saving failed</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>

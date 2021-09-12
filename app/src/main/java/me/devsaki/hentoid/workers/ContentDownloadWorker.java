@@ -456,8 +456,8 @@ public class ContentDownloadWorker extends BaseWorker {
 
 
         if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
-            Timber.i("Queue JSON successfully saved");
-        else Timber.w("Queue JSON saving failed");
+            Timber.i(context.getString(R.string.queue_json_saved));
+        else Timber.w(context.getString(R.string.queue_json_failed));
 
         return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);
     }
@@ -666,9 +666,10 @@ public class ContentDownloadWorker extends BaseWorker {
                 Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
                 EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages, sizeDownloadedBytes));
 
-                if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
-                    Timber.i("Queue JSON successfully saved");
-                else Timber.w("Queue JSON saving failed");
+                Context context = getApplicationContext();
+                if (ContentHelper.updateQueueJson(context, dao))
+                    Timber.i(context.getString(R.string.queue_json_saved));
+                else Timber.w(context.getString(R.string.queue_json_failed));
 
                 // Tracking Event (Download Completed)
                 HentoidApp.trackDownloadEvent("Completed");
@@ -1105,9 +1106,10 @@ public class ContentDownloadWorker extends BaseWorker {
         dao.deleteQueue(content);
         HentoidApp.trackDownloadEvent("Error");
 
-        if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
-            Timber.i("Queue JSON successfully saved");
-        else Timber.w("Queue JSON saving failed");
+        Context context = getApplicationContext();
+        if (ContentHelper.updateQueueJson(context, dao))
+            Timber.i(context.getString(R.string.queue_json_saved));
+        else Timber.w(context.getString(R.string.queue_json_failed));
 
         notificationManager.notify(new DownloadErrorNotification(content));
     }
