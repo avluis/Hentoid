@@ -184,6 +184,8 @@ public class DragSelectTouchListener implements RecyclerView.OnItemTouchListener
             case MotionEvent.ACTION_DOWN:
                 reset();
                 break;
+            default:
+                // No default case to handle
         }
 
         mRecyclerView = rv;
@@ -236,6 +238,8 @@ public class DragSelectTouchListener implements RecyclerView.OnItemTouchListener
             case MotionEvent.ACTION_POINTER_UP:
                 reset();
                 break;
+            default:
+                // No default case to handle
         }
     }
 
