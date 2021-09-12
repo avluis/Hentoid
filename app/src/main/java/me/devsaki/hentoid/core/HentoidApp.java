@@ -41,7 +41,7 @@ public class HentoidApp extends Application {
 
     private static Application instance;
 
-    public static Application getInstance() {
+    public synchronized static Application getInstance() {
         return instance;
     }
 
