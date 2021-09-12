@@ -80,7 +80,7 @@ public class ImageViewerActivity extends BaseActivity {
         if (!Preferences.getRecentVisibility())
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
 
-        isRunning = true;
+        setRunning(true);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class ImageViewerActivity extends BaseActivity {
             Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
             Preferences.setViewerCurrentPageNum(-1);
             Preferences.setViewerCurrentContent(-1);
-            isRunning = false;
+            setRunning(false);
         }
         super.onStop();
     }
@@ -109,6 +109,10 @@ public class ImageViewerActivity extends BaseActivity {
     public void unregisterKeyListener() {
         if (volumeKeyListener != null) volumeKeyListener.clear();
         volumeKeyListener = null;
+    }
+
+    private synchronized static void setRunning(boolean value) {
+        isRunning = value;
     }
 
     public static boolean isRunning() {
