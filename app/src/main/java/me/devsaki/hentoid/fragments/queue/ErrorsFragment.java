@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.queue;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
@@ -60,8 +62,6 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 04/2020
@@ -232,8 +232,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     }
 
     private void initToolbar() {
-        if (!(requireActivity() instanceof QueueActivity)) return;
-        QueueActivity queueActivity = (QueueActivity) requireActivity();
+        QueueActivity queueActivity = activity.get();
         MenuItem redownloadAllMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_redownload_all);
         redownloadAllMenu.setOnMenuItemClickListener(item -> {
             onRedownloadAllClick();
@@ -254,8 +253,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     }
 
     private void initSelectionToolbar() {
-        if (!(requireActivity() instanceof QueueActivity)) return;
-        QueueActivity queueActivity = (QueueActivity) requireActivity();
+        QueueActivity queueActivity = activity.get();
 
         selectionToolbar = queueActivity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
