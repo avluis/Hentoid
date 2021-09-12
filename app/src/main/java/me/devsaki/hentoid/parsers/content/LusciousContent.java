@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import static me.devsaki.hentoid.activities.sources.LusciousActivity.GALLERY_FILTER;
+
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -21,8 +23,6 @@ import me.devsaki.hentoid.retrofit.sources.LusciousServer;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.activities.sources.LusciousActivity.GALLERY_FILTER;
 
 public class LusciousContent extends BaseContentParser {
 
