@@ -231,10 +231,10 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     public void removeAll() {
-        List<Content> errors = dao.selectErrorContentList();
-        if (errors.isEmpty()) return;
+        List<Content> errorsLocal = dao.selectErrorContentList();
+        if (errorsLocal.isEmpty()) return;
 
-        remove(errors);
+        remove(errorsLocal);
     }
 
     public void remove(@NonNull List<Content> contentList) {

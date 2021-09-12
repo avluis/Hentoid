@@ -1092,8 +1092,8 @@ public class ContentDownloadWorker extends BaseWorker {
 
     private void logErrorRecord(long contentId, ErrorType type, String url, String
             contentPart, String description) {
-        ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description, Instant.now());
-        if (contentId > 0) dao.insertErrorRecord(record);
+        ErrorRecord downloadRecord = new ErrorRecord(contentId, type, url, contentPart, description, Instant.now());
+        if (contentId > 0) dao.insertErrorRecord(downloadRecord);
     }
 
     private void moveToErrors(long contentId) {

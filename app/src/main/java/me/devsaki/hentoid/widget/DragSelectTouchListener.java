@@ -293,7 +293,7 @@ public class DragSelectTouchListener implements RecyclerView.OnItemTouchListener
         } else if (y >= mBottomBoundFrom && y <= mBottomBoundTo) {
             mLastX = event.getX();
             mLastY = event.getY();
-            mScrollSpeedFactor = (((float) y - (float) mBottomBoundFrom)) / ((float) mBottomBoundTo - (float) mBottomBoundFrom);
+            mScrollSpeedFactor = ((float) y - (float) mBottomBoundFrom) / ((float) mBottomBoundTo - (float) mBottomBoundFrom);
             mScrollDistance = (int) ((float) mMaxScrollDistance * mScrollSpeedFactor);
             if (mDebug)
                 Timber.d("SCROLL - mScrollSpeedFactor=" + mScrollSpeedFactor + " | mScrollDistance=" + mScrollDistance);

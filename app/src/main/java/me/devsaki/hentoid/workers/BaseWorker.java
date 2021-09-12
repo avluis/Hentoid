@@ -56,7 +56,7 @@ public abstract class BaseWorker extends Worker {
         return false;
     }
 
-    public BaseWorker(
+    protected BaseWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters,
             @IdRes int serviceId,
