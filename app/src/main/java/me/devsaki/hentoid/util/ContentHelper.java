@@ -592,6 +592,8 @@ public final class ContentHelper {
             case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_AUTH_ID:
                 result += title + " - " + author;
                 break;
+            default:
+                // Nothing to do
         }
         result += " - ";
 
