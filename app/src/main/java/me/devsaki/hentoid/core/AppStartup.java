@@ -60,6 +60,10 @@ public class AppStartup {
 
     private static boolean isInitialized = false;
 
+    private synchronized static void setInitialized() {
+        isInitialized = true;
+    }
+
     public void initApp(
             @NonNull final Context context,
             @NonNull Consumer<Float> onMainProgress,
@@ -75,7 +79,7 @@ public class AppStartup {
         // TODO switch from a recursive function to a full RxJava-powered chain
         doRunTask(0, onMainProgress, onSecondaryProgress, () -> {
             if (launchDisposable != null) launchDisposable.dispose();
-            isInitialized = true;
+            setInitialized();
 
             onComplete.run();
             // Run post-launch tasks on a worker
