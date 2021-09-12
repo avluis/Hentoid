@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.web;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
@@ -47,8 +49,6 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 public final class BookmarksDialogFragment extends DialogFragment implements ItemTouchCallback {
 
@@ -278,11 +278,10 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         Context context = getActivity();
         if (1 == selectedItems.size() && context != null) {
             SiteBookmark b = Stream.of(selectedItems).findFirst().get().getTag();
-            if (b != null)
-                if (Helper.copyPlainTextToClipboard(context, b.getUrl())) {
-                    ToastHelper.toast(context, R.string.web_url_clipboard);
-                    selectionToolbar.setVisibility(View.INVISIBLE);
-                }
+            if (b != null && Helper.copyPlainTextToClipboard(context, b.getUrl())) {
+                ToastHelper.toast(context, R.string.web_url_clipboard);
+                selectionToolbar.setVisibility(View.INVISIBLE);
+            }
         }
     }
 
