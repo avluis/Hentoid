@@ -61,6 +61,8 @@ public class ArchiveHelper {
     private static final FileHelper.NameFilter archiveNamesFilter = displayName -> isArchiveExtensionSupported(FileHelper.getExtension(displayName));
     private static final String CACHE_SEPARATOR = "£";
 
+    private static final String INTERRUPTION_MSG = "Extract archive INTERRUPTED";
+
     private static final int BUFFER = 32 * 1024;
 
 
@@ -466,8 +468,8 @@ public class ArchiveHelper {
             Timber.v("Extract archive, get stream: " + index + " to: " + extractAskMode);
 
             if (interrupt != null && interrupt.get()) {
-                Timber.v("Extract archive INTERRUPTED");
-                throw new SevenZipException("Extract archive INTERRUPTED");
+                Timber.v(INTERRUPTION_MSG);
+                throw new SevenZipException(INTERRUPTION_MSG);
             }
 
             this.extractAskMode = extractAskMode;
@@ -502,8 +504,8 @@ public class ArchiveHelper {
         public void prepareOperation(ExtractAskMode extractAskMode) throws SevenZipException {
             Timber.v("Extract archive, prepare to: %s", extractAskMode);
             if (interrupt != null && interrupt.get()) {
-                Timber.v("Extract archive INTERRUPTED");
-                throw new SevenZipException("Extract archive INTERRUPTED");
+                Timber.v(INTERRUPTION_MSG);
+                throw new SevenZipException(INTERRUPTION_MSG);
             }
         }
 
