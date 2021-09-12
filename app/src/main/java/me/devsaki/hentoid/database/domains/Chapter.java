@@ -24,7 +24,7 @@ public class Chapter {
     @Backlink(to = "chapter")
     private ToMany<ImageFile> imageFiles;
 
-    public Chapter() {
+    public Chapter() { // Required by ObjectBox when an alternate constructor exists
     }
 
     public Chapter(int order, String url, String name) {

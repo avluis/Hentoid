@@ -49,8 +49,8 @@ public class Attribute {
     public ToMany<Content> contents;
 
 
-    public Attribute() {
-    } // No-arg constructor required by ObjectBox
+    public Attribute() { // Required by ObjectBox when an alternate constructor exists
+    }
 
     public Attribute(@Nonnull AttributeType type, @Nonnull String name) {
         this.type = type;

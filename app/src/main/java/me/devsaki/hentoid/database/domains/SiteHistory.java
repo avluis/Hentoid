@@ -18,8 +18,8 @@ public class SiteHistory {
     private Site site;
     private String url; // Last
 
-    public SiteHistory() {
-    }  // Required for ObjectBox to work
+    public SiteHistory() { // Required by ObjectBox when an alternate constructor exists
+    }
 
     public SiteHistory(Site site, String url) {
         this.site = site;

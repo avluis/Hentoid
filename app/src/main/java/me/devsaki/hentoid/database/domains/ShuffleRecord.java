@@ -12,8 +12,8 @@ public class ShuffleRecord {
     public long id;
     private Long contentId;
 
-    public ShuffleRecord() {
-    } // Required for ObjectBox to work
+    public ShuffleRecord() { // Required by ObjectBox when an alternate constructor exists
+    }
 
     public ShuffleRecord(Long contentId) {
         this.contentId = contentId;
