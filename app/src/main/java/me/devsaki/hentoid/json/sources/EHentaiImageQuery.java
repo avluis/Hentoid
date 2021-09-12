@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.json.sources;
 
-@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection","squid:S1172"})
+@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class EHentaiImageQuery {
     private final String method = "imagedispatch";
     private final Integer gid;

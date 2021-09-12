@@ -3,7 +3,7 @@ package me.devsaki.hentoid.json.sources;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection","squid:S1172"})
+@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class EHentaiGalleryQuery {
     private String method = "gdata";
     private final List<List<String>> gidlist;

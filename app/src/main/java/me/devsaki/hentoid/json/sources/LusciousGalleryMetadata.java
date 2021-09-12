@@ -6,7 +6,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 
-@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection","squid:S1172"})
+@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class LusciousGalleryMetadata {
     private PictureData data;
 
