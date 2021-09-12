@@ -233,20 +233,20 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
 
     private void initToolbar() {
         if (!(requireActivity() instanceof QueueActivity)) return;
-        QueueActivity activity = (QueueActivity) requireActivity();
-        MenuItem redownloadAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_redownload_all);
+        QueueActivity queueActivity = (QueueActivity) requireActivity();
+        MenuItem redownloadAllMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_redownload_all);
         redownloadAllMenu.setOnMenuItemClickListener(item -> {
             onRedownloadAllClick();
             return true;
         });
 
-        MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all_errors);
+        MenuItem cancelAllMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_cancel_all_errors);
         cancelAllMenu.setOnMenuItemClickListener(item -> {
             onCancelAllClick();
             return true;
         });
 
-        MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
+        MenuItem invertMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
         invertMenu.setOnMenuItemClickListener(item -> {
             viewModel.invertQueue();
             return true;
@@ -255,9 +255,9 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
 
     private void initSelectionToolbar() {
         if (!(requireActivity() instanceof QueueActivity)) return;
-        QueueActivity activity = (QueueActivity) requireActivity();
+        QueueActivity queueActivity = (QueueActivity) requireActivity();
 
-        selectionToolbar = activity.getSelectionToolbar();
+        selectionToolbar = queueActivity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);
