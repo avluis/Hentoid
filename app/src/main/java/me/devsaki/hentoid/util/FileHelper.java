@@ -151,7 +151,7 @@ public class FileHelper {
     @Nullable
     private static String getVolumePath(@NonNull Context context, final String volumeId) {
         try {
-            // StorageVolume exists since API21, but is only visible since API24
+            // StorageVolume exists since API19, has an uiid since API21 but is only visible since API24
             StorageManager mStorageManager =
                     (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
             Class<?> storageVolumeClazz = Class.forName("android.os.storage.StorageVolume");
