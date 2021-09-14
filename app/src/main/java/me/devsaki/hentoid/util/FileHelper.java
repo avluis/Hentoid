@@ -829,11 +829,11 @@ public class FileHelper {
     }
 
     /**
-     * Format the given file size using human-readable units
+     * Format the given file size using human-readable units, two decimals precision
      * e.g. if the size represents more than 1M Bytes, the result is formatted as megabytes
      *
      * @param bytes Size to format, in bytes
-     * @return Given file size using human-readable units
+     * @return Given file size using human-readable units, two decimals precision
      */
     public static String formatHumanReadableSize(long bytes) {
         return FileUtil.byteCountToDisplayRoundedSize(bytes, 2);
