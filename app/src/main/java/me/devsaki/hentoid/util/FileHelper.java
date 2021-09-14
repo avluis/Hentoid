@@ -836,7 +836,7 @@ public class FileHelper {
      * @return Given file size using human-readable units
      */
     public static String formatHumanReadableSize(long bytes) {
-        return FileUtils.byteCountToDisplaySize(bytes);
+        return FileUtil.byteCountToDisplayRoundedSize(bytes, 2);
     }
 
     /**
@@ -937,17 +937,17 @@ public class FileHelper {
         }
 
         /**
-         * Get total storage capacity in "traditional" MB (base 1024)
+         * Get total storage capacity in bytes
          */
-        public double getTotalSpaceMb() {
-            return totalMemBytes * 1.0 / (1024 * 1024);
+        public long getTotalSpaceBytes() {
+            return totalMemBytes;
         }
 
         /**
-         * Get free storage capacity in "traditional" MB (base 1024)
+         * Get free storage capacity in bytes
          */
-        public double getfreeUsageMb() {
-            return freeMemBytes * 1.0 / (1024 * 1024);
+        public long getfreeUsageBytes() {
+            return freeMemBytes;
         }
     }
 

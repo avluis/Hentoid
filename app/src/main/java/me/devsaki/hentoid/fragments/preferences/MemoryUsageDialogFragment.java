@@ -62,14 +62,14 @@ public class MemoryUsageDialogFragment extends DialogFragment {
 
         ROW_PADDING = (int) getResources().getDimension(R.dimen.mem_row_padding);
 
-        double deviceFreeGb = -1;
-        double deviceTotalGb = -1;
+        long deviceFreeBytes = -1;
+        long deviceTotalBytes = -1;
 
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(requireActivity(), Preferences.getStorageUri());
         if (rootFolder != null) {
             FileHelper.MemoryUsageFigures memUsage = new FileHelper.MemoryUsageFigures(requireContext(), rootFolder);
-            deviceFreeGb = memUsage.getfreeUsageMb() / 1024;
-            deviceTotalGb = memUsage.getTotalSpaceMb() / 1024;
+            deviceFreeBytes = memUsage.getfreeUsageBytes();
+            deviceTotalBytes = memUsage.getTotalSpaceBytes();
         }
 
         Map<Site, ImmutablePair<Integer, Long>> primaryMemUsage;
@@ -81,11 +81,10 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         } finally {
             dao.cleanup();
         }
-        long hentoidPrimaryUsageByte = Stream.of(primaryMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight));
-        long hentoidExternalUsageByte = Stream.of(externalMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight));
-
-        double hentoidPrimaryUsageGb = hentoidPrimaryUsageByte * 1.0 / (1024 * 1024 * 1024);
-        double hentoidExternalUsageGb = hentoidExternalUsageByte * 1.0 / (1024 * 1024 * 1024);
+        Long hentoidPrimaryUsageBytes = Stream.of(primaryMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight));
+        if (null == hentoidPrimaryUsageBytes) hentoidPrimaryUsageBytes = 0L;
+        Long hentoidExternalUsageBytes = Stream.of(externalMemUsage.values()).collect(Collectors.summingLong(ImmutablePair::getRight));
+        if (null == hentoidExternalUsageBytes) hentoidExternalUsageBytes = 0L;
 
         CircularProgressView donut = requireViewById(rootView, R.id.memory_global_graph);
         donut.setTotalColor(requireContext(), R.color.primary_light);
@@ -93,15 +92,15 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         donut.setProgress2Color(getContext(), R.color.secondary_variant_light);
         donut.setProgress3Color(getContext(), R.color.white_opacity_25);
         donut.setTotal(1);
-        donut.setProgress1((float) (hentoidPrimaryUsageGb / deviceTotalGb)); // Size taken by Hentoid primary library
-        donut.setProgress2((float) (hentoidExternalUsageGb / deviceTotalGb)); // Size taken by Hentoid external library
-        donut.setProgress3((float) (1 - deviceFreeGb / deviceTotalGb)); // Total size taken on the device
+        donut.setProgress1(hentoidPrimaryUsageBytes * 1f / deviceTotalBytes); // Size taken by Hentoid primary library
+        donut.setProgress2(hentoidExternalUsageBytes * 1f / deviceTotalBytes); // Size taken by Hentoid external library
+        donut.setProgress3(1 - deviceFreeBytes * 1f / deviceTotalBytes); // Total size taken on the device
 
 
-        ((TextView) requireViewById(rootView, R.id.memory_total)).setText(getResources().getString(R.string.memory_total, deviceTotalGb));
-        ((TextView) requireViewById(rootView, R.id.memory_free)).setText(getResources().getString(R.string.memory_free, deviceFreeGb));
-        ((TextView) requireViewById(rootView, R.id.memory_hentoid_main)).setText(getResources().getString(R.string.memory_hentoid_main, FileHelper.formatHumanReadableSize(hentoidPrimaryUsageByte)));
-        ((TextView) requireViewById(rootView, R.id.memory_hentoid_ext)).setText(getResources().getString(R.string.memory_hentoid_ext, FileHelper.formatHumanReadableSize(hentoidExternalUsageByte)));
+        ((TextView) requireViewById(rootView, R.id.memory_total)).setText(getResources().getString(R.string.memory_total, FileHelper.formatHumanReadableSize(deviceTotalBytes)));
+        ((TextView) requireViewById(rootView, R.id.memory_free)).setText(getResources().getString(R.string.memory_free, FileHelper.formatHumanReadableSize(deviceFreeBytes)));
+        ((TextView) requireViewById(rootView, R.id.memory_hentoid_main)).setText(getResources().getString(R.string.memory_hentoid_main, FileHelper.formatHumanReadableSize(hentoidPrimaryUsageBytes)));
+        ((TextView) requireViewById(rootView, R.id.memory_hentoid_ext)).setText(getResources().getString(R.string.memory_hentoid_ext, FileHelper.formatHumanReadableSize(hentoidExternalUsageBytes)));
 
         table = requireViewById(rootView, R.id.memory_details_table);
         addRow(table, "Source", "Books", "Size");
