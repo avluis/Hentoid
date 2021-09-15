@@ -470,23 +470,29 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     private void sortAndSetViewerImages(@NonNull List<ImageFile> imgs, boolean shuffle) {
+        Stream<ImageFile> imgStream;
         if (shuffle) {
             Collections.shuffle(imgs, new Random(RandomSeedSingleton.getInstance().getSeed(Consts.SEED_PAGES)));
-            // Don't keep the cover thumb
-            imgs = Stream.of(imgs).filter(ImageFile::isReadable).toList();
+            imgStream = Stream.of(imgs);
         } else {
             // Sort images according to their Order; don't keep the cover thumb
-            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).filter(ImageFile::isReadable).toList();
+            imgStream = Stream.of(imgs).sortBy(ImageFile::getOrder);
         }
+        // Don't keep the cover thumb
+        imgStream = imgStream.filter(ImageFile::isReadable);
 
         Boolean showFavouritesOnlyVal = getShowFavouritesOnly().getValue();
         if (showFavouritesOnlyVal != null && showFavouritesOnlyVal)
-            imgs = Stream.of(imgs).filter(ImageFile::isFavourite).toList();
+            imgStream = imgStream.filter(ImageFile::isFavourite);
+
+        imgs = imgStream.toList();
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
 
-        viewerImagesInternal.clear();
-        viewerImagesInternal.addAll(imgs);
+        synchronized (viewerImagesInternal) {
+            viewerImagesInternal.clear();
+            viewerImagesInternal.addAll(imgs);
+        }
         viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
     }
 
