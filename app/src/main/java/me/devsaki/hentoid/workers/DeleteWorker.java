@@ -54,14 +54,21 @@ public class DeleteWorker extends BaseWorker {
         super(context, parameters, R.id.delete_service, "delete");
 
         DeleteData.Parser inputData = new DeleteData.Parser(getInputData());
-        contentIds = inputData.getContentIds();
+        long[] askedContentIds = inputData.getContentIds();
         contentPurgeIds = inputData.getContentPurgeIds();
         groupIds = inputData.getGroupIds();
         queueIds = inputData.getQueueIds();
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly();
-        deleteMax = contentIds.length + contentPurgeIds.length + groupIds.length + queueIds.length;
 
         dao = new ObjectBoxDAO(context);
+
+        // Queried here to avoid serialization hard-limit
+        // of androidx.work.Data.Builder when passing a large long[] through DeleteData
+        if (0 == askedContentIds.length && inputData.isDeleteAllContentExceptFavs())
+            askedContentIds = Helper.getPrimitiveLongArrayFromList(dao.selectStoredContentIds(true, false, -1, false));
+        contentIds = askedContentIds;
+
+        deleteMax = contentIds.length + contentPurgeIds.length + groupIds.length + queueIds.length;
     }
 
     @Override

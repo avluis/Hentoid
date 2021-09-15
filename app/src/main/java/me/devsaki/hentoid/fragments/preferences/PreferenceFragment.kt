@@ -247,7 +247,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         val dao = ObjectBoxDAO(activity)
         var searchDisposable = Disposables.empty()
 
-        searchDisposable = Single.fromCallable { dao.selectStoredContent(true, false, -1, false) }
+        searchDisposable = Single.fromCallable { dao.selectStoredContentIds(true, false, -1, false) }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { list ->
@@ -269,7 +269,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                             parentFragmentManager,
                             resources.getString(R.string.delete_title)
                         )
-                        viewModel.deleteItems(list)
+                        viewModel.deleteAllItemsExceptFavourites()
                     }
                     .setNegativeButton(
                         R.string.no

@@ -5,10 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.annimon.stream.Stream
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
-import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.ImageHelper
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -38,25 +36,17 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
         if (images != null) for (f in images) FileHelper.removeFile(f)
     }
 
-    fun deleteItems(items: List<Content>) {
-        // Split the job into jobs of 1500 items to avoid serialization hard-limit
-        // of androidx.work.Data.Builder
-        val subjobs = items.chunked(1500)
+    fun deleteAllItemsExceptFavourites() {
+        val builder = DeleteData.Builder()
+        builder.setDeleteAllContentExceptFavs(true)
 
-        subjobs.forEach {
-            val builder = DeleteData.Builder()
-            if (it.isNotEmpty()) builder.setContentIds(
-                Stream.of(it).map { obj: Content -> obj.id }.toList()
-            )
-
-            val workManager = WorkManager.getInstance(getApplication())
-            workManager.enqueueUniqueWork(
-                R.id.delete_service.toString(),
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                OneTimeWorkRequestBuilder<DeleteWorker>()
-                    .setInputData(builder.data)
-                    .build()
-            )
-        }
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            R.id.delete_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequestBuilder<DeleteWorker>()
+                .setInputData(builder.data)
+                .build()
+        )
     }
 }
