@@ -129,18 +129,6 @@ public class FileHelper {
     public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri, LogHelper.LogInfo log) {
         if (uri.toString().isEmpty()) return "";
 
-        if (Build.VERSION.SDK_INT >= 26) {
-            try {
-                DocumentsContract.Path path = DocumentsContract.findDocumentPath(context.getContentResolver(), uri);
-                if (path != null) {
-                    Timber.i("document path=%s", path.toString());
-                    if (log != null) log.addEntry("document path=%s", path.toString());
-                }
-            } catch (FileNotFoundException | SecurityException e) {
-                Timber.w(e);
-            }
-        }
-
         String volumePath = getVolumePath(context, getVolumeIdFromUri(uri));
         if (volumePath == null) return File.separator;
         if (volumePath.endsWith(File.separator))
@@ -925,7 +913,7 @@ public class FileHelper {
             Timber.v("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
 
             List<StorageVolume> volumes = mgr.getStorageVolumes();
-            if (1 == volumes.size()) {
+            if (1 == volumes.size()) { // No need to test anything, there's just one single volume
                 processPrimary(context, volumes.get(0));
             } else
                 for (StorageVolume v : volumes) {
