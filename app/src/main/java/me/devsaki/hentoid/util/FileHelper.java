@@ -36,7 +36,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,7 +108,7 @@ public class FileHelper {
         if (ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
             return uri.getPath();
         } else {
-            return getFullPathFromTreeUri(context, uri, null);
+            return getFullPathFromTreeUri(context, uri);
         }
     }
 
@@ -123,10 +122,6 @@ public class FileHelper {
      * @return Full, human-readable access path from the given Uri
      */
     public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri) {
-        return getFullPathFromTreeUri(context, uri, null);
-    }
-
-    public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri, LogHelper.LogInfo log) {
         if (uri.toString().isEmpty()) return "";
 
         String volumePath = getVolumePath(context, getVolumeIdFromUri(uri));
@@ -860,12 +855,9 @@ public class FileHelper {
          * @param f       Folder to get the figures from
          */
         public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
+            // TODO remove logging completely when no more incident about memory size is signalled for 1 month
             log = new LogHelper.LogInfo("size");
-            if (Build.VERSION.SDK_INT >= 29) {
-                init29(context, f);
-                log.addEntry("init29 : %d / %d", totalMemBytes, freeMemBytes);
-            }
-            if (0 == totalMemBytes && Build.VERSION.SDK_INT >= 26) {
+            if (Build.VERSION.SDK_INT >= 26) {
                 init26(context, f);
                 log.addEntry("init26 : %d / %d", totalMemBytes, freeMemBytes);
             }
@@ -877,12 +869,12 @@ public class FileHelper {
                 initLegacy(context, f);
                 log.addEntry("initLegacy : %d / %d", totalMemBytes, freeMemBytes);
             }
-            LogHelper.writeLog(context, log);
+            if (BuildConfig.DEBUG) LogHelper.writeLog(context, log);
         }
 
         // Old way of measuring memory (inaccurate on certain devices)
         private void initLegacy(@NonNull Context context, @NonNull DocumentFile f) {
-            String fullPath = getFullPathFromTreeUri(context, f.getUri(), log); // Oh so dirty !!
+            String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
             if (fullPath != null) {
                 File file = new File(fullPath);
                 this.freeMemBytes = file.getFreeSpace(); // should actually have been getUsableSpace
@@ -892,7 +884,7 @@ public class FileHelper {
 
         // Init for API 21 to 25
         private void init21(@NonNull Context context, @NonNull DocumentFile f) {
-            String fullPath = getFullPathFromTreeUri(context, f.getUri(), log); // Oh so dirty !!
+            String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
             if (fullPath != null) {
                 StatFs stat = new StatFs(fullPath);
 
@@ -913,22 +905,39 @@ public class FileHelper {
             Timber.v("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
 
             List<StorageVolume> volumes = mgr.getStorageVolumes();
-            if (1 == volumes.size()) { // No need to test anything, there's just one single volume
-                processPrimary(context, volumes.get(0));
-            } else
+            StorageVolume targetVolume = null;
+            StorageVolume primaryVolume = null;
+            // No need to test anything, there's just one single volume
+            if (1 == volumes.size()) targetVolume = volumes.get(0);
+            else { // Look for a match among listed volumes
                 for (StorageVolume v : volumes) {
                     log.addEntry("Storage volume ID %s", v.getUuid());
                     Timber.v("Storage volume ID %s", v.getUuid());
 
+                    if (v.isPrimary()) primaryVolume = v;
+
                     if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
-                        if (v.isPrimary()) {
-                            processPrimary(context, v);
-                        } else {
-                            processSecondary(v);
-                        }
+                        targetVolume = v;
                         break;
                     }
                 }
+            }
+
+            // If no volume matches, default to Primary
+            // NB : necessary to avoid defaulting to the root on rooted phones
+            // (rooted phone's root is a separate volume with specific memory usage figures)
+            if (null == targetVolume) {
+                log.addEntry("Defaulting to Primary");
+                Timber.v("Defaulting to Primary");
+                targetVolume = primaryVolume;
+            }
+
+            // Process target volume
+            if (targetVolume.isPrimary()) {
+                processPrimary(context, targetVolume);
+            } else {
+                processSecondary(targetVolume);
+            }
         }
 
         @TargetApi(26)
@@ -965,23 +974,6 @@ public class FileHelper {
                     freeMemBytes = stats.f_bavail * blockSize;
                 }
             } catch (Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
-                Timber.w(e);
-            }
-        }
-
-        @TargetApi(29)
-        private void init29(@NonNull Context context, @NonNull DocumentFile f) {
-            StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
-            try {
-                StorageVolume volume = mgr.getStorageVolume(f.getUri());
-                log.addEntry("init29 : volume found ; %s", volume.getUuid());
-
-                StorageStatsManager storageStatsManager =
-                        (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
-
-                totalMemBytes = storageStatsManager.getTotalBytes(UUID.fromString(volume.getUuid()));
-                freeMemBytes = storageStatsManager.getFreeBytes(UUID.fromString(volume.getUuid()));
-            } catch (IOException | IllegalArgumentException e) {
                 Timber.w(e);
             }
         }
