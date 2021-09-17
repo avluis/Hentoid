@@ -36,6 +36,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,7 +109,7 @@ public class FileHelper {
         if (ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
             return uri.getPath();
         } else {
-            return getFullPathFromTreeUri(context, uri);
+            return getFullPathFromTreeUri(context, uri, null);
         }
     }
 
@@ -122,7 +123,23 @@ public class FileHelper {
      * @return Full, human-readable access path from the given Uri
      */
     public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri) {
+        return getFullPathFromTreeUri(context, uri, null);
+    }
+
+    public static String getFullPathFromTreeUri(@NonNull final Context context, @NonNull final Uri uri, LogHelper.LogInfo log) {
         if (uri.toString().isEmpty()) return "";
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            try {
+                DocumentsContract.Path path = DocumentsContract.findDocumentPath(context.getContentResolver(), uri);
+                if (path != null) {
+                    Timber.i("document path=%s", path.toString());
+                    if (log != null) log.addEntry("document path=%s", path.toString());
+                }
+            } catch (FileNotFoundException | SecurityException e) {
+                Timber.w(e);
+            }
+        }
 
         String volumePath = getVolumePath(context, getVolumeIdFromUri(uri));
         if (volumePath == null) return File.separator;
@@ -225,6 +242,7 @@ public class FileHelper {
     @Nullable
     private static String getVolumeIdFromUri(final Uri uri) {
         String docId;
+
         try {
             docId = DocumentsContract.getDocumentId(uri);
         } catch (IllegalArgumentException e) {
@@ -845,6 +863,7 @@ public class FileHelper {
     public static class MemoryUsageFigures {
         private long freeMemBytes = 0;
         private long totalMemBytes = 0;
+        private final LogHelper.LogInfo log;
 
         /**
          * Get memory usage figures for the volume containing the given folder
@@ -853,14 +872,29 @@ public class FileHelper {
          * @param f       Folder to get the figures from
          */
         public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
-            if (Build.VERSION.SDK_INT >= 26) init26(context, f);
-            if (0 == totalMemBytes) init21(context, f);
-            if (0 == totalMemBytes) initLegacy(context, f);
+            log = new LogHelper.LogInfo("size");
+            if (Build.VERSION.SDK_INT >= 29) {
+                init29(context, f);
+                log.addEntry("init29 : %d / %d", totalMemBytes, freeMemBytes);
+            }
+            if (0 == totalMemBytes && Build.VERSION.SDK_INT >= 26) {
+                init26(context, f);
+                log.addEntry("init26 : %d / %d", totalMemBytes, freeMemBytes);
+            }
+            if (0 == totalMemBytes) {
+                init21(context, f);
+                log.addEntry("init21 : %d / %d", totalMemBytes, freeMemBytes);
+            }
+            if (0 == totalMemBytes) {
+                initLegacy(context, f);
+                log.addEntry("initLegacy : %d / %d", totalMemBytes, freeMemBytes);
+            }
+            LogHelper.writeLog(context, log);
         }
 
         // Old way of measuring memory (inaccurate on certain devices)
         private void initLegacy(@NonNull Context context, @NonNull DocumentFile f) {
-            String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
+            String fullPath = getFullPathFromTreeUri(context, f.getUri(), log); // Oh so dirty !!
             if (fullPath != null) {
                 File file = new File(fullPath);
                 this.freeMemBytes = file.getFreeSpace(); // should actually have been getUsableSpace
@@ -870,7 +904,7 @@ public class FileHelper {
 
         // Init for API 21 to 25
         private void init21(@NonNull Context context, @NonNull DocumentFile f) {
-            String fullPath = getFullPathFromTreeUri(context, f.getUri()); // Oh so dirty !!
+            String fullPath = getFullPathFromTreeUri(context, f.getUri(), log); // Oh so dirty !!
             if (fullPath != null) {
                 StatFs stat = new StatFs(fullPath);
 
@@ -880,52 +914,87 @@ public class FileHelper {
             }
         }
 
-        // Init for API 26+
+        // Init for API 26-28
         // Inspired by https://github.com/Cheticamp/Storage_Volumes/
         @TargetApi(26)
         private void init26(@NonNull Context context, @NonNull DocumentFile f) {
             String volumeId = getVolumeIdFromUri(f.getUri());
             StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
 
+            log.addEntry("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
             Timber.v("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
 
-            for (StorageVolume v : mgr.getStorageVolumes()) {
-                Timber.v("Storage volume ID %s", v.getUuid());
+            List<StorageVolume> volumes = mgr.getStorageVolumes();
+            if (1 == volumes.size()) {
+                processPrimary(context, volumes.get(0));
+            } else
+                for (StorageVolume v : volumes) {
+                    log.addEntry("Storage volume ID %s", v.getUuid());
+                    Timber.v("Storage volume ID %s", v.getUuid());
 
-                if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
-                    if (v.isPrimary()) {
-                        Timber.v(">> %s PRIMARY", v.getUuid());
-
-                        // Special processing for primary volume
-                        UUID uuid = StorageManager.UUID_DEFAULT;
-                        try {
-                            StorageStatsManager storageStatsManager =
-                                    (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
-                            totalMemBytes = storageStatsManager.getTotalBytes(uuid);
-                            freeMemBytes = storageStatsManager.getFreeBytes(uuid);
-                        } catch (IOException e) {
-                            Timber.e(e);
+                    if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
+                        if (v.isPrimary()) {
+                            processPrimary(context, v);
+                        } else {
+                            processSecondary(v);
                         }
-                    } else {
-                        Timber.v(">> %s NOT PRIMARY", v.getUuid());
-
-                        // StorageStatsManager doesn't work for volumes other than the primary volume since
-                        // the "UUID" available for non-primary volumes is not acceptable to
-                        // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
-                        try {
-                            String volumePath = getVolumePath(v);
-                            if (!volumePath.isEmpty()) {
-                                StructStatVfs stats = Os.statvfs(volumePath);
-                                long blockSize = stats.f_bsize;
-                                totalMemBytes = stats.f_blocks * blockSize;
-                                freeMemBytes = stats.f_bavail * blockSize;
-                            }
-                        } catch (Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
-                            Timber.e(e);
-                        }
+                        break;
                     }
-                    break;
                 }
+        }
+
+        @TargetApi(26)
+        private void processPrimary(Context context, StorageVolume volume) {
+            log.addEntry(">> %s PRIMARY", volume.getUuid());
+            Timber.v(">> %s PRIMARY", volume.getUuid());
+
+            // Special processing for primary volume
+            UUID uuid = StorageManager.UUID_DEFAULT;
+            try {
+                StorageStatsManager storageStatsManager =
+                        (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
+                totalMemBytes = storageStatsManager.getTotalBytes(uuid);
+                freeMemBytes = storageStatsManager.getFreeBytes(uuid);
+            } catch (IOException e) {
+                Timber.w(e);
+            }
+        }
+
+        @TargetApi(26)
+        private void processSecondary(StorageVolume volume) {
+            log.addEntry(">> %s NOT PRIMARY", volume.getUuid());
+            Timber.v(">> %s NOT PRIMARY", volume.getUuid());
+
+            // StorageStatsManager doesn't work for volumes other than the primary volume since
+            // the "UUID" available for non-primary volumes is not acceptable to
+            // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
+            try {
+                String volumePath = getVolumePath(volume);
+                if (!volumePath.isEmpty()) {
+                    StructStatVfs stats = Os.statvfs(volumePath);
+                    long blockSize = stats.f_bsize;
+                    totalMemBytes = stats.f_blocks * blockSize;
+                    freeMemBytes = stats.f_bavail * blockSize;
+                }
+            } catch (Exception e) { // On some devices, Os.statvfs can throw other exceptions than ErrnoException
+                Timber.w(e);
+            }
+        }
+
+        @TargetApi(29)
+        private void init29(@NonNull Context context, @NonNull DocumentFile f) {
+            StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
+            try {
+                StorageVolume volume = mgr.getStorageVolume(f.getUri());
+                log.addEntry("init29 : volume found ; %s", volume.getUuid());
+
+                StorageStatsManager storageStatsManager =
+                        (StorageStatsManager) context.getSystemService(Context.STORAGE_STATS_SERVICE);
+
+                totalMemBytes = storageStatsManager.getTotalBytes(UUID.fromString(volume.getUuid()));
+                freeMemBytes = storageStatsManager.getFreeBytes(UUID.fromString(volume.getUuid()));
+            } catch (IOException | IllegalArgumentException e) {
+                Timber.w(e);
             }
         }
 

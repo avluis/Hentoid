@@ -211,7 +211,7 @@ public class ExternalImportService extends IntentService {
 
     private LogHelper.LogInfo buildLogInfo(@NonNull List<LogHelper.LogEntry> log) {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-        logInfo.setLogName("Import external");
+        logInfo.setHeaderName("Import external");
         logInfo.setFileName("import_external_log");
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);

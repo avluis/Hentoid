@@ -116,7 +116,7 @@ public abstract class BaseWorker extends Worker {
 
             LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
             logInfo.setFileName(logName);
-            logInfo.setLogName(logName);
+            logInfo.setHeaderName(logName);
             logInfo.setEntries(logs);
             LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
         }

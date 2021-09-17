@@ -392,7 +392,7 @@ public class ImportWorker extends BaseWorker {
 
     private LogHelper.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogHelper.LogEntry> log) {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-        logInfo.setLogName(cleanup ? "Cleanup" : "Import");
+        logInfo.setHeaderName(cleanup ? "Cleanup" : "Import");
         logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);
