@@ -184,7 +184,7 @@ dependencies {
     implementation "com.github.skydoves:submarine:1.0.7"
 
     // Fast scroller
-    implementation "me.zhanghai.android.fastscroll:library:1.1.5"
+    implementation 'me.zhanghai.android.fastscroll:library:1.1.7'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android:flexbox:2.0.1'
