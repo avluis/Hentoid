@@ -70,10 +70,6 @@ public class FileHelper {
     private static final String ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"; // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
 
 
-    public static String getFileProviderAuthority() {
-        return AUTHORITY;
-    }
-
     /**
      * Build a DocumentFile representing a file from the given Uri string
      *
