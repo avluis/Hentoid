@@ -95,7 +95,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     // Drag, drop & swipe
     private final ItemTouchHelper touchHelper;
-    private boolean isSwipeable = true;
+    private final boolean isSwipeable;
 
 
     static {
@@ -118,11 +118,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
     // Constructor for empty placeholder
     public ContentItem(@ViewType int viewType) {
-        isEmpty = true;
         content = null;
         isSearchActive = false;
         this.viewType = viewType;
         touchHelper = null;
+        isEmpty = true;
+        isSwipeable = true;
         setIdentifier(Helper.generateIdForPlaceholder());
     }
 
@@ -155,6 +156,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         this.touchHelper = touchHelper;
         this.deleteAction = deleteAction;
         isEmpty = (null == content);
+        isSwipeable = true;
 //        setIdentifier(record.id);
         if (content != null) setIdentifier(content.uniqueHash());
         else setIdentifier(Helper.generateIdForPlaceholder());
@@ -191,6 +193,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
     @Override
     public boolean isSwipeable() {
         return isSwipeable;
+    }
+
+    @Override
+    public boolean isDirectionSupported(int i) {
+        return (ItemTouchHelper.LEFT == i);
     }
 
     @org.jetbrains.annotations.Nullable
