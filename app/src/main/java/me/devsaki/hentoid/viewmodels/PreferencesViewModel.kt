@@ -42,7 +42,7 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
 
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
-            R.id.delete_service.toString(),
+            R.id.delete_service_delete.toString(),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
             OneTimeWorkRequestBuilder<DeleteWorker>()
                 .setInputData(builder.data)

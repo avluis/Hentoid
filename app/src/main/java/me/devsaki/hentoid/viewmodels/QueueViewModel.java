@@ -36,6 +36,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.workers.DeleteWorker;
+import me.devsaki.hentoid.workers.PurgeWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
 import timber.log.Timber;
 
@@ -243,11 +244,7 @@ public class QueueViewModel extends AndroidViewModel {
             builder.setQueueIds(Stream.of(contentList).map(Content::getId).toList());
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
-        workManager.enqueueUniqueWork(
-                Integer.toString(R.id.delete_service),
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
-        );
+        workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
     }
 
     private void purgeItem(@NonNull Content content) {
@@ -256,9 +253,9 @@ public class QueueViewModel extends AndroidViewModel {
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueueUniqueWork(
-                Integer.toString(R.id.delete_service),
+                Integer.toString(R.id.delete_service_purge),
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
-                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
+                new OneTimeWorkRequest.Builder(PurgeWorker.class).setInputData(builder.getData()).build()
         );
     }
 
@@ -273,11 +270,7 @@ public class QueueViewModel extends AndroidViewModel {
         if (!contentIdList.isEmpty()) builder.setQueueIds(contentIdList);
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
-        workManager.enqueueUniqueWork(
-                Integer.toString(R.id.delete_service),
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
-        );
+        workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
     }
 
     public void redownloadContent(
