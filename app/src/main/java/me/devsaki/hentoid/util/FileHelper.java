@@ -889,7 +889,7 @@ public class FileHelper {
             }
         }
 
-        // Init for API 26-28
+        // Init for API 26+
         // Inspired by https://github.com/Cheticamp/Storage_Volumes/
         @TargetApi(26)
         private void init26(@NonNull Context context, @NonNull DocumentFile f) {
@@ -935,12 +935,12 @@ public class FileHelper {
             }
         }
 
+        // Use StorageStatsManager on primary volume
         @TargetApi(26)
-        private void processPrimary(Context context, StorageVolume volume) {
+        private void processPrimary(@NonNull Context context, @NonNull StorageVolume volume) {
             log.addEntry(">> %s PRIMARY", volume.getUuid());
             Timber.v(">> %s PRIMARY", volume.getUuid());
 
-            // Special processing for primary volume
             UUID uuid = StorageManager.UUID_DEFAULT;
             try {
                 StorageStatsManager storageStatsManager =
@@ -952,14 +952,14 @@ public class FileHelper {
             }
         }
 
+        // StorageStatsManager doesn't work for volumes other than the primary volume since
+        // the "UUID" available for non-primary volumes is not acceptable to
+        // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
         @TargetApi(26)
-        private void processSecondary(StorageVolume volume) {
+        private void processSecondary(@NonNull StorageVolume volume) {
             log.addEntry(">> %s NOT PRIMARY", volume.getUuid());
             Timber.v(">> %s NOT PRIMARY", volume.getUuid());
 
-            // StorageStatsManager doesn't work for volumes other than the primary volume since
-            // the "UUID" available for non-primary volumes is not acceptable to
-            // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
             try {
                 String volumePath = getVolumePath(volume);
                 if (!volumePath.isEmpty()) {
@@ -995,12 +995,26 @@ public class FileHelper {
         }
     }
 
-    // TODO doc
+    /**
+     * Indicate whether the given volume IDs match
+     *
+     * @param volume       Volume to compare against
+     * @param treeVolumeId Volume ID extracted from an Uri
+     * @return True if both IDs match
+     */
     @TargetApi(26)
     private static boolean volumeIdMatch(@NonNull final StorageVolume volume, @NonNull final String treeVolumeId) {
         return volumeIdMatch(StringHelper.protect(volume.getUuid()), volume.isPrimary(), treeVolumeId);
     }
 
+    /**
+     * Indicate whether the given volume IDs match
+     *
+     * @param volumeUuid      Volume UUID to compare against
+     * @param isVolumePrimary True if the volume to compare against is primary
+     * @param treeVolumeId    Volume ID extracted from an Uri
+     * @return True if the given volume matches the given volume ID
+     */
     private static boolean volumeIdMatch(@NonNull final String volumeUuid, boolean isVolumePrimary, @NonNull final String treeVolumeId) {
         if (volumeUuid.equals(treeVolumeId.replace("/", ""))) return true;
         else return (isVolumePrimary && treeVolumeId.equals(PRIMARY_VOLUME_NAME));
@@ -1087,12 +1101,20 @@ public class FileHelper {
         return "";
     }
 
-    // TODO doc; must only be used for text files
-    public static String readStreamAsString(@NonNull final InputStream str) throws IOException, IllegalArgumentException {
+    /**
+     * Read the given InputStream as a continuous string, ignoring line breaks and BOMs
+     * WARNING : Designed to be used on text files only
+     *
+     * @param input InputStream to read from
+     * @return String built from the given InputStream
+     * @throws IOException              In case something horrible happens
+     * @throws IllegalArgumentException In case something horrible happens
+     */
+    public static String readStreamAsString(@NonNull final InputStream input) throws IOException, IllegalArgumentException {
         StringBuilder result = new StringBuilder();
         String sCurrentLine;
         boolean isFirst = true;
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(str))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(input))) {
             while ((sCurrentLine = br.readLine()) != null) {
                 if (isFirst) {
                     // Strip UTF-8 BOMs if any
@@ -1143,8 +1165,14 @@ public class FileHelper {
         return -1;
     }
 
-    // TODO doc
-    public static Uri getFileUri(@NonNull final Context context, @NonNull final File file) {
+    /**
+     * Get a valid Uri for the given File
+     *
+     * @param context Context to use
+     * @param file    File to get the Uri for
+     * @return Valid Uri
+     */
+    public static Uri getFileUriCompat(@NonNull final Context context, @NonNull final File file) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return FileProvider.getUriForFile(context, AUTHORITY, file);
         } else {

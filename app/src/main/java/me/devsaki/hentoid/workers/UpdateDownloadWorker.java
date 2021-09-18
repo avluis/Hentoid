@@ -102,7 +102,7 @@ public class UpdateDownloadWorker extends BaseWorker {
         }
         Timber.d("Download successful");
 
-        notificationManager.notifyLast(new UpdateInstallNotification(FileHelper.getFileUri(context, file)));
+        notificationManager.notifyLast(new UpdateInstallNotification(FileHelper.getFileUriCompat(context, file)));
     }
 
     private void updateNotificationProgress(int processPc) {
