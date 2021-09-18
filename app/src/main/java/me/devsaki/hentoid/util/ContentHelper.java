@@ -778,7 +778,7 @@ public final class ContentHelper {
             // Detect gaps inside image numbering
             order = img.getOrder();
             // Look for files named with the forgotten number
-            if (previousOrder > -1 && previousOrder != order - 1) {
+            if (previousOrder > -1 && previousOrder < order - 1) {
                 Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
                 for (int j = previousOrder + 1; j < order; j++) {
                     ImmutablePair<String, Long> property = fileNameProperties.get(j + "");
