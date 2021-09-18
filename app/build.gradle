@@ -121,7 +121,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0-alpha01'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.media:media:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.2'
