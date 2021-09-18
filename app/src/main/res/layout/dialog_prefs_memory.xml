@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="@string/memory_total"
-        android:textSize="@dimen/text_body_1"
+        android:textSize="@dimen/text_body_2"
         app:layout_constraintStart_toEndOf="@id/memory_global_graph"
         app:layout_constraintTop_toTopOf="@id/memory_global_graph" />
 
@@ -56,7 +56,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="@string/memory_hentoid_main"
-        android:textSize="@dimen/text_body_1"
+        android:textSize="@dimen/text_body_2"
         app:layout_constraintStart_toEndOf="@id/memory_hentoid_color_main"
         app:layout_constraintTop_toBottomOf="@id/memory_total" />
 
@@ -77,7 +77,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="@string/memory_hentoid_ext"
-        android:textSize="@dimen/text_body_1"
+        android:textSize="@dimen/text_body_2"
         app:layout_constraintStart_toEndOf="@id/memory_hentoid_color_ext"
         app:layout_constraintTop_toBottomOf="@id/memory_hentoid_main" />
 
@@ -98,7 +98,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:text="@string/memory_free"
-        android:textSize="@dimen/text_body_1"
+        android:textSize="@dimen/text_body_2"
         app:layout_constraintStart_toEndOf="@id/memory_free_color"
         app:layout_constraintTop_toBottomOf="@id/memory_hentoid_ext" />
 

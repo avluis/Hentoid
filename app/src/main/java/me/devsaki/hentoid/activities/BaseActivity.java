@@ -7,11 +7,16 @@ import androidx.annotation.ContentView;
 import androidx.annotation.LayoutRes;
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.threeten.bp.Instant;
 
 import me.devsaki.hentoid.core.HentoidApp;
+import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.util.ToastHelper;
 
 public abstract class BaseActivity extends AppCompatActivity {
 
@@ -29,6 +34,13 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ThemeHelper.applyTheme(this);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 
     @Override
@@ -62,5 +74,12 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         }
         super.onRestart();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCommunicationEvent(CommunicationEvent event) {
+        if (event.getRecipient() != CommunicationEvent.RC_ALL || event.getType() != CommunicationEvent.EV_BROADCAST || null == event.getMessage())
+            return;
+        ToastHelper.toast(event.getMessage());
     }
 }

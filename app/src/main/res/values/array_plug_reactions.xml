@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="audio_reactions">
+        <item>yametee~~♡</item>
+        <item>stop, that\'s… the wrong hole~</item>
+        <item>ughhh~</item>
+        <item>ewww ♡ ♡</item>
+        <item>not here~~♡</item>
+        <item>bad, bad boy~~</item>
+        <item>too… tight…♡</item>
+    </string-array>
+    <string-array name="power_reactions">
+        <item>♡~</item>
+        <item>I like it there~~</item>
+        <item>push it further~~~♡</item>
+        <item>ikuuuu~~</item>
+        <item>ahh ♡</item>
+        <item>ohhh~</item>
+        <item>give me more ♡</item>
+    </string-array>
+</resources>

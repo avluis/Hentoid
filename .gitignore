@@ -62,6 +62,4 @@ signing.gradle
 /app/objectbox-models/default.json.bak
 /objectbox-jni-windows-x64.dll
 /*.trace
-/heapDump.hprof
-/java_pid16580.hprof
-/memory-20200219T175110.hprof
+/*.hprof

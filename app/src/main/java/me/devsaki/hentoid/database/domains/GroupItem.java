@@ -15,8 +15,8 @@ public class GroupItem {
     public ToOne<Group> group;
     public int order;
 
-    public GroupItem() {
-    }  // Required for ObjectBox to work
+    public GroupItem() { // Required by ObjectBox when an alternate constructor exists
+    }
 
     public GroupItem(@NonNull final Content content, @NonNull final Group group, int order) {
         this.content.setTarget(content);

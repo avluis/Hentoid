@@ -126,7 +126,7 @@ public class ErrorsDialogFragment extends DialogFragment {
         List<LogHelper.LogEntry> log = new ArrayList<>();
 
         LogHelper.LogInfo errorLogInfo = new LogHelper.LogInfo();
-        errorLogInfo.setLogName("Error");
+        errorLogInfo.setHeaderName("Error");
         errorLogInfo.setFileName("error_log" + content.getId());
         errorLogInfo.setNoDataMessage("No error detected.");
         errorLogInfo.setEntries(log);

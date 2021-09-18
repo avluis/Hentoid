@@ -28,8 +28,8 @@ public class ErrorRecord {
     private Instant timestamp;
 
 
-    public ErrorRecord() {
-    } // Required for ObjectBox to work
+    public ErrorRecord() { // Required by ObjectBox when an alternate constructor exists
+    }
 
     public ErrorRecord(ErrorType type, String url, String contentPart, String description, Instant timestamp) {
         this.type = type;

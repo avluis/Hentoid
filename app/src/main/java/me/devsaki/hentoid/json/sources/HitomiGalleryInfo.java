@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
+@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class HitomiGalleryInfo {
 
     private List<HitomiGalleryPage> files;

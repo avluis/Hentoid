@@ -42,8 +42,8 @@ public class Group {
     private boolean isFlaggedForDeletion = false;
 
 
-    public Group() {
-    }  // Required for ObjectBox to work
+    public Group() { // Required by ObjectBox when an alternate constructor exists
+    }
 
     public Group(@NonNull final Grouping grouping, @NonNull final String name, int order) {
         this.grouping = grouping;

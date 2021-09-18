@@ -296,10 +296,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void initToolbar() {
-        if (!(requireActivity() instanceof QueueActivity)) return;
-        QueueActivity activity = (QueueActivity) requireActivity();
+        QueueActivity queueActivity = activity.get();
 
-        MenuItem searchMenu = activity.getToolbar().getMenu().findItem(R.id.action_search);
+        MenuItem searchMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_search);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
@@ -351,7 +350,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
             }
         });
 
-        MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
+        MenuItem cancelAllMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_cancel_all);
         cancelAllMenu.setOnMenuItemClickListener(item -> {
             // Don't do anything if the queue is empty
             if (0 == itemAdapter.getAdapterItemCount()) return true;
@@ -375,17 +374,17 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                         .show();
             return true;
         });
-        MenuItem settingsMenu = activity.getToolbar().getMenu().findItem(R.id.action_queue_prefs);
+        MenuItem settingsMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_queue_prefs);
         settingsMenu.setOnMenuItemClickListener(item -> {
             onSettingsClick();
             return true;
         });
-        MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
+        MenuItem invertMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
         invertMenu.setOnMenuItemClickListener(item -> {
             viewModel.invertQueue();
             return true;
         });
-        errorStatsMenu = activity.getToolbar().getMenu().findItem(R.id.action_error_stats);
+        errorStatsMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_error_stats);
         errorStatsMenu.setOnMenuItemClickListener(item -> {
             showErrorStats();
             return true;
@@ -934,10 +933,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void initSelectionToolbar() {
-        if (!(requireActivity() instanceof QueueActivity)) return;
-        QueueActivity activity = (QueueActivity) requireActivity();
+        QueueActivity queueActivity = activity.get();
 
-        selectionToolbar = activity.getSelectionToolbar();
+        selectionToolbar = queueActivity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);

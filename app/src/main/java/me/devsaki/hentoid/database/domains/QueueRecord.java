@@ -13,8 +13,8 @@ public class QueueRecord {
     private ToOne<Content> content;
     private int rank;
 
-    public QueueRecord() {
-    }  // Required for ObjectBox to work
+    public QueueRecord() { // Required by ObjectBox when an alternate constructor exists
+    }
 
     public QueueRecord(long id, int order) {
         content.setTargetId(id);

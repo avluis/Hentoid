@@ -24,7 +24,7 @@ public class AttributeLocation {
     public String url;
     public ToOne<Attribute> attribute;
 
-    public AttributeLocation() { // Required by ObjectBox
+    public AttributeLocation() { // Required by ObjectBox when an alternate constructor exists
     }
 
     AttributeLocation(Site site, String url) {

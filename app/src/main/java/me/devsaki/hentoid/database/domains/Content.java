@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
+
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
@@ -62,8 +64,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.JsonHelper.MAP_STRINGS;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -156,7 +156,7 @@ public class Content implements Serializable {
     @Transient
     private String archiveLocationUri;  // Only used when importing external archives
 
-    public Content() {
+    public Content() { // Required by ObjectBox when an alternate constructor exists
     }
 
 

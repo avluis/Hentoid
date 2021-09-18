@@ -16,7 +16,6 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -141,6 +140,8 @@ public interface CollectionDAO {
     // High-level queries (internal and external locations)
 
     List<Content> selectStoredContent(boolean nonFavouriteOnly, boolean includeQueued, int orderField, boolean orderDesc);
+
+    List<Long> selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc);
 
     long countStoredContent(boolean nonFavouriteOnly, boolean includeQueued);
 

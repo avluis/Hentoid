@@ -117,6 +117,8 @@
     <string name="notification_action_title">User action needed</string>
     <string name="notification_action_dl_revive">Tap here to reactivate your download</string>
     <string name="revive_wait">Please stay on this screen while your download is revived</string>
+    <string name="queue_json_saved">Queue JSON successfully saved</string>
+    <string name="queue_json_failed">Queue JSON saving failed</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
@@ -222,8 +224,8 @@
 
     <!-- Memory usage -->
     <string name="memory_title">Memory usage</string>
-    <string name="memory_total">Total : %.2f GB</string>
-    <string name="memory_free">Free : %.2f GB</string>
+    <string name="memory_total">Total : %s</string>
+    <string name="memory_free">Free : %s</string>
     <string name="memory_hentoid_main">Hentoid (primary) : %s</string>
     <string name="memory_hentoid_ext">Hentoid (external) : %s</string>
     <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>

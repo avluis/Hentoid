@@ -25,6 +25,8 @@ public class ContentSearchManager {
     private static final String KEY_SELECTED_TAGS = "selected_tags";
     private static final String KEY_GROUP = "group";
     private static final String KEY_FILTER_FAVOURITES = "filter_favs";
+    private static final String KEY_FILTER_COMPLETED_YES = "filter_completed_yes";
+    private static final String KEY_FILTER_COMPLETED_NO = "filter_completed_no";
     private static final String KEY_QUERY = "query";
     private static final String KEY_SORT_FIELD = "sort_field";
     private static final String KEY_SORT_DESC = "sort_desc";
@@ -66,6 +68,7 @@ public class ContentSearchManager {
     public void setFilterBookCompleted(boolean filterBookCompleted) {
         this.filterBookCompleted = filterBookCompleted;
     }
+
     public void setFilterBookNotCompleted(boolean filterBookNotCompleted) {
         this.filterBookNotCompleted = filterBookNotCompleted;
     }
@@ -73,6 +76,7 @@ public class ContentSearchManager {
     public boolean isFilterBookCompleted() {
         return filterBookCompleted;
     }
+
     public boolean isFilterBookNotCompleted() {
         return filterBookNotCompleted;
     }
@@ -124,6 +128,8 @@ public class ContentSearchManager {
 
     public void saveToBundle(@Nonnull Bundle outState) {
         outState.putBoolean(KEY_FILTER_FAVOURITES, filterBookFavourites);
+        outState.putBoolean(KEY_FILTER_COMPLETED_YES, filterBookCompleted);
+        outState.putBoolean(KEY_FILTER_COMPLETED_NO, filterBookNotCompleted);
         outState.putString(KEY_QUERY, query);
         outState.putInt(KEY_SORT_FIELD, contentSortField);
         outState.putBoolean(KEY_SORT_DESC, contentSortDesc);
@@ -134,6 +140,8 @@ public class ContentSearchManager {
 
     public void loadFromBundle(@Nonnull Bundle state) {
         filterBookFavourites = state.getBoolean(KEY_FILTER_FAVOURITES, false);
+        filterBookCompleted = state.getBoolean(KEY_FILTER_COMPLETED_YES, false);
+        filterBookNotCompleted = state.getBoolean(KEY_FILTER_COMPLETED_NO, false);
         query = state.getString(KEY_QUERY, "");
         contentSortField = state.getInt(KEY_SORT_FIELD, Preferences.getContentSortField());
         contentSortDesc = state.getBoolean(KEY_SORT_DESC, Preferences.isContentSortDesc());

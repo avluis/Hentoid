@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import static android.content.Context.CLIPBOARD_SERVICE;
+
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -39,8 +41,6 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import timber.log.Timber;
-
-import static android.content.Context.CLIPBOARD_SERVICE;
 
 /**
  * Created by avluis on 06/05/2016.
@@ -227,12 +227,22 @@ public final class Helper {
             return mStr + ":" + sStr;
     }
 
-    // TODO doc
+    /**
+     * Indicate whether the given View's context is usable by Glide
+     *
+     * @param view View whose Context to test
+     * @return True if the given View's context is usable by Glide; false if not
+     */
     public static boolean isValidContextForGlide(final View view) {
         return isValidContextForGlide(view.getContext());
     }
 
-    // TODO doc
+    /**
+     * Indicate whether the given Context is usable by Glide
+     *
+     * @param context Context to test
+     * @return True if the given Context is usable by Glide; false if not
+     */
     public static boolean isValidContextForGlide(final Context context) {
         if (context == null) {
             return false;
@@ -244,12 +254,24 @@ public final class Helper {
         return true;
     }
 
-    // TODO doc
+    /**
+     * Build an 64-bit SIP hash from the given data
+     *
+     * @param data Data to hash
+     * @return Hash built from the given data
+     */
     public static long hash64(@NonNull final byte[] data) {
         return SipHasher.hash(SIP_KEY, data);
     }
 
-    // TODO doc
+    /**
+     * Compute the weighted average of the given operands
+     * - Left part is the value
+     * - Right part is the coefficient
+     *
+     * @param operands List of (value, coefficient) pairs
+     * @return Weigthed average of the given operands; 0 if uncomputable
+     */
     public static float weightedAverage(List<Pair<Float, Float>> operands) {
         if (operands.isEmpty()) return 0;
 

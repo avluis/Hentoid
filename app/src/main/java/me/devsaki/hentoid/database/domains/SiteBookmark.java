@@ -24,8 +24,8 @@ public class SiteBookmark {
     private String url;
     private int order = -1;
 
-    public SiteBookmark() {
-    }  // Required for ObjectBox to work
+    public SiteBookmark() { // Required by ObjectBox when an alternate constructor exists
+    }
 
     public SiteBookmark(@NonNull final Site site, @NonNull final String title, @NonNull final String url) {
         this.site = site;

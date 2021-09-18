@@ -12,6 +12,7 @@ import com.annimon.stream.Stream;
 
 import org.threeten.bp.Instant;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +90,13 @@ public class LogHelper {
         private String header = "";
         private List<LogEntry> entries = Collections.emptyList();
 
+        public LogInfo() {
+        }
+
+        public LogInfo(@NonNull String fileName) {
+            this.fileName = fileName;
+        }
+
         /**
          * Set the log file name, without the extension
          *
@@ -102,11 +110,11 @@ public class LogHelper {
         /**
          * Set display name of the log, for use in its header
          *
-         * @param logName Display name
+         * @param headerName Display name
          */
-        public void setLogName(@NonNull String logName) {
-            this.logName = logName;
-            if (this.fileName.isEmpty()) this.fileName = logName;
+        public void setHeaderName(@NonNull String headerName) {
+            this.logName = headerName;
+            if (this.fileName.isEmpty()) this.fileName = headerName;
         }
 
         /**
@@ -135,6 +143,17 @@ public class LogHelper {
          */
         public void setEntries(@NonNull List<LogEntry> entries) {
             this.entries = entries;
+        }
+
+        // TODO doc
+        public void addEntry(@NonNull String message) {
+            if (entries.isEmpty()) entries = new ArrayList<>();
+            entries.add(new LogEntry(message));
+        }
+
+        public void addEntry(@NonNull String message, Object... formatArgs) {
+            if (entries.isEmpty()) entries = new ArrayList<>();
+            entries.add(new LogEntry(message, formatArgs));
         }
     }
 

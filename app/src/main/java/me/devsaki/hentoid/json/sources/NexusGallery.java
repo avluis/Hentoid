@@ -4,7 +4,7 @@ import com.squareup.moshi.Json;
 
 import java.util.List;
 
-@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
+@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class NexusGallery {
     private String b;
     private String r;

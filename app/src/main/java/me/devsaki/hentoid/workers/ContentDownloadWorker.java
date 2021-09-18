@@ -225,7 +225,7 @@ public class ContentDownloadWorker extends BaseWorker {
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
-        if (new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageMb() < 2) {
+        if (new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes() < 2 * 1024 * 1024) {
             Timber.w("Device very low on storage space (<2 MB). Queue paused.");
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
@@ -456,8 +456,8 @@ public class ContentDownloadWorker extends BaseWorker {
 
 
         if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
-            Timber.i("Queue JSON successfully saved");
-        else Timber.w("Queue JSON saving failed");
+            Timber.i(context.getString(R.string.queue_json_saved));
+        else Timber.w(context.getString(R.string.queue_json_failed));
 
         return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);
     }
@@ -666,9 +666,10 @@ public class ContentDownloadWorker extends BaseWorker {
                 Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
                 EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages, sizeDownloadedBytes));
 
-                if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
-                    Timber.i("Queue JSON successfully saved");
-                else Timber.w("Queue JSON saving failed");
+                Context context = getApplicationContext();
+                if (ContentHelper.updateQueueJson(context, dao))
+                    Timber.i(context.getString(R.string.queue_json_saved));
+                else Timber.w(context.getString(R.string.queue_json_failed));
 
                 // Tracking Event (Download Completed)
                 HentoidApp.trackDownloadEvent("Completed");
@@ -1091,8 +1092,8 @@ public class ContentDownloadWorker extends BaseWorker {
 
     private void logErrorRecord(long contentId, ErrorType type, String url, String
             contentPart, String description) {
-        ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description, Instant.now());
-        if (contentId > 0) dao.insertErrorRecord(record);
+        ErrorRecord downloadRecord = new ErrorRecord(contentId, type, url, contentPart, description, Instant.now());
+        if (contentId > 0) dao.insertErrorRecord(downloadRecord);
     }
 
     private void moveToErrors(long contentId) {
@@ -1105,9 +1106,10 @@ public class ContentDownloadWorker extends BaseWorker {
         dao.deleteQueue(content);
         HentoidApp.trackDownloadEvent("Error");
 
-        if (ContentHelper.updateQueueJson(getApplicationContext(), dao))
-            Timber.i("Queue JSON successfully saved");
-        else Timber.w("Queue JSON saving failed");
+        Context context = getApplicationContext();
+        if (ContentHelper.updateQueueJson(context, dao))
+            Timber.i(context.getString(R.string.queue_json_saved));
+        else Timber.w(context.getString(R.string.queue_json_failed));
 
         notificationManager.notify(new DownloadErrorNotification(content));
     }

@@ -1,5 +1,10 @@
 package me.devsaki.hentoid.services;
 
+import static me.devsaki.hentoid.util.ImportHelper.scanArchive;
+import static me.devsaki.hentoid.util.ImportHelper.scanBookFolder;
+import static me.devsaki.hentoid.util.ImportHelper.scanChapterFolders;
+import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
+
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
@@ -44,11 +49,6 @@ import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import me.devsaki.hentoid.workers.ImportWorker;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.ImportHelper.scanArchive;
-import static me.devsaki.hentoid.util.ImportHelper.scanBookFolder;
-import static me.devsaki.hentoid.util.ImportHelper.scanChapterFolders;
-import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
-
 /**
  * Service responsible for importing an external library.
  */
@@ -69,15 +69,20 @@ public class ExternalImportService extends IntentService {
         return new Intent(context, ExternalImportService.class);
     }
 
-    public static boolean isRunning() {
+    public static synchronized boolean isRunning() {
         return running;
     }
+
+    private static synchronized void setRunning(boolean value) {
+        running = value;
+    }
+
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        running = true;
+        setRunning(true);
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
         notificationManager.cancel();
         notificationManager.startForeground(new ImportStartNotification());
@@ -87,7 +92,7 @@ public class ExternalImportService extends IntentService {
 
     @Override
     public void onDestroy() {
-        running = false;
+        setRunning(false);
         notificationManager.cancel();
         Timber.w("Service destroyed");
 
@@ -206,7 +211,7 @@ public class ExternalImportService extends IntentService {
 
     private LogHelper.LogInfo buildLogInfo(@NonNull List<LogHelper.LogEntry> log) {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-        logInfo.setLogName("Import external");
+        logInfo.setHeaderName("Import external");
         logInfo.setFileName("import_external_log");
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);

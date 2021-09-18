@@ -12,10 +12,10 @@
         android:layout_height="250dp"
         android:cropToPadding="true"
         android:src="@drawable/ic_hentoid"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
     <TextView
@@ -26,8 +26,10 @@
         android:layout_marginBottom="80dp"
         android:ellipsize="end"
         android:gravity="center"
-        android:maxLines="1"
+        android:maxLines="2"
+        android:paddingStart="16dp"
         android:paddingTop="4dp"
+        android:paddingEnd="16dp"
         android:paddingBottom="4dp"
         android:textAlignment="center"
         android:textColor="@color/white"
@@ -36,7 +38,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:text="funny quote here" />
+        tools:text="funny quote here funny quote here funny quote here funny quote here" />
 
     <ProgressBar
         android:id="@+id/progress_main"

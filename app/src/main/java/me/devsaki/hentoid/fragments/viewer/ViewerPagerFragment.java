@@ -457,14 +457,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             binding.controlsOverlay.favouriteMicroMenu.dips();
             binding.controlsOverlay.informationMicroMenu.floats();
         });
-        binding.controlsOverlay.informationMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.informationMicroMenu.dips());
+        binding.controlsOverlay.informationMicroMenu.setSubmarineCircleClickListener(binding.controlsOverlay.favouriteMicroMenu::dips);
 
         // Favourite micro menu
         updateFavouriteButtonIcon();
 
         binding.controlsOverlay.favouriteMicroMenu.setSubmarineItemClickListener((p, i) -> onFavouriteMicroMenuClick(p));
         binding.controlsOverlay.viewerFavouriteActionBtn.setOnClickListener(v -> onFavouriteMicroMenuOpen());
-        binding.controlsOverlay.favouriteMicroMenu.setSubmarineCircleClickListener(() -> binding.controlsOverlay.favouriteMicroMenu.dips());
+        binding.controlsOverlay.favouriteMicroMenu.setSubmarineCircleClickListener(binding.controlsOverlay.favouriteMicroMenu::dips);
 
         // Gallery
         binding.controlsOverlay.viewerGalleryBtn.setOnClickListener(v -> displayGallery());
@@ -587,13 +587,13 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.favouriteMicroMenu.dips();
     }
 
-    private void onPageFavouriteSuccess(Boolean newState) {
+    private void onPageFavouriteSuccess(boolean newState) {
         ToastHelper.toast(newState ? R.string.page_favourite_success : R.string.page_unfavourite_success);
         isPageFavourite = newState;
         updateFavouriteButtonIcon();
     }
 
-    private void onBookFavouriteSuccess(Boolean newState) {
+    private void onBookFavouriteSuccess(boolean newState) {
         ToastHelper.toast(newState ? R.string.book_favourite_success : R.string.book_unfavourite_success);
         isContentFavourite = newState;
         updateFavouriteButtonIcon();

@@ -75,10 +75,8 @@ public class ViewerGalleryFragment extends Fragment {
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private int startIndex = 0;
-    private boolean firstLoadDone = false;
     private boolean firstMoveDone = false;
 
-    private boolean filterFavouritesLaunchState = false;
     private boolean filterFavouritesState = false;
 
 
@@ -213,10 +211,6 @@ public class ViewerGalleryFragment extends Fragment {
         if (recyclerView != null)
             recyclerView.setAdapter(null);
         recyclerView = null;
-
-        if (filterFavouritesLaunchState != filterFavouritesState)
-            viewModel.filterFavouriteImages(filterFavouritesLaunchState);
-
         chaptersSelector.dismiss();
 
         super.onDestroy();
@@ -264,10 +258,6 @@ public class ViewerGalleryFragment extends Fragment {
     }
 
     private void onShowFavouriteChanged(Boolean showFavouriteOnly) {
-        if (!firstLoadDone) {
-            filterFavouritesLaunchState = showFavouriteOnly;
-            firstLoadDone = true;
-        }
         filterFavouritesState = showFavouriteOnly;
         updateFavouriteDisplay(filterFavouritesState);
     }

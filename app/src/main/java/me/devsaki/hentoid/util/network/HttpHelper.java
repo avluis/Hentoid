@@ -58,6 +58,9 @@ public class HttpHelper {
     public static String defaultChromeAgent = null;
     public static int defaultChromeVersion = -1;
 
+    // Error messages
+    public static final String AGENT_INIT_ISSUE = "Call initUserAgents first to initialize them !";
+
 
     static {
         // Can't be done on the variable initializer as Set.of is only available since API R
@@ -131,7 +134,7 @@ public class HttpHelper {
     public static Response getOnlineResourceFast(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) throws IOException {
         Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
         Request request = requestBuilder.get().build();
-        return OkHttpClientSingleton.getInstance(2000,10000).newCall(request).execute();
+        return OkHttpClientSingleton.getInstance(2000, 10000).newCall(request).execute();
     }
 
     /**
@@ -546,7 +549,7 @@ public class HttpHelper {
      */
     public static String getDesktopUserAgent(boolean withHentoid, boolean withWebview) {
         if (null == defaultChromeAgent)
-            throw new RuntimeException("Call initUserAgents first to initialize them !");
+            throw new RuntimeException(AGENT_INIT_ISSUE);
         String result = String.format(DESKTOP_USER_AGENT_PATTERN, defaultChromeAgent);
         if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME;
         if (!withWebview) result = cleanWebViewAgent(result);
@@ -561,7 +564,7 @@ public class HttpHelper {
      */
     public static String getDefaultUserAgent(boolean withHentoid, boolean withWebview) {
         if (null == defaultUserAgent)
-            throw new RuntimeException("Call initUserAgents first to initialize them !");
+            throw new RuntimeException(AGENT_INIT_ISSUE);
         String result = defaultUserAgent;
         if (withHentoid) result += " Hentoid/v" + BuildConfig.VERSION_NAME;
         if (!withWebview) result = cleanWebViewAgent(result);
@@ -592,7 +595,7 @@ public class HttpHelper {
      */
     public static int getChromeVersion() {
         if (-1 == defaultChromeVersion)
-            throw new RuntimeException("Call initUserAgents first to initialize them !");
+            throw new RuntimeException(AGENT_INIT_ISSUE);
         return defaultChromeVersion;
     }
 
