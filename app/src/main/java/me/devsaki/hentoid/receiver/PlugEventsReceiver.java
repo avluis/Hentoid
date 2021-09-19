@@ -12,12 +12,14 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.Random;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.CommunicationEvent;
 
 public class PlugEventsReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (!HentoidApp.isInForeground()) return;
         String action = intent.getAction();
         if (!isInitialStickyBroadcast()) {
             if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(action) || Intent.ACTION_POWER_CONNECTED.equals(action)) {
