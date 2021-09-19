@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.15.5/hentoid1155-437.apk",
-  "versionCode": "437",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.15.6/hentoid1156-439.apk",
+  "versionCode": "439",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/test1/v415.apk",
   "versionCode.beta": "100",
   "sourceAlerts":[
@@ -31,6 +31,7 @@
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"400"},
 	  {"sourceName":"HITOMI", "status":"ORANGE", "fixedByBuild":"401"},
 	  {"sourceName":"MANHWA", "status":"RED", "fixedByBuild":"402"},
+	  {"sourceName":"TOONILY", "status":"RED", "fixedByBuild":"439"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
