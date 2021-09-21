@@ -97,11 +97,13 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
 
         private final View rootView;
         private final TextView title;
+        private final ImageView checkedIndicator;
         private final ImageView dragHandle;
 
         TextViewHolder(View view) {
             super(view);
             rootView = view;
+            checkedIndicator = view.findViewById(R.id.checked_indicator);
             dragHandle = view.findViewById(R.id.item_handle);
             title = requireViewById(view, R.id.item_txt);
             int color = ThemeHelper.getColor(view.getContext(), R.color.secondary_light);
@@ -115,6 +117,9 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
                 dragHandle.setVisibility(View.VISIBLE);
                 DragDropUtil.bindDragHandle(this, item);
             }
+
+            if (item.isSelected()) checkedIndicator.setVisibility(View.VISIBLE);
+            else checkedIndicator.setVisibility(View.GONE);
 
             title.setText(StringHelper.capitalizeString(item.text));
             if (item.centered) title.setGravity(Gravity.CENTER);

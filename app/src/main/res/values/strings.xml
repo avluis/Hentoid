@@ -369,6 +369,8 @@
         <item quantity="other">Delete groups + books</item>
     </plurals>
     <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
+    <string name="merge_merge">Merge</string>
+    <string name="merge_split">Split</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
