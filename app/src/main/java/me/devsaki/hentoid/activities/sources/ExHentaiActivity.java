@@ -31,6 +31,7 @@ import timber.log.Timber;
 public class ExHentaiActivity extends BaseWebActivity {
 
     private static final String[] GALLERY_FILTER = {"exhentai.org/g/[0-9]+/[\\w\\-]+"};
+    private static final String DOMAIN = ".exhentai.org";
 
     Site getStartSite() {
         return Site.EXHENTAI;
@@ -39,8 +40,8 @@ public class ExHentaiActivity extends BaseWebActivity {
     @Override
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new ExHentaiWebClient(getStartSite(), GALLERY_FILTER, this);
-        CookieManager.getInstance().setCookie(".exhentai.org", "sl=dm_2");  // Show thumbs in results page ("extended display")
-        CookieManager.getInstance().setCookie(".exhentai.org", "nw=1"); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
+        CookieManager.getInstance().setCookie(DOMAIN, "sl=dm_2");  // Show thumbs in results page ("extended display")
+        CookieManager.getInstance().setCookie(DOMAIN, "nw=1"); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
         // ExH serves images through hosts that use http connections, which is detected as "mixed content" by the app
         webView.getSettings().setMixedContentMode(WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE);
         return client;
@@ -58,7 +59,7 @@ public class ExHentaiActivity extends BaseWebActivity {
 
             if (url.startsWith("https://exhentai.org")) {
                 CookieManager mgr = CookieManager.getInstance();
-                String cookiesStr = mgr.getCookie(".exhentai.org");
+                String cookiesStr = mgr.getCookie(DOMAIN);
                 if (cookiesStr != null && (!cookiesStr.contains("ipb_member_id=") || cookiesStr.contains("igneous=mystery"))) {
                     mgr.removeAllCookies(null);
                     webView.loadUrl("https://forums.e-hentai.org/index.php?act=Login&CODE=00/");

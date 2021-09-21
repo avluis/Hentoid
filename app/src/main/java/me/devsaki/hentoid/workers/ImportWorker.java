@@ -210,7 +210,7 @@ public class ImportWorker extends BaseWorker {
                         try {
                             content = importJson(context, bookFolder, bookFiles, dao);
                             // Don't delete books that are _not supposed to_ have downloaded images
-                            if (content.getDownloadMode() == Content.DownloadMode.STREAM)
+                            if (content != null && content.getDownloadMode() == Content.DownloadMode.STREAM)
                                 doRemove = false;
                         } catch (ParseException e) {
                             trace(Log.WARN, STEP_1, log, "[Remove no image] Folder %s : unreadable JSON", bookFolder.getUri().toString());
@@ -392,7 +392,7 @@ public class ImportWorker extends BaseWorker {
 
     private LogHelper.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogHelper.LogEntry> log) {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-        logInfo.setLogName(cleanup ? "Cleanup" : "Import");
+        logInfo.setHeaderName(cleanup ? "Cleanup" : "Import");
         logInfo.setFileName(cleanup ? "cleanup_log" : "import_log");
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);

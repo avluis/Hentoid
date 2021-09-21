@@ -5,10 +5,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.annimon.stream.Stream
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
-import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.ImageHelper
 import me.devsaki.hentoid.workers.DeleteWorker
@@ -38,15 +36,13 @@ class PreferencesViewModel(application: Application, val dao: CollectionDAO) :
         if (images != null) for (f in images) FileHelper.removeFile(f)
     }
 
-    fun deleteItems(items: List<Content>) {
+    fun deleteAllItemsExceptFavourites() {
         val builder = DeleteData.Builder()
-        if (items.isNotEmpty()) builder.setContentIds(
-            Stream.of(items).map { obj: Content -> obj.id }.toList()
-        )
+        builder.setDeleteAllContentExceptFavs(true)
 
         val workManager = WorkManager.getInstance(getApplication())
         workManager.enqueueUniqueWork(
-            R.id.delete_service.toString(),
+            R.id.delete_service_delete.toString(),
             ExistingWorkPolicy.APPEND_OR_REPLACE,
             OneTimeWorkRequestBuilder<DeleteWorker>()
                 .setInputData(builder.data)

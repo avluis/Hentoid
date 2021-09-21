@@ -105,9 +105,9 @@ public class IntentActivity extends AppCompatActivity {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
                 return toParse.replace("/g", "") + "/"; // '/' required
-            case HENTAICAFE:
-                String path = data.toString();
-                return path.contains("/?p=") ? path.replace(Site.HENTAICAFE.getUrl(), "") : toParse;
+            //case HENTAICAFE:
+            //    String path = data.toString();
+            //    return path.contains("/?p=") ? path.replace(Site.HENTAICAFE.getUrl(), "") : toParse;
             case PURURIN:
                 return toParse.replace("/gallery", "") + "/";
             case EHENTAI:

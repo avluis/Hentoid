@@ -586,6 +586,8 @@ public final class ContentHelper {
             case Preferences.Constant.FOLDER_NAMING_CONTENT_TITLE_AUTH_ID:
                 result += title + " - " + author;
                 break;
+            default:
+                // Nothing to do
         }
         result += " - ";
 
@@ -763,21 +765,22 @@ public final class ContentHelper {
         // Look up similar names between images and file names
         int order;
         int previousOrder = -1;
-        for (ImageFile img : images) {
+        for (int i = 0; i < images.size(); i++) {
+            ImageFile img = images.get(i);
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
 
             // Detect gaps inside image numbering
             order = img.getOrder();
             // Look for files named with the forgotten number
-            if (previousOrder > -1 && previousOrder != order - 1) {
+            if (previousOrder > -1 && previousOrder < order - 1) {
                 Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
-                for (int i = previousOrder + 1; i < order; i++) {
-                    ImmutablePair<String, Long> property = fileNameProperties.get(i + "");
+                for (int j = previousOrder + 1; j < order; j++) {
+                    ImmutablePair<String, Long> property = fileNameProperties.get(j + "");
                     if (property != null) {
-                        Timber.i("Numbering gap filled with a file : %d", i);
-                        ImageFile newImage = ImageFile.fromImageUrl(i, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
+                        Timber.i("Numbering gap filled with a file : %d", j);
+                        ImageFile newImage = ImageFile.fromImageUrl(j, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
                         newImage.setFileUri(property.left).setSize(property.right);
-                        result.add(i, newImage);
+                        result.add(result.size() - 1, newImage);
                     }
                 }
             }
@@ -1275,8 +1278,8 @@ public final class ContentHelper {
      * @throws EmptyResultException  If no picture has been detected
      */
     public static boolean testDownloadPictureFromPage(@NonNull Site site,
-                                                @NonNull ImageFile img,
-                                                List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
+                                                      @NonNull ImageFile img,
+                                                      List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
         ImmutablePair<String, Optional<String>> pages = parser.parseImagePage(pageUrl, requestHeaders);

@@ -4,7 +4,7 @@ import java.util.Map;
 
 import me.devsaki.hentoid.util.StringHelper;
 
-@SuppressWarnings("unused, MismatchedQueryAndUpdateOfCollection")
+@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class LusciousQuery {
     private Map<String, String> variables;
 

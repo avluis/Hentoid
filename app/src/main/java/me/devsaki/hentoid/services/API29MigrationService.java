@@ -270,7 +270,7 @@ public class API29MigrationService extends IntentService {
 
     private LogHelper.LogInfo buildLogInfo(@NonNull List<LogHelper.LogEntry> log) {
         LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-        logInfo.setLogName("API29Migration");
+        logInfo.setHeaderName("API29Migration");
         logInfo.setFileName("API29_migration_log");
         logInfo.setNoDataMessage("No content detected.");
         logInfo.setEntries(log);

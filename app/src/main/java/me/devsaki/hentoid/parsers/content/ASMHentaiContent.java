@@ -9,12 +9,12 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -56,11 +56,12 @@ public class ASMHentaiContent extends BaseContentParser {
 
         AttributeMap attributes = new AttributeMap();
 
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, "badge", Site.ASMHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, "badge", Site.ASMHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, "badge", Site.ASMHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, "badge", Site.ASMHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, "badge", Site.ASMHENTAI);
+        final String BADGE_CONST = "badge";
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, BADGE_CONST, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, BADGE_CONST, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, false, BADGE_CONST, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, false, BADGE_CONST, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, false, BADGE_CONST, Site.ASMHENTAI);
 
         content.putAttributes(attributes);
 

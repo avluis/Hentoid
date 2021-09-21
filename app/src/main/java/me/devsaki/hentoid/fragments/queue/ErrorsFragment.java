@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.queue;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
@@ -60,8 +62,6 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 04/2020
@@ -232,21 +232,20 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     }
 
     private void initToolbar() {
-        if (!(requireActivity() instanceof QueueActivity)) return;
-        QueueActivity activity = (QueueActivity) requireActivity();
-        MenuItem redownloadAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_redownload_all);
+        QueueActivity queueActivity = activity.get();
+        MenuItem redownloadAllMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_redownload_all);
         redownloadAllMenu.setOnMenuItemClickListener(item -> {
             onRedownloadAllClick();
             return true;
         });
 
-        MenuItem cancelAllMenu = activity.getToolbar().getMenu().findItem(R.id.action_cancel_all_errors);
+        MenuItem cancelAllMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_cancel_all_errors);
         cancelAllMenu.setOnMenuItemClickListener(item -> {
             onCancelAllClick();
             return true;
         });
 
-        MenuItem invertMenu = activity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
+        MenuItem invertMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_invert_queue);
         invertMenu.setOnMenuItemClickListener(item -> {
             viewModel.invertQueue();
             return true;
@@ -254,10 +253,9 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     }
 
     private void initSelectionToolbar() {
-        if (!(requireActivity() instanceof QueueActivity)) return;
-        QueueActivity activity = (QueueActivity) requireActivity();
+        QueueActivity queueActivity = activity.get();
 
-        selectionToolbar = activity.getSelectionToolbar();
+        selectionToolbar = queueActivity.getSelectionToolbar();
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);

@@ -40,6 +40,11 @@ public class FileExplorer implements Closeable {
     private final ContentProviderClient client;
 
 
+    private static synchronized void setTreeDocumentFileConstructor(@NonNull Constructor<?> value) {
+        treeDocumentFileConstructor = value;
+    }
+
+
     public FileExplorer(@NonNull final Context context, @NonNull final DocumentFile parent) {
         client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
     }
@@ -317,8 +322,9 @@ public class FileExplorer implements Closeable {
         try {
             if (null == treeDocumentFileConstructor) {
                 Class<?> treeDocumentFileClazz = Class.forName("androidx.documentfile.provider.TreeDocumentFile");
-                treeDocumentFileConstructor = treeDocumentFileClazz.getDeclaredConstructor(DocumentFile.class, Context.class, Uri.class);
-                treeDocumentFileConstructor.setAccessible(true);
+                Constructor<?> constructor = treeDocumentFileClazz.getDeclaredConstructor(DocumentFile.class, Context.class, Uri.class);
+                constructor.setAccessible(true);
+                setTreeDocumentFileConstructor(constructor);
             }
             return (DocumentFile) treeDocumentFileConstructor.newInstance(parent, context, uri);
         } catch (Exception ex) {

@@ -1,0 +1,8 @@
+
+Fixed
+
+    Toonily : Align with new site layout (use "redownload from scratch" to fix download errors)
+    Only show "special messages" when the app is in the foreground
+    Remove Hentai Cafe
+
+

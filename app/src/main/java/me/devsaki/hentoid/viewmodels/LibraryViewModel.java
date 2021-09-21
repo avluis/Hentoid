@@ -16,6 +16,7 @@ import androidx.paging.PagedList;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
@@ -56,6 +57,7 @@ import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
+import me.devsaki.hentoid.workers.PurgeWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
 import timber.log.Timber;
 
@@ -405,7 +407,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                         ContentQueueManager.getInstance().isQueueActive());
                             } else {
                                 errorCount.incrementAndGet();
-                                onError.accept(new EmptyResultException("Content unreachable"));
+                                onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
                             }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
@@ -453,7 +455,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                         ContentQueueManager.getInstance().isQueueActive());
                             } else {
                                 nbErrors.incrementAndGet();
-                                onError.accept(new EmptyResultException("Content unreachable"));
+                                onError.accept(new EmptyResultException(getApplication().getString(R.string.download_canceled)));
                             }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
@@ -521,7 +523,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 dao.insertContent(dbContent);
                                 ContentHelper.updateContentJson(getApplication(), dbContent);
                             } else {
-                                onError.accept(new EmptyResultException("Content unreachable"));
+                                onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
                             }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
@@ -561,11 +563,7 @@ public class LibraryViewModel extends AndroidViewModel {
         builder.setDeleteGroupsOnly(deleteGroupsOnly);
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
-        workManager.enqueueUniqueWork(
-                Integer.toString(R.id.delete_service),
-                ExistingWorkPolicy.APPEND_OR_REPLACE,
-                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
-        );
+        workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
     }
 
     public void purgeItem(@NonNull final Content content) {
@@ -574,9 +572,9 @@ public class LibraryViewModel extends AndroidViewModel {
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueueUniqueWork(
-                Integer.toString(R.id.delete_service),
+                Integer.toString(R.id.delete_service_purge),
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
-                new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build()
+                new OneTimeWorkRequest.Builder(PurgeWorker.class).setInputData(builder.getData()).build()
         );
     }
 

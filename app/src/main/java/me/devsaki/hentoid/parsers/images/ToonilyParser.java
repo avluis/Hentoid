@@ -73,16 +73,15 @@ public class ToonilyParser extends BaseImageListParser {
         List<Chapter> chapters = new ArrayList<>();
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
         if (doc != null) {
-            // Get the book ID
-            Element idElt = doc.select(".rating-post-id").first();
-            if (null == idElt) return result;
-            String id = idElt.attr("value");
+            // Get the canonical URL
+            String canonicalUrl = doc.select("head [rel=canonical]").first().attr("href");
+
             // Retrieve the chapters page chunk
             doc = HttpHelper.postOnlineDocument(
-                    "https://toonily.com/wp-admin/admin-ajax.php",
+                    canonicalUrl + "ajax/chapters/",
                     headers,
                     Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent(),
-                    "action=manga_get_chapters&manga=" + id,
+                    "",
                     HttpHelper.POST_MIME_TYPE
             );
             if (null == doc) return result;

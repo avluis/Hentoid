@@ -504,7 +504,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
         // Filter on delete complete event
-        if (R.id.delete_service != event.processId) return;
+        if (R.id.delete_service_delete != event.processId) return;
         if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
         viewModel.refreshCustomGroupingAvailable();
     }

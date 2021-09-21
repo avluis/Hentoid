@@ -11,6 +11,7 @@ import com.squareup.moshi.Types;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
@@ -133,7 +134,7 @@ public class JsonHelper {
     private static <K> void updateJson(K object, Type type, @Nonnull OutputStream output) throws IOException {
         byte[] bytes = serializeToJson(object, type).getBytes();
         output.write(bytes);
-        FileHelper.sync(output);
+        if (output instanceof FileOutputStream) FileHelper.sync((FileOutputStream) output);
         output.flush();
     }
 

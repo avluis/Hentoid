@@ -3,6 +3,8 @@ package me.devsaki.hentoid.core;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.hardware.usb.UsbManager;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
@@ -42,6 +44,7 @@ import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
 import me.devsaki.hentoid.notification.startup.StartupNotificationChannel;
 //import me.devsaki.hentoid.services.UpdateCheckService;
+import me.devsaki.hentoid.receiver.PlugEventsReceiver;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -55,6 +58,10 @@ public class AppStartup {
     private Disposable launchDisposable = null;
 
     private static boolean isInitialized = false;
+
+    private static synchronized void setInitialized() {
+        isInitialized = true;
+    }
 
     public void initApp(
             @NonNull final Context context,
@@ -71,7 +78,7 @@ public class AppStartup {
         // TODO switch from a recursive function to a full RxJava-powered chain
         doRunTask(0, onMainProgress, onSecondaryProgress, () -> {
             if (launchDisposable != null) launchDisposable.dispose();
-            isInitialized = true;
+            setInitialized();
 
             onComplete.run();
             // Run post-launch tasks on a worker
@@ -129,6 +136,7 @@ public class AppStartup {
         //result.add(createObservableFrom(context, AppStartup::sendFirebaseStats));
         result.add(createObservableFrom(context, AppStartup::clearPictureCache));
         result.add(createObservableFrom(context, AppStartup::createBookmarksJson));
+        result.add(createObservableFrom(context, AppStartup::createPlugReceiver));
         return result;
     }
 
@@ -240,5 +248,21 @@ public class AppStartup {
             emitter.onComplete();
         }
         Timber.i("Create bookmarks JSON : done");
+    }
+
+    private static void createPlugReceiver(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        Timber.i("Create plug receiver : start");
+        try {
+            PlugEventsReceiver rcv = new PlugEventsReceiver();
+            final IntentFilter filter = new IntentFilter();
+            filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+            filter.addAction(Intent.ACTION_POWER_CONNECTED);
+            filter.addAction(Intent.ACTION_HEADSET_PLUG);
+
+            context.registerReceiver(rcv, filter);
+        } finally {
+            emitter.onComplete();
+        }
+        Timber.i("Create plug receiver : done");
     }
 }

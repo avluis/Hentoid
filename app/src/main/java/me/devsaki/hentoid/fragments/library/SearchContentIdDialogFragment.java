@@ -104,8 +104,8 @@ public class SearchContentIdDialogFragment extends DialogFragment {
             case IMHENTAI:
             case HENTAIFOX:
                 return site.getUrl() + "/gallery/" + id + "/";
-            case HENTAICAFE:
-                return site.getUrl() + "/hc.fyi/" + id;
+            //case HENTAICAFE:
+            //   return site.getUrl() + "/hc.fyi/" + id;
             case TSUMINO:
                 return site.getUrl() + "/entry/" + id;
             //case NEXUS:

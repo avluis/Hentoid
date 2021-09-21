@@ -58,7 +58,7 @@ public class ImageFile {
     @Transient
     private boolean isBackup = false;
 
-    public ImageFile() {
+    public ImageFile() { // Required by ObjectBox when an alternate constructor exists
     }
 
     public ImageFile(ImageFile img) {

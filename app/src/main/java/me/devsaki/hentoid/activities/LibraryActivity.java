@@ -310,7 +310,7 @@ public class LibraryActivity extends BaseActivity {
         onCreated();
         sortCommandsAutoHide = new Debouncer<>(this, 3000, this::hideSearchSortBar);
 
-        //EventBus.getDefault().register(this);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
     }
 
     /*
@@ -325,7 +325,7 @@ public class LibraryActivity extends BaseActivity {
     @Override
     public void onDestroy() {
         Preferences.unregisterPrefsChangedListener(prefsListener);
-        EventBus.getDefault().unregister(this);
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         if (archiveNotificationManager != null) archiveNotificationManager.cancel();
 
         // Empty all handlers to avoid leaks
@@ -362,7 +362,7 @@ public class LibraryActivity extends BaseActivity {
         super.onStart();
         final long previouslyViewedContent = Preferences.getViewerCurrentContent();
         final int previouslyViewedPage = Preferences.getViewerCurrentPageNum();
-        if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ImageViewerActivity.isRunning) {
+        if (previouslyViewedContent > -1 && previouslyViewedPage > -1 && !ImageViewerActivity.isRunning()) {
             Snackbar snackbar = Snackbar.make(viewPager, R.string.resume_closed, BaseTransientBottomBar.LENGTH_LONG);
             snackbar.setAction(R.string.resume, v -> {
                 Timber.i("Reopening book %d from page %d", previouslyViewedContent, previouslyViewedPage);
@@ -1028,7 +1028,7 @@ public class LibraryActivity extends BaseActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
         // Filter on delete complete event
-        if (R.id.delete_service != event.processId) return;
+        if (R.id.delete_service_delete != event.processId) return;
         if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
         String msg = "";
         int nbGroups = event.elementsOKOther;

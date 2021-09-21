@@ -37,7 +37,7 @@ public class EmergencyRestartHandler implements
 
             LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
             logInfo.setEntries(log);
-            logInfo.setLogName("latest-crash");
+            logInfo.setHeaderName("latest-crash");
             LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
         } finally {
             // Restart the Activity

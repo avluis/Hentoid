@@ -26,13 +26,13 @@ class ToolsActivity : BaseActivity() {
 
     override fun onStart() {
         super.onStart()
-        EventBus.getDefault().register(this)
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this)
         // Replace the default "preferences" toolbar title
         supportActionBar?.title = getText(R.string.tools_title)
     }
 
     override fun onStop() {
-        EventBus.getDefault().unregister(this)
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this)
         super.onStop()
     }
 

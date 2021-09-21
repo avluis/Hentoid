@@ -917,17 +917,17 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         // Check if the tag blocker applies here
-        List<String> blockedTags = ContentHelper.getBlockedTags(currentContent);
-        if (!blockedTags.isEmpty()) {
+        List<String> blockedTagsLocal = ContentHelper.getBlockedTags(currentContent);
+        if (!blockedTagsLocal.isEmpty()) {
             if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
                 ToastHelper.toast(getResources().getString(R.string.blocked_tag, blockedTags.get(0)));
             } else { // Insert directly as an error
                 List<ErrorRecord> errors = new ArrayList<>();
-                errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tags : " + TextUtils.join(", ", blockedTags), Instant.now()));
+                errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tags : " + TextUtils.join(", ", blockedTagsLocal), Instant.now()));
                 currentContent.setErrorLog(errors);
                 currentContent.setStatus(StatusContent.ERROR);
                 objectBoxDAO.insertContent(currentContent);
-                ToastHelper.toast(getResources().getString(R.string.blocked_tag_queued, blockedTags.get(0)));
+                ToastHelper.toast(getResources().getString(R.string.blocked_tag_queued, blockedTagsLocal.get(0)));
                 setActionMode(ActionMode.VIEW_QUEUE);
             }
             return;

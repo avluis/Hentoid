@@ -21,7 +21,7 @@ public enum Site {
     HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_menu_hitomi),
     NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_menu_nhentai),
     TSUMINO(4, "tsumino", "https://www.tsumino.com", R.drawable.ic_menu_tsumino),
-    HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", R.drawable.ic_menu_hentaicafe),
+    //HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", R.drawable.ic_menu_hentaicafe),
     ASMHENTAI(6, "asmhentai", "https://asmhentai.com", R.drawable.ic_menu_asmhentai),
     ASMHENTAI_COMICS(7, "asmhentai comics", "https://comics.asmhentai.com", R.drawable.ic_menu_asmcomics),
     EHENTAI(8, "e-hentai", "https://e-hentai.org", R.drawable.ic_menu_ehentai),

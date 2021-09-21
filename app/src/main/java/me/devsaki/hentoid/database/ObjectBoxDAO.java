@@ -80,6 +80,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public List<Long> selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
+        return Helper.getListFromPrimitiveArray(db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc).build().findIds());
+    }
+
+    @Override
     public long countStoredContent(boolean nonFavouritesOnly, boolean includeQueued) {
         return db.selectStoredContentQ(nonFavouritesOnly, includeQueued, -1, false).build().count();
     }
