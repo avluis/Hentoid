@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
@@ -200,6 +201,10 @@ public interface CollectionDAO {
     Map<Site, ImmutablePair<Integer, Long>> selectPrimaryMemoryUsagePerSource();
 
     Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource();
+
+    // Chapters
+
+    List<Chapter> selectChapters(long[] ids);
 
 
     // QUEUE

@@ -30,6 +30,7 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
@@ -597,7 +598,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public LiveData<List<ImageFile>> selectDownloadedImagesFromContent(long id) {
-        return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContent(id));
+        return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContentQ(id));
     }
 
     public Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId) {
@@ -610,6 +611,10 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource() {
         return db.selectExternalMemoryUsagePerSource();
+    }
+
+    public List<Chapter> selectChapters(long[] ids) {
+        return db.selectChaptersQ(ids).find();
     }
 
     public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, boolean isQueueActive) {

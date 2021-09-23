@@ -20,7 +20,6 @@ import com.google.android.material.button.MaterialButton;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
-import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 
@@ -43,7 +42,7 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 
 public final class SplitDialogFragment extends DialogFragment implements ItemTouchCallback {
 
-    private static final String KEY_CONTENTS = "contents";
+    private static final String KEY_CHAPTERS = "contents";
 
     // === UI
     private RecyclerView recyclerView;
@@ -58,7 +57,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
 
     // === VARIABLES
     private Parent parent;
-    private long[] contentIds;
+    private long[] chapterIds;
 
     private Disposable disposable;
 
@@ -68,11 +67,11 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
 
     public static void invoke(
             @NonNull final FragmentActivity parent,
-            @NonNull final List<Content> contentList) {
+            @NonNull final List<Chapter> chapterList) {
         SplitDialogFragment fragment = new SplitDialogFragment();
 
         Bundle args = new Bundle();
-        args.putLongArray(KEY_CONTENTS, Helper.getPrimitiveLongArrayFromList(Stream.of(contentList).map(Content::getId).toList()));
+        args.putLongArray(KEY_CHAPTERS, Helper.getPrimitiveLongArrayFromList(Stream.of(chapterList).map(Chapter::getId).toList()));
         fragment.setArguments(args);
 
         fragment.show(parent.getSupportFragmentManager(), null);
@@ -83,7 +82,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         super.onCreate(savedInstanceState);
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
-        contentIds = getArguments().getLongArray(KEY_CONTENTS);
+        chapterIds = getArguments().getLongArray(KEY_CHAPTERS);
 
         parent = (Parent) getActivity();
     }
@@ -97,15 +96,15 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_library_merge, container, false);
+        return inflater.inflate(R.layout.dialog_library_split, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
 
-        List<Chapter> contentList = loadChapterList();
-        itemAdapter.set(Stream.of(contentList).map(c -> new TextItem<>(c.getName(), c, false, true, touchHelper)).toList());
+        List<Chapter> chapterList = loadChapterList();
+        itemAdapter.set(Stream.of(chapterList).map(c -> new TextItem<>(c.getName(), c, false, true, touchHelper)).toList());
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
@@ -116,7 +115,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
             selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
 
-            FastAdapterPreClickSelectHelper<TextItem<Content>> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
+            FastAdapterPreClickSelectHelper<TextItem<Chapter>> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
             fastAdapter.setOnPreClickListener(helper::onPreClickListener);
             fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
                 // Warning : specific code for drag selection
@@ -139,11 +138,11 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         actionButton.setOnClickListener(v -> onActionClick());
     }
 
-    private List<Content> loadChapterList() {
-        List<Content> result;
+    private List<Chapter> loadChapterList() {
+        List<Chapter> result;
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
         try {
-            result = dao.selectContent(contentIds);
+            result = dao.selectChapters(chapterIds);
         } finally {
             dao.cleanup();
         }
@@ -154,7 +153,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
      * Callback for any selection change (item added to or removed from selection)
      */
     private void onSelectionChanged() {
-        Set<TextItem<Content>> selectedItems = selectExtension.getSelectedItems();
+        Set<TextItem<Chapter>> selectedItems = selectExtension.getSelectedItems();
         int selectedCount = selectedItems.size();
 
         if (0 == selectedCount) {

@@ -1203,12 +1203,16 @@ public class ObjectBoxDB {
         else return null;
     }
 
-    Query<ImageFile> selectDownloadedImagesFromContent(long id) {
+    Query<ImageFile> selectDownloadedImagesFromContentQ(long id) {
         QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
         builder.equal(ImageFile_.contentId, id);
         builder.in(ImageFile_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.EXTERNAL.getCode(), StatusContent.ONLINE.getCode()});
         builder.order(ImageFile_.order);
         return builder.build();
+    }
+
+    Query<Chapter> selectChaptersQ(long[] ids) {
+        return store.boxFor(Chapter.class).query().build();
     }
 
     void insertSiteHistory(@NonNull Site site, @NonNull String url) {
