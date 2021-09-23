@@ -221,7 +221,9 @@ public class ParseHelper {
         List<ImageFile> result = new ArrayList<>();
 
         int order = initialOrder;
-        for (String s : imgUrls)
+        // Remove duplicates before creationg the ImageFiles
+        List<String> imgUrlsUnique = Stream.of(imgUrls).distinct().toList();
+        for (String s : imgUrlsUnique)
             result.add(urlToImageFile(s.trim(), order++, maxPages, status, chapter));
 
         return result;
