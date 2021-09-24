@@ -4,7 +4,6 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://jcenter.bintray.com" }
         maven { url "https://plugins.gradle.org/m2/" } // About library plugin
     }
     dependencies {
@@ -25,8 +24,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://jcenter.bintray.com" }
-        maven { url 'https://jitpack.io' }
+        maven { url 'https://jitpack.io' } // AppIntro
         maven { url "https://plugins.gradle.org/m2/" } // Sonarcloud
     }
 }

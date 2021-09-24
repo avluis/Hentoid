@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.viewholders;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,9 +34,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
@@ -41,9 +44,6 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
 public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHolder> implements IExtendedDraggable, ISwipeable {
 
@@ -65,7 +65,6 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
     // Drag, drop & swipe
     private final ItemTouchHelper touchHelper;
-    private boolean isSwipeable = true;
 
 
     static {
@@ -131,7 +130,12 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
     @Override
     public boolean isSwipeable() {
-        return isSwipeable;
+        return true;
+    }
+
+    @Override
+    public boolean isDirectionSupported(int i) {
+        return (ItemTouchHelper.LEFT == i);
     }
 
 

@@ -1,0 +1,8 @@
+
+
+Fixed
+
+    Hitomi : Align with new gallery URLs -> "back to gallery" button works again
+    Manhwa Hentai : Prevent downloading duplicate pictures
+
+

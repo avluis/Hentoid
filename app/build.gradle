@@ -33,8 +33,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
-        versionCode 178
-        versionName '1.15.6'
+        versionCode 179
+        versionName '1.15.7'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -114,13 +114,13 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.30"
 
     // Support libraries
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.3.1'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.google.android.material:material:1.4.0-alpha01'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.media:media:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.0'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     //implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.2'
@@ -128,7 +128,7 @@ dependencies {
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
-    def android_work_version = '2.5.0'
+    def android_work_version = '2.6.0'
     implementation "androidx.work:work-runtime:$android_work_version"
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
@@ -150,13 +150,13 @@ dependencies {
     implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.8.0'
+    implementation 'com.github.penfeizhou.android.animation:apng:2.12.0'
 
     /**
      * UI
      */
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = '5.4.1'
+    def fastadapter_version = '5.5.1'
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"
@@ -171,10 +171,10 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.0.0'
 
     // Tooltips
-    implementation 'com.github.skydoves:balloon:1.3.4'
+    implementation 'com.github.skydoves:balloon:1.3.7'
 
     // Dropdown lists
-    implementation "com.github.skydoves:powerspinner:1.1.7"
+    implementation 'com.github.skydoves:powerspinner:1.1.9'
 
     // Popup menus with icons
     implementation 'com.github.skydoves:powermenu:2.2.0'
@@ -183,7 +183,7 @@ dependencies {
     implementation "com.github.skydoves:submarine:1.0.7"
 
     // Fast scroller
-    implementation "me.zhanghai.android.fastscroll:library:1.1.5"
+    implementation 'me.zhanghai.android.fastscroll:library:1.1.7'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android:flexbox:2.0.1'
@@ -214,7 +214,7 @@ dependencies {
     implementation "pl.droidsonroids.retrofit2:converter-jspoon:$jspoon_version"
 
     // JSOUP HTML parser: github.com/jhy/jsoup
-    implementation 'org.jsoup:jsoup:1.13.1'
+    implementation 'org.jsoup:jsoup:1.14.2'
 
     //    https://github.com/square/retrofit
     def retrofit_version = '2.9.0'
@@ -253,7 +253,7 @@ dependencies {
     }
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    implementation 'commons-io:commons-io:2.6'
+    implementation 'commons-io:commons-io:2.11.0'
 
     // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
     implementation 'org.apache.commons:commons-lang3:3.12.0'
@@ -262,7 +262,7 @@ dependencies {
     implementation 'org.apache.commons:commons-text:1.9'
 
     // Cleaner date manipulation
-    implementation 'com.jakewharton.threetenabp:threetenabp:1.3.0'
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.3.1'
 
     // Archive management
     implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
