@@ -202,10 +202,6 @@ public interface CollectionDAO {
 
     Map<Site, ImmutablePair<Integer, Long>> selectExternalMemoryUsagePerSource();
 
-    // Chapters
-
-    List<Chapter> selectChapters(long[] ids);
-
 
     // QUEUE
 

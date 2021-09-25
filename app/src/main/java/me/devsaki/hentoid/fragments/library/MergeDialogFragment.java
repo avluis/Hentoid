@@ -6,28 +6,27 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.annimon.stream.IntStream;
 import com.annimon.stream.Stream;
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.TextInputLayout;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.drag.SimpleDragCallback;
-import com.mikepenz.fastadapter.select.SelectExtension;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Set;
 
 import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.R;
@@ -37,8 +36,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
-import me.devsaki.hentoid.widget.DragSelectTouchListener;
-import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 
 public final class MergeDialogFragment extends DialogFragment implements ItemTouchCallback {
 
@@ -46,14 +43,11 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
 
     // === UI
     private RecyclerView recyclerView;
-    private MaterialButton actionButton;
+    private EditText newTitleTxt;
 
     private final ItemAdapter<TextItem<Content>> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<TextItem<Content>> fastAdapter = FastAdapter.with(itemAdapter);
     private ItemTouchHelper touchHelper;
-    private SelectExtension<TextItem<Content>> selectExtension;
-
-    private DragSelectTouchListener mDragSelectTouchListener;
 
     // === VARIABLES
     private Parent parent;
@@ -63,7 +57,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
 
 
     public static void invoke(
-            @NonNull final FragmentActivity parent,
+            @NonNull final Fragment parent,
             @NonNull final List<Content> contentList) {
         MergeDialogFragment fragment = new MergeDialogFragment();
 
@@ -71,7 +65,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         args.putLongArray(KEY_CONTENTS, Helper.getPrimitiveLongArrayFromList(Stream.of(contentList).map(Content::getId).toList()));
         fragment.setArguments(args);
 
-        fragment.show(parent.getSupportFragmentManager(), null);
+        fragment.show(parent.getChildFragmentManager(), null);
     }
 
     @Override
@@ -81,7 +75,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
         contentIds = getArguments().getLongArray(KEY_CONTENTS);
 
-        parent = (Parent) getActivity();
+        parent = (Parent) getParentFragment();
     }
 
     @Override
@@ -113,6 +107,10 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
 
         recyclerView.setAdapter(fastAdapter);
 
+        TextInputLayout newTitleLayout = requireViewById(rootView, R.id.title_new);
+        newTitleTxt = newTitleLayout.getEditText();
+        if (newTitleTxt != null) newTitleTxt.setText(contentList.get(0).getTitle());
+
         View actionButton = requireViewById(rootView, R.id.action_button);
         actionButton.setOnClickListener(v -> onActionClick());
     }
@@ -128,22 +126,10 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         return result;
     }
 
-    /**
-     * Callback for any selection change (item added to or removed from selection)
-     */
-    private void onSelectionChanged() {
-        Set<TextItem<Content>> selectedItems = selectExtension.getSelectedItems();
-        int selectedCount = selectedItems.size();
-
-        if (0 == selectedCount) {
-            selectExtension.setSelectOnLongClick(true);
-        } else {
-            // TODO
-        }
-    }
-
     private void onActionClick() {
-        // TODO
+        List<Content> contents = Stream.of(itemAdapter.getAdapterItems()).map(TextItem::getTag).toList();
+        String newTitleStr = (null == newTitleTxt) ? "" : newTitleTxt.getText().toString();
+        parent.mergeContents(contents, newTitleStr);
         this.dismiss();
     }
 
@@ -180,8 +166,6 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
     }
 
     public interface Parent {
-        void openUrl(@NonNull final String url);
-
-        void updateBookmarkButton(boolean newValue);
+        void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle);
     }
 }

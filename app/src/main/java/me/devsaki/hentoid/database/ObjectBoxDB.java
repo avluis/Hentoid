@@ -1211,10 +1211,6 @@ public class ObjectBoxDB {
         return builder.build();
     }
 
-    Query<Chapter> selectChaptersQ(long[] ids) {
-        return store.boxFor(Chapter.class).query().build();
-    }
-
     void insertSiteHistory(@NonNull Site site, @NonNull String url) {
         SiteHistory siteHistory = selectHistory(site);
         if (siteHistory != null) {

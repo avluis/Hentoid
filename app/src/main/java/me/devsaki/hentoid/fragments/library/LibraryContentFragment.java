@@ -122,7 +122,7 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 @SuppressLint("NonConstantResourceId")
-public class LibraryContentFragment extends Fragment implements ChangeGroupDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
+public class LibraryContentFragment extends Fragment implements ChangeGroupDialogFragment.Parent, MergeDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -400,6 +400,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             PopupMenu popup = new PopupMenu(requireContext(), sortFieldButton, Gravity.END);
             popup.getMenuInflater()
                     .inflate(R.menu.library_books_sort_popup, popup.getMenu());
+
             popup.getMenu().findItem(R.id.sort_custom).setVisible(group != null && group.hasCustomBookOrder);
             popup.setOnMenuItemClickListener(item -> {
                 // Update button text
@@ -589,6 +590,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             case R.id.action_set_cover:
                 askSetCover();
                 break;
+            case R.id.action_merge:
+                Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+                MergeDialogFragment.invoke(this, Stream.of(selectedItems).map(ContentItem::getContent).toList());
+                keepToolbar = true;
+                break;
+            case R.id.action_split:
+                Content selectedContent = Stream.of(selectExtension.getSelectedItems()).toList().get(0).getContent();
+                if (selectedContent != null)
+                    SplitDialogFragment.invoke(this, selectedContent);
+                keepToolbar = true;
+                break;
             default:
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
                 return false;
@@ -597,6 +609,12 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         return true;
     }
 
+    // TODO doc
+    private void leaveSelectionMode() {
+        selectExtension.setSelectOnLongClick(true);
+        selectExtension.deselect(selectExtension.getSelections());
+        activity.get().getSelectionToolbar().setVisibility(View.GONE);
+    }
 
     /**
      * Callback for the "share item" action button
@@ -717,9 +735,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             redownloadFromScratch(contents);
-                            selectExtension.setSelectOnLongClick(true);
-                            selectExtension.deselect(selectExtension.getSelections());
-                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+                            leaveSelectionMode();
                         })
                 .setNegativeButton(R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
@@ -758,9 +774,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             download(contents, this::onDownloadError);
-                            selectExtension.setSelectOnLongClick(true);
-                            selectExtension.deselect(selectExtension.getSelections());
-                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+                            leaveSelectionMode();
                         })
                 .setNegativeButton(R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
@@ -803,10 +817,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            selectExtension.setSelectOnLongClick(true);
-                            selectExtension.deselect(selectExtension.getSelections());
+                            leaveSelectionMode();
                             stream(contents, this::onStreamError);
-                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
@@ -836,9 +848,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                         (dialog1, which) -> {
                             dialog1.dismiss();
                             viewModel.setGroupCover(group.id, content.getCover());
-                            selectExtension.setSelectOnLongClick(true);
-                            selectExtension.deselect(selectExtension.getSelections());
-                            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+                            leaveSelectionMode();
                         })
                 .setNegativeButton(R.string.no,
                         (dialog12, which) -> dialog12.dismiss())
@@ -1422,8 +1432,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             selectExtension.setSelectOnLongClick(true);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
-            long selectedOnlineCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedOnlineCount);
+            long selectedStreamedCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedStreamedCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }
@@ -1442,6 +1452,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void viewQueue() {
         Intent intent = new Intent(requireContext(), QueueActivity.class);
         requireContext().startActivity(intent);
+    }
+
+    public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle) {
+        leaveSelectionMode();
+        // TODO
     }
 
     /**

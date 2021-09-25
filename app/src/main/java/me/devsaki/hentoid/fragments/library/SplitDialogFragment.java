@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,6 +26,7 @@ import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +36,6 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
 import me.devsaki.hentoid.widget.DragSelectTouchListener;
@@ -42,7 +43,7 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 
 public final class SplitDialogFragment extends DialogFragment implements ItemTouchCallback {
 
-    private static final String KEY_CHAPTERS = "contents";
+    private static final String KEY_CONTENT = "contents";
 
     // === UI
     private RecyclerView recyclerView;
@@ -57,6 +58,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
 
     // === VARIABLES
     private Parent parent;
+    private long contentId;
     private long[] chapterIds;
 
     private Disposable disposable;
@@ -66,15 +68,15 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
 
 
     public static void invoke(
-            @NonNull final FragmentActivity parent,
-            @NonNull final List<Chapter> chapterList) {
+            @NonNull final Fragment parent,
+            @NonNull final Content content) {
         SplitDialogFragment fragment = new SplitDialogFragment();
 
         Bundle args = new Bundle();
-        args.putLongArray(KEY_CHAPTERS, Helper.getPrimitiveLongArrayFromList(Stream.of(chapterList).map(Chapter::getId).toList()));
+        args.putLong(KEY_CONTENT, content.getId());
         fragment.setArguments(args);
 
-        fragment.show(parent.getSupportFragmentManager(), null);
+        fragment.show(parent.getChildFragmentManager(), null);
     }
 
     @Override
@@ -82,9 +84,9 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         super.onCreate(savedInstanceState);
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
-        chapterIds = getArguments().getLongArray(KEY_CHAPTERS);
+        contentId = getArguments().getLong(KEY_CONTENT);
 
-        parent = (Parent) getActivity();
+        parent = (Parent) getParentFragment();
     }
 
     @Override
@@ -142,7 +144,9 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         List<Chapter> result;
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
         try {
-            result = dao.selectChapters(chapterIds);
+            Content c = dao.selectContent(contentId);
+            if (c != null) result = c.getChapters();
+            else result = Collections.emptyList();
         } finally {
             dao.cleanup();
         }
