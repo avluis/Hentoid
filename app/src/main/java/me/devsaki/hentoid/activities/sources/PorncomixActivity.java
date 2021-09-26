@@ -4,10 +4,12 @@ import me.devsaki.hentoid.enums.Site;
 
 public class PorncomixActivity extends BaseWebActivity {
 
-    private static final String[] DOMAIN_FILTER = {"www.porncomixonline.net", "porncomicszone.net", "porncomixinfo.com", "porncomixinfo.net", "bestporncomix.com"};
+    private static final String[] DOMAIN_FILTER = {"www.porncomixonline.net", "www.porncomixonline.com", "porncomicszone.net", "porncomixinfo.com", "porncomixinfo.net", "bestporncomix.com"};
     private static final String[] GALLERY_FILTER = {
             "//www.porncomixonline.net/(?!m-comic)([\\w\\-]+)/[\\w\\-]+/$",
             "//www.porncomixonline.net/m-comic/[\\w\\-]+/[\\w\\-]+$",
+            "//www.porncomixonline.com/(?!m-comic)([\\w\\-]+)/[\\w\\-]+/$",
+            "//www.porncomixonline.com/m-comic/[\\w\\-]+/[\\w\\-]+$",
             "//porncomicszone.net/[0-9]+/[\\w\\-]+/[0-9]+/$",
             "//porncomixinfo.(com|net)/manga-comics/[\\w\\-]+/[\\w\\-]+/$",
             "//porncomixinfo.(com|net)/chapter/[\\w\\-]+/[\\w\\-]+/$",
