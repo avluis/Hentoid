@@ -339,7 +339,15 @@
                     android:pathPattern="..*/.*"
                     android:scheme="https" />
                 <data
+                    android:host="porncomixonline.com"
+                    android:pathPattern="..*/.*"
+                    android:scheme="https" />
+                <data
                     android:host="www.porncomixonline.net"
+                    android:pathPattern="..*/.*"
+                    android:scheme="https" />
+                <data
+                    android:host="www.porncomixonline.com"
                     android:pathPattern="..*/.*"
                     android:scheme="https" />
             </intent-filter>
