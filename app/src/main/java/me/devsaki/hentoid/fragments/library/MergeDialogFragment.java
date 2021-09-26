@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments.library;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -28,7 +28,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -52,8 +51,6 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
     // === VARIABLES
     private Parent parent;
     private long[] contentIds;
-
-    private Disposable disposable;
 
 
     public static void invoke(
@@ -82,6 +79,12 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
     public void onDestroy() {
         parent = null;
         super.onDestroy();
+    }
+
+    @Override
+    public void onCancel(@NonNull DialogInterface dialog) {
+        parent.leaveSelectionMode();
+        super.onCancel(dialog);
     }
 
     @Nullable
@@ -167,5 +170,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
 
     public interface Parent {
         void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle);
+
+        void leaveSelectionMode();
     }
 }

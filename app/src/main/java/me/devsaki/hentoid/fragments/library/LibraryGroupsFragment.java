@@ -203,7 +203,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         initUI(rootView);
-        activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
+        activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
 
         return rootView;
     }
@@ -335,7 +335,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }
     }
 
-    private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
+    private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
                 toggleEditMode();
@@ -352,7 +352,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         return true;
     }
 
-    private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
+    private boolean onSelectionToolbarItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit_name:
                 editSelectedItemName();
@@ -588,7 +588,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             case EV_UPDATE_SORT:
                 updateSortControls();
                 addCustomBackControl();
-                activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
+                activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
                 break;
             case EV_ENABLE:
                 onEnable();

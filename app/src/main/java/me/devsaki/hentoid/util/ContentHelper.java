@@ -70,9 +70,9 @@ import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
-import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.util.exception.FileNotProcessedException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
@@ -184,19 +184,24 @@ public final class ContentHelper {
     /**
      * Create the given Content's JSON file and populate it with its current values
      *
+     * @param context Context to use
      * @param content Content whose JSON file to create
+     * @return Created JSON file, or null if it couldn't be created
      */
-    public static void createContentJson(@NonNull Context context, @NonNull Content content) {
+    @Nullable
+    public static DocumentFile createContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        if (content.isArchive()) return; // Keep that as is, we can't find the parent folder anyway
+        if (content.isArchive())
+            return null; // Keep that as is, we can't find the parent folder anyway
 
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
-        if (null == folder) return;
+        if (null == folder) return null;
         try {
-            JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            return JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getStorageUri());
         }
+        return null;
     }
 
     /**
@@ -318,9 +323,9 @@ public final class ContentHelper {
      * @param context Context to be used
      * @param dao     DAO to be used
      * @param content Content to be removed
-     * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
+     * @throws ContentNotProcessedException in case an issue prevents the content from being actually removed
      */
-    public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
+    public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
@@ -329,12 +334,12 @@ public final class ContentHelper {
         if (content.isArchive()) { // Remove an archive
             DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
             if (null == archive)
-                throw new FileNotRemovedException(content, "Failed to find archive " + content.getStorageUri());
+                throw new FileNotProcessedException(content, "Failed to find archive " + content.getStorageUri());
 
             if (archive.delete()) {
                 Timber.i("Archive removed : %s", content.getStorageUri());
             } else {
-                throw new FileNotRemovedException(content, "Failed to delete archive " + content.getStorageUri());
+                throw new FileNotProcessedException(content, "Failed to delete archive " + content.getStorageUri());
             }
 
             // Remove the cover stored in the app's persistent folder
@@ -346,12 +351,12 @@ public final class ContentHelper {
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
             DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
             if (null == folder)
-                throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
+                throw new FileNotProcessedException(content, "Failed to find directory " + content.getStorageUri());
 
             if (folder.delete()) {
                 Timber.i("Directory removed : %s", content.getStorageUri());
             } else {
-                throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
+                throw new FileNotProcessedException(content, "Failed to delete directory " + content.getStorageUri());
             }
         }
     }
@@ -362,9 +367,9 @@ public final class ContentHelper {
      * @param context Context to be used
      * @param dao     DAO to be used
      * @param content Content to be removed
-     * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
+     * @throws ContentNotProcessedException in case an issue prevents the content from being actually removed
      */
-    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
+    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
         // Check if the content is on top of the queue; if so, send a CANCEL event

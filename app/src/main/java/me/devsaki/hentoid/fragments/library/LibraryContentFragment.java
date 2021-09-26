@@ -13,6 +13,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_P
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -307,7 +308,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         initUI(rootView);
-        activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
+        activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
 
         return rootView;
     }
@@ -533,7 +534,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         setPagingMethod(Preferences.getEndlessScroll(), false);
     }
 
-    private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
+    private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
                 toggleEditMode();
@@ -547,7 +548,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         return true;
     }
 
-    private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
+    private boolean onSelectionToolbarItemClicked(@NonNull MenuItem menuItem) {
         boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
             case R.id.action_share:
@@ -591,6 +592,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 askSetCover();
                 break;
             case R.id.action_merge:
+                // TODO prevent merging streamed and non-streamed books together
+                // TODO prevent merging external and non-external books together
                 Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
                 MergeDialogFragment.invoke(this, Stream.of(selectedItems).map(ContentItem::getContent).toList());
                 keepToolbar = true;
@@ -610,7 +613,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     // TODO doc
-    private void leaveSelectionMode() {
+    public void leaveSelectionMode() {
         selectExtension.setSelectOnLongClick(true);
         selectExtension.deselect(selectExtension.getSelections());
         activity.get().getSelectionToolbar().setVisibility(View.GONE);
@@ -911,7 +914,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             case EV_UPDATE_SORT:
                 updateSortControls();
                 addCustomBackControl();
-                activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
+                activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
                 break;
             case EV_ENABLE:
                 onEnable();
@@ -1454,9 +1457,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         requireContext().startActivity(intent);
     }
 
+    @TargetApi(24)
     public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle) {
         leaveSelectionMode();
-        // TODO
+        viewModel.mergeContents(contentList, newTitle, () -> ToastHelper.toast(R.string.merge_success));
     }
 
     /**

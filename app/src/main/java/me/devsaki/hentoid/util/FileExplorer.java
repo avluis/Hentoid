@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util;
 
+import android.annotation.TargetApi;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -16,6 +17,7 @@ import androidx.documentfile.provider.CachedDocumentFile;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -37,7 +39,9 @@ public class FileExplorer implements Closeable {
     private static final Map<String, Boolean> providersCache = new HashMap<>();
     private final Map<String, String> documentIdCache = new HashMap<>();
 
+    private final Context context;
     private final ContentProviderClient client;
+    private final ContentResolver contentResolver;
 
 
     private static synchronized void setTreeDocumentFileConstructor(@NonNull Constructor<?> value) {
@@ -46,11 +50,15 @@ public class FileExplorer implements Closeable {
 
 
     public FileExplorer(@NonNull final Context context, @NonNull final DocumentFile parent) {
-        client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
+        this.context = context;
+        contentResolver = context.getContentResolver();
+        client = contentResolver.acquireContentProviderClient(parent.getUri());
     }
 
     public FileExplorer(@NonNull final Context context, @NonNull final Uri parentUri) {
-        client = context.getContentResolver().acquireContentProviderClient(parentUri);
+        this.context = context;
+        contentResolver = context.getContentResolver();
+        client = contentResolver.acquireContentProviderClient(parentUri);
     }
 
     @Override
@@ -238,6 +246,17 @@ public class FileExplorer implements Closeable {
                 resultFiles.add(new CachedDocumentFile(docFile, result.name, result.size, result.isDirectory));
         }
         return resultFiles;
+    }
+
+    // TODO doc
+    @Nullable
+    @TargetApi(24)
+    public Uri moveFile(@NonNull final Uri sourceFolder, @NonNull final Uri sourceFile, @NonNull final Uri targetFolder, String newName) throws FileNotFoundException {
+        if (newName != null) DocumentsContract.renameDocument(contentResolver, sourceFile, "_tmp");
+        Uri newUri = DocumentsContract.moveDocument(contentResolver, sourceFile, sourceFolder, targetFolder);
+        if (newName != null && newUri != null)
+            newUri = DocumentsContract.renameDocument(contentResolver, newUri, newName);
+        return newUri;
     }
 
     /**

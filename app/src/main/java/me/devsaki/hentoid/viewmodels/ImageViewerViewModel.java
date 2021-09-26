@@ -71,7 +71,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
@@ -708,7 +708,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doDeleteBook(@NonNull Content targetContent) throws ContentNotRemovedException {
+    private void doDeleteBook(@NonNull Content targetContent) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
         ContentHelper.removeQueuedContent(getApplication(), dao, targetContent);
     }

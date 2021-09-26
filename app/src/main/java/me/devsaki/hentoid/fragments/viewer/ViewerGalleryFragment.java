@@ -46,7 +46,7 @@ import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -388,8 +388,8 @@ public class ViewerGalleryFragment extends Fragment {
      */
     private void onDeleteError(Throwable t) {
         Timber.e(t);
-        if (t instanceof ContentNotRemovedException) {
-            ContentNotRemovedException e = (ContentNotRemovedException) t;
+        if (t instanceof ContentNotProcessedException) {
+            ContentNotProcessedException e = (ContentNotProcessedException) t;
             String message = (null == e.getMessage()) ? "Page removal failed" : e.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }

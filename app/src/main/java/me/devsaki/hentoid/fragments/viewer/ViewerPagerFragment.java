@@ -82,7 +82,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
@@ -728,8 +728,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onDeleteError(Throwable t) {
         Timber.e(t);
-        if (t instanceof ContentNotRemovedException) {
-            ContentNotRemovedException e = (ContentNotRemovedException) t;
+        if (t instanceof ContentNotProcessedException) {
+            ContentNotProcessedException e = (ContentNotProcessedException) t;
             String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
             Snackbar.make(binding.recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }

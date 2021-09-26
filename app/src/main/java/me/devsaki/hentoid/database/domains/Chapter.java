@@ -33,6 +33,10 @@ public class Chapter {
         this.name = name;
     }
 
+    public static Chapter fromChapter(Chapter chap) {
+        return new Chapter(chap.order, chap.url, chap.name);
+    }
+
 
     public long getId() {
         return this.id;
