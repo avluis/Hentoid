@@ -675,6 +675,7 @@ public class FileHelper {
         else return result;
     }
 
+    // TODO doc
     public static String getMimeTypeFromFileName(@NonNull String fileName) {
         return getMimeTypeFromExtension(getExtension(fileName));
     }

@@ -66,10 +66,12 @@ public class FileExplorer implements Closeable {
         documentIdCache.clear();
 
         // ContentProviderClient.close only available on API level 24+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            client.close();
-        else
-            client.release();
+        if (client != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                client.close();
+            else
+                client.release();
+        }
     }
 
 
@@ -252,8 +254,11 @@ public class FileExplorer implements Closeable {
     @Nullable
     @TargetApi(24)
     public Uri moveFile(@NonNull final Uri sourceFolder, @NonNull final Uri sourceFile, @NonNull final Uri targetFolder, String newName) throws FileNotFoundException {
-        if (newName != null) DocumentsContract.renameDocument(contentResolver, sourceFile, "_tmp");
-        Uri newUri = DocumentsContract.moveDocument(contentResolver, sourceFile, sourceFolder, targetFolder);
+        Uri newUri = sourceFile;
+        if (newName != null)
+            newUri = DocumentsContract.renameDocument(contentResolver, sourceFile, "_tmp");
+        if (null == newUri) return null;
+        newUri = DocumentsContract.moveDocument(contentResolver, newUri, sourceFolder, targetFolder);
         if (newName != null && newUri != null)
             newUri = DocumentsContract.renameDocument(contentResolver, newUri, newName);
         return newUri;

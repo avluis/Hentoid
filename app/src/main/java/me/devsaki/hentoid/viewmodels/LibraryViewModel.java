@@ -24,6 +24,7 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.threeten.bp.Instant;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -62,6 +63,7 @@ import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.PurgeWorker;
@@ -893,11 +895,12 @@ public class LibraryViewModel extends AndroidViewModel {
         mergedContent.setSite(firstContent.getSite());
         mergedContent.setUrl(firstContent.getUrl());
         mergedContent.populateUniqueSiteId();
+        mergedContent.setUniqueSiteId(mergedContent.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
         mergedContent.setDownloadMode(firstContent.getDownloadMode());
         mergedContent.setTitle(newTitle);
         mergedContent.setCoverImageUrl(firstContent.getCoverImageUrl());
         mergedContent.setUploadDate(firstContent.getUploadDate());
-        mergedContent.setDownloadDate(firstContent.getDownloadDate());
+        mergedContent.setDownloadDate(Instant.now().toEpochMilli());
         mergedContent.setStatus(firstContent.getStatus());
         mergedContent.setFavourite(firstContent.isFavourite());
         mergedContent.setBookPreferences(firstContent.getBookPreferences());
@@ -911,14 +914,30 @@ public class LibraryViewModel extends AndroidViewModel {
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
 
+        mergedContent.setStorageUri(targetFolder.getUri().toString());
+
         // Renumber all picture files and dispatch chapters
         long nbImages = Stream.of(contentList).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
         int nbMaxDigits = (int) (Math.floor(Math.log10(nbImages)) + 1);
 
         List<ImageFile> mergedImages = new ArrayList<>();
-        int chapterOrder = 0;
-        int pictureOrder = 0;
+        List<Chapter> mergedChapters = new ArrayList<>();
+
+        // Set cover
         try (FileExplorer fe = new FileExplorer(getApplication(), Uri.parse(mergedContent.getStorageUri()))) {
+            ImageFile firstCover = firstContent.getCover();
+            ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
+            if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
+                Uri newUri = fe.moveFile(Uri.parse(firstContent.getStorageUri()), Uri.parse(firstCover.getFileUri()), targetFolder.getUri(), null);
+                if (newUri != null)
+                    coverPic.setFileUri(newUri.toString());
+                else
+                    Timber.w("Could not move file %s", firstCover.getFileUri());
+            }
+            mergedImages.add(coverPic);
+
+            int chapterOrder = 0;
+            int pictureOrder = 1;
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
@@ -926,20 +945,25 @@ public class LibraryViewModel extends AndroidViewModel {
                 for (ImageFile img : c.getImageFiles()) {
                     if (!img.isReadable()) continue;
                     ImageFile newImg = new ImageFile(img);
+                    newImg.setId(0); // Force working on a new picture
                     newImg.getContent().setTarget(null); // Clear content
                     newImg.setOrder(pictureOrder++);
                     newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
                     ToOne<Chapter> chapLink = newImg.getChapter();
+                    Chapter newChapter;
                     if (null == chapLink || !chapLink.isResolvedAndNotNull()) { // No chapter -> set content chapter
-                        newImg.setChapter(contentChapter);
+                        newChapter = contentChapter;
                     } else {
-                        newImg.setChapter(Chapter.fromChapter(chapLink.getTarget()).setOrder(chapterOrder++));
+                        newChapter = Chapter.fromChapter(chapLink.getTarget()).setOrder(chapterOrder++);
                     }
+                    if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
+                    newImg.setChapter(newChapter);
                     // TODO test chapters
 
                     // If exists, move the picture to the merged books's folder
                     if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
-                        Uri newUri = fe.moveFile(parentFolderUri, Uri.parse(img.getFileUri()), targetFolder.getUri(), newImg.getName());
+                        String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
+                        Uri newUri = fe.moveFile(parentFolderUri, Uri.parse(img.getFileUri()), targetFolder.getUri(), newImg.getName() + "." + extension);
                         if (newUri != null)
                             newImg.setFileUri(newUri.toString());
                         else
@@ -960,8 +984,9 @@ public class LibraryViewModel extends AndroidViewModel {
                     throw new ContentNotProcessedException(mergedContent, "Could not delete old folder " + c.getStorageUri());
         }
          */
-        // TODO cover
         mergedContent.setImageFiles(mergedImages);
+        mergedContent.setChapters(mergedChapters); // Chapters have to be attached to Content too
+        mergedContent.setQtyPages(mergedImages.size() - 1);
         mergedContent.computeSize();
 
         DocumentFile jsonFile = ContentHelper.createContentJson(getApplication(), mergedContent);
