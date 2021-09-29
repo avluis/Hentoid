@@ -765,11 +765,12 @@ public class FileHelper {
         DocumentFile sourceFile = DocumentFile.fromSingleUri(context, sourceFileUri);
         if (null == sourceFile || !sourceFile.exists()) return null;
         Uri newUri = copyFile(context, sourceFile, targetFolderUri, mimeType, newName);
-        disposable.add(
-                Completable.fromRunnable(sourceFile::delete)
-                        .subscribeOn(Schedulers.io())
-                        .subscribe()
-        );
+        if (newUri != null)
+            disposable.add(
+                    Completable.fromRunnable(sourceFile::delete)
+                            .subscribeOn(Schedulers.io())
+                            .subscribe()
+            );
         return newUri;
     }
 
