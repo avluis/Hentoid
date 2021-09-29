@@ -17,8 +17,6 @@ import androidx.documentfile.provider.DocumentFile;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,9 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.reactivex.Completable;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class FileExplorer implements Closeable {
@@ -42,9 +37,7 @@ public class FileExplorer implements Closeable {
     private static final Map<String, Boolean> providersCache = new HashMap<>();
     private final Map<String, String> documentIdCache = new HashMap<>();
 
-    private final Context context;
     private final ContentProviderClient client;
-    private final ContentResolver contentResolver;
 
 
     private static synchronized void setTreeDocumentFileConstructor(@NonNull Constructor<?> value) {
@@ -53,15 +46,11 @@ public class FileExplorer implements Closeable {
 
 
     public FileExplorer(@NonNull final Context context, @NonNull final DocumentFile parent) {
-        this.context = context;
-        contentResolver = context.getContentResolver();
-        client = contentResolver.acquireContentProviderClient(parent.getUri());
+        client = context.getContentResolver().acquireContentProviderClient(parent.getUri());
     }
 
     public FileExplorer(@NonNull final Context context, @NonNull final Uri parentUri) {
-        this.context = context;
-        contentResolver = context.getContentResolver();
-        client = contentResolver.acquireContentProviderClient(parentUri);
+        client = context.getContentResolver().acquireContentProviderClient(parentUri);
     }
 
     @Override
@@ -251,42 +240,6 @@ public class FileExplorer implements Closeable {
                 resultFiles.add(new CachedDocumentFile(docFile, result.name, result.size, result.isDirectory));
         }
         return resultFiles;
-    }
-
-    @Nullable
-    public Uri moveFileAsync(
-            @NonNull final Uri sourceFileUri,
-            @NonNull final Uri targetFolderUri,
-            @NonNull String mimeType,
-            @NonNull String newName,
-            @NonNull CompositeDisposable disposable) throws IOException {
-        DocumentFile sourceFile = DocumentFile.fromSingleUri(context, sourceFileUri);
-        if (null == sourceFile || !sourceFile.exists()) return null;
-        Uri newUri = copyFile(sourceFile, targetFolderUri, mimeType, newName);
-        disposable.add(
-                Completable.fromRunnable(sourceFile::delete)
-                        .subscribeOn(Schedulers.io())
-                        .subscribe()
-        );
-        return newUri;
-    }
-
-    @Nullable
-    public Uri copyFile(
-            @NonNull final DocumentFile sourceFile,
-            @NonNull final Uri targetFolderUri,
-            @NonNull String mimeType,
-            @NonNull String newName) throws IOException {
-        DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
-        if (null == targetFolder || !targetFolder.exists()) return null;
-        DocumentFile newFile = targetFolder.createFile(mimeType, newName);
-        if (null == newFile || !newFile.exists()) return null;
-        try (OutputStream newDownload = FileHelper.getOutputStream(context, newFile)) {
-            try (InputStream input = FileHelper.getInputStream(context, sourceFile)) {
-                FileHelper.copy(input, newDownload);
-            }
-        }
-        return newFile.getUri();
     }
 
     /**

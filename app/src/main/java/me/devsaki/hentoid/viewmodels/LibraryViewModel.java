@@ -26,6 +26,7 @@ import com.annimon.stream.function.Consumer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
@@ -54,7 +55,6 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.FileExplorer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -923,12 +923,13 @@ public class LibraryViewModel extends AndroidViewModel {
         List<Chapter> mergedChapters = new ArrayList<>();
 
         // Set cover
-        try (FileExplorer fe = new FileExplorer(getApplication(), Uri.parse(mergedContent.getStorageUri()))) {
-            ImageFile firstCover = firstContent.getCover();
-            ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
+        ImageFile firstCover = firstContent.getCover();
+        ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
+        try {
             if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
                 String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
-                Uri newUri = fe.moveFileAsync(
+                Uri newUri = FileHelper.moveFileAsync(
+                        getApplication(),
                         Uri.parse(firstCover.getFileUri()),
                         targetFolder.getUri(),
                         firstCover.getMimeType(),
@@ -946,7 +947,6 @@ public class LibraryViewModel extends AndroidViewModel {
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
-                Uri parentFolderUri = Uri.parse(c.getStorageUri());
                 for (ImageFile img : c.getImageFiles()) {
                     if (!img.isReadable()) continue;
                     ImageFile newImg = new ImageFile(img);
@@ -968,7 +968,8 @@ public class LibraryViewModel extends AndroidViewModel {
                     // If exists, move the picture to the merged books's folder
                     if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
                         String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
-                        Uri newUri = fe.moveFileAsync(
+                        Uri newUri = FileHelper.moveFileAsync(
+                                getApplication(),
                                 Uri.parse(img.getFileUri()),
                                 targetFolder.getUri(),
                                 newImg.getMimeType(),
@@ -983,7 +984,7 @@ public class LibraryViewModel extends AndroidViewModel {
                 }
             }
         } catch (IOException e) {
-            throw new ContentNotProcessedException(mergedContent, "Could not process pictures", e);
+            Timber.w(e);
         }
         // Remove old folders
         /*

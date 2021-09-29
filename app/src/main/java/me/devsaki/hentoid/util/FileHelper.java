@@ -48,6 +48,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import io.reactivex.Completable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
@@ -748,6 +751,46 @@ public class FileHelper {
             out.write(buf, 0, len);
         }
         out.flush();
+    }
+
+    // TODO doc
+    @Nullable
+    public static Uri moveFileAsync(
+            @NonNull final Context context,
+            @NonNull final Uri sourceFileUri,
+            @NonNull final Uri targetFolderUri,
+            @NonNull String mimeType,
+            @NonNull String newName,
+            @NonNull CompositeDisposable disposable) throws IOException {
+        DocumentFile sourceFile = DocumentFile.fromSingleUri(context, sourceFileUri);
+        if (null == sourceFile || !sourceFile.exists()) return null;
+        Uri newUri = copyFile(context, sourceFile, targetFolderUri, mimeType, newName);
+        disposable.add(
+                Completable.fromRunnable(sourceFile::delete)
+                        .subscribeOn(Schedulers.io())
+                        .subscribe()
+        );
+        return newUri;
+    }
+
+    // TODO doc
+    @Nullable
+    private static Uri copyFile(
+            @NonNull final Context context,
+            @NonNull final DocumentFile sourceFile,
+            @NonNull final Uri targetFolderUri,
+            @NonNull String mimeType,
+            @NonNull String newName) throws IOException {
+        DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
+        if (null == targetFolder || !targetFolder.exists()) return null;
+        DocumentFile newFile = targetFolder.createFile(mimeType, newName);
+        if (null == newFile || !newFile.exists()) return null;
+        try (OutputStream newDownload = FileHelper.getOutputStream(context, newFile)) {
+            try (InputStream input = FileHelper.getInputStream(context, sourceFile)) {
+                FileHelper.copy(input, newDownload);
+            }
+        }
+        return newFile.getUri();
     }
 
     /**
