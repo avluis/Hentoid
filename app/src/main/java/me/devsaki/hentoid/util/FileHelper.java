@@ -69,6 +69,8 @@ public class FileHelper {
 
     private static final String ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"; // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
 
+    public static final int FILE_IO_BUFFER_SIZE = 32 * 1024;
+
 
     /**
      * Build a DocumentFile representing a file from the given Uri string
@@ -627,7 +629,7 @@ public class FileHelper {
      * @throws IOException In case something horrible happens during I/O
      */
     public static void saveBinary(@NonNull final Context context, @NonNull final Uri uri, byte[] binaryData) throws IOException {
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[FILE_IO_BUFFER_SIZE];
         int count;
 
         try (InputStream input = new ByteArrayInputStream(binaryData)) {
@@ -740,7 +742,7 @@ public class FileHelper {
      */
     public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
         // Transfer bytes from in to out
-        byte[] buf = new byte[1024];
+        byte[] buf = new byte[FILE_IO_BUFFER_SIZE];
         int len;
         while ((len = in.read(buf)) > 0) {
             out.write(buf, 0, len);

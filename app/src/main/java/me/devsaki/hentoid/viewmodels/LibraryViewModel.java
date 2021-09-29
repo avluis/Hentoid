@@ -884,7 +884,6 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    @TargetApi(24)
     private void doMergeContents(@NonNull List<Content> contentList, @NonNull String newTitle) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
@@ -928,7 +927,13 @@ public class LibraryViewModel extends AndroidViewModel {
             ImageFile firstCover = firstContent.getCover();
             ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
             if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
-                Uri newUri = fe.moveFile(Uri.parse(firstContent.getStorageUri()), Uri.parse(firstCover.getFileUri()), targetFolder.getUri(), null);
+                String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
+                Uri newUri = fe.moveFileAsync(
+                        Uri.parse(firstCover.getFileUri()),
+                        targetFolder.getUri(),
+                        firstCover.getMimeType(),
+                        firstCover.getName() + "." + extension,
+                        compositeDisposable);
                 if (newUri != null)
                     coverPic.setFileUri(newUri.toString());
                 else
@@ -963,7 +968,12 @@ public class LibraryViewModel extends AndroidViewModel {
                     // If exists, move the picture to the merged books's folder
                     if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
                         String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
-                        Uri newUri = fe.moveFile(parentFolderUri, Uri.parse(img.getFileUri()), targetFolder.getUri(), newImg.getName() + "." + extension);
+                        Uri newUri = fe.moveFileAsync(
+                                Uri.parse(img.getFileUri()),
+                                targetFolder.getUri(),
+                                newImg.getMimeType(),
+                                newImg.getName() + "." + extension,
+                                compositeDisposable);
                         if (newUri != null)
                             newImg.setFileUri(newUri.toString());
                         else

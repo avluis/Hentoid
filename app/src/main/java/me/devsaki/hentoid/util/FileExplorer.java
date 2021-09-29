@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.annotation.TargetApi;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -17,8 +16,9 @@ import androidx.documentfile.provider.CachedDocumentFile;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.io.Closeable;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Completable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class FileExplorer implements Closeable {
@@ -250,18 +253,40 @@ public class FileExplorer implements Closeable {
         return resultFiles;
     }
 
-    // TODO doc
     @Nullable
-    @TargetApi(24)
-    public Uri moveFile(@NonNull final Uri sourceFolder, @NonNull final Uri sourceFile, @NonNull final Uri targetFolder, String newName) throws FileNotFoundException {
-        Uri newUri = sourceFile;
-        if (newName != null)
-            newUri = DocumentsContract.renameDocument(contentResolver, sourceFile, "_tmp");
-        if (null == newUri) return null;
-        newUri = DocumentsContract.moveDocument(contentResolver, newUri, sourceFolder, targetFolder);
-        if (newName != null && newUri != null)
-            newUri = DocumentsContract.renameDocument(contentResolver, newUri, newName);
+    public Uri moveFileAsync(
+            @NonNull final Uri sourceFileUri,
+            @NonNull final Uri targetFolderUri,
+            @NonNull String mimeType,
+            @NonNull String newName,
+            @NonNull CompositeDisposable disposable) throws IOException {
+        DocumentFile sourceFile = DocumentFile.fromSingleUri(context, sourceFileUri);
+        if (null == sourceFile || !sourceFile.exists()) return null;
+        Uri newUri = copyFile(sourceFile, targetFolderUri, mimeType, newName);
+        disposable.add(
+                Completable.fromRunnable(sourceFile::delete)
+                        .subscribeOn(Schedulers.io())
+                        .subscribe()
+        );
         return newUri;
+    }
+
+    @Nullable
+    public Uri copyFile(
+            @NonNull final DocumentFile sourceFile,
+            @NonNull final Uri targetFolderUri,
+            @NonNull String mimeType,
+            @NonNull String newName) throws IOException {
+        DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
+        if (null == targetFolder || !targetFolder.exists()) return null;
+        DocumentFile newFile = targetFolder.createFile(mimeType, newName);
+        if (null == newFile || !newFile.exists()) return null;
+        try (OutputStream newDownload = FileHelper.getOutputStream(context, newFile)) {
+            try (InputStream input = FileHelper.getInputStream(context, sourceFile)) {
+                FileHelper.copy(input, newDownload);
+            }
+        }
+        return newFile.getUri();
     }
 
     /**

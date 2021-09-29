@@ -146,7 +146,7 @@ public final class Helper {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
         int len;
         while ((len = stream.read(buffer)) > -1) baos.write(buffer, 0, len);
         baos.flush();

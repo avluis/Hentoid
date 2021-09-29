@@ -1066,7 +1066,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             throw new IOException("Could not create file " + targetFile.getPath());
 
         Timber.d("WRITING DOWNLOADED PIC %d TO %s (size %.2f KB)", pageIndex, targetFile.getAbsolutePath(), size / 1024.0);
-        byte[] buffer = new byte[4196];
+        byte[] buffer = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
         int len;
         long processed = 0;
         int iteration = 0;
