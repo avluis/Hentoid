@@ -958,14 +958,13 @@ public class LibraryViewModel extends AndroidViewModel {
                     newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
                     ToOne<Chapter> chapLink = newImg.getChapter();
                     Chapter newChapter;
-                    if (null == chapLink || !chapLink.isResolvedAndNotNull()) { // No chapter -> set content chapter
+                    if (null == chapLink || chapLink.isNull()) { // No chapter -> set content chapter
                         newChapter = contentChapter;
                     } else {
                         newChapter = Chapter.fromChapter(chapLink.getTarget()).setOrder(chapterOrder++);
                     }
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
                     newImg.setChapter(newChapter);
-                    // TODO test merging books with existing chapters
 
                     // If exists, move the picture to the merged books's folder
                     if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
