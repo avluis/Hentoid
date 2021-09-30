@@ -244,13 +244,13 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         if (title != null) {
             deleteProgress++;
             notificationManager.notify(new DeleteProgressNotification(title, deleteProgress + nbError, deleteMax, isPurge));
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, deleteProgress, nbError, deleteMax));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, deleteProgress, nbError, deleteMax));
         }
     }
 
     private void progressDone() {
         notificationManager.notify(new DeleteCompleteNotification(deleteMax, nbError > 0));
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, deleteProgress, nbError, deleteMax));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, deleteProgress, nbError, deleteMax));
     }
 
     /**

@@ -48,7 +48,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
+import me.devsaki.hentoid.fragments.ProgressDialogFragment;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
@@ -418,21 +418,21 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     private void onDeleteBooks(@NonNull List<Content> c) {
         if (c.size() > 2) {
             isDeletingAll = true;
-            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
+            ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), getResources().getString(R.string.books));
         }
         viewModel.remove(c);
     }
 
     private void doCancelAll() {
         isDeletingAll = true;
-        DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), getResources().getString(R.string.books));
         viewModel.removeAll();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
         // Filter on cancel complete event
-        if (R.id.generic_delete != event.processId) return;
+        if (R.id.generic_progress != event.processId) return;
         if (event.eventType == ProcessEvent.EventType.COMPLETE) onDeleteComplete();
     }
 

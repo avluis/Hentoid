@@ -24,9 +24,9 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
@@ -53,6 +53,7 @@ import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -925,6 +926,7 @@ public class LibraryViewModel extends AndroidViewModel {
         // Set cover
         ImageFile firstCover = firstContent.getCover();
         ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
+        boolean isError = false;
         try {
             if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
                 String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
@@ -944,6 +946,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
             int chapterOrder = 0;
             int pictureOrder = 1;
+            int nbProcessedPics = 1;
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
@@ -963,7 +966,7 @@ public class LibraryViewModel extends AndroidViewModel {
                     }
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
                     newImg.setChapter(newChapter);
-                    // TODO test chapters
+                    // TODO test merging books with existing chapters
 
                     // If exists, move the picture to the merged books's folder
                     if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
@@ -979,42 +982,40 @@ public class LibraryViewModel extends AndroidViewModel {
                             newImg.setFileUri(newUri.toString());
                         else
                             Timber.w("Could not move file %s", img.getFileUri());
+                        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
                     }
                     mergedImages.add(newImg);
                 }
             }
         } catch (IOException e) {
             Timber.w(e);
+            isError = true;
         }
-        // Remove old folders
-        /*
-        for (Content c : contentList) {
-            DocumentFile folder = FileHelper.getFolderFromTreeUriString(getApplication(), c.getStorageUri());
-            if (null != folder)
-                if (!folder.delete())
-                    throw new ContentNotProcessedException(mergedContent, "Could not delete old folder " + c.getStorageUri());
+
+        if (!isError) {
+            mergedContent.setImageFiles(mergedImages);
+            mergedContent.setChapters(mergedChapters); // Chapters have to be attached to Content too
+            mergedContent.setQtyPages(mergedImages.size() - 1);
+            mergedContent.computeSize();
+
+            DocumentFile jsonFile = ContentHelper.createContentJson(getApplication(), mergedContent);
+            if (jsonFile != null) mergedContent.setJsonUri(jsonFile.getUri().toString());
+
+            // Save new content (incl. group operations)
+            ContentHelper.addContent(getApplication(), dao, mergedContent);
+            // TODO test artist & time groups
+
+            // Merge custom groups and update
+            // Merged book can be a member of one custom group only
+            Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
+            if (customGroup.isPresent())
+                GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
+            // TODO test custom groups
+
+            // Remove old contents
+            for (Content c : contentList) ContentHelper.removeContent(getApplication(), dao, c);
         }
-         */
-        mergedContent.setImageFiles(mergedImages);
-        mergedContent.setChapters(mergedChapters); // Chapters have to be attached to Content too
-        mergedContent.setQtyPages(mergedImages.size() - 1);
-        mergedContent.computeSize();
 
-        DocumentFile jsonFile = ContentHelper.createContentJson(getApplication(), mergedContent);
-        if (jsonFile != null) mergedContent.setJsonUri(jsonFile.getUri().toString());
-
-        // Save new content (incl. group operations)
-        ContentHelper.addContent(getApplication(), dao, mergedContent);
-        // TODO test artist & time groups
-
-        // Merge custom groups and update
-        // Merged book can be a member of one custom group only
-        Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
-        if (customGroup.isPresent())
-            GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
-
-        // TODO test custom groups
-
-        // TODO remove old content
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
     }
 }

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.queue;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -70,7 +72,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
-import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
+import me.devsaki.hentoid.fragments.ProgressDialogFragment;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -93,8 +95,6 @@ import me.devsaki.hentoid.views.CircularProgressView;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by avluis on 04/10/2016.
@@ -816,21 +816,21 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void onCancelBooks(@NonNull List<Content> c) {
         if (c.size() > 2) {
             isCancelingAll = true;
-            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
+            ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), getResources().getString(R.string.books));
         }
         viewModel.cancel(c);
     }
 
     private void onCancelAll() {
         isCancelingAll = true;
-        DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), getResources().getString(R.string.books));
         viewModel.cancelAll();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
         // Filter on cancel complete event
-        if (R.id.generic_delete != event.processId) return;
+        if (R.id.generic_progress != event.processId) return;
         if (event.eventType == ProcessEvent.EventType.COMPLETE) onCancelComplete();
     }
 

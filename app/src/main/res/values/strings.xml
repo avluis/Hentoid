@@ -12,6 +12,8 @@
     <string name="goto_page">Go to page…</string>
     <string name="confirm">Confirm</string>
     <string name="please_wait">Please wait…</string>
+    <string name="books">books</string>
+    <string name="pages">pages</string>
     <string name="undo">Undo</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
@@ -142,8 +144,9 @@
 
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
+    <string name="generic_progress">%1$d / %2$d %s</string>
     <string name="book_progress">%1$d / %2$d books</string>
-    <string name="group_progress">%1$d / %2$d groups</string>
+    <string name="group_progress">%1$d / %2$d groups</string>b
 
     <!-- Import metadata -->
     <string name="import_title">Import metadata</string>
@@ -370,6 +373,7 @@
     </plurals>
     <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
     <string name="merge_merge">Merge</string>
+    <string name="merge_progress">Merging books…</string>
     <string name="merge_split">Split</string>
     <string name="new_title">New title</string>
     <string name="merge_success">Content merged successfuly</string>

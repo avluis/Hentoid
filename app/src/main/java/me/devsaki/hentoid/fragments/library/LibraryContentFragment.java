@@ -102,6 +102,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.fragments.ProgressDialogFragment;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
@@ -1461,6 +1462,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle) {
         leaveSelectionMode();
         viewModel.mergeContents(contentList, newTitle, () -> ToastHelper.toast(R.string.merge_success));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), getResources().getString(R.string.pages));
     }
 
     /**

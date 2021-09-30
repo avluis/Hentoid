@@ -23,7 +23,7 @@ import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.database.ObjectBoxDAO
-import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
+import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.services.ExternalImportService
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.util.FileHelper
@@ -265,9 +265,10 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                         dao.cleanup()
                         dialog1.dismiss()
                         searchDisposable.dispose()
-                        DeleteProgressDialogFragment.invoke(
+                        ProgressDialogFragment.invoke(
                             parentFragmentManager,
-                            resources.getString(R.string.delete_title)
+                            resources.getString(R.string.delete_title),
+                            resources.getString(R.string.books)
                         )
                         viewModel.deleteAllItemsExceptFavourites()
                     }

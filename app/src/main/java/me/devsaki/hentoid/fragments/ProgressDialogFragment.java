@@ -15,25 +15,30 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.databinding.DialogPrefsDeleteBinding;
+import me.devsaki.hentoid.databinding.DialogProgressBinding;
 import me.devsaki.hentoid.events.ProcessEvent;
 
 /**
- * Created by Robb on 11/2018
- * Launcher dialog for the library refresh feature
+ * Generic dialog to report progress
  */
-public class DeleteProgressDialogFragment extends DialogFragment {
+public class ProgressDialogFragment extends DialogFragment {
 
     private static final String TITLE = "title";
-    private DialogPrefsDeleteBinding binding = null;
+    private static final String PROGRESS_UNIT = "progressUnit";
+    private DialogProgressBinding binding = null;
 
     private String dialogTitle;
+    private String progressUnit;
 
-    public static void invoke(@NonNull final FragmentManager fragmentManager, @NonNull final String title) {
-        DeleteProgressDialogFragment fragment = new DeleteProgressDialogFragment();
+    public static void invoke(
+            @NonNull final FragmentManager fragmentManager,
+            @NonNull final String title,
+            @NonNull final String progressUnit) {
+        ProgressDialogFragment fragment = new ProgressDialogFragment();
 
         Bundle args = new Bundle();
         args.putString(TITLE, title);
+        args.putString(PROGRESS_UNIT, progressUnit);
         fragment.setArguments(args);
 
         fragment.show(fragmentManager, null);
@@ -45,8 +50,23 @@ public class DeleteProgressDialogFragment extends DialogFragment {
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
         dialogTitle = getArguments().getString(TITLE, "");
+        progressUnit = getArguments().getString(PROGRESS_UNIT, "");
 
         EventBus.getDefault().register(this);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
+        binding = DialogProgressBinding.inflate(inflater, container, false);
+        setCancelable(false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(rootView, savedInstanceState);
+        binding.title.setText(dialogTitle);
     }
 
     @Override
@@ -56,28 +76,14 @@ public class DeleteProgressDialogFragment extends DialogFragment {
         binding = null;
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        binding = DialogPrefsDeleteBinding.inflate(inflater, container, false);
-        setCancelable(false);
-        return binding.getRoot();
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(rootView, savedInstanceState);
-        binding.deleteTitle.setText(dialogTitle);
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
-        if (event.processId != R.id.generic_delete) return;
+        if (event.processId != R.id.generic_progress) return;
 
-        binding.deleteBar.setMax(event.elementsTotal);
+        binding.bar.setMax(event.elementsTotal);
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            binding.deleteProgress.setText(getString(R.string.book_progress, event.elementsOK + event.elementsKO, event.elementsTotal));
-            binding.deleteBar.setProgress(event.elementsOK + event.elementsKO);
+            binding.progress.setText(getString(R.string.generic_progress, event.elementsOK + event.elementsKO, event.elementsTotal, progressUnit));
+            binding.bar.setProgress(event.elementsOK + event.elementsKO);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             dismiss();
         }
