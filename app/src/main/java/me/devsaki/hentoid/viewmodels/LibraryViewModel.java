@@ -894,8 +894,7 @@ public class LibraryViewModel extends AndroidViewModel {
         Content mergedContent = new Content();
         mergedContent.setSite(firstContent.getSite());
         mergedContent.setUrl(firstContent.getUrl());
-        mergedContent.populateUniqueSiteId();
-        mergedContent.setUniqueSiteId(mergedContent.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
+        mergedContent.setUniqueSiteId(firstContent.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
         mergedContent.setDownloadMode(firstContent.getDownloadMode());
         mergedContent.setTitle(newTitle);
         mergedContent.setCoverImageUrl(firstContent.getCoverImageUrl());
