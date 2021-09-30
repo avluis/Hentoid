@@ -144,9 +144,9 @@
 
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
-    <string name="generic_progress">%1$d / %2$d %s</string>
+    <string name="generic_progress">%1$d / %2$d %3$s</string>
     <string name="book_progress">%1$d / %2$d books</string>
-    <string name="group_progress">%1$d / %2$d groups</string>b
+    <string name="group_progress">%1$d / %2$d groups</string>
 
     <!-- Import metadata -->
     <string name="import_title">Import metadata</string>
