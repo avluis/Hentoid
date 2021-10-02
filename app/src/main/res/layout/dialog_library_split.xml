@@ -7,6 +7,8 @@
     android:layout_gravity="center"
     android:clipToPadding="false">
 
+
+
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"
@@ -24,7 +26,7 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_button"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_marginTop="8dp"
