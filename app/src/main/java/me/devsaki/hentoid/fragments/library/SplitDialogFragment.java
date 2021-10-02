@@ -203,7 +203,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
     }
 
     public interface Parent {
-        void splitContent(@NonNull Content content);
+        void splitContent(@NonNull Content content, @NonNull List<Chapter> chapters);
 
         void leaveSelectionMode();
     }

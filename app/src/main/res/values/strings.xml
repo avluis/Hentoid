@@ -377,6 +377,7 @@
     <string name="split_progress">Splitting book…</string>
     <string name="merge_split">Split</string>
     <string name="new_title">New title</string>
+    <string name="split_select_help">Hold and drag to select chapters</string>
     <string name="merge_success">Content merged successfuly</string>
     <string name="split_success">Content split successfuly</string>
     <!-- Groups -->

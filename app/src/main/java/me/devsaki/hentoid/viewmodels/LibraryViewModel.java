@@ -1016,6 +1016,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void splitContent(
             @NonNull Content content,
+            @NonNull List<Chapter> chapters,
             @NonNull Runnable onSuccess) {
         // TODO
     }

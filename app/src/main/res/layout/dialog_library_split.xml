@@ -7,7 +7,34 @@
     android:layout_gravity="center"
     android:clipToPadding="false">
 
+    <TextView
+        android:id="@+id/select_help"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/white_opacity_25"
+        android:paddingStart="48dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/split_select_help"
+        android:textColor="@color/white_opacity_87"
+        android:textStyle="italic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/export_warning_img"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:adjustViewBounds="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_info"
+        app:layout_constraintBottom_toBottomOf="@id/select_help"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/select_help"
+        app:tint="@color/white_opacity_87"
+        tools:ignore="ContentDescription" />
 
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/list"
@@ -20,7 +47,7 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/select_help"
         app:maxHeight="@dimen/dialog_max_height"
         tools:listitem="@layout/item_drawer_edit" />
 
@@ -29,6 +56,7 @@
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
+        android:layout_margin="8dp"
         android:layout_marginTop="8dp"
         android:text="@string/merge_split"
         android:textColor="?colorSecondary"
@@ -36,6 +64,5 @@
         app:icon="@drawable/ic_action_split"
         app:iconTint="?colorSecondary"
         app:layout_constraintTop_toBottomOf="@id/list" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
