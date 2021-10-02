@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -929,13 +930,12 @@ public class LibraryViewModel extends AndroidViewModel {
         try {
             if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
                 String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
-                Uri newUri = FileHelper.moveFileAsync(
+                Uri newUri = FileHelper.copyFile(
                         getApplication(),
                         Uri.parse(firstCover.getFileUri()),
                         targetFolder.getUri(),
                         firstCover.getMimeType(),
-                        firstCover.getName() + "." + extension,
-                        compositeDisposable);
+                        firstCover.getName() + "." + extension);
                 if (newUri != null)
                     coverPic.setFileUri(newUri.toString());
                 else
@@ -969,13 +969,12 @@ public class LibraryViewModel extends AndroidViewModel {
                     // If exists, move the picture to the merged books's folder
                     if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
                         String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
-                        Uri newUri = FileHelper.moveFileAsync(
+                        Uri newUri = FileHelper.copyFile(
                                 getApplication(),
                                 Uri.parse(img.getFileUri()),
                                 targetFolder.getUri(),
                                 newImg.getMimeType(),
-                                newImg.getName() + "." + extension,
-                                compositeDisposable);
+                                newImg.getName() + "." + extension);
                         if (newUri != null)
                             newImg.setFileUri(newUri.toString());
                         else
@@ -1001,7 +1000,6 @@ public class LibraryViewModel extends AndroidViewModel {
 
             // Save new content (incl. group operations)
             ContentHelper.addContent(getApplication(), dao, mergedContent);
-            // TODO test artist & time groups
 
             // Merge custom groups and update
             // Merged book can be a member of one custom group only
@@ -1011,7 +1009,7 @@ public class LibraryViewModel extends AndroidViewModel {
             // TODO test custom groups
 
             // Remove old contents
-            for (Content c : contentList) ContentHelper.removeContent(getApplication(), dao, c);
+            deleteItems(contentList, Collections.emptyList(), false);
         }
 
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));

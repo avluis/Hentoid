@@ -755,33 +755,14 @@ public class FileHelper {
 
     // TODO doc
     @Nullable
-    public static Uri moveFileAsync(
+    public static Uri copyFile(
             @NonNull final Context context,
             @NonNull final Uri sourceFileUri,
             @NonNull final Uri targetFolderUri,
             @NonNull String mimeType,
-            @NonNull String newName,
-            @NonNull CompositeDisposable disposable) throws IOException {
+            @NonNull String newName) throws IOException {
         DocumentFile sourceFile = DocumentFile.fromSingleUri(context, sourceFileUri);
         if (null == sourceFile || !sourceFile.exists()) return null;
-        Uri newUri = copyFile(context, sourceFile, targetFolderUri, mimeType, newName);
-        if (newUri != null)
-            disposable.add(
-                    Completable.fromRunnable(sourceFile::delete)
-                            .subscribeOn(Schedulers.io())
-                            .subscribe()
-            );
-        return newUri;
-    }
-
-    // TODO doc
-    @Nullable
-    private static Uri copyFile(
-            @NonNull final Context context,
-            @NonNull final DocumentFile sourceFile,
-            @NonNull final Uri targetFolderUri,
-            @NonNull String mimeType,
-            @NonNull String newName) throws IOException {
         DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
         if (null == targetFolder || !targetFolder.exists()) return null;
         DocumentFile newFile = targetFolder.createFile(mimeType, newName);
