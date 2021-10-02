@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.fragments.library;
 
-import static androidx.core.view.ViewCompat.requireViewById;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,13 +9,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.IntStream;
 import com.annimon.stream.Stream;
-import com.google.android.material.button.MaterialButton;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
@@ -31,11 +27,11 @@ import java.util.List;
 import java.util.Set;
 
 import io.reactivex.disposables.Disposable;
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.databinding.DialogLibrarySplitBinding;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
 import me.devsaki.hentoid.widget.DragSelectTouchListener;
@@ -43,11 +39,10 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 
 public final class SplitDialogFragment extends DialogFragment implements ItemTouchCallback {
 
-    private static final String KEY_CONTENT = "contents";
+    private static final String KEY_CONTENT = "content";
 
     // === UI
-    private RecyclerView recyclerView;
-    private MaterialButton actionButton;
+    private DialogLibrarySplitBinding binding = null;
 
     private final ItemAdapter<TextItem<Chapter>> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<TextItem<Chapter>> fastAdapter = FastAdapter.with(itemAdapter);
@@ -95,10 +90,16 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         super.onDestroy();
     }
 
-    @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_library_split, container, false);
+        binding = DialogLibrarySplitBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     @Override
@@ -106,7 +107,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         super.onViewCreated(rootView, savedInstanceState);
 
         List<Chapter> chapterList = loadChapterList();
-        itemAdapter.set(Stream.of(chapterList).map(c -> new TextItem<>(c.getName(), c, false, true, touchHelper)).toList());
+        itemAdapter.set(Stream.of(chapterList).map(c -> new TextItem<>(c.getName(), c, false, false, false, touchHelper)).toList());
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
@@ -126,18 +127,15 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
             });
         }
 
-        recyclerView = requireViewById(rootView, R.id.list);
-
-        recyclerView.setAdapter(fastAdapter);
+        binding.list.setAdapter(fastAdapter);
 
         // Select on swipe
         DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
         mDragSelectTouchListener = new DragSelectTouchListener()
                 .withSelectListener(onDragSelectionListener);
-        recyclerView.addOnItemTouchListener(mDragSelectTouchListener);
+        binding.list.addOnItemTouchListener(mDragSelectTouchListener);
 
-        View actionButton = requireViewById(rootView, R.id.action_button);
-        actionButton.setOnClickListener(v -> onActionClick());
+        binding.actionButton.setOnClickListener(v -> onActionClick());
     }
 
     private List<Chapter> loadChapterList() {
@@ -178,7 +176,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
     @Override
     public void itemTouchDropped(int oldPosition, int newPosition) {
         // Update  visuals
-        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
+        RecyclerView.ViewHolder vh = binding.list.findViewHolderForAdapterPosition(newPosition);
         if (vh instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) vh).onDropped();
         }
@@ -205,8 +203,8 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
     }
 
     public interface Parent {
-        void openUrl(@NonNull final String url);
+        void splitContent(@NonNull Content content);
 
-        void updateBookmarkButton(boolean newValue);
+        void leaveSelectionMode();
     }
 }

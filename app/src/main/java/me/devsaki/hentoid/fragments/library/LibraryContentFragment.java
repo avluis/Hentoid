@@ -124,7 +124,7 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 @SuppressLint("NonConstantResourceId")
-public class LibraryContentFragment extends Fragment implements ChangeGroupDialogFragment.Parent, MergeDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
+public class LibraryContentFragment extends Fragment implements ChangeGroupDialogFragment.Parent, MergeDialogFragment.Parent, SplitDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -1464,6 +1464,34 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), getResources().getString(R.string.pages));
     }
 
+    public void splitContent(@NonNull Content content) {
+        leaveSelectionMode();
+        viewModel.splitContent(content, () -> ToastHelper.toast(R.string.split_success));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), getResources().getString(R.string.pages));
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onProcessEvent(ProcessEvent event) {
+        // Filter on delete complete event
+        if (R.id.delete_service_delete != event.processId) return;
+        if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
+        refreshIfNeeded();
+    }
+
+    @Override
+    public void onChangeGroupSuccess() {
+        refreshIfNeeded();
+    }
+
+    /**
+     * Force a new search when the sort order is custom
+     * (in that case, LiveData can't do its job because of https://github.com/objectbox/objectbox-java/issues/141)
+     */
+    private void refreshIfNeeded() {
+        if (Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
+            viewModel.updateContentOrder();
+    }
+
     /**
      * Callback for the end of item diff calculations
      * Activated when all _adapter_ items are placed on their definitive position
@@ -1564,27 +1592,5 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         Content content = item.getContent();
         if (content != null)
             viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onProcessEvent(ProcessEvent event) {
-        // Filter on delete complete event
-        if (R.id.delete_service_delete != event.processId) return;
-        if (ProcessEvent.EventType.COMPLETE != event.eventType) return;
-        refreshIfNeeded();
-    }
-
-    @Override
-    public void onChangeGroupSuccess() {
-        refreshIfNeeded();
-    }
-
-    /**
-     * Force a new search when the sort order is custom
-     * (in that case, LiveData can't do its job because of https://github.com/objectbox/objectbox-java/issues/141)
-     */
-    private void refreshIfNeeded() {
-        if (Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
-            viewModel.updateContentOrder();
     }
 }

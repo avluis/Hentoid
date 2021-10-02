@@ -1013,4 +1013,10 @@ public class LibraryViewModel extends AndroidViewModel {
 
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
     }
+
+    public void splitContent(
+            @NonNull Content content,
+            @NonNull Runnable onSuccess) {
+        // TODO
+    }
 }

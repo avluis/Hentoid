@@ -374,9 +374,11 @@
     <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
     <string name="merge_merge">Merge</string>
     <string name="merge_progress">Merging books…</string>
+    <string name="split_progress">Splitting book…</string>
     <string name="merge_split">Split</string>
     <string name="new_title">New title</string>
     <string name="merge_success">Content merged successfuly</string>
+    <string name="split_success">Content split successfuly</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>

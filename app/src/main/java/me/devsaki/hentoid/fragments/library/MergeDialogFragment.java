@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.fragments.library;
 
-import static androidx.core.view.ViewCompat.requireViewById;
-
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,7 +15,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
-import com.google.android.material.textfield.TextInputLayout;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
@@ -28,10 +25,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.databinding.DialogLibraryMergeBinding;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
@@ -41,7 +38,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
     private static final String KEY_CONTENTS = "contents";
 
     // === UI
-    private RecyclerView recyclerView;
+    private DialogLibraryMergeBinding binding = null;
     private EditText newTitleTxt;
 
     private final ItemAdapter<TextItem<Content>> itemAdapter = new ItemAdapter<>();
@@ -51,6 +48,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
     // === VARIABLES
     private Parent parent;
     private long[] contentIds;
+    private String initialTitle = "";
 
 
     public static void invoke(
@@ -87,10 +85,16 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         super.onCancel(dialog);
     }
 
-    @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_library_merge, container, false);
+        binding = DialogLibraryMergeBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     @Override
@@ -98,24 +102,21 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         super.onViewCreated(rootView, savedInstanceState);
 
         List<Content> contentList = loadContentList();
-        itemAdapter.set(Stream.of(contentList).map(s -> new TextItem<>(s.getTitle(), s, false, true, touchHelper)).toList());
-
-        recyclerView = requireViewById(rootView, R.id.list);
+        itemAdapter.set(Stream.of(contentList).map(s -> new TextItem<>(s.getTitle(), s, false, true, false, touchHelper)).toList());
 
         // Activate drag & drop
         SimpleDragCallback dragCallback = new SimpleDragCallback(this);
         dragCallback.setNotifyAllDrops(true);
         touchHelper = new ItemTouchHelper(dragCallback);
-        touchHelper.attachToRecyclerView(recyclerView);
+        touchHelper.attachToRecyclerView(binding.list);
 
-        recyclerView.setAdapter(fastAdapter);
+        binding.list.setAdapter(fastAdapter);
 
-        TextInputLayout newTitleLayout = requireViewById(rootView, R.id.title_new);
-        newTitleTxt = newTitleLayout.getEditText();
-        if (newTitleTxt != null) newTitleTxt.setText(contentList.get(0).getTitle());
+        initialTitle = contentList.get(0).getTitle();
+        newTitleTxt = binding.titleNew.getEditText();
+        if (newTitleTxt != null) newTitleTxt.setText(initialTitle);
 
-        View actionButton = requireViewById(rootView, R.id.action_button);
-        actionButton.setOnClickListener(v -> onActionClick());
+        binding.actionButton.setOnClickListener(v -> onActionClick());
     }
 
     private List<Content> loadContentList() {
@@ -142,9 +143,14 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
     @Override
     public void itemTouchDropped(int oldPosition, int newPosition) {
         // Update  visuals
-        RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(newPosition);
+        RecyclerView.ViewHolder vh = binding.list.findViewHolderForAdapterPosition(newPosition);
         if (vh instanceof IDraggableViewHolder) {
             ((IDraggableViewHolder) vh).onDropped();
+        }
+        // Update new title if unedited
+        if (0 == newPosition && newTitleTxt.getText().toString().equals(initialTitle)) {
+            initialTitle = itemAdapter.getAdapterItem(0).getText();
+            newTitleTxt.setText(initialTitle);
         }
     }
 

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.viewholders;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
@@ -23,14 +25,13 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 
-import static androidx.core.view.ViewCompat.requireViewById;
-
 public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implements IExtendedDraggable {
 
     private final String text;
     private final T tag;
     private final boolean centered;
     private final boolean draggable;
+    private final boolean reformatCase;
     private final ItemTouchHelper touchHelper;
 
 
@@ -40,6 +41,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         this.centered = centered;
         this.draggable = false;
         this.touchHelper = null;
+        this.reformatCase = true;
     }
 
     public TextItem(String text, T tag, boolean centered, boolean draggable, ItemTouchHelper touchHelper) {
@@ -48,6 +50,16 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         this.centered = centered;
         this.draggable = draggable;
         this.touchHelper = touchHelper;
+        this.reformatCase = true;
+    }
+
+    public TextItem(String text, T tag, boolean centered, boolean draggable, boolean reformatCase, ItemTouchHelper touchHelper) {
+        this.text = text;
+        this.tag = tag;
+        this.centered = centered;
+        this.draggable = draggable;
+        this.touchHelper = touchHelper;
+        this.reformatCase = reformatCase;
     }
 
     @Nullable
@@ -56,7 +68,13 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         return tag;
     }
 
-    public String getText() { return text; }
+    public String getText() {
+        return text;
+    }
+
+    private String getDisplayText() {
+        return reformatCase ? StringHelper.capitalizeString(text) : text;
+    }
 
     @Override
     public boolean isDraggable() {
@@ -121,7 +139,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
             if (item.isSelected()) checkedIndicator.setVisibility(View.VISIBLE);
             else checkedIndicator.setVisibility(View.GONE);
 
-            title.setText(StringHelper.capitalizeString(item.text));
+            title.setText(item.getDisplayText());
             if (item.centered) title.setGravity(Gravity.CENTER);
         }
 
