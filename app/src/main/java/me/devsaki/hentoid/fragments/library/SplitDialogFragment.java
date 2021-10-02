@@ -9,7 +9,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.IntStream;
@@ -26,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Chapter;
@@ -46,7 +44,6 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
 
     private final ItemAdapter<TextItem<Chapter>> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<TextItem<Chapter>> fastAdapter = FastAdapter.with(itemAdapter);
-    private ItemTouchHelper touchHelper;
     private SelectExtension<TextItem<Chapter>> selectExtension;
 
     private DragSelectTouchListener mDragSelectTouchListener;
@@ -54,12 +51,6 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
     // === VARIABLES
     private Parent parent;
     private long contentId;
-    private long[] chapterIds;
-
-    private Disposable disposable;
-
-    // Used to ignore native calls to onBookClick right after that book has been deselected
-    private boolean invalidateNextBookClick = false;
 
 
     public static void invoke(
@@ -107,7 +98,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         super.onViewCreated(rootView, savedInstanceState);
 
         List<Chapter> chapterList = loadChapterList();
-        itemAdapter.set(Stream.of(chapterList).map(c -> new TextItem<>(c.getName(), c, false, false, false, touchHelper)).toList());
+        itemAdapter.set(Stream.of(chapterList).map(c -> new TextItem<>(c.getName(), c, false, false, false, null)).toList());
 
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
@@ -158,16 +149,16 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         Set<TextItem<Chapter>> selectedItems = selectExtension.getSelectedItems();
         int selectedCount = selectedItems.size();
 
-        if (0 == selectedCount) {
-            selectExtension.setSelectOnLongClick(true);
-        } else {
-            // TODO
-        }
+        binding.actionButton.setEnabled(selectedCount > 0);
+        if (0 == selectedCount) selectExtension.setSelectOnLongClick(true);
     }
 
     private void onActionClick() {
-        // TODO
-        this.dismiss();
+        List<Chapter> chapters = Stream.of(itemAdapter.getAdapterItems()).map(TextItem::getTag).toList();
+        if (!chapters.isEmpty()) {
+            parent.splitContent(chapters.get(0).getContent().getTarget(), chapters);
+            this.dismiss();
+        }
     }
 
 

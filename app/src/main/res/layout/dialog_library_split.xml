@@ -58,11 +58,13 @@
         android:layout_height="?android:attr/actionBarSize"
         android:layout_margin="8dp"
         android:layout_marginTop="8dp"
+        android:enabled="false"
         android:text="@string/merge_split"
-        android:textColor="?colorSecondary"
+        android:textColor="@color/secondary_color_selector"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_split"
-        app:iconTint="?colorSecondary"
-        app:layout_constraintTop_toBottomOf="@id/list" />
+        app:iconTint="@color/secondary_color_selector"
+        app:layout_constraintTop_toBottomOf="@id/list"
+        app:strokeColor="@color/secondary_color_selector" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
