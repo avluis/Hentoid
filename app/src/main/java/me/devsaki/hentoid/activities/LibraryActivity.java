@@ -983,11 +983,8 @@ public class LibraryActivity extends BaseActivity {
             downloadMenu.setVisible(selectedStreamedCount > 0);
             streamMenu.setVisible(selectedDownloadedCount > 0);
             coverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
-            // Merge & split are only usable from API24+ due to lack of native SAF support for moving files
-            // NB : a DocumentFile-based implementation is _possible_ but would require much work
-            // to be as efficient as DocumentsContract.moveDocument
-            mergeMenu.setVisible(selectedLocalCount > 1 && Build.VERSION.SDK_INT >= 24);
-            splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount  && Build.VERSION.SDK_INT >= 24);
+            mergeMenu.setVisible(selectedLocalCount > 1);
+            splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         }
     }
 

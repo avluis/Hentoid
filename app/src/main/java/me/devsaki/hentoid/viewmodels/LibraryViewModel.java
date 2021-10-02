@@ -850,7 +850,6 @@ public class LibraryViewModel extends AndroidViewModel {
         dao.shuffleContent();
     }
 
-    @TargetApi(24)
     public void mergeContents(
             @NonNull List<Content> contentList,
             @NonNull String newTitle,

@@ -1458,7 +1458,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         requireContext().startActivity(intent);
     }
 
-    @TargetApi(24)
     public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle) {
         leaveSelectionMode();
         viewModel.mergeContents(contentList, newTitle, () -> ToastHelper.toast(R.string.merge_success));
