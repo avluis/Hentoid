@@ -249,7 +249,12 @@ public final class ContentHelper {
      * @param searchParams Current search parameters (so that the next/previous book feature
      *                     is faithful to the library screen's order)
      */
-    public static boolean openHentoidViewer(@NonNull Context context, @NonNull Content content, int pageNumber, Bundle searchParams) {
+    public static boolean openHentoidViewer(
+            @NonNull Context context,
+            @NonNull Content content,
+            int pageNumber,
+            Bundle searchParams,
+            boolean forceShowGallery) {
         // Check if the book has at least its own folder
         if (content.getStorageUri().isEmpty()) return false;
 
@@ -259,6 +264,7 @@ public final class ContentHelper {
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
         if (pageNumber > -1) builder.setPageNumber(pageNumber);
+        builder.setForceShowGallery(forceShowGallery);
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);
         viewer.putExtras(builder.getBundle());

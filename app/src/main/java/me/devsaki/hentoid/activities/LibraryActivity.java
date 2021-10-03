@@ -372,7 +372,7 @@ public class LibraryActivity extends BaseActivity {
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle());
+                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle(), false);
                 } finally {
                     dao.cleanup();
                 }

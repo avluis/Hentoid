@@ -378,6 +378,8 @@
     <string name="merge_split">Split</string>
     <string name="new_title">New title</string>
     <string name="split_select_help">Hold and drag to select\n- Selected chapters are split to one book\n- Unselected chapters are split to another book</string>
+    <string name="split_no_chapters">No chapters created yet :-(</string>
+    <string name="split_create_chapters">Create chapters</string>
     <string name="merge_success">Content merged successfuly</string>
     <string name="split_success">Content split successfuly</string>
     <!-- Groups -->

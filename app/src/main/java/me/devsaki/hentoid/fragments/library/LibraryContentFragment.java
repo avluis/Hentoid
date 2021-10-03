@@ -13,7 +13,6 @@ import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_P
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -1350,12 +1349,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private boolean onItemClick(int position, @NonNull ContentItem item) {
         if (selectExtension.getSelections().isEmpty()) {
             if (item.getContent() != null && !item.getContent().isBeingDeleted()) {
-                topItemPosition = position;
-                ContentHelper.openHentoidViewer(requireContext(), item.getContent(), -1, viewModel.getSearchManagerBundle());
+                readBook(item.getContent(), false);
             }
             return true;
         }
         return false;
+    }
+
+    // TODO doc
+    public void readBook(@NonNull Content content, boolean forceShowGallery) {
+        topItemPosition = getTopItemPosition();
+        ContentHelper.openHentoidViewer(requireContext(), content, -1, viewModel.getSearchManagerBundle(), forceShowGallery);
     }
 
     /**

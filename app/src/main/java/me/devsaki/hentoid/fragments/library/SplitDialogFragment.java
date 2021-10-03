@@ -51,6 +51,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
     // === VARIABLES
     private Parent parent;
     private long contentId;
+    private Content content;
 
 
     public static void invoke(
@@ -120,6 +121,13 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
 
         binding.list.setAdapter(fastAdapter);
 
+        // Display help text is no chapters
+        if (chapterList.isEmpty()) {
+            binding.nochapterAction.setOnClickListener(v -> onCreateChaptersClick());
+            binding.nochapterView.setVisibility(View.VISIBLE);
+            binding.list.setVisibility(View.GONE);
+        }
+
         // Select on swipe
         DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
         mDragSelectTouchListener = new DragSelectTouchListener()
@@ -133,8 +141,8 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         List<Chapter> result;
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
         try {
-            Content c = dao.selectContent(contentId);
-            if (c != null) result = c.getChapters();
+            content = dao.selectContent(contentId);
+            if (content != null) result = content.getChapters();
             else result = Collections.emptyList();
         } finally {
             dao.cleanup();
@@ -153,10 +161,14 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
         if (0 == selectedCount) selectExtension.setSelectOnLongClick(true);
     }
 
+    private void onCreateChaptersClick() {
+        parent.readBook(content, true);
+    }
+
     private void onActionClick() {
         List<Chapter> chapters = Stream.of(itemAdapter.getAdapterItems()).map(TextItem::getTag).toList();
         if (!chapters.isEmpty()) {
-            parent.splitContent(chapters.get(0).getContent().getTarget(), chapters);
+            parent.splitContent(content, chapters);
             this.dismiss();
         }
     }
@@ -195,6 +207,8 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
 
     public interface Parent {
         void splitContent(@NonNull Content content, @NonNull List<Chapter> chapters);
+
+        void readBook(@NonNull Content content, boolean forceShowGallery);
 
         void leaveSelectionMode();
     }
