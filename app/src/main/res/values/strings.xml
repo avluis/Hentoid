@@ -534,8 +534,8 @@
     <string name="information_help">Information</string>
     <string name="previous_book_help">Previous book</string>
     <string name="next_book_help">Next book</string>
+    <string name="menu_edit_chapters">Edit chapters</string>
     <string name="gallery_help">Book gallery</string>
-    <string name="gallery_fav_help">Book gallery / favourites only</string>
     <string name="page_fav_help">Mark/unmark page as favourite</string>
     <string name="page_copy_help">Copy page to the Android Downloads folder</string>
     <string name="page_share_help">Share page using another app</string>

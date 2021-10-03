@@ -11,4 +11,10 @@
         android:title="@string/menu_fav"
         android:tooltipText="@string/menu_fav"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_edit_chapters"
+        android:icon="@drawable/ic_chapters"
+        android:title="@string/menu_edit_chapters"
+        android:tooltipText="@string/menu_edit_chapters"
+        app:showAsAction="ifRoom" />
 </menu>
