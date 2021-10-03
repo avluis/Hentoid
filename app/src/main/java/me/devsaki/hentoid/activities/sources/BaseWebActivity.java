@@ -597,7 +597,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         duplicateId = -1;
         duplicateSimilarity = 0f;
         // Greys out the action button
-        // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious)
+        // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious, Pixiv)
         runOnUiThread(() -> {
             actionMenu.setIcon(downloadIcon);
             actionMenu.setEnabled(false);

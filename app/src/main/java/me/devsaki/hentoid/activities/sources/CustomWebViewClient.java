@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.activities.sources;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
+import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
+
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -46,6 +49,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -64,9 +68,6 @@ import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
-import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
 
 /**
  * Analyze loaded HTML to display download button
@@ -359,6 +360,7 @@ class CustomWebViewClient extends WebViewClient {
             return new WebResourceResponse("text/plain", "utf-8", NOTHING);
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
+            else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url);
 
             // If we're here to remove "dirty elements", we only do it
             // on HTML resources (URLs without extension) from the source's main domain
@@ -401,6 +403,9 @@ class CustomWebViewClient extends WebViewClient {
     @SuppressLint("NewApi")
     protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
         Helper.assertNonUiThread();
+
+        if (BuildConfig.DEBUG) Timber.v("WebView : parseResponse %s", urlStr);
+
         // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 

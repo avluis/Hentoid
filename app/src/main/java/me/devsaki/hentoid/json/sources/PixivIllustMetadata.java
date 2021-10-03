@@ -96,10 +96,12 @@ public class PixivIllustMetadata {
         }
 
         List<Pair<String, String>> getTags() {
+            if (null == display_tags) return Collections.emptyList();
             return Stream.of(display_tags).map(TagData::getTag).toList();
         }
 
         List<String> getImageUrls() {
+            if (null == manga_a) return Collections.emptyList();
             return Stream.of(manga_a).map(PageData::getUrl).toList();
         }
     }
@@ -146,12 +148,6 @@ public class PixivIllustMetadata {
     @Nullable
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
-        String pixivPrefix = Site.PIXIV.getUrl();
-        String[] urlParts = url.replace(Site.PIXIV.getUrl(), "").split("/");
-        String secondPath = urlParts[0];
-        if (!secondPath.equals("user") && !secondPath.equals("artworks"))
-            pixivPrefix += secondPath + "/";
-
         content.setSite(Site.PIXIV);
 
         if (error || null == body || null == body.illust_details)
@@ -168,13 +164,13 @@ public class PixivIllustMetadata {
 
         AttributeMap attributes = new AttributeMap();
 
-        Attribute attribute = new Attribute(AttributeType.ARTIST, illustData.getUserName(), pixivPrefix + "user/" + illustData.getUserId(), Site.LUSCIOUS);
+        Attribute attribute = new Attribute(AttributeType.ARTIST, illustData.getUserName(), Site.PIXIV.getUrl() + "user/" + illustData.getUserId(), Site.LUSCIOUS);
         attributes.add(attribute);
 
         for (Pair<String, String> tag : illustData.getTags()) {
             String name = StringHelper.removeNonPrintableChars(tag.second);
             AttributeType type = AttributeType.TAG;
-            attribute = new Attribute(type, name, pixivPrefix + "tags/" + tag.first, Site.LUSCIOUS);
+            attribute = new Attribute(type, name, Site.PIXIV.getUrl() + "tags/" + tag.first, Site.LUSCIOUS);
             attributes.add(attribute);
         }
         content.putAttributes(attributes);

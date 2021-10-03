@@ -13,9 +13,9 @@ import java.util.Map;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ContentParser;
-import me.devsaki.hentoid.parsers.content.LusciousContent;
 import me.devsaki.hentoid.parsers.content.PixivContent;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
@@ -26,11 +26,11 @@ public class PixivActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "pixiv.net";
     public static final String[] GALLERY_FILTER = {
-            "xxx", // Fetch using GraphQL call
+            "pixiv.net/touch/ajax/illust/details", // Using fetch call
             "pixiv.net/[\\w\\-]+/artworks/[0-9]+$", // Illustrations page
             "pixiv.net/user/[0-9]+/series/[0-9]+$" // Manga/series page
     };
-    //private static final String[] DIRTY_ELEMENTS = {".ad_banner"}; <-- doesn't work; added dynamically on an element tagged with a neutral-looking class
+    private static final String[] BLOCKED_CONTENT = {"ads-pixiv.net"};
 
 
     Site getStartSite() {
@@ -41,8 +41,8 @@ public class PixivActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         PixivWebClient client = new PixivWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-//        client.adBlocker.addUrlWhitelist(DOMAIN_FILTER);
-        //client.addDirtyElements(DIRTY_ELEMENTS);
+        client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
+        client.adBlocker.addUrlWhitelist(DOMAIN_FILTER);
 
         return client;
     }
@@ -83,6 +83,8 @@ public class PixivActivity extends BaseWebActivity {
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
             activity.onGalleryPageStarted();
+
+            if (BuildConfig.DEBUG) Timber.v("WebView : parseResponse Pixiv %s", urlStr);
 
             ContentParser contentParser = new PixivContent();
             compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.content;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
@@ -25,9 +27,13 @@ public class PixivContent extends BaseContentParser {
         String id = urlParts[urlParts.length - 1];
         String entity = urlParts[urlParts.length - 2];
 
-        if (entity.equals("artworks")) bookId = id;
+        if (entity.equals("artworks")) bookId = id; // Direct HTTP access
+        else if (entity.equals("illust")) { // fetch Call
+            Uri uri = Uri.parse(url);
+            bookId = uri.getQueryParameter("illust_id");
+        }
 
-        if (!bookId.isEmpty()) {
+        if (bookId != null && !bookId.isEmpty()) {
             try {
                 String cookieStr = HttpHelper.getCookies(
                         url,
