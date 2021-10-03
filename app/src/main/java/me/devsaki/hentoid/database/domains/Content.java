@@ -48,6 +48,7 @@ import me.devsaki.hentoid.activities.sources.ManhwaActivity;
 import me.devsaki.hentoid.activities.sources.MrmActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
+import me.devsaki.hentoid.activities.sources.PixivActivity;
 import me.devsaki.hentoid.activities.sources.PorncomixActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
 import me.devsaki.hentoid.activities.sources.ToonilyActivity;
@@ -278,6 +279,11 @@ public class Content implements Serializable {
                 // e.g. /albums/lewd_title_ch_1_3_42116/ -> 42116 is the ID
                 lastIndex = url.lastIndexOf('_');
                 return url.substring(lastIndex + 1, url.length() - 1);
+            case PIXIV:
+                // - If artworks, ID is the artwork ID
+                // - If not, ID is the whole URL
+                if (url.contains("artworks")) return url.substring(url.lastIndexOf('/') + 1);
+                else return url;
             default:
                 return "";
         }
@@ -355,6 +361,8 @@ public class Content implements Serializable {
                 return ToonilyActivity.class;
             case ALLPORNCOMIC:
                 return AllPornComicActivity.class;
+            case PIXIV:
+                return PixivActivity.class;
             default:
                 return BaseWebActivity.class;
         }

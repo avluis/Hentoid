@@ -72,7 +72,8 @@ public class LusciousActivity extends BaseWebActivity {
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            content -> super.processContent(content, content.getGalleryUrl(), quickDownload)
+                            content -> super.processContent(content, content.getGalleryUrl(), quickDownload),
+                            Timber::e
                     )
             );
             return null;
