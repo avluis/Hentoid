@@ -285,6 +285,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                     if (cookiesStr != null) {
                         LazyHeaders.Builder builder = new LazyHeaders.Builder()
                                 .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookiesStr)
+                                .addHeader(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl())
                                 .addHeader(HttpHelper.HEADER_USER_AGENT, userAgent);
 
                         GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
