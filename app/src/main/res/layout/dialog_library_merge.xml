@@ -16,7 +16,7 @@
         android:text="@string/bookmark_homepage"
         android:textColor="@color/white_opacity_87"
         android:textSize="@dimen/text_body_1"
-        app:icon="@drawable/ic_menu_nhentai"
+        app:icon="@drawable/ic_site_nhentai"
         app:iconTint="@color/white_opacity_87"
         app:layout_constraintTop_toTopOf="parent" />
 
