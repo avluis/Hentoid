@@ -26,7 +26,7 @@ public class PixivActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "pixiv.net";
     public static final String[] GALLERY_FILTER = {
-            "pixiv.net/touch/ajax/illust/details", // Using fetch call
+            "pixiv.net/touch/ajax/illust/details\\?", // Dynamic load using fetch call
             "pixiv.net/[\\w\\-]+/artworks/[0-9]+$", // Illustrations page
             "pixiv.net/user/[0-9]+/series/[0-9]+$" // Manga/series page
     };
