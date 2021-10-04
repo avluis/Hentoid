@@ -85,11 +85,13 @@ public class PixivIllustMetadata {
         private String id;
         private String title;
         private Long upload_timestamp;
+        private String page_count;
 
         private List<String> tags;
         private List<PageData> manga_a;
         private List<TagData> display_tags;
         private String url_s;
+        private String url_big;
 
         String getThumbUrl() {
             return StringHelper.protect(url_s);
@@ -101,8 +103,16 @@ public class PixivIllustMetadata {
         }
 
         List<String> getImageUrls() {
-            if (null == manga_a) return Collections.emptyList();
-            return Stream.of(manga_a).map(PageData::getUrl).toList();
+            int pageCount = 0;
+            if (page_count != null && StringHelper.isNumeric(page_count))
+                pageCount = Integer.parseInt(page_count);
+
+            if (1 == pageCount) {
+                return Stream.of(url_big).toList();
+            } else {
+                if (null == manga_a) return Collections.emptyList();
+                return Stream.of(manga_a).map(PageData::getUrl).toList();
+            }
         }
     }
 
