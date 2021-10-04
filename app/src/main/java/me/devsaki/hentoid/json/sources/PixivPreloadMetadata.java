@@ -22,6 +22,9 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.StringHelper;
 
+/**
+ * Data structure for Pixiv's "illust details" desktop website header data
+ */
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class PixivPreloadMetadata {
 
