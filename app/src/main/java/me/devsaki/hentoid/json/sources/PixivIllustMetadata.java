@@ -79,6 +79,11 @@ public class PixivIllustMetadata {
             if (null == author_details) return "";
             return author_details.getName();
         }
+
+        public String getCanonicalUrl() {
+            if (null == illust_details) return "";
+            return illust_details.getCanonicalUrl();
+        }
     }
 
     private static class IllustDetails {
@@ -90,6 +95,7 @@ public class PixivIllustMetadata {
         private List<String> tags;
         private List<PageData> manga_a;
         private List<TagData> display_tags;
+        private MetaData meta;
         private String url_s;
         private String url_big;
 
@@ -113,6 +119,11 @@ public class PixivIllustMetadata {
                 if (null == manga_a) return Collections.emptyList();
                 return Stream.of(manga_a).map(PageData::getUrl).toList();
             }
+        }
+
+        String getCanonicalUrl() {
+            if (null == meta) return "";
+            return meta.getCanonicalUrl();
         }
     }
 
@@ -142,6 +153,14 @@ public class PixivIllustMetadata {
         }
     }
 
+    private static class MetaData {
+        private String canonical;
+
+        public String getCanonicalUrl() {
+            return StringHelper.protect(canonical);
+        }
+    }
+
     private static class AuthorDetails {
         private String user_id;
         private String user_name;
@@ -164,9 +183,12 @@ public class PixivIllustMetadata {
             return content.setStatus(StatusContent.IGNORED);
         IllustBody illustData = body;
 
-        content.setUrl(url.replace(Site.PIXIV.getUrl(), ""));
         content.setTitle(StringHelper.removeNonPrintableChars(illustData.getTitle()));
         content.setUniqueSiteId(illustData.getIllustId());
+
+        String urlValue = illustData.getCanonicalUrl();
+        if (urlValue.isEmpty()) urlValue = url;
+        content.setUrl(urlValue.replace(Site.PIXIV.getUrl(), ""));
 
         content.setQtyPages(illustData.getPageCount());
         content.setCoverImageUrl(illustData.getThumbUrl());
