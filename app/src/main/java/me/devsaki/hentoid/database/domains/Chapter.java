@@ -98,9 +98,9 @@ public class Chapter {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Chapter imageFile = (Chapter) o;
-        return getId() == imageFile.getId() &&
-                Objects.equals(getUrl(), imageFile.getUrl());
+        Chapter chapter = (Chapter) o;
+        return getId() == chapter.getId() &&
+                Objects.equals(getUrl(), chapter.getUrl());
     }
 
     @Override
