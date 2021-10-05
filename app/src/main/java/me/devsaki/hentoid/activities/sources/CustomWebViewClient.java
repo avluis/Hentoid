@@ -56,6 +56,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.util.AdBlocker;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -508,7 +509,11 @@ class CustomWebViewClient extends WebViewClient {
             return;
 
         // Save useful download params for future use during download
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params;
+        if (content.getDownloadParams().length() > 2) // Params already contain values
+            params = ContentHelper.parseDownloadParams(content.getDownloadParams());
+        else params = new HashMap<>();
+
         params.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(url));
         params.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
 

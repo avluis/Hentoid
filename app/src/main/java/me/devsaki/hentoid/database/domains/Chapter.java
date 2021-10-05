@@ -23,6 +23,8 @@ public class Chapter {
     private ToOne<Content> content;
     @Backlink(to = "chapter")
     private ToMany<ImageFile> imageFiles;
+    private String uniqueId = "";
+
 
     public Chapter() { // Required by ObjectBox when an alternate constructor exists
     }
@@ -69,8 +71,18 @@ public class Chapter {
         return this;
     }
 
-    public void setContentId(long contentId) {
+    public String getUniqueId() {
+        return uniqueId;
+    }
+
+    public Chapter setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
+        return this;
+    }
+
+    public Chapter setContentId(long contentId) {
         this.content.setTargetId(contentId);
+        return this;
     }
 
     public ToOne<Content> getContent() {

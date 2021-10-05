@@ -177,6 +177,19 @@ public class PixivIllustMetadata {
         }
     }
 
+    public boolean isError() {
+        return error;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public List<String> getPageUrls() {
+        if (error || null == body || null == body.illust_details) return Collections.emptyList();
+        return body.getImageUrls();
+    }
+
     @Nullable
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         // Determine the prefix the user is navigating with (i.e. with or without language path)

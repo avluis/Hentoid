@@ -53,8 +53,6 @@ public class ToonilyParser extends BaseImageListParser {
             EventBus.getDefault().unregister(this);
         }
 
-        Timber.d("%s", result);
-
         return result;
     }
 
