@@ -26,6 +26,9 @@ public class PixivContent extends BaseContentParser {
 
         String[] urlParts = url.split("/");
         String id = urlParts[urlParts.length - 1];
+        if (id.contains("?")) {
+            id = id.substring(0, id.indexOf("?"));
+        }
         String entity = urlParts[urlParts.length - 2];
 
         if (entity.equals("illust")) { // fetch Call / single gallery

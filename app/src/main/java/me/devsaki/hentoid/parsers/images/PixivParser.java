@@ -61,6 +61,12 @@ public class PixivParser extends BaseImageListParser {
                     useMobileAgent, useHentoidAgent, useWebviewAgent);
 
             if (content.getUrl().contains("/series/")) {
+                String[] seriesIdParts = content.getUniqueSiteId().split("/");
+                String seriesId = seriesIdParts[seriesIdParts.length - 1];
+                if (seriesId.contains("?")) {
+                    seriesId = seriesId.substring(0, seriesId.indexOf("?"));
+                }
+
                 // Retrieve the number of Illusts
                 String nbChaptersStr = ContentHelper.parseDownloadParams(content.getDownloadParams()).get(KEY_DL_PARAMS_NB_CHAPTERS);
                 if (null == nbChaptersStr || !StringHelper.isNumeric(nbChaptersStr))
@@ -75,7 +81,7 @@ public class PixivParser extends BaseImageListParser {
                 while (chapters.size() < nbChapters) {
                     if (processHalted) break;
                     int chaptersToRead = Math.min(nbChapters - chapters.size(), MAX_QUERY_WINDOW);
-                    PixivSeriesContentMetadata seriesContentMetadata = PixivServer.API.getSeriesIllust(content.getUniqueSiteId(), chaptersToRead, chapters.size(), cookieStr).execute().body();
+                    PixivSeriesContentMetadata seriesContentMetadata = PixivServer.API.getSeriesIllust(seriesId, chaptersToRead, chapters.size(), cookieStr).execute().body();
                     if (null == seriesContentMetadata || seriesContentMetadata.isError()) {
                         String message = "Unreachable series illust";
                         if (seriesContentMetadata != null)
@@ -84,6 +90,8 @@ public class PixivParser extends BaseImageListParser {
                     }
                     chapters.addAll(seriesContentMetadata.getChapters(content.getId()));
                 }
+                // Put back chapters in reading order
+                Collections.reverse(chapters);
 
                 // Retrieve all Illust detailed info
                 List<String> result = new ArrayList<>();

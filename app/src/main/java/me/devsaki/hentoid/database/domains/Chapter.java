@@ -72,7 +72,7 @@ public class Chapter {
     }
 
     public String getUniqueId() {
-        return uniqueId;
+        return (null == uniqueId) ? "" : uniqueId;
     }
 
     public Chapter setUniqueId(String uniqueId) {
