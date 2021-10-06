@@ -212,13 +212,13 @@ public class PixivIllustMetadata {
 
         AttributeMap attributes = new AttributeMap();
 
-        Attribute attribute = new Attribute(AttributeType.ARTIST, illustData.getUserName(), Site.PIXIV.getUrl() + "user/" + illustData.getUserId(), Site.LUSCIOUS);
+        Attribute attribute = new Attribute(AttributeType.ARTIST, illustData.getUserName(), Site.PIXIV.getUrl() + "user/" + illustData.getUserId(), Site.PIXIV);
         attributes.add(attribute);
 
         for (Pair<String, String> tag : illustData.getTags()) {
             String name = StringHelper.removeNonPrintableChars(tag.second);
             AttributeType type = AttributeType.TAG;
-            attribute = new Attribute(type, name, Site.PIXIV.getUrl() + "tags/" + tag.first, Site.LUSCIOUS);
+            attribute = new Attribute(type, name, Site.PIXIV.getUrl() + "tags/" + tag.first, Site.PIXIV);
             attributes.add(attribute);
         }
         content.putAttributes(attributes);
