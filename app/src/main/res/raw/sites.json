@@ -40,7 +40,8 @@
       "useCloudflare": true
     },
     "PIXIV": {
-      "useWebviewAgent": false
+      "useWebviewAgent": false,
+      "parallelDownloadCap": 3
     }
   }
 }
