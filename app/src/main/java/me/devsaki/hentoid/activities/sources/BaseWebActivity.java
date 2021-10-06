@@ -568,7 +568,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 android.R.color.holo_red_light);
     }
 
-    public void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded) {
+    public void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded, boolean isBookmarkable) {
         refreshStopMenu.setIcon(R.drawable.ic_close);
         progressBar.setVisibility(View.GONE);
         if (!isHtmlLoaded) {
@@ -585,9 +585,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // Display download button tooltip if a book page has been reached
         if (isGalleryPage) showTooltip(R.string.help_web_download, false);
         // Update bookmark button
-        List<SiteBookmark> bookmarks = objectBoxDAO.selectBookmarks(getStartSite());
-        Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> SiteBookmark.urlsAreSame(b.getUrl(), url)).findFirst();
-        updateBookmarkButton(currentBookmark.isPresent());
+        if (isBookmarkable) {
+            List<SiteBookmark> bookmarks = objectBoxDAO.selectBookmarks(getStartSite());
+            Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> SiteBookmark.urlsAreSame(b.getUrl(), url)).findFirst();
+            updateBookmarkButton(currentBookmark.isPresent());
+        }
     }
 
     // WARNING : This method may not be called from the UI thread

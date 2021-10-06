@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import java.io.IOException;
 import java.util.Map;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -75,6 +76,15 @@ public class PixivActivity extends BaseWebActivity {
                 } catch (IOException e) {
                     Timber.w(e);
                 }
+            }
+
+            // Gray out the action button after every navigation action
+            if (url.contains("/details?") || url.contains("/search/illusts?")) {
+                compositeDisposable.add(
+                        Completable.fromRunnable(() -> activity.onPageStarted(url, isGalleryPage(url), false, false))
+                                .subscribeOn(AndroidSchedulers.mainThread())
+                                .subscribe()
+                );
             }
 
             return super.shouldInterceptRequest(view, request);

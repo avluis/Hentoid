@@ -316,7 +316,7 @@ class CustomWebViewClient extends WebViewClient {
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         isPageLoading = true;
-        activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded);
+        activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded, true);
     }
 
     @Override
@@ -558,7 +558,7 @@ class CustomWebViewClient extends WebViewClient {
     }
 
     interface CustomWebActivity {
-        void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded);
+        void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded, boolean isBookmarkable);
 
         void onPageFinished(boolean isResultsPage, boolean isGalleryPage);
 
