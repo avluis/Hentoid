@@ -25,7 +25,7 @@ import timber.log.Timber;
 
 public class PixivActivity extends BaseWebActivity {
 
-    private static final String DOMAIN_FILTER = "pixiv.net";
+    private static final String DOMAIN_FILTER = ".pixiv.net";
     public static final String[] GALLERY_FILTER = {
             "pixiv.net/touch/ajax/illust/details\\?", // Illustrations page (single gallery) / load using fetch call
             "pixiv.net/touch/ajax/illust/series_content/", // Manga/series page (anthology) / load using fetch call
@@ -33,6 +33,7 @@ public class PixivActivity extends BaseWebActivity {
             "pixiv.net/user/[0-9]+/series/[0-9]+$" // Manga/series page (anthology)
     };
     private static final String[] BLOCKED_CONTENT = {"ads-pixiv.net"};
+    private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
 
 
     Site getStartSite() {
@@ -44,7 +45,7 @@ public class PixivActivity extends BaseWebActivity {
         PixivWebClient client = new PixivWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
-        client.adBlocker.addUrlWhitelist(DOMAIN_FILTER);
+        client.adBlocker.addJsUrlWhitelist(JS_WHITELIST);
 
         return client;
     }

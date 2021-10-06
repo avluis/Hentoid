@@ -33,7 +33,7 @@ public class HitomiActivity extends BaseWebActivity {
         client.setResultsUrlPatterns(RESULTS_FILTER);
         client.setResultUrlRewriter(this::rewriteResultsUrl);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
-        for (String s : JS_WHITELIST) client.adBlocker.addJsWhitelistUrlPattern(s);
+        for (String s : JS_WHITELIST) client.adBlocker.addJsUrlPatternWhitelist(s);
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         return client;
     }
