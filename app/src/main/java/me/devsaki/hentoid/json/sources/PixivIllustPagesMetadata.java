@@ -11,7 +11,7 @@ import me.devsaki.hentoid.util.StringHelper;
  * Data structure for Pixiv's "illust pages" desktop endpoint
  */
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
-public class PixivGalleryMetadata {
+public class PixivIllustPagesMetadata {
 
     private Boolean error;
     private String message;

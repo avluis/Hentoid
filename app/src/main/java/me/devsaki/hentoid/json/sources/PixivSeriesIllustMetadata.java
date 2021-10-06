@@ -15,7 +15,7 @@ import me.devsaki.hentoid.util.StringHelper;
  * Data structure for Pixiv's "series-content" mobile endpoint
  */
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
-public class PixivSeriesContentMetadata {
+public class PixivSeriesIllustMetadata {
 
     private Boolean error;
     private String message;

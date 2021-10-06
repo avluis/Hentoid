@@ -190,6 +190,21 @@ public class PixivIllustMetadata {
         return body.getImageUrls();
     }
 
+    public String getUrl() {
+        if (error || null == body) return "";
+        return body.getCanonicalUrl();
+    }
+
+    public String getTitle() {
+        if (error || null == body) return "";
+        return body.getTitle();
+    }
+
+    public String getId() {
+        if (error || null == body) return "";
+        return body.getIllustId();
+    }
+
     @Nullable
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
