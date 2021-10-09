@@ -37,6 +37,8 @@ public class PixivActivity extends BaseWebActivity {
     private static final String[] BLOCKED_CONTENT = {"ads-pixiv.net"};
     private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
 
+    private static final String[] NAVIGATION_QUERIES = {"/details?", "/search/illusts?", "/details/many?"};
+
 
     Site getStartSite() {
         return Site.PIXIV;
@@ -82,13 +84,14 @@ public class PixivActivity extends BaseWebActivity {
             }
 
             // Gray out the action button after every navigation action
-            if (url.contains("/details?") || url.contains("/search/illusts?")) {
-                compositeDisposable.add(
-                        Completable.fromRunnable(() -> activity.onPageStarted(url, isGalleryPage(url), false, false))
-                                .subscribeOn(AndroidSchedulers.mainThread())
-                                .subscribe()
-                );
-            }
+            for (String s : NAVIGATION_QUERIES)
+                if (url.contains(s)) {
+                    compositeDisposable.add(
+                            Completable.fromRunnable(() -> activity.onPageStarted(url, isGalleryPage(url), false, false))
+                                    .subscribeOn(AndroidSchedulers.mainThread())
+                                    .subscribe()
+                    );
+                }
 
             return super.shouldInterceptRequest(view, request);
         }
