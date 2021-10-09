@@ -49,6 +49,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
+import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 
 public final class BookmarksDialogFragment extends DialogFragment implements ItemTouchCallback {
 
@@ -149,7 +150,12 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
             selectExtension.setSelectable(true);
             selectExtension.setMultiSelect(true);
             selectExtension.setSelectOnLongClick(true);
+            selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+
+            FastAdapterPreClickSelectHelper<TextItem<SiteBookmark>> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
+            fastAdapter.setOnPreClickListener(helper::onPreClickListener);
+            fastAdapter.setOnPreLongClickListener(helper::onPreLongClickListener);
         }
 
         recyclerView = requireViewById(rootView, R.id.bookmarks_list);
