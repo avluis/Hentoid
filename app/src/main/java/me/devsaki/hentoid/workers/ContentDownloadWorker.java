@@ -302,6 +302,8 @@ public class ContentDownloadWorker extends BaseWorker {
                     }
                 }
 
+                if (content.isUpdatedProperties()) dao.insertContent(content);
+
                 // Manually insert new images (without using insertContent)
                 long contentId = content.getId();
                 dao.replaceImageList(contentId, images);

@@ -9,8 +9,11 @@ import org.greenrobot.eventbus.EventBus;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -119,6 +122,7 @@ public class PixivParser extends BaseImageListParser {
         // Retrieve all Illust detailed info
         List<ImageFile> result = new ArrayList<>();
         result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+        Set<Attribute> attrs = new HashSet<>();
         int order = 1;
         for (Chapter ch : chapters) {
             if (processHalted) break;
@@ -129,11 +133,17 @@ public class PixivParser extends BaseImageListParser {
                     message = illustMetadata.getMessage();
                 throw new IllegalArgumentException(message);
             }
+
+            List<Attribute> chapterAttrs = illustMetadata.getAttributes();
+            attrs.addAll(chapterAttrs);
+
             List<String> pageUrls = illustMetadata.getPageUrls();
             result.addAll(ParseHelper.urlsToImageFiles(pageUrls, order, StatusContent.SAVED, ch, 1000));
             order += pageUrls.size();
             progress.advance();
         }
+        content.putAttributes(attrs);
+        content.setUpdatedProperties(true);
         return result;
     }
 
@@ -162,6 +172,7 @@ public class PixivParser extends BaseImageListParser {
         result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
         int imgOrder = 1;
         int chpOrder = 0;
+        Set<Attribute> attrs = new HashSet<>();
         for (String illustId : illustIds) {
             if (processHalted) break;
             PixivIllustMetadata illustMetadata = PixivServer.API.getIllustMetadata(illustId, cookieStr).execute().body();
@@ -172,12 +183,17 @@ public class PixivParser extends BaseImageListParser {
                 throw new IllegalArgumentException(message);
             }
 
+            List<Attribute> chapterAttrs = illustMetadata.getAttributes();
+            attrs.addAll(chapterAttrs);
+
             Chapter chp = new Chapter(chpOrder++, illustMetadata.getUrl(), illustMetadata.getTitle()).setUniqueId(illustMetadata.getId()).setContentId(content.getId());
             List<String> pageUrls = illustMetadata.getPageUrls();
             result.addAll(ParseHelper.urlsToImageFiles(pageUrls, imgOrder, StatusContent.SAVED, chp, 1000));
             imgOrder += pageUrls.size();
             progress.advance();
         }
+        content.putAttributes(attrs);
+        content.setUpdatedProperties(true);
         return result;
     }
 

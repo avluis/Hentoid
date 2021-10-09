@@ -18,6 +18,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -156,6 +157,8 @@ public class Content implements Serializable {
     private int readPagesCount = -1;  // Read pages count fed by payload; only useful to update list display
     @Transient
     private String archiveLocationUri;  // Only used when importing external archives
+    @Transient
+    private boolean updatedProperties = false;  // Only used when using ImageListParsers to indicate the passed Content has been updated
 
     public Content() { // Required by ObjectBox when an alternate constructor exists
     }
@@ -173,7 +176,7 @@ public class Content implements Serializable {
         this.attributes.clear();
     }
 
-    public void putAttributes(List<Attribute> attributes) {
+    public void putAttributes(Collection<Attribute> attributes) {
         // We do want to compare array references, not content
         if (attributes != null && attributes != this.attributes) {
             this.attributes.clear();
@@ -863,6 +866,14 @@ public class Content implements Serializable {
     public Content setDownloadMode(int downloadMode) {
         this.downloadMode = downloadMode;
         return this;
+    }
+
+    public boolean isUpdatedProperties() {
+        return updatedProperties;
+    }
+
+    public void setUpdatedProperties(boolean updatedProperties) {
+        this.updatedProperties = updatedProperties;
     }
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {

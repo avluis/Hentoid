@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.annimon.stream.Stream;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -205,6 +206,24 @@ public class PixivIllustMetadata {
         return body.getIllustId();
     }
 
+    public List<Attribute> getAttributes() {
+        List<Attribute> result = new ArrayList<>();
+
+        if (error || null == body || null == body.illust_details) return result;
+        IllustBody illustData = body;
+
+        Attribute attribute = new Attribute(AttributeType.ARTIST, illustData.getUserName(), Site.PIXIV.getUrl() + "user/" + illustData.getUserId(), Site.PIXIV);
+        result.add(attribute);
+
+        for (Pair<String, String> tag : illustData.getTags()) {
+            String name = StringHelper.removeNonPrintableChars(tag.second);
+            AttributeType type = AttributeType.TAG;
+            attribute = new Attribute(type, name, Site.PIXIV.getUrl() + "tags/" + tag.first, Site.PIXIV);
+            result.add(attribute);
+        }
+        return result;
+    }
+
     @Nullable
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         // Determine the prefix the user is navigating with (i.e. with or without language path)
@@ -225,18 +244,7 @@ public class PixivIllustMetadata {
         content.setCoverImageUrl(illustData.getThumbUrl());
         content.setUploadDate(illustData.getUploadTimestamp());
 
-        AttributeMap attributes = new AttributeMap();
-
-        Attribute attribute = new Attribute(AttributeType.ARTIST, illustData.getUserName(), Site.PIXIV.getUrl() + "user/" + illustData.getUserId(), Site.PIXIV);
-        attributes.add(attribute);
-
-        for (Pair<String, String> tag : illustData.getTags()) {
-            String name = StringHelper.removeNonPrintableChars(tag.second);
-            AttributeType type = AttributeType.TAG;
-            attribute = new Attribute(type, name, Site.PIXIV.getUrl() + "tags/" + tag.first, Site.PIXIV);
-            attributes.add(attribute);
-        }
-        content.putAttributes(attributes);
+        content.putAttributes(getAttributes());
 
         List<ImageFile> images = ParseHelper.urlsToImageFiles(illustData.getImageUrls(), illustData.getThumbUrl(), StatusContent.SAVED);
         if (updateImages) content.setImageFiles(images);
