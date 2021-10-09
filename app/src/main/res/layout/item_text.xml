@@ -40,6 +40,8 @@
         android:layout_height="24dp"
         android:layout_gravity="center"
         android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
         android:scaleType="centerInside"
         android:src="@drawable/ic_reorder"
         android:visibility="gone"

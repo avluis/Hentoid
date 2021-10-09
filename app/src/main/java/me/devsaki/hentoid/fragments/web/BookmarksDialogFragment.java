@@ -163,6 +163,14 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
         recyclerView.setAdapter(fastAdapter);
 
         fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
+        fastAdapter.addEventHook(
+                new TextItem.DragHandlerTouchEvent<>(
+                        position -> {
+                            RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
+                            if (vh != null) touchHelper.startDrag(vh);
+                        }
+                )
+        );
 
         selectionToolbar = requireViewById(rootView, R.id.toolbar);
         selectionToolbar.setOnMenuItemClickListener(this::selectionToolbarOnItemClicked);
