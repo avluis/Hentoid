@@ -162,6 +162,7 @@ dependencies {
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-drag:$fastadapter_version"
+    implementation "com.mikepenz:fastadapter-extensions-expandable:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-scroll:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-paged:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-ui:$fastadapter_version"

@@ -788,7 +788,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (contentIds.size() > currentContentIndex && loadedContentId != contentIds.get(currentContentIndex))
             imageLocations.clear();
         content.postValue(theContent);
+        processImages(theContent, pageNumber);
+    }
 
+    private void processImages(@NonNull Content theContent, int pageNumber) {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
@@ -808,7 +811,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private Content doUpdateContentPreferences(@NonNull final Context context, long contentId, @NonNull final Map<String, String> newPrefs) {
+    private Content doUpdateContentPreferences(@NonNull final Context context, long contentId,
+                                               @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
         Content theContent = dao.selectContent(contentId);
@@ -849,12 +853,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
         readPageNumbers.add(pageNumber);
     }
 
+    public void repostImages() {
+        viewerImages.postValue(viewerImages.getValue());
+    }
+
     public synchronized void setCurrentPage(int pageIndex, int direction) {
         if (viewerImagesInternal.size() <= pageIndex) return;
 
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
-        if (isPictureDownloadable(pageIndex, viewerImagesInternal)) indexesToLoad.add(pageIndex);
+        if (isPictureDownloadable(pageIndex, viewerImagesInternal))
+            indexesToLoad.add(pageIndex);
         if (isPictureDownloadable(pageIndex + increment, viewerImagesInternal))
             indexesToLoad.add(pageIndex + increment);
         if (isPictureDownloadable(pageIndex + 2 * increment, viewerImagesInternal))
@@ -951,7 +960,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull final AtomicBoolean stopDownload) {
         Helper.assertNonUiThread();
         Content content = getContent().getValue();
-        if (null == content || viewerImagesInternal.size() <= pageIndex) return Optional.empty();
+        if (null == content || viewerImagesInternal.size() <= pageIndex)
+            return Optional.empty();
 
         ImageFile img = viewerImagesInternal.get(pageIndex);
         // Already downloaded
@@ -1042,9 +1052,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
             List<Pair<String, String>> requestHeaders,
             @NonNull File targetFolder,
             @NonNull String targetFileName,
-            @NonNull final AtomicBoolean interruptDownload) throws IOException, UnsupportedContentException, DownloadInterruptedException {
+            @NonNull final AtomicBoolean interruptDownload) throws
+            IOException, UnsupportedContentException, DownloadInterruptedException {
 
-        if (interruptDownload.get()) throw new DownloadInterruptedException("Download interrupted");
+        if (interruptDownload.get())
+            throw new DownloadInterruptedException("Download interrupted");
 
         Site site = content.getSite();
         Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
@@ -1158,5 +1170,32 @@ public class ImageViewerViewModel extends AndroidViewModel {
         } else {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.page_download, pageIndex, progress, 0, 100));
         }
+    }
+
+    // TODO doc
+    public void removeChapters(Consumer<Throwable> onError) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doRemoveChapters(theContent))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> {
+                                    processImages(theContent, -1);
+                                },
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    private void doRemoveChapters(@NonNull Content theContent) {
+        Helper.assertNonUiThread();
+
+        dao.deleteChapters(theContent);
     }
 }

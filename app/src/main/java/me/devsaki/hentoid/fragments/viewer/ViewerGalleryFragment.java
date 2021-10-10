@@ -31,6 +31,7 @@ import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.diff.DiffCallback;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
+import com.mikepenz.fastadapter.expandable.ExpandableExtension;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.skydoves.powerspinner.PowerSpinnerView;
 
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
@@ -48,8 +50,10 @@ import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
+import me.devsaki.hentoid.viewholders.SubExpandableItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.DragSelectTouchListener;
@@ -74,12 +78,19 @@ public class ViewerGalleryFragment extends Fragment {
     private MenuItem removeChaptersMenu;
     private PowerSpinnerView chaptersSelector;
     private RecyclerView recyclerView;
+    private View chapterEditBottomHelpBanner;
 
     private final ItemAdapter<ImageFileItem> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<ImageFileItem> fastAdapter = FastAdapter.with(itemAdapter);
     private SelectExtension<ImageFileItem> selectExtension;
 
-    private DragSelectTouchListener mDragSelectTouchListener;
+    private final ItemAdapter<SubExpandableItem> itemAdapter2 = new ItemAdapter<>();
+    private final FastAdapter<SubExpandableItem> fastAdapter2 = FastAdapter.with(itemAdapter2);
+    private SelectExtension<SubExpandableItem> selectExtension2;
+    private ExpandableExtension<SubExpandableItem> expandableExtension;
+
+    private DragSelectTouchListener mDragSelectTouchListener = null;
+    private DragSelectTouchListener mDragSelectTouchListener2 = null;
 
     // === VARIABLES
     // Used to ignore native calls to onBookClick right after that book has been deselected
@@ -142,53 +153,16 @@ public class ViewerGalleryFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-        if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
-
-        // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
-        selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
-        if (selectExtension != null) {
-            selectExtension.setSelectable(true);
-            selectExtension.setMultiSelect(true);
-            selectExtension.setSelectOnLongClick(true);
-            selectExtension.setSelectWithItemUpdate(true);
-            selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
-
-            FastAdapterPreClickSelectHelper<ImageFileItem> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
-            fastAdapter.setOnPreClickListener(helper::onPreClickListener);
-            fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
-                // Warning : specific code for drag selection
-                mDragSelectTouchListener.startDragSelection(p);
-                return helper.onPreLongClickListener(v, a, i, p);
-            });
-        }
-
-        // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
-
-        // Filtering
-        itemAdapter.getItemFilter().setFilterPredicate((imageFileItem, charSequence) -> !charSequence.equals("true") || imageFileItem.isFavourite());
-
         recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
+        updateListAdapter(activity.get().isChapterEditMode());
 
-        GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
-        if (glm != null)
-            glm.setSpanCount(Preferences.getViewerGalleryColumns());
-
-        recyclerView.setAdapter(fastAdapter);
         new FastScrollerBuilder(recyclerView).build();
-
-        // Select on swipe
-        DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
-        mDragSelectTouchListener = new DragSelectTouchListener()
-                .withSelectListener(onDragSelectionListener);
-        recyclerView.addOnItemTouchListener(mDragSelectTouchListener);
-
 
         // Toolbar
         toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
         toolbar.setNavigationOnClickListener(v -> {
             // TODO exit chapter edit mode on back button press
-            if (activity.get().isEditMode())
+            if (activity.get().isChapterEditMode())
                 toggleChapterEditMode();
             else
                 requireActivity().onBackPressed();
@@ -199,12 +173,15 @@ public class ViewerGalleryFragment extends Fragment {
                 viewModel.filterFavouriteImages(!filterFavouritesState);
             } else if (clickedMenuItem.getItemId() == R.id.action_edit_chapters) {
                 toggleChapterEditMode();
+            } else if (clickedMenuItem.getItemId() == R.id.action_remove_chapters) {
+                removeChapters();
             }
             return true;
         });
         showFavouritePagesMenu = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
         editChaptersMenu = toolbar.getMenu().findItem(R.id.action_edit_chapters);
         removeChaptersMenu = toolbar.getMenu().findItem(R.id.action_remove_chapters);
+        updateToolbar();
 
         selectionToolbar = requireViewById(rootView, R.id.viewer_gallery_selection_toolbar);
         itemSetCoverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
@@ -216,6 +193,8 @@ public class ViewerGalleryFragment extends Fragment {
         selectionToolbar.setOnMenuItemClickListener(this::onSelectionMenuItemClicked);
 
         chaptersSelector = requireViewById(rootView, R.id.chapter_selector);
+
+        chapterEditBottomHelpBanner = requireViewById(rootView, R.id.chapter_edit_help_banner);
 
         return rootView;
     }
@@ -244,16 +223,175 @@ public class ViewerGalleryFragment extends Fragment {
     }
 
     private void onImagesChanged(List<ImageFile> images) {
-        List<ImageFileItem> imgs = new ArrayList<>();
-        for (ImageFile img : images) {
-            ImageFileItem holder = new ImageFileItem(img);
-            if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
-            imgs.add(holder);
+        if (activity.get().isChapterEditMode()) { // Expandable chapters
+            List<SubExpandableItem> chapterItems = new ArrayList<>();
+
+            List<Chapter> chapters = Stream.of(images)
+                    .map(ImageFile::getChapter)
+                    .withoutNulls()
+                    .filterNot(ToOne::isNull)
+                    .map(ToOne::getTarget)
+                    .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
+
+            for (Chapter c : chapters) {
+                SubExpandableItem expandableItem = new SubExpandableItem().withName(c.getName());
+                expandableItem.setIdentifier(c.getId());
+
+                List<ImageFileItem> imgs = new ArrayList<>();
+                List<ImageFile> chpImgs = c.getImageFiles();
+                if (chpImgs != null) {
+                    for (ImageFile img : chpImgs) {
+                        ImageFileItem holder = new ImageFileItem(img);
+                        imgs.add(holder);
+                    }
+                }
+                expandableItem.getSubItems().addAll(imgs);
+                chapterItems.add(expandableItem);
+            }
+
+            // One last category for chapterless images
+            List<ImageFile> chapterlessImages = Stream.of(images)
+                    .filter(i -> null == i.getChapter() || i.getChapter().isNull())
+                    .toList();
+
+            if (!chapterlessImages.isEmpty()) {
+                SubExpandableItem expandableItem = new SubExpandableItem().withName("No chapter");
+                expandableItem.setIdentifier(Long.MAX_VALUE);
+
+                List<ImageFileItem> imgs = new ArrayList<>();
+                for (ImageFile img : chapterlessImages) {
+                    ImageFileItem holder = new ImageFileItem(img);
+                    imgs.add(holder);
+                }
+                expandableItem.getSubItems().addAll(imgs);
+                chapterItems.add(expandableItem);
+            }
+
+            itemAdapter2.set(chapterItems);
+        } else { // Classic gallery
+            List<ImageFileItem> imgs = new ArrayList<>();
+            for (ImageFile img : images) {
+                ImageFileItem holder = new ImageFileItem(img);
+                if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
+                imgs.add(holder);
+            }
+            // Remove duplicates
+            imgs = Stream.of(imgs).distinct().toList();
+            FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs, IMAGE_DIFF_CALLBACK);
         }
-        // Remove duplicates
-        imgs = Stream.of(imgs).distinct().toList();
-        FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs, IMAGE_DIFF_CALLBACK);
         new Handler(Looper.getMainLooper()).postDelayed(() -> moveToIndex(startIndex, false), 150);
+    }
+
+    private void updateListAdapter(boolean isChapterEditMode) {
+        if (isChapterEditMode) {
+            if (!fastAdapter2.hasObservers()) fastAdapter2.setHasStableIds(true);
+
+            // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
+            selectExtension2 = fastAdapter2.getOrCreateExtension(SelectExtension.class);
+            if (selectExtension2 != null) {
+                selectExtension2.setSelectable(true);
+                selectExtension2.setMultiSelect(true);
+                selectExtension2.setSelectOnLongClick(true);
+                selectExtension2.setSelectWithItemUpdate(true);
+                selectExtension2.setSelectionListener((i, b) -> this.onSelectionChanged());
+
+                FastAdapterPreClickSelectHelper<SubExpandableItem> helper = new FastAdapterPreClickSelectHelper<>(selectExtension2);
+                fastAdapter2.setOnPreClickListener(helper::onPreClickListener);
+                fastAdapter2.setOnPreLongClickListener((v, a, i, p) -> {
+                    // Warning : specific code for drag selection
+                    mDragSelectTouchListener.startDragSelection(p);
+                    return helper.onPreLongClickListener(v, a, i, p);
+                });
+            }
+
+            expandableExtension = fastAdapter2.getOrCreateExtension(ExpandableExtension.class);
+
+            GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
+            if (glm != null) {
+                int spanCount = Preferences.getViewerGalleryColumns();
+                glm.setSpanCount(spanCount);
+
+                // Use the correct size to display chapter separators, if any
+                GridLayoutManager.SpanSizeLookup spanSizeLookup = new GridLayoutManager.SpanSizeLookup() {
+                    @Override
+                    public int getSpanSize(int position) {
+                        if (fastAdapter2.getItemViewType(position) == R.id.expandable_item) {
+                            return spanCount;
+                        }
+                        return 1;
+                    }
+                };
+                glm.setSpanSizeLookup(spanSizeLookup);
+            }
+
+            recyclerView.setAdapter(fastAdapter2);
+
+            // Select on swipe
+            DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension2.select(IntStream.rangeClosed(start, end).boxed().toList());
+            mDragSelectTouchListener2 = new DragSelectTouchListener()
+                    .withSelectListener(onDragSelectionListener);
+            if (mDragSelectTouchListener != null) {
+                recyclerView.removeOnItemTouchListener(mDragSelectTouchListener);
+                mDragSelectTouchListener = null;
+            }
+            recyclerView.addOnItemTouchListener(mDragSelectTouchListener2);
+        } else {
+            if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
+
+            // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
+            selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
+            if (selectExtension != null) {
+                selectExtension.setSelectable(true);
+                selectExtension.setMultiSelect(true);
+                selectExtension.setSelectOnLongClick(true);
+                selectExtension.setSelectWithItemUpdate(true);
+                selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+
+                FastAdapterPreClickSelectHelper<ImageFileItem> helper = new FastAdapterPreClickSelectHelper<>(selectExtension);
+                fastAdapter.setOnPreClickListener(helper::onPreClickListener);
+                fastAdapter.setOnPreLongClickListener((v, a, i, p) -> {
+                    // Warning : specific code for drag selection
+                    mDragSelectTouchListener.startDragSelection(p);
+                    return helper.onPreLongClickListener(v, a, i, p);
+                });
+            }
+
+            // Item click listener
+            fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
+
+            // Filtering
+            itemAdapter.getItemFilter().setFilterPredicate((imageFileItem, charSequence) -> !charSequence.equals("true") || imageFileItem.isFavourite());
+
+            GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
+            if (glm != null) {
+                int spanCount = Preferences.getViewerGalleryColumns();
+                glm.setSpanCount(spanCount);
+
+                // Use the correct size to display chapter separators, if any
+                GridLayoutManager.SpanSizeLookup spanSizeLookup = new GridLayoutManager.SpanSizeLookup() {
+                    @Override
+                    public int getSpanSize(int position) {
+                        if (fastAdapter.getItemViewType(position) == R.id.expandable_item) {
+                            return spanCount;
+                        }
+                        return 1;
+                    }
+                };
+                glm.setSpanSizeLookup(spanSizeLookup);
+            }
+
+            recyclerView.setAdapter(fastAdapter);
+
+            // Select on swipe
+            DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
+            mDragSelectTouchListener = new DragSelectTouchListener()
+                    .withSelectListener(onDragSelectionListener);
+            if (mDragSelectTouchListener2 != null) {
+                recyclerView.removeOnItemTouchListener(mDragSelectTouchListener2);
+                mDragSelectTouchListener2 = null;
+            }
+            recyclerView.addOnItemTouchListener(mDragSelectTouchListener);
+        }
     }
 
     private void onContentChanged(Content content) {
@@ -322,9 +460,9 @@ public class ViewerGalleryFragment extends Fragment {
     }
 
     private void updateToolbar() {
-        showFavouritePagesMenu.setVisible(!activity.get().isEditMode());
-        editChaptersMenu.setVisible(!activity.get().isEditMode());
-        removeChaptersMenu.setVisible(activity.get().isEditMode());
+        showFavouritePagesMenu.setVisible(!activity.get().isChapterEditMode());
+        editChaptersMenu.setVisible(!activity.get().isChapterEditMode());
+        removeChaptersMenu.setVisible(activity.get().isChapterEditMode());
     }
 
     private void updateSelectionToolbar(long selectedCount) {
@@ -468,8 +606,18 @@ public class ViewerGalleryFragment extends Fragment {
         updateToolbar();
 
         if (chaptersSelector.getSelectedIndex() > -1)
-            chaptersSelector.setVisibility(activity.get().isEditMode() ? View.GONE : View.VISIBLE);
+            chaptersSelector.setVisibility(activity.get().isChapterEditMode() ? View.GONE : View.VISIBLE);
 
-        // TODO switch between flat and hierarchical page display
+        chapterEditBottomHelpBanner.setVisibility(activity.get().isChapterEditMode() ? View.VISIBLE : View.GONE);
+
+        updateListAdapter(activity.get().isChapterEditMode());
+        viewModel.repostImages();
+    }
+
+    // TODO doc
+    private void removeChapters() {
+        viewModel.removeChapters( t -> {
+            ToastHelper.toast("Couldn't remove chapters");
+        });
     }
 }

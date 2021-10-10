@@ -39,6 +39,7 @@ import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Chapter;
+import me.devsaki.hentoid.database.domains.Chapter_;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
@@ -1358,6 +1359,12 @@ public class ObjectBoxDB {
     void deleteGroupItemsByGroup(long groupId) {
         QueryBuilder<GroupItem> qb = store.boxFor(GroupItem.class).query();
         qb.link(GroupItem_.group).equal(Group_.id, groupId);
+        qb.build().remove();
+    }
+
+    void deleteChaptersByContentId(long contentId) {
+        QueryBuilder<Chapter> qb = store.boxFor(Chapter.class).query();
+        qb.equal(Chapter_.contentId, contentId);
         qb.build().remove();
     }
 

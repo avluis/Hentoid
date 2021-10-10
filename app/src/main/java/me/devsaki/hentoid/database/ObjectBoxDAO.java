@@ -326,6 +326,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteErrorRecords(contentId);
     }
 
+    public void deleteChapters(@NonNull final Content content) {
+        db.deleteChaptersByContentId(content.getId());
+    }
+
     @Override
     public void clearDownloadParams(long contentId) {
         Content c = db.selectContentById(contentId);

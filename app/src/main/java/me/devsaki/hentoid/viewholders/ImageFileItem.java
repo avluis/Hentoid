@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.viewholders;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,10 +14,15 @@ import androidx.annotation.NonNull;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IExpandable;
+import com.mikepenz.fastadapter.IParentItem;
+import com.mikepenz.fastadapter.ISubItem;
 import com.mikepenz.fastadapter.items.AbstractItem;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -23,12 +30,12 @@ import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Helper;
 
-import static androidx.core.view.ViewCompat.requireViewById;
-
-public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
+public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> implements IExpandable<ImageFileItem.ImageViewHolder> {
 
     private final ImageFile image;
     private boolean isCurrent;
+    private boolean expanded = false;
+
     private static final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     public ImageFileItem(@NonNull ImageFile image) {
@@ -64,6 +71,43 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> {
     @Override
     public int getType() {
         return R.id.gallery_image;
+    }
+
+    @Override
+    public boolean isAutoExpanding() {
+        return true;
+    }
+
+    @Override
+    public boolean isExpanded() {
+        return expanded;
+    }
+
+    @Override
+    public void setExpanded(boolean b) {
+        expanded = b;
+    }
+
+    @NonNull
+    @Override
+    public List<ISubItem<?>> getSubItems() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void setSubItems(@NonNull List<ISubItem<?>> list) {
+        // Nothing
+    }
+
+    @Nullable
+    @Override
+    public IParentItem<?> getParent() {
+        return null;
+    }
+
+    @Override
+    public void setParent(@Nullable IParentItem<?> iParentItem) {
+        // Nothing
     }
 
 

@@ -125,15 +125,15 @@ public class ImageViewerActivity extends BaseActivity {
         volumeKeyListener = null;
     }
 
-    public boolean isEditMode() {
+    public boolean isChapterEditMode() {
         return editMode;
     }
 
-    public void setEditMode(boolean editMode) {
-        this.editMode = editMode;
+    public void setChapterEditMode(boolean chapterEditMode) {
+        this.editMode = chapterEditMode;
     }
 
     public void toggleEditMode() {
-        setEditMode(!editMode);
+        setChapterEditMode(!editMode);
     }
 }
