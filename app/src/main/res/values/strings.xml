@@ -562,6 +562,8 @@
     <string name="viewer_fix">Fix download error</string>
     <string name="viewer_reload_page">Reload page</string>
     <string name="viewer_reparse_book">Reparse book</string>
+    <string name="gallery_edit_chapters_help">Long tap a page to create a new chapter</string>
+    <string name="gallery_clear_chapters">Clear all chapters</string>
 
 
     <!-- Changelog -->

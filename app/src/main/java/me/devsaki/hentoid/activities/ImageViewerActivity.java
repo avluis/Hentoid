@@ -25,6 +25,9 @@ public class ImageViewerActivity extends BaseActivity {
 
     private static boolean isRunning = false;
 
+    // True if chapter edit mode is on
+    private boolean editMode = false;
+
     private VolumeKeyListener volumeKeyListener = null;
     private ImageViewerViewModel viewModel = null;
 
@@ -120,5 +123,17 @@ public class ImageViewerActivity extends BaseActivity {
     public void unregisterKeyListener() {
         if (volumeKeyListener != null) volumeKeyListener.clear();
         volumeKeyListener = null;
+    }
+
+    public boolean isEditMode() {
+        return editMode;
+    }
+
+    public void setEditMode(boolean editMode) {
+        this.editMode = editMode;
+    }
+
+    public void toggleEditMode() {
+        setEditMode(!editMode);
     }
 }

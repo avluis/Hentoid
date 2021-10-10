@@ -36,11 +36,13 @@ import com.skydoves.powerspinner.PowerSpinnerView;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
@@ -57,15 +59,22 @@ import timber.log.Timber;
 
 public class ViewerGalleryFragment extends Fragment {
 
+    // ======== COMMUNICATION
+    // Viewmodel
     private ImageViewerViewModel viewModel;
+    // Activity
+    private WeakReference<ImageViewerActivity> activity;
 
     // === UI
     private Toolbar toolbar;
     private Toolbar selectionToolbar;
-    private MenuItem itemSetCover;
-    private MenuItem showFavouritePagesButton;
+    private MenuItem itemSetCoverMenu;
+    private MenuItem showFavouritePagesMenu;
+    private MenuItem editChaptersMenu;
+    private MenuItem removeChaptersMenu;
     private PowerSpinnerView chaptersSelector;
     private RecyclerView recyclerView;
+
     private final ItemAdapter<ImageFileItem> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<ImageFileItem> fastAdapter = FastAdapter.with(itemAdapter);
     private SelectExtension<ImageFileItem> selectExtension;
@@ -120,6 +129,14 @@ public class ViewerGalleryFragment extends Fragment {
     }
 
     @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (!(requireActivity() instanceof ImageViewerActivity))
+            throw new IllegalStateException("Parent activity has to be a LibraryActivity");
+        activity = new WeakReference<>((ImageViewerActivity) requireActivity());
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
 
@@ -169,18 +186,28 @@ public class ViewerGalleryFragment extends Fragment {
 
         // Toolbar
         toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
-        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
+        toolbar.setNavigationOnClickListener(v -> {
+            // TODO exit chapter edit mode on back button press
+            if (activity.get().isEditMode())
+                toggleChapterEditMode();
+            else
+                requireActivity().onBackPressed();
+        });
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
                 viewModel.filterFavouriteImages(!filterFavouritesState);
+            } else if (clickedMenuItem.getItemId() == R.id.action_edit_chapters) {
+                toggleChapterEditMode();
             }
             return true;
         });
-        showFavouritePagesButton = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
+        showFavouritePagesMenu = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
+        editChaptersMenu = toolbar.getMenu().findItem(R.id.action_edit_chapters);
+        removeChaptersMenu = toolbar.getMenu().findItem(R.id.action_remove_chapters);
 
         selectionToolbar = requireViewById(rootView, R.id.viewer_gallery_selection_toolbar);
-        itemSetCover = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+        itemSetCoverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);
@@ -294,8 +321,14 @@ public class ViewerGalleryFragment extends Fragment {
         return true;
     }
 
+    private void updateToolbar() {
+        showFavouritePagesMenu.setVisible(!activity.get().isEditMode());
+        editChaptersMenu.setVisible(!activity.get().isEditMode());
+        removeChaptersMenu.setVisible(activity.get().isEditMode());
+    }
+
     private void updateSelectionToolbar(long selectedCount) {
-        itemSetCover.setVisible(1 == selectedCount);
+        itemSetCoverMenu.setVisible(1 == selectedCount);
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedCount, (int) selectedCount));
     }
 
@@ -320,12 +353,12 @@ public class ViewerGalleryFragment extends Fragment {
     private void onFavouriteSuccess() {
         selectExtension.deselect(selectExtension.getSelections());
         selectExtension.setSelectOnLongClick(true);
-        showFavouritePagesButton.setVisible(hasFavourite());
+        showFavouritePagesMenu.setVisible(hasFavourite());
     }
 
     private void updateFavouriteDisplay(boolean showFavouritePages) {
-        showFavouritePagesButton.setVisible(hasFavourite());
-        showFavouritePagesButton.setIcon(showFavouritePages ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
+        showFavouritePagesMenu.setVisible(hasFavourite());
+        showFavouritePagesMenu.setIcon(showFavouritePages ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
     }
 
     @Override
@@ -367,8 +400,7 @@ public class ViewerGalleryFragment extends Fragment {
      * @param items Items to be deleted if the answer is yes
      */
     private void askDeleteSelected(@NonNull final List<ImageFile> items) {
-        Context context = getActivity();
-        if (null == context) return;
+        Context context = activity.get();
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         String title = context.getResources().getQuantityString(R.plurals.ask_delete_multiple, items.size(), items.size());
@@ -414,8 +446,7 @@ public class ViewerGalleryFragment extends Fragment {
      * @param item Item that contains the image to set as a cover
      */
     private void askSetSelectedCover(@NonNull final ImageFile item) {
-        Context context = getActivity();
-        if (null == context) return;
+        Context context = activity.get();
 
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
         String title = context.getResources().getString(R.string.viewer_ask_cover);
@@ -429,5 +460,16 @@ public class ViewerGalleryFragment extends Fragment {
                         (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))
                 .setOnCancelListener(dialog -> selectExtension.deselect(selectExtension.getSelections()))
                 .create().show();
+    }
+
+    // TODO doc
+    private void toggleChapterEditMode() {
+        activity.get().toggleEditMode();
+        updateToolbar();
+
+        if (chaptersSelector.getSelectedIndex() > -1)
+            chaptersSelector.setVisibility(activity.get().isEditMode() ? View.GONE : View.VISIBLE);
+
+        // TODO switch between flat and hierarchical page display
     }
 }

@@ -17,4 +17,10 @@
         android:title="@string/menu_edit_chapters"
         android:tooltipText="@string/menu_edit_chapters"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_remove_chapters"
+        android:icon="@drawable/ic_action_delete_forever"
+        android:title="@string/gallery_clear_chapters"
+        android:tooltipText="@string/gallery_clear_chapters"
+        app:showAsAction="always" />
 </menu>
