@@ -870,7 +870,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         Site site = content.getSite();
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
-        Chapter chp = (img.getChapter() != null) ? img.getChapter().getTarget() : null;
+        Chapter chp = img.getLinkedChapter();
 
         // per Volley behaviour, this method is called on the UI thread
         // -> need to create a new thread to do a network call

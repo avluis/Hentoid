@@ -1368,6 +1368,10 @@ public class ObjectBoxDB {
         qb.build().remove();
     }
 
+    void insertChapters(List<Chapter> chapters) {
+        store.boxFor(Chapter.class).put(chapters);
+    }
+
 
     /**
      * ONE-SHOT USE QUERIES (MIGRATION & MAINTENANCE)

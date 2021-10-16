@@ -1113,11 +1113,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             for (ImageFile img : onlineImgs) {
                 maxOnlineImageOrder = Math.max(maxOnlineImageOrder, img.getOrder());
                 minOnlineImageOrder = Math.min(minOnlineImageOrder, img.getOrder());
-                if (null != img.getChapter()) {
-                    Chapter chp = img.getChapter().getTarget();
-                    if (null != chp)
-                        positionMap.put(img.getOrder(), chp);
-                }
+                if (null != img.getLinkedChapter()) positionMap.put(img.getOrder(), img.getLinkedChapter());
             }
 
             List<Chapter> storedChapters = storedContent.getChapters();
@@ -1126,7 +1122,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 List<ImageFile> storedImages = storedContent.getImageFiles();
                 if (null == storedImages) storedImages = Collections.emptyList();
                 for (ImageFile img : storedImages) {
-                    if (null == img.getChapter() || img.getChapter().isNull()) {
+                    if (null == img.getLinkedChapter()) {
                         Chapter targetChapter = positionMap.get(img.getOrder());
                         if (targetChapter != null) img.setChapter(targetChapter);
                     }

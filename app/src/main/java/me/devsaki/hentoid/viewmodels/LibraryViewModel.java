@@ -2,7 +2,6 @@ package me.devsaki.hentoid.viewmodels;
 
 import static me.devsaki.hentoid.util.GroupHelper.moveContentToCustomGroup;
 
-import android.annotation.TargetApi;
 import android.app.Application;
 import android.net.Uri;
 import android.os.Bundle;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import io.objectbox.relation.ToOne;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -955,12 +953,12 @@ public class LibraryViewModel extends AndroidViewModel {
                     newImg.getContent().setTarget(null); // Clear content
                     newImg.setOrder(pictureOrder++);
                     newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
-                    ToOne<Chapter> chapLink = newImg.getChapter();
+                    Chapter chapLink = newImg.getLinkedChapter();
                     Chapter newChapter;
-                    if (null == chapLink || chapLink.isNull()) { // No chapter -> set content chapter
+                    if (null == chapLink) { // No chapter -> set content chapter
                         newChapter = contentChapter;
                     } else {
-                        newChapter = Chapter.fromChapter(chapLink.getTarget()).setOrder(chapterOrder++);
+                        newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
                     }
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
                     newImg.setChapter(newChapter);

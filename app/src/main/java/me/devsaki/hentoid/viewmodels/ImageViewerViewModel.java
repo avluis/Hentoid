@@ -55,6 +55,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
@@ -1173,7 +1174,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     // TODO doc
-    public void removeChapters(Consumer<Throwable> onError) {
+    public void removeChapters(@NonNull Consumer<Throwable> onError) {
         Content theContent = content.getValue();
         if (null == theContent) return;
 
@@ -1182,9 +1183,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> {
-                                    processImages(theContent, -1);
-                                },
+                                () -> processImages(theContent, -1),
                                 e -> {
                                     Timber.e(e);
                                     onError.accept(e);
@@ -1193,9 +1192,85 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
+    // TODO doc
     private void doRemoveChapters(@NonNull Content theContent) {
         Helper.assertNonUiThread();
 
         dao.deleteChapters(theContent);
     }
+
+    // TODO doc
+    public void createChapter(@NonNull ImageFile img, @NonNull Consumer<Throwable> onError) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doCreateChapter(theContent, img))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> processImages(theContent, -1),
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    // TODO doc
+    private void doCreateChapter(@NonNull Content content, @NonNull ImageFile firstPage) {
+        Helper.assertNonUiThread();
+        List<ImageFile> contentImages = content.getImageFiles();
+        if (null == contentImages) throw new IllegalArgumentException("No images found in content");
+
+        Chapter previousChapter = firstPage.getLinkedChapter();
+        if (null == previousChapter) {
+            previousChapter = new Chapter(1, "", "Chapter 1");
+            previousChapter.setImageFiles(contentImages);
+            previousChapter.setContent(content);
+        }
+
+        int newChapterOrder = previousChapter.getOrder() + 1;
+        Chapter newChapter = new Chapter(newChapterOrder, "", "Chapter " + newChapterOrder);
+        newChapter.setContent(content);
+
+        List<ImageFile> chapterImages = previousChapter.getImageFiles();
+        if (null == chapterImages)
+            throw new IllegalArgumentException("No images found for selection");
+
+        // Sort by order
+        chapterImages = Stream.of(chapterImages).sortBy(ImageFile::getOrder).toList();
+
+        // Split pages
+        for (ImageFile img : chapterImages) {
+            if (img.getOrder() >= firstPage.getOrder()) img.setChapter(newChapter);
+        }
+
+        // Rearrange all chapters
+        List<Chapter> chapters = Stream.of(contentImages)
+                .map(ImageFile::getLinkedChapter)
+                .withoutNulls()
+                .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
+
+        // Renumber all chapters starting from the new one
+        List<Chapter> updatedChapters = new ArrayList<>();
+        for (Chapter c : chapters) {
+            if (c.getOrder() >= previousChapter.getOrder()) {
+                int newOrder = c.getOrder() + 1;
+                // Update names with the default "Chapter x" naming
+                if (c.getName().equals("Chapter " + c.getOrder()))
+                    c.setName("Chapter " + newOrder);
+                // Update order
+                c.setOrder(newOrder);
+            }
+            updatedChapters.add(c);
+        }
+        updatedChapters.add(newChapter);
+
+        // Force save everything
+        dao.insertChapters(updatedChapters);
+        dao.insertImageFiles(chapterImages);
+    }
 }
+

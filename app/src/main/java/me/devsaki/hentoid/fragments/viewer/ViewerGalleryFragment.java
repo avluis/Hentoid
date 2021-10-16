@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
@@ -37,12 +38,13 @@ import com.skydoves.powerspinner.PowerSpinnerView;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
@@ -63,6 +65,14 @@ import timber.log.Timber;
 
 public class ViewerGalleryFragment extends Fragment {
 
+    @IntDef({EditMode.NONE, EditMode.EDIT_CHAPTERS, EditMode.ADD_CHAPTER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface EditMode {
+        int NONE = 0;
+        int EDIT_CHAPTERS = 1;
+        int ADD_CHAPTER = 2;
+    }
+
     // ======== COMMUNICATION
     // Viewmodel
     private ImageViewerViewModel viewModel;
@@ -75,6 +85,7 @@ public class ViewerGalleryFragment extends Fragment {
     private MenuItem itemSetCoverMenu;
     private MenuItem showFavouritePagesMenu;
     private MenuItem editChaptersMenu;
+    private MenuItem addChapterMenu;
     private MenuItem removeChaptersMenu;
     private PowerSpinnerView chaptersSelector;
     private RecyclerView recyclerView;
@@ -96,6 +107,9 @@ public class ViewerGalleryFragment extends Fragment {
     // Used to ignore native calls to onBookClick right after that book has been deselected
     private int startIndex = 0;
     private boolean firstMoveDone = false;
+
+    private @EditMode
+    int editMode = EditMode.NONE;
 
     private boolean filterFavouritesState = false;
 
@@ -154,7 +168,7 @@ public class ViewerGalleryFragment extends Fragment {
         setHasOptionsMenu(true);
 
         recyclerView = requireViewById(rootView, R.id.viewer_gallery_recycler);
-        updateListAdapter(activity.get().isChapterEditMode());
+        updateListAdapter(editMode == EditMode.EDIT_CHAPTERS);
 
         new FastScrollerBuilder(recyclerView).build();
 
@@ -162,8 +176,10 @@ public class ViewerGalleryFragment extends Fragment {
         toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
         toolbar.setNavigationOnClickListener(v -> {
             // TODO exit chapter edit mode on back button press
-            if (activity.get().isChapterEditMode())
-                toggleChapterEditMode();
+            if (editMode == EditMode.EDIT_CHAPTERS)
+                setChapterEditMode(EditMode.NONE);
+            if (editMode == EditMode.ADD_CHAPTER)
+                setChapterEditMode(EditMode.EDIT_CHAPTERS);
             else
                 requireActivity().onBackPressed();
         });
@@ -172,7 +188,9 @@ public class ViewerGalleryFragment extends Fragment {
             if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
                 viewModel.filterFavouriteImages(!filterFavouritesState);
             } else if (clickedMenuItem.getItemId() == R.id.action_edit_chapters) {
-                toggleChapterEditMode();
+                setChapterEditMode(EditMode.EDIT_CHAPTERS);
+            } else if (clickedMenuItem.getItemId() == R.id.action_add_chapter) {
+                startAddChapter();
             } else if (clickedMenuItem.getItemId() == R.id.action_remove_chapters) {
                 removeChapters();
             }
@@ -181,6 +199,7 @@ public class ViewerGalleryFragment extends Fragment {
         showFavouritePagesMenu = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
         editChaptersMenu = toolbar.getMenu().findItem(R.id.action_edit_chapters);
         removeChaptersMenu = toolbar.getMenu().findItem(R.id.action_remove_chapters);
+        addChapterMenu = toolbar.getMenu().findItem(R.id.action_add_chapter);
         updateToolbar();
 
         selectionToolbar = requireViewById(rootView, R.id.viewer_gallery_selection_toolbar);
@@ -223,14 +242,12 @@ public class ViewerGalleryFragment extends Fragment {
     }
 
     private void onImagesChanged(List<ImageFile> images) {
-        if (activity.get().isChapterEditMode()) { // Expandable chapters
+        if (editMode == EditMode.EDIT_CHAPTERS) { // Expandable chapters
             List<SubExpandableItem> chapterItems = new ArrayList<>();
 
             List<Chapter> chapters = Stream.of(images)
-                    .map(ImageFile::getChapter)
+                    .map(ImageFile::getLinkedChapter)
                     .withoutNulls()
-                    .filterNot(ToOne::isNull)
-                    .map(ToOne::getTarget)
                     .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
 
             for (Chapter c : chapters) {
@@ -241,7 +258,7 @@ public class ViewerGalleryFragment extends Fragment {
                 List<ImageFile> chpImgs = c.getImageFiles();
                 if (chpImgs != null) {
                     for (ImageFile img : chpImgs) {
-                        ImageFileItem holder = new ImageFileItem(img);
+                        ImageFileItem holder = new ImageFileItem(img, false);
                         imgs.add(holder);
                     }
                 }
@@ -251,7 +268,7 @@ public class ViewerGalleryFragment extends Fragment {
 
             // One last category for chapterless images
             List<ImageFile> chapterlessImages = Stream.of(images)
-                    .filter(i -> null == i.getChapter() || i.getChapter().isNull())
+                    .filter(i -> null == i.getLinkedChapter())
                     .toList();
 
             if (!chapterlessImages.isEmpty()) {
@@ -260,7 +277,7 @@ public class ViewerGalleryFragment extends Fragment {
 
                 List<ImageFileItem> imgs = new ArrayList<>();
                 for (ImageFile img : chapterlessImages) {
-                    ImageFileItem holder = new ImageFileItem(img);
+                    ImageFileItem holder = new ImageFileItem(img, false);
                     imgs.add(holder);
                 }
                 expandableItem.getSubItems().addAll(imgs);
@@ -271,7 +288,7 @@ public class ViewerGalleryFragment extends Fragment {
         } else { // Classic gallery
             List<ImageFileItem> imgs = new ArrayList<>();
             for (ImageFile img : images) {
-                ImageFileItem holder = new ImageFileItem(img);
+                ImageFileItem holder = new ImageFileItem(img, editMode == EditMode.ADD_CHAPTER);
                 if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
                 imgs.add(holder);
             }
@@ -285,6 +302,7 @@ public class ViewerGalleryFragment extends Fragment {
     private void updateListAdapter(boolean isChapterEditMode) {
         if (isChapterEditMode) {
             if (!fastAdapter2.hasObservers()) fastAdapter2.setHasStableIds(true);
+            itemAdapter2.clear();
 
             // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
             selectExtension2 = fastAdapter2.getOrCreateExtension(SelectExtension.class);
@@ -337,6 +355,7 @@ public class ViewerGalleryFragment extends Fragment {
             recyclerView.addOnItemTouchListener(mDragSelectTouchListener2);
         } else {
             if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
+            itemAdapter.clear();
 
             // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
             selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
@@ -460,9 +479,10 @@ public class ViewerGalleryFragment extends Fragment {
     }
 
     private void updateToolbar() {
-        showFavouritePagesMenu.setVisible(!activity.get().isChapterEditMode());
-        editChaptersMenu.setVisible(!activity.get().isChapterEditMode());
-        removeChaptersMenu.setVisible(activity.get().isChapterEditMode());
+        showFavouritePagesMenu.setVisible(editMode == EditMode.NONE);
+        editChaptersMenu.setVisible(editMode == EditMode.NONE);
+        addChapterMenu.setVisible(editMode == EditMode.EDIT_CHAPTERS);
+        removeChaptersMenu.setVisible(editMode == EditMode.EDIT_CHAPTERS);
     }
 
     private void updateSelectionToolbar(long selectedCount) {
@@ -473,15 +493,19 @@ public class ViewerGalleryFragment extends Fragment {
     private boolean onItemClick(ImageFileItem item) {
         ImageFile img = item.getImage();
         if (img != null) {
-            viewModel.setReaderStartingIndex(img.getDisplayOrder());
-            if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
-                getParentFragmentManager()
-                        .beginTransaction()
-                        .replace(android.R.id.content, new ViewerPagerFragment())
-                        .addToBackStack(null)
-                        .commit();
-            } else { // Pager mode (Library -> pager -> gallery -> pager)
-                getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
+            if (editMode == EditMode.NONE) { // View image in gallery
+                viewModel.setReaderStartingIndex(img.getDisplayOrder());
+                if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
+                    getParentFragmentManager()
+                            .beginTransaction()
+                            .replace(android.R.id.content, new ViewerPagerFragment())
+                            .addToBackStack(null)
+                            .commit();
+                } else { // Pager mode (Library -> pager -> gallery -> pager)
+                    getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
+                }
+            } else { // Create new chapter
+                viewModel.createChapter(img, t -> ToastHelper.toast("Couldn't create chapter at page " + img.getOrder()));
             }
             return true;
         }
@@ -601,23 +625,25 @@ public class ViewerGalleryFragment extends Fragment {
     }
 
     // TODO doc
-    private void toggleChapterEditMode() {
-        activity.get().toggleEditMode();
+    private void setChapterEditMode(@EditMode int editMode) {
+        this.editMode = editMode;
         updateToolbar();
 
         if (chaptersSelector.getSelectedIndex() > -1)
-            chaptersSelector.setVisibility(activity.get().isChapterEditMode() ? View.GONE : View.VISIBLE);
+            chaptersSelector.setVisibility(editMode == EditMode.NONE ? View.VISIBLE : View.GONE);
 
-        chapterEditBottomHelpBanner.setVisibility(activity.get().isChapterEditMode() ? View.VISIBLE : View.GONE);
+        chapterEditBottomHelpBanner.setVisibility(editMode == EditMode.ADD_CHAPTER ? View.VISIBLE : View.GONE);
 
-        updateListAdapter(activity.get().isChapterEditMode());
+        updateListAdapter(editMode == EditMode.EDIT_CHAPTERS);
         viewModel.repostImages();
     }
 
     // TODO doc
     private void removeChapters() {
-        viewModel.removeChapters( t -> {
-            ToastHelper.toast("Couldn't remove chapters");
-        });
+        viewModel.removeChapters(t -> ToastHelper.toast("Couldn't remove chapters"));
+    }
+
+    private void startAddChapter() {
+        setChapterEditMode(EditMode.ADD_CHAPTER);
     }
 }

@@ -24,22 +24,31 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Helper;
 
 public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> implements IExpandable<ImageFileItem.ImageViewHolder> {
 
     private final ImageFile image;
+    private final Chapter chapter;
+    private final boolean showChapter;
     private boolean isCurrent;
     private boolean expanded = false;
 
     private static final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
-    public ImageFileItem(@NonNull ImageFile image) {
+    public ImageFileItem(@NonNull ImageFile image, boolean showChapter) {
         this.image = image;
+        if (image.getLinkedChapter() != null)
+            this.chapter = image.getLinkedChapter();
+        else
+            this.chapter = new Chapter(1, "", "Chapter 1"); // Default display when nothing is set
+        this.showChapter = showChapter;
         setIdentifier(image.uniqueHash());
     }
 
@@ -54,6 +63,10 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
 
     public boolean isFavourite() {
         return image.isFavourite();
+    }
+
+    public boolean isShowChapter() {
+        return showChapter;
     }
 
 
@@ -118,12 +131,14 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
         private final TextView pageNumberTxt;
         private final ImageView image;
         private final ImageView checkedIndicator;
+        private final TextView chapterOverlay;
 
         ImageViewHolder(View view) {
             super(view);
             pageNumberTxt = requireViewById(view, R.id.viewer_gallery_pagenumber_text);
             image = requireViewById(view, R.id.viewer_gallery_image);
             checkedIndicator = requireViewById(view, R.id.checked_indicator);
+            chapterOverlay = requireViewById(view, R.id.chapter_overlay);
         }
 
 
@@ -141,9 +156,22 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
 
             updateText(item);
 
+            // Checkmark
             if (item.isSelected()) checkedIndicator.setVisibility(View.VISIBLE);
             else checkedIndicator.setVisibility(View.GONE);
 
+            // Chapter overlay
+            if (item.showChapter) {
+                chapterOverlay.setText(String.format(Locale.ENGLISH, "Chp %d", item.chapter.getOrder()));
+                chapterOverlay.setBackgroundColor(
+                        chapterOverlay.getResources().getColor(
+                                (0 == item.chapter.getOrder() % 2) ? R.color.black_opacity_50 : R.color.white_opacity_25
+                        )
+                );
+                chapterOverlay.setVisibility(View.VISIBLE);
+            } else chapterOverlay.setVisibility(View.GONE);
+
+            // Image
             Glide.with(image)
                     .load(Uri.parse(item.image.getFileUri()))
                     .apply(glideRequestOptions)

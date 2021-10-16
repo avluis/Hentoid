@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
@@ -239,6 +240,8 @@ public interface CollectionDAO {
     // CHAPTERS
 
     void deleteChapters(@NonNull final Content content);
+
+    void insertChapters(@NonNull final List<Chapter> chapters);
 
 
     // SITE HISTORY

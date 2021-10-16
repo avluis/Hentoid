@@ -11,6 +11,7 @@ import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.util.Helper;
+import timber.log.Timber;
 
 @Entity
 public class Chapter {
@@ -83,6 +84,14 @@ public class Chapter {
 
     public void setContent(ToOne<Content> content) {
         this.content = content;
+    }
+
+    public void setContent(Content content) {
+        if (null == this.content) {
+            Timber.d(">> INIT ToONE");
+            this.content = new ToOne<>(this, Chapter_.content);
+        }
+        this.content.setTarget(content);
     }
 
     @Nullable

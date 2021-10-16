@@ -41,8 +41,8 @@ class JsonImageFile {
         result.isRead = f.isRead();
         result.mimeType = f.getMimeType();
         result.pHash = f.getImageHash();
-        if (f.getChapter() != null && f.getChapter().getTarget() != null)
-            result.chapterOrder = f.getChapter().getTarget().getOrder();
+        if (f.getLinkedChapter() != null)
+            result.chapterOrder = f.getLinkedChapter().getOrder();
         return result;
     }
 
