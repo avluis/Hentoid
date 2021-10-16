@@ -381,9 +381,6 @@ public class ViewerGalleryFragment extends Fragment {
             // Item click listener
             fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
 
-            // Filtering
-            itemAdapter.getItemFilter().setFilterPredicate((imageFileItem, charSequence) -> !charSequence.equals("true") || imageFileItem.isFavourite());
-
             GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
             if (glm != null) {
                 int spanCount = Preferences.getViewerGalleryColumns();
