@@ -263,8 +263,10 @@ public class ViewerGalleryFragment extends Fragment {
                 List<ImageFile> chpImgs = c.getImageFiles();
                 if (chpImgs != null) {
                     for (ImageFile img : chpImgs) {
-                        ImageFileItem holder = new ImageFileItem(img, false);
-                        imgs.add(holder);
+                        if (img.isReadable()) {
+                            ImageFileItem holder = new ImageFileItem(img, false);
+                            imgs.add(holder);
+                        }
                     }
                 }
                 expandableItem.getSubItems().addAll(imgs);
