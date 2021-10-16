@@ -112,6 +112,7 @@ public class ViewerGalleryFragment extends Fragment {
     int editMode = EditMode.NONE;
 
     private boolean filterFavouritesState = false;
+    private boolean shuffledState = false;
 
 
     public static final DiffCallback<ImageFileItem> IMAGE_DIFF_CALLBACK = new DiffCallback<ImageFileItem>() {
@@ -193,7 +194,7 @@ public class ViewerGalleryFragment extends Fragment {
             } else if (clickedMenuItem.getItemId() == R.id.action_edit_chapters) {
                 setChapterEditMode(EditMode.EDIT_CHAPTERS);
             } else if (clickedMenuItem.getItemId() == R.id.action_add_chapter) {
-                startAddChapter();
+                setChapterEditMode(EditMode.ADD_CHAPTER);
             } else if (clickedMenuItem.getItemId() == R.id.action_remove_chapters) {
                 removeChapters();
             }
@@ -232,6 +233,7 @@ public class ViewerGalleryFragment extends Fragment {
         viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
         viewModel.getContent().observe(getViewLifecycleOwner(), this::onContentChanged);
         viewModel.getShowFavouritesOnly().observe(getViewLifecycleOwner(), this::onShowFavouriteChanged);
+        viewModel.getShuffled().observe(getViewLifecycleOwner(), this::onShuffledChanged);
     }
 
     @Override
@@ -446,6 +448,11 @@ public class ViewerGalleryFragment extends Fragment {
         updateFavouriteDisplay(filterFavouritesState);
     }
 
+    private void onShuffledChanged(Boolean shuffled) {
+        shuffledState = shuffled;
+        updateToolbar();
+    }
+
     @SuppressLint("NonConstantResourceId")
     private boolean onSelectionMenuItemClicked(@NonNull MenuItem menuItem) {
         Set<ImageFileItem> selectedItems = selectExtension.getSelectedItems();
@@ -479,10 +486,13 @@ public class ViewerGalleryFragment extends Fragment {
     }
 
     private void updateToolbar() {
-        showFavouritePagesMenu.setVisible(editMode == EditMode.NONE);
-        editChaptersMenu.setVisible(editMode == EditMode.NONE);
+        showFavouritePagesMenu.setVisible(editMode == EditMode.NONE && hasFavourite());
+        editChaptersMenu.setVisible(editMode == EditMode.NONE && !shuffledState);
         addChapterMenu.setVisible(editMode == EditMode.EDIT_CHAPTERS);
         removeChaptersMenu.setVisible(editMode == EditMode.EDIT_CHAPTERS);
+
+        if (chaptersSelector.getSelectedIndex() > -1)
+            chaptersSelector.setVisibility(editMode == EditMode.NONE ? View.VISIBLE : View.GONE);
     }
 
     private void updateSelectionToolbar(long selectedCount) {
@@ -515,12 +525,12 @@ public class ViewerGalleryFragment extends Fragment {
     private void onFavouriteSuccess() {
         selectExtension.deselect(selectExtension.getSelections());
         selectExtension.setSelectOnLongClick(true);
-        showFavouritePagesMenu.setVisible(hasFavourite());
+        updateToolbar();
     }
 
     private void updateFavouriteDisplay(boolean showFavouritePages) {
-        showFavouritePagesMenu.setVisible(hasFavourite());
         showFavouritePagesMenu.setIcon(showFavouritePages ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
+        updateToolbar();
     }
 
     @Override
@@ -629,21 +639,18 @@ public class ViewerGalleryFragment extends Fragment {
         this.editMode = editMode;
         updateToolbar();
 
-        if (chaptersSelector.getSelectedIndex() > -1)
-            chaptersSelector.setVisibility(editMode == EditMode.NONE ? View.VISIBLE : View.GONE);
-
         chapterEditBottomHelpBanner.setVisibility(editMode == EditMode.ADD_CHAPTER ? View.VISIBLE : View.GONE);
 
         updateListAdapter(editMode == EditMode.EDIT_CHAPTERS);
-        viewModel.repostImages();
+
+        // Don't filter favs when editing chapters
+        if (filterFavouritesState) {
+            viewModel.filterFavouriteImages(editMode == EditMode.NONE);
+        } else viewModel.repostImages();
     }
 
     // TODO doc
     private void removeChapters() {
         viewModel.removeChapters(t -> ToastHelper.toast("Couldn't remove chapters"));
-    }
-
-    private void startAddChapter() {
-        setChapterEditMode(EditMode.ADD_CHAPTER);
     }
 }
