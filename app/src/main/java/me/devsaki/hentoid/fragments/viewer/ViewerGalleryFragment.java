@@ -127,13 +127,13 @@ public class ViewerGalleryFragment extends Fragment {
 
             if (null == oldImage || null == newImage) return false;
 
-            return oldItem.isFavourite() == newItem.isFavourite();
+            return oldItem.isFavourite() == newItem.isFavourite() && oldItem.getChapterOrder() == newItem.getChapterOrder();
         }
 
         @Override
-        public @org.jetbrains.annotations.Nullable Object getChangePayload(ImageFileItem oldImageItem, int oldPos, ImageFileItem newImageItem, int newPos) {
-            ImageFile oldImage = oldImageItem.getImage();
-            ImageFile newImage = newImageItem.getImage();
+        public @org.jetbrains.annotations.Nullable Object getChangePayload(ImageFileItem oldItem, int oldPos, ImageFileItem newItem, int newPos) {
+            ImageFile oldImage = oldItem.getImage();
+            ImageFile newImage = newItem.getImage();
 
             if (null == oldImage || null == newImage) return false;
 
@@ -141,6 +141,9 @@ public class ViewerGalleryFragment extends Fragment {
 
             if (oldImage.isFavourite() != newImage.isFavourite()) {
                 diffBundleBuilder.setIsFavourite(newImage.isFavourite());
+            }
+            if (oldItem.getChapterOrder() != newItem.getChapterOrder()) {
+                diffBundleBuilder.setChapterOrder(newItem.getChapterOrder());
             }
 
             if (diffBundleBuilder.isEmpty()) return null;

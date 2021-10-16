@@ -65,8 +65,8 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
         return image.isFavourite();
     }
 
-    public boolean isShowChapter() {
-        return showChapter;
+    public int getChapterOrder() {
+        return chapter.getOrder();
     }
 
 
@@ -152,6 +152,9 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
 
                 Boolean boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.image.setFavourite(boolValue);
+
+                Integer intValue = bundleParser.getChapterOrder();
+                if (intValue != null) item.chapter.setOrder(intValue);
             }
 
             updateText(item);
@@ -162,7 +165,9 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
 
             // Chapter overlay
             if (item.showChapter) {
-                chapterOverlay.setText(String.format(Locale.ENGLISH, "Chp %d", item.chapter.getOrder()));
+                String chapterText = String.format(Locale.ENGLISH, "Chp %d", item.chapter.getOrder());
+                if (item.chapter.getOrder() == Integer.MAX_VALUE) chapterText = ""; // Don't show temp values
+                chapterOverlay.setText(chapterText);
                 chapterOverlay.setBackgroundColor(
                         chapterOverlay.getResources().getColor(
                                 (0 == item.chapter.getOrder() % 2) ? R.color.black_opacity_50 : R.color.white_opacity_25

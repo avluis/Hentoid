@@ -107,22 +107,31 @@ public class Chapter {
         }
     }
 
+    public void removeImageFile(ImageFile img) {
+        if (imageFiles != null) imageFiles.remove(img);
+    }
+
+    public void addImageFile(ImageFile img) {
+        if (imageFiles != null) imageFiles.add(img);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Chapter imageFile = (Chapter) o;
-        return getId() == imageFile.getId() &&
-                Objects.equals(getUrl(), imageFile.getUrl());
+        Chapter chapter = (Chapter) o;
+        return getId() == chapter.getId() &&
+                Objects.equals(getOrder(), chapter.getOrder()) &&
+                Objects.equals(getUrl(), chapter.getUrl());
     }
 
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getUrl());
+        return Objects.hash(getId(), getOrder(), getUrl());
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + url).getBytes());
+        return Helper.hash64((id + "." + order + "." + url).getBytes());
     }
 }

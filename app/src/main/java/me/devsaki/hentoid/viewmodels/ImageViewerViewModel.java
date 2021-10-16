@@ -796,7 +796,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
-        currentImageSource = dao.selectDownloadedImagesFromContent(theContent.getId());
+        currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.getId());
         databaseImages.addSource(currentImageSource, imgs -> setImages(theContent, pageNumber, imgs));
     }
 
@@ -1221,18 +1221,18 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // TODO doc
     private void doCreateChapter(@NonNull Content content, @NonNull ImageFile firstPage) {
         Helper.assertNonUiThread();
-        List<ImageFile> contentImages = content.getImageFiles();
-        if (null == contentImages) throw new IllegalArgumentException("No images found in content");
 
         Chapter previousChapter = firstPage.getLinkedChapter();
         if (null == previousChapter) {
             previousChapter = new Chapter(1, "", "Chapter 1");
-            previousChapter.setImageFiles(contentImages);
+            previousChapter.setImageFiles(viewerImagesInternal);
+            // Link images the other way around so that what follows works properly
+            for (ImageFile img : viewerImagesInternal) img.setChapter(previousChapter);
             previousChapter.setContent(content);
         }
 
         int newChapterOrder = previousChapter.getOrder() + 1;
-        Chapter newChapter = new Chapter(newChapterOrder, "", "Chapter " + newChapterOrder);
+        Chapter newChapter = new Chapter(Integer.MAX_VALUE, "", "Chapter " + newChapterOrder);
         newChapter.setContent(content);
 
         List<ImageFile> chapterImages = previousChapter.getImageFiles();
@@ -1243,12 +1243,23 @@ public class ImageViewerViewModel extends AndroidViewModel {
         chapterImages = Stream.of(chapterImages).sortBy(ImageFile::getOrder).toList();
 
         // Split pages
-        for (ImageFile img : chapterImages) {
-            if (img.getOrder() >= firstPage.getOrder()) img.setChapter(newChapter);
-        }
+        int firstPageOrder = firstPage.getOrder();
+        int lastPageOrder = chapterImages.get(chapterImages.size() - 1).getOrder();
+        for (ImageFile img : chapterImages)
+            if (img.getOrder() >= firstPageOrder && img.getOrder() <= lastPageOrder) {
+                Chapter oldChapter = img.getLinkedChapter();
+                if (oldChapter != null) oldChapter.removeImageFile(img);
+                img.setChapter(newChapter);
+                newChapter.addImageFile(img);
+            }
+
+        // Save images
+        dao.insertImageFiles(chapterImages);
+        // Work on a clean image set
+        List<ImageFile> viewerImages = dao.selectDownloadedImagesFromContent(content.getId());
 
         // Rearrange all chapters
-        List<Chapter> chapters = Stream.of(contentImages)
+        List<Chapter> chapters = Stream.of(viewerImages)
                 .map(ImageFile::getLinkedChapter)
                 .withoutNulls()
                 .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
@@ -1256,21 +1267,19 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Renumber all chapters starting from the new one
         List<Chapter> updatedChapters = new ArrayList<>();
         for (Chapter c : chapters) {
-            if (c.getOrder() >= previousChapter.getOrder()) {
+            if (c.getOrder() >= newChapterOrder && c.getOrder() < Integer.MAX_VALUE) {
                 int newOrder = c.getOrder() + 1;
                 // Update names with the default "Chapter x" naming
                 if (c.getName().equals("Chapter " + c.getOrder()))
                     c.setName("Chapter " + newOrder);
                 // Update order
                 c.setOrder(newOrder);
-            }
+            } else if (c.getOrder() == Integer.MAX_VALUE) c.setOrder(newChapterOrder);
             updatedChapters.add(c);
         }
-        updatedChapters.add(newChapter);
 
-        // Force save everything
+        // Save chapters
         dao.insertChapters(updatedChapters);
-        dao.insertImageFiles(chapterImages);
     }
 }
 

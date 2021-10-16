@@ -194,7 +194,9 @@ public interface CollectionDAO {
 
     ImageFile selectImageFile(long id);
 
-    LiveData<List<ImageFile>> selectDownloadedImagesFromContent(long id);
+    LiveData<List<ImageFile>> selectDownloadedImagesFromContentLive(long id);
+
+    List<ImageFile> selectDownloadedImagesFromContent(long id);
 
     Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId);
 
