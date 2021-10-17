@@ -27,6 +27,8 @@
 	  {"sourceName":"MANHWA", "status":"RED", "fixedByBuild":"402"},
 	  {"sourceName":"TOONILY", "status":"RED", "fixedByBuild":"439"},
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"440"},
+	  {"sourceName":"PORNCOMIX", "status":"RED"},
+	  {"sourceName":"HENTAIFOX", "status":"RED"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
