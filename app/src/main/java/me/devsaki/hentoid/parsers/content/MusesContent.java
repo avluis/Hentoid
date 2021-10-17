@@ -59,7 +59,7 @@ public class MusesContent extends BaseContentParser {
             if (StringHelper.isNumeric(href.substring(numSeparator + 1))) {
                 Element img = thumbLink.select("img").first();
                 if (null == img) continue;
-                String src = img.attr("data-src");
+                String src = ParseHelper.getImgSrc(img);
                 if (src.isEmpty()) continue;
                 imagesUrls.add(src);
 

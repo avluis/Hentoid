@@ -115,8 +115,7 @@ public class ManhwaParser extends BaseImageListParser {
                 List<Element> images = doc.select(".reading-content img");
                 List<String> urls = new ArrayList<>();
                 for (Element e : images) {
-                    String url = e.attr("data-src").trim();
-                    if (url.isEmpty()) url = e.attr("src").trim();
+                    String url = ParseHelper.getImgSrc(e);
                     if (!url.isEmpty()) urls.add(url);
                 }
                 if (!urls.isEmpty())
