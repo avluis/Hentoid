@@ -62,7 +62,7 @@ public class PorncomixParser extends BaseImageListParser {
             String imgUrl;
             String imgExt;
             for (Element e : bestPages) {
-                imgUrl = e.attr("src");
+                imgUrl = ParseHelper.getImgSrc(e);
                 imgExt = HttpHelper.getExtensionFromUri(imgUrl);
                 imgUrl = imgUrl.substring(0, imgUrl.lastIndexOf('-')) + "." + imgExt;
                 result.add(imgUrl);
