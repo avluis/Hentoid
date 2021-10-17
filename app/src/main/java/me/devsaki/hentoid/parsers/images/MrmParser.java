@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -14,8 +16,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 /**
  * Created by robb_w on 2020/10
@@ -48,7 +48,7 @@ public class MrmParser extends BaseImageListParser {
             doc = getOnlineDocument(url, headers, Site.MRM.useHentoidAgent(), Site.MRM.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".entry-content img");
-                for (Element e : images) result.add(e.attr("data-src"));
+                for (Element e : images) result.add(ParseHelper.getImgSrc(e));
             }
             progressPlus();
         }

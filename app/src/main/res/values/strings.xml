@@ -18,6 +18,7 @@
     <string name="cancel">Cancel</string>
     <string name="cancel_all">Cancel all</string>
     <string name="menu_completed_single">Completed</string>
+    <string name="service_running">Service is already running</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>

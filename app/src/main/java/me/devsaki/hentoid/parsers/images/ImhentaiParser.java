@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.parsers.ParseHelper.getExtensionFromFormat;
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -17,9 +20,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.parsers.ParseHelper.getExtensionFromFormat;
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 /**
  * Created by robb_w on 01/2021
@@ -61,7 +61,7 @@ public class ImhentaiParser extends BaseImageListParser {
             }
 
             if (!thumbs.isEmpty() && imageFormats != null) {
-                String thumbUrl = thumbs.get(0).attr("data-src");
+                String thumbUrl = ParseHelper.getImgSrc(thumbs.get(0));
                 String thumbPath = thumbUrl.substring(0, thumbUrl.lastIndexOf("/") + 1);
 
                 // Forge all page URLs

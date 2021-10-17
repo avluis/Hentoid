@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.parsers.ParseHelper.getExtensionFromFormat;
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Document;
@@ -12,12 +15,10 @@ import java.util.Map;
 import java.util.Random;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.parsers.ParseHelper.getExtensionFromFormat;
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class HentaifoxParser extends BaseImageListParser {
 
@@ -57,7 +58,7 @@ public class HentaifoxParser extends BaseImageListParser {
         }
 
         if (!thumbs.isEmpty() && imageFormats != null) {
-            String thumbUrl = thumbs.get(0).attr("data-src");
+            String thumbUrl = ParseHelper.getImgSrc(thumbs.get(0));
             String thumbPath = thumbUrl.substring(thumbUrl.indexOf("hentaifox.com") + 14, thumbUrl.lastIndexOf("/") + 1);
 
             // Forge all page URLs

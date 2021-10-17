@@ -33,8 +33,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 30
-        versionCode 179
-        versionName '1.15.7'
+        versionCode 180
+        versionName '1.15.8'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -111,7 +111,7 @@ dependencies {
     /**
      * ANDROID FRAMEWORK
      */
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.30"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.31"
 
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.2.1'

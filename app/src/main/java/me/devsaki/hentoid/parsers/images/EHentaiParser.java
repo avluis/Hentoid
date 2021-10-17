@@ -175,7 +175,7 @@ public class EHentaiParser implements ImageListParser {
 
         // A.1- Detect the number of pages of the gallery
         Elements elements = galleryDoc.select("table.ptt a");
-        if (null == elements || elements.isEmpty()) return result;
+        if (elements.isEmpty()) return result;
 
         int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
         int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
@@ -210,9 +210,9 @@ public class EHentaiParser implements ImageListParser {
 
     static void fetchPageUrls(@Nonnull Document doc, List<String> pageUrls) {
         Elements imageLinks = doc.select(".gdtm a"); // Normal thumbs
-        if (null == imageLinks || imageLinks.isEmpty())
+        if (imageLinks.isEmpty())
             imageLinks = doc.select(".gdtl a"); // Large thumbs
-        if (null == imageLinks || imageLinks.isEmpty())
+        if (imageLinks.isEmpty())
             imageLinks = doc.select("#gdt a"); // Universal, ID-based
         for (Element e : imageLinks) pageUrls.add(e.attr("href"));
     }
@@ -221,7 +221,7 @@ public class EHentaiParser implements ImageListParser {
         Elements elements = doc.select("img#img");
         if (!elements.isEmpty()) {
             Element e = elements.first();
-            return e.attr("src");
+            if (e != null) return ParseHelper.getImgSrc(e);
         }
         return "";
     }
@@ -232,18 +232,20 @@ public class EHentaiParser implements ImageListParser {
         Elements elements = doc.select("#loadfail");
         if (!elements.isEmpty()) {
             Element e = elements.first();
-            String arg = e.attr("onclick");
-            // Get the argument between 's
-            int quoteBegin = arg.indexOf('\'');
-            int quoteEnd = arg.indexOf('\'', quoteBegin + 1);
-            arg = arg.substring(quoteBegin + 1, quoteEnd);
-            // Get the query URL
-            String backupUrl = queryUrl;
-            if (backupUrl.contains("?")) backupUrl += "&";
-            else backupUrl += "?";
-            backupUrl += "nl=" + arg;
-            // Get the final URL
-            if (URLUtil.isValidUrl(backupUrl)) return Optional.of(backupUrl);
+            if (e != null) {
+                String arg = e.attr("onclick");
+                // Get the argument between 's
+                int quoteBegin = arg.indexOf('\'');
+                int quoteEnd = arg.indexOf('\'', quoteBegin + 1);
+                arg = arg.substring(quoteBegin + 1, quoteEnd);
+                // Get the query URL
+                String backupUrl = queryUrl;
+                if (backupUrl.contains("?")) backupUrl += "&";
+                else backupUrl += "?";
+                backupUrl += "nl=" + arg;
+                // Get the final URL
+                if (URLUtil.isValidUrl(backupUrl)) return Optional.of(backupUrl);
+            }
         }
         return Optional.empty();
     }

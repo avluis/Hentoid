@@ -1,16 +1,22 @@
 package me.devsaki.hentoid.viewholders;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.function.Consumer;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.drag.IExtendedDraggable;
 import com.mikepenz.fastadapter.items.AbstractItem;
+import com.mikepenz.fastadapter.listeners.TouchEventHook;
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils;
 import com.mikepenz.fastadapter.utils.DragDropUtil;
 
@@ -22,8 +28,6 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implements IExtendedDraggable {
 
@@ -56,7 +60,9 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         return tag;
     }
 
-    public String getText() { return text; }
+    public String getText() {
+        return text;
+    }
 
     @Override
     public boolean isDraggable() {
@@ -133,6 +139,30 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         @Override
         public void onDropped() {
             rootView.setBackgroundColor(ThemeHelper.getColor(rootView.getContext(), R.color.transparent));
+        }
+    }
+
+    public static class DragHandlerTouchEvent<T> extends TouchEventHook<TextItem<T>> {
+
+        private final Consumer<Integer> action;
+
+        public DragHandlerTouchEvent(@NonNull Consumer<Integer> action) {
+            this.action = action;
+        }
+
+        @Nullable
+        @Override
+        public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+            return (viewHolder instanceof TextViewHolder<?>) ? ((TextViewHolder<?>) viewHolder).dragHandle : null;
+        }
+
+        @Override
+        public boolean onTouch(@NonNull View view, @NonNull MotionEvent motionEvent, int position, @NonNull FastAdapter<TextItem<T>> fastAdapter, @NonNull TextItem<T> item) {
+            if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
+                action.accept(position);
+                return true;
+            }
+            return false;
         }
     }
 }

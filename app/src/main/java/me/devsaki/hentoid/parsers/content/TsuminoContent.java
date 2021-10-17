@@ -22,8 +22,8 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 public class TsuminoContent extends BaseContentParser {
     @Selector(value = "div.book-page-cover a", attr = "href", defValue = "")
     private String galleryUrl;
-    @Selector(value = "img.book-page-image", attr = "src", defValue = "")
-    private String coverUrl;
+    @Selector(value = "img.book-page-image")
+    private Element cover;
     @Selector(value = "div#Title", defValue = "")
     private String title;
     @Selector(value = "div#Pages", defValue = "")
@@ -48,6 +48,7 @@ public class TsuminoContent extends BaseContentParser {
         if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
 
         content.setUrl(theUrl.replace("/Read/Index", ""));
+        String coverUrl = (cover != null) ? ParseHelper.getImgSrc(cover) : "";
         if (!coverUrl.startsWith("http")) coverUrl = TSUMINO.getUrl() + coverUrl;
         content.setCoverImageUrl(coverUrl);
         content.setTitle(StringHelper.removeNonPrintableChars(title));

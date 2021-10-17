@@ -1,0 +1,13 @@
+
+
+Changed
+
+    Bookmarks : Drag handle activates with a simple tap
+
+Fixed
+
+    Porncomix : Align with new site layout; use "redownload from scratch" to fix your downloads
+    Hentaifox : Align with new site layout; use "redownload from scratch" to fix your downloads
+    Prevent external library import from being run multiple times
+
+
