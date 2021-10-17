@@ -302,6 +302,8 @@ public class ContentDownloadWorker extends BaseWorker {
                     }
                 }
 
+                if (content.isUpdatedProperties()) dao.insertContent(content);
+
                 // Manually insert new images (without using insertContent)
                 long contentId = content.getId();
                 dao.replaceImageList(contentId, images);
@@ -404,6 +406,17 @@ public class ContentDownloadWorker extends BaseWorker {
             }
         }
 
+        if (content.getSite().getParallelDownloadCap() > 0 &&
+                (requestQueueManager.getDownloadThreadCount() > content.getSite().getParallelDownloadCap()
+                        || -1 == requestQueueManager.getDownloadThreadCount())
+        ) {
+            Timber.d("Setting parallel downloads count to %s", content.getSite().getParallelDownloadCap());
+            requestQueueManager.setDownloadThreadCount(getApplicationContext(), content.getSite().getParallelDownloadCap());
+        }
+        if (0 == content.getSite().getParallelDownloadCap() && requestQueueManager.getDownloadThreadCount() > -1) {
+            Timber.d("Resetting parallel downloads count to default");
+            requestQueueManager.setDownloadThreadCount(getApplicationContext(), -1);
+        }
         requestQueueManager.setSimulateHumanReading(content.getSite().isSimulateHumanReading());
 
         // In case the download has been canceled while in preparation phase

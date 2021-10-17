@@ -472,7 +472,12 @@ public class HttpHelper {
      * @param useWebviewAgent True if webview user agent should be used
      * @return Raw cookies string for the given URL
      */
-    public static String getCookies(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) {
+    public static String getCookies(
+            @NonNull String url,
+            @Nullable List<Pair<String, String>> headers,
+            boolean useMobileAgent,
+            boolean useHentoidAgent,
+            boolean useWebviewAgent) {
         String result = getCookies(url);
         if (result != null) return result;
         else return peekCookies(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);

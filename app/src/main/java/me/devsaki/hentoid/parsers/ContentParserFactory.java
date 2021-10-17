@@ -19,6 +19,7 @@ import me.devsaki.hentoid.parsers.content.ManhwaContent;
 import me.devsaki.hentoid.parsers.content.MrmContent;
 import me.devsaki.hentoid.parsers.content.MusesContent;
 import me.devsaki.hentoid.parsers.content.NhentaiContent;
+import me.devsaki.hentoid.parsers.content.PixivContent;
 import me.devsaki.hentoid.parsers.content.PorncomixContent;
 import me.devsaki.hentoid.parsers.content.PururinContent;
 import me.devsaki.hentoid.parsers.content.ToonilyContent;
@@ -40,6 +41,7 @@ import me.devsaki.hentoid.parsers.images.ManhwaParser;
 import me.devsaki.hentoid.parsers.images.MrmParser;
 import me.devsaki.hentoid.parsers.images.MusesParser;
 import me.devsaki.hentoid.parsers.images.NhentaiParser;
+import me.devsaki.hentoid.parsers.images.PixivParser;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
 import me.devsaki.hentoid.parsers.images.ToonilyParser;
@@ -98,6 +100,8 @@ public class ContentParserFactory {
                 return ToonilyContent.class;
             case ALLPORNCOMIC:
                 return AllPornComicContent.class;
+            case PIXIV:
+                return PixivContent.class;
             default:
                 return DummyContent.class;
         }
@@ -148,6 +152,8 @@ public class ContentParserFactory {
                 return new ToonilyParser();
             case ALLPORNCOMIC:
                 return new AllPornComicParser();
+            case PIXIV:
+                return new PixivParser();
             default:
                 return new DummyParser();
         }

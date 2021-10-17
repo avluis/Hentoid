@@ -651,7 +651,7 @@
     },
     {
       "id": "14:4653544552059492176",
-      "lastPropertyId": "5:8187979340827089166",
+      "lastPropertyId": "6:2875790170342417054",
       "name": "Chapter",
       "properties": [
         {
@@ -683,6 +683,11 @@
           "type": 11,
           "flags": 1548,
           "relationTarget": "Content"
+        },
+        {
+          "id": "6:2875790170342417054",
+          "name": "uniqueId",
+          "type": 9
         }
       ],
       "relations": []

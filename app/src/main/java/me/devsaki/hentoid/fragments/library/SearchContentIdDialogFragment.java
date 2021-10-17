@@ -80,6 +80,7 @@ public class SearchContentIdDialogFragment extends DialogFragment {
                 if (!foundSitesList.contains(Site.HBROWSE.getCode())) sites.add(Site.HBROWSE);
                 if (!foundSitesList.contains(Site.HENTAIFOX.getCode())) sites.add(Site.HENTAIFOX);
                 if (!foundSitesList.contains(Site.IMHENTAI.getCode())) sites.add(Site.IMHENTAI);
+                if (!foundSitesList.contains(Site.PIXIV.getCode())) sites.add(Site.PIXIV);
             }
             ItemAdapter<TextItem<Site>> itemAdapter = new ItemAdapter<>();
             itemAdapter.set(Stream.of(sites).map(s -> new TextItem<>(s.getDescription(), s, true)).toList());
@@ -114,6 +115,8 @@ public class SearchContentIdDialogFragment extends DialogFragment {
                 return site.getUrl().replace("manga", "albums") + id + "/";
             case HBROWSE:
                 return site.getUrl() + id + "/c00001";
+            case PIXIV:
+                return site.getUrl() + "artworks/" + id;
             default:
                 return site.getUrl();
         }

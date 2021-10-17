@@ -150,7 +150,7 @@ public class ObjectBoxDB {
                         dbAttr.addLocationsFrom(inputAttr);
                         attrBox.put(dbAttr);
                     } else {
-                        inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
+                        inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute name
                     }
                 }
             }

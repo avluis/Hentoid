@@ -107,6 +107,9 @@
             android:name=".activities.sources.AllPornComicActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.PixivActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -437,6 +440,21 @@
                 <data
                     android:host="allporncomic.com"
                     android:pathPattern="/porncomic/..*/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="pixiv.net"
+                    android:pathPattern="/..*/artworks/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="pixiv.net"
+                    android:pathPattern="/user/..*/series/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>
