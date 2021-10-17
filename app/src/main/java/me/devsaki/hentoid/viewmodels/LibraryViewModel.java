@@ -947,6 +947,7 @@ public class LibraryViewModel extends AndroidViewModel {
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
+                contentChapter.setUniqueId(c.getUniqueSiteId());
                 for (ImageFile img : c.getImageFiles()) {
                     if (!img.isReadable()) continue;
                     ImageFile newImg = new ImageFile(img);
@@ -996,7 +997,7 @@ public class LibraryViewModel extends AndroidViewModel {
             DocumentFile jsonFile = ContentHelper.createContentJson(getApplication(), mergedContent);
             if (jsonFile != null) mergedContent.setJsonUri(jsonFile.getUri().toString());
 
-            // Save new content (incl. group operations)
+            // Save new content (incl. non-custom group operations)
             ContentHelper.addContent(getApplication(), dao, mergedContent);
 
             // Merge custom groups and update
@@ -1045,20 +1046,72 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    private void doSplitContent(@NonNull Content content) throws ContentNotProcessedException {
+    private void doSplitContent(@NonNull Content content) throws Exception {
         Helper.assertNonUiThread();
         List<Chapter> chapters = content.getChapters();
+        List<ImageFile> images = content.getImageFiles();
         if (null == chapters || chapters.isEmpty())
             throw new ContentNotProcessedException(content, "No chapters detected");
+        if (null == images || images.isEmpty())
+            throw new ContentNotProcessedException(content, "No images detected");
 
-        for (Chapter chap : chapters) createContentFromChapter(content, chap);
+        int nbProcessedPics = 0;
+        int nbImages = (int) Stream.of(images).filter(ImageFile::isReadable).count();
+        for (Chapter chap : chapters) {
+            Content splitContent = createContentFromChapter(content, chap);
+
+            // Create a new folder for the split content
+            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent);
+            if (null == targetFolder || !targetFolder.exists())
+                throw new ContentNotProcessedException(splitContent, "Could not create target directory");
+
+            splitContent.setStorageUri(targetFolder.getUri().toString());
+
+            // Copy the corresponding images to that folder
+            List<ImageFile> splitContentImages = splitContent.getImageFiles();
+            if (null == splitContentImages)
+                throw new ContentNotProcessedException(splitContent, "No images detected in generated book");
+
+            for (ImageFile img : splitContentImages) {
+                if (img.getStatus().equals(StatusContent.DOWNLOADED)) {
+                    String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
+                    Uri newUri = FileHelper.copyFile(
+                            getApplication(),
+                            Uri.parse(img.getFileUri()),
+                            targetFolder.getUri(),
+                            img.getMimeType(),
+                            img.getName() + "." + extension);
+                    if (newUri != null)
+                        img.setFileUri(newUri.toString());
+                    else
+                        Timber.w("Could not move file %s", img.getFileUri());
+                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
+                }
+            }
+
+            // Save the JSON for the new book
+            DocumentFile jsonFile = ContentHelper.createContentJson(getApplication(), splitContent);
+            if (jsonFile != null) splitContent.setJsonUri(jsonFile.getUri().toString());
+
+            // Save new content (incl. onn-custom group operations)
+            ContentHelper.addContent(getApplication(), dao, splitContent);
+
+            // Set custom group, if any
+            List<GroupItem> customGroups = content.getGroupItems(Grouping.CUSTOM);
+            if (!customGroups.isEmpty())
+                GroupHelper.moveContentToCustomGroup(splitContent, customGroups.get(0).getGroup(), dao);
+        }
+
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
     }
 
-    private void createContentFromChapter(@NonNull Content content, @NonNull Chapter chapter) throws ContentNotProcessedException {
-        // Initiate a new Content
+    private Content createContentFromChapter(@NonNull Content content, @NonNull Chapter chapter) {
         Content splitContent = new Content();
+
         splitContent.setSite(content.getSite());
-        splitContent.setUniqueSiteId(content.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
+        String id = chapter.getUniqueId();
+        if (id.isEmpty()) id = content.getUniqueSiteId() + "_"; // Don't create a copy of content
+        splitContent.setUniqueSiteId(id);
         splitContent.setDownloadMode(content.getDownloadMode());
         splitContent.setTitle(content.getTitle() + " - " + chapter.getName());
         splitContent.setUploadDate(content.getUploadDate());
@@ -1073,14 +1126,21 @@ public class LibraryViewModel extends AndroidViewModel {
         List<ImageFile> images = chapter.getImageFiles();
         if (images != null) {
             images = Stream.of(chapter.getImageFiles()).sortBy(ImageFile::getOrder).toList();
-            for (ImageFile img : images) { // Force new instance creation
-                img.setId(0);
+            int position = 0;
+            int nbMaxDigits = (int) (Math.floor(Math.log10(images.size()) + 1));
+            for (ImageFile img : images) {
+                img.setId(0); // Force working on a new picture
                 img.setChapter(null);
+                img.getContent().setTarget(null); // Clear content
+                img.setIsCover(0 == position);
+                img.setOrder(position++);
+                img.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", img.getOrder()));
             }
 
             splitContent.setImageFiles(images);
             splitContent.setChapters(null);
             splitContent.setQtyPages((int) Stream.of(images).filter(ImageFile::isReadable).count());
+            splitContent.computeSize();
 
             String coverImageUrl = StringHelper.protect(images.get(0).getUrl());
             if (coverImageUrl.isEmpty()) coverImageUrl = content.getCoverImageUrl();
@@ -1089,5 +1149,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
         List<Attribute> splitAttributes = Stream.of(content).flatMap(c -> Stream.of(c.getAttributes())).toList();
         splitContent.addAttributes(splitAttributes);
+
+        return splitContent;
     }
 }

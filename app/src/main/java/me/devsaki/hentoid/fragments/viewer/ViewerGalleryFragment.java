@@ -204,7 +204,6 @@ public class ViewerGalleryFragment extends Fragment {
         editChaptersMenu = toolbar.getMenu().findItem(R.id.action_edit_chapters);
         removeChaptersMenu = toolbar.getMenu().findItem(R.id.action_remove_chapters);
         addChapterMenu = toolbar.getMenu().findItem(R.id.action_add_chapter);
-        updateToolbar();
 
         selectionToolbar = requireViewById(rootView, R.id.viewer_gallery_selection_toolbar);
         itemSetCoverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
@@ -218,6 +217,7 @@ public class ViewerGalleryFragment extends Fragment {
         chaptersSelector = requireViewById(rootView, R.id.chapter_selector);
 
         chapterEditBottomHelpBanner = requireViewById(rootView, R.id.chapter_edit_help_banner);
+        updateToolbar();
 
         return rootView;
     }
