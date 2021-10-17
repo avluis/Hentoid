@@ -321,4 +321,10 @@ public class ParseHelper {
         }
         return Stream.of(result).sortBy(Chapter::getOrder).toList();
     }
+
+    public static String getImgSrc(Element e) {
+        String result = e.attr("src").trim();
+        if (result.isEmpty()) result = e.attr("data-cfsrc").trim(); // Cloudflare-served image
+        return result;
+    }
 }

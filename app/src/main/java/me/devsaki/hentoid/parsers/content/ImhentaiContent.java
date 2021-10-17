@@ -41,11 +41,8 @@ public class ImhentaiContent extends BaseContentParser {
 
         content.setUrl(url.replace(Site.IMHENTAI.getUrl(), "").replace("/gallery", ""));
 
-        if (cover != null) {
-            String coverUrl = cover.attr("src");
-            if (coverUrl.isEmpty()) coverUrl = cover.attr("data-cfsrc"); // Cloudflare-served image
-            content.setCoverImageUrl(coverUrl);
-        }
+        if (cover != null) content.setCoverImageUrl(ParseHelper.getImgSrc(cover));
+
         String str = !title.isEmpty() ? StringHelper.removeNonPrintableChars(title) : "";
         str = ParseHelper.removeTextualTags(str);
         content.setTitle(str);

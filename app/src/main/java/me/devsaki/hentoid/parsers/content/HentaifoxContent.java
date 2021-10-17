@@ -19,10 +19,8 @@ import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HentaifoxContent extends BaseContentParser {
-    @Selector(value = ".cover img", attr = "src", defValue = "")
-    private String coverUrl;
-    @Selector(value = ".cover img", attr = "data-cfsrc", defValue = "")
-    private String coverUrl2;
+    @Selector(value = ".cover img")
+    private Element cover;
     @Selector(value = ".info h1", defValue = "")
     private String title;
     @Selector(".info")
@@ -40,7 +38,7 @@ public class HentaifoxContent extends BaseContentParser {
         content.setUrl(url.replace(Site.HENTAIFOX.getUrl(), "").replace("/gallery", ""));
 
         content.populateUniqueSiteId();
-        content.setCoverImageUrl(coverUrl.isEmpty() ? coverUrl2 : coverUrl);
+        if (cover != null) content.setCoverImageUrl(ParseHelper.getImgSrc(cover));
         content.setTitle(StringHelper.removeNonPrintableChars(title));
 
         if (null == information || information.children().isEmpty()) return content;
