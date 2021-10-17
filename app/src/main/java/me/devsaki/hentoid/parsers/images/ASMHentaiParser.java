@@ -1,8 +1,11 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
@@ -10,8 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+import me.devsaki.hentoid.parsers.ParseHelper;
 
 public class ASMHentaiParser extends BaseImageListParser {
 
@@ -25,17 +27,16 @@ public class ASMHentaiParser extends BaseImageListParser {
             Elements imgContainer = doc.select("div.full_image"); // New ASM layout
             if (imgContainer.isEmpty())
                 imgContainer = doc.select("div.full_gallery"); // Old ASM layout; current ASM Comics layout
-            String imgUrl = "https:" +
-                    imgContainer
-                            .select("a")
-                            .select("img")
-                            .attr("src");
+            Element imgElt = imgContainer.select("a").select("img").first();
+            if (imgElt != null) {
+                String imgUrl = "https:" + ParseHelper.getImgSrc(imgElt);
 
-            String ext = imgUrl.substring(imgUrl.lastIndexOf('.'));
+                String ext = imgUrl.substring(imgUrl.lastIndexOf('.'));
 
-            for (int i = 0; i < content.getQtyPages(); i++) {
-                String img = imgUrl.substring(0, imgUrl.lastIndexOf('/') + 1) + (i + 1) + ext;
-                result.add(img);
+                for (int i = 0; i < content.getQtyPages(); i++) {
+                    String img = imgUrl.substring(0, imgUrl.lastIndexOf('/') + 1) + (i + 1) + ext;
+                    result.add(img);
+                }
             }
         }
 

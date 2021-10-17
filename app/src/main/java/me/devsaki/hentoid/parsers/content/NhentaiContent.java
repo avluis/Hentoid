@@ -24,8 +24,8 @@ public class NhentaiContent extends BaseContentParser {
 
     @Selector(value = "#bigcontainer #cover a", attr = "href", defValue = "")
     private String galleryUrl;
-    @Selector(value = "#cover img", attr = "data-src", defValue = "")
-    private String coverUrl;
+    @Selector(value = "#cover img")
+    private Element cover;
     @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
     private String title;
     // Fallback value for title (see #449)
@@ -62,7 +62,7 @@ public class NhentaiContent extends BaseContentParser {
             return new Content().setStatus(StatusContent.IGNORED); // Fav button
 
         content.setUrl(theUrl.replace("/g", "").replaceFirst("/1/$", "/"));
-        content.setCoverImageUrl(coverUrl);
+        if (cover != null) content.setCoverImageUrl(ParseHelper.getImgSrc(cover));
 
         String titleDef = title.trim();
         if (titleDef.isEmpty()) titleDef = titleAlt.trim();

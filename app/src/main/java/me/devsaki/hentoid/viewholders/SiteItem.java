@@ -77,8 +77,8 @@ public class SiteItem extends AbstractItem<SiteItem.SiteViewHolder> implements I
     @Nullable
     @Override
     public View getDragView(@NotNull RecyclerView.ViewHolder viewHolder) {
-        if (viewHolder instanceof SiteItem.SiteViewHolder)
-            return ((SiteItem.SiteViewHolder) viewHolder).dragHandle;
+        if (viewHolder instanceof SiteViewHolder)
+            return ((SiteViewHolder) viewHolder).dragHandle;
         else return null;
     }
 

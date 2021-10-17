@@ -9,20 +9,20 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HitomiContent extends BaseContentParser {
     @Selector(value = "h1 a[href*='/reader/']", attr = "href", defValue = "")
     private String galleryUrl;
-    @Selector(value = ".cover img", attr = "src", defValue = "")
-    private String coverUrl;
+    @Selector(value = ".cover img")
+    private Element cover;
     @Selector(value = "h1 a[href*='/reader/']", defValue = NO_TITLE)
     private String title;
     @Selector(value = "div.gallery h2 a[href^='/artist']")
@@ -43,6 +43,7 @@ public class HitomiContent extends BaseContentParser {
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
         if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
+        String coverUrl = (cover != null) ? ParseHelper.getImgSrc(cover) : "";
         if (coverUrl.isEmpty() && title.equals(NO_TITLE))
             return new Content().setStatus(StatusContent.IGNORED);
 

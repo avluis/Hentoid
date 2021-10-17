@@ -21,8 +21,8 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 public class ASMHentaiContent extends BaseContentParser {
     @Selector(value = "div.cover a", attr = "href", defValue = "")
     private String galleryUrl;
-    @Selector(value = "div.cover a img", attr = "src")
-    private String coverUrl;
+    @Selector(value = "div.cover a img")
+    private Element cover;
     @Selector(value = "div.info h1:first-child", defValue = "<no title>")
     private String title;
     @Selector("div.pages h3")
@@ -50,7 +50,8 @@ public class ASMHentaiContent extends BaseContentParser {
         // Remove the host from the URL
         galleryUrl = galleryUrl.substring(galleryUrl.indexOf("/gallery/") + 8, galleryUrl.length() - 2);
         content.setUrl(galleryUrl);
-        content.setCoverImageUrl("https:" + coverUrl);
+        if (cover != null)
+            content.setCoverImageUrl("https:" + ParseHelper.getImgSrc(cover));
 
         content.setTitle(StringHelper.removeNonPrintableChars(title));
 

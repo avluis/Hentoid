@@ -1,5 +1,9 @@
 package me.devsaki.hentoid.util;
 
+import static android.os.Build.VERSION_CODES.O;
+import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
+import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -52,10 +56,6 @@ import me.devsaki.hentoid.services.ExternalImportService;
 import me.devsaki.hentoid.workers.ImportWorker;
 import me.devsaki.hentoid.workers.data.ImportData;
 import timber.log.Timber;
-
-import static android.os.Build.VERSION_CODES.O;
-import static android.provider.DocumentsContract.EXTRA_INITIAL_URI;
-import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
 
 public class ImportHelper {
 
@@ -436,6 +436,11 @@ public class ImportHelper {
     private static void runExternalImport(
             @NonNull final Context context
     ) {
+        if (ExternalImportService.isRunning()) {
+            ToastHelper.toast(R.string.service_running);
+            return;
+        }
+
         ImportNotificationChannel.init(context);
         Intent intent = ExternalImportService.makeIntent(context);
 

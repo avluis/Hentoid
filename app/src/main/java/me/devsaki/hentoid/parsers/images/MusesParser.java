@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Document;
@@ -10,9 +12,8 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 public class MusesParser extends BaseImageListParser {
 
@@ -29,8 +30,8 @@ public class MusesParser extends BaseImageListParser {
 
         String[] thumbParts;
         for (Element e : thumbs) {
-            String src = e.attr("data-src");
-            if (null == src || src.isEmpty()) continue;
+            String src = ParseHelper.getImgSrc(e);
+            if (src.isEmpty()) continue;
 
             thumbParts = src.split("/");
             if (thumbParts.length > 3) {

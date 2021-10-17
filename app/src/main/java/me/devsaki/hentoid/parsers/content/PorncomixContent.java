@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -88,11 +89,7 @@ public class PorncomixContent extends BaseContentParser {
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, false, Site.PORNCOMIX);
         content.putAttributes(attributes);
 
-        if (updateImages) {
-            List<ImageFile> images = ParseHelper.urlsToImageFiles(PorncomixParser.parseImages(mangaPagesContainer, galleryPages, galleryPages2, bestPages), content.getCoverImageUrl(), StatusContent.SAVED);
-            content.setImageFiles(images);
-            content.setQtyPages(images.size() - 1);  // Keep final result after deduplicating; don't count the cover
-        }
+        if (updateImages) content.setImageFiles(Collections.emptyList());
 
         return content;
     }
