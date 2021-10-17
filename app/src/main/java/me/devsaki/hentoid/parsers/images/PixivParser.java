@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +27,7 @@ import me.devsaki.hentoid.retrofit.sources.PixivServer;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
@@ -86,7 +86,7 @@ public class PixivParser extends BaseImageListParser {
         return ParseHelper.urlsToImageFiles(galleryMetadata.getPageUrls(), content.getCoverImageUrl(), StatusContent.SAVED);
     }
 
-    private List<ImageFile> parseSeries(@NonNull Content content, @NonNull String cookieStr) throws IOException {
+    private List<ImageFile> parseSeries(@NonNull Content content, @NonNull String cookieStr) throws Exception {
         String[] seriesIdParts = content.getUniqueSiteId().split("/");
         String seriesId = seriesIdParts[seriesIdParts.length - 1];
         if (seriesId.contains("?")) {
@@ -142,12 +142,16 @@ public class PixivParser extends BaseImageListParser {
             order += pageUrls.size();
             progress.advance();
         }
+
+        // If the process has been halted manually, the result is incomplete and should not be returned as is
+        if (processHalted) throw new PreparationInterruptedException();
+
         content.putAttributes(attrs);
         content.setUpdatedProperties(true);
         return result;
     }
 
-    private List<ImageFile> parseUser(@NonNull Content content, @NonNull String cookieStr) throws IOException {
+    private List<ImageFile> parseUser(@NonNull Content content, @NonNull String cookieStr) throws Exception {
         String[] userIdParts = content.getUniqueSiteId().split("/");
         String userId = userIdParts[userIdParts.length - 1];
         if (userId.contains("?")) {
@@ -192,6 +196,10 @@ public class PixivParser extends BaseImageListParser {
             imgOrder += pageUrls.size();
             progress.advance();
         }
+
+        // If the process has been halted manually, the result is incomplete and should not be returned as is
+        if (processHalted) throw new PreparationInterruptedException();
+
         content.putAttributes(attrs);
         content.setUpdatedProperties(true);
         return result;
