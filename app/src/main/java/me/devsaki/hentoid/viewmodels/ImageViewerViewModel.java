@@ -55,6 +55,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
@@ -71,7 +72,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
@@ -708,7 +709,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doDeleteBook(@NonNull Content targetContent) throws ContentNotRemovedException {
+    private void doDeleteBook(@NonNull Content targetContent) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
         ContentHelper.removeQueuedContent(getApplication(), dao, targetContent);
     }
@@ -788,11 +789,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (contentIds.size() > currentContentIndex && loadedContentId != contentIds.get(currentContentIndex))
             imageLocations.clear();
         content.postValue(theContent);
+        processImages(theContent, pageNumber);
+    }
 
+    private void processImages(@NonNull Content theContent, int pageNumber) {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
-        currentImageSource = dao.selectDownloadedImagesFromContent(theContent.getId());
+        currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.getId());
         databaseImages.addSource(currentImageSource, imgs -> setImages(theContent, pageNumber, imgs));
     }
 
@@ -808,7 +812,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private Content doUpdateContentPreferences(@NonNull final Context context, long contentId, @NonNull final Map<String, String> newPrefs) {
+    private Content doUpdateContentPreferences(@NonNull final Context context, long contentId,
+                                               @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
         Content theContent = dao.selectContent(contentId);
@@ -849,12 +854,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
         readPageNumbers.add(pageNumber);
     }
 
+    public void repostImages() {
+        viewerImages.postValue(viewerImages.getValue());
+    }
+
     public synchronized void setCurrentPage(int pageIndex, int direction) {
         if (viewerImagesInternal.size() <= pageIndex) return;
 
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
-        if (isPictureDownloadable(pageIndex, viewerImagesInternal)) indexesToLoad.add(pageIndex);
+        if (isPictureDownloadable(pageIndex, viewerImagesInternal))
+            indexesToLoad.add(pageIndex);
         if (isPictureDownloadable(pageIndex + increment, viewerImagesInternal))
             indexesToLoad.add(pageIndex + increment);
         if (isPictureDownloadable(pageIndex + 2 * increment, viewerImagesInternal))
@@ -951,7 +961,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull final AtomicBoolean stopDownload) {
         Helper.assertNonUiThread();
         Content content = getContent().getValue();
-        if (null == content || viewerImagesInternal.size() <= pageIndex) return Optional.empty();
+        if (null == content || viewerImagesInternal.size() <= pageIndex)
+            return Optional.empty();
 
         ImageFile img = viewerImagesInternal.get(pageIndex);
         // Already downloaded
@@ -1042,9 +1053,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
             List<Pair<String, String>> requestHeaders,
             @NonNull File targetFolder,
             @NonNull String targetFileName,
-            @NonNull final AtomicBoolean interruptDownload) throws IOException, UnsupportedContentException, DownloadInterruptedException {
+            @NonNull final AtomicBoolean interruptDownload) throws
+            IOException, UnsupportedContentException, DownloadInterruptedException {
 
-        if (interruptDownload.get()) throw new DownloadInterruptedException("Download interrupted");
+        if (interruptDownload.get())
+            throw new DownloadInterruptedException("Download interrupted");
 
         Site site = content.getSite();
         Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
@@ -1066,7 +1079,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             throw new IOException("Could not create file " + targetFile.getPath());
 
         Timber.d("WRITING DOWNLOADED PIC %d TO %s (size %.2f KB)", pageIndex, targetFile.getAbsolutePath(), size / 1024.0);
-        byte[] buffer = new byte[4196];
+        byte[] buffer = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
         int len;
         long processed = 0;
         int iteration = 0;
@@ -1159,4 +1172,114 @@ public class ImageViewerViewModel extends AndroidViewModel {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.page_download, pageIndex, progress, 0, 100));
         }
     }
+
+    // TODO doc
+    public void removeChapters(@NonNull Consumer<Throwable> onError) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doRemoveChapters(theContent))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> processImages(theContent, -1),
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    // TODO doc
+    private void doRemoveChapters(@NonNull Content theContent) {
+        Helper.assertNonUiThread();
+
+        dao.deleteChapters(theContent);
+    }
+
+    // TODO doc
+    public void createChapter(@NonNull ImageFile img, @NonNull Consumer<Throwable> onError) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doCreateChapter(theContent, img))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> processImages(theContent, -1),
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    // TODO doc
+    private void doCreateChapter(@NonNull Content content, @NonNull ImageFile firstPage) {
+        Helper.assertNonUiThread();
+
+        Chapter previousChapter = firstPage.getLinkedChapter();
+        if (null == previousChapter) {
+            previousChapter = new Chapter(1, "", "Chapter 1");
+            previousChapter.setImageFiles(viewerImagesInternal);
+            // Link images the other way around so that what follows works properly
+            for (ImageFile img : viewerImagesInternal) img.setChapter(previousChapter);
+            previousChapter.setContent(content);
+        }
+
+        int newChapterOrder = previousChapter.getOrder() + 1;
+        Chapter newChapter = new Chapter(Integer.MAX_VALUE, "", "Chapter " + newChapterOrder);
+        newChapter.setContent(content);
+
+        List<ImageFile> chapterImages = previousChapter.getImageFiles();
+        if (null == chapterImages)
+            throw new IllegalArgumentException("No images found for selection");
+
+        // Sort by order
+        chapterImages = Stream.of(chapterImages).sortBy(ImageFile::getOrder).toList();
+
+        // Split pages
+        int firstPageOrder = firstPage.getOrder();
+        int lastPageOrder = chapterImages.get(chapterImages.size() - 1).getOrder();
+        for (ImageFile img : chapterImages)
+            if (img.getOrder() >= firstPageOrder && img.getOrder() <= lastPageOrder) {
+                Chapter oldChapter = img.getLinkedChapter();
+                if (oldChapter != null) oldChapter.removeImageFile(img);
+                img.setChapter(newChapter);
+                newChapter.addImageFile(img);
+            }
+
+        // Save images
+        dao.insertImageFiles(chapterImages);
+        // Work on a clean image set
+        List<ImageFile> viewerImages = dao.selectDownloadedImagesFromContent(content.getId());
+
+        // Rearrange all chapters
+        List<Chapter> chapters = Stream.of(viewerImages)
+                .map(ImageFile::getLinkedChapter)
+                .withoutNulls()
+                .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
+
+        // Renumber all chapters starting from the new one
+        List<Chapter> updatedChapters = new ArrayList<>();
+        for (Chapter c : chapters) {
+            if (c.getOrder() >= newChapterOrder && c.getOrder() < Integer.MAX_VALUE) {
+                int newOrder = c.getOrder() + 1;
+                // Update names with the default "Chapter x" naming
+                if (c.getName().equals("Chapter " + c.getOrder()))
+                    c.setName("Chapter " + newOrder);
+                // Update order
+                c.setOrder(newOrder);
+            } else if (c.getOrder() == Integer.MAX_VALUE) c.setOrder(newChapterOrder);
+            updatedChapters.add(c);
+        }
+
+        // Save chapters
+        dao.insertChapters(updatedChapters);
+    }
 }
+

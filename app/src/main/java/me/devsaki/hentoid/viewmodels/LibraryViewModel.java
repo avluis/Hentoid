@@ -1,8 +1,9 @@
 package me.devsaki.hentoid.viewmodels;
 
-import static me.devsaki.hentoid.util.GroupHelper.moveBook;
+import static me.devsaki.hentoid.util.GroupHelper.moveContentToCustomGroup;
 
 import android.app.Application;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,18 +17,22 @@ import androidx.paging.PagedList;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.greenrobot.eventbus.EventBus;
+import org.threeten.bp.Instant;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
@@ -40,12 +45,14 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -53,8 +60,11 @@ import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.PurgeWorker;
@@ -796,20 +806,20 @@ public class LibraryViewModel extends AndroidViewModel {
         throw new InvalidParameterException("Invalid GroupId : " + groupId);
     }
 
-    public void moveBooksToNew(long[] bookIds, String newGroupName,
-                               @NonNull final Runnable onSuccess) {
+    public void moveContentsToNewCustomGroup(long[] contentIds, String newGroupName,
+                                             @NonNull final Runnable onSuccess) {
         Group newGroup = new Group(Grouping.CUSTOM, newGroupName.trim(), -1);
         newGroup.id = dao.insertGroup(newGroup);
-        moveBooks(bookIds, newGroup, onSuccess);
+        moveContentsToCustomGroup(contentIds, newGroup, onSuccess);
     }
 
-    public void moveBooks(long[] bookIds, @Nullable final Group group,
-                          @NonNull final Runnable onSuccess) {
+    public void moveContentsToCustomGroup(long[] contentIds, @Nullable final Group group,
+                                          @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
-                Observable.fromIterable(Helper.getListFromPrimitiveArray(bookIds))
+                Observable.fromIterable(Helper.getListFromPrimitiveArray(contentIds))
                         .observeOn(Schedulers.io())
                         .map(dao::selectContent)
-                        .map(c -> moveBook(c, group, dao))
+                        .map(c -> moveContentToCustomGroup(c, group, dao))
                         .doOnNext(c -> ContentHelper.updateContentJson(getApplication(), c))
                         .doOnComplete(() -> {
                             refreshCustomGroupingAvailable();
@@ -837,5 +847,247 @@ public class LibraryViewModel extends AndroidViewModel {
     public void shuffleContent() {
         RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
         dao.shuffleContent();
+    }
+
+    public void mergeContents(
+            @NonNull List<Content> contentList,
+            @NonNull String newTitle,
+            @NonNull Runnable onSuccess) {
+        if (0 == contentList.size()) return;
+
+        // Flag the content as "being deleted" (triggers blink animation)
+        for (Content c : contentList) flagContentDelete(c, true);
+
+        compositeDisposable.add(
+                Single.fromCallable(() -> {
+                    boolean result = false;
+                    try {
+                        doMergeContents(contentList, newTitle);
+                        result = true;
+                    } catch (ContentNotProcessedException e) {
+                        Timber.e(e);
+                        for (Content c : contentList) flagContentDelete(c, false);
+                    }
+                    return result;
+                })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                b -> {
+                                    if (b) onSuccess.run();
+                                },
+                                t -> {
+                                    Timber.e(t);
+                                    for (Content c : contentList) flagContentDelete(c, false);
+                                }
+                        )
+        );
+    }
+
+    private void doMergeContents(@NonNull List<Content> contentList, @NonNull String newTitle) throws ContentNotProcessedException {
+        Helper.assertNonUiThread();
+
+        Content firstContent = contentList.get(0);
+
+        // Initiate a new Content
+        Content mergedContent = new Content();
+        mergedContent.setSite(firstContent.getSite());
+        mergedContent.setUrl(firstContent.getUrl());
+        mergedContent.setUniqueSiteId(firstContent.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
+        mergedContent.setDownloadMode(firstContent.getDownloadMode());
+        mergedContent.setTitle(newTitle);
+        mergedContent.setCoverImageUrl(firstContent.getCoverImageUrl());
+        mergedContent.setUploadDate(firstContent.getUploadDate());
+        mergedContent.setDownloadDate(Instant.now().toEpochMilli());
+        mergedContent.setStatus(firstContent.getStatus());
+        mergedContent.setFavourite(firstContent.isFavourite());
+        mergedContent.setBookPreferences(firstContent.getBookPreferences());
+
+        // Merge attributes
+        List<Attribute> mergedAttributes = Stream.of(contentList).flatMap(c -> Stream.of(c.getAttributes())).toList();
+        mergedContent.addAttributes(mergedAttributes);
+
+        // Create destination folder for new content
+        DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), mergedContent);
+        if (null == targetFolder || !targetFolder.exists())
+            throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
+
+        mergedContent.setStorageUri(targetFolder.getUri().toString());
+
+        // Renumber all picture files and dispatch chapters
+        long nbImages = Stream.of(contentList).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
+        int nbMaxDigits = (int) (Math.floor(Math.log10(nbImages)) + 1);
+
+        List<ImageFile> mergedImages = new ArrayList<>();
+        List<Chapter> mergedChapters = new ArrayList<>();
+
+        // Set cover
+        ImageFile firstCover = firstContent.getCover();
+        ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
+        boolean isError = false;
+        try {
+            if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
+                String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
+                Uri newUri = FileHelper.copyFile(
+                        getApplication(),
+                        Uri.parse(firstCover.getFileUri()),
+                        targetFolder.getUri(),
+                        firstCover.getMimeType(),
+                        firstCover.getName() + "." + extension);
+                if (newUri != null)
+                    coverPic.setFileUri(newUri.toString());
+                else
+                    Timber.w("Could not move file %s", firstCover.getFileUri());
+            }
+            mergedImages.add(coverPic);
+
+            int chapterOrder = 0;
+            int pictureOrder = 1;
+            int nbProcessedPics = 1;
+            for (Content c : contentList) {
+                if (null == c.getImageFiles()) continue;
+                Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
+                for (ImageFile img : c.getImageFiles()) {
+                    if (!img.isReadable()) continue;
+                    ImageFile newImg = new ImageFile(img);
+                    newImg.setId(0); // Force working on a new picture
+                    newImg.getContent().setTarget(null); // Clear content
+                    newImg.setOrder(pictureOrder++);
+                    newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
+                    Chapter chapLink = newImg.getLinkedChapter();
+                    Chapter newChapter;
+                    if (null == chapLink) { // No chapter -> set content chapter
+                        newChapter = contentChapter;
+                    } else {
+                        newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
+                    }
+                    if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
+                    newImg.setChapter(newChapter);
+
+                    // If exists, move the picture to the merged books's folder
+                    if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
+                        String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
+                        Uri newUri = FileHelper.copyFile(
+                                getApplication(),
+                                Uri.parse(img.getFileUri()),
+                                targetFolder.getUri(),
+                                newImg.getMimeType(),
+                                newImg.getName() + "." + extension);
+                        if (newUri != null)
+                            newImg.setFileUri(newUri.toString());
+                        else
+                            Timber.w("Could not move file %s", img.getFileUri());
+                        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
+                    }
+                    mergedImages.add(newImg);
+                }
+            }
+        } catch (IOException e) {
+            Timber.w(e);
+            isError = true;
+        }
+
+        if (!isError) {
+            mergedContent.setImageFiles(mergedImages);
+            mergedContent.setChapters(mergedChapters); // Chapters have to be attached to Content too
+            mergedContent.setQtyPages(mergedImages.size() - 1);
+            mergedContent.computeSize();
+
+            DocumentFile jsonFile = ContentHelper.createContentJson(getApplication(), mergedContent);
+            if (jsonFile != null) mergedContent.setJsonUri(jsonFile.getUri().toString());
+
+            // Save new content (incl. group operations)
+            ContentHelper.addContent(getApplication(), dao, mergedContent);
+
+            // Merge custom groups and update
+            // Merged book can be a member of one custom group only
+            Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
+            if (customGroup.isPresent())
+                GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
+            // TODO test custom groups
+
+            // Remove old contents
+            deleteItems(contentList, Collections.emptyList(), false);
+        }
+
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
+    }
+
+    public void splitContent(
+            @NonNull Content content,
+            @NonNull Runnable onSuccess) {
+        // Flag the content as "being deleted" (triggers blink animation)
+//        flagContentDelete(content, true);
+
+        compositeDisposable.add(
+                Single.fromCallable(() -> {
+                    boolean result = false;
+                    try {
+                        doSplitContent(content);
+                        result = true;
+                    } catch (ContentNotProcessedException e) {
+                        Timber.e(e);
+//                        flagContentDelete(content, false);
+                    }
+                    return result;
+                })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                b -> {
+                                    if (b) onSuccess.run();
+                                },
+                                t -> {
+                                    Timber.e(t);
+//                                    flagContentDelete(content, false);
+                                }
+                        )
+        );
+    }
+
+    private void doSplitContent(@NonNull Content content) throws ContentNotProcessedException {
+        Helper.assertNonUiThread();
+        List<Chapter> chapters = content.getChapters();
+        if (null == chapters || chapters.isEmpty())
+            throw new ContentNotProcessedException(content, "No chapters detected");
+
+        for (Chapter chap : chapters) createContentFromChapter(content, chap);
+    }
+
+    private void createContentFromChapter(@NonNull Content content, @NonNull Chapter chapter) throws ContentNotProcessedException {
+        // Initiate a new Content
+        Content splitContent = new Content();
+        splitContent.setSite(content.getSite());
+        splitContent.setUniqueSiteId(content.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
+        splitContent.setDownloadMode(content.getDownloadMode());
+        splitContent.setTitle(content.getTitle() + " - " + chapter.getName());
+        splitContent.setUploadDate(content.getUploadDate());
+        splitContent.setDownloadDate(Instant.now().toEpochMilli());
+        splitContent.setStatus(content.getStatus());
+        splitContent.setBookPreferences(content.getBookPreferences());
+
+        String url = StringHelper.protect(chapter.getUrl());
+        if (url.isEmpty()) url = content.getUrl();
+        splitContent.setUrl(url);
+
+        List<ImageFile> images = chapter.getImageFiles();
+        if (images != null) {
+            images = Stream.of(chapter.getImageFiles()).sortBy(ImageFile::getOrder).toList();
+            for (ImageFile img : images) { // Force new instance creation
+                img.setId(0);
+                img.setChapter(null);
+            }
+
+            splitContent.setImageFiles(images);
+            splitContent.setChapters(null);
+            splitContent.setQtyPages((int) Stream.of(images).filter(ImageFile::isReadable).count());
+
+            String coverImageUrl = StringHelper.protect(images.get(0).getUrl());
+            if (coverImageUrl.isEmpty()) coverImageUrl = content.getCoverImageUrl();
+            splitContent.setCoverImageUrl(coverImageUrl);
+        }
+
+        List<Attribute> splitAttributes = Stream.of(content).flatMap(c -> Stream.of(c.getAttributes())).toList();
+        splitContent.addAttributes(splitAttributes);
     }
 }

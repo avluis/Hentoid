@@ -111,7 +111,8 @@ public final class GroupHelper {
         return true;
     }
 
-    public static Content moveBook(@NonNull final Content content, @Nullable final Group group, @NonNull final CollectionDAO dao) {
+    // TODO doc
+    public static Content moveContentToCustomGroup(@NonNull final Content content, @Nullable final Group group, @NonNull final CollectionDAO dao) {
         Helper.assertNonUiThread();
         // Get all groupItems of the given content for custom grouping
         List<GroupItem> groupItems = dao.selectGroupItems(content.getId(), Grouping.CUSTOM);
@@ -148,7 +149,7 @@ public final class GroupHelper {
         return content;
     }
 
-
+    // TODO doc
     private static void updateGroupCover(@NonNull final Group g, long contentIdToRemove) {
         List<Content> groupsContents = g.getContents();
 

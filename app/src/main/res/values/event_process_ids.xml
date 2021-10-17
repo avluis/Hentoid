@@ -7,5 +7,5 @@
     <item name="queue_download" type="id"/>
     <item name="duplicate_index" type="id"/>
     <item name="duplicate_detect" type="id"/>
-    <item name="generic_delete" type="id"/>
+    <item name="generic_progress" type="id"/>
 </resources>

@@ -2,7 +2,7 @@ package me.devsaki.hentoid.util.exception
 
 import me.devsaki.hentoid.database.domains.Content
 
-open class ContentNotRemovedException : Exception {
+open class ContentNotProcessedException : Exception {
 
     val content: Content
 

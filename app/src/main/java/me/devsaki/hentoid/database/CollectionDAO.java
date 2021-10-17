@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
@@ -193,7 +194,9 @@ public interface CollectionDAO {
 
     ImageFile selectImageFile(long id);
 
-    LiveData<List<ImageFile>> selectDownloadedImagesFromContent(long id);
+    LiveData<List<ImageFile>> selectDownloadedImagesFromContentLive(long id);
+
+    List<ImageFile> selectDownloadedImagesFromContent(long id);
 
     Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId);
 
@@ -235,6 +238,12 @@ public interface CollectionDAO {
             int orderStyle);
 
     Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
+
+    // CHAPTERS
+
+    void deleteChapters(@NonNull final Content content);
+
+    void insertChapters(@NonNull final List<Chapter> chapters);
 
 
     // SITE HISTORY

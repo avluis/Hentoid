@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.library;
+package me.devsaki.hentoid.fragments.queue;
 
 import android.content.Context;
 import android.os.Bundle;

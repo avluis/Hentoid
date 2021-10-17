@@ -48,6 +48,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import io.reactivex.Completable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
@@ -68,6 +71,8 @@ public class FileHelper {
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
 
     private static final String ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"; // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
+
+    public static final int FILE_IO_BUFFER_SIZE = 32 * 1024;
 
 
     /**
@@ -627,7 +632,7 @@ public class FileHelper {
      * @throws IOException In case something horrible happens during I/O
      */
     public static void saveBinary(@NonNull final Context context, @NonNull final Uri uri, byte[] binaryData) throws IOException {
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[FILE_IO_BUFFER_SIZE];
         int count;
 
         try (InputStream input = new ByteArrayInputStream(binaryData)) {
@@ -675,6 +680,7 @@ public class FileHelper {
         else return result;
     }
 
+    // TODO doc
     public static String getMimeTypeFromFileName(@NonNull String fileName) {
         return getMimeTypeFromExtension(getExtension(fileName));
     }
@@ -739,12 +745,34 @@ public class FileHelper {
      */
     public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
         // Transfer bytes from in to out
-        byte[] buf = new byte[1024];
+        byte[] buf = new byte[FILE_IO_BUFFER_SIZE];
         int len;
         while ((len = in.read(buf)) > 0) {
             out.write(buf, 0, len);
         }
         out.flush();
+    }
+
+    // TODO doc
+    @Nullable
+    public static Uri copyFile(
+            @NonNull final Context context,
+            @NonNull final Uri sourceFileUri,
+            @NonNull final Uri targetFolderUri,
+            @NonNull String mimeType,
+            @NonNull String newName) throws IOException {
+        DocumentFile sourceFile = DocumentFile.fromSingleUri(context, sourceFileUri);
+        if (null == sourceFile || !sourceFile.exists()) return null;
+        DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
+        if (null == targetFolder || !targetFolder.exists()) return null;
+        DocumentFile newFile = targetFolder.createFile(mimeType, newName);
+        if (null == newFile || !newFile.exists()) return null;
+        try (OutputStream newDownload = FileHelper.getOutputStream(context, newFile)) {
+            try (InputStream input = FileHelper.getInputStream(context, sourceFile)) {
+                FileHelper.copy(input, newDownload);
+            }
+        }
+        return newFile.getUri();
     }
 
     /**

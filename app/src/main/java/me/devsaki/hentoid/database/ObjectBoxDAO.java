@@ -30,6 +30,7 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
@@ -325,6 +326,14 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteErrorRecords(contentId);
     }
 
+    public void deleteChapters(@NonNull final Content content) {
+        db.deleteChaptersByContentId(content.getId());
+    }
+
+    public void insertChapters(@NonNull final List<Chapter> chapters) {
+        db.insertChapters(chapters);
+    }
+
     @Override
     public void clearDownloadParams(long contentId) {
         Content c = db.selectContentById(contentId);
@@ -596,8 +605,13 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectImageFile(id);
     }
 
-    public LiveData<List<ImageFile>> selectDownloadedImagesFromContent(long id) {
-        return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContent(id));
+    public LiveData<List<ImageFile>> selectDownloadedImagesFromContentLive(long id) {
+        return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContentQ(id));
+    }
+
+    @Override
+    public List<ImageFile> selectDownloadedImagesFromContent(long id) {
+        return db.selectDownloadedImagesFromContentQ(id).find();
     }
 
     public Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId) {

@@ -79,11 +79,16 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:background="@color/white_opacity_25"
+        android:paddingStart="64dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp"
         android:text="@string/export_warning"
         android:textColor="@color/white_opacity_87"
-        android:textStyle="bold"
+        android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/export_warning_img"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/export_file_bookmarks_chk" />
 
     <ImageView
@@ -96,7 +101,7 @@
         app:layout_constraintBottom_toBottomOf="@id/export_file_help_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/export_file_help_text"
-        app:tint="?colorSecondary"
+        app:tint="@color/white_opacity_87"
         tools:ignore="ContentDescription" />
 
     <TextView

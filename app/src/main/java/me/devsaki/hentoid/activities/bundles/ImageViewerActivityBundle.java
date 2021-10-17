@@ -16,6 +16,7 @@ public class ImageViewerActivityBundle {
     private static final String KEY_IMAGE_INDEX = "imageIndex";
     private static final String KEY_IMAGE_NUMBER = "imageNumber";
     private static final String KEY_SCALE = "scale";
+    private static final String KEY_FORCE_SHOW_GALLERY = "forceShowGallery";
 
     private ImageViewerActivityBundle() {
         throw new UnsupportedOperationException();
@@ -43,6 +44,10 @@ public class ImageViewerActivityBundle {
 
         public void setScale(float scale) {
             bundle.putFloat(KEY_SCALE, scale);
+        }
+
+        public void setForceShowGallery(boolean value) {
+            bundle.putBoolean(KEY_FORCE_SHOW_GALLERY, value);
         }
 
         public Bundle getBundle() {
@@ -76,6 +81,10 @@ public class ImageViewerActivityBundle {
 
         public float getScale() {
             return bundle.getFloat(KEY_SCALE, -1);
+        }
+
+        public boolean isForceShowGallery() {
+            return bundle.getBoolean(KEY_FORCE_SHOW_GALLERY, false);
         }
     }
 }

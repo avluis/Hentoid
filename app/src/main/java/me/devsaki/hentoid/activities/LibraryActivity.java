@@ -15,6 +15,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -77,6 +78,7 @@ import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.TooltipHelper;
@@ -157,6 +159,8 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem downloadMenu;
     private MenuItem streamMenu;
     private MenuItem coverMenu;
+    private MenuItem mergeMenu;
+    private MenuItem splitMenu;
 
     private ViewPager2 viewPager;
 
@@ -368,7 +372,7 @@ public class LibraryActivity extends BaseActivity {
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle());
+                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle(), false);
                 } finally {
                     dao.cleanup();
                 }
@@ -656,6 +660,7 @@ public class LibraryActivity extends BaseActivity {
         selectionToolbar = findViewById(R.id.library_selection_toolbar);
         selectionToolbar.getMenu().clear();
         selectionToolbar.inflateMenu(R.menu.library_selection_menu);
+        Helper.tryShowMenuIcons(this, selectionToolbar.getMenu());
 
         editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
         deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
@@ -668,6 +673,8 @@ public class LibraryActivity extends BaseActivity {
         downloadMenu = selectionToolbar.getMenu().findItem(R.id.action_download);
         streamMenu = selectionToolbar.getMenu().findItem(R.id.action_stream);
         coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+        mergeMenu = selectionToolbar.getMenu().findItem(R.id.action_merge);
+        splitMenu = selectionToolbar.getMenu().findItem(R.id.action_split);
 
         updateSelectionToolbar(0, 0, 0);
     }
@@ -945,9 +952,9 @@ public class LibraryActivity extends BaseActivity {
     public void updateSelectionToolbar(
             long selectedTotalCount,
             long selectedLocalCount,
-            long selectedOnlineCount) {
+            long selectedStreamedCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
-        long selectedDownloadedCount = selectedLocalCount - selectedOnlineCount;
+        long selectedDownloadedCount = selectedLocalCount - selectedStreamedCount;
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
 
         if (isGroupDisplayed()) {
@@ -962,6 +969,8 @@ public class LibraryActivity extends BaseActivity {
             downloadMenu.setVisible(false);
             streamMenu.setVisible(false);
             coverMenu.setVisible(false);
+            mergeMenu.setVisible(false);
+            splitMenu.setVisible(false);
         } else {
             editNameMenu.setVisible(false);
             deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
@@ -971,9 +980,11 @@ public class LibraryActivity extends BaseActivity {
             changeGroupMenu.setVisible(true);
             folderMenu.setVisible(!isMultipleSelection);
             redownloadMenu.setVisible(selectedDownloadedCount > 0);
-            downloadMenu.setVisible(selectedOnlineCount > 0);
+            downloadMenu.setVisible(selectedStreamedCount > 0);
             streamMenu.setVisible(selectedDownloadedCount > 0);
             coverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
+            mergeMenu.setVisible(selectedLocalCount > 1);
+            splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         }
     }
 

@@ -39,7 +39,7 @@ import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
@@ -307,8 +307,8 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
      */
     private void onDeleteError(Throwable t) {
         Timber.e(t);
-        if (t instanceof ContentNotRemovedException) {
-            ContentNotRemovedException e = (ContentNotRemovedException) t;
+        if (t instanceof ContentNotProcessedException) {
+            ContentNotProcessedException e = (ContentNotProcessedException) t;
             String message = (null == e.getMessage()) ? "File removal failed" : e.getMessage();
             Snackbar.make(rootView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }

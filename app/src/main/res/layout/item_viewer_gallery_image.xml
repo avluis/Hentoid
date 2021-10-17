@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="100dp"
     android:background="@color/transparent"
     android:clickable="true"
-    android:focusable="true">
+    android:focusable="true"
+    android:minHeight="100dp">
 
     <ImageView
         android:id="@+id/viewer_gallery_image"
@@ -15,18 +15,18 @@
         android:layout_height="0dp"
         android:clickable="false"
         android:duplicateParentState="true"
-        app:layout_constraintDimensionRatio="W, 1:1"
         android:focusable="false"
-        tools:src="@tools:sample/avatars"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="W, 1:1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"
+        tools:src="@tools:sample/avatars" />
 
     <ImageView
         android:id="@+id/checked_indicator"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:src="@drawable/ic_checked_circle"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@id/viewer_gallery_image"
@@ -38,7 +38,7 @@
 
     <TextView
         android:id="@+id/viewer_gallery_pagenumber_text"
-        style="@style/TextShadow"
+        style="@style/TextShadowLight"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/black_opacity_50"
@@ -55,5 +55,25 @@
         app:layout_constraintEnd_toEndOf="@id/viewer_gallery_image"
         app:layout_constraintStart_toStartOf="@id/viewer_gallery_image"
         tools:text="28" />
+
+    <TextView
+        android:id="@+id/chapter_overlay"
+        style="@style/TextShadowMedium"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/black_opacity_50"
+        android:clickable="false"
+        android:duplicateParentState="true"
+        android:focusable="false"
+        android:gravity="center"
+        android:longClickable="false"
+        android:textAlignment="center"
+        android:textColor="@color/white_opacity_87"
+        android:textSize="@dimen/text_header_6"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Chapter 44"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

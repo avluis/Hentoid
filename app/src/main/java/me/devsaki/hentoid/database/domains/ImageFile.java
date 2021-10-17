@@ -271,6 +271,11 @@ public class ImageFile {
     }
 
     @Nullable
+    public Chapter getLinkedChapter() {
+        return (chapter != null && !chapter.isNull()) ? chapter.getTarget() : null;
+    }
+
+    @Nullable
     public ToOne<Chapter> getChapter() {
         return chapter;
     }

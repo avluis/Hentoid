@@ -18,8 +18,8 @@ import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.notification.duplicates.DuplicateNotificationChannel
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException
-import me.devsaki.hentoid.util.exception.FileNotRemovedException
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException
+import me.devsaki.hentoid.util.exception.FileNotProcessedException
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.devsaki.hentoid.workers.data.DuplicateData
 import timber.log.Timber
@@ -151,16 +151,16 @@ class DuplicateViewModel(
         )
     }
 
-    @Throws(ContentNotRemovedException::class)
+    @Throws(ContentNotProcessedException::class)
     private fun doRemove(contentId: Long) {
         Helper.assertNonUiThread()
         // Remove content altogether from the DB (including queue)
         val content: Content = dao.selectContent(contentId) ?: return
         try {
             ContentHelper.removeQueuedContent(getApplication(), dao, content)
-        } catch (e: ContentNotRemovedException) {
+        } catch (e: ContentNotProcessedException) {
             // Don't throw the exception if we can't remove something that isn't there
-            if (!(e is FileNotRemovedException && content.storageUri.isEmpty())) throw e
+            if (!(e is FileNotProcessedException && content.storageUri.isEmpty())) throw e
         }
     }
 }

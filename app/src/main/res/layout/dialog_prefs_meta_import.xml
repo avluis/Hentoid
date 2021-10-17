@@ -120,10 +120,15 @@
         android:layout_marginTop="8dp"
         android:text="@string/import_warning"
         android:textColor="@color/white_opacity_87"
-        android:textStyle="bold"
+        android:background="@color/white_opacity_25"
+        android:textStyle="italic"
         android:visibility="gone"
+        android:paddingStart="64dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/import_warning_img"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/import_file_bookmarks_chk"
         tools:visibility="visible" />
 
@@ -138,7 +143,7 @@
         app:layout_constraintBottom_toBottomOf="@id/import_file_help_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/import_file_help_text"
-        app:tint="?colorSecondary"
+        app:tint="@color/white_opacity_87"
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
 

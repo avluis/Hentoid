@@ -12,6 +12,8 @@
     <string name="goto_page">Go to page…</string>
     <string name="confirm">Confirm</string>
     <string name="please_wait">Please wait…</string>
+    <string name="books">books</string>
+    <string name="pages">pages</string>
     <string name="undo">Undo</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
@@ -143,6 +145,7 @@
 
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
+    <string name="generic_progress">%1$d / %2$d %3$s</string>
     <string name="book_progress">%1$d / %2$d books</string>
     <string name="group_progress">%1$d / %2$d groups</string>
 
@@ -370,6 +373,16 @@
         <item quantity="other">Delete groups + books</item>
     </plurals>
     <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
+    <string name="merge_merge">Merge</string>
+    <string name="merge_progress">Merging books…</string>
+    <string name="split_progress">Splitting book…</string>
+    <string name="merge_split">Split</string>
+    <string name="new_title">New title</string>
+    <string name="split_select_help">Hold and drag to select\n- Selected chapters are split to one book\n- Unselected chapters are split to another book</string>
+    <string name="split_no_chapters">No chapters created yet :-(</string>
+    <string name="split_create_chapters">Create chapters</string>
+    <string name="merge_success">Content merged successfuly</string>
+    <string name="split_success">Content split successfuly</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
@@ -522,8 +535,8 @@
     <string name="information_help">Information</string>
     <string name="previous_book_help">Previous book</string>
     <string name="next_book_help">Next book</string>
+    <string name="menu_edit_chapters">Edit chapters</string>
     <string name="gallery_help">Book gallery</string>
-    <string name="gallery_fav_help">Book gallery / favourites only</string>
     <string name="page_fav_help">Mark/unmark page as favourite</string>
     <string name="page_copy_help">Copy page to the Android Downloads folder</string>
     <string name="page_share_help">Share page using another app</string>
@@ -550,6 +563,9 @@
     <string name="viewer_fix">Fix download error</string>
     <string name="viewer_reload_page">Reload page</string>
     <string name="viewer_reparse_book">Reparse book</string>
+    <string name="gallery_edit_chapters_help">To create a chapter, tap its first page</string>
+    <string name="gallery_clear_chapters">Clear all chapters</string>
+    <string name="gallery_add_chapter">Add chapter</string>
 
 
     <!-- Changelog -->
