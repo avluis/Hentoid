@@ -60,6 +60,7 @@ import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
@@ -1014,8 +1015,79 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void splitContent(
             @NonNull Content content,
-            @NonNull List<Chapter> chapters,
             @NonNull Runnable onSuccess) {
-        // TODO
+        // Flag the content as "being deleted" (triggers blink animation)
+//        flagContentDelete(content, true);
+
+        compositeDisposable.add(
+                Single.fromCallable(() -> {
+                    boolean result = false;
+                    try {
+                        doSplitContent(content);
+                        result = true;
+                    } catch (ContentNotProcessedException e) {
+                        Timber.e(e);
+//                        flagContentDelete(content, false);
+                    }
+                    return result;
+                })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                b -> {
+                                    if (b) onSuccess.run();
+                                },
+                                t -> {
+                                    Timber.e(t);
+//                                    flagContentDelete(content, false);
+                                }
+                        )
+        );
+    }
+
+    private void doSplitContent(@NonNull Content content) throws ContentNotProcessedException {
+        Helper.assertNonUiThread();
+        List<Chapter> chapters = content.getChapters();
+        if (null == chapters || chapters.isEmpty())
+            throw new ContentNotProcessedException(content, "No chapters detected");
+
+        for (Chapter chap : chapters) createContentFromChapter(content, chap);
+    }
+
+    private void createContentFromChapter(@NonNull Content content, @NonNull Chapter chapter) throws ContentNotProcessedException {
+        // Initiate a new Content
+        Content splitContent = new Content();
+        splitContent.setSite(content.getSite());
+        splitContent.setUniqueSiteId(content.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
+        splitContent.setDownloadMode(content.getDownloadMode());
+        splitContent.setTitle(content.getTitle() + " - " + chapter.getName());
+        splitContent.setUploadDate(content.getUploadDate());
+        splitContent.setDownloadDate(Instant.now().toEpochMilli());
+        splitContent.setStatus(content.getStatus());
+        splitContent.setBookPreferences(content.getBookPreferences());
+
+        String url = StringHelper.protect(chapter.getUrl());
+        if (url.isEmpty()) url = content.getUrl();
+        splitContent.setUrl(url);
+
+        List<ImageFile> images = chapter.getImageFiles();
+        if (images != null) {
+            images = Stream.of(chapter.getImageFiles()).sortBy(ImageFile::getOrder).toList();
+            for (ImageFile img : images) { // Force new instance creation
+                img.setId(0);
+                img.setChapter(null);
+            }
+
+            splitContent.setImageFiles(images);
+            splitContent.setChapters(null);
+            splitContent.setQtyPages((int) Stream.of(images).filter(ImageFile::isReadable).count());
+
+            String coverImageUrl = StringHelper.protect(images.get(0).getUrl());
+            if (coverImageUrl.isEmpty()) coverImageUrl = content.getCoverImageUrl();
+            splitContent.setCoverImageUrl(coverImageUrl);
+        }
+
+        List<Attribute> splitAttributes = Stream.of(content).flatMap(c -> Stream.of(c.getAttributes())).toList();
+        splitContent.addAttributes(splitAttributes);
     }
 }
