@@ -29,6 +29,7 @@
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"440"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"441"},
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"441"},
+	  {"sourceName":"NHENTAI", "status":"RED"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
