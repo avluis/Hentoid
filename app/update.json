@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.15.8/hentoid1158-441.apk",
-  "versionCode": "441",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.15.9/hentoid1159-442.apk",
+  "versionCode": "442",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/test1/v415.apk",
   "versionCode.beta": "100",
   "sourceAlerts":[
@@ -29,6 +29,7 @@
 	  {"sourceName":"MANHWA", "status":"ORANGE", "fixedByBuild":"440"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"441"},
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"441"},
+	  {"sourceName":"NHENTAI", "status":"RED", "fixedByBuild":"442"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
