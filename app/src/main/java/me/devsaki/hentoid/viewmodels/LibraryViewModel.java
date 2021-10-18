@@ -944,6 +944,7 @@ public class LibraryViewModel extends AndroidViewModel {
             int chapterOrder = 0;
             int pictureOrder = 1;
             int nbProcessedPics = 1;
+            Chapter newChapter = null;
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
@@ -956,10 +957,12 @@ public class LibraryViewModel extends AndroidViewModel {
                     newImg.setOrder(pictureOrder++);
                     newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
                     Chapter chapLink = newImg.getLinkedChapter();
-                    Chapter newChapter;
                     if (null == chapLink) { // No chapter -> set content chapter
                         newChapter = contentChapter;
-                    } else {
+                    } else if (null == newChapter || (
+                            !chapLink.getUrl().equals(newChapter.getUrl()) && !chapLink.getUniqueId().equals(newChapter.getUniqueId())
+                    )
+                    ) {
                         newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
                     }
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);

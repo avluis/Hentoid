@@ -1274,12 +1274,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     c.setName("Chapter " + newOrder);
                 // Update order
                 c.setOrder(newOrder);
+                c.setContent(content);
             } else if (c.getOrder() == Integer.MAX_VALUE) c.setOrder(newChapterOrder);
             updatedChapters.add(c);
         }
+//        content.setChapters(updatedChapters);
 
         // Save chapters
         dao.insertChapters(updatedChapters);
+//        dao.insertContent(content);
     }
 }
 

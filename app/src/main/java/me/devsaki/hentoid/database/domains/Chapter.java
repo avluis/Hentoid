@@ -37,7 +37,7 @@ public class Chapter {
     }
 
     public static Chapter fromChapter(Chapter chap) {
-        return new Chapter(chap.order, chap.url, chap.name);
+        return new Chapter(chap.order, chap.url, chap.name).setUniqueId(chap.uniqueId);
     }
 
 
