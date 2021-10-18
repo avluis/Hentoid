@@ -15,7 +15,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -983,7 +982,10 @@ public class LibraryActivity extends BaseActivity {
             downloadMenu.setVisible(selectedStreamedCount > 0);
             streamMenu.setVisible(selectedDownloadedCount > 0);
             coverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
-            mergeMenu.setVisible(selectedLocalCount > 1);
+            mergeMenu.setVisible(
+                    (selectedLocalCount > 1 && 0 == selectedStreamedCount)
+                            || (selectedStreamedCount > 1 && 0 == selectedLocalCount)
+            ); // Can only merge downloaded or streamed content together
             splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         }
     }
