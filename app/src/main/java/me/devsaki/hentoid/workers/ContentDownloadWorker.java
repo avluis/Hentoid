@@ -226,7 +226,7 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
         long spaceLeftBytes = new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes();
-        if (spaceLeftBytes < 2L * 1024 * 1024 * 1024 * 1024) {
+        if (spaceLeftBytes < 2L * 1024 * 1024) {
             Timber.w("Device very low on storage space (<2 MB). Queue paused.");
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE, spaceLeftBytes));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
