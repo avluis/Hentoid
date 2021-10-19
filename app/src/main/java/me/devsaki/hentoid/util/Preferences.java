@@ -565,11 +565,11 @@ public final class Preferences {
         String siteCodesStr = sharedPreferences.getString(Key.ACTIVE_SITES, Default.ACTIVE_SITES) + "";
         if (siteCodesStr.isEmpty()) return Collections.emptyList();
 
-        return Stream.of(siteCodesStr.split(",")).map(s -> Site.searchByCode(Long.parseLong(s))).toList();
+        return Stream.of(siteCodesStr.split(",")).distinct().map(s -> Site.searchByCode(Long.parseLong(s))).toList();
     }
 
     public static void setActiveSites(List<Site> activeSites) {
-        List<Integer> siteCodes = Stream.of(activeSites).map(Site::getCode).toList();
+        List<Integer> siteCodes = Stream.of(activeSites).map(Site::getCode).distinct().toList();
         sharedPreferences.edit()
                 .putString(Key.ACTIVE_SITES, android.text.TextUtils.join(",", siteCodes))
                 .apply();
