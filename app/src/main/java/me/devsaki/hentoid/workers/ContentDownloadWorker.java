@@ -225,9 +225,10 @@ public class ContentDownloadWorker extends BaseWorker {
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
-        if (new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes() < 2 * 1024 * 1024) {
+        long spaceLeftBytes = new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes();
+        if (spaceLeftBytes < 2L * 1024 * 1024 * 1024 * 1024) {
             Timber.w("Device very low on storage space (<2 MB). Queue paused.");
-            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE));
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE, spaceLeftBytes));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 

@@ -96,6 +96,22 @@ public class DownloadEvent {
     }
 
     /**
+     * Use for out of memory EV_PAUSE event
+     *
+     * @param eventType event type code (among DownloadEvent public static EV_ values)
+     * @param motive    motive for the event
+     */
+    public DownloadEvent(int eventType, @Motive int motive, long spaceLeftBytes) {
+        this.content = null;
+        this.eventType = eventType;
+        this.pagesOK = 0;
+        this.pagesKO = 0;
+        this.pagesTotal = 0;
+        this.downloadedSizeB = spaceLeftBytes;
+        this.motive = motive;
+    }
+
+    /**
      * Use for EV_PAUSE, EV_UNPAUSE and EV_SKIP events
      *
      * @param eventType event type code (among DownloadEvent public static EV_ values)

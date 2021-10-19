@@ -104,7 +104,7 @@
     <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
     <string name="paused_no_internet">Cannot download - No internet</string>
     <string name="paused_no_wifi">Cannot download - No WiFi</string>
-    <string name="paused_no_storage">Cannot download - Low on storage. Free space or change download folder location</string>
+    <string name="paused_no_storage">Cannot download - Low on storage (%s left). Free space or change download folder location</string>
     <string name="paused_no_dl_folder">Cannot download - No download folder. Use app settings to select one</string>
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
