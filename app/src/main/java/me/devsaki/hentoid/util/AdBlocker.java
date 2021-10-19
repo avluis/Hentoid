@@ -31,8 +31,8 @@ public class AdBlocker {
     private static final Set<String> universalUrlBlacklist = new HashSet<>();
     private static final Set<String> universalUrlWhitelist = new HashSet<>();
     // Local lists (applied to current site)
-    private List<String> localUrlBlacklist;
-    private List<String> localUrlWhitelist;
+    private final List<String> localUrlBlacklist = new ArrayList<>();
+    private final List<String> localUrlWhitelist = new ArrayList<>();
     private final List<Pattern> jsUrlPatternWhitelist = Collections.synchronizedList(new ArrayList<>());
     private final List<String> jsContentBlacklist = new ArrayList<>();
 
@@ -59,13 +59,12 @@ public class AdBlocker {
      */
     private boolean isUrlBlacklisted(@NonNull String url) {
         // First search into the local list...
-        if (localUrlBlacklist != null)
-            for (String s : localUrlBlacklist) {
-                if (url.contains(s)) {
-                    if (BuildConfig.DEBUG) Timber.v("Blacklisted URL blocked (local) : %s", url);
-                    return true;
-                }
+        for (String s : localUrlBlacklist) {
+            if (url.contains(s)) {
+                if (BuildConfig.DEBUG) Timber.v("Blacklisted URL blocked (local) : %s", url);
+                return true;
             }
+        }
         // ...then into the universal list
         for (String s : universalUrlBlacklist) {
             if (url.contains(s)) {
@@ -84,13 +83,12 @@ public class AdBlocker {
      */
     private boolean isUrlWhitelisted(@NonNull String url) {
         // First search into the local simple list...
-        if (localUrlWhitelist != null)
-            for (String s : localUrlWhitelist) {
-                if (url.contains(s)) {
-                    if (BuildConfig.DEBUG) Timber.v("Whitelisted URL (local) : %s", url);
-                    return true;
-                }
+        for (String s : localUrlWhitelist) {
+            if (url.contains(s)) {
+                if (BuildConfig.DEBUG) Timber.v("Whitelisted URL (local) : %s", url);
+                return true;
             }
+        }
         // ...then into the global simple list...
         for (String s : universalUrlWhitelist) {
             if (url.contains(s)) {
@@ -115,7 +113,6 @@ public class AdBlocker {
      * @param filter Filter to addAll to local blacklist
      */
     public void addToUrlBlacklist(String... filter) {
-        if (null == localUrlBlacklist) localUrlBlacklist = new ArrayList<>();
         Collections.addAll(localUrlBlacklist, filter);
     }
 
@@ -125,7 +122,6 @@ public class AdBlocker {
      * @param filter Filter to addAll to local whitelist
      */
     public void addJsUrlWhitelist(String... filter) {
-        if (null == localUrlWhitelist) localUrlWhitelist = new ArrayList<>();
         Collections.addAll(localUrlWhitelist, filter);
     }
 
@@ -155,8 +151,11 @@ public class AdBlocker {
         // 3- Accept non-JS files that are not blacklisted
         if (!isJs) return false;
 
-        // If no grey list has been defined, block url as it has not been whitelisted
-        if (jsContentBlacklist.isEmpty()) return true;
+        // If no grey list has been defined...
+        if (jsContentBlacklist.isEmpty()) {
+            // ...be lenient if there's no local whitelist set (vanilla adblocker); block instead as it has not been explicitly whitelisted
+            return (localUrlWhitelist.size() + jsUrlPatternWhitelist.size() > 0);
+        }
 
 
         // 4- If a grey list has been defined, block them if they _contain_ keywords
