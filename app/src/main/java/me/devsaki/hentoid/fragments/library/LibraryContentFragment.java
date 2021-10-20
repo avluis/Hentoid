@@ -997,7 +997,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             else if (s.equals(Site.NONE))
                 Snackbar.make(recyclerView, R.string.unsupported_site, BaseTransientBottomBar.LENGTH_SHORT).show();
             else
-                ContentHelper.launchBrowserFor(requireContext(), s, query);
+                ContentHelper.launchBrowserFor(requireContext(), query);
         } else {
             viewModel.searchContentUniversal(query);
         }

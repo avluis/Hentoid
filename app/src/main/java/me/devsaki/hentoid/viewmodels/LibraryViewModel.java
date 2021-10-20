@@ -853,7 +853,7 @@ public class LibraryViewModel extends AndroidViewModel {
             @NonNull List<Content> contentList,
             @NonNull String newTitle,
             @NonNull Runnable onSuccess) {
-        if (0 == contentList.size()) return;
+        if (contentList.isEmpty()) return;
 
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
@@ -862,7 +862,9 @@ public class LibraryViewModel extends AndroidViewModel {
                 Single.fromCallable(() -> {
                     boolean result = false;
                     try {
-                        doMergeContents(contentList, newTitle);
+                        ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
+                        // Remove old contents
+                        deleteItems(contentList, Collections.emptyList(), false);
                         result = true;
                     } catch (ContentNotProcessedException e) {
                         Timber.e(e);
@@ -882,139 +884,6 @@ public class LibraryViewModel extends AndroidViewModel {
                                 }
                         )
         );
-    }
-
-    private void doMergeContents(@NonNull List<Content> contentList, @NonNull String newTitle) throws ContentNotProcessedException {
-        Helper.assertNonUiThread();
-
-        Content firstContent = contentList.get(0);
-
-        // Initiate a new Content
-        Content mergedContent = new Content();
-        mergedContent.setSite(firstContent.getSite());
-        mergedContent.setUrl(firstContent.getUrl());
-        mergedContent.setUniqueSiteId(firstContent.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
-        mergedContent.setDownloadMode(firstContent.getDownloadMode());
-        mergedContent.setTitle(newTitle);
-        mergedContent.setCoverImageUrl(firstContent.getCoverImageUrl());
-        mergedContent.setUploadDate(firstContent.getUploadDate());
-        mergedContent.setDownloadDate(Instant.now().toEpochMilli());
-        mergedContent.setStatus(firstContent.getStatus());
-        mergedContent.setFavourite(firstContent.isFavourite());
-        mergedContent.setBookPreferences(firstContent.getBookPreferences());
-
-        // Merge attributes
-        List<Attribute> mergedAttributes = Stream.of(contentList).flatMap(c -> Stream.of(c.getAttributes())).toList();
-        mergedContent.addAttributes(mergedAttributes);
-
-        // Create destination folder for new content
-        DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), mergedContent);
-        if (null == targetFolder || !targetFolder.exists())
-            throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
-
-        mergedContent.setStorageUri(targetFolder.getUri().toString());
-
-        // Renumber all picture files and dispatch chapters
-        long nbImages = Stream.of(contentList).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
-        int nbMaxDigits = (int) (Math.floor(Math.log10(nbImages)) + 1);
-
-        List<ImageFile> mergedImages = new ArrayList<>();
-        List<Chapter> mergedChapters = new ArrayList<>();
-
-        // Set cover
-        ImageFile firstCover = firstContent.getCover();
-        ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
-        boolean isError = false;
-        try {
-            if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
-                String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
-                Uri newUri = FileHelper.copyFile(
-                        getApplication(),
-                        Uri.parse(firstCover.getFileUri()),
-                        targetFolder.getUri(),
-                        firstCover.getMimeType(),
-                        firstCover.getName() + "." + extension);
-                if (newUri != null)
-                    coverPic.setFileUri(newUri.toString());
-                else
-                    Timber.w("Could not move file %s", firstCover.getFileUri());
-            }
-            mergedImages.add(coverPic);
-
-            int chapterOrder = 0;
-            int pictureOrder = 1;
-            int nbProcessedPics = 1;
-            Chapter newChapter = null;
-            for (Content c : contentList) {
-                if (null == c.getImageFiles()) continue;
-                Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
-                contentChapter.setUniqueId(c.getUniqueSiteId());
-                for (ImageFile img : c.getImageFiles()) {
-                    if (!img.isReadable()) continue;
-                    ImageFile newImg = new ImageFile(img);
-                    newImg.setId(0); // Force working on a new picture
-                    newImg.getContent().setTarget(null); // Clear content
-                    newImg.setOrder(pictureOrder++);
-                    newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
-                    Chapter chapLink = newImg.getLinkedChapter();
-                    if (null == chapLink) { // No chapter -> set content chapter
-                        newChapter = contentChapter;
-                    } else if (null == newChapter || (
-                            !chapLink.getUrl().equals(newChapter.getUrl()) && !chapLink.getUniqueId().equals(newChapter.getUniqueId())
-                    )
-                    ) {
-                        newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
-                    }
-                    if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
-                    newImg.setChapter(newChapter);
-
-                    // If exists, move the picture to the merged books's folder
-                    if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
-                        String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
-                        Uri newUri = FileHelper.copyFile(
-                                getApplication(),
-                                Uri.parse(img.getFileUri()),
-                                targetFolder.getUri(),
-                                newImg.getMimeType(),
-                                newImg.getName() + "." + extension);
-                        if (newUri != null)
-                            newImg.setFileUri(newUri.toString());
-                        else
-                            Timber.w("Could not move file %s", img.getFileUri());
-                        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
-                    }
-                    mergedImages.add(newImg);
-                }
-            }
-        } catch (IOException e) {
-            Timber.w(e);
-            isError = true;
-        }
-
-        if (!isError) {
-            mergedContent.setImageFiles(mergedImages);
-            mergedContent.setChapters(mergedChapters); // Chapters have to be attached to Content too
-            mergedContent.setQtyPages(mergedImages.size() - 1);
-            mergedContent.computeSize();
-
-            DocumentFile jsonFile = ContentHelper.createContentJson(getApplication(), mergedContent);
-            if (jsonFile != null) mergedContent.setJsonUri(jsonFile.getUri().toString());
-
-            // Save new content (incl. non-custom group operations)
-            ContentHelper.addContent(getApplication(), dao, mergedContent);
-
-            // Merge custom groups and update
-            // Merged book can be a member of one custom group only
-            Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
-            if (customGroup.isPresent())
-                GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
-            // TODO test custom groups
-
-            // Remove old contents
-            deleteItems(contentList, Collections.emptyList(), false);
-        }
-
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
     }
 
     public void splitContent(

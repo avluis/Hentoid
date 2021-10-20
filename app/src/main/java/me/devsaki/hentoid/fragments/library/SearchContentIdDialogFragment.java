@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.library;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -25,8 +27,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 11/2018
@@ -125,7 +125,7 @@ public class SearchContentIdDialogFragment extends DialogFragment {
     private boolean onItemSelected(Site s) {
         if (null == s) return false;
 
-        ContentHelper.launchBrowserFor(requireContext(), s, getUrlFromId(s, bookId));
+        ContentHelper.launchBrowserFor(requireContext(), getUrlFromId(s, bookId));
 
         this.dismiss();
         return true;

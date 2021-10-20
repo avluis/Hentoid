@@ -72,7 +72,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     ): View {
         _binding = FragmentDuplicateMainBinding.inflate(inflater, container, false)
         addCustomBackControl()
-        activity.get()?.initFragmentToolbars(this::toolbarOnItemClicked)
+        activity.get()?.initFragmentToolbars(this::onToolbarItemClicked)
         return binding.root
     }
 
@@ -142,7 +142,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         requireActivity().onBackPressed()
     }
 
-    private fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
+    private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_settings -> setSettingsPanelVisibility()
         }
@@ -284,9 +284,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         // Group by reference book and count duplicates
         val entries: MutableList<DuplicateEntry> = ArrayList()
-        val countConst = 1
         val map =
-            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumOf { countConst } }
+            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumOf { 1 as Int } }
                 .toMap()
         for (mapEntry in map) {
             if (mapEntry.key != null) {

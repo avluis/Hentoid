@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -54,6 +55,7 @@ import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.DuplicateEntry;
 import me.devsaki.hentoid.database.domains.Group;
@@ -65,6 +67,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
@@ -917,14 +920,15 @@ public final class ContentHelper {
 
     /**
      * Launch the web browser for the given site and URL
-     * TODO make sure the URL and the site are compatible
      *
      * @param context   COntext to be used
-     * @param s         Site to navigate to
      * @param targetUrl Url to navigate to
      */
-    public static void launchBrowserFor(@NonNull final Context context, @NonNull final Site s, @NonNull final String targetUrl) {
-        Intent intent = new Intent(context, Content.getWebActivityClass(s));
+    public static void launchBrowserFor(@NonNull final Context context, @NonNull final String targetUrl) {
+        Site targetSite = Site.searchByUrl(targetUrl);
+        if (null == targetSite || targetSite.equals(Site.NONE)) return;
+
+        Intent intent = new Intent(context, Content.getWebActivityClass(targetSite));
 
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(targetUrl);
@@ -1347,6 +1351,142 @@ public final class ContentHelper {
         }
         return false;
     }
+
+    // TODO doc
+    public static void mergeContents(
+            @NonNull Context context,
+            @NonNull List<Content> contentList,
+            @NonNull String newTitle,
+            @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
+        Helper.assertNonUiThread();
+
+        Content firstContent = contentList.get(0);
+
+        // Initiate a new Content
+        Content mergedContent = new Content();
+        mergedContent.setSite(firstContent.getSite());
+        mergedContent.setUrl(firstContent.getUrl());
+        mergedContent.setUniqueSiteId(firstContent.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
+        mergedContent.setDownloadMode(firstContent.getDownloadMode());
+        mergedContent.setTitle(newTitle);
+        mergedContent.setCoverImageUrl(firstContent.getCoverImageUrl());
+        mergedContent.setUploadDate(firstContent.getUploadDate());
+        mergedContent.setDownloadDate(Instant.now().toEpochMilli());
+        mergedContent.setStatus(firstContent.getStatus());
+        mergedContent.setFavourite(firstContent.isFavourite());
+        mergedContent.setBookPreferences(firstContent.getBookPreferences());
+
+        // Merge attributes
+        List<Attribute> mergedAttributes = Stream.of(contentList).flatMap(c -> Stream.of(c.getAttributes())).toList();
+        mergedContent.addAttributes(mergedAttributes);
+
+        // Create destination folder for new content
+        DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent);
+        if (null == targetFolder || !targetFolder.exists())
+            throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
+
+        mergedContent.setStorageUri(targetFolder.getUri().toString());
+
+        // Renumber all picture files and dispatch chapters
+        long nbImages = Stream.of(contentList).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
+        int nbMaxDigits = (int) (Math.floor(Math.log10(nbImages)) + 1);
+
+        List<ImageFile> mergedImages = new ArrayList<>();
+        List<Chapter> mergedChapters = new ArrayList<>();
+
+        // Set cover
+        ImageFile firstCover = firstContent.getCover();
+        ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
+        boolean isError = false;
+        try {
+            if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
+                String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
+                Uri newUri = FileHelper.copyFile(
+                        context,
+                        Uri.parse(firstCover.getFileUri()),
+                        targetFolder.getUri(),
+                        firstCover.getMimeType(),
+                        firstCover.getName() + "." + extension);
+                if (newUri != null)
+                    coverPic.setFileUri(newUri.toString());
+                else
+                    Timber.w("Could not move file %s", firstCover.getFileUri());
+            }
+            mergedImages.add(coverPic);
+
+            int chapterOrder = 0;
+            int pictureOrder = 1;
+            int nbProcessedPics = 1;
+            Chapter newChapter = null;
+            for (Content c : contentList) {
+                if (null == c.getImageFiles()) continue;
+                Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
+                contentChapter.setUniqueId(c.getUniqueSiteId());
+                for (ImageFile img : c.getImageFiles()) {
+                    if (!img.isReadable()) continue;
+                    ImageFile newImg = new ImageFile(img);
+                    newImg.setId(0); // Force working on a new picture
+                    newImg.getContent().setTarget(null); // Clear content
+                    newImg.setOrder(pictureOrder++);
+                    newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
+                    Chapter chapLink = newImg.getLinkedChapter();
+                    if (null == chapLink) { // No chapter -> set content chapter
+                        newChapter = contentChapter;
+                    } else if (null == newChapter || (
+                            !chapLink.getUrl().equals(newChapter.getUrl()) && !chapLink.getUniqueId().equals(newChapter.getUniqueId())
+                    )
+                    ) {
+                        newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
+                    }
+                    if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
+                    newImg.setChapter(newChapter);
+
+                    // If exists, move the picture to the merged books's folder
+                    if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
+                        String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
+                        Uri newUri = FileHelper.copyFile(
+                                context,
+                                Uri.parse(img.getFileUri()),
+                                targetFolder.getUri(),
+                                newImg.getMimeType(),
+                                newImg.getName() + "." + extension);
+                        if (newUri != null)
+                            newImg.setFileUri(newUri.toString());
+                        else
+                            Timber.w("Could not move file %s", img.getFileUri());
+                        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
+                    }
+                    mergedImages.add(newImg);
+                }
+            }
+        } catch (IOException e) {
+            Timber.w(e);
+            isError = true;
+        }
+
+        if (!isError) {
+            mergedContent.setImageFiles(mergedImages);
+            mergedContent.setChapters(mergedChapters); // Chapters have to be attached to Content too
+            mergedContent.setQtyPages(mergedImages.size() - 1);
+            mergedContent.computeSize();
+
+            DocumentFile jsonFile = ContentHelper.createContentJson(context, mergedContent);
+            if (jsonFile != null) mergedContent.setJsonUri(jsonFile.getUri().toString());
+
+            // Save new content (incl. non-custom group operations)
+            ContentHelper.addContent(context, dao, mergedContent);
+
+            // Merge custom groups and update
+            // Merged book can be a member of one custom group only
+            Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
+            if (customGroup.isPresent())
+                GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
+            // TODO test custom groups
+        }
+
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
+    }
+
 
     /**
      * Comparator to be used to sort files according to their names

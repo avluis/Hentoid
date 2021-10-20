@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.work.*
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.subscribeBy
@@ -167,5 +168,35 @@ class DuplicateViewModel(
             // Don't throw the exception if we can't remove something that isn't there
             if (!(e is FileNotProcessedException && content.storageUri.isEmpty())) throw e
         }
+    }
+
+    fun mergeContents(
+        contentList: List<Content?>,
+        newTitle: String,
+        onSuccess: Runnable
+    ) {
+        if (contentList.isEmpty()) return
+
+        val context = getApplication<Application>().applicationContext
+
+        compositeDisposable.add(
+            Single.fromCallable {
+                var result = false
+                try {
+                    ContentHelper.mergeContents(context, contentList, newTitle, dao)
+                    // Remove old contents
+                    for (content in contentList) doRemove(content!!.id)
+                    result = true
+                } catch (e: ContentNotProcessedException) {
+                    Timber.e(e)
+                }
+                result
+            }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { b: Boolean -> if (b) onSuccess.run() }
+                ) { t: Throwable? -> Timber.e(t) }
+        )
     }
 }
