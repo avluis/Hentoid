@@ -593,8 +593,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 askSetCover();
                 break;
             case R.id.action_merge:
-                // TODO prevent merging streamed and non-streamed books together
-                // TODO prevent merging external and non-external books together
                 Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
                 MergeDialogFragment.invoke(this, Stream.of(selectedItems).map(ContentItem::getContent).toList());
                 keepToolbar = true;
