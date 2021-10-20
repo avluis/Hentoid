@@ -34,7 +34,8 @@
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.SplashActivity"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -182,7 +183,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activities.IntentActivity"
-            android:theme="@style/Theme.Invisible">
+            android:theme="@style/Theme.Invisible"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
