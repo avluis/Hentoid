@@ -284,8 +284,10 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         // Group by reference book and count duplicates
         val entries: MutableList<DuplicateEntry> = ArrayList()
+        val countConst = 1
         val map =
-            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumBy { 1 } }.toMap()
+            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumOf { countConst } }
+                .toMap()
         for (mapEntry in map) {
             if (mapEntry.key != null) {
                 val entry = DuplicateEntry(mapEntry.key!!.id, mapEntry.key!!.size)
@@ -326,7 +328,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         if (ProcessEvent.EventType.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
             disableScanUi()
             setSettingsPanelVisibility(false)
-            ToastHelper.toast(requireContext(), R.string.duplicate_notif_complete_title);
+            ToastHelper.toast(requireContext(), R.string.duplicate_notif_complete_title)
         } else if (binding.controls.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
                 requireContext()
             )

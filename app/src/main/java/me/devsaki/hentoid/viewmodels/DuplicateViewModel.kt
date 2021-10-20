@@ -22,6 +22,7 @@ import me.devsaki.hentoid.util.exception.ContentNotProcessedException
 import me.devsaki.hentoid.util.exception.FileNotProcessedException
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.devsaki.hentoid.workers.data.DuplicateData
+import okhttp3.internal.toImmutableList
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -85,7 +86,9 @@ class DuplicateViewModel(
     }
 
     fun setContent(content: Content) {
-        val selectedDupes = ArrayList(allDuplicates.value?.filter { it.referenceId == content.id })
+        if (null == allDuplicates.value) return
+        val selectedDupes =
+            allDuplicates.value!!.filter { it.referenceId == content.id }.toMutableList()
         // Add reference item on top
         val refEntry = DuplicateEntry(
             content.id,
@@ -103,7 +106,8 @@ class DuplicateViewModel(
     }
 
     fun setBookChoice(content: Content, choice: Boolean) {
-        val selectedDupes = ArrayList(selectedDuplicates.value)
+        if (null == selectedDuplicates.value) return
+        val selectedDupes = selectedDuplicates.value!!.toImmutableList()
         for (dupe in selectedDupes) {
             if (dupe.duplicateId == content.id) dupe.keep = choice
         }
@@ -111,7 +115,8 @@ class DuplicateViewModel(
     }
 
     fun applyChoices(onComplete: Runnable) {
-        val selectedDupes = ArrayList(selectedDuplicates.value)
+        if (null == selectedDuplicates.value) return
+        val selectedDupes = selectedDuplicates.value!!.toImmutableList()
 
         // Mark as "is being deleted" to trigger blink animation
         val toRemove = selectedDupes.toMutableList()

@@ -75,7 +75,7 @@ class DuplicateDetectorActivity : BaseActivity() {
     }
 
     fun initFragmentToolbars(
-            toolbarOnItemClicked: Toolbar.OnMenuItemClickListener
+        toolbarOnItemClicked: Toolbar.OnMenuItemClickListener
     ) {
         binding?.toolbar?.setOnMenuItemClickListener(toolbarOnItemClicked)
     }
@@ -106,14 +106,28 @@ class DuplicateDetectorActivity : BaseActivity() {
     }
 
     private fun enableFragment(fragmentIndex: Int) {
-        EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.EV_ENABLE, if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_MAIN else CommunicationEvent.RC_DUPLICATE_DETAILS, null))
-        EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.EV_DISABLE, if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_DETAILS else CommunicationEvent.RC_DUPLICATE_MAIN, null))
+        EventBus.getDefault().post(
+            CommunicationEvent(
+                CommunicationEvent.EV_ENABLE,
+                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_MAIN else CommunicationEvent.RC_DUPLICATE_DETAILS,
+                null
+            )
+        )
+        EventBus.getDefault().post(
+            CommunicationEvent(
+                CommunicationEvent.EV_DISABLE,
+                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_DETAILS else CommunicationEvent.RC_DUPLICATE_MAIN,
+                null
+            )
+        )
     }
 
     private fun updateToolbar() {
         if (null == binding) return
 
-        binding!!.toolbar.menu.findItem(R.id.action_settings).isVisible = (0 == viewPager.currentItem)
+        binding!!.toolbar.menu.findItem(R.id.action_settings).isVisible =
+            (0 == viewPager.currentItem)
+        binding!!.toolbar.menu.findItem(R.id.action_merge).isVisible = (1 == viewPager.currentItem)
     }
 
     private fun initSelectionToolbar() {
@@ -132,7 +146,8 @@ class DuplicateDetectorActivity : BaseActivity() {
     /**
      * ============================== SUBCLASS
      */
-    private class DuplicatePagerAdapter constructor(fa: FragmentActivity?) : FragmentStateAdapter(fa!!) {
+    private class DuplicatePagerAdapter constructor(fa: FragmentActivity?) :
+        FragmentStateAdapter(fa!!) {
         override fun createFragment(position: Int): Fragment {
             return if (0 == position) {
                 DuplicateMainFragment()

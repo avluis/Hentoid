@@ -11,4 +11,10 @@
         android:title="@string/open_settings"
         android:tooltipText="@string/open_settings"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_merge"
+        android:icon="@drawable/ic_action_merge"
+        android:title="@string/merge_merge"
+        android:tooltipText="@string/merge_merge"
+        app:showAsAction="always" />
 </menu>
