@@ -8,7 +8,7 @@
     android:clipToPadding="false">
 
     <TextView
-        android:id="@+id/select_help"
+        android:id="@+id/split_help"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -24,15 +24,15 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/export_warning_img"
+        android:id="@+id/warning_img"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:adjustViewBounds="true"
         android:padding="8dp"
         android:src="@drawable/ic_info"
-        app:layout_constraintBottom_toBottomOf="@id/select_help"
+        app:layout_constraintBottom_toBottomOf="@id/split_help"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/select_help"
+        app:layout_constraintTop_toTopOf="@id/split_help"
         app:tint="@color/white_opacity_87"
         tools:ignore="ContentDescription" />
 
@@ -47,7 +47,7 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/select_help"
+        app:layout_constraintTop_toBottomOf="@id/split_help"
         app:maxHeight="@dimen/dialog_max_height"
         tools:listitem="@layout/item_drawer_edit" />
 
@@ -56,7 +56,7 @@
         android:layout_width="match_parent"
         android:layout_height="180dp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/select_help"
+        app:layout_constraintTop_toBottomOf="@id/split_help"
         tools:visibility="visible">
 
         <TextView

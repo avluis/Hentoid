@@ -92,7 +92,7 @@
         app:layout_constraintTop_toBottomOf="@id/export_file_bookmarks_chk" />
 
     <ImageView
-        android:id="@+id/export_warning_img"
+        android:id="@+id/warning_img"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:adjustViewBounds="true"
