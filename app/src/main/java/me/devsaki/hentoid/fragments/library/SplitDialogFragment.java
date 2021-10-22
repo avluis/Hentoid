@@ -166,7 +166,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
     }
 
     private void onActionClick() {
-        List<Chapter> chapters = Stream.of(itemAdapter.getAdapterItems()).map(TextItem::getTag).toList();
+        List<Chapter> chapters = Stream.of(selectExtension.getSelectedItems()).map(TextItem::getTag).toList();
         if (!chapters.isEmpty()) {
             parent.splitContent(content, chapters);
             this.dismiss();

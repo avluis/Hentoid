@@ -29,7 +29,6 @@ import org.threeten.bp.Instant;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -888,6 +887,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void splitContent(
             @NonNull Content content,
+            @NonNull List<Chapter> chapters,
             @NonNull Runnable onSuccess) {
         // Flag the content as "being deleted" (triggers blink animation)
 //        flagContentDelete(content, true);
@@ -896,7 +896,7 @@ public class LibraryViewModel extends AndroidViewModel {
                 Single.fromCallable(() -> {
                     boolean result = false;
                     try {
-                        doSplitContent(content);
+                        doSplitContent(content, chapters);
                         result = true;
                     } catch (ContentNotProcessedException e) {
                         Timber.e(e);
@@ -918,17 +918,16 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    private void doSplitContent(@NonNull Content content) throws Exception {
+    private void doSplitContent(@NonNull Content content, @NonNull List<Chapter> chapters) throws Exception {
         Helper.assertNonUiThread();
-        List<Chapter> chapters = content.getChapters();
         List<ImageFile> images = content.getImageFiles();
-        if (null == chapters || chapters.isEmpty())
+        if (chapters.isEmpty())
             throw new ContentNotProcessedException(content, "No chapters detected");
         if (null == images || images.isEmpty())
             throw new ContentNotProcessedException(content, "No images detected");
 
         int nbProcessedPics = 0;
-        int nbImages = (int) Stream.of(images).filter(ImageFile::isReadable).count();
+        int nbImages = (int) Stream.of(chapters).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
         for (Chapter chap : chapters) {
             Content splitContent = createContentFromChapter(content, chap);
 
@@ -957,7 +956,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         img.setFileUri(newUri.toString());
                     else
                         Timber.w("Could not move file %s", img.getFileUri());
-                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
+                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, nbImages));
                 }
             }
 
