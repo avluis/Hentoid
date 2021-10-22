@@ -610,6 +610,7 @@
     <string name="duplicate_notif_complete_desc">%d duplicates detected successfully</string>
     <string name="duplicate_empty_first_use">Nothing to display - Run a new duplicate search</string>
     <string name="duplicate_processing">Duplicate detection in progress</string>
+    <string name="duplicate_detail_title">%d duplicates</string>
     <string name="duplicate_empty_no_result">No duplicates found</string>
     <string name="duplicate_keep">Keep</string>
     <string name="duplicate_delete">Delete</string>

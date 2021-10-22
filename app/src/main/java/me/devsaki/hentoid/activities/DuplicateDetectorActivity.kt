@@ -45,7 +45,7 @@ class DuplicateDetectorActivity : BaseActivity() {
 //        WorkManager.getInstance(application).cancelAllWorkByTag(DuplicateDetectorWorker.WORKER_TAG)
 
         initUI()
-        updateToolbar()
+        updateToolbar(0, 0, 0)
         initSelectionToolbar()
     }
 
@@ -66,7 +66,8 @@ class DuplicateDetectorActivity : BaseActivity() {
             override fun onPageSelected(position: Int) {
                 enableCurrentFragment()
                 hideSettingsBar()
-                updateToolbar()
+                updateToolbar(0, 0, 0)
+                updateTitle(-1)
                 updateSelectionToolbar()
             }
         })
@@ -122,12 +123,26 @@ class DuplicateDetectorActivity : BaseActivity() {
         )
     }
 
-    private fun updateToolbar() {
+    fun updateTitle(count: Int) {
+        binding!!.toolbar.title = if (count > -1) resources.getString(
+            R.string.duplicate_detail_title,
+            count
+        ) else resources.getString(R.string.title_activity_duplicate_detector)
+    }
+
+    fun updateToolbar(localCount: Int, externalCount: Int, streamedCount: Int) {
         if (null == binding) return
 
         binding!!.toolbar.menu.findItem(R.id.action_settings).isVisible =
             (0 == viewPager.currentItem)
-        binding!!.toolbar.menu.findItem(R.id.action_merge).isVisible = (1 == viewPager.currentItem)
+        binding!!.toolbar.menu.findItem(R.id.action_merge).isVisible = (
+                1 == viewPager.currentItem
+                        && (
+                        localCount > 1 && 0 == streamedCount && 0 == externalCount
+                                || streamedCount > 1 && 0 == localCount && 0 == externalCount
+                                || externalCount > 1 && 0 == localCount && 0 == streamedCount
+                        )
+                )
     }
 
     private fun initSelectionToolbar() {

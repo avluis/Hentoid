@@ -131,17 +131,18 @@ class DuplicateViewModel(
             Observable.fromIterable(selectedDupes)
                 .observeOn(Schedulers.io())
                 .map {
-                    if (!it.keep) doRemove(it.duplicateId)
+                    // Remove content
+                    if (!it.keep) doRemoveContent(it.duplicateId)
                     it
                 }
                 .doOnNext {
-                    // Update UI
+                    // Remove duplicate entries
                     if (!it.keep) {
                         val newList = selectedDupes.toMutableList()
                         newList.remove(it)
                         selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on
                     }
-                    if (it.titleScore <= 1f) // Just don't try to delete the fake reference entry that has been put there for display
+                    if (it.titleScore <= 1f) // Don't delete the fake reference entry that has been put there for display
                         duplicatesDao.delete(it)
                 }
                 .observeOn(AndroidSchedulers.mainThread())
@@ -158,7 +159,7 @@ class DuplicateViewModel(
     }
 
     @Throws(ContentNotProcessedException::class)
-    private fun doRemove(contentId: Long) {
+    private fun doRemoveContent(contentId: Long) {
         Helper.assertNonUiThread()
         // Remove content altogether from the DB (including queue)
         val content: Content = dao.selectContent(contentId) ?: return
@@ -176,16 +177,35 @@ class DuplicateViewModel(
         onSuccess: Runnable
     ) {
         if (contentList.isEmpty()) return
+        if (null == selectedDuplicates.value) return
 
+        val selectedDupes = selectedDuplicates.value!!.toImmutableList()
         val context = getApplication<Application>().applicationContext
 
         compositeDisposable.add(
             Single.fromCallable {
                 var result = false
                 try {
+                    // Create merged book
                     ContentHelper.mergeContents(context, contentList, newTitle, dao)
+
+                    // Mark as "is being deleted" to trigger blink animation
+                    val toRemove = selectedDupes.toMutableList()
+                    for (entry in toRemove) entry.isBeingDeleted = true
+                    selectedDuplicates.postValue(toRemove)
+
                     // Remove old contents
-                    for (content in contentList) doRemove(content!!.id)
+                    for (content in contentList) doRemoveContent(content!!.id)
+
+                    // Remove duplicate entries (update UI)
+                    for (dupeEntry in selectedDupes) {
+                        val newList = selectedDupes.toMutableList()
+                        newList.remove(dupeEntry)
+                        selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on
+
+                        if (dupeEntry.titleScore <= 1f) // Don't delete the fake reference entry that has been put there for display
+                            duplicatesDao.delete(dupeEntry)
+                    }
                     result = true
                 } catch (e: ContentNotProcessedException) {
                     Timber.e(e)

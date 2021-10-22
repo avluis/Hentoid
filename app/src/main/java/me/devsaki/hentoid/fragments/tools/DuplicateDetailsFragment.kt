@@ -26,6 +26,7 @@ import me.devsaki.hentoid.activities.bundles.DuplicateItemBundle
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateDetailsBinding
+import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.fragments.library.MergeDialogFragment
@@ -126,14 +127,15 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val vmFactory = ViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
 
+        // List
         binding.list.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         FastScrollerBuilder(binding.list).build()
         binding.list.adapter = fastAdapter
 
-        val vmFactory = ViewModelFactory(requireActivity().application)
-        viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
         viewModel.selectedDuplicates.observe(
             viewLifecycleOwner,
             { l: List<DuplicateEntry>? -> this.onDuplicatesChanged(l) })
@@ -210,6 +212,18 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
 
         // TODO update UI title
 
+        activity.get()?.updateTitle(duplicates.size)
+        val contentStream =
+            duplicates.map(DuplicateEntry::duplicateContent)
+        val localCount = contentStream.map { return@map Content::getStatus }
+            .filter { s -> !s.equals(StatusContent.EXTERNAL) }.count()
+        val externaCount = duplicates.size - localCount
+        val streamedCount = contentStream.map { return@map Content::getDownloadMode }
+            .filter { mode -> mode.equals(Content.DownloadMode.STREAM) }.count()
+
+        // streamed, external
+        activity.get()?.updateToolbar(localCount, externaCount, streamedCount)
+
         // Order by relevance desc and transforms to DuplicateItem
         val items = duplicates.sortedByDescending { it.calcTotalScore() }
             .map { DuplicateItem(it, DuplicateItem.ViewType.DETAILS) }.toMutableList()
@@ -253,7 +267,10 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
         viewModel.mergeContents(
             contentList,
             newTitle
-        ) { ToastHelper.toast(R.string.merge_success) }
+        ) {
+            ToastHelper.toast(R.string.merge_success)
+            activity.get()?.goBackToMain()
+        }
         ProgressDialogFragment.invoke(
             parentFragmentManager,
             resources.getString(R.string.merge_progress),
