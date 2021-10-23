@@ -109,6 +109,14 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         dragCallback.setNotifyAllDrops(true);
         touchHelper = new ItemTouchHelper(dragCallback);
         touchHelper.attachToRecyclerView(binding.list);
+        fastAdapter.addEventHook(
+                new TextItem.DragHandlerTouchEvent<>(
+                        position -> {
+                            RecyclerView.ViewHolder vh = binding.list.findViewHolderForAdapterPosition(position);
+                            if (vh != null) touchHelper.startDrag(vh);
+                        }
+                )
+        );
 
         binding.list.setAdapter(fastAdapter);
 
