@@ -316,6 +316,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (longValue != null) item.content.setReadPagesCount(longValue.intValue());
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) item.content.getCover().setFileUri(stringValue);
+                stringValue = bundleParser.getTitle();
+                if (stringValue != null) item.content.setTitle(stringValue);
             }
             debugStr = "objectBox ID=" + item.content.getId() + "; site ID=" + item.content.getUniqueSiteId() + "; hashCode=" + item.content.hashCode();
 

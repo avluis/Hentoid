@@ -273,6 +273,7 @@
     </plurals>
     <string name="new_group_name">Name of the new group ?</string>
     <string name="group_edit_name">Edit group name</string>
+    <string name="book_edit_title">Edit book title</string>
     <string name="delete_progress">Deleting books</string>
     <string name="purge_progress">Purging books</string>
     <string name="cancel_queue_progress">Canceling queue items</string>

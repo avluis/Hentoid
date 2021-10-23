@@ -972,7 +972,7 @@ public class LibraryActivity extends BaseActivity {
             mergeMenu.setVisible(false);
             splitMenu.setVisible(false);
         } else {
-            editNameMenu.setVisible(false);
+            editNameMenu.setVisible(!isMultipleSelection);
             deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
             completedMenu.setVisible(true);
             shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);

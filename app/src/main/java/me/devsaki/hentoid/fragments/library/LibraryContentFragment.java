@@ -103,6 +103,7 @@ import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.fragments.ProgressDialogFragment;
+import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
@@ -231,6 +232,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
                 diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());
             }
+            if (!oldItem.getTitle().equals(newItem.getTitle())) {
+                diffBundleBuilder.setTitle(newItem.getTitle());
+            }
 
             if (diffBundleBuilder.isEmpty()) return null;
             else return diffBundleBuilder.getBundle();
@@ -273,6 +277,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             }
             if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
                 diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());
+            }
+            if (!oldItem.getTitle().equals(newItem.getTitle())) {
+                diffBundleBuilder.setTitle(newItem.getTitle());
             }
 
             if (diffBundleBuilder.isEmpty()) return null;
@@ -551,6 +558,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     private boolean onSelectionToolbarItemClicked(@NonNull MenuItem menuItem) {
         boolean keepToolbar = false;
+        Content selectedContent;
+
         switch (menuItem.getItemId()) {
             case R.id.action_share:
                 shareSelectedItems();
@@ -598,10 +607,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 keepToolbar = true;
                 break;
             case R.id.action_split:
-                Content selectedContent = Stream.of(selectExtension.getSelectedItems()).toList().get(0).getContent();
+                selectedContent = Stream.of(selectExtension.getSelectedItems()).toList().get(0).getContent();
                 if (selectedContent != null)
                     SplitDialogFragment.invoke(this, selectedContent);
                 keepToolbar = true;
+                break;
+            case R.id.action_edit_name:
+                selectedContent = Stream.of(selectExtension.getSelectedItems()).toList().get(0).getContent();
+                if (selectedContent != null)
+                    InputDialog.invokeInputDialog(requireActivity(), R.string.book_edit_title,
+                            selectedContent.getTitle(),
+                            s -> viewModel.editContentTitle(selectedContent, s));
                 break;
             default:
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
