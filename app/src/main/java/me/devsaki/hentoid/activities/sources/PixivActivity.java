@@ -37,7 +37,7 @@ public class PixivActivity extends BaseWebActivity {
     private static final String[] BLOCKED_CONTENT = {"ads-pixiv.net"};
     private static final String[] JS_WHITELIST = {DOMAIN_FILTER};
 
-    private static final String[] NAVIGATION_QUERIES = {"/details?", "/search/illusts?", "/details/many?"};
+    private static final String[] NAVIGATION_QUERIES = {"/details?", "/search/illusts?", "ajax/pages/top?"};
 
 
     Site getStartSite() {
