@@ -50,6 +50,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -187,7 +188,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
-    private int itemToRefreshIndex = -1;
     private boolean excludeClicked = false;
 
     // Launches the search activity according to the returned result
@@ -303,7 +303,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
         ExtensionsFactories.INSTANCE.register(new SelectExtensionFactory());
         EventBus.getDefault().register(this);
-        setRetainInstance(true);
     }
 
     @Override
@@ -558,7 +557,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     private boolean onSelectionToolbarItemClicked(@NonNull MenuItem menuItem) {
         boolean keepToolbar = false;
-        Content selectedContent;
+        boolean keepSelection = true;
+        Optional<ContentItem> selectedContent;
 
         switch (menuItem.getItemId()) {
             case R.id.action_share:
@@ -602,26 +602,36 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 askSetCover();
                 break;
             case R.id.action_merge:
-                Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
-                MergeDialogFragment.invoke(this, Stream.of(selectedItems).map(ContentItem::getContent).toList());
+                MergeDialogFragment.invoke(this, Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList());
                 keepToolbar = true;
                 break;
             case R.id.action_split:
-                selectedContent = Stream.of(selectExtension.getSelectedItems()).toList().get(0).getContent();
-                if (selectedContent != null)
-                    SplitDialogFragment.invoke(this, selectedContent);
+                selectedContent = Stream.of(selectExtension.getSelectedItems()).findFirst();
+                if (selectedContent.isPresent()) {
+                    Content c = selectedContent.get().getContent();
+                    if (c != null)
+                        SplitDialogFragment.invoke(this, c);
+                }
                 keepToolbar = true;
                 break;
             case R.id.action_edit_name:
-                selectedContent = Stream.of(selectExtension.getSelectedItems()).toList().get(0).getContent();
-                if (selectedContent != null)
-                    InputDialog.invokeInputDialog(requireActivity(), R.string.book_edit_title,
-                            selectedContent.getTitle(),
-                            s -> viewModel.editContentTitle(selectedContent, s));
+                selectedContent = Stream.of(selectExtension.getSelectedItems()).findFirst();
+                if (selectedContent.isPresent()) {
+                    Content c = selectedContent.get().getContent();
+                    if (c != null)
+                        InputDialog.invokeInputDialog(requireActivity(), R.string.book_edit_title,
+                                c.getTitle(),
+                                s -> viewModel.editContentTitle(c, s));
+                }
+                keepSelection = false;
                 break;
             default:
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
                 return false;
+        }
+        if (!keepSelection) {
+            selectExtension.setSelectOnLongClick(true);
+            selectExtension.deselect(selectExtension.getSelections());
         }
         if (!keepToolbar) activity.get().getSelectionToolbar().setVisibility(View.GONE);
         return true;
@@ -1551,20 +1561,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      * DRAG, DROP & SWIPE METHODS
      */
 
-    private void recordMoveFromFirstPos(int from, int to) {
-        if (0 == from) itemToRefreshIndex = to;
-    }
-
-    private void recordMoveFromFirstPos(List<Integer> positions) {
-        // Only useful when moving the 1st item to the bottom
-        if (!positions.isEmpty() && 0 == positions.get(0))
-            itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
-    }
-
     @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
         DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
-        recordMoveFromFirstPos(oldPosition, newPosition);
         return true;
     }
 

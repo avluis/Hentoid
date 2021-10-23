@@ -192,7 +192,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         ExtensionsFactories.INSTANCE.register(new SelectExtensionFactory());
         EventBus.getDefault().register(this);
-        setRetainInstance(true);
     }
 
     @Override
