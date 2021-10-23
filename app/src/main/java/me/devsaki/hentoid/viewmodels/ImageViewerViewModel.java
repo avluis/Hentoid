@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -95,6 +96,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Number of concurrent image downloads
     private static final int CONCURRENT_DOWNLOADS = 3;
+
+    private static final Pattern VANILLA_CHAPTERNAME_PATTERN = Pattern.compile("Chapter [0-9]+");
 
     // Collection DAO
     private final CollectionDAO dao;
@@ -1200,12 +1203,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     // TODO doc
-    public void createChapter(@NonNull ImageFile img, @NonNull Consumer<Throwable> onError) {
+    public void createRemoveChapter(@NonNull ImageFile img, @NonNull Consumer<Throwable> onError) {
         Content theContent = content.getValue();
         if (null == theContent) return;
 
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doCreateChapter(theContent, img))
+                Completable.fromRunnable(() -> doCreateRemoveChapter(theContent.getId(), img))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -1219,10 +1222,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     // TODO doc
-    private void doCreateChapter(@NonNull Content content, @NonNull ImageFile firstPage) {
+    private void doCreateRemoveChapter(long contentId, @NonNull ImageFile selectedPage) {
         Helper.assertNonUiThread();
 
-        Chapter previousChapter = firstPage.getLinkedChapter();
+        Content content = dao.selectContent(contentId); // Work on a fresh content
+        if (null == content) throw new IllegalArgumentException("No content found");
+
+        Chapter previousChapter = selectedPage.getLinkedChapter();
+        // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
         if (null == previousChapter) {
             previousChapter = new Chapter(1, "", "Chapter 1");
             previousChapter.setImageFiles(viewerImagesInternal);
@@ -1231,19 +1238,67 @@ public class ImageViewerViewModel extends AndroidViewModel {
             previousChapter.setContent(content);
         }
 
-        int newChapterOrder = previousChapter.getOrder() + 1;
-        Chapter newChapter = new Chapter(Integer.MAX_VALUE, "", "Chapter " + newChapterOrder);
-        newChapter.setContent(content);
-
         List<ImageFile> chapterImages = previousChapter.getImageFiles();
-        if (null == chapterImages)
+        if (null == chapterImages || chapterImages.isEmpty())
             throw new IllegalArgumentException("No images found for selection");
+
+        if (selectedPage.getOrder() < 2)
+            throw new IllegalArgumentException("Can't create or remove chapter on first page");
+
+        // If we tap the 1st page of an existing chapter, it means we're removing it
+        Optional<ImageFile> firstChapterPic = Stream.of(chapterImages).sortBy(ImageFile::getOrder).findFirst();
+        boolean isRemoving = (firstChapterPic.get().getOrder().intValue() == selectedPage.getOrder().intValue());
+
+        if (isRemoving) doRemoveChapter(content, previousChapter, chapterImages);
+        else doCreateChapter(content, selectedPage, previousChapter, chapterImages);
+
+        // Rearrange all chapters
+
+        // Work on a clean image set by accessing it directly from the DAO
+        // (we don't want to depend on LiveData being on time here)
+        List<ImageFile> viewerImages = dao.selectDownloadedImagesFromContent(content.getId());
+        List<Chapter> chapters = Stream.of(viewerImages)
+                .map(ImageFile::getLinkedChapter)
+                .withoutNulls()
+                .filter(c -> c.getOrder() > -1)
+                .distinct()
+                .sorted(new Chapter.OrderComparator())
+                .toList();
+
+        // Renumber all chapters to reflect changes
+        int order = 1;
+        List<Chapter> updatedChapters = new ArrayList<>();
+        for (Chapter c : chapters) {
+            // Update names with the default "Chapter x" naming
+            if (VANILLA_CHAPTERNAME_PATTERN.matcher(c.getName()).matches())
+                c.setName("Chapter " + order);
+            // Update order
+            c.setOrder(order);
+            c.setContent(content);
+            order++;
+            updatedChapters.add(c);
+        }
+
+        // Save chapters
+        dao.insertChapters(updatedChapters);
+    }
+
+    // TODO doc
+    private void doCreateChapter(
+            @NonNull Content content,
+            @NonNull ImageFile selectedPage,
+            @NonNull Chapter previousChapter,
+            @NonNull List<ImageFile> chapterImages
+    ) {
+        int newChapterOrder = previousChapter.getOrder() + 1;
+        Chapter newChapter = new Chapter(newChapterOrder, "", "Chapter " + newChapterOrder);
+        newChapter.setContent(content);
 
         // Sort by order
         chapterImages = Stream.of(chapterImages).sortBy(ImageFile::getOrder).toList();
 
         // Split pages
-        int firstPageOrder = firstPage.getOrder();
+        int firstPageOrder = selectedPage.getOrder();
         int lastPageOrder = chapterImages.get(chapterImages.size() - 1).getOrder();
         for (ImageFile img : chapterImages)
             if (img.getOrder() >= firstPageOrder && img.getOrder() <= lastPageOrder) {
@@ -1255,32 +1310,31 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Save images
         dao.insertImageFiles(chapterImages);
-        // Work on a clean image set
-        List<ImageFile> viewerImages = dao.selectDownloadedImagesFromContent(content.getId());
+    }
 
-        // Rearrange all chapters
-        List<Chapter> chapters = Stream.of(viewerImages)
-                .map(ImageFile::getLinkedChapter)
-                .withoutNulls()
-                .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
+    // TODO doc
+    private void doRemoveChapter(
+            @NonNull Content content,
+            @NonNull Chapter toRemove,
+            @NonNull List<ImageFile> chapterImages
+    ) {
+        List<Chapter> contentChapters = content.getChapters();
+        if (null == contentChapters) return;
 
-        // Renumber all chapters starting from the new one
-        List<Chapter> updatedChapters = new ArrayList<>();
-        for (Chapter c : chapters) {
-            if (c.getOrder() >= newChapterOrder && c.getOrder() < Integer.MAX_VALUE) {
-                int newOrder = c.getOrder() + 1;
-                // Update names with the default "Chapter x" naming
-                if (c.getName().equals("Chapter " + c.getOrder()))
-                    c.setName("Chapter " + newOrder);
-                // Update order
-                c.setOrder(newOrder);
-                c.setContent(content);
-            } else if (c.getOrder() == Integer.MAX_VALUE) c.setOrder(newChapterOrder);
-            updatedChapters.add(c);
+        contentChapters = Stream.of(contentChapters).sortBy(Chapter::getOrder).toList();
+        int removeOrder = toRemove.getOrder();
+
+        // Identify preceding chapter
+        Chapter precedingChapter = null;
+        for (Chapter c : contentChapters) {
+            if (c.getOrder() == removeOrder) break;
+            precedingChapter = c;
         }
 
-        // Save chapters
-        dao.insertChapters(updatedChapters);
+        // Pages of selected chapter will join the preceding chapter
+        for (ImageFile img : chapterImages) img.setChapter(precedingChapter);
+        dao.insertImageFiles(chapterImages);
+        dao.deleteChapter(toRemove);
     }
 }
 

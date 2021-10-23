@@ -193,7 +193,7 @@ public class ViewerGalleryFragment extends Fragment {
                 viewModel.filterFavouriteImages(!filterFavouritesState);
             } else if (clickedMenuItem.getItemId() == R.id.action_edit_chapters) {
                 setChapterEditMode(EditMode.EDIT_CHAPTERS);
-            } else if (clickedMenuItem.getItemId() == R.id.action_add_chapter) {
+            } else if (clickedMenuItem.getItemId() == R.id.action_add_remove_chapters) {
                 setChapterEditMode(EditMode.ADD_CHAPTER);
             } else if (clickedMenuItem.getItemId() == R.id.action_remove_chapters) {
                 removeChapters();
@@ -203,7 +203,7 @@ public class ViewerGalleryFragment extends Fragment {
         showFavouritePagesMenu = toolbar.getMenu().findItem(R.id.action_show_favorite_pages);
         editChaptersMenu = toolbar.getMenu().findItem(R.id.action_edit_chapters);
         removeChaptersMenu = toolbar.getMenu().findItem(R.id.action_remove_chapters);
-        addChapterMenu = toolbar.getMenu().findItem(R.id.action_add_chapter);
+        addChapterMenu = toolbar.getMenu().findItem(R.id.action_add_remove_chapters);
 
         selectionToolbar = requireViewById(rootView, R.id.viewer_gallery_selection_toolbar);
         itemSetCoverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
@@ -516,8 +516,8 @@ public class ViewerGalleryFragment extends Fragment {
                 } else { // Pager mode (Library -> pager -> gallery -> pager)
                     getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
                 }
-            } else { // Create new chapter
-                viewModel.createChapter(img, t -> ToastHelper.toast("Couldn't create chapter at page " + img.getOrder()));
+            } else { // Create/remove chapter
+                viewModel.createRemoveChapter(img, t -> ToastHelper.toast("Couldn't toggle chapter at page " + img.getOrder()));
             }
             return true;
         }

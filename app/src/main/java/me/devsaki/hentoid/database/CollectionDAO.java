@@ -241,9 +241,11 @@ public interface CollectionDAO {
 
     // CHAPTERS
 
+    void insertChapters(@NonNull final List<Chapter> chapters);
+
     void deleteChapters(@NonNull final Content content);
 
-    void insertChapters(@NonNull final List<Chapter> chapters);
+    void deleteChapter(@NonNull final Chapter chapter);
 
 
     // SITE HISTORY

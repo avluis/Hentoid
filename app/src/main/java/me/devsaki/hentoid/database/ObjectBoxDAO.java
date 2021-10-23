@@ -326,12 +326,18 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteErrorRecords(contentId);
     }
 
+    public void insertChapters(@NonNull final List<Chapter> chapters) {
+        db.insertChapters(chapters);
+    }
+
     public void deleteChapters(@NonNull final Content content) {
         db.deleteChaptersByContentId(content.getId());
     }
 
-    public void insertChapters(@NonNull final List<Chapter> chapters) {
-        db.insertChapters(chapters);
+    @Override
+    public void deleteChapter(@NonNull Chapter chapter) {
+
+        db.deleteChapter(chapter.getId());
     }
 
     @Override

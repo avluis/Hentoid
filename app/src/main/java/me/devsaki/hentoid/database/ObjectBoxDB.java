@@ -1362,14 +1362,18 @@ public class ObjectBoxDB {
         qb.build().remove();
     }
 
+    void insertChapters(List<Chapter> chapters) {
+        store.boxFor(Chapter.class).put(chapters);
+    }
+
     void deleteChaptersByContentId(long contentId) {
         QueryBuilder<Chapter> qb = store.boxFor(Chapter.class).query();
         qb.equal(Chapter_.contentId, contentId);
         qb.build().remove();
     }
 
-    void insertChapters(List<Chapter> chapters) {
-        store.boxFor(Chapter.class).put(chapters);
+    void deleteChapter(long chapterId) {
+        store.boxFor(Chapter.class).remove(chapterId);
     }
 
 
