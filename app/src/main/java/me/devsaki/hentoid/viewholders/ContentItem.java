@@ -672,6 +672,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             // Nothing
         }
 
+        @NonNull
         @Override
         public String toString() {
             return super.toString() + " " + debugStr;
