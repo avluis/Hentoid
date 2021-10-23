@@ -315,12 +315,14 @@ class CustomWebViewClient extends WebViewClient {
      */
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
+        if (BuildConfig.DEBUG) Timber.v("WebView : page started %s", url);
         isPageLoading = true;
         activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded, true);
     }
 
     @Override
     public void onPageFinished(WebView view, String url) {
+        if (BuildConfig.DEBUG) Timber.v("WebView : page finished %s", url);
         isPageLoading = false;
         isHtmlLoaded = false; // Reset for the next page
         activity.onPageFinished(isResultsPage(StringHelper.protect(url)), isGalleryPage(url));
