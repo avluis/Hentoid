@@ -1254,21 +1254,21 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Rearrange all chapters
 
-        // Work on a clean image set by accessing it directly from the DAO
+        // Work on a clean image set directly from the DAO
         // (we don't want to depend on LiveData being on time here)
         List<ImageFile> viewerImages = dao.selectDownloadedImagesFromContent(content.getId());
-        List<Chapter> chapters = Stream.of(viewerImages)
+        // Rely on the order of pictures to get chapter in the right order
+        List<Chapter> allChapters = Stream.of(viewerImages)
                 .map(ImageFile::getLinkedChapter)
+                .distinct()
                 .withoutNulls()
                 .filter(c -> c.getOrder() > -1)
-                .distinct()
-                .sorted(new Chapter.OrderComparator())
                 .toList();
 
         // Renumber all chapters to reflect changes
         int order = 1;
         List<Chapter> updatedChapters = new ArrayList<>();
-        for (Chapter c : chapters) {
+        for (Chapter c : allChapters) {
             // Update names with the default "Chapter x" naming
             if (VANILLA_CHAPTERNAME_PATTERN.matcher(c.getName()).matches())
                 c.setName("Chapter " + order);

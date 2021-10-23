@@ -1,9 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -147,15 +145,5 @@ public class Chapter {
 
     public long uniqueHash() {
         return Helper.hash64((id + "." + order + "." + url).getBytes());
-    }
-
-    // Obliged to do that until minApi becomes 24 (-> use Comparator.comparing / Comparator.thenComparingLong)
-    public static class OrderComparator implements Comparator<Chapter> {
-        @Override
-        public int compare(@NonNull Chapter o1, @NonNull Chapter o2) {
-            int sComp = o1.getOrder().compareTo(o2.order);
-            if (sComp != 0) return sComp;
-            return Long.compare(o1.getId(), o2.getId());
-        }
     }
 }

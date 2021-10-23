@@ -336,7 +336,6 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public void deleteChapter(@NonNull Chapter chapter) {
-
         db.deleteChapter(chapter.getId());
     }
 
