@@ -98,9 +98,6 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
 
-        List<Chapter> chapterList = loadChapterList();
-        itemAdapter.set(Stream.of(chapterList).map(c -> new TextItem<>(c.getName(), c, false, false, false, null)).toList());
-
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
         if (selectExtension != null) {
@@ -118,15 +115,7 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
                 return helper.onPreLongClickListener(v, a, i, p);
             });
         }
-
         binding.list.setAdapter(fastAdapter);
-
-        // Display help text is no chapters
-        if (chapterList.isEmpty()) {
-            binding.nochapterAction.setOnClickListener(v -> onCreateChaptersClick());
-            binding.nochapterView.setVisibility(View.VISIBLE);
-            binding.list.setVisibility(View.GONE);
-        }
 
         // Select on swipe
         DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension.select(IntStream.rangeClosed(start, end).boxed().toList());
@@ -134,7 +123,24 @@ public final class SplitDialogFragment extends DialogFragment implements ItemTou
                 .withSelectListener(onDragSelectionListener);
         binding.list.addOnItemTouchListener(mDragSelectTouchListener);
 
+        binding.nochapterAction.setOnClickListener(v -> onCreateChaptersClick());
         binding.actionButton.setOnClickListener(v -> onActionClick());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        List<Chapter> chapterList = loadChapterList();
+        itemAdapter.set(Stream.of(chapterList).map(c -> new TextItem<>(c.getName(), c, false, false, false, null)).toList());
+
+        // Display help text is no chapters
+        if (chapterList.isEmpty()) {
+            binding.nochapterView.setVisibility(View.VISIBLE);
+            binding.list.setVisibility(View.GONE);
+        } else {
+            binding.nochapterView.setVisibility(View.GONE);
+            binding.list.setVisibility(View.VISIBLE);
+        }
     }
 
     private List<Chapter> loadChapterList() {
