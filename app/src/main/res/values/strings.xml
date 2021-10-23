@@ -566,7 +566,7 @@
     <string name="viewer_reload_page">Reload page</string>
     <string name="viewer_reparse_book">Reparse book</string>
     <string name="menu_edit_chapters">Edit chapters</string>
-    <string name="gallery_edit_chapters_help">To create a chapter, tap its first page</string>
+    <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
 
