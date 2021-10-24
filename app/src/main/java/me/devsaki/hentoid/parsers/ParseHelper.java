@@ -323,8 +323,8 @@ public class ParseHelper {
     }
 
     public static String getImgSrc(Element e) {
-        String result = e.attr("src").trim();
-        if (result.isEmpty()) result = e.attr("data-src").trim();
+        String result = e.attr("data-src").trim();
+        if (result.isEmpty()) result = e.attr("src").trim();
         if (result.isEmpty()) result = e.attr("data-cfsrc").trim(); // Cloudflare-served image
         return result;
     }
