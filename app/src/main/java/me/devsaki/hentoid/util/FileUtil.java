@@ -142,16 +142,12 @@ class FileUtil {
      */
     // Directly copied from https://github.com/apache/commons-io/pull/74
     public static String byteCountToDisplayRoundedSize(final BigInteger size, final int places, final Locale locale) {
-        String displaySize;
-
-        if (size == null) {
-            return null;
-        }
+        if (size == null) return null;
 
         final long sizeInLong = size.longValue();
-
         final String formatPattern = "%." + places + "f";
 
+        String displaySize;
         if (size.divide(ONE_EB_BI).compareTo(BigInteger.ZERO) > 0) {
             displaySize = String.format(locale, formatPattern, sizeInLong / ONE_EB_BI.doubleValue()) + " EB";
         } else if (size.divide(ONE_PB_BI).compareTo(BigInteger.ZERO) > 0) {
@@ -193,10 +189,6 @@ class FileUtil {
      * @see <a href="https://issues.apache.org/jira/browse/IO-226">IO-226 - should the rounding be changed?</a>
      */
     public static String byteCountToDisplayRoundedSize(final Long size, final int places, final Locale locale) {
-        if (size == null) {
-            return null;
-        }
-
         return byteCountToDisplayRoundedSize(BigInteger.valueOf(size), places, locale);
     }
 
