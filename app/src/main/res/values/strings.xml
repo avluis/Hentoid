@@ -129,6 +129,7 @@
     <string name="work_artist">Artist: %s</string>
     <string name="work_pages_queue">Pages: %1$s%2$s</string>
     <string name="work_pages_library">%1$d pages / "%2$.1f MB</string>
+    <string name="library_metrics_storage">%.0f MB</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>

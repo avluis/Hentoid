@@ -55,10 +55,10 @@
         android:layout_height="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_completed"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/pbDownload"
-        android:visibility="gone"
-        android:src="@drawable/ic_completed"
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
 
@@ -100,25 +100,98 @@
         app:layout_constraintTop_toBottomOf="@id/tvArtist"
         tools:text="@string/book_series" />
 
+    <ImageView
+        android:id="@+id/ivPages"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_images"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@id/tvArtist"
+        app:layout_constraintTop_toBottomOf="@id/tvSeries"
+        app:tint="@color/card_tags_light"
+        tools:ignore="ContentDescription" />
+
     <TextView
         android:id="@+id/tvPages"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:textColor="@color/card_tags_light"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@id/tvArtist"
-        app:layout_constraintStart_toStartOf="@id/tvArtist"
+        app:layout_constraintBottom_toBottomOf="@id/ivPages"
+        app:layout_constraintStart_toEndOf="@id/ivPages"
+        app:layout_constraintTop_toTopOf="@id/ivPages"
+        tools:text="1234" />
+
+    <ImageView
+        android:id="@+id/ivChapters"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:padding="2dp"
+        android:src="@drawable/ic_chapter"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="@id/tvPages"
         app:layout_constraintTop_toBottomOf="@id/tvSeries"
-        tools:text="@string/book_pages_library" />
+        app:tint="@color/card_tags_light"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/tvChapters"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/card_tags_light"
+        app:layout_constraintBottom_toBottomOf="@id/ivPages"
+        app:layout_constraintStart_toEndOf="@id/ivChapters"
+        app:layout_constraintTop_toTopOf="@id/ivPages"
+        tools:text="32" />
+
+    <ImageView
+        android:id="@+id/ivStorage"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_storage"
+        android:visibility="visible"
+        app:layout_constraintStart_toEndOf="@id/tvChapters"
+        app:layout_constraintTop_toBottomOf="@id/tvSeries"
+        app:tint="@color/card_tags_light"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/tvStorage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/card_tags_light"
+        app:layout_constraintBottom_toBottomOf="@id/ivPages"
+        app:layout_constraintStart_toEndOf="@id/ivStorage"
+        app:layout_constraintTop_toTopOf="@id/ivPages"
+        tools:text="124 MB" />
+
+    <ImageView
+        android:id="@+id/ivMerged"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_action_merge"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="@id/tvArtist"
+        app:layout_constraintTop_toBottomOf="@id/tvSeries"
+        app:tint="@color/card_tags_light"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
 
     <View
         android:id="@+id/divider"
         style="@style/Divider"
         android:layout_width="0dp"
+        android:layout_marginTop="2dp"
         app:layout_constraintEnd_toEndOf="@id/tvArtist"
         app:layout_constraintStart_toStartOf="@id/tvArtist"
-        app:layout_constraintTop_toBottomOf="@id/tvPages" />
+        app:layout_constraintTop_toBottomOf="@id/ivPages" />
 
     <TextView
         android:id="@+id/tvTags"

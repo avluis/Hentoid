@@ -53,6 +53,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -239,6 +240,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private ImageView ivExternal;
         private CircularProgressView readingProgress;
         private ImageView ivCompleted;
+        private ImageView ivChapters;
+        private TextView tvChapters;
+        private ImageView ivStorage;
+        private TextView tvStorage;
+        private ImageView ivMerged;
 
         // Specific to Queued content
         private ProgressBar progressBar;
@@ -275,6 +281,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivExternal = itemView.findViewById(R.id.ivExternal);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
+                ivChapters = itemView.findViewById(R.id.ivChapters);
+                tvChapters = itemView.findViewById(R.id.tvChapters);
+                ivStorage = itemView.findViewById(R.id.ivStorage);
+                tvStorage = itemView.findViewById(R.id.tvStorage);
+                ivMerged = itemView.findViewById(R.id.ivMerged);
                 ivCompleted = requireViewById(itemView, R.id.ivCompleted);
                 readingProgress = requireViewById(itemView, R.id.reading_progress);
             } else if (viewType == ViewType.LIBRARY_GRID) {
@@ -346,7 +357,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 attachReadingProgress(item.content);
             if (tvArtist != null) attachArtist(item.content);
             if (tvSeries != null) attachSeries(item.content);
-            if (tvPages != null) attachPages(item.content, item.viewType);
+            if (tvPages != null) attachMetrics(item.content, item.viewType);
             if (tvTags != null) attachTags(item.content);
             attachButtons(item);
 
@@ -491,7 +502,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
         }
 
-        private void attachPages(@NonNull final Content content, @ViewType int viewType) {
+        private void attachMetrics(@NonNull final Content content, @ViewType int viewType) {
             tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
             Context context = tvPages.getContext();
 
@@ -506,11 +517,30 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         template = context.getString(R.string.work_pages_queue, nbPages, "");
                 } else
                     template = context.getString(R.string.work_pages_queue, nbPages, "");
+                tvPages.setText(template);
             } else { // Library
-                template = context.getResources().getString(R.string.work_pages_library, content.getNbDownloadedPages(), content.getSize() * 1.0 / (1024 * 1024));
-            }
+                tvPages.setText(String.format(Locale.ENGLISH, "%d", content.getNbDownloadedPages()));
 
-            tvPages.setText(template);
+                if (tvChapters != null) {
+                    List<Chapter> chapters = content.getChapters();
+                    int chapterVisibility = (null == chapters || chapters.isEmpty()) ? View.GONE : View.VISIBLE;
+                    ivChapters.setVisibility(chapterVisibility);
+                    tvChapters.setVisibility(chapterVisibility);
+                    if (chapterVisibility == View.VISIBLE)
+                        tvChapters.setText(String.format(Locale.ENGLISH, "%d", chapters.size()));
+                }
+
+                if (tvStorage != null) {
+                    int storageVisibility = content.getDownloadMode() == Content.DownloadMode.STREAM ? View.GONE : View.VISIBLE;
+                    ivStorage.setVisibility(storageVisibility);
+                    tvStorage.setVisibility(storageVisibility);
+                    if (storageVisibility == View.VISIBLE)
+                        tvStorage.setText(context.getString(R.string.library_metrics_storage, content.getSize() / (1024.0 * 1024.0)));
+                }
+
+                if (ivMerged != null)
+                    ivMerged.setVisibility(content.isManuallyMerged() ? View.VISIBLE : View.GONE);
+            }
         }
 
         private void attachTags(@NonNull final Content content) {

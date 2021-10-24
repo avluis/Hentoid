@@ -13,7 +13,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/action_edit_chapters"
-        android:icon="@drawable/ic_chapters"
+        android:icon="@drawable/ic_chapter"
         android:title="@string/menu_edit_chapters"
         android:tooltipText="@string/menu_edit_chapters"
         app:showAsAction="ifRoom" />
