@@ -126,7 +126,6 @@ public class ObjectBoxDB {
         return store.sizeOnDisk();
     }
 
-
     long insertContent(Content content) {
         ToMany<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
@@ -157,6 +156,11 @@ public class ObjectBoxDB {
 
             return store.boxFor(Content.class).put(content);
         });
+    }
+
+    // Faster alternative to insertContent when Content fields only need to be updated
+    void updateContentObject(Content content) {
+        store.boxFor(Content.class).put(content);
     }
 
     public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
@@ -1403,6 +1407,10 @@ public class ObjectBoxDB {
 
     List<Content> selectContentWithNullDlModeField() {
         return store.boxFor(Content.class).query().isNull(Content_.downloadMode).build().find();
+    }
+
+    List<Content> selectContentWithNullMergeField() {
+        return store.boxFor(Content.class).query().isNull(Content_.manuallyMerged).build().find();
     }
 
     public Query<Content> selectOldStoredContentQ() {

@@ -308,7 +308,8 @@
     <string name="book_artist">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
     <string name="book_pages_queue">Pages: 1234; estimated 125 MB</string>
     <string name="book_pages_library">1234 pages / 1125 MB</string>
-    <string name="book_tags">""tag1, tag2, tag3, etc.</string>
+    <string name="book_pages_library2">1234 pages / 30 chapters / 1125 MB [Merged]</string>
+    <string name="book_tags">tag1, tag2, tag3, etc.</string>
     <plurals name="number_of_book_search_results">
         <item quantity="one">%d/%d result</item>
         <item quantity="other">%d/%d results</item>

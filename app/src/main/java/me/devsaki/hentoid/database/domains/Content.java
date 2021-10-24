@@ -117,6 +117,7 @@ public class Content implements Serializable {
     private long reads = 0;
     private long lastReadDate;
     private int lastReadPageIndex = 0;
+    private boolean manuallyMerged = false;
     @Convert(converter = Content.StringMapConverter.class, dbType = String.class)
     private Map<String, String> bookPreferences = new HashMap<>();
 
@@ -866,6 +867,14 @@ public class Content implements Serializable {
     public Content setDownloadMode(int downloadMode) {
         this.downloadMode = downloadMode;
         return this;
+    }
+
+    public boolean isManuallyMerged() {
+        return manuallyMerged;
+    }
+
+    public void setManuallyMerged(boolean manuallyMerged) {
+        this.manuallyMerged = manuallyMerged;
     }
 
     public boolean isUpdatedProperties() {
