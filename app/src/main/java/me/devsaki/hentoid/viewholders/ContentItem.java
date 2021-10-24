@@ -244,7 +244,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private TextView tvChapters;
         private ImageView ivStorage;
         private TextView tvStorage;
-        private ImageView ivMerged;
 
         // Specific to Queued content
         private ProgressBar progressBar;
@@ -285,7 +284,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 tvChapters = itemView.findViewById(R.id.tvChapters);
                 ivStorage = itemView.findViewById(R.id.ivStorage);
                 tvStorage = itemView.findViewById(R.id.tvStorage);
-                ivMerged = itemView.findViewById(R.id.ivMerged);
                 ivCompleted = requireViewById(itemView, R.id.ivCompleted);
                 readingProgress = requireViewById(itemView, R.id.reading_progress);
             } else if (viewType == ViewType.LIBRARY_GRID) {
@@ -526,8 +524,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                     int chapterVisibility = (null == chapters || chapters.isEmpty()) ? View.GONE : View.VISIBLE;
                     ivChapters.setVisibility(chapterVisibility);
                     tvChapters.setVisibility(chapterVisibility);
-                    if (chapterVisibility == View.VISIBLE)
+                    if (chapterVisibility == View.VISIBLE) {
+                        if (content.isManuallyMerged())
+                            ivChapters.setImageResource(R.drawable.ic_action_merge);
+                        else ivChapters.setImageResource(R.drawable.ic_chapter);
                         tvChapters.setText(String.format(Locale.ENGLISH, "%d", chapters.size()));
+                    }
                 }
 
                 if (tvStorage != null) {
@@ -537,9 +539,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                     if (storageVisibility == View.VISIBLE)
                         tvStorage.setText(context.getString(R.string.library_metrics_storage, content.getSize() / (1024.0 * 1024.0)));
                 }
-
-                if (ivMerged != null)
-                    ivMerged.setVisibility(content.isManuallyMerged() ? View.VISIBLE : View.GONE);
             }
         }
 
