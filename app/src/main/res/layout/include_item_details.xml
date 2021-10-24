@@ -113,7 +113,7 @@
 
     <TextView
         android:id="@+id/tvPages"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -138,7 +138,7 @@
 
     <TextView
         android:id="@+id/tvChapters"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -162,7 +162,7 @@
 
     <TextView
         android:id="@+id/tvStorage"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:textAppearance="?android:attr/textAppearanceSmall"
@@ -171,18 +171,6 @@
         app:layout_constraintStart_toEndOf="@id/ivStorage"
         app:layout_constraintTop_toTopOf="@id/ivPages"
         tools:text="124 MB" />
-
-    <ImageView
-        android:id="@+id/ivMerged"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@drawable/ic_action_merge"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="@id/tvArtist"
-        app:layout_constraintTop_toBottomOf="@id/tvSeries"
-        app:tint="@color/card_tags_light"
-        tools:ignore="ContentDescription"
-        tools:visibility="visible" />
 
     <View
         android:id="@+id/divider"
