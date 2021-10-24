@@ -1375,6 +1375,7 @@ public final class ContentHelper {
         mergedContent.setStatus(firstContent.getStatus());
         mergedContent.setFavourite(firstContent.isFavourite());
         mergedContent.setBookPreferences(firstContent.getBookPreferences());
+        mergedContent.setManuallyMerged(true);
 
         // Merge attributes
         List<Attribute> mergedAttributes = Stream.of(contentList).flatMap(c -> Stream.of(c.getAttributes())).toList();
