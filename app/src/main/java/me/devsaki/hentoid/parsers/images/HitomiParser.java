@@ -41,7 +41,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 public class HitomiParser implements ImageListParser {
 
     // Reproduction of the Hitomi.la Javascript to find the hostname of the image server
-    private static final int NUMBER_OF_FRONTENDS = 3;
+    private static final int NUMBER_OF_FRONTENDS = 2;
     private static final String HOSTNAME_SUFFIX_JPG = "b";
     private static final String HOSTNAME_SUFFIX_WEBP = "a";
     private static final char HOSTNAME_PREFIX_BASE = 97;
@@ -113,8 +113,7 @@ public class HitomiParser implements ImageListParser {
         int nbFrontends = NUMBER_OF_FRONTENDS;
         int varG = Integer.valueOf(componentB, 16);
         int varO = 0;
-        if (varG < 0x88) varO = 1;
-        if (varG < 0x44) varO = 2;
+        if (varG < 0x80) varO = 1;
 
         //String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends, getSuffixFromExtension(extension));
         String imageSubdomain = (char) (HOSTNAME_PREFIX_BASE + varO) + getSuffixFromExtension(extension);
