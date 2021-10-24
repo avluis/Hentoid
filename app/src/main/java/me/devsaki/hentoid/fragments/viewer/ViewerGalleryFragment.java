@@ -246,66 +246,6 @@ public class ViewerGalleryFragment extends Fragment {
         super.onDestroy();
     }
 
-    private void onImagesChanged(List<ImageFile> images) {
-        if (editMode == EditMode.EDIT_CHAPTERS) { // Expandable chapters
-            List<SubExpandableItem> chapterItems = new ArrayList<>();
-
-            List<Chapter> chapters = Stream.of(images)
-                    .map(ImageFile::getLinkedChapter)
-                    .withoutNulls()
-                    .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
-
-            for (Chapter c : chapters) {
-                SubExpandableItem expandableItem = new SubExpandableItem().withName(c.getName());
-                expandableItem.setIdentifier(c.getId());
-
-                List<ImageFileItem> imgs = new ArrayList<>();
-                List<ImageFile> chpImgs = c.getImageFiles();
-                if (chpImgs != null) {
-                    for (ImageFile img : chpImgs) {
-                        if (img.isReadable()) {
-                            ImageFileItem holder = new ImageFileItem(img, false);
-                            imgs.add(holder);
-                        }
-                    }
-                }
-                expandableItem.getSubItems().addAll(imgs);
-                chapterItems.add(expandableItem);
-            }
-
-            // One last category for chapterless images
-            List<ImageFile> chapterlessImages = Stream.of(images)
-                    .filter(i -> null == i.getLinkedChapter())
-                    .toList();
-
-            if (!chapterlessImages.isEmpty()) {
-                SubExpandableItem expandableItem = new SubExpandableItem().withName("No chapter");
-                expandableItem.setIdentifier(Long.MAX_VALUE);
-
-                List<ImageFileItem> imgs = new ArrayList<>();
-                for (ImageFile img : chapterlessImages) {
-                    ImageFileItem holder = new ImageFileItem(img, false);
-                    imgs.add(holder);
-                }
-                expandableItem.getSubItems().addAll(imgs);
-                chapterItems.add(expandableItem);
-            }
-
-            itemAdapter2.set(chapterItems);
-        } else { // Classic gallery
-            List<ImageFileItem> imgs = new ArrayList<>();
-            for (ImageFile img : images) {
-                ImageFileItem holder = new ImageFileItem(img, editMode == EditMode.ADD_CHAPTER);
-                if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
-                imgs.add(holder);
-            }
-            // Remove duplicates
-            imgs = Stream.of(imgs).distinct().toList();
-            FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs, IMAGE_DIFF_CALLBACK);
-        }
-        new Handler(Looper.getMainLooper()).postDelayed(() -> moveToIndex(startIndex, false), 150);
-    }
-
     private void updateListAdapter(boolean isChapterEditMode) {
         if (isChapterEditMode) {
             if (!fastAdapter2.hasObservers()) fastAdapter2.setHasStableIds(true);
@@ -439,6 +379,67 @@ public class ViewerGalleryFragment extends Fragment {
         );
 
         chaptersSelector.setVisibility(View.VISIBLE);
+    }
+
+    private void onImagesChanged(List<ImageFile> images) {
+        if (editMode == EditMode.EDIT_CHAPTERS) { // Expandable chapters
+            List<SubExpandableItem> chapterItems = new ArrayList<>();
+
+            List<Chapter> chapters = Stream.of(images)
+                    .map(ImageFile::getLinkedChapter)
+                    .withoutNulls()
+                    .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
+
+            for (Chapter c : chapters) {
+                SubExpandableItem expandableItem = new SubExpandableItem().withName(c.getName());
+                expandableItem.setIdentifier(c.getId());
+
+                List<ImageFileItem> imgs = new ArrayList<>();
+                List<ImageFile> chpImgs = c.getImageFiles();
+                if (chpImgs != null) {
+                    for (ImageFile img : chpImgs) {
+                        if (img.isReadable()) {
+                            ImageFileItem holder = new ImageFileItem(img, false);
+                            imgs.add(holder);
+                        }
+                    }
+                }
+                expandableItem.getSubItems().addAll(imgs);
+                chapterItems.add(expandableItem);
+            }
+
+            // One last category for chapterless images
+            List<ImageFile> chapterlessImages = Stream.of(images)
+                    .filter(i -> null == i.getLinkedChapter())
+                    .toList();
+
+            if (!chapterlessImages.isEmpty()) {
+                SubExpandableItem expandableItem = new SubExpandableItem().withName("No chapter");
+                expandableItem.setIdentifier(Long.MAX_VALUE);
+
+                List<ImageFileItem> imgs = new ArrayList<>();
+                for (ImageFile img : chapterlessImages) {
+                    ImageFileItem holder = new ImageFileItem(img, false);
+                    imgs.add(holder);
+                }
+                expandableItem.getSubItems().addAll(imgs);
+                chapterItems.add(expandableItem);
+            }
+
+            itemAdapter2.set(chapterItems);
+        } else { // Classic gallery
+            List<ImageFileItem> imgs = new ArrayList<>();
+            for (ImageFile img : images) {
+                ImageFileItem holder = new ImageFileItem(img, editMode == EditMode.ADD_CHAPTER);
+                if (startIndex == img.getDisplayOrder()) holder.setCurrent(true);
+                imgs.add(holder);
+            }
+            // Remove duplicates
+            imgs = Stream.of(imgs).distinct().toList();
+            FastAdapterDiffUtil.INSTANCE.set(itemAdapter, imgs, IMAGE_DIFF_CALLBACK);
+        }
+        updateToolbar();
+        new Handler(Looper.getMainLooper()).postDelayed(() -> moveToIndex(startIndex, false), 150);
     }
 
     private void onStartingIndexChanged(Integer startingIndex) {
