@@ -5,7 +5,7 @@ import android.os.Bundle;
 import javax.annotation.Nonnull;
 
 /**
- * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.services.ImportService}
+ * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.services.ExternalImportService}
  * through a Bundle
  *
  * Use Builder class to set data; use Parser class to get data

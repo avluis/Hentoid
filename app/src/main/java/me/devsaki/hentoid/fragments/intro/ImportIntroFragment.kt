@@ -35,7 +35,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     private var _mergedBinding: IncludeImportStepsBinding? = null
     private val binding get() = _binding!!
     private val mergedBinding get() = _mergedBinding!!
-    lateinit var importDisposable: Disposable
+    private lateinit var importDisposable: Disposable
 
     private val pickFolder = registerForActivityResult(ImportHelper.PickFolderContract()) { res ->
         onFolderPickerResult(res.left, res.right)
