@@ -5,7 +5,7 @@
     android:id="@+id/item"
     android:layout_width="@dimen/card_grid_width"
     android:layout_height="@dimen/card_grid_height"
-    android:layout_marginBottom="@dimen/default_cardview_margin"
+    android:layout_marginTop="@dimen/default_cardview_margin"
     android:background="@drawable/bg_book_card"
     android:clickable="true"
     android:elevation="6dp"
