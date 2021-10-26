@@ -29,8 +29,8 @@
 
     <ImageView
         android:id="@+id/ivReorder"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginEnd="24dp"
         android:background="@color/transparent"
         android:clickable="true"
@@ -61,8 +61,8 @@
         tools:text="@string/book_title" />
     <ImageView
         android:id="@+id/ivFavourite"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="8dp"
