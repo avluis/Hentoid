@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 
 import com.annimon.stream.Stream;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,7 +16,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -88,6 +89,16 @@ public class PixivIllustMetadata {
             if (null == illust_details) return "";
             return illust_details.getCanonicalUrl();
         }
+
+        public String getUgoiraSrc() {
+            if (null == illust_details) return "";
+            return illust_details.getUgoiraSrc();
+        }
+
+        public List<ImmutablePair<String, Integer>> getUgoiraFrames() {
+            if (null == illust_details) return Collections.emptyList();
+            return illust_details.getUgoiraFrames();
+        }
     }
 
     private static class IllustDetails {
@@ -102,6 +113,8 @@ public class PixivIllustMetadata {
         private MetaData meta;
         private String url_s;
         private String url_big;
+
+        private UgoiraData ugoira_meta;
 
         String getThumbUrl() {
             return StringHelper.protect(url_s);
@@ -128,6 +141,16 @@ public class PixivIllustMetadata {
         String getCanonicalUrl() {
             if (null == meta) return "";
             return meta.getCanonicalUrl();
+        }
+
+        String getUgoiraSrc() {
+            if (null == ugoira_meta) return "";
+            return ugoira_meta.src;
+        }
+
+        List<ImmutablePair<String, Integer>> getUgoiraFrames() {
+            if (null == ugoira_meta) return Collections.emptyList();
+            return ugoira_meta.getFrames();
         }
     }
 
@@ -176,6 +199,22 @@ public class PixivIllustMetadata {
         public String getName() {
             return user_name;
         }
+    }
+
+    private static class UgoiraData {
+        private String src;
+        private String mime_type;
+        private List<UgoiraFrameData> frames;
+
+        public List<ImmutablePair<String, Integer>> getFrames() {
+            if (null == frames) return Collections.emptyList();
+            return Stream.of(frames).map(f -> new ImmutablePair<>(f.file, f.delay)).toList();
+        }
+    }
+
+    private static class UgoiraFrameData {
+        private String file;
+        private Integer delay;
     }
 
     public boolean isError() {
@@ -248,6 +287,9 @@ public class PixivIllustMetadata {
 
         List<ImageFile> images = ParseHelper.urlsToImageFiles(illustData.getImageUrls(), illustData.getThumbUrl(), StatusContent.SAVED);
         if (updateImages) content.setImageFiles(images);
+
+        // TODO Store Ugoira into DownloadParams for future assembly
+
 
         return content;
     }

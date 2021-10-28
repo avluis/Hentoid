@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import static android.graphics.Bitmap.Config.ARGB_8888;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,19 +10,23 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
+import com.waynejo.androidndkgif.GifEncoder;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
-import static android.graphics.Bitmap.Config.ARGB_8888;
 
 /**
  * Created by Robb on 07/2020
@@ -207,4 +213,44 @@ public final class ImageHelper {
             workStream2.close();
         }
     }
+
+    public static Uri assembleGif(
+            @NonNull Context context,
+            @NonNull List<ImmutablePair<String, Integer>> frames) throws IOException {
+        if (frames.isEmpty()) return null;
+
+        int width;
+        int height;
+        try (InputStream is = FileHelper.getInputStream(context, Uri.parse(frames.get(0).left))) {
+            Bitmap b = BitmapFactory.decodeStream(is);
+            width = b.getWidth();
+            height = b.getHeight();
+        }
+
+        GifEncoder gifEncoder = new GifEncoder();
+        String path = context.getCacheDir().getAbsolutePath() + "/tmp.gif"; // GIF encoder only work with paths...
+        gifEncoder.init(width, height, path, GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY);
+
+        for (ImmutablePair<String, Integer> frame : frames) {
+            try (InputStream is = FileHelper.getInputStream(context, Uri.parse(frame.left))) {
+                final BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+                Bitmap b = BitmapFactory.decodeStream(is, null, options);
+                if (null == b) continue;
+
+                try {
+                    gifEncoder.encodeFrame(b, 100);
+                } finally {
+                    b.recycle();
+                }
+            }
+        }
+
+        gifEncoder.close();
+
+        return Uri.fromFile(new File(path));
+    }
+
+
 }
