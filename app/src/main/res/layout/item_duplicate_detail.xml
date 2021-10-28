@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
     android:layout_width="match_parent"
-    android:layout_height="130dp"
+    android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
     android:clickable="true"
     android:focusable="true"
@@ -106,8 +106,8 @@
 
         <ImageView
             android:id="@+id/ivSite"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
             android:background="@color/transparent"
@@ -123,8 +123,8 @@
 
         <ImageView
             android:id="@+id/ivFavourite"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:src="@drawable/ic_fav_empty"
             android:tooltipText="@string/book_favourite_success"
@@ -136,8 +136,8 @@
 
         <ImageView
             android:id="@+id/ivExternal"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:src="@drawable/ic_external_library"
             android:tooltipText="@string/external_help"
@@ -152,16 +152,16 @@
         <TextView
             android:id="@+id/delete_btn"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_gravity="center"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="4dp"
             android:layout_weight="1"
-            android:drawablePadding="4dp"
             android:gravity="center"
             android:singleLine="true"
             android:text="@string/duplicate_delete"
             android:textAllCaps="true"
+            app:layout_constraintEnd_toStartOf="@id/keep_delete"
             android:textColor="@color/medium_gray"
             android:textSize="@dimen/caption"
             android:textStyle="bold"
@@ -173,21 +173,24 @@
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/keep_delete"
             android:layout_width="wrap_content"
-            android:layout_height="24dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="4dp"
             android:checked="true"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/keep_btn"
             app:layout_constraintStart_toEndOf="@id/delete_btn" />
 
         <TextView
             android:id="@+id/keep_btn"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_gravity="center"
             android:layout_marginBottom="4dp"
+            android:layout_marginTop="4dp"
             android:layout_weight="1"
-            android:drawablePadding="4dp"
             android:gravity="center"
             android:singleLine="true"
+            app:layout_constraintEnd_toStartOf="@id/guideline_middle"
             android:text="@string/duplicate_keep"
             android:textAllCaps="true"
             android:textColor="?colorSecondary"
@@ -196,7 +199,8 @@
             app:drawableStartCompat="@drawable/ic_check"
             app:drawableTint="?colorSecondary"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/keep_delete" />
+            app:layout_constraintStart_toEndOf="@id/keep_delete"
+            app:layout_constraintTop_toBottomOf="@id/ivSite" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_middle"

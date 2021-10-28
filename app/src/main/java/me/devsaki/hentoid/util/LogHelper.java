@@ -176,8 +176,8 @@ public class LogHelper {
             Instant beginning = Stream.of(info.entries).withoutNulls().min((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
             Instant end = Stream.of(info.entries).withoutNulls().max((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
             long durationMs = end.toEpochMilli() - beginning.toEpochMilli();
-            logStr.append("Start : ").append(beginning.toString()).append(LINE_SEPARATOR);
-            logStr.append("End : ").append(end.toString()).append(" (").append(Helper.formatDuration(durationMs)).append(")").append(LINE_SEPARATOR);
+            logStr.append("Start : ").append(beginning).append(LINE_SEPARATOR);
+            logStr.append("End : ").append(end).append(" (").append(Helper.formatDuration(durationMs)).append(")").append(LINE_SEPARATOR);
             logStr.append("-----").append(LINE_SEPARATOR);
 
             // Log header

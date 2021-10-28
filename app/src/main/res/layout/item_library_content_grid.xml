@@ -5,10 +5,7 @@
     android:id="@+id/item"
     android:layout_width="@dimen/card_grid_width"
     android:layout_height="@dimen/card_grid_height"
-    android:layout_marginStart="@dimen/default_cardview_vertical_padding"
     android:layout_marginTop="@dimen/default_cardview_vertical_padding"
-    android:layout_marginEnd="@dimen/default_cardview_vertical_padding"
-    android:layout_marginBottom="@dimen/default_cardview_vertical_padding"
     android:clickable="true"
     android:focusable="true"
     android:longClickable="true"
@@ -67,7 +64,7 @@
             android:adjustViewBounds="true"
             android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@id/tvTitle"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/lineNew"
             tools:ignore="ContentDescription"
             tools:src="@drawable/flag_cn"
             tools:visibility="visible" />
@@ -86,7 +83,7 @@
             android:textSize="@dimen/text_subtitle_1"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/lineNew"
             app:layout_constraintStart_toStartOf="parent"
             tools:text="@string/book_title" />
 
@@ -101,11 +98,10 @@
 
         <ImageView
             android:id="@+id/ivFavourite"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:background="@color/transparent"
             android:clickable="true"
             android:focusable="true"
@@ -113,54 +109,47 @@
             android:tooltipText="@string/fav_help"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="1.0"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/queue_site_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true"
             android:tooltipText="@string/view_source_help"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/ivFavourite"
-            app:layout_constraintVertical_bias="1.0"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_hentoid_shape" />
 
         <ImageView
             android:id="@+id/ivExternal"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
             android:src="@drawable/ic_external_library"
             android:tooltipText="@string/external_help"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/queue_site_button"
-            app:layout_constraintVertical_bias="1.0"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/medium_gray"
             tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/ivOnline"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="8dp"
             android:src="@drawable/ic_action_download_stream"
             android:tooltipText="@string/streamed_help"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/ivExternal"
-            app:layout_constraintVertical_bias="1.0"
             app:tint="@color/medium_gray"
             tools:ignore="ContentDescription" />
 

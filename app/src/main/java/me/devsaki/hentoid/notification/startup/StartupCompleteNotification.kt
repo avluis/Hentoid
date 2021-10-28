@@ -6,7 +6,7 @@ import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.notification.Notification
 
-class StartupCompleteNotification() : Notification {
+class StartupCompleteNotification : Notification {
 
     override fun onCreateNotification(context: Context): android.app.Notification =
         NotificationCompat.Builder(context, StartupNotificationChannel.ID)

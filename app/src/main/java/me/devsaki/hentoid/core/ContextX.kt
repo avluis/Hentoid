@@ -46,7 +46,7 @@ fun Context.clearWebviewCache() {
             // Creating with the application Context fixes this, but is not generally recommended for view creation
             NestedScrollWebView(Helper.getFixedContext(this))
         }
-        webView.clearCache(true);
+        webView.clearCache(true)
     }
 }
 
