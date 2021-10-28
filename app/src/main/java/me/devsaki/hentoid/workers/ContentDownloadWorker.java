@@ -46,9 +46,6 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.fakku.FakkuDecode;
-import me.devsaki.fakku.PageInfo;
-import me.devsaki.fakku.PointTranslation;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.core.HentoidApp;
@@ -917,43 +914,6 @@ public class ContentDownloadWorker extends BaseWorker {
         } else Timber.w("Failed to parse backup URL");
     }
 
-    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws
-            IOException {
-        Map<String, String> downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
-
-        if (!downloadParams.containsKey("pageInfo"))
-            throw new InvalidParameterException("No pageInfo");
-
-        String pageInfoValue = downloadParams.get("pageInfo");
-        if (null == pageInfoValue) throw new InvalidParameterException("PageInfo is null");
-
-        if (pageInfoValue.equals("unprotected"))
-            return binaryContent; // Free content, picture is not protected
-
-//        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
-        Bitmap sourcePicture = BitmapFactory.decodeByteArray(binaryContent, 0, binaryContent.length);
-
-        PageInfo page = JsonHelper.jsonToObject(pageInfoValue, PageInfo.class);
-        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-        Bitmap destPicture = Bitmap.createBitmap(page.width, page.height, conf);
-        Canvas destCanvas = new Canvas(destPicture);
-
-        FakkuDecode.getTranslations(page);
-
-        if (page.translations.isEmpty())
-            throw new InvalidParameterException("No translation found");
-
-        for (PointTranslation t : page.translations) {
-            Rect sourceRect = new Rect(t.sourceX, t.sourceY, t.sourceX + FakkuDecode.TILE_EDGE_LENGTH, t.sourceY + FakkuDecode.TILE_EDGE_LENGTH);
-            Rect destRect = new Rect(t.destX, t.destY, t.destX + FakkuDecode.TILE_EDGE_LENGTH, t.destY + FakkuDecode.TILE_EDGE_LENGTH);
-
-            destCanvas.drawBitmap(sourcePicture, sourceRect, destRect, null);
-        }
-        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
-        destPicture.compress(Bitmap.CompressFormat.PNG, 100, out); // Fakku is _always_ PNG
-        return out.toByteArray();
-    }
-
     /**
      * Create the given file in the given destination folder, and write binary data to it
      *
@@ -979,8 +939,9 @@ public class ContentDownloadWorker extends BaseWorker {
 
         byte[] processedBinaryContent = null;
         if (hasImageProcessing && !img.getName().equals(Consts.THUMB_FILE_NAME)) {
-            if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty())
-                processedBinaryContent = processImage(img.getDownloadParams(), binaryContent);
+            if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty()) {
+                //processedBinaryContent = processImage(img.getDownloadParams(), binaryContent);
+            }
             else throw new InvalidParameterException("No processing parameters found");
         }
         binaryContent = (null == processedBinaryContent) ? binaryContent : processedBinaryContent;

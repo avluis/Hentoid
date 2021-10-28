@@ -92,8 +92,6 @@ dependencies {
     implementation fileTree(include: ['*jar'], dir: 'libs')
     implementation fileTree(include: ['*aar'], dir: 'libs')
 
-    implementation project(':fakkuLib')
-
     /**
      * TESTING
      */

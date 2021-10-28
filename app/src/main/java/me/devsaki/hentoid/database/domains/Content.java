@@ -38,7 +38,6 @@ import me.devsaki.hentoid.activities.sources.BaseWebActivity;
 import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
-import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
 import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
@@ -339,8 +338,6 @@ public class Content implements Serializable {
                 return EHentaiActivity.class;
             case EXHENTAI:
                 return ExHentaiActivity.class;
-            case FAKKU2:
-                return FakkuActivity.class;
             case MUSES:
                 return MusesActivity.class;
             case DOUJINS:

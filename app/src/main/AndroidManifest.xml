@@ -66,9 +66,6 @@
             android:name=".activities.sources.EHentaiActivity"
             android:configChanges="orientation|screenSize" />
         <activity
-            android:name=".activities.sources.FakkuActivity"
-            android:configChanges="orientation|screenSize" />
-        <activity
             android:name=".activities.sources.MusesActivity"
             android:configChanges="orientation|screenSize" />
         <activity
