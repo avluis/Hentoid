@@ -5,12 +5,16 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 
 import com.annimon.stream.Stream;
+import com.squareup.moshi.Types;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,6 +26,8 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
 
 /**
@@ -29,6 +35,8 @@ import me.devsaki.hentoid.util.StringHelper;
  */
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class PixivIllustMetadata {
+
+    public static final Type UGOIRA_FRAMES_TYPE = Types.newParameterizedType(List.class, Pair.class, String.class, Integer.class);
 
     private Boolean error;
     private String message;
@@ -285,11 +293,18 @@ public class PixivIllustMetadata {
 
         content.putAttributes(getAttributes());
 
-        List<ImageFile> images = ParseHelper.urlsToImageFiles(illustData.getImageUrls(), illustData.getThumbUrl(), StatusContent.SAVED);
-        if (updateImages) content.setImageFiles(images);
+        if (updateImages) {
+            List<ImageFile> images = ParseHelper.urlsToImageFiles(illustData.getImageUrls(), illustData.getThumbUrl(), StatusContent.SAVED);
+            content.setImageFiles(images);
+        }
 
-        // TODO Store Ugoira into DownloadParams for future assembly
+        Map<String, String> downloadParams = new HashMap<>();
 
+        downloadParams.put(ContentHelper.KEY_DL_PARAMS_UGOIRA_URL, illustData.getUgoiraSrc());
+        String framesJson = JsonHelper.serializeToJson(illustData.getUgoiraFrames(), UGOIRA_FRAMES_TYPE);
+        downloadParams.put(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES, framesJson);
+
+        content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
 
         return content;
     }
