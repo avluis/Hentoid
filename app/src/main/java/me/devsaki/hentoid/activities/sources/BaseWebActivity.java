@@ -501,7 +501,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         webView.setWebViewClient(webClient);
 
         // Download immediately on long click on a link / image link
-        if (Preferences.isBrowserQuickDl())
+        if (Preferences.isBrowserQuickDl()) {
             webView.setOnLongClickListener(v -> {
                 WebView.HitTestResult result = webView.getHitTestResult();
 
@@ -527,6 +527,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     return false;
                 }
             });
+
+            webView.setLongClickThreshold(Preferences.getBrowserQuickDlThreshold());
+        }
 
 
         CookieManager cookieManager = CookieManager.getInstance();

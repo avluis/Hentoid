@@ -13,7 +13,7 @@ import androidx.core.view.ViewCompat;
  * <p>
  * Refs: https://github.com/tobiasrohloff/NestedScrollWebView
  */
-public class NestedScrollWebView extends WebView {
+public class NestedScrollWebView extends VariableLongClickWebView {
     private int mLastMotionY;
 
     private final int[] mScrollOffset = new int[2];
