@@ -1003,7 +1003,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
                         if (!cookieStr.isEmpty())
                             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-                        result = downloadPictureToCachedFile(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
+                        result = downloadToCachedFile(content.getSite(), img.getUrl(), pageIndex, headers, targetFolder, targetFileName, stopDownload);
                     }
                     targetFile = result.left;
                     mimeType = result.right;
@@ -1038,20 +1038,20 @@ public class ImageViewerViewModel extends AndroidViewModel {
         img.setUrl(pages.left);
         // Download the picture
         try {
-            return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
+            return downloadToCachedFile(content.getSite(), img.getUrl(), pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
         } catch (IOException e) {
             if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
             else throw e;
         }
         // Trying with backup URL
         img.setUrl(pages.right.get());
-        return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
+        return downloadToCachedFile(content.getSite(), img.getUrl(), pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
     }
 
     // TODO doc
-    private ImmutablePair<File, String> downloadPictureToCachedFile(
-            @NonNull Content content,
-            @NonNull ImageFile img,
+    private ImmutablePair<File, String> downloadToCachedFile(
+            @NonNull Site site,
+            @NonNull String url,
             int pageIndex,
             List<Pair<String, String>> requestHeaders,
             @NonNull File targetFolder,
@@ -1062,15 +1062,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (interruptDownload.get())
             throw new DownloadInterruptedException("Download interrupted");
 
-        Site site = content.getSite();
-        Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
-        Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        Timber.d("DOWNLOADING PIC %d %s", pageIndex, url);
+        Response response = HttpHelper.getOnlineResourceFast(url, requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         Timber.d("DOWNLOADING PIC %d - RESPONSE %s", pageIndex, response.code());
         if (response.code() >= 300) throw new IOException("Network error " + response.code());
 
         ResponseBody body = response.body();
         if (null == body)
-            throw new IOException("Could not read response : empty body for " + img.getUrl());
+            throw new IOException("Could not read response : empty body for " + url);
 
         long size = body.contentLength();
         // TODO if size can't be found (e.g. content-length header not set), guess it by looking at the size of the other downloaded pics
@@ -1094,7 +1093,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 if (0 == iteration) {
                     mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
                     if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
-                        String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", img.getUrl(), size / 1024.0);
+                        String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", url, size / 1024.0);
                         throw new UnsupportedContentException(message);
                     }
                 }
