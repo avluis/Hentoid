@@ -23,6 +23,7 @@ public abstract class Consts {
 
     public static final String THUMB_FILE_NAME = "thumb";
     public static final String PICTURE_CACHE_FOLDER = "pictures";
+    public static final String UGOIRA_CACHE_FOLDER = "ugoira";
 
     public static final String SEED_CONTENT = "content";
     public static final String SEED_PAGES = "pages";

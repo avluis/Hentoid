@@ -99,7 +99,6 @@ public final class ContentHelper {
     }
 
     public static final String KEY_DL_PARAMS_NB_CHAPTERS = "nbChapters";
-    public static final String KEY_DL_PARAMS_UGOIRA_URL = "ugo_url";
     public static final String KEY_DL_PARAMS_UGOIRA_FRAMES = "ugo_frames";
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";

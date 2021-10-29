@@ -105,10 +105,7 @@ public class ImageFile {
 
     private static void init(ImageFile imgFile, int order, StatusContent status, int maxPages) {
         imgFile.order = order;
-
-        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
-        imgFile.name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
-
+        imgFile.computeName(maxPages);
         imgFile.status = status;
     }
 
@@ -152,6 +149,12 @@ public class ImageFile {
 
     public ImageFile setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public ImageFile computeName(int maxPages) {
+        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
+        name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
         return this;
     }
 

@@ -137,9 +137,10 @@ public class PixivParser extends BaseImageListParser {
             List<Attribute> chapterAttrs = illustMetadata.getAttributes();
             attrs.addAll(chapterAttrs);
 
-            List<String> pageUrls = illustMetadata.getPageUrls();
-            result.addAll(ParseHelper.urlsToImageFiles(pageUrls, order, StatusContent.SAVED, ch, 1000));
-            order += pageUrls.size();
+            List<ImageFile> chapterImages = illustMetadata.getImageFiles();
+            for (ImageFile img : chapterImages)
+                img.setOrder(order++).computeName(1000).setChapter(ch);
+
             progress.advance();
         }
 
@@ -191,9 +192,10 @@ public class PixivParser extends BaseImageListParser {
             attrs.addAll(chapterAttrs);
 
             Chapter chp = new Chapter(chpOrder++, illustMetadata.getUrl(), illustMetadata.getTitle()).setUniqueId(illustMetadata.getId()).setContentId(content.getId());
-            List<String> pageUrls = illustMetadata.getPageUrls();
-            result.addAll(ParseHelper.urlsToImageFiles(pageUrls, imgOrder, StatusContent.SAVED, chp, 1000));
-            imgOrder += pageUrls.size();
+            List<ImageFile> chapterImages = illustMetadata.getImageFiles();
+            for (ImageFile img : chapterImages)
+                img.setOrder(imgOrder++).computeName(1000).setChapter(chp);
+
             progress.advance();
         }
 

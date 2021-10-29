@@ -51,8 +51,8 @@ public class PixivIllustMetadata {
             else return Collections.emptyList();
         }
 
-        List<String> getImageUrls() {
-            if (illust_details != null) return illust_details.getImageUrls();
+        List<ImageFile> getImageFiles() {
+            if (illust_details != null) return illust_details.getImageFiles();
             else return Collections.emptyList();
         }
 
@@ -133,16 +133,32 @@ public class PixivIllustMetadata {
             return Stream.of(display_tags).map(TagData::getTag).toList();
         }
 
-        List<String> getImageUrls() {
+        List<ImageFile> getImageFiles() {
             int pageCount = 0;
             if (page_count != null && StringHelper.isNumeric(page_count))
                 pageCount = Integer.parseInt(page_count);
 
+            // TODO include cover in the page list (getThumbUrl) ?
             if (1 == pageCount) {
-                return Stream.of(url_big).toList();
-            } else {
+                ImageFile img;
+                if (null == ugoira_meta) { // One single page
+                    img = ParseHelper.urlToImageFile(url_big, 1, 1, StatusContent.SAVED);
+                } else { // One single ugoira
+                    img = ParseHelper.urlToImageFile(ugoira_meta.src, 1, 1, StatusContent.SAVED);
+                    Map<String, String> downloadParams = new HashMap<>();
+                    String framesJson = JsonHelper.serializeToJson(ugoira_meta.getFrames(), UGOIRA_FRAMES_TYPE);
+                    downloadParams.put(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES, framesJson);
+                    img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+                }
+                return Stream.of(img).toList();
+            } else { // Classic page list
                 if (null == manga_a) return Collections.emptyList();
-                return Stream.of(manga_a).map(PageData::getUrl).toList();
+                int order = 1;
+                List<ImageFile> result = new ArrayList<>();
+                for (PageData pd : manga_a) {
+                    result.add(ParseHelper.urlToImageFile(pd.getUrl(), order++, manga_a.size(), StatusContent.SAVED));
+                }
+                return result;
             }
         }
 
@@ -233,9 +249,9 @@ public class PixivIllustMetadata {
         return message;
     }
 
-    public List<String> getPageUrls() {
+    public List<ImageFile> getImageFiles() {
         if (error || null == body || null == body.illust_details) return Collections.emptyList();
-        return body.getImageUrls();
+        return body.getImageFiles();
     }
 
     public String getUrl() {
@@ -293,18 +309,7 @@ public class PixivIllustMetadata {
 
         content.putAttributes(getAttributes());
 
-        if (updateImages) {
-            List<ImageFile> images = ParseHelper.urlsToImageFiles(illustData.getImageUrls(), illustData.getThumbUrl(), StatusContent.SAVED);
-            content.setImageFiles(images);
-        }
-
-        Map<String, String> downloadParams = new HashMap<>();
-
-        downloadParams.put(ContentHelper.KEY_DL_PARAMS_UGOIRA_URL, illustData.getUgoiraSrc());
-        String framesJson = JsonHelper.serializeToJson(illustData.getUgoiraFrames(), UGOIRA_FRAMES_TYPE);
-        downloadParams.put(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES, framesJson);
-
-        content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
+        if (updateImages) content.setImageFiles(illustData.getImageFiles());
 
         return content;
     }

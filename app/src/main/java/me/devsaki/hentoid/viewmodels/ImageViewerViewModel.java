@@ -25,15 +25,12 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
@@ -73,6 +70,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.download.DownloadHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
@@ -80,8 +78,6 @@ import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -1003,7 +999,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
                         if (!cookieStr.isEmpty())
                             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-                        result = downloadToCachedFile(content.getSite(), img.getUrl(), pageIndex, headers, targetFolder, targetFileName, stopDownload);
+                        result = DownloadHelper.downloadToFile(
+                                content.getSite(),
+                                img.getUrl(),
+                                pageIndex,
+                                headers,
+                                targetFolder,
+                                targetFileName,
+                                null,
+                                stopDownload,
+                                f -> notifyDownloadProgress(f, pageIndex)
+                        );
                     }
                     targetFile = result.left;
                     mimeType = result.right;
@@ -1038,79 +1044,34 @@ public class ImageViewerViewModel extends AndroidViewModel {
         img.setUrl(pages.left);
         // Download the picture
         try {
-            return downloadToCachedFile(content.getSite(), img.getUrl(), pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
+            return DownloadHelper.downloadToFile(
+                    content.getSite(),
+                    img.getUrl(),
+                    pageIndex,
+                    requestHeaders,
+                    targetFolder,
+                    targetFileName,
+                    null,
+                    stopDownload,
+                    f -> notifyDownloadProgress(f, pageIndex)
+            );
         } catch (IOException e) {
             if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
             else throw e;
         }
         // Trying with backup URL
         img.setUrl(pages.right.get());
-        return downloadToCachedFile(content.getSite(), img.getUrl(), pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
-    }
-
-    // TODO doc
-    private ImmutablePair<File, String> downloadToCachedFile(
-            @NonNull Site site,
-            @NonNull String url,
-            int pageIndex,
-            List<Pair<String, String>> requestHeaders,
-            @NonNull File targetFolder,
-            @NonNull String targetFileName,
-            @NonNull final AtomicBoolean interruptDownload) throws
-            IOException, UnsupportedContentException, DownloadInterruptedException {
-
-        if (interruptDownload.get())
-            throw new DownloadInterruptedException("Download interrupted");
-
-        Timber.d("DOWNLOADING PIC %d %s", pageIndex, url);
-        Response response = HttpHelper.getOnlineResourceFast(url, requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-        Timber.d("DOWNLOADING PIC %d - RESPONSE %s", pageIndex, response.code());
-        if (response.code() >= 300) throw new IOException("Network error " + response.code());
-
-        ResponseBody body = response.body();
-        if (null == body)
-            throw new IOException("Could not read response : empty body for " + url);
-
-        long size = body.contentLength();
-        // TODO if size can't be found (e.g. content-length header not set), guess it by looking at the size of the other downloaded pics
-        if (size < 1) size = 1;
-
-        File targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
-        String mimeType = "";
-        if (!targetFile.createNewFile())
-            throw new IOException("Could not create file " + targetFile.getPath());
-
-        Timber.d("WRITING DOWNLOADED PIC %d TO %s (size %.2f KB)", pageIndex, targetFile.getAbsolutePath(), size / 1024.0);
-        byte[] buffer = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
-        int len;
-        long processed = 0;
-        int iteration = 0;
-        try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
-            while ((len = in.read(buffer)) > -1) {
-                if (interruptDownload.get()) break;
-                processed += len;
-                // Read mime-type on the fly
-                if (0 == iteration) {
-                    mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
-                    if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
-                        String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", url, size / 1024.0);
-                        throw new UnsupportedContentException(message);
-                    }
-                }
-                if (0 == ++iteration % 50) // Notify every 200KB
-                    notifyDownloadProgress((processed * 100f) / size, pageIndex);
-                out.write(buffer, 0, len);
-            }
-            if (!interruptDownload.get()) {
-                notifyDownloadProgress(100, pageIndex);
-                out.flush();
-                Timber.d("DOWNLOADED PIC %d [%s] WRITTEN TO %s (%.2f KB)", pageIndex, mimeType, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
-                return new ImmutablePair<>(targetFile, mimeType);
-            }
-        }
-        // Remove the remaining file chunk if download has been interrupted
-        FileHelper.removeFile(targetFile);
-        throw new DownloadInterruptedException("Download interrupted");
+        return DownloadHelper.downloadToFile(
+                content.getSite(),
+                img.getUrl(),
+                pageIndex,
+                requestHeaders,
+                targetFolder,
+                targetFileName,
+                null,
+                stopDownload,
+                f -> notifyDownloadProgress(f, pageIndex)
+        );
     }
 
     /**
