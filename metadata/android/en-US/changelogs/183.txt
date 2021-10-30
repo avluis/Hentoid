@@ -1,0 +1,1 @@
+Hitomi : Align with new site layout; use "redownload from scratch" to fix your downloads
