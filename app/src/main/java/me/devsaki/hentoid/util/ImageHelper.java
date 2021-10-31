@@ -217,8 +217,8 @@ public final class ImageHelper {
     public static Uri assembleGif(
             @NonNull Context context,
             @NonNull File folder, // GIF encoder only work with paths...
-            @NonNull List<ImmutablePair<Uri, Integer>> frames) throws IOException {
-        if (frames.isEmpty()) return null;
+            @NonNull List<ImmutablePair<Uri, Integer>> frames) throws IOException, IllegalArgumentException {
+        if (frames.isEmpty()) throw new IllegalArgumentException("No frames given");
 
         int width;
         int height;

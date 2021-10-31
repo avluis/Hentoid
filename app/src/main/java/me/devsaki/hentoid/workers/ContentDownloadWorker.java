@@ -482,7 +482,7 @@ public class ContentDownloadWorker extends BaseWorker {
                     Observable.fromIterable(ugoirasToDownload)
                             .observeOn(Schedulers.io())
                             .subscribe(
-                                    img -> downloadAndUnzipUgoira(img, siteFinal),
+                                    img -> downloadAndUnzipUgoira(img, dir, siteFinal),
                                     t -> {
                                         // Nothing; just exit the Rx chain
                                     }
@@ -744,21 +744,21 @@ public class ContentDownloadWorker extends BaseWorker {
             requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
         } catch (UnsupportedOperationException | IllegalArgumentException e) {
             Timber.w(e, "Could not read image from page %s", img.getPageUrl());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "Could not read image from page " + img.getPageUrl() + " " + e.getMessage());
         } catch (IOException ioe) {
             Timber.w(ioe, "Could not read page data from %s", img.getPageUrl());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.IO, img.getPageUrl(), "Page " + img.getName(), "Could not read page data from " + img.getPageUrl() + " " + ioe.getMessage());
         } catch (LimitReachedException lre) {
             String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
             Timber.w(lre, description);
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Page " + img.getName(), description);
             throw lre;
         } catch (EmptyResultException ere) {
             Timber.w(ere, "No images have been found while parsing %s", content.getTitle());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "No images have been found. Error = " + ere.getMessage());
         }
     }
@@ -796,9 +796,9 @@ public class ContentDownloadWorker extends BaseWorker {
             if (result != null) {
                 DocumentFile imgFile = processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey());
                 if (imgFile != null)
-                    updateImageStatusUri(img, true, imgFile.getUri().toString());
+                    updateImageProperties(img, true, imgFile.getUri().toString());
             } else {
-                updateImageStatusUri(img, false, "");
+                updateImageProperties(img, false, "");
                 logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "No picture (result is null)");
             }
         } catch (UnsupportedContentException e) {
@@ -806,16 +806,16 @@ public class ContentDownloadWorker extends BaseWorker {
             if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);
             else {
                 Timber.w("No backup URL found - aborting this image");
-                updateImageStatusUri(img, false, "");
+                updateImageProperties(img, false, "");
                 logErrorRecord(img.getContent().getTargetId(), ErrorType.UNDEFINED, img.getUrl(), "Picture " + img.getName(), e.getMessage());
             }
         } catch (InvalidParameterException e) {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(img.getContent().getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), "Picture " + img.getName(), "Download params : " + img.getDownloadParams());
         } catch (IOException | IllegalArgumentException e) {
             Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), "Picture " + img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
         }
     }
@@ -854,7 +854,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         Timber.w(error);
 
-        updateImageStatusUri(img, false, "");
+        updateImageProperties(img, false, "");
         logErrorRecord(content.getId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
         // Handle cloudflare blocks
         if (content.getSite().isUseCloudflare() && 503 == statusCode && !isCloudFlareBlocked) {
@@ -893,7 +893,7 @@ public class ContentDownloadWorker extends BaseWorker {
                                 imageFile -> processBackupImage(imageFile.orElse(null), img, dir, content),
                                 throwable ->
                                 {
-                                    updateImageStatusUri(img, false, "");
+                                    updateImageProperties(img, false, "");
                                     logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
                                     Timber.e(throwable, "Error processing backup image.");
                                 }
@@ -915,10 +915,13 @@ public class ContentDownloadWorker extends BaseWorker {
     }
 
     // TODO doc
-    // TODO clear ugoira cache when download ends (regardless of success)
     private void downloadAndUnzipUgoira(
             @NonNull final ImageFile img,
+            @NonNull final DocumentFile dir,
             @NonNull final Site site) {
+        boolean isError = false;
+        String errorMsg = "";
+
         File ugoiraCacheFolder = FileHelper.getOrCreateCacheFolder(getApplicationContext(), Consts.UGOIRA_CACHE_FOLDER + File.separator + img.getId());
         if (ugoiraCacheFolder != null) {
             String targetFileName = img.getName();
@@ -955,6 +958,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 String ugoiraFramesStr = downloadParams.get(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES);
                 List<Pair<String, Integer>> ugoiraFrames = JsonHelper.jsonToObject(ugoiraFramesStr, PixivIllustMetadata.UGOIRA_FRAMES_TYPE);
 
+                // Map frame name to the downloaded file
                 for (Pair<String, Integer> frame : ugoiraFrames) {
                     File[] files = ugoiraCacheFolder.listFiles(pathname -> pathname.getName().endsWith(frame.first));
                     if (files != null && files.length > 0) {
@@ -962,25 +966,37 @@ public class ContentDownloadWorker extends BaseWorker {
                     }
                 }
 
+                // Assemble the GIF
                 Uri ugoiraGifFile = ImageHelper.assembleGif(
                         getApplicationContext(),
                         ugoiraCacheFolder,
                         frames
                 );
 
-                /*
-                if (result != null) {
-                    DocumentFile imgFile = processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey());
-                    if (imgFile != null)
-                        updateImageStatusUri(img, true, imgFile.getUri().toString());
-                } else {
-                    updateImageStatusUri(img, false, "");
-                    logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "No picture (result is null)");
-                }
-                 */
-
+                // Save it to the book folder
+                Uri finalImgUri = FileHelper.copyFile(
+                        getApplicationContext(),
+                        ugoiraGifFile,
+                        dir.getUri(),
+                        ImageHelper.MIME_IMAGE_GIF,
+                        img.getName() + ".gif"
+                );
+                if (finalImgUri != null) {
+                    img.setMimeType(ImageHelper.MIME_IMAGE_GIF);
+                    img.setSize(FileHelper.fileSizeFromUri(getApplicationContext(), ugoiraGifFile));
+                    updateImageProperties(img, true, finalImgUri.toString());
+                } else
+                    throw new IOException("Couldn't copy result ugoira file");
             } catch (Exception e) {
                 Timber.w(e);
+                isError = true;
+                errorMsg = e.getMessage();
+            } finally {
+                ugoiraCacheFolder.delete();
+            }
+            if (isError) {
+                updateImageProperties(img, false, "");
+                logErrorRecord(img.getContent().getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), errorMsg);
             }
         }
     }
@@ -1007,15 +1023,6 @@ public class ContentDownloadWorker extends BaseWorker {
             return null;
         }
 
-        byte[] processedBinaryContent = null;
-        /*
-        if (hasImageProcessing && !img.getName().equals(Consts.THUMB_FILE_NAME)) {
-            if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty()) {
-                //processedBinaryContent = processImage(img.getDownloadParams(), binaryContent);
-            } else throw new InvalidParameterException("No processing parameters found");
-        }
-         */
-        binaryContent = (null == processedBinaryContent) ? binaryContent : processedBinaryContent;
         img.setSize((null == binaryContent) ? 0 : binaryContent.length);
 
         // Determine the extension of the file
@@ -1090,13 +1097,13 @@ public class ContentDownloadWorker extends BaseWorker {
     }
 
     /**
-     * Update given image status in DB
+     * Update given image properties in DB
      *
      * @param img     Image to update
      * @param success True if download is successful; false if download failed
      */
-    private void updateImageStatusUri(@NonNull ImageFile img, boolean success,
-                                      @NonNull String uriStr) {
+    private void updateImageProperties(@NonNull ImageFile img, boolean success,
+                                       @NonNull String uriStr) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         img.setFileUri(uriStr);
         if (success) img.setDownloadParams("");

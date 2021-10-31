@@ -758,14 +758,13 @@ public class FileHelper {
             @NonNull final Uri targetFolderUri,
             @NonNull String mimeType,
             @NonNull String newName) throws IOException {
-        DocumentFile sourceFile = DocumentFile.fromSingleUri(context, sourceFileUri);
-        if (null == sourceFile || !sourceFile.exists()) return null;
+        if (!fileExists(context, sourceFileUri)) return null;
         DocumentFile targetFolder = DocumentFile.fromTreeUri(context, targetFolderUri);
         if (null == targetFolder || !targetFolder.exists()) return null;
         DocumentFile newFile = targetFolder.createFile(mimeType, newName);
         if (null == newFile || !newFile.exists()) return null;
         try (OutputStream newDownload = FileHelper.getOutputStream(context, newFile)) {
-            try (InputStream input = FileHelper.getInputStream(context, sourceFile)) {
+            try (InputStream input = FileHelper.getInputStream(context, sourceFileUri)) {
                 FileHelper.copy(input, newDownload);
             }
         }
