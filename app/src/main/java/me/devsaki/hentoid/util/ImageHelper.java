@@ -216,38 +216,41 @@ public final class ImageHelper {
 
     public static Uri assembleGif(
             @NonNull Context context,
-            @NonNull List<ImmutablePair<String, Integer>> frames) throws IOException {
+            @NonNull File folder, // GIF encoder only work with paths...
+            @NonNull List<ImmutablePair<Uri, Integer>> frames) throws IOException {
         if (frames.isEmpty()) return null;
 
         int width;
         int height;
-        try (InputStream is = FileHelper.getInputStream(context, Uri.parse(frames.get(0).left))) {
+        try (InputStream is = FileHelper.getInputStream(context, frames.get(0).left)) {
             Bitmap b = BitmapFactory.decodeStream(is);
             width = b.getWidth();
             height = b.getHeight();
         }
 
+        String path = new File(folder, "tmp.gif").getAbsolutePath();
         GifEncoder gifEncoder = new GifEncoder();
-        String path = context.getCacheDir().getAbsolutePath() + "/tmp.gif"; // GIF encoder only work with paths...
-        gifEncoder.init(width, height, path, GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY);
+        try {
+            gifEncoder.init(width, height, path, GifEncoder.EncodingType.ENCODING_TYPE_NORMAL_LOW_MEMORY);
 
-        for (ImmutablePair<String, Integer> frame : frames) {
-            try (InputStream is = FileHelper.getInputStream(context, Uri.parse(frame.left))) {
-                final BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+            for (ImmutablePair<Uri, Integer> frame : frames) {
+                try (InputStream is = FileHelper.getInputStream(context, frame.left)) {
+                    final BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
-                Bitmap b = BitmapFactory.decodeStream(is, null, options);
-                if (null == b) continue;
+                    Bitmap b = BitmapFactory.decodeStream(is, null, options);
+                    if (null == b) continue;
 
-                try {
-                    gifEncoder.encodeFrame(b, 100);
-                } finally {
-                    b.recycle();
+                    try {
+                        gifEncoder.encodeFrame(b, 100);
+                    } finally {
+                        b.recycle();
+                    }
                 }
             }
+        } finally {
+            gifEncoder.close();
         }
-
-        gifEncoder.close();
 
         return Uri.fromFile(new File(path));
     }

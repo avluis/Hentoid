@@ -48,9 +48,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-import io.reactivex.Completable;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
@@ -1238,16 +1235,20 @@ public class FileHelper {
      * Retrieve or create the subfolder with the given name inside the cache folder
      *
      * @param context    Context to use
-     * @param folderName Name of the subfolder to retrieve or create
+     * @param folderName Name of the subfolder to retrieve or create; may contain subfolders separated by File.separator
      * @return Subfolder as a File, or null if it couldn't be found nor created
      */
     @Nullable
     public static File getOrCreateCacheFolder(@NonNull Context context, @NonNull String folderName) {
-        File cacheRoot = context.getCacheDir();
-        File cacheDir = new File(cacheRoot.getAbsolutePath() + File.separator + folderName);
-        if (cacheDir.exists()) return cacheDir;
-        else if (cacheDir.mkdir()) return cacheDir;
-        else return null;
+        File root = context.getCacheDir();
+        String[] subfolders = folderName.split(File.separator);
+        for (String subfolderName : subfolders) {
+            File cacheFolder = new File(root, subfolderName);
+            if (cacheFolder.exists()) root = cacheFolder;
+            else if (cacheFolder.mkdir()) root = cacheFolder;
+            else return null;
+        }
+        return root;
     }
 
     @FunctionalInterface

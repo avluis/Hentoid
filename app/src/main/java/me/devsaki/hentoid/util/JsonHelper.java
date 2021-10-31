@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
@@ -22,6 +23,7 @@ import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.json.adapters.AndroidPairAdapterFactory;
 import timber.log.Timber;
 
 /**
@@ -43,6 +45,7 @@ public class JsonHelper {
     private static final Moshi MOSHI = new Moshi.Builder()
             .add(Date.class, new Rfc3339DateJsonAdapter())
             .add(new AttributeType.AttributeTypeAdapter())
+            .add(new AndroidPairAdapterFactory())
             .build();
 
 

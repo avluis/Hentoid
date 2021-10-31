@@ -64,9 +64,10 @@ public class DownloadHelper {
         long size = body.contentLength();
         if (size < 1) size = 1;
 
-        File targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
         String mimeType = StringHelper.protect(forceMimeType);
-        if (!targetFile.createNewFile())
+
+        File targetFile = new File(targetFolder, targetFileName);
+        if (!targetFile.exists() && !targetFile.createNewFile())
             throw new IOException("Could not create file " + targetFile.getPath());
 
         Timber.d("WRITING CACHED DOWNLOAD %d TO %s (size %.2f KB)", resourceId, targetFile.getAbsolutePath(), size / 1024.0);

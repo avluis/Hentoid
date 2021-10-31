@@ -7,8 +7,6 @@ import androidx.annotation.NonNull;
 import com.annimon.stream.Stream;
 import com.squareup.moshi.Types;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +34,8 @@ import me.devsaki.hentoid.util.StringHelper;
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class PixivIllustMetadata {
 
-    public static final Type UGOIRA_FRAMES_TYPE = Types.newParameterizedType(List.class, Pair.class, String.class, Integer.class);
+    private static final Type UGOIRA_FRAME_TYPE = Types.newParameterizedType(Pair.class, String.class, Integer.class);
+    public static final Type UGOIRA_FRAMES_TYPE = Types.newParameterizedType(List.class, UGOIRA_FRAME_TYPE);
 
     private Boolean error;
     private String message;
@@ -103,7 +102,7 @@ public class PixivIllustMetadata {
             return illust_details.getUgoiraSrc();
         }
 
-        public List<ImmutablePair<String, Integer>> getUgoiraFrames() {
+        public List<Pair<String, Integer>> getUgoiraFrames() {
             if (null == illust_details) return Collections.emptyList();
             return illust_details.getUgoiraFrames();
         }
@@ -172,7 +171,7 @@ public class PixivIllustMetadata {
             return ugoira_meta.src;
         }
 
-        List<ImmutablePair<String, Integer>> getUgoiraFrames() {
+        List<Pair<String, Integer>> getUgoiraFrames() {
             if (null == ugoira_meta) return Collections.emptyList();
             return ugoira_meta.getFrames();
         }
@@ -230,9 +229,9 @@ public class PixivIllustMetadata {
         private String mime_type;
         private List<UgoiraFrameData> frames;
 
-        public List<ImmutablePair<String, Integer>> getFrames() {
+        public List<Pair<String, Integer>> getFrames() {
             if (null == frames) return Collections.emptyList();
-            return Stream.of(frames).map(f -> new ImmutablePair<>(f.file, f.delay)).toList();
+            return Stream.of(frames).map(f -> new Pair<>(f.file, f.delay)).toList();
         }
     }
 

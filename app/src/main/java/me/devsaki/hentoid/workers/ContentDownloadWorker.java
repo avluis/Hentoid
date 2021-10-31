@@ -2,6 +2,7 @@ package me.devsaki.hentoid.workers;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.net.Uri;
 import android.util.Pair;
 import android.webkit.MimeTypeMap;
 
@@ -59,6 +60,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadReviveEvent;
 import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.json.sources.PixivIllustMetadata;
 import me.devsaki.hentoid.notification.action.UserActionNotification;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
@@ -480,7 +482,7 @@ public class ContentDownloadWorker extends BaseWorker {
                     Observable.fromIterable(ugoirasToDownload)
                             .observeOn(Schedulers.io())
                             .subscribe(
-                                    img -> downloadUgoira(img, siteFinal),
+                                    img -> downloadAndUnzipUgoira(img, siteFinal),
                                     t -> {
                                         // Nothing; just exit the Rx chain
                                     }
@@ -913,14 +915,16 @@ public class ContentDownloadWorker extends BaseWorker {
     }
 
     // TODO doc
-    private void downloadUgoira(
+    // TODO clear ugoira cache when download ends (regardless of success)
+    private void downloadAndUnzipUgoira(
             @NonNull final ImageFile img,
             @NonNull final Site site) {
-        File ugoiraCacheFolder = FileHelper.getOrCreateCacheFolder(getApplicationContext(), Consts.UGOIRA_CACHE_FOLDER);
+        File ugoiraCacheFolder = FileHelper.getOrCreateCacheFolder(getApplicationContext(), Consts.UGOIRA_CACHE_FOLDER + File.separator + img.getId());
         if (ugoiraCacheFolder != null) {
             String targetFileName = img.getName();
             try {
-                DownloadHelper.downloadToFile(
+                // == Download archive
+                ImmutablePair<File, String> result = DownloadHelper.downloadToFile(
                         site,
                         img.getUrl(),
                         img.getOrder(),
@@ -931,6 +935,50 @@ public class ContentDownloadWorker extends BaseWorker {
                         downloadInterrupted,
                         null
                 );
+
+                // == Extract all frames
+                ArchiveHelper.extractArchiveEntries(
+                        getApplicationContext(),
+                        Uri.fromFile(result.left),
+                        null, // Extract everything
+                        ugoiraCacheFolder,
+                        null,
+                        downloadInterrupted,
+                        null
+                );
+
+                // == Build the GIF using download params and extracted pics
+                List<ImmutablePair<Uri, Integer>> frames = new ArrayList<>();
+
+                // Get frame information
+                Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
+                String ugoiraFramesStr = downloadParams.get(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES);
+                List<Pair<String, Integer>> ugoiraFrames = JsonHelper.jsonToObject(ugoiraFramesStr, PixivIllustMetadata.UGOIRA_FRAMES_TYPE);
+
+                for (Pair<String, Integer> frame : ugoiraFrames) {
+                    File[] files = ugoiraCacheFolder.listFiles(pathname -> pathname.getName().endsWith(frame.first));
+                    if (files != null && files.length > 0) {
+                        frames.add(new ImmutablePair<>(Uri.fromFile(files[0]), frame.second));
+                    }
+                }
+
+                Uri ugoiraGifFile = ImageHelper.assembleGif(
+                        getApplicationContext(),
+                        ugoiraCacheFolder,
+                        frames
+                );
+
+                /*
+                if (result != null) {
+                    DocumentFile imgFile = processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey());
+                    if (imgFile != null)
+                        updateImageStatusUri(img, true, imgFile.getUri().toString());
+                } else {
+                    updateImageStatusUri(img, false, "");
+                    logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "No picture (result is null)");
+                }
+                 */
+
             } catch (Exception e) {
                 Timber.w(e);
             }
