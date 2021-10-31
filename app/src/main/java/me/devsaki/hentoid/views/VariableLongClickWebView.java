@@ -43,9 +43,9 @@ public class VariableLongClickWebView extends WebView {
         handler = new Handler(Looper.getMainLooper(), message -> {
             if (message.what == MESSAGE_LONG_CLICK) {
                 if (onLongClickListener != null) {
-                    super.setOnLongClickListener(onLongClickListener);
-                    performLongClick();
                     super.setOnLongClickListener(null);
+                    performLongClick();
+                    super.setOnLongClickListener(onLongClickListener);
                 }
             }
             return true;
@@ -77,7 +77,7 @@ public class VariableLongClickWebView extends WebView {
                 handler.sendMessageDelayed(m, longClickThreshold);
                 break;
 
-            case MotionEvent.ACTION_MOVE:
+//            case MotionEvent.ACTION_MOVE:
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
