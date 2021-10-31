@@ -27,6 +27,7 @@
 	  {"sourceName":"NHENTAI", "status":"RED", "fixedByBuild":"442"},
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"445"},
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"446"},
+	  {"sourceName":"HITOMI", "status":"RED"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
