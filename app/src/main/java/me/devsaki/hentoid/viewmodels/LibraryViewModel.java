@@ -50,6 +50,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Grouping;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ArchiveHelper;
@@ -987,7 +988,19 @@ public class LibraryViewModel extends AndroidViewModel {
     private Content createContentFromChapter(@NonNull Content content, @NonNull Chapter chapter) {
         Content splitContent = new Content();
 
-        splitContent.setSite(content.getSite());
+        String url = StringHelper.protect(chapter.getUrl());
+        if (url.isEmpty()) { // Default (e.g. manually created chapters)
+            url = content.getUrl();
+            splitContent.setSite(content.getSite());
+        } else { // Detect site and cleanup full URL (e.g. previously merged books)
+            Site site = Site.searchByUrl(url);
+            if (site != null && !site.equals(Site.NONE)) {
+                splitContent.setSite(site);
+                url = url.replace(site.getUrl(), "");
+            }
+        }
+        splitContent.setUrl(url);
+
         String id = chapter.getUniqueId();
         if (id.isEmpty()) id = content.getUniqueSiteId() + "_"; // Don't create a copy of content
         splitContent.setUniqueSiteId(id);
@@ -1000,10 +1013,6 @@ public class LibraryViewModel extends AndroidViewModel {
         splitContent.setDownloadDate(Instant.now().toEpochMilli());
         splitContent.setStatus(content.getStatus());
         splitContent.setBookPreferences(content.getBookPreferences());
-
-        String url = StringHelper.protect(chapter.getUrl());
-        if (url.isEmpty()) url = content.getUrl();
-        splitContent.setUrl(url);
 
         List<ImageFile> images = chapter.getImageFiles();
         if (images != null) {
