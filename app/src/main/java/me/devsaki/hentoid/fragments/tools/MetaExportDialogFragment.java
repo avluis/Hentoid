@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.fragments.tools;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
+
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,8 +22,7 @@ import androidx.fragment.app.FragmentManager;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
-import org.apache.commons.io.IOUtils;
-
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,9 +43,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 /**
  * Created by Robb on 03/2021
@@ -197,7 +196,7 @@ public class MetaExportDialogFragment extends DialogFragment {
 
         try {
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, JsonHelper.JSON_MIME_TYPE)) {
-                try (InputStream input = IOUtils.toInputStream(json, StandardCharsets.UTF_8)) {
+                try (InputStream input = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))) {
                     FileHelper.copy(input, newDownload);
                 }
             }
