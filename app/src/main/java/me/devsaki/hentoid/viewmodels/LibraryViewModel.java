@@ -992,7 +992,10 @@ public class LibraryViewModel extends AndroidViewModel {
         if (id.isEmpty()) id = content.getUniqueSiteId() + "_"; // Don't create a copy of content
         splitContent.setUniqueSiteId(id);
         splitContent.setDownloadMode(content.getDownloadMode());
-        splitContent.setTitle(content.getTitle() + " - " + chapter.getName());
+        String newTitle = content.getTitle();
+        if (!newTitle.contains(chapter.getName()))
+            newTitle += " - " + chapter.getName(); // Avoid swelling the title after multiple merges and splits
+        splitContent.setTitle(newTitle);
         splitContent.setUploadDate(content.getUploadDate());
         splitContent.setDownloadDate(Instant.now().toEpochMilli());
         splitContent.setStatus(content.getStatus());
