@@ -33,13 +33,10 @@ public class PixivContent extends BaseContentParser {
 
         Uri uri = Uri.parse(url);
         switch (entity) {
+            case "artworks":  // fetch Call / single gallery
             case "illust":  // fetch Call / single gallery
                 if (!StringHelper.isNumeric(id))
                     id = uri.getQueryParameter("illust_id");
-                break;
-            case "series":
-            case "series_content":  // Series
-                entity = "series";
                 break;
             case "user":  // User
                 if (!StringHelper.isNumeric(id))
@@ -55,10 +52,12 @@ public class PixivContent extends BaseContentParser {
                 );
 
                 switch (entity) {
+                    case "artworks":
                     case "illust":
                         PixivIllustMetadata metadata = PixivServer.API.getIllustMetadata(id, cookieStr).execute().body();
                         if (metadata != null) return metadata.update(content, url, updateImages);
                         break;
+                    case "series_content":
                     case "series":
                         PixivSeriesMetadata seriesData = PixivServer.API.getSeriesMetadata(id, cookieStr).execute().body();
                         if (seriesData != null)
