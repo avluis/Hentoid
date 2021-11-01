@@ -1,17 +1,18 @@
 package me.devsaki.hentoid.viewholders
 
 import android.graphics.Color
+import android.view.MotionEvent
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.StringRes
 import androidx.core.view.ViewCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.mikepenz.fastadapter.ClickListener
-import com.mikepenz.fastadapter.IAdapter
-import com.mikepenz.fastadapter.IClickable
-import com.mikepenz.fastadapter.ISubItem
+import com.mikepenz.fastadapter.*
+import com.mikepenz.fastadapter.drag.IExtendedDraggable
 import com.mikepenz.fastadapter.expandable.items.AbstractExpandableItem
+import com.mikepenz.fastadapter.listeners.TouchEventHook
 import com.mikepenz.fastadapter.ui.utils.FastAdapterUIUtils
 import com.mikepenz.fastadapter.ui.utils.StringHolder
 import me.devsaki.hentoid.R
@@ -19,8 +20,10 @@ import me.devsaki.hentoid.R
 /**
  * Created by mikepenz on 28.12.15.
  */
-open class SubExpandableItem : AbstractExpandableItem<SubExpandableItem.ViewHolder>(),
-    IClickable<SubExpandableItem>, ISubItem<SubExpandableItem.ViewHolder> {
+open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
+    AbstractExpandableItem<SubExpandableItem.ViewHolder>(),
+    IClickable<SubExpandableItem>, ISubItem<SubExpandableItem.ViewHolder>,
+    IExtendedDraggable<SubExpandableItem.ViewHolder> {
 
     var header: String? = null
     var name: StringHolder? = null
@@ -159,5 +162,37 @@ open class SubExpandableItem : AbstractExpandableItem<SubExpandableItem.ViewHold
         var name: TextView = view.findViewById(R.id.material_drawer_name)
         var description: TextView = view.findViewById(R.id.material_drawer_description)
         var icon: ImageView = view.findViewById(R.id.material_drawer_icon)
+        var dragHandle: ImageView = view.findViewById(R.id.ivReorder)
+    }
+
+    override val isDraggable: Boolean
+        get() = true
+    override val touchHelper: ItemTouchHelper?
+        get() = mTouchHelper
+
+    override fun getDragView(viewHolder: ViewHolder): View? {
+        return viewHolder.dragHandle;
+    }
+
+    class DragHandlerTouchEvent(val action: (position: Int) -> Unit) :
+        TouchEventHook<SubExpandableItem>() {
+        override fun onBind(viewHolder: RecyclerView.ViewHolder): View? {
+            return if (viewHolder is ViewHolder) viewHolder.dragHandle else null
+        }
+
+        override fun onTouch(
+            v: View,
+            event: MotionEvent,
+            position: Int,
+            fastAdapter: FastAdapter<SubExpandableItem>,
+            item: SubExpandableItem
+        ): Boolean {
+            return if (event.action == MotionEvent.ACTION_DOWN) {
+                action(position)
+                true
+            } else {
+                false
+            }
+        }
     }
 }

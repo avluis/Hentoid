@@ -1366,6 +1366,10 @@ public class ObjectBoxDB {
         qb.build().remove();
     }
 
+    List<Chapter> selectChapters(long contentId) {
+        return store.boxFor(Chapter.class).query().equal(Chapter_.contentId, contentId).order(Chapter_.order).build().find();
+    }
+
     void insertChapters(List<Chapter> chapters) {
         store.boxFor(Chapter.class).put(chapters);
     }

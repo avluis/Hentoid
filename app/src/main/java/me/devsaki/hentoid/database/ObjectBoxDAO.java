@@ -152,6 +152,11 @@ public class ObjectBoxDAO implements CollectionDAO {
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
+    @Override
+    public List<Chapter> selectChapters(long contentId) {
+        return db.selectChapters(contentId);
+    }
+
     public LiveData<List<Content>> selectErrorContent() {
         return new ObjectBoxLiveData<>(db.selectErrorContentQ());
     }

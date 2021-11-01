@@ -241,6 +241,8 @@ public interface CollectionDAO {
 
     // CHAPTERS
 
+    List<Chapter> selectChapters(long contentId);
+
     void insertChapters(@NonNull final List<Chapter> chapters);
 
     void deleteChapters(@NonNull final Content content);

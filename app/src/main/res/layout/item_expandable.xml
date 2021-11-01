@@ -4,7 +4,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="48dp"
-    android:padding="8dp">
+    android:padding="8dp"
+    tools:targetApi="o">
+
+    <ImageView
+        android:id="@+id/material_drawer_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_keyboard_arrow_up"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/material_drawer_name"
@@ -16,8 +28,8 @@
         android:singleLine="true"
         android:textDirection="anyRtl"
         android:textSize="@dimen/text_body_2"
-        app:layout_constraintEnd_toStartOf="@id/material_drawer_icon"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivReorder"
+        app:layout_constraintStart_toEndOf="@id/material_drawer_icon"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Some drawer text" />
 
@@ -31,18 +43,24 @@
         android:singleLine="true"
         android:textDirection="anyRtl"
         android:textSize="@dimen/caption"
-        app:layout_constraintEnd_toStartOf="@id/material_drawer_icon"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivReorder"
+        app:layout_constraintStart_toEndOf="@id/material_drawer_icon"
         app:layout_constraintTop_toBottomOf="@id/material_drawer_name"
         tools:text="Some drawer text" />
 
     <ImageView
-        android:id="@+id/material_drawer_icon"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:src="@drawable/ic_keyboard_arrow_up"
+        android:id="@+id/ivReorder"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_reorder"
+        android:tooltipText="@string/drag_help"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

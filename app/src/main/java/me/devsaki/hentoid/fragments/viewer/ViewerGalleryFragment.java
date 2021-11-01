@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -32,8 +33,11 @@ import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.diff.DiffCallback;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
+import com.mikepenz.fastadapter.drag.ItemTouchCallback;
+import com.mikepenz.fastadapter.drag.SimpleDragCallback;
 import com.mikepenz.fastadapter.expandable.ExpandableExtension;
 import com.mikepenz.fastadapter.select.SelectExtension;
+import com.mikepenz.fastadapter.utils.DragDropUtil;
 import com.skydoves.powerspinner.PowerSpinnerView;
 
 import org.jetbrains.annotations.Nullable;
@@ -63,7 +67,7 @@ import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
-public class ViewerGalleryFragment extends Fragment {
+public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback {
 
     @IntDef({EditMode.NONE, EditMode.EDIT_CHAPTERS, EditMode.ADD_CHAPTER})
     @Retention(RetentionPolicy.SOURCE)
@@ -98,6 +102,7 @@ public class ViewerGalleryFragment extends Fragment {
     private final ItemAdapter<SubExpandableItem> itemAdapter2 = new ItemAdapter<>();
     private final FastAdapter<SubExpandableItem> fastAdapter2 = FastAdapter.with(itemAdapter2);
     private SelectExtension<SubExpandableItem> selectExtension2;
+    private ItemTouchHelper touchHelper;
     private ExpandableExtension<SubExpandableItem> expandableExtension;
 
     private DragSelectTouchListener mDragSelectTouchListener = null;
@@ -289,7 +294,23 @@ public class ViewerGalleryFragment extends Fragment {
                 glm.setSpanSizeLookup(spanSizeLookup);
             }
 
+            // Activate drag & drop
+            SimpleDragCallback dragCallback = new SimpleDragCallback(this);
+            dragCallback.setNotifyAllDrops(true);
+            touchHelper = new ItemTouchHelper(dragCallback);
+            touchHelper.attachToRecyclerView(recyclerView);
+
             recyclerView.setAdapter(fastAdapter2);
+
+            fastAdapter2.addEventHook(
+                    new SubExpandableItem.DragHandlerTouchEvent(
+                            position -> {
+                                RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(position);
+                                if (vh != null) touchHelper.startDrag(vh);
+                                return null;
+                            }
+                    )
+            );
 
             // Select on swipe
             DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension2.select(IntStream.rangeClosed(start, end).boxed().toList());
@@ -391,7 +412,7 @@ public class ViewerGalleryFragment extends Fragment {
                     .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
 
             for (Chapter c : chapters) {
-                SubExpandableItem expandableItem = new SubExpandableItem().withName(c.getName());
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName(c.getName());
                 expandableItem.setIdentifier(c.getId());
 
                 List<ImageFileItem> imgs = new ArrayList<>();
@@ -414,7 +435,7 @@ public class ViewerGalleryFragment extends Fragment {
                     .toList();
 
             if (!chapterlessImages.isEmpty()) {
-                SubExpandableItem expandableItem = new SubExpandableItem().withName("No chapter");
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName("No chapter");
                 expandableItem.setIdentifier(Long.MAX_VALUE);
 
                 List<ImageFileItem> imgs = new ArrayList<>();
@@ -655,5 +676,36 @@ public class ViewerGalleryFragment extends Fragment {
     // TODO doc
     private void removeChapters() {
         viewModel.removeChapters(t -> ToastHelper.toast("Couldn't remove chapters"));
+    }
+
+    @Override
+    public void itemTouchDropped(int oldPosition, int newPosition) {
+        if (oldPosition == newPosition) return;
+
+        // Save final position of item in DB
+        viewModel.moveChapter(oldPosition, newPosition, this::onChapterMoveError);
+    }
+
+    private void onChapterMoveError(Throwable t) {
+        Timber.e(t);
+        Snackbar.make(recyclerView, "Failed moving chapter", BaseTransientBottomBar.LENGTH_LONG).show();
+    }
+
+
+    @Override
+    public boolean itemTouchOnMove(int oldPosition, int newPosition) {
+        // Update visuals
+        DragDropUtil.onMove(itemAdapter, oldPosition, newPosition);
+        return true;
+    }
+
+    @Override
+    public void itemTouchStartDrag(@NonNull RecyclerView.ViewHolder viewHolder) {
+        // Nothing
+    }
+
+    @Override
+    public void itemTouchStopDrag(@NonNull RecyclerView.ViewHolder viewHolder) {
+        // Nothing
     }
 }

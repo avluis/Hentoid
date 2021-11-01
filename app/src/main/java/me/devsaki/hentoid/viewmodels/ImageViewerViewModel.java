@@ -118,8 +118,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Write cache for read indicator (no need to update DB and JSON at every page turn)
     private final Set<Integer> readPageNumbers = new HashSet<>();
 
-    // TODO doc
-    private final Map<Integer, String> imageLocations = new HashMap<>();
+    // Cache for image locations according to their order
+    private final Map<Integer, String> imageLocationCache = new HashMap<>();
     // Switch to interrupt unarchiving when leaving the activity
     private final AtomicBoolean interruptArchiveLoad = new AtomicBoolean(false);
     // Page indexes that are being downloaded
@@ -225,7 +225,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
-        if (imageLocations.isEmpty() || newImages.size() != imageLocations.size()) {
+        if (imageLocationCache.isEmpty() || newImages.size() != imageLocationCache.size()) {
             if (theContent.isArchive())
                 observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptArchiveLoad, emitter));
             else
@@ -252,7 +252,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             () -> {
                                 EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
                                 for (ImageFile img : newImages)
-                                    imageLocations.put(img.getOrder(), img.getFileUri());
+                                    imageLocationCache.put(img.getOrder(), img.getFileUri());
                                 initViewer(theContent, -1, newImages);
                                 imageLoadDisposable.dispose();
                             }
@@ -261,7 +261,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             // Copy location properties of the new list on the current list
             for (int i = 0; i < newImages.size(); i++) {
                 ImageFile newImg = newImages.get(i);
-                String location = imageLocations.get(newImg.getOrder());
+                String location = imageLocationCache.get(newImg.getOrder());
                 newImg.setFileUri(location);
             }
 
@@ -370,7 +370,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         } else { // Refresh current book with new data
             for (int i = 0; i < newImageFiles.size(); i++) {
                 ImageFile newImg = newImageFiles.get(i);
-                String location = imageLocations.get(newImg.getOrder());
+                String location = imageLocationCache.get(newImg.getOrder());
                 newImg.setFileUri(location);
             }
 
@@ -786,7 +786,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         theContent.setFirst(0 == currentContentIndex);
         theContent.setLast(currentContentIndex >= contentIds.size() - 1);
         if (contentIds.size() > currentContentIndex && loadedContentId != contentIds.get(currentContentIndex))
-            imageLocations.clear();
+            imageLocationCache.clear();
         content.postValue(theContent);
         processImages(theContent, pageNumber);
     }
@@ -917,7 +917,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
                                                 // Instanciate a new list to trigger an actual Adapter UI refresh
                                                 viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
-                                                imageLocations.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
+                                                imageLocationCache.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
                                             }
                                         },
                                         Timber::w
@@ -1146,7 +1146,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> processImages(theContent, -1),
+                                () -> processImages(theContent, -1), // Force reload images
                                 e -> {
                                     Timber.e(e);
                                     onError.accept(e);
@@ -1172,7 +1172,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> processImages(theContent, -1),
+                                () -> processImages(theContent, -1), // Force reload images
                                 e -> {
                                     Timber.e(e);
                                     onError.accept(e);
@@ -1296,5 +1296,62 @@ public class ImageViewerViewModel extends AndroidViewModel {
         dao.insertImageFiles(chapterImages);
         dao.deleteChapter(toRemove);
     }
-}
 
+    public void moveChapter(int oldPosition, int newPosition, Consumer<Throwable> onError) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doMoveChapter(theContent.getId(), oldPosition, newPosition))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Force reload the whole Content
+                                    Content updatedContent = dao.selectContent(theContent.getId());
+                                    if (updatedContent != null) processContent(updatedContent, -1);
+                                },
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    private void doMoveChapter(long contentId, int oldPosition, int newPosition) {
+        Helper.assertNonUiThread();
+        List<Chapter> chapters = dao.selectChapters(contentId);
+        if (null == chapters || chapters.isEmpty())
+            throw new IllegalArgumentException("No chapters found");
+
+        if (oldPosition < 0 || oldPosition >= chapters.size()) return;
+
+        // Move the item
+        Chapter fromValue = chapters.get(oldPosition);
+        int delta = oldPosition < newPosition ? 1 : -1;
+        for (int i = oldPosition; i != newPosition; i += delta) {
+            chapters.set(i, chapters.get(i + delta));
+        }
+        chapters.set(newPosition, fromValue);
+
+        // Renumber all chapters and update the DB
+        int index = 1;
+        for (Chapter c : chapters) {
+            c.setOrder(index++);
+        }
+        dao.insertChapters(chapters);
+
+        // Renumber all images and update the DB
+        List<ImageFile> images = Stream.of(chapters).map(Chapter::getImageFiles).withoutNulls().flatMap(Stream::of).toList();
+        index = 1;
+        for (ImageFile img : images) {
+            img.setOrder(index++);
+            img.computeName(images.size());
+            // TODO rename files
+        }
+        dao.insertImageFiles(images);
+
+        // Reset locations cache as image order has changed
+        imageLocationCache.clear();
+    }
+}
