@@ -57,6 +57,7 @@
         android:padding="8dp"
         android:src="@drawable/ic_reorder"
         android:tooltipText="@string/drag_help"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

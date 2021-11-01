@@ -28,6 +28,7 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
     var header: String? = null
     var name: StringHolder? = null
     var description: StringHolder? = null
+    private var draggable: Boolean = false
 
     private var mOnClickListener: ClickListener<SubExpandableItem>? = null
 
@@ -108,6 +109,11 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
         return this
     }
 
+    fun withDraggable(value: Boolean): SubExpandableItem {
+        this.draggable = value
+        return this
+    }
+
     /**
      * binds the data of this item onto the viewHolder
      *
@@ -129,6 +135,8 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
         StringHolder.applyTo(name, holder.name)
         //set the text for the description or hide
         StringHolder.applyToOrHide(description, holder.description)
+
+        holder.dragHandle.visibility = if (draggable) View.VISIBLE else View.GONE
 
         if (subItems.isEmpty()) {
             holder.icon.visibility = View.GONE
@@ -166,12 +174,12 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
     }
 
     override val isDraggable: Boolean
-        get() = true
+        get() = draggable
     override val touchHelper: ItemTouchHelper?
         get() = mTouchHelper
 
     override fun getDragView(viewHolder: ViewHolder): View? {
-        return viewHolder.dragHandle;
+        return viewHolder.dragHandle
     }
 
     class DragHandlerTouchEvent(val action: (position: Int) -> Unit) :

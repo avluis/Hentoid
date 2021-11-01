@@ -406,13 +406,17 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         if (editMode == EditMode.EDIT_CHAPTERS) { // Expandable chapters
             List<SubExpandableItem> chapterItems = new ArrayList<>();
 
+            boolean isArchive = false;
+            if (!images.isEmpty())
+                isArchive = images.get(0).getContent().getTarget().isArchive();
+
             List<Chapter> chapters = Stream.of(images)
                     .map(ImageFile::getLinkedChapter)
                     .withoutNulls()
                     .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
 
             for (Chapter c : chapters) {
-                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName(c.getName());
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName(c.getName()).withDraggable(!isArchive);
                 expandableItem.setIdentifier(c.getId());
 
                 List<ImageFileItem> imgs = new ArrayList<>();
@@ -435,7 +439,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     .toList();
 
             if (!chapterlessImages.isEmpty()) {
-                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName("No chapter");
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName("No chapter").withDraggable(!isArchive);
                 expandableItem.setIdentifier(Long.MAX_VALUE);
 
                 List<ImageFileItem> imgs = new ArrayList<>();
