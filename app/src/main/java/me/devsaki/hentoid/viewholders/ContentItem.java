@@ -41,7 +41,6 @@ import com.mikepenz.fastadapter.utils.DragDropUtil;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -63,13 +62,11 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.CircularProgressView;
-import timber.log.Timber;
 
 public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable, ISwipeable {
 
@@ -399,43 +396,31 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
             ivCover.setVisibility(View.VISIBLE);
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-            if (thumbLocation.startsWith("http")
-                    && content.getDownloadParams() != null
-                    && content.getDownloadParams().length() > 2 // Avoid empty and "{}"
-                    && content.getDownloadParams().contains(HttpHelper.HEADER_COOKIE_KEY)) {
+            if (thumbLocation.startsWith("http")) {
+                String cookieStr = null;
+                String referer = null;
 
-                Map<String, String> downloadParams = null;
-                try {
-                    downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
-                } catch (IOException e) {
-                    Timber.w(e);
+                // Quickly skip JSON deserialization if there are no cookies in downloadParams
+                String downloadParamsStr = content.getDownloadParams();
+                if (downloadParamsStr != null && downloadParamsStr.contains(HttpHelper.HEADER_COOKIE_KEY)) {
+                    Map<String, String> downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr);
+                    cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                    referer = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
                 }
+                if (null == cookieStr) cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
+                if (null == referer) referer = content.getGalleryUrl();
 
-                if (downloadParams != null && downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
-                    String cookiesStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                    String userAgent = content.getSite().getUserAgent();
-                    if (cookiesStr != null) {
-                        LazyHeaders.Builder builder = new LazyHeaders.Builder()
-                                .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookiesStr)
-                                .addHeader(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl())
-                                .addHeader(HttpHelper.HEADER_USER_AGENT, userAgent);
+                LazyHeaders.Builder builder = new LazyHeaders.Builder()
+                        .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
+                        .addHeader(HttpHelper.HEADER_REFERER_KEY, referer)
+                        .addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
 
-                        GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
-                        Glide.with(ivCover)
-                                .load(glideUrl)
-                                .apply(glideRequestOptions)
-                                .into(ivCover);
-                        return;
-                    }
-                }
-            }
-
-            if (thumbLocation.startsWith("http"))
+                GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
                 Glide.with(ivCover)
-                        .load(thumbLocation)
+                        .load(glideUrl)
                         .apply(glideRequestOptions)
                         .into(ivCover);
-            else
+            } else
                 Glide.with(ivCover)
                         .load(Uri.parse(thumbLocation))
                         .apply(glideRequestOptions)
