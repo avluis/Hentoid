@@ -63,6 +63,7 @@ import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.FileExplorer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
@@ -1344,11 +1345,39 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Renumber all images and update the DB
         List<ImageFile> images = Stream.of(chapters).map(Chapter::getImageFiles).withoutNulls().flatMap(Stream::of).toList();
         index = 1;
+        Map<String, ImageFile> fileNames = new HashMap<>();
         for (ImageFile img : images) {
             img.setOrder(index++);
             img.computeName(images.size());
-            // TODO rename files
+            fileNames.put(img.getFileUri(), img);
         }
+        // Rename all files that need to be renamed
+        // TODO handle renaming to a filename that already exists
+        // TODO display file renaming progress on the UI
+        DocumentFile parentFolder = FileHelper.getFolderFromTreeUriString(getApplication(), chapters.get(0).getContent().getTarget().getStorageUri());
+        if (parentFolder != null) {
+            try (FileExplorer fe = new FileExplorer(getApplication(), parentFolder)) {
+                List<DocumentFile> contentFiles = fe.listDocumentFiles(getApplication(), parentFolder);
+                for (DocumentFile doc : contentFiles) {
+                    String uri = doc.getUri().toString();
+                    ImageFile img = fileNames.get(uri);
+                    if (img != null) {
+                        String docName = doc.getName();
+                        if (docName != null) {
+                            String rawName = FileHelper.getFileNameWithoutExtension(docName);
+                            if (!rawName.equals(img.getName())) {
+                                String extension = FileHelper.getExtension(docName);
+                                doc.renameTo(img.getName() + "." + extension);
+                                img.setFileUri(doc.getUri().toString());
+                            }
+                        }
+                    }
+                }
+            } catch (IOException t) {
+                Timber.w(t);
+            }
+        }
+
         dao.insertImageFiles(images);
 
         // Reset locations cache as image order has changed
