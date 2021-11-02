@@ -105,8 +105,9 @@ public class ImageFile {
 
     private static void init(ImageFile imgFile, int order, StatusContent status, int maxPages) {
         imgFile.order = order;
-        imgFile.computeName(maxPages);
         imgFile.status = status;
+        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
+        imgFile.computeName(nbMaxDigits);
     }
 
     public long getId() {
@@ -152,8 +153,7 @@ public class ImageFile {
         return this;
     }
 
-    public ImageFile computeName(int maxPages) {
-        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
+    public ImageFile computeName(int nbMaxDigits) {
         name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
         return this;
     }

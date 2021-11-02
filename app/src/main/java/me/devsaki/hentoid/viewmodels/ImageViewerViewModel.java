@@ -68,6 +68,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.download.DownloadHelper;
@@ -1336,25 +1337,27 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Renumber all chapters and update the DB
         int index = 1;
-        for (Chapter c : chapters) {
-            c.setOrder(index++);
-        }
+        for (Chapter c : chapters) c.setOrder(index++);
         dao.insertChapters(chapters);
 
         // Renumber all images and update the DB
         List<ImageFile> images = Stream.of(chapters).map(Chapter::getImageFiles).withoutNulls().flatMap(Stream::of).toList();
+        if (images.isEmpty())
+            throw new IllegalArgumentException("No imagesfound");
+
         index = 1;
+        int nbMaxDigits = images.get(images.size() - 1).getName().length(); // Keep existing formatting
         Map<String, ImageFile> fileNames = new HashMap<>();
         for (ImageFile img : images) {
             img.setOrder(index++);
-            img.computeName(images.size());
+            img.computeName(nbMaxDigits);
             fileNames.put(img.getFileUri(), img);
         }
 
-        // Rename all files that need to be renamed
-        // TODO handle renaming to a filename that already exists
+        // = Rename all files that need to be renamed
+
         // Compute all renaming tasks
-        List<ImmutableTriple<ImageFile, DocumentFile, String>> renamingQueue = new ArrayList<>();
+        List<ImmutableTriple<ImageFile, DocumentFile, String>> firstPass = new ArrayList<>();
         DocumentFile parentFolder = FileHelper.getFolderFromTreeUriString(getApplication(), chapters.get(0).getContent().getTarget().getStorageUri());
         if (parentFolder != null) {
             List<DocumentFile> contentFiles = FileHelper.listFiles(getApplication(), parentFolder, null);
@@ -1365,21 +1368,43 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     if (docName != null) {
                         String rawName = FileHelper.getFileNameWithoutExtension(docName);
                         if (!rawName.equals(img.getName())) {
+                            Timber.d("Adding to 1st pass : %s != %s", rawName, img.getName());
                             String extension = FileHelper.getExtension(docName);
-                            renamingQueue.add(new ImmutableTriple<>(img, doc, img.getName() + "." + extension));
+                            firstPass.add(new ImmutableTriple<>(img, doc, img.getName() + "." + extension));
                         }
                     }
                 }
             }
         }
 
-        // Run renaming tasks
-        int nbImages = renamingQueue.size();
-        int nbProcessedPics = 1;
+        // Moving pages inside the same folder invariably result in having to give files a name that is already taken during processing
+        // => need to do two passes to make sure every file eventually gets its right name
 
-        for (ImmutableTriple<ImageFile, DocumentFile, String> renamingTask : renamingQueue) {
+        // Keep an snapshot of all filenames to keep track of which files belong to the 2nd pass
+        List<String> existingNames = Stream.of(firstPass).map(i -> i.getMiddle().getName()).withoutNulls().toList();
+        List<ImmutableTriple<ImageFile, DocumentFile, String>> secondPass = new ArrayList<>();
+
+        // Run 1st pass
+        int nbImages = firstPass.size();
+        int nbProcessedPics = 1;
+        for (ImmutableTriple<ImageFile, DocumentFile, String> renamingTask : firstPass) {
             DocumentFile doc = renamingTask.middle;
-            doc.renameTo(renamingTask.getRight());
+            String existingName = StringHelper.protect(doc.getName());
+            String newName = renamingTask.getRight();
+            if (existingNames.contains(newName)) secondPass.add(renamingTask);
+            doc.renameTo(newName);
+            renamingTask.getLeft().setFileUri(doc.getUri().toString());
+            existingNames.remove(existingName);
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, nbImages));
+        }
+
+        // Run 2nd pass
+        nbImages = secondPass.size();
+        nbProcessedPics = 1;
+        for (ImmutableTriple<ImageFile, DocumentFile, String> renamingTask : secondPass) {
+            DocumentFile doc = renamingTask.middle;
+            String newName = renamingTask.getRight();
+            doc.renameTo(newName);
             renamingTask.getLeft().setFileUri(doc.getUri().toString());
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, nbImages));
         }
