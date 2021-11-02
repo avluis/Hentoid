@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.io.File;
 import java.io.IOException;
@@ -101,5 +103,29 @@ public class DownloadHelper {
         // Remove the remaining file chunk if download has been interrupted
         FileHelper.removeFile(targetFile);
         throw new DownloadInterruptedException("Download interrupted");
+    }
+
+    // TODO doc
+    public static String getCanonicalUrl(@NonNull final Document doc) {
+        // Get the canonical URL
+        String canonicalUrl = "";
+        Element canonicalElt = doc.select("head link[rel=canonical]").first();
+        if (canonicalElt != null) canonicalUrl = canonicalElt.attr("href").trim();
+
+        // Get the OpenGraph URL
+        String ogUrl = "";
+        Element ogUrlElt = doc.select("head meta[property=og:url]").first();
+        if (ogUrlElt != null) ogUrl = ogUrlElt.attr("content").trim();
+
+        final String finalUrl;
+        if (!canonicalUrl.isEmpty() && !ogUrl.isEmpty() && !ogUrl.equals(canonicalUrl)) {
+            int canonicalDigits = Integer.parseInt(StringHelper.keepDigits(canonicalUrl));
+            int ogDigits = Integer.parseInt(StringHelper.keepDigits(ogUrl));
+            finalUrl = (canonicalDigits > ogDigits) ? canonicalUrl : ogUrl;
+        } else {
+            if (!canonicalUrl.isEmpty()) finalUrl = canonicalUrl;
+            else finalUrl = ogUrl;
+        }
+        return finalUrl;
     }
 }

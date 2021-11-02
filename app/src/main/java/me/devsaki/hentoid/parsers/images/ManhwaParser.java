@@ -24,6 +24,8 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.download.DownloadHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
@@ -63,6 +65,7 @@ public class ManhwaParser extends BaseImageListParser {
 
         List<Pair<String, String>> headers = new ArrayList<>();
         HttpHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl()));
 
         // If the stored content has chapters already, save them for comparison
         List<Chapter> storedChapters = content.getChapters();
@@ -73,9 +76,7 @@ public class ManhwaParser extends BaseImageListParser {
         List<Chapter> chapters = new ArrayList<>();
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MANHWA.useHentoidAgent(), Site.MANHWA.useWebviewAgent());
         if (doc != null) {
-            // Get the canonical URL
-            String canonicalUrl = doc.select("head [rel=canonical]").first().attr("href");
-
+            String canonicalUrl = DownloadHelper.getCanonicalUrl(doc);
             // Retrieve the chapters page chunk
             doc = HttpHelper.postOnlineDocument(
                     canonicalUrl + "ajax/chapters/",
