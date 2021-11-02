@@ -1024,6 +1024,9 @@ public final class ContentHelper {
             else return Optional.empty();
         }
 
+        // Clear existing chapters to avoid issues with extra chapter detection
+        newContent.clearChapters();
+
         // Save cookies for future calls during download
         Map<String, String> params = new HashMap<>();
         if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);

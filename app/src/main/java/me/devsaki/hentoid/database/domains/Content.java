@@ -857,6 +857,10 @@ public class Content implements Serializable {
         }
     }
 
+    public void clearChapters() {
+        this.chapters.clear();
+    }
+
     public int getDownloadMode() {
         return downloadMode;
     }
