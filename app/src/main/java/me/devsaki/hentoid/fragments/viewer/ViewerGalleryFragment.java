@@ -55,6 +55,7 @@ import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.fragments.ProgressDialogFragment;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
@@ -688,6 +689,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
         // Save final position of item in DB
         viewModel.moveChapter(oldPosition, newPosition, this::onChapterMoveError);
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.renaming_progress), getResources().getString(R.string.files));
     }
 
     private void onChapterMoveError(Throwable t) {
@@ -699,7 +701,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
     @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
         // Update visuals
-        DragDropUtil.onMove(itemAdapter, oldPosition, newPosition);
+        DragDropUtil.onMove(itemAdapter2, oldPosition, newPosition);
         return true;
     }
 

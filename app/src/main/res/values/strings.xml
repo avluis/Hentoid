@@ -14,6 +14,7 @@
     <string name="please_wait">Please wait…</string>
     <string name="books">books</string>
     <string name="pages">pages</string>
+    <string name="files">files</string>
     <string name="undo">Undo</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
@@ -571,7 +572,7 @@
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
-
+    <string name="renaming_progress">Renaming files…</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

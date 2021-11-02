@@ -898,9 +898,6 @@ public class LibraryViewModel extends AndroidViewModel {
             @NonNull Content content,
             @NonNull List<Chapter> chapters,
             @NonNull Runnable onSuccess) {
-        // Flag the content as "being deleted" (triggers blink animation)
-//        flagContentDelete(content, true);
-
         compositeDisposable.add(
                 Single.fromCallable(() -> {
                     boolean result = false;
@@ -909,7 +906,6 @@ public class LibraryViewModel extends AndroidViewModel {
                         result = true;
                     } catch (ContentNotProcessedException e) {
                         Timber.e(e);
-//                        flagContentDelete(content, false);
                     }
                     return result;
                 })
@@ -919,10 +915,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 b -> {
                                     if (b) onSuccess.run();
                                 },
-                                t -> {
-                                    Timber.e(t);
-//                                    flagContentDelete(content, false);
-                                }
+                                Timber::e
                         )
         );
     }
