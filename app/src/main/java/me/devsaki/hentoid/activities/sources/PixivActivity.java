@@ -26,7 +26,7 @@ import timber.log.Timber;
 public class PixivActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = ".pixiv.net";
-    public static final String[] GALLERY_FILTER = {
+    private static final String[] GALLERY_FILTER = {
             "pixiv.net/touch/ajax/illust/details\\?", // Illustrations page (single gallery) / load using fetch call
             "pixiv.net/touch/ajax/illust/series_content/", // Manga/series page (anthology) / load using fetch call
             "pixiv.net/touch/ajax/user/details\\?", // User page / load using fetch call
