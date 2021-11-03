@@ -1184,12 +1184,13 @@ public final class ContentHelper {
     /**
      * Find the best match for the given Content inside the library and queue
      *
+     * @param context Context to use
      * @param content Content to find the duplicate for
-     *                // TOD update
-     * @param dao     CollectionDao to use
+     * @param pHash   Cover perceptual hash to use as an override for the given Content's cover hash; Long.MIN_VALUE not to override
+     * @param dao     DAO to use
      * @return Pair containing
-     * left side : Best match for the given Content inside the library and queue
-     * Right side : Similarity score (between 0 and 1; 1=100%)
+     * - left side : Best match for the given Content inside the library and queue
+     * - Right side : Similarity score (between 0 and 1; 1=100%)
      */
     @Nullable
     public static ImmutablePair<Content, Float> findDuplicate(
@@ -1356,7 +1357,16 @@ public final class ContentHelper {
         return false;
     }
 
-    // TODO doc
+    /**
+     * Merge the given list of Content into one single new Content with the given title
+     * NB : The Content's of the given list are _not_ removed
+     *
+     * @param context     Context to use
+     * @param contentList List of Content to merge together
+     * @param newTitle    Title of the new merged Content
+     * @param dao         DAO to use
+     * @throws ContentNotProcessedException If something terrible happens
+     */
     public static void mergeContents(
             @NonNull Context context,
             @NonNull List<Content> contentList,

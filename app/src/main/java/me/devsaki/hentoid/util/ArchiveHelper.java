@@ -295,14 +295,25 @@ public class ArchiveHelper {
         }
     }
 
-    // TODO doc
-    // Not to overwrite files with the same name if they are located in different folders
+    /**
+     * Format the output file name to facilitate "flat" unarchival in one single folder
+     * NB : We do not want to overwrite files with the same name if they are located in different folders within the archive
+     *
+     * @param index    Index of the archived file
+     * @param fileName Name of the archived file (name only, without the path)
+     * @return Output file name of the given archived file
+     */
     static String formatCacheFileName(int index, @NonNull final String fileName) {
         return index + CACHE_SEPARATOR + fileName;
     }
 
-    // TODO doc
-    public static String extractCacheFileName(@NonNull final String path) {
+    /**
+     * Extracts the original file name from the filename of the cached file
+     *
+     * @param path Path of the cached file
+     * @return Original filename of the given cached file
+     */
+    public static String extractFileNameFromCacheName(@NonNull final String path) {
         String result = FileHelper.getFileNameWithoutExtension(path);
 
         int folderSeparatorIndex = result.lastIndexOf(ArchiveHelper.CACHE_SEPARATOR);

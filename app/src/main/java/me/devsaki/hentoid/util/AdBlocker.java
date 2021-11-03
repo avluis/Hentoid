@@ -125,18 +125,31 @@ public class AdBlocker {
         Collections.addAll(localUrlWhitelist, filter);
     }
 
-    // TODO doc
-    public void addJsUrlPatternWhitelist(String pattern) {
+    /**
+     * Add the given regexp pattern to the Javascript files URL whitelist
+     *
+     * @param pattern Pattern to add
+     */
+    public void addJsUrlPatternWhitelist(@NonNull final String pattern) {
         jsUrlPatternWhitelist.add(Pattern.compile(pattern));
     }
 
-    // TODO doc
-    public void addJsContentBlacklist(String sequence) {
+    /**
+     * Add the given sequence to the Javascript content blacklist
+     *
+     * @param sequence Sequence to add to the Javascript content blacklist
+     */
+    public void addJsContentBlacklist(@NonNull final String sequence) {
         jsContentBlacklist.add(sequence);
     }
 
-    // TODO doc
-    public boolean isBlocked(@NonNull String url) {
+    /**
+     * Indicate if the resource at the given URL is blocked by the current adblock settings
+     *
+     * @param url Url to examine
+     * @return True if the resource is blocked; false if not
+     */
+    public boolean isBlocked(@NonNull final String url) {
         final String cleanUrl = url.toLowerCase();
 
         // 1- Accept whitelisted JS files

@@ -677,7 +677,12 @@ public class FileHelper {
         else return result;
     }
 
-    // TODO doc
+    /**
+     * Get the most relevant mime-type for the given file name
+     *
+     * @param fileName File name to get the mime-type for
+     * @return Most relevant mime-type for the given file name; generic mime-type if none found
+     */
     public static String getMimeTypeFromFileName(@NonNull String fileName) {
         return getMimeTypeFromExtension(getExtension(fileName));
     }
@@ -750,7 +755,17 @@ public class FileHelper {
         out.flush();
     }
 
-    // TODO doc
+    /**
+     * Copy the given file to the target location, giving the copy the given name
+     *
+     * @param context         Context to use
+     * @param sourceFileUri   Uri of the source file to copy
+     * @param targetFolderUri Uri of the folder where to copy the source file
+     * @param mimeType        Mime-type of the source file
+     * @param newName         Filename to give of the copy
+     * @return Uri of the copied file, if successful; null if failed
+     * @throws IOException If something terrible happens
+     */
     @Nullable
     public static Uri copyFile(
             @NonNull final Context context,

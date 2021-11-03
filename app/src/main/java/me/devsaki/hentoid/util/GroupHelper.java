@@ -111,7 +111,15 @@ public final class GroupHelper {
         return true;
     }
 
-    // TODO doc
+    /**
+     * Move the given Content to the given custom Group
+     * NB : A Content can only be affected to one single custom group; moving it to multiple groups will only remember the last one
+     *
+     * @param content Content to move
+     * @param group   Custom group to move the content to
+     * @param dao     DAO to use
+     * @return Updated Content
+     */
     public static Content moveContentToCustomGroup(@NonNull final Content content, @Nullable final Group group, @NonNull final CollectionDAO dao) {
         Helper.assertNonUiThread();
         // Get all groupItems of the given content for custom grouping
@@ -149,7 +157,13 @@ public final class GroupHelper {
         return content;
     }
 
-    // TODO doc
+    /**
+     * Update the given Group's cover according to the removed Content ID
+     * NB : This method does _not_ remove any Content from the given Group
+     *
+     * @param g                 Group to update the cover from
+     * @param contentIdToRemove Content ID removed from the given Group
+     */
     private static void updateGroupCover(@NonNull final Group g, long contentIdToRemove) {
         List<Content> groupsContents = g.getContents();
 

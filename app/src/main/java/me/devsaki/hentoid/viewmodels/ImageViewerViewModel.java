@@ -396,7 +396,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Feed the Uri's of unzipped files back into the corresponding images for viewing
         for (ImageFile img : imageFiles) {
-            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(ArchiveHelper.extractCacheFileName(path))) {
+            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(ArchiveHelper.extractFileNameFromCacheName(path))) {
                 return img.setFileUri(uri.toString());
             }
         }

@@ -604,6 +604,9 @@ public class HttpHelper {
         return defaultChromeVersion;
     }
 
+    /**
+     * Class to parse and manipulate Uri parts
+     */
     public static class UriParts {
         private String path;
         private String fileName;
