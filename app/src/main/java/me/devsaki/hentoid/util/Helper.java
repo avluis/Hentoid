@@ -290,7 +290,9 @@ public final class Helper {
         return (denominator > 0) ? numerator / denominator : 0;
     }
 
-    // TODO doc
+    /**
+     * Cleans the given Disposable as soon as the attached Lifecycle is destroyed
+     */
     public static class LifecycleRxCleaner implements LifecycleObserver {
 
         private final Disposable disposable;
@@ -310,7 +312,11 @@ public final class Helper {
         }
     }
 
-    // TODO doc
+    /**
+     * Generate an ID for a RecyclerView ViewHolder without any ID to assign to
+     *
+     * @return Generated ID
+     */
     public static long generateIdForPlaceholder() {
         long result = new Random().nextLong();
         // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
@@ -318,8 +324,14 @@ public final class Helper {
         return result;
     }
 
-    // TODO doc
-    // Inspired by https://material.io/components/menus/android#dropdown-menus
+    /**
+     * Try to enrich the given Menu to make its associated icons displayable
+     * Fails silently (with a log) if not possible
+     * Inspired by https://material.io/components/menus/android#dropdown-menus
+     *
+     * @param context Context to use
+     * @param menu    Menu to display
+     */
     @SuppressLint("RestrictedApi")
     public static void tryShowMenuIcons(@NonNull Context context, @NonNull Menu menu) {
         try {

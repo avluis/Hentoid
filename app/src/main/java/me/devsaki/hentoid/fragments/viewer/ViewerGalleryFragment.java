@@ -680,7 +680,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     // TODO doc
     private void removeChapters() {
-        viewModel.removeChapters(t -> ToastHelper.toast("Couldn't remove chapters"));
+        viewModel.stripChapters(t -> ToastHelper.toast("Couldn't remove chapters"));
     }
 
     @Override

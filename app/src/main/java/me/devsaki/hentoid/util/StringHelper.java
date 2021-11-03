@@ -160,7 +160,12 @@ public final class StringHelper {
         return /*cleanMultipleSpaces(*/result.toString().trim()/*)*/;
     }
 
-    // TODO doc
+    /**
+     * Remove all digits (0-9; not punctuation) from the given string
+     *
+     * @param s String to remove digits from
+     * @return Given string sripped from all its digits
+     */
     public static String removeDigits(@NonNull final String s) {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
@@ -170,7 +175,12 @@ public final class StringHelper {
         return result.toString().trim();
     }
 
-    // TODO doc
+    /**
+     * Remove all non-digits (0-9; not punctuation) from the given string
+     *
+     * @param s String to keep digits from
+     * @return Digits from the given string, in their original order
+     */
     public static String keepDigits(@NonNull final String s) {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {

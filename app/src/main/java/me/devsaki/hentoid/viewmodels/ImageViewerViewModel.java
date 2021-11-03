@@ -1029,14 +1029,28 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return Optional.empty();
     }
 
-    // TODO doc
+    /**
+     * Download the picture represented by the given ImageFile to the given disk location
+     *
+     * @param content           Corresponding Content
+     * @param img               ImageFile of the page to download
+     * @param pageIndex         Index of the page to download
+     * @param requestHeaders    HTTP request headers to use
+     * @param targetFolder      Folder where to save the downloaded resource
+     * @param targetFileName    Name of the file to save the downloaded resource
+     * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
+     * @return Pair containing
+     * - Left : Downloaded file
+     * - Right : Detected mime-type of the downloades resource
+     * @throws UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException in case something horrible happens
+     */
     private ImmutablePair<File, String> downloadPictureFromPage(@NonNull Content content,
                                                                 @NonNull ImageFile img,
                                                                 int pageIndex,
                                                                 List<Pair<String, String>> requestHeaders,
                                                                 @NonNull File targetFolder,
                                                                 @NonNull String targetFileName,
-                                                                @NonNull final AtomicBoolean stopDownload) throws
+                                                                @NonNull final AtomicBoolean interruptDownload) throws
             UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException {
         Site site = content.getSite();
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
@@ -1053,7 +1067,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                     targetFolder,
                     targetFileName,
                     null,
-                    stopDownload,
+                    interruptDownload,
                     f -> notifyDownloadProgress(f, pageIndex)
             );
         } catch (IOException e) {
@@ -1070,7 +1084,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 targetFolder,
                 targetFileName,
                 null,
-                stopDownload,
+                interruptDownload,
                 f -> notifyDownloadProgress(f, pageIndex)
         );
     }
@@ -1137,13 +1151,18 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    // TODO doc
-    public void removeChapters(@NonNull Consumer<Throwable> onError) {
+    /**
+     * Strip all chapters from the current Content
+     * NB : All images are kept; only chapters are removed
+     *
+     * @param onError Callback in case processing fails
+     */
+    public void stripChapters(@NonNull Consumer<Throwable> onError) {
         Content theContent = content.getValue();
         if (null == theContent) return;
 
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doRemoveChapters(theContent))
+                Completable.fromRunnable(() -> dao.deleteChapters(theContent))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -1156,20 +1175,20 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    // TODO doc
-    private void doRemoveChapters(@NonNull Content theContent) {
-        Helper.assertNonUiThread();
-
-        dao.deleteChapters(theContent);
-    }
-
-    // TODO doc
-    public void createRemoveChapter(@NonNull ImageFile img, @NonNull Consumer<Throwable> onError) {
+    /**
+     * Create or remove a chapter at the given position
+     * - If the given position is the first page of a chapter -> remove this chapter
+     * - If not, create a new chapter at this position
+     *
+     * @param selectedPage Position to remove or create a chapter at
+     * @param onError      Callback in case processing fails
+     */
+    public void createRemoveChapter(@NonNull ImageFile selectedPage, @NonNull Consumer<Throwable> onError) {
         Content theContent = content.getValue();
         if (null == theContent) return;
 
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doCreateRemoveChapter(theContent.getId(), img))
+                Completable.fromRunnable(() -> doCreateRemoveChapter(theContent.getId(), selectedPage))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -1182,24 +1201,31 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    // TODO doc
+    /**
+     * Create or remove a chapter at the given position
+     * * - If the given position is the first page of a chapter -> remove this chapter
+     * * - If not, create a new chapter at this position
+     *
+     * @param contentId    ID of the corresponding content
+     * @param selectedPage Position to remove or create a chapter at
+     */
     private void doCreateRemoveChapter(long contentId, @NonNull ImageFile selectedPage) {
         Helper.assertNonUiThread();
 
         Content content = dao.selectContent(contentId); // Work on a fresh content
         if (null == content) throw new IllegalArgumentException("No content found");
 
-        Chapter previousChapter = selectedPage.getLinkedChapter();
+        Chapter currentChapter = selectedPage.getLinkedChapter();
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
-        if (null == previousChapter) {
-            previousChapter = new Chapter(1, "", "Chapter 1");
-            previousChapter.setImageFiles(viewerImagesInternal);
+        if (null == currentChapter) {
+            currentChapter = new Chapter(1, "", "Chapter 1");
+            currentChapter.setImageFiles(viewerImagesInternal);
             // Link images the other way around so that what follows works properly
-            for (ImageFile img : viewerImagesInternal) img.setChapter(previousChapter);
-            previousChapter.setContent(content);
+            for (ImageFile img : viewerImagesInternal) img.setChapter(currentChapter);
+            currentChapter.setContent(content);
         }
 
-        List<ImageFile> chapterImages = previousChapter.getImageFiles();
+        List<ImageFile> chapterImages = currentChapter.getImageFiles();
         if (null == chapterImages || chapterImages.isEmpty())
             throw new IllegalArgumentException("No images found for selection");
 
@@ -1210,8 +1236,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Optional<ImageFile> firstChapterPic = Stream.of(chapterImages).sortBy(ImageFile::getOrder).findFirst();
         boolean isRemoving = (firstChapterPic.get().getOrder().intValue() == selectedPage.getOrder().intValue());
 
-        if (isRemoving) doRemoveChapter(content, previousChapter, chapterImages);
-        else doCreateChapter(content, selectedPage, previousChapter, chapterImages);
+        if (isRemoving) doRemoveChapter(content, currentChapter, chapterImages);
+        else doCreateChapter(content, selectedPage, currentChapter, chapterImages);
 
         // Rearrange all chapters
 
@@ -1244,14 +1270,21 @@ public class ImageViewerViewModel extends AndroidViewModel {
         dao.insertChapters(updatedChapters);
     }
 
-    // TODO doc
+    /**
+     * Create a chapter at the given position, which will become the 1st page of the new chapter
+     *
+     * @param content        Corresponding Content
+     * @param selectedPage   Position to create a new chapter at
+     * @param currentChapter Current chapter at the given position
+     * @param chapterImages  Images of the current chapter at the given position
+     */
     private void doCreateChapter(
             @NonNull Content content,
             @NonNull ImageFile selectedPage,
-            @NonNull Chapter previousChapter,
+            @NonNull Chapter currentChapter,
             @NonNull List<ImageFile> chapterImages
     ) {
-        int newChapterOrder = previousChapter.getOrder() + 1;
+        int newChapterOrder = currentChapter.getOrder() + 1;
         Chapter newChapter = new Chapter(newChapterOrder, "", "Chapter " + newChapterOrder);
         newChapter.setContent(content);
 
@@ -1273,7 +1306,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         dao.insertImageFiles(chapterImages);
     }
 
-    // TODO doc
+    /**
+     * Remove the given chapter
+     * All pages from this chapter will be affected to the preceding chapter
+     *
+     * @param content       Corresponding Content
+     * @param toRemove      Chapter to remove
+     * @param chapterImages Images of the chapter to remove
+     */
     private void doRemoveChapter(
             @NonNull Content content,
             @NonNull Chapter toRemove,
@@ -1298,12 +1338,19 @@ public class ImageViewerViewModel extends AndroidViewModel {
         dao.deleteChapter(toRemove);
     }
 
-    public void moveChapter(int oldPosition, int newPosition, Consumer<Throwable> onError) {
+    /**
+     * Move the chapter of the current Content from oldIndex to newIndex and renumber pages & files accordingly
+     *
+     * @param oldIndex Old index (0-based) of the chapter to move
+     * @param newIndex New index (0-based) of the chapter to move
+     * @param onError  Callback in case processing fails
+     */
+    public void moveChapter(int oldIndex, int newIndex, Consumer<Throwable> onError) {
         Content theContent = content.getValue();
         if (null == theContent) return;
 
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doMoveChapter(theContent.getId(), oldPosition, newPosition))
+                Completable.fromRunnable(() -> doMoveChapter(theContent.getId(), oldIndex, newIndex))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -1319,21 +1366,28 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doMoveChapter(long contentId, int oldPosition, int newPosition) {
+    /**
+     * Move the chapter of the given Content from oldPosition to newPosition and renumber pages & files accordingly
+     *
+     * @param contentId ID of the Content to work on
+     * @param oldIndex  Old index (0-based) of the chapter to move
+     * @param newIndex  New index (0-based) of the chapter to move
+     */
+    private void doMoveChapter(long contentId, int oldIndex, int newIndex) {
         Helper.assertNonUiThread();
         List<Chapter> chapters = dao.selectChapters(contentId);
         if (null == chapters || chapters.isEmpty())
             throw new IllegalArgumentException("No chapters found");
 
-        if (oldPosition < 0 || oldPosition >= chapters.size()) return;
+        if (oldIndex < 0 || oldIndex >= chapters.size()) return;
 
         // Move the item
-        Chapter fromValue = chapters.get(oldPosition);
-        int delta = oldPosition < newPosition ? 1 : -1;
-        for (int i = oldPosition; i != newPosition; i += delta) {
+        Chapter fromValue = chapters.get(oldIndex);
+        int delta = oldIndex < newIndex ? 1 : -1;
+        for (int i = oldIndex; i != newIndex; i += delta) {
             chapters.set(i, chapters.get(i + delta));
         }
-        chapters.set(newPosition, fromValue);
+        chapters.set(newIndex, fromValue);
 
         // Renumber all chapters and update the DB
         int index = 1;

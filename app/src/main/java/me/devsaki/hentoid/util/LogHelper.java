@@ -145,12 +145,22 @@ public class LogHelper {
             this.entries = entries;
         }
 
-        // TODO doc
+        /**
+         * Add the given message as a log entry
+         *
+         * @param message Message to add as a log entry
+         */
         public void addEntry(@NonNull String message) {
             if (entries.isEmpty()) entries = new ArrayList<>();
             entries.add(new LogEntry(message));
         }
 
+        /**
+         * Add the given message as a log entry
+         *
+         * @param message    Message to add as a log entry
+         * @param formatArgs Formatting arguments
+         */
         public void addEntry(@NonNull String message, Object... formatArgs) {
             if (entries.isEmpty()) entries = new ArrayList<>();
             entries.add(new LogEntry(message, formatArgs));
