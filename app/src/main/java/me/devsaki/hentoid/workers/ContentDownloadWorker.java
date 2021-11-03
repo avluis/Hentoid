@@ -992,7 +992,8 @@ public class ContentDownloadWorker extends BaseWorker {
                 isError = true;
                 errorMsg = e.getMessage();
             } finally {
-                ugoiraCacheFolder.delete();
+                if (!ugoiraCacheFolder.delete())
+                    Timber.w("Couldn't delete ugoira folder %s", ugoiraCacheFolder.getAbsolutePath());
             }
             if (isError) {
                 updateImageProperties(img, false, "");
