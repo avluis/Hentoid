@@ -102,9 +102,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     private final ItemAdapter<SubExpandableItem> itemAdapter2 = new ItemAdapter<>();
     private final FastAdapter<SubExpandableItem> fastAdapter2 = FastAdapter.with(itemAdapter2);
-    private SelectExtension<SubExpandableItem> selectExtension2;
     private ItemTouchHelper touchHelper;
-    private ExpandableExtension<SubExpandableItem> expandableExtension;
 
     private DragSelectTouchListener mDragSelectTouchListener = null;
     private DragSelectTouchListener mDragSelectTouchListener2 = null;
@@ -258,7 +256,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             itemAdapter2.clear();
 
             // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
-            selectExtension2 = fastAdapter2.getOrCreateExtension(SelectExtension.class);
+            SelectExtension<SubExpandableItem> selectExtension2 = fastAdapter2.getOrCreateExtension(SelectExtension.class);
             if (selectExtension2 != null) {
                 selectExtension2.setSelectable(true);
                 selectExtension2.setMultiSelect(true);
@@ -275,7 +273,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 });
             }
 
-            expandableExtension = fastAdapter2.getOrCreateExtension(ExpandableExtension.class);
+            ExpandableExtension<SubExpandableItem> expandableExtension = fastAdapter2.getOrCreateExtension(ExpandableExtension.class);
 
             GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
             if (glm != null) {
