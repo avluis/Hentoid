@@ -967,10 +967,12 @@ public class FileHelper {
             }
 
             // Process target volume
-            if (targetVolume.isPrimary()) {
-                processPrimary(context, targetVolume);
-            } else {
-                processSecondary(targetVolume);
+            if (targetVolume != null) {
+                if (targetVolume.isPrimary()) {
+                    processPrimary(context, targetVolume);
+                } else {
+                    processSecondary(targetVolume);
+                }
             }
         }
 
