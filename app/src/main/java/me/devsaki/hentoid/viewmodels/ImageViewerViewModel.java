@@ -1212,8 +1212,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void doCreateRemoveChapter(long contentId, @NonNull ImageFile selectedPage) {
         Helper.assertNonUiThread();
 
-        Content content = dao.selectContent(contentId); // Work on a fresh content
-        if (null == content) throw new IllegalArgumentException("No content found");
+        Content theContent = dao.selectContent(contentId); // Work on a fresh content
+        if (null == theContent) throw new IllegalArgumentException("No content found");
 
         Chapter currentChapter = selectedPage.getLinkedChapter();
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
@@ -1222,7 +1222,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             currentChapter.setImageFiles(viewerImagesInternal);
             // Link images the other way around so that what follows works properly
             for (ImageFile img : viewerImagesInternal) img.setChapter(currentChapter);
-            currentChapter.setContent(content);
+            currentChapter.setContent(theContent);
         }
 
         List<ImageFile> chapterImages = currentChapter.getImageFiles();
@@ -1236,16 +1236,16 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Optional<ImageFile> firstChapterPic = Stream.of(chapterImages).sortBy(ImageFile::getOrder).findFirst();
         boolean isRemoving = (firstChapterPic.get().getOrder().intValue() == selectedPage.getOrder().intValue());
 
-        if (isRemoving) doRemoveChapter(content, currentChapter, chapterImages);
-        else doCreateChapter(content, selectedPage, currentChapter, chapterImages);
+        if (isRemoving) doRemoveChapter(theContent, currentChapter, chapterImages);
+        else doCreateChapter(theContent, selectedPage, currentChapter, chapterImages);
 
         // Rearrange all chapters
 
         // Work on a clean image set directly from the DAO
         // (we don't want to depend on LiveData being on time here)
-        List<ImageFile> viewerImages = dao.selectDownloadedImagesFromContent(content.getId());
+        List<ImageFile> theViewerImages = dao.selectDownloadedImagesFromContent(theContent.getId());
         // Rely on the order of pictures to get chapter in the right order
-        List<Chapter> allChapters = Stream.of(viewerImages)
+        List<Chapter> allChapters = Stream.of(theViewerImages)
                 .map(ImageFile::getLinkedChapter)
                 .distinct()
                 .withoutNulls()
@@ -1261,7 +1261,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 c.setName("Chapter " + order);
             // Update order
             c.setOrder(order);
-            c.setContent(content);
+            c.setContent(theContent);
             order++;
             updatedChapters.add(c);
         }

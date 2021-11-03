@@ -6,7 +6,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 import android.webkit.WebView;
 
 
@@ -41,12 +40,10 @@ public class VariableLongClickWebView extends WebView {
 
     private void init() {
         handler = new Handler(Looper.getMainLooper(), message -> {
-            if (message.what == MESSAGE_LONG_CLICK) {
-                if (onLongClickListener != null) {
-                    super.setOnLongClickListener(null);
-                    performLongClick();
-                    super.setOnLongClickListener(onLongClickListener);
-                }
+            if (message.what == MESSAGE_LONG_CLICK && onLongClickListener != null) {
+                super.setOnLongClickListener(null);
+                performLongClick();
+                super.setOnLongClickListener(onLongClickListener);
             }
             return true;
         });
@@ -77,7 +74,6 @@ public class VariableLongClickWebView extends WebView {
                 handler.sendMessageDelayed(m, longClickThreshold);
                 break;
 
-//            case MotionEvent.ACTION_MOVE:
             case MotionEvent.ACTION_POINTER_UP:
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
