@@ -35,12 +35,13 @@
         android:background="@color/transparent"
         android:clickable="true"
         android:focusable="true"
+        android:padding="8dp"
         android:src="@drawable/ic_reorder"
         android:tooltipText="@string/drag_help"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:tint="?colorSecondary"
         tools:ignore="ContentDescription"
         tools:visibility="visible" />
@@ -54,11 +55,12 @@
         android:textColor="?colorSecondary"
         android:textSize="@dimen/text_subtitle_1"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/ivReorder"
         app:layout_constraintStart_toEndOf="@id/ivCover"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         tools:text="@string/book_title" />
+
     <ImageView
         android:id="@+id/ivFavourite"
         android:layout_width="48dp"
@@ -69,6 +71,7 @@
         android:background="@color/transparent"
         android:clickable="true"
         android:focusable="true"
+        android:padding="8dp"
         android:src="@drawable/ic_fav_empty"
         android:tooltipText="@string/fav_help"
         app:layout_constraintBottom_toBottomOf="parent"
