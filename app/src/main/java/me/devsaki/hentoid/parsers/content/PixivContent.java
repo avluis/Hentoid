@@ -42,6 +42,8 @@ public class PixivContent extends BaseContentParser {
                 if (!StringHelper.isNumeric(id))
                     id = uri.getQueryParameter("id");
                 break;
+            default:
+                // Nothing specific
         }
 
         try {
@@ -67,6 +69,8 @@ public class PixivContent extends BaseContentParser {
                         PixivUserMetadata userData = PixivServer.API.getUserMetadata(id, cookieStr).execute().body();
                         if (userData != null) return userData.update(content, url, updateImages);
                         break;
+                    default:
+                        // Nothing specific
                 }
             }
         } catch (IOException e) {
