@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.util;
 
 import android.content.Context;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
