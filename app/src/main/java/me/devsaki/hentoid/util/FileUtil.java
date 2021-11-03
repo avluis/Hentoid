@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Locale;
 
 import timber.log.Timber;
@@ -164,7 +165,7 @@ class FileUtil {
             displaySize = size + " bytes";
         }
 
-        final DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance(locale);
+        final DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getInstance(locale);
         return displaySize.replaceFirst("[" +
                         decimalFormat.getDecimalFormatSymbols().getDecimalSeparator() +
                         "]" +
