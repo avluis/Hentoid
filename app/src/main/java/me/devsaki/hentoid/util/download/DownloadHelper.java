@@ -38,7 +38,23 @@ public class DownloadHelper {
         throw new IllegalStateException("Utility class");
     }
 
-
+    /**
+     * Download the given resource to the given disk location
+     *
+     * @param site              Site to use params for
+     * @param url               URL to download from
+     * @param resourceId        ID of the corresponding resource (for logging purposes only)
+     * @param requestHeaders    HTTP request headers to use
+     * @param targetFolder      Folder where to save the downloaded resource
+     * @param targetFileName    Name of the file to save the downloaded resource
+     * @param forceMimeType     Forced mime-type of the downloaded resource (null for auto-set)
+     * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
+     * @param notifyProgress    Consumer called with the download progress %
+     * @return Pair containing
+     * - Left : Downloaded file
+     * - Right : Detected mime-type of the downloades resource
+     * @throws IOException,UnsupportedContentException,DownloadInterruptedException if anything goes wrong
+     */
     public static ImmutablePair<File, String> downloadToFile(
             @NonNull Site site,
             @NonNull String url,
@@ -105,7 +121,13 @@ public class DownloadHelper {
         throw new DownloadInterruptedException("Download interrupted");
     }
 
-    // TODO doc
+    /**
+     * Extract the given HTML document's canonical URL using link and OpenGraph metadata when available
+     * NB : Uses the URL with the highest number when both exist and are not the same
+     *
+     * @param doc HTML document to parse
+     * @return Canonical URL of the given document; empty string if nothing found
+     */
     public static String getCanonicalUrl(@NonNull final Document doc) {
         // Get the canonical URL
         String canonicalUrl = "";
