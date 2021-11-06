@@ -51,7 +51,11 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         super.onDestroy()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = IntroSlide04Binding.inflate(inflater, container, false)
         // We need to manually bind the merged view - it won't work at runtime with the main view alone
         _mergedBinding = IncludeImportStepsBinding.bind(binding.root)
@@ -64,7 +68,10 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        mergedBinding.importStep1Button.setOnClickListener { pickFolder.launch(0) }
+        mergedBinding.importStep1Button.setOnClickListener {
+            binding.skipBtn.visibility = View.INVISIBLE
+            pickFolder.launch(0)
+        }
         mergedBinding.importStep1Button.visibility = View.VISIBLE
 
         binding.skipBtn.setOnClickListener { askSkip() }
@@ -74,16 +81,39 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         when (resultCode) {
             ImportHelper.PickerResult.OK -> {
                 if (null == treeUri) return
-                // TODO lock UI and display waiting
-                importDisposable = io.reactivex.Single.fromCallable { setAndScanHentoidFolder(requireContext(), treeUri, true, null) }
-                        .subscribeOn(io.reactivex.schedulers.Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                { i: Int -> onScanHentoidFolderResult(i) }, { t: Throwable? -> Timber.w(t) }
-                        )
+                importDisposable = io.reactivex.Single.fromCallable {
+                    setAndScanHentoidFolder(
+                        requireContext(),
+                        treeUri,
+                        true,
+                        null
+                    )
+                }
+                    .subscribeOn(io.reactivex.schedulers.Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(
+                        { result: Int ->
+                            onScanHentoidFolderResult(result)
+                        },
+                        { t: Throwable? -> Timber.w(t) }
+                    )
             }
-            ImportHelper.PickerResult.KO_CANCELED -> Snackbar.make(binding.main, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.PickerResult.KO_OTHER, ImportHelper.PickerResult.KO_NO_URI -> Snackbar.make(binding.main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.PickerResult.KO_CANCELED -> {
+                Snackbar.make(
+                    binding.main,
+                    R.string.import_canceled,
+                    BaseTransientBottomBar.LENGTH_LONG
+                ).show()
+                binding.skipBtn.visibility = View.VISIBLE
+            }
+            ImportHelper.PickerResult.KO_OTHER, ImportHelper.PickerResult.KO_NO_URI -> {
+                Snackbar.make(
+                    binding.main,
+                    R.string.import_other,
+                    BaseTransientBottomBar.LENGTH_LONG
+                ).show()
+                binding.skipBtn.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -91,17 +121,42 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         importDisposable.dispose()
         when (resultCode) {
             ImportHelper.ProcessFolderResult.OK_EMPTY_FOLDER -> nextStep()
-            ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED -> updateOnSelectFolder() // Import service is already launched by the Helper; nothing else to do
+            ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED -> { // Import service is already launched by the Helper; nothing else to do
+                updateOnSelectFolder()
+                return
+            }
             ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED_ASK -> {
                 updateOnSelectFolder()
                 ImportHelper.showExistingLibraryDialog(requireContext()) { onCancelExistingLibraryDialog() }
+                return
             }
-            ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER -> Snackbar.make(binding.main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.ProcessFolderResult.KO_APP_FOLDER -> Snackbar.make(binding.main, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER -> Snackbar.make(binding.main, R.string.import_download_folder, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.ProcessFolderResult.KO_CREATE_FAIL -> Snackbar.make(binding.main, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show()
-            ImportHelper.ProcessFolderResult.KO_OTHER -> Snackbar.make(binding.main, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show()
+            ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER -> Snackbar.make(
+                binding.main,
+                R.string.import_invalid,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
+            ImportHelper.ProcessFolderResult.KO_APP_FOLDER -> Snackbar.make(
+                binding.main,
+                R.string.import_invalid,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
+            ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER -> Snackbar.make(
+                binding.main,
+                R.string.import_download_folder,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
+            ImportHelper.ProcessFolderResult.KO_CREATE_FAIL -> Snackbar.make(
+                binding.main,
+                R.string.import_create_fail,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
+            ImportHelper.ProcessFolderResult.KO_OTHER -> Snackbar.make(
+                binding.main,
+                R.string.import_other,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
         }
+        binding.skipBtn.visibility = View.VISIBLE
     }
 
     private fun updateOnSelectFolder() {
@@ -142,7 +197,11 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             if (ImportWorker.STEP_3_BOOKS == event.step) {
                 mergedBinding.importStep2Check.visibility = View.VISIBLE
                 mergedBinding.importStep3.visibility = View.VISIBLE
-                mergedBinding.importStep3Text.text = resources.getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal)
+                mergedBinding.importStep3Text.text = resources.getString(
+                    R.string.api29_migration_step3,
+                    event.elementsKO + event.elementsOK,
+                    event.elementsTotal
+                )
             } else if (ImportWorker.STEP_4_QUEUE_FINAL == event.step) {
                 mergedBinding.importStep3Check.visibility = View.VISIBLE
                 mergedBinding.importStep4.visibility = View.VISIBLE
@@ -154,7 +213,11 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     mergedBinding.importStep3.visibility = View.VISIBLE
                 }
                 ImportWorker.STEP_3_BOOKS == event.step -> {
-                    mergedBinding.importStep3Text.text = resources.getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal)
+                    mergedBinding.importStep3Text.text = resources.getString(
+                        R.string.api29_migration_step3,
+                        event.elementsTotal,
+                        event.elementsTotal
+                    )
                     mergedBinding.importStep3Check.visibility = View.VISIBLE
                     mergedBinding.importStep4.visibility = View.VISIBLE
                 }
@@ -168,12 +231,12 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
     private fun askSkip() {
         val materialDialog: AlertDialog = MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.slide_04_skip_title)
-                .setMessage(R.string.slide_04_skip_msg)
-                .setCancelable(true)
-                .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int -> nextStep() }
-                .setNegativeButton(android.R.string.cancel, null)
-                .create()
+            .setTitle(R.string.slide_04_skip_title)
+            .setMessage(R.string.slide_04_skip_msg)
+            .setCancelable(true)
+            .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int -> nextStep() }
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
 
         materialDialog.setIcon(R.drawable.ic_warning)
         materialDialog.show()
