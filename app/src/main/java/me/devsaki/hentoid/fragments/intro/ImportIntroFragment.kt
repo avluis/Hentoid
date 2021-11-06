@@ -74,6 +74,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         when (resultCode) {
             ImportHelper.PickerResult.OK -> {
                 if (null == treeUri) return
+                // TODO lock UI and display waiting
                 importDisposable = io.reactivex.Single.fromCallable { setAndScanHentoidFolder(requireContext(), treeUri, true, null) }
                         .subscribeOn(io.reactivex.schedulers.Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())

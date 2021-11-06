@@ -95,13 +95,15 @@ public class Api29MigrationActivity extends AppCompatActivity {
             Timber.d("Detected dir : %s", storageDoc.getUri().toString());
             // Make certain we have the actual Hentoid/.Hentoid folder (root URI can be set to its parent on certain devices)
             storageDoc = ImportHelper.getExistingHentoidDirFrom(this, storageDoc);
-            Timber.d("Suggested dir : %s", storageDoc.getUri().toString());
-            Preferences.setStorageUri(storageDoc.getUri().toString());
-            scanLibrary(storageDoc);
+            if (storageDoc != null) {
+                Timber.d("Suggested dir : %s", storageDoc.getUri().toString());
+                Preferences.setStorageUri(storageDoc.getUri().toString());
+                scanLibrary(storageDoc);
+            }
         }
         // else ask for the Hentoid folder, as PersistableUriPermission might not have been granted at all
         // (case of v11- app running on Android 10 with API28- target)
-        else step1button.setVisibility(View.VISIBLE);
+        if (null == storageDoc) step1button.setVisibility(View.VISIBLE);
     }
 
     private void selectHentoidFolder() {
