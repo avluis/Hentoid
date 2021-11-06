@@ -19,6 +19,7 @@ import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
 import me.devsaki.hentoid.databinding.IntroSlide04Binding
 import me.devsaki.hentoid.events.ProcessEvent
+import me.devsaki.hentoid.ui.BlinkAnimation
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.ImportHelper.setAndScanHentoidFolder
@@ -81,6 +82,10 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         when (resultCode) {
             ImportHelper.PickerResult.OK -> {
                 if (null == treeUri) return
+                binding.waitTxt.visibility = View.VISIBLE
+                val animation = BlinkAnimation(750, 20)
+                binding.waitTxt.startAnimation(animation)
+
                 importDisposable = io.reactivex.Single.fromCallable {
                     setAndScanHentoidFolder(
                         requireContext(),
@@ -93,7 +98,12 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                         { result: Int ->
-                            onScanHentoidFolderResult(result)
+                            run {
+                                binding.waitTxt.clearAnimation()
+                                binding.waitTxt.visibility = View.GONE
+                                onScanHentoidFolderResult(result)
+                            }
+
                         },
                         { t: Throwable? -> Timber.w(t) }
                     )
