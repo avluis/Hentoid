@@ -52,7 +52,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
-import me.devsaki.hentoid.services.ExternalImportService;
+import me.devsaki.hentoid.workers.ExternalImportWorker;
 import me.devsaki.hentoid.workers.ImportWorker;
 import me.devsaki.hentoid.workers.data.ImportData;
 import timber.log.Timber;
@@ -246,7 +246,7 @@ public class ImportHelper {
         // Scan the folder for an existing library; start the import
         if (hasBooks(context)) {
             if (!askScanExisting) {
-                runHentoidImport(context, options);
+                runPrimaryImport(context, options);
                 return ProcessFolderResult.OK_LIBRARY_DETECTED;
             } else return ProcessFolderResult.OK_LIBRARY_DETECTED_ASK;
         } else {
@@ -316,7 +316,7 @@ public class ImportHelper {
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            runHentoidImport(context, null);
+                            runPrimaryImport(context, null);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog2, which) -> {
@@ -410,7 +410,7 @@ public class ImportHelper {
      * @param context Context to use
      * @param options Import options to use
      */
-    private static void runHentoidImport(
+    private static void runPrimaryImport(
             @NonNull final Context context,
             @Nullable final ImportOptions options
     ) {
@@ -436,19 +436,18 @@ public class ImportHelper {
     private static void runExternalImport(
             @NonNull final Context context
     ) {
-        if (ExternalImportService.isRunning()) {
+        if (ExternalImportWorker.isRunning(context)) {
             ToastHelper.toast(R.string.service_running);
             return;
         }
 
         ImportNotificationChannel.init(context);
-        Intent intent = ExternalImportService.makeIntent(context);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
-        }
+        WorkManager workManager = WorkManager.getInstance(context);
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.external_import_service),
+                ExistingWorkPolicy.KEEP,
+                new OneTimeWorkRequest.Builder(ExternalImportWorker.class).addTag(WORK_CLOSEABLE).build());
     }
 
     /**

@@ -3,6 +3,7 @@
     <item name="startup_service" type="id"/>
     <item name="update_download_service" type="id"/>
     <item name="download_service" type="id"/>
+    <item name="external_import_service" type="id"/>
     <item name="import_service" type="id"/>
     <item name="delete_service_delete" type="id"/>
     <item name="delete_service_purge" type="id"/>

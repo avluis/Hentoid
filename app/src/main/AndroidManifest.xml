@@ -471,8 +471,6 @@
 
         <service android:name=".services.UpdateCheckService" />
 
-        <service android:name=".services.ExternalImportService" />
-
         <service android:name=".services.API29MigrationService" />
 
         <!-- Receivers -->

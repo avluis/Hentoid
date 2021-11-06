@@ -1,19 +1,19 @@
-package me.devsaki.hentoid.services;
+package me.devsaki.hentoid.workers;
 
 import static me.devsaki.hentoid.util.ImportHelper.scanArchive;
 import static me.devsaki.hentoid.util.ImportHelper.scanBookFolder;
 import static me.devsaki.hentoid.util.ImportHelper.scanChapterFolders;
 import static me.devsaki.hentoid.util.ImportHelper.scanForArchives;
 
-import android.app.IntentService;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
+import androidx.work.Data;
+import androidx.work.WorkerParameters;
 
 import com.annimon.stream.Stream;
 
@@ -45,63 +45,45 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
-import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
-import me.devsaki.hentoid.workers.ImportWorker;
+import me.devsaki.hentoid.util.notification.Notification;
 import timber.log.Timber;
+
 
 /**
  * Service responsible for importing an external library.
  */
-public class ExternalImportService extends IntentService {
+public class ExternalImportWorker extends BaseWorker {
 
-    private static final int NOTIFICATION_ID = ExternalImportService.class.getName().hashCode();
     private static final Pattern ENDS_WITH_NUMBER = Pattern.compile(".*\\d+(\\.\\d+)?$");
 
-    private static boolean running;
-    private ServiceNotificationManager notificationManager;
-
-
-    public ExternalImportService() {
-        super(ExternalImportService.class.getName());
+    public ExternalImportWorker(
+            @NonNull Context context,
+            @NonNull WorkerParameters parameters) {
+        super(context, parameters, R.id.external_import_service, null);
     }
 
-    public static Intent makeIntent(@NonNull Context context) {
-        return new Intent(context, ExternalImportService.class);
-    }
-
-    public static synchronized boolean isRunning() {
-        return running;
-    }
-
-    private static synchronized void setRunning(boolean value) {
-        running = value;
-    }
-
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-
-        setRunning(true);
-        notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
-        notificationManager.cancel();
-        notificationManager.startForeground(new ImportStartNotification());
-
-        Timber.w("Service created");
+    public static boolean isRunning(@NonNull Context context) {
+        return isRunning(context, R.id.external_import_service);
     }
 
     @Override
-    public void onDestroy() {
-        setRunning(false);
-        notificationManager.cancel();
-        Timber.w("Service destroyed");
-
-        super.onDestroy();
+    Notification getStartNotification() {
+        return new ImportStartNotification();
     }
 
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        startImport();
+    void onInterrupt() {
+        // Nothing
+    }
+
+    @Override
+    void onClear() {
+        // Nothing
+    }
+
+    @Override
+    void getToWork(@NonNull Data input) {
+        startImport(getApplicationContext());
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -127,26 +109,26 @@ public class ExternalImportService extends IntentService {
     /**
      * Import books from external folder
      */
-    private void startImport() {
+    private void startImport(
+            @NonNull final Context context
+    ) {
         int booksOK = 0;                        // Number of books imported
         int booksKO = 0;                        // Number of folders found with no valid book inside
         List<LogHelper.LogEntry> log = new ArrayList<>();
 
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getExternalLibraryUri());
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getExternalLibraryUri());
         if (null == rootFolder) {
             Timber.e("External folder is not defined (%s)", Preferences.getExternalLibraryUri());
             return;
         }
 
         DocumentFile logFile = null;
-        CollectionDAO dao = new ObjectBoxDAO(this);
+        CollectionDAO dao = new ObjectBoxDAO(context);
 
-        try (FileExplorer explorer = new FileExplorer(this, Uri.parse(Preferences.getExternalLibraryUri()))) {
-            notificationManager.startForeground(new ImportProgressNotification(this.getResources().getString(R.string.starting_import), 0, 0));
-
+        try (FileExplorer explorer = new FileExplorer(context, Uri.parse(Preferences.getExternalLibraryUri()))) {
             List<Content> library = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
-            scanFolderRecursive(rootFolder, explorer, new ArrayList<>(), library, dao);
+            scanFolderRecursive(context, rootFolder, explorer, new ArrayList<>(), library, dao);
             eventComplete(ImportWorker.STEP_2_BOOK_FOLDERS, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
@@ -179,14 +161,14 @@ public class ExternalImportService extends IntentService {
                 if (content.getJsonUri().isEmpty()) {
                     Uri jsonUri = null;
                     try {
-                        jsonUri = createJsonFileFor(content, explorer);
+                        jsonUri = createJsonFileFor(context, content, explorer);
                     } catch (IOException ioe) {
                         Timber.w(ioe); // Not blocking
                         trace(Log.WARN, 1, log, "Could not create JSON in %s", content.getStorageUri());
                     }
                     if (jsonUri != null) content.setJsonUri(jsonUri.toString());
                 }
-                ContentHelper.addContent(this, dao, content);
+                ContentHelper.addContent(context, dao, content);
                 trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;
                 notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, library.size()));
@@ -196,7 +178,7 @@ public class ExternalImportService extends IntentService {
             eventComplete(ImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO, null);
 
             // Write log in root folder
-            logFile = LogHelper.writeLog(this, buildLogInfo(log));
+            logFile = LogHelper.writeLog(context, buildLogInfo(log));
         } catch (IOException e) {
             Timber.w(e);
         } finally {
@@ -204,9 +186,6 @@ public class ExternalImportService extends IntentService {
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
             dao.cleanup();
         }
-
-        stopForeground(true);
-        stopSelf();
     }
 
     private LogHelper.LogInfo buildLogInfo(@NonNull List<LogHelper.LogEntry> log) {
@@ -219,6 +198,7 @@ public class ExternalImportService extends IntentService {
     }
 
     private void scanFolderRecursive(
+            @NonNull final Context context,
             @NonNull final DocumentFile root,
             @NonNull final FileExplorer explorer,
             @NonNull final List<String> parentNames,
@@ -230,7 +210,7 @@ public class ExternalImportService extends IntentService {
         eventProcessed(2, rootName);
 
         Timber.d(">>>> scan root %s", root.getUri());
-        List<DocumentFile> files = explorer.listDocumentFiles(this, root);
+        List<DocumentFile> files = explorer.listDocumentFiles(context, root);
         List<DocumentFile> subFolders = new ArrayList<>();
         List<DocumentFile> images = new ArrayList<>();
         List<DocumentFile> archives = new ArrayList<>();
@@ -254,12 +234,12 @@ public class ExternalImportService extends IntentService {
                 int nbPicturesInside = explorer.countFiles(subFolders.get(0), ImageHelper.getImageNamesFilter());
                 if (nbPicturesInside > 1) {
                     DocumentFile json = ImportHelper.getFileWithName(jsons, Consts.JSON_FILE_NAME_V2);
-                    library.add(scanChapterFolders(this, root, subFolders, explorer, parentNames, dao, json));
+                    library.add(scanChapterFolders(context, root, subFolders, explorer, parentNames, dao, json));
                 }
                 // Look for archives inside
                 int nbArchivesInside = explorer.countFiles(subFolders.get(0), ArchiveHelper.getArchiveNamesFilter());
                 if (nbArchivesInside > 0) {
-                    List<Content> c = scanForArchives(this, subFolders, explorer, parentNames, dao);
+                    List<Content> c = scanForArchives(context, subFolders, explorer, parentNames, dao);
                     library.addAll(c);
                 }
             }
@@ -267,46 +247,49 @@ public class ExternalImportService extends IntentService {
         if (!archives.isEmpty()) { // We've got an archived book
             for (DocumentFile archive : archives) {
                 DocumentFile json = ImportHelper.getFileWithName(jsons, archive.getName());
-                Content c = scanArchive(this, root, archive, parentNames, StatusContent.EXTERNAL, dao, json);
+                Content c = scanArchive(context, root, archive, parentNames, StatusContent.EXTERNAL, dao, json);
                 if (!c.getStatus().equals(StatusContent.IGNORED)) library.add(c);
             }
         }
         if (images.size() > 2) { // We've got a book
             DocumentFile json = ImportHelper.getFileWithName(jsons, Consts.JSON_FILE_NAME_V2);
-            library.add(scanBookFolder(this, root, explorer, parentNames, StatusContent.EXTERNAL, dao, images, json));
+            library.add(scanBookFolder(context, root, explorer, parentNames, StatusContent.EXTERNAL, dao, images, json));
         }
 
         // Go down one level
         List<String> newParentNames = new ArrayList<>(parentNames);
         newParentNames.add(rootName);
         for (DocumentFile subfolder : subFolders)
-            scanFolderRecursive(subfolder, explorer, newParentNames, library, dao);
+            scanFolderRecursive(context, subfolder, explorer, newParentNames, library, dao);
     }
 
     @Nullable
-    private Uri createJsonFileFor(@NonNull final Content c, @NonNull final FileExplorer explorer) throws IOException {
-        if (null == c.getStorageUri() || c.getStorageUri().isEmpty()) return null;
+    private Uri createJsonFileFor(
+            @NonNull final Context context,
+            @NonNull final Content content,
+            @NonNull final FileExplorer explorer) throws IOException {
+        if (null == content.getStorageUri() || content.getStorageUri().isEmpty()) return null;
 
         // Check if the storage URI is valid
         DocumentFile contentFolder;
-        if (c.isArchive()) {
-            contentFolder = FileHelper.getFolderFromTreeUriString(this, c.getArchiveLocationUri());
+        if (content.isArchive()) {
+            contentFolder = FileHelper.getFolderFromTreeUriString(context, content.getArchiveLocationUri());
         } else {
-            contentFolder = FileHelper.getFolderFromTreeUriString(this, c.getStorageUri());
+            contentFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         }
         if (null == contentFolder) return null;
 
         // If a JSON file already exists at that location, use it as is, don't overwrite it
         String jsonName;
-        if (c.isArchive()) {
-            DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(this, c.getStorageUri());
+        if (content.isArchive()) {
+            DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
             jsonName = FileHelper.getFileNameWithoutExtension(StringHelper.protect(archiveFile.getName())) + ".json";
         } else {
             jsonName = Consts.JSON_FILE_NAME_V2;
         }
-        DocumentFile jsonFile = explorer.findFile(this, contentFolder, jsonName);
+        DocumentFile jsonFile = explorer.findFile(context, contentFolder, jsonName);
         if (jsonFile != null && jsonFile.exists()) return jsonFile.getUri();
 
-        return JsonHelper.jsonToFile(this, JsonContent.fromEntity(c), JsonContent.class, contentFolder, jsonName).getUri();
+        return JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, contentFolder, jsonName).getUri();
     }
 }
