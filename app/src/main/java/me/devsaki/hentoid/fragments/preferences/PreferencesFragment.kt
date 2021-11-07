@@ -36,7 +36,7 @@ import me.devsaki.hentoid.workers.ImportWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
 
 
-class PreferenceFragment : PreferenceFragmentCompat(),
+class PreferencesFragment : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var viewModel: PreferencesViewModel
@@ -45,8 +45,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     companion object {
         private const val KEY_ROOT = "root"
 
-        fun newInstance(rootKey: String?): PreferenceFragment {
-            val fragment = PreferenceFragment()
+        fun newInstance(rootKey: String?): PreferencesFragment {
+            val fragment = PreferencesFragment()
             if (rootKey != null) {
                 val args = Bundle()
                 args.putCharSequence(KEY_ROOT, rootKey)
@@ -185,7 +185,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         }
 
     override fun onNavigateToScreen(preferenceScreen: PreferenceScreen) {
-        val preferenceFragment = PreferenceFragment().withArguments {
+        val preferenceFragment = PreferencesFragment().withArguments {
             putString(ARG_PREFERENCE_ROOT, preferenceScreen.key)
         }
 
