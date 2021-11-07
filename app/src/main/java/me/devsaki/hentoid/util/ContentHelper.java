@@ -747,8 +747,8 @@ public final class ContentHelper {
         if (s.startsWith("0")) beginIndex = -1;
 
         for (int i = 0; i < s.length(); i++) {
+            if ('.' == s.charAt(i)) return (-1 == beginIndex) ? "0" : s.substring(beginIndex, i);
             if (-1 == beginIndex && s.charAt(i) != '0') beginIndex = i;
-            if ('.' == s.charAt(i)) return s.substring(beginIndex, i);
         }
 
         return (-1 == beginIndex) ? "0" : s.substring(beginIndex);
@@ -760,7 +760,7 @@ public final class ContentHelper {
      * @param s String to be cleaned
      * @return Input string, without leading zeroes and extension
      */
-    private static String removeLeadingZeroesAndExtensionCached(String s) {
+    private static String removeLeadingZeroesAndExtensionCached(@NonNull final String s) {
         if (fileNameMatchCache.containsKey(s)) return fileNameMatchCache.get(s);
         else {
             String result = removeLeadingZeroesAndExtension(s);
