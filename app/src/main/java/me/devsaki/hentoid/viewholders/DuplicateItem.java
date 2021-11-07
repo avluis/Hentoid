@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.viewholders;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -11,7 +14,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -33,7 +35,6 @@ import com.mikepenz.fastadapter.items.AbstractItem;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
@@ -50,18 +51,12 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
 public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder> {
 
-    private static final int ITEM_HORIZONTAL_MARGIN_PX;
     private static final RequestOptions glideRequestOptions;
 
     @IntDef({ViewType.MAIN, ViewType.DETAILS})
@@ -76,6 +71,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
     int viewType;
     private final boolean isEmpty;
     private final boolean isReferenceItem;
+    private final boolean canDelete;
 
     private int nbDuplicates = 0;
     private Float titleScore = -1f;
@@ -87,12 +83,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
 
     static {
         Context context = HentoidApp.getInstance();
-
-        int screenWidthPx = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels - (2 * (int) context.getResources().getDimension(R.dimen.default_cardview_margin));
-        int gridHorizontalWidthPx = (int) context.getResources().getDimension(R.dimen.card_grid_width);
-        int nbItems = (int) Math.floor(screenWidthPx * 1f / gridHorizontalWidthPx);
-        int remainingSpacePx = screenWidthPx % gridHorizontalWidthPx;
-        ITEM_HORIZONTAL_MARGIN_PX = remainingSpacePx / (nbItems * 2);
 
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
@@ -120,10 +110,12 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 keep = result.getKeep();
                 isBeingDeleted = result.isBeingDeleted();
             }
+            canDelete = (content != null && (!content.getStatus().equals(StatusContent.EXTERNAL) || Preferences.isDeleteExternalLibrary()));
             nbDuplicates = result.getNbDuplicates();
         } else {
             setIdentifier(Helper.generateIdForPlaceholder());
             content = null;
+            canDelete = false;
         }
         isReferenceItem = (titleScore > 1f);
     }
@@ -176,6 +168,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         // Specific to details screen
         private TextView tvLaunchCode;
         private Group scores;
+        private Group keepDeleteGroup;
         private TextView titleScore;
         private TextView coverScore;
         private TextView artistScore;
@@ -203,6 +196,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             } else if (viewType == ViewType.DETAILS) {
                 tvLaunchCode = itemView.findViewById(R.id.tvLaunchCode);
                 scores = itemView.findViewById(R.id.scores);
+                keepDeleteGroup = itemView.findViewById(R.id.keep_delete_group);
                 titleScore = itemView.findViewById(R.id.title_score);
                 coverScore = itemView.findViewById(R.id.cover_score);
                 artistScore = itemView.findViewById(R.id.artist_score);
@@ -246,15 +240,6 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
                 baseLayout.startAnimation(new BlinkAnimation(500, 250));
             else
                 baseLayout.clearAnimation();
-
-            if (Preferences.Constant.LIBRARY_DISPLAY_GRID == Preferences.getLibraryDisplay()) {
-                ViewGroup.LayoutParams layoutParams = baseLayout.getLayoutParams();
-                if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
-                    ((ViewGroup.MarginLayoutParams) layoutParams).setMarginStart(ITEM_HORIZONTAL_MARGIN_PX);
-                    ((ViewGroup.MarginLayoutParams) layoutParams).setMarginEnd(ITEM_HORIZONTAL_MARGIN_PX);
-                }
-                baseLayout.setLayoutParams(layoutParams);
-            }
         }
 
         private void attachCover(@NonNull final Content content) {
@@ -267,43 +252,31 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
 
             ivCover.setVisibility(View.VISIBLE);
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-            if (thumbLocation.startsWith("http")
-                    && content.getDownloadParams() != null
-                    && content.getDownloadParams().length() > 2 // Avoid empty and "{}"
-                    && content.getDownloadParams().contains(HttpHelper.HEADER_COOKIE_KEY)) {
+            if (thumbLocation.startsWith("http")) {
+                String cookieStr = null;
+                String referer = null;
 
-                Map<String, String> downloadParams = null;
-                try {
-                    downloadParams = JsonHelper.jsonToObject(content.getDownloadParams(), JsonHelper.MAP_STRINGS);
-                } catch (IOException e) {
-                    Timber.w(e);
+                // Quickly skip JSON deserialization if there are no cookies in downloadParams
+                String downloadParamsStr = content.getDownloadParams();
+                if (downloadParamsStr != null && downloadParamsStr.contains(HttpHelper.HEADER_COOKIE_KEY)) {
+                    Map<String, String> downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr);
+                    cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                    referer = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
                 }
+                if (null == cookieStr) cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
+                if (null == referer) referer = content.getGalleryUrl();
 
-                if (downloadParams != null && downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
-                    String cookiesStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                    String userAgent = content.getSite().getUserAgent();
-                    if (cookiesStr != null) {
-                        LazyHeaders.Builder builder = new LazyHeaders.Builder()
-                                .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookiesStr)
-                                .addHeader(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl())
-                                .addHeader(HttpHelper.HEADER_USER_AGENT, userAgent);
+                LazyHeaders.Builder builder = new LazyHeaders.Builder()
+                        .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
+                        .addHeader(HttpHelper.HEADER_REFERER_KEY, referer)
+                        .addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
 
-                        GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
-                        Glide.with(ivCover)
-                                .load(glideUrl)
-                                .apply(glideRequestOptions)
-                                .into(ivCover);
-                        return;
-                    }
-                }
-            }
-
-            if (thumbLocation.startsWith("http"))
+                GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
                 Glide.with(ivCover)
-                        .load(thumbLocation)
+                        .load(glideUrl)
                         .apply(glideRequestOptions)
                         .into(ivCover);
-            else
+            } else
                 Glide.with(ivCover)
                         .load(Uri.parse(thumbLocation))
                         .apply(glideRequestOptions)
@@ -406,36 +379,43 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             if (viewDetails != null)
                 viewDetails.setText(context.getResources().getString(R.string.duplicate_count, item.nbDuplicates + 1));
 
-            // Keep and delete buttons
-            if (keepButton != null) {
-                @ColorInt int targetColor = (item.keep) ?
-                        ThemeHelper.getColor(context, R.color.secondary_light) :
-                        ContextCompat.getColor(context, R.color.medium_gray);
-                keepButton.setTextColor(targetColor);
-                Drawable[] drawables = keepButton.getCompoundDrawablesRelative();
-                if (drawables[0] != null) {
-                    drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
+            if (item.canDelete) {
+                if (keepDeleteGroup != null) keepDeleteGroup.setVisibility(View.VISIBLE);
+
+                // Keep and delete buttons
+                if (keepButton != null) {
+                    @ColorInt int targetColor = (item.keep) ?
+                            ThemeHelper.getColor(context, R.color.secondary_light) :
+                            ContextCompat.getColor(context, R.color.medium_gray);
+                    keepButton.setTextColor(targetColor);
+                    Drawable[] drawables = keepButton.getCompoundDrawablesRelative();
+                    if (drawables[0] != null) {
+                        drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
+                    }
+                    keepButton.setOnClickListener(v -> {
+                        keepDeleteSwitch.setChecked(true);
+                        keepDeleteSwitch.callOnClick();
+                    });
                 }
-                keepButton.setOnClickListener(v -> {
-                    keepDeleteSwitch.setChecked(true);
-                    keepDeleteSwitch.callOnClick();
-                });
-            }
-            if (deleteButton != null) {
-                @ColorInt int targetColor = (!item.keep) ?
-                        ThemeHelper.getColor(context, R.color.secondary_light) :
-                        ContextCompat.getColor(context, R.color.medium_gray);
-                deleteButton.setTextColor(targetColor);
-                Drawable[] drawables = deleteButton.getCompoundDrawablesRelative();
-                if (drawables[0] != null) {
-                    drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
+                if (deleteButton != null) {
+                    @ColorInt int targetColor = (!item.keep) ?
+                            ThemeHelper.getColor(context, R.color.secondary_light) :
+                            ContextCompat.getColor(context, R.color.medium_gray);
+                    deleteButton.setTextColor(targetColor);
+                    Drawable[] drawables = deleteButton.getCompoundDrawablesRelative();
+                    if (drawables[0] != null) {
+                        drawables[0].setColorFilter(targetColor, PorterDuff.Mode.SRC_IN);
+                    }
+                    deleteButton.setOnClickListener(v -> {
+                        keepDeleteSwitch.setChecked(false);
+                        keepDeleteSwitch.callOnClick();
+                    });
                 }
-                deleteButton.setOnClickListener(v -> {
-                    keepDeleteSwitch.setChecked(false);
-                    keepDeleteSwitch.callOnClick();
-                });
+                if (keepDeleteSwitch != null) keepDeleteSwitch.setChecked(item.keep);
+            } else {
+                if (keepDeleteGroup != null) keepDeleteGroup.setVisibility(View.INVISIBLE);
+                if (keepDeleteSwitch != null) keepDeleteSwitch.setChecked(true);
             }
-            if (keepDeleteSwitch != null) keepDeleteSwitch.setChecked(item.keep);
         }
 
         public View getViewDetailsButton() {
