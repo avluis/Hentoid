@@ -739,6 +739,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      */
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">>Library changed (groups) ! Size=%s", result.size());
+        if (!enabled) return;
 
         // Refresh groups (new content -> updated book count or new groups)
         // TODO do we really want to do that, especially when deleting content ?

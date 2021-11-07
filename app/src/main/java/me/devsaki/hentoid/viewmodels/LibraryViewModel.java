@@ -32,6 +32,7 @@ import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
@@ -269,15 +270,18 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void setGroup(Group group) {
-        searchManager.setGroup(group);
+        Group currentGroup = this.group.getValue();
+        if (Objects.equals(group, currentGroup)) return;
+
         this.group.postValue(group);
+        searchManager.setGroup(group);
         newSearch.setValue(true);
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?
         doSearchContent();
     }
 
-    public void setGrouping(Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
+    public void setGrouping(@NonNull final Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
         if (grouping.equals(Grouping.FLAT)) {
             setGroup(null);
             return;

@@ -162,6 +162,7 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem splitMenu;
 
     private ViewPager2 viewPager;
+    private FragmentStateAdapter pagerAdapter;
 
 
     // === NOTIFICATIONS
@@ -305,10 +306,13 @@ public class LibraryActivity extends BaseActivity {
         }
 
         Preferences.registerPrefsChangedListener(prefsListener);
+        pagerAdapter = new LibraryPagerAdapter(this);
 
-        initUI();
         initToolbar();
         initSelectionToolbar();
+        initUI();
+        updateToolbar();
+        updateSelectionToolbar(0, 0, 0);
 
         onCreated();
         sortCommandsAutoHide = new Debouncer<>(this, 3000, this::hideSearchSortBar);
@@ -435,14 +439,16 @@ public class LibraryActivity extends BaseActivity {
                 updateSelectionToolbar(0, 0, 0);
             }
         });
+        viewPager.setAdapter(pagerAdapter);
 
         updateDisplay();
     }
 
     private void updateDisplay() {
-        FragmentStateAdapter pagerAdapter = new LibraryPagerAdapter(this);
-        viewPager.setAdapter(pagerAdapter);
         pagerAdapter.notifyDataSetChanged();
+        if (Preferences.getGroupingDisplay().equals(Grouping.FLAT)) { // Display books right away
+            viewPager.setCurrentItem(1);
+        }
         enableCurrentFragment();
     }
 
@@ -514,8 +520,6 @@ public class LibraryActivity extends BaseActivity {
                 return true;
             }
         });
-        // Update icons visibility
-        updateToolbar();
     }
 
     public void initFragmentToolbars(
@@ -582,7 +586,6 @@ public class LibraryActivity extends BaseActivity {
         }
         return true;
     }
-
 
     private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
         if (showSort != null && showSort && View.VISIBLE == sortFieldButton.getVisibility()) {
@@ -674,8 +677,6 @@ public class LibraryActivity extends BaseActivity {
         coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
         mergeMenu = selectionToolbar.getMenu().findItem(R.id.action_merge);
         splitMenu = selectionToolbar.getMenu().findItem(R.id.action_split);
-
-        updateSelectionToolbar(0, 0, 0);
     }
 
     private Grouping getGroupingFromMenuId(@IdRes int menuId) {
@@ -913,7 +914,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private boolean isGroupDisplayed() {
-        return (0 == viewPager.getCurrentItem() && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
+        return 0 == viewPager.getCurrentItem();
     }
 
     public void goBackToGroups() {
@@ -1131,6 +1132,7 @@ public class LibraryActivity extends BaseActivity {
      */
 
     private static class LibraryPagerAdapter extends FragmentStateAdapter {
+
         LibraryPagerAdapter(FragmentActivity fa) {
             super(fa);
         }
@@ -1138,20 +1140,16 @@ public class LibraryActivity extends BaseActivity {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
-            if (Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
-                return new LibraryContentFragment();
+            if (0 == position) {
+                return new LibraryGroupsFragment();
             } else {
-                if (0 == position) {
-                    return new LibraryGroupsFragment();
-                } else {
-                    return new LibraryContentFragment();
-                }
+                return new LibraryContentFragment();
             }
         }
 
         @Override
         public int getItemCount() {
-            return (Grouping.FLAT.equals(Preferences.getGroupingDisplay())) ? 1 : 2;
+            return 2;
         }
     }
 }
