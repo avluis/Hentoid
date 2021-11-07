@@ -461,6 +461,7 @@
         <activity
             android:name=".activities.ImageViewerActivity"
             android:label="Image Viewer"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.Light.Monochrome">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
