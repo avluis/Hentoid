@@ -642,8 +642,10 @@ public class ImportHelper {
      *
      * @param content Content to remove the "external" attribute flag, if it has been set
      */
-    public static void removeExternalAttribute(@NonNull final Content content) {
+    public static void removeExternalAttributes(@NonNull final Content content) {
         content.putAttributes(Stream.of(content.getAttributes()).filterNot(a -> a.getName().equalsIgnoreCase(EXTERNAL_LIB_TAG)).toList());
+        if (content.getStatus().equals(StatusContent.EXTERNAL))
+            content.setStatus(StatusContent.DOWNLOADED);
     }
 
     /**
