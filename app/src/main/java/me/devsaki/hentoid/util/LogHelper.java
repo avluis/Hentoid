@@ -60,6 +60,13 @@ public class LogHelper {
             this.isError = false;
         }
 
+        public LogEntry(@NonNull String message, boolean isError) {
+            this.timestamp = Instant.now();
+            this.message = message;
+            this.chapter = 1;
+            this.isError = isError;
+        }
+
         public LogEntry(@NonNull String message, int chapter, boolean isError) {
             this.timestamp = Instant.now();
             this.message = message;
@@ -183,6 +190,7 @@ public class LogHelper {
             logStr.append("No activity to report - ").append(info.noDataMessage).append(LINE_SEPARATOR);
         else {
             // Log beginning, end and duration
+            // Unfortunately, Comparator.comparing is API24...
             Instant beginning = Stream.of(info.entries).withoutNulls().min((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
             Instant end = Stream.of(info.entries).withoutNulls().max((a, b) -> a.timestamp.compareTo(b.timestamp)).get().timestamp;
             long durationMs = end.toEpochMilli() - beginning.toEpochMilli();
