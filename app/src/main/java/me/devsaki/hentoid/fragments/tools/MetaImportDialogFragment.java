@@ -208,7 +208,6 @@ public class MetaImportDialogFragment extends DialogFragment {
     }
 
     // Gray out run button if no option is selected
-    // TODO create a custom style to visually gray out the button when it's disabled
     private void refreshDisplay() {
         runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked() || bookmarksChk.isChecked());
     }
