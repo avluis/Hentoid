@@ -364,6 +364,7 @@
     <string name="group_new_name">New custom group name</string>
     <string name="group_remove">Detach from current group</string>
     <string name="group_name_exists">Group with that name already exists!</string>
+    <string name="group_name_empty">Group name is empty!</string>
     <plurals name="group_delete_selected_group">
         <item quantity="one">Delete group only</item>
         <item quantity="other">Delete groups only</item>
