@@ -118,7 +118,6 @@ public class MetaExportDialogFragment extends DialogFragment {
     }
 
     // Gray out run button if no option is selected
-    // TODO create a custom style to visually gray out the run button when it's disabled
     private void refreshDisplay() {
         runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked() || bookmarksChk.isChecked());
         favsChk.setVisibility(libraryChk.isChecked() ? View.VISIBLE : View.GONE);
