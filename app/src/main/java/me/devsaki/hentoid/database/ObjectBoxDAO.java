@@ -461,17 +461,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.countGroupsFor(grouping);
     }
 
-    public LiveData<Integer> countLiveGroupsFor(@NonNull final Grouping grouping) {
-        // This is not optimal because it fetches all the content and returns its size only
-        // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
-        // See https://github.com/objectbox/objectbox-java/issues/776
-        ObjectBoxLiveData<Group> livedata = new ObjectBoxLiveData<>(db.selectGroupsByGroupingQ(grouping.getId()));
-
-        MediatorLiveData<Integer> result = new MediatorLiveData<>();
-        result.addSource(livedata, v -> result.setValue(v.size()));
-        return result;
-    }
-
     public void deleteGroup(long groupId) {
         db.deleteGroup(groupId);
     }

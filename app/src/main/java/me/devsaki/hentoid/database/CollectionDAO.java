@@ -119,8 +119,6 @@ public interface CollectionDAO {
 
     long countGroupsFor(Grouping grouping);
 
-    LiveData<Integer> countLiveGroupsFor(@NonNull final Grouping grouping);
-
     long insertGroup(Group group);
 
     void deleteGroup(long groupId);

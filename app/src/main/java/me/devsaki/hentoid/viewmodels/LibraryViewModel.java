@@ -85,13 +85,12 @@ public class LibraryViewModel extends AndroidViewModel {
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
     private final LiveData<Integer> totalContent;
-    private LiveData<Integer> currentGroupCountSource;
-    private final MediatorLiveData<Integer> totalGroups = new MediatorLiveData<>();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
     // Groups data
     private final MutableLiveData<Group> group = new MutableLiveData<>();
     private LiveData<List<Group>> currentGroupsSource;
     private final MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
+    private final MediatorLiveData<Integer> currentGroupTotal = new MediatorLiveData<>();
     private final MutableLiveData<Boolean> isCustomGroupingAvailable = new MutableLiveData<>();     // True if there's at least one existing custom group; false instead
 
     // Updated whenever a new search is performed
@@ -149,7 +148,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
     @NonNull
     public LiveData<Integer> getTotalGroup() {
-        return totalGroups;
+        return currentGroupTotal;
     }
 
     @NonNull
@@ -289,11 +288,17 @@ public class LibraryViewModel extends AndroidViewModel {
 
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
         currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
-        groups.addSource(currentGroupsSource, groups::setValue);
+        groups.addSource(currentGroupsSource, this::onGroupsChanged);
+    }
 
-        if (currentGroupCountSource != null) totalGroups.removeSource(currentGroupCountSource);
-        currentGroupCountSource = dao.countLiveGroupsFor(grouping);
-        totalGroups.addSource(currentGroupCountSource, totalGroups::setValue);
+    private void onGroupsChanged(@NonNull final List<Group> newGroups) {
+        groups.setValue(newGroups);
+        currentGroupTotal.postValue(newGroups.size());
+        refreshCustomGroupingAvailable();
+    }
+
+    public void refreshCustomGroupingAvailable() {
+        isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
     }
 
     // =========================
@@ -578,6 +583,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
+        // TODO update isCustomGroupingAvailable when the whole delete job is complete
     }
 
     public void purgeItem(@NonNull final Content content) {
@@ -835,10 +841,6 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Timber::e
                         )
         );
-    }
-
-    public void refreshCustomGroupingAvailable() {
-        isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
     }
 
     public void resetCompletedFilter() {
