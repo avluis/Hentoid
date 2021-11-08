@@ -754,7 +754,7 @@ public class LibraryActivity extends BaseActivity {
             case Preferences.Key.SD_STORAGE_URI:
             case Preferences.Key.EXTERNAL_LIBRARY_URI:
                 Preferences.setGroupingDisplay(Grouping.FLAT.getId());
-                viewModel.setGroup(null);
+                viewModel.setGroup(null, true);
                 updateDisplay();
                 break;
             case Preferences.Key.GROUPING_DISPLAY:
@@ -928,7 +928,7 @@ public class LibraryActivity extends BaseActivity {
 
     public void showBooksInGroup(me.devsaki.hentoid.database.domains.Group group) {
         enableFragment(1);
-        viewModel.setGroup(group);
+        viewModel.setGroup(group, true);
         viewPager.setCurrentItem(1);
     }
 

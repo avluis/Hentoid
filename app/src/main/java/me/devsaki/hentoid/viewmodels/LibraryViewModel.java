@@ -268,9 +268,9 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchContent();
     }
 
-    public void setGroup(Group group) {
+    public void setGroup(Group group, boolean forceRefresh) {
         Group currentGroup = this.group.getValue();
-        if (Objects.equals(group, currentGroup)) return;
+        if (!forceRefresh && Objects.equals(group, currentGroup)) return;
 
         this.group.postValue(group);
         searchManager.setGroup(group);
@@ -282,7 +282,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void setGrouping(@NonNull final Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
         if (grouping.equals(Grouping.FLAT)) {
-            setGroup(null);
+            setGroup(null, false);
             return;
         }
 
