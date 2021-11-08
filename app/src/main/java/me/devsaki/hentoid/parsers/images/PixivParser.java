@@ -67,7 +67,7 @@ public class PixivParser extends BaseImageListParser {
             if (content.getUrl().contains("/series/")) return parseSeries(content, cookieStr);
             else if (content.getUrl().contains("/artworks/"))
                 return parseIllust(content, cookieStr);
-            else if (content.getUrl().contains("user/"))
+            else if (content.getUrl().contains("users/"))
                 return parseUser(content, cookieStr);
         } catch (Exception e) {
             Timber.w(e);
@@ -141,6 +141,8 @@ public class PixivParser extends BaseImageListParser {
             for (ImageFile img : chapterImages)
                 img.setOrder(order++).computeName(4).setChapter(ch);
 
+            result.addAll(chapterImages);
+
             progress.advance();
         }
 
@@ -195,6 +197,8 @@ public class PixivParser extends BaseImageListParser {
             List<ImageFile> chapterImages = illustMetadata.getImageFiles();
             for (ImageFile img : chapterImages)
                 img.setOrder(imgOrder++).computeName(4).setChapter(chp);
+
+            result.addAll(chapterImages);
 
             progress.advance();
         }

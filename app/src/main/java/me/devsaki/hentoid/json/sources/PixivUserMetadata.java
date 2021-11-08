@@ -64,7 +64,7 @@ public class PixivUserMetadata {
         content.setTitle(StringHelper.removeNonPrintableChars(data.getName()));
         content.setUniqueSiteId(data.getId());
 
-        String urlValue = "user/" + data.getId();
+        String urlValue = "users/" + data.getId();
         content.setUrl(urlValue);
 
         content.setCoverImageUrl(data.getCoverUrl());

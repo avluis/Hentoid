@@ -453,7 +453,11 @@
                     android:scheme="https" />
                 <data
                     android:host="pixiv.net"
-                    android:pathPattern="/user/..*/series/..*"
+                    android:pathPattern="/..*/user/..*/series/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="pixiv.net"
+                    android:pathPattern="/..*/users/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>

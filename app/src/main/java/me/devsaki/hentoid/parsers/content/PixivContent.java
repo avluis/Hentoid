@@ -39,6 +39,7 @@ public class PixivContent extends BaseContentParser {
                     id = uri.getQueryParameter("illust_id");
                 break;
             case "user":  // User
+            case "users":
                 if (!StringHelper.isNumeric(id))
                     id = uri.getQueryParameter("id");
                 break;
@@ -66,6 +67,7 @@ public class PixivContent extends BaseContentParser {
                             return seriesData.update(content, url, updateImages);
                         break;
                     case "user":
+                    case "users":
                         PixivUserMetadata userData = PixivServer.API.getUserMetadata(id, cookieStr).execute().body();
                         if (userData != null) return userData.update(content, url, updateImages);
                         break;
