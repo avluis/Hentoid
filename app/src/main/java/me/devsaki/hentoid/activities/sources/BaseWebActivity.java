@@ -923,10 +923,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private void goToQueue() {
         Intent intent = new Intent(this, QueueActivity.class);
 
-        QueueActivityBundle.Builder builder = new QueueActivityBundle.Builder();
-        builder.setContentHash(currentContent.uniqueHash());
-        builder.setIsErrorsTab(currentContent.getStatus().equals(StatusContent.ERROR));
-        intent.putExtras(builder.getBundle());
+        if (currentContent != null) {
+            QueueActivityBundle.Builder builder = new QueueActivityBundle.Builder();
+            builder.setContentHash(currentContent.uniqueHash());
+            builder.setIsErrorsTab(currentContent.getStatus().equals(StatusContent.ERROR));
+            intent.putExtras(builder.getBundle());
+        }
 
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
@@ -1118,7 +1120,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             for (ImageFile img : onlineImgs) {
                 maxOnlineImageOrder = Math.max(maxOnlineImageOrder, img.getOrder());
                 minOnlineImageOrder = Math.min(minOnlineImageOrder, img.getOrder());
-                if (null != img.getLinkedChapter()) positionMap.put(img.getOrder(), img.getLinkedChapter());
+                if (null != img.getLinkedChapter())
+                    positionMap.put(img.getOrder(), img.getLinkedChapter());
             }
 
             List<Chapter> storedChapters = storedContent.getChapters();
