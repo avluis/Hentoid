@@ -228,12 +228,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
     public void onEnable() {
         enabled = true;
-        callback.setEnabled(true);
+        if (callback != null) callback.setEnabled(true);
     }
 
     public void onDisable() {
         enabled = false;
-        callback.setEnabled(false);
+        if (callback != null) callback.setEnabled(false);
     }
 
     /**

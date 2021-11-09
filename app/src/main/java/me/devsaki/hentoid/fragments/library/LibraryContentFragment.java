@@ -337,12 +337,12 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     public void onEnable() {
         enabled = true;
-        callback.setEnabled(true);
+        if (callback != null) callback.setEnabled(true);
     }
 
     public void onDisable() {
         enabled = false;
-        callback.setEnabled(false);
+        if (callback != null) callback.setEnabled(false);
     }
 
     /**
