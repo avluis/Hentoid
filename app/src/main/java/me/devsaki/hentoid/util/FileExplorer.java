@@ -58,10 +58,12 @@ public class FileExplorer implements Closeable {
         documentIdCache.clear();
 
         // ContentProviderClient.close only available on API level 24+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            client.close();
-        else
-            client.release();
+        if (client != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+                client.close();
+            else
+                client.release();
+        }
     }
 
 

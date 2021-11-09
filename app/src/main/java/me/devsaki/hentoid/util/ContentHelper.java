@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -54,6 +55,7 @@ import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.DuplicateEntry;
 import me.devsaki.hentoid.database.domains.Group;
@@ -65,14 +67,15 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
-import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.util.exception.FileNotProcessedException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
@@ -94,6 +97,9 @@ public final class ContentHelper {
         int TOP = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
         int BOTTOM = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
     }
+
+    public static final String KEY_DL_PARAMS_NB_CHAPTERS = "nbChapters";
+    public static final String KEY_DL_PARAMS_UGOIRA_FRAMES = "ugo_frames";
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
     private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
@@ -184,19 +190,24 @@ public final class ContentHelper {
     /**
      * Create the given Content's JSON file and populate it with its current values
      *
+     * @param context Context to use
      * @param content Content whose JSON file to create
+     * @return Created JSON file, or null if it couldn't be created
      */
-    public static void createContentJson(@NonNull Context context, @NonNull Content content) {
+    @Nullable
+    public static DocumentFile createContentJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
-        if (content.isArchive()) return; // Keep that as is, we can't find the parent folder anyway
+        if (content.isArchive())
+            return null; // Keep that as is, we can't find the parent folder anyway
 
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
-        if (null == folder) return;
+        if (null == folder) return null;
         try {
-            JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            return JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getStorageUri());
         }
+        return null;
     }
 
     /**
@@ -244,7 +255,12 @@ public final class ContentHelper {
      * @param searchParams Current search parameters (so that the next/previous book feature
      *                     is faithful to the library screen's order)
      */
-    public static boolean openHentoidViewer(@NonNull Context context, @NonNull Content content, int pageNumber, Bundle searchParams) {
+    public static boolean openHentoidViewer(
+            @NonNull Context context,
+            @NonNull Content content,
+            int pageNumber,
+            Bundle searchParams,
+            boolean forceShowGallery) {
         // Check if the book has at least its own folder
         if (content.getStorageUri().isEmpty()) return false;
 
@@ -254,6 +270,7 @@ public final class ContentHelper {
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
         if (pageNumber > -1) builder.setPageNumber(pageNumber);
+        builder.setForceShowGallery(forceShowGallery);
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);
         viewer.putExtras(builder.getBundle());
@@ -318,9 +335,9 @@ public final class ContentHelper {
      * @param context Context to be used
      * @param dao     DAO to be used
      * @param content Content to be removed
-     * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
+     * @throws ContentNotProcessedException in case an issue prevents the content from being actually removed
      */
-    public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
+    public static void removeContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
         // Remove from DB
         // NB : start with DB to have a LiveData feedback, because file removal can take much time
@@ -329,12 +346,12 @@ public final class ContentHelper {
         if (content.isArchive()) { // Remove an archive
             DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
             if (null == archive)
-                throw new FileNotRemovedException(content, "Failed to find archive " + content.getStorageUri());
+                throw new FileNotProcessedException(content, "Failed to find archive " + content.getStorageUri());
 
             if (archive.delete()) {
                 Timber.i("Archive removed : %s", content.getStorageUri());
             } else {
-                throw new FileNotRemovedException(content, "Failed to delete archive " + content.getStorageUri());
+                throw new FileNotProcessedException(content, "Failed to delete archive " + content.getStorageUri());
             }
 
             // Remove the cover stored in the app's persistent folder
@@ -346,12 +363,12 @@ public final class ContentHelper {
             // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
             DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
             if (null == folder)
-                throw new FileNotRemovedException(content, "Failed to find directory " + content.getStorageUri());
+                throw new FileNotProcessedException(content, "Failed to find directory " + content.getStorageUri());
 
             if (folder.delete()) {
                 Timber.i("Directory removed : %s", content.getStorageUri());
             } else {
-                throw new FileNotRemovedException(content, "Failed to delete directory " + content.getStorageUri());
+                throw new FileNotProcessedException(content, "Failed to delete directory " + content.getStorageUri());
             }
         }
     }
@@ -362,9 +379,9 @@ public final class ContentHelper {
      * @param context Context to be used
      * @param dao     DAO to be used
      * @param content Content to be removed
-     * @throws ContentNotRemovedException in case an issue prevents the content from being actually removed
+     * @throws ContentNotProcessedException in case an issue prevents the content from being actually removed
      */
-    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotRemovedException {
+    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
         // Check if the content is on top of the queue; if so, send a CANCEL event
@@ -730,8 +747,8 @@ public final class ContentHelper {
         if (s.startsWith("0")) beginIndex = -1;
 
         for (int i = 0; i < s.length(); i++) {
+            if ('.' == s.charAt(i)) return (-1 == beginIndex) ? "0" : s.substring(beginIndex, i);
             if (-1 == beginIndex && s.charAt(i) != '0') beginIndex = i;
-            if ('.' == s.charAt(i)) return s.substring(beginIndex, i);
         }
 
         return (-1 == beginIndex) ? "0" : s.substring(beginIndex);
@@ -743,7 +760,7 @@ public final class ContentHelper {
      * @param s String to be cleaned
      * @return Input string, without leading zeroes and extension
      */
-    private static String removeLeadingZeroesAndExtensionCached(String s) {
+    private static String removeLeadingZeroesAndExtensionCached(@NonNull final String s) {
         if (fileNameMatchCache.containsKey(s)) return fileNameMatchCache.get(s);
         else {
             String result = removeLeadingZeroesAndExtension(s);
@@ -904,14 +921,15 @@ public final class ContentHelper {
 
     /**
      * Launch the web browser for the given site and URL
-     * TODO make sure the URL and the site are compatible
      *
      * @param context   COntext to be used
-     * @param s         Site to navigate to
      * @param targetUrl Url to navigate to
      */
-    public static void launchBrowserFor(@NonNull final Context context, @NonNull final Site s, @NonNull final String targetUrl) {
-        Intent intent = new Intent(context, Content.getWebActivityClass(s));
+    public static void launchBrowserFor(@NonNull final Context context, @NonNull final String targetUrl) {
+        Site targetSite = Site.searchByUrl(targetUrl);
+        if (null == targetSite || targetSite.equals(Site.NONE)) return;
+
+        Intent intent = new Intent(context, Content.getWebActivityClass(targetSite));
 
         BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
         builder.setUrl(targetUrl);
@@ -1005,6 +1023,9 @@ public final class ContentHelper {
                 return reparseFromScratch(content, canonicalUrl);
             else return Optional.empty();
         }
+
+        // Clear existing chapters to avoid issues with extra chapter detection
+        newContent.clearChapters();
 
         // Save cookies for future calls during download
         Map<String, String> params = new HashMap<>();
@@ -1163,12 +1184,13 @@ public final class ContentHelper {
     /**
      * Find the best match for the given Content inside the library and queue
      *
+     * @param context Context to use
      * @param content Content to find the duplicate for
-     *                // TOD update
-     * @param dao     CollectionDao to use
+     * @param pHash   Cover perceptual hash to use as an override for the given Content's cover hash; Long.MIN_VALUE not to override
+     * @param dao     DAO to use
      * @return Pair containing
-     * left side : Best match for the given Content inside the library and queue
-     * Right side : Similarity score (between 0 and 1; 1=100%)
+     * - left side : Best match for the given Content inside the library and queue
+     * - Right side : Similarity score (between 0 and 1; 1=100%)
      */
     @Nullable
     public static ImmutablePair<Content, Float> findDuplicate(
@@ -1334,6 +1356,152 @@ public final class ContentHelper {
         }
         return false;
     }
+
+    /**
+     * Merge the given list of Content into one single new Content with the given title
+     * NB : The Content's of the given list are _not_ removed
+     *
+     * @param context     Context to use
+     * @param contentList List of Content to merge together
+     * @param newTitle    Title of the new merged Content
+     * @param dao         DAO to use
+     * @throws ContentNotProcessedException If something terrible happens
+     */
+    public static void mergeContents(
+            @NonNull Context context,
+            @NonNull List<Content> contentList,
+            @NonNull String newTitle,
+            @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
+        Helper.assertNonUiThread();
+
+        Content firstContent = contentList.get(0);
+
+        // Initiate a new Content
+        Content mergedContent = new Content();
+        mergedContent.setSite(firstContent.getSite());
+        mergedContent.setUrl(firstContent.getUrl());
+        mergedContent.setUniqueSiteId(firstContent.getUniqueSiteId() + "_"); // Not to create a copy of firstContent
+        mergedContent.setDownloadMode(firstContent.getDownloadMode());
+        mergedContent.setTitle(newTitle);
+        mergedContent.setCoverImageUrl(firstContent.getCoverImageUrl());
+        mergedContent.setUploadDate(firstContent.getUploadDate());
+        mergedContent.setDownloadDate(Instant.now().toEpochMilli());
+        mergedContent.setStatus(firstContent.getStatus());
+        mergedContent.setFavourite(firstContent.isFavourite());
+        mergedContent.setBookPreferences(firstContent.getBookPreferences());
+        mergedContent.setManuallyMerged(true);
+
+        // Merge attributes
+        List<Attribute> mergedAttributes = Stream.of(contentList).flatMap(c -> Stream.of(c.getAttributes())).toList();
+        mergedContent.addAttributes(mergedAttributes);
+
+        // Create destination folder for new content
+        DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent);
+        if (null == targetFolder || !targetFolder.exists())
+            throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
+
+        mergedContent.setStorageUri(targetFolder.getUri().toString());
+
+        // Renumber all picture files and dispatch chapters
+        long nbImages = Stream.of(contentList).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
+        int nbMaxDigits = (int) (Math.floor(Math.log10(nbImages)) + 1);
+
+        List<ImageFile> mergedImages = new ArrayList<>();
+        List<Chapter> mergedChapters = new ArrayList<>();
+
+        // Set cover
+        ImageFile firstCover = firstContent.getCover();
+        ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
+        boolean isError = false;
+        try {
+            if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
+                String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
+                Uri newUri = FileHelper.copyFile(
+                        context,
+                        Uri.parse(firstCover.getFileUri()),
+                        targetFolder.getUri(),
+                        firstCover.getMimeType(),
+                        firstCover.getName() + "." + extension);
+                if (newUri != null)
+                    coverPic.setFileUri(newUri.toString());
+                else
+                    Timber.w("Could not move file %s", firstCover.getFileUri());
+            }
+            mergedImages.add(coverPic);
+
+            int chapterOrder = 0;
+            int pictureOrder = 1;
+            int nbProcessedPics = 1;
+            Chapter newChapter = null;
+            for (Content c : contentList) {
+                if (null == c.getImageFiles()) continue;
+                Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
+                contentChapter.setUniqueId(c.getUniqueSiteId());
+                for (ImageFile img : c.getImageFiles()) {
+                    if (!img.isReadable()) continue;
+                    ImageFile newImg = new ImageFile(img);
+                    newImg.setId(0); // Force working on a new picture
+                    newImg.getContent().setTarget(null); // Clear content
+                    newImg.setOrder(pictureOrder++);
+                    newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
+                    Chapter chapLink = newImg.getLinkedChapter();
+                    if (null == chapLink) { // No chapter -> set content chapter
+                        newChapter = contentChapter;
+                    } else if (null == newChapter || (
+                            !chapLink.getUrl().equals(newChapter.getUrl()) && !chapLink.getUniqueId().equals(newChapter.getUniqueId())
+                    )
+                    ) {
+                        newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
+                    }
+                    if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
+                    newImg.setChapter(newChapter);
+
+                    // If exists, move the picture to the merged books's folder
+                    if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
+                        String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
+                        Uri newUri = FileHelper.copyFile(
+                                context,
+                                Uri.parse(img.getFileUri()),
+                                targetFolder.getUri(),
+                                newImg.getMimeType(),
+                                newImg.getName() + "." + extension);
+                        if (newUri != null)
+                            newImg.setFileUri(newUri.toString());
+                        else
+                            Timber.w("Could not move file %s", img.getFileUri());
+                        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, (int) nbImages));
+                    }
+                    mergedImages.add(newImg);
+                }
+            }
+        } catch (IOException e) {
+            Timber.w(e);
+            isError = true;
+        }
+
+        if (!isError) {
+            mergedContent.setImageFiles(mergedImages);
+            mergedContent.setChapters(mergedChapters); // Chapters have to be attached to Content too
+            mergedContent.setQtyPages(mergedImages.size() - 1);
+            mergedContent.computeSize();
+
+            DocumentFile jsonFile = ContentHelper.createContentJson(context, mergedContent);
+            if (jsonFile != null) mergedContent.setJsonUri(jsonFile.getUri().toString());
+
+            // Save new content (incl. non-custom group operations)
+            ContentHelper.addContent(context, dao, mergedContent);
+
+            // Merge custom groups and update
+            // Merged book can be a member of one custom group only
+            Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
+            if (customGroup.isPresent())
+                GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
+            // TODO test custom groups
+        }
+
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
+    }
+
 
     /**
      * Comparator to be used to sort files according to their names

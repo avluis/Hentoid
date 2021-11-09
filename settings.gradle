@@ -1,2 +1,2 @@
-include ':app', ':fakkuLib'
+include ':app'
 include ':app:customssiv'

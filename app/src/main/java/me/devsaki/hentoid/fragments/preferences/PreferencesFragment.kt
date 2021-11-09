@@ -23,8 +23,7 @@ import me.devsaki.hentoid.activities.PinPreferenceActivity
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.database.ObjectBoxDAO
-import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment
-import me.devsaki.hentoid.services.ExternalImportService
+import me.devsaki.hentoid.fragments.ProgressDialogFragment
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.Preferences
@@ -32,11 +31,12 @@ import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.ImportWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
 
 
-class PreferenceFragment : PreferenceFragmentCompat(),
+class PreferencesFragment : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var viewModel: PreferencesViewModel
@@ -45,8 +45,8 @@ class PreferenceFragment : PreferenceFragmentCompat(),
     companion object {
         private const val KEY_ROOT = "root"
 
-        fun newInstance(rootKey: String?): PreferenceFragment {
-            val fragment = PreferenceFragment()
+        fun newInstance(rootKey: String?): PreferencesFragment {
+            val fragment = PreferencesFragment()
             if (rootKey != null) {
                 val args = Bundle()
                 args.putCharSequence(KEY_ROOT, rootKey)
@@ -113,7 +113,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
                 true
             }
             Preferences.Key.EXTERNAL_LIBRARY -> {
-                if (ExternalImportService.isRunning()) {
+                if (ExternalImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
                     LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
@@ -185,7 +185,7 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         }
 
     override fun onNavigateToScreen(preferenceScreen: PreferenceScreen) {
-        val preferenceFragment = PreferenceFragment().withArguments {
+        val preferenceFragment = PreferencesFragment().withArguments {
             putString(ARG_PREFERENCE_ROOT, preferenceScreen.key)
         }
 
@@ -247,38 +247,43 @@ class PreferenceFragment : PreferenceFragmentCompat(),
         val dao = ObjectBoxDAO(activity)
         var searchDisposable = Disposables.empty()
 
-        searchDisposable = Single.fromCallable { dao.selectStoredContentIds(true, false, -1, false) }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { list ->
-                MaterialAlertDialogBuilder(
-                    requireContext(),
-                    ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog)
-                )
-                    .setIcon(R.drawable.ic_warning)
-                    .setCancelable(false)
-                    .setTitle(R.string.app_name)
-                    .setMessage(getString(R.string.pref_ask_delete_all_except_favs, list.size))
-                    .setPositiveButton(
-                        R.string.yes
-                    ) { dialog1: DialogInterface, _: Int ->
-                        dao.cleanup()
-                        dialog1.dismiss()
-                        searchDisposable.dispose()
-                        DeleteProgressDialogFragment.invoke(
-                            parentFragmentManager,
-                            resources.getString(R.string.delete_title)
+        searchDisposable =
+            Single.fromCallable { dao.selectStoredContentIds(true, false, -1, false) }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { list ->
+                    MaterialAlertDialogBuilder(
+                        requireContext(),
+                        ThemeHelper.getIdForCurrentTheme(
+                            requireContext(),
+                            R.style.Theme_Light_Dialog
                         )
-                        viewModel.deleteAllItemsExceptFavourites()
-                    }
-                    .setNegativeButton(
-                        R.string.no
-                    ) { dialog12: DialogInterface, _: Int ->
-                        dao.cleanup()
-                        dialog12.dismiss()
-                    }
-                    .create()
-                    .show()
-            }
+                    )
+                        .setIcon(R.drawable.ic_warning)
+                        .setCancelable(false)
+                        .setTitle(R.string.app_name)
+                        .setMessage(getString(R.string.pref_ask_delete_all_except_favs, list.size))
+                        .setPositiveButton(
+                            R.string.yes
+                        ) { dialog1: DialogInterface, _: Int ->
+                            dao.cleanup()
+                            dialog1.dismiss()
+                            searchDisposable.dispose()
+                            ProgressDialogFragment.invoke(
+                                parentFragmentManager,
+                                resources.getString(R.string.delete_title),
+                                resources.getString(R.string.books)
+                            )
+                            viewModel.deleteAllItemsExceptFavourites()
+                        }
+                        .setNegativeButton(
+                            R.string.no
+                        ) { dialog12: DialogInterface, _: Int ->
+                            dao.cleanup()
+                            dialog12.dismiss()
+                        }
+                        .create()
+                        .show()
+                }
     }
 }

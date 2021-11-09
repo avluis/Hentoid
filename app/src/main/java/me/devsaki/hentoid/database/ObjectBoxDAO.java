@@ -30,6 +30,7 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
@@ -149,6 +150,11 @@ public class ObjectBoxDAO implements CollectionDAO {
         return Single.fromCallable(() -> count(filter))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Override
+    public List<Chapter> selectChapters(long contentId) {
+        return db.selectChapters(contentId);
     }
 
     public LiveData<List<Content>> selectErrorContent() {
@@ -325,6 +331,19 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.deleteErrorRecords(contentId);
     }
 
+    public void insertChapters(@NonNull final List<Chapter> chapters) {
+        db.insertChapters(chapters);
+    }
+
+    public void deleteChapters(@NonNull final Content content) {
+        db.deleteChaptersByContentId(content.getId());
+    }
+
+    @Override
+    public void deleteChapter(@NonNull Chapter chapter) {
+        db.deleteChapter(chapter.getId());
+    }
+
     @Override
     public void clearDownloadParams(long contentId) {
         Content c = db.selectContentById(contentId);
@@ -440,17 +459,6 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public long countGroupsFor(Grouping grouping) {
         return db.countGroupsFor(grouping);
-    }
-
-    public LiveData<Integer> countLiveGroupsFor(@NonNull final Grouping grouping) {
-        // This is not optimal because it fetches all the content and returns its size only
-        // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
-        // See https://github.com/objectbox/objectbox-java/issues/776
-        ObjectBoxLiveData<Group> livedata = new ObjectBoxLiveData<>(db.selectGroupsByGroupingQ(grouping.getId()));
-
-        MediatorLiveData<Integer> result = new MediatorLiveData<>();
-        result.addSource(livedata, v -> result.setValue(v.size()));
-        return result;
     }
 
     public void deleteGroup(long groupId) {
@@ -596,8 +604,13 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectImageFile(id);
     }
 
-    public LiveData<List<ImageFile>> selectDownloadedImagesFromContent(long id) {
-        return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContent(id));
+    public LiveData<List<ImageFile>> selectDownloadedImagesFromContentLive(long id) {
+        return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContentQ(id));
+    }
+
+    @Override
+    public List<ImageFile> selectDownloadedImagesFromContent(long id) {
+        return db.selectDownloadedImagesFromContentQ(id).find();
     }
 
     public Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId) {

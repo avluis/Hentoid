@@ -48,6 +48,20 @@
         android:layout_weight="1"
         android:paddingEnd="16dp">
 
+        <TextView
+            android:id="@+id/wait_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginStart="32dp"
+            android:gravity="center"
+            android:text="@string/please_wait"
+            android:textSize="16sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:visibility="visible" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/skip_btn"
             style="@style/Widget.MaterialComponents.Button.TextButton"

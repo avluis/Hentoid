@@ -285,8 +285,8 @@ public class ImportWorker extends BaseWorker {
                             }
                         }
 
-                        // If content has an external-library tag, remove it because we're importing for the primary library now
-                        ImportHelper.removeExternalAttribute(content);
+                        // If content has an external-library tag or an EXTERNAL status, remove it because we're importing for the primary library now
+                        ImportHelper.removeExternalAttributes(content);
 
                         content.computeSize();
                         ContentHelper.addContent(context, dao, content);

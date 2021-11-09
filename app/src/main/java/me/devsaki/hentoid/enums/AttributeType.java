@@ -16,15 +16,15 @@ public enum AttributeType {
 
     // Attributes stored in Attributes table of the DB
     ARTIST(0, "Artist", R.drawable.ic_attribute_artist),
-    PUBLISHER(1, "Publisher", R.drawable.ic_menu_fakku),
+    PUBLISHER(1, "Publisher", R.drawable.ic_site_fakku),
     LANGUAGE(2, "Language", R.drawable.ic_attribute_language),
     TAG(3, "Tag", R.drawable.ic_attribute_tag),
-    TRANSLATOR(4, "Translator", R.drawable.ic_menu_fakku),
+    TRANSLATOR(4, "Translator", R.drawable.ic_site_fakku),
     SERIE(5, "Series", R.drawable.ic_attribute_serie),
-    UPLOADER(6, "Uploader", R.drawable.ic_menu_fakku),
-    CIRCLE(7, "Circle", R.drawable.ic_menu_fakku),
+    UPLOADER(6, "Uploader", R.drawable.ic_site_fakku),
+    CIRCLE(7, "Circle", R.drawable.ic_site_fakku),
     CHARACTER(8, "Character", R.drawable.ic_attribute_character),
-    CATEGORY(9, "Category", R.drawable.ic_menu_fakku),
+    CATEGORY(9, "Category", R.drawable.ic_site_fakku),
     // Attributes displayed on screen and stored elsewhere
     SOURCE(10, "Source", R.drawable.ic_attribute_source);
 

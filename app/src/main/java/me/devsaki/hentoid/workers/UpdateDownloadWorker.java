@@ -87,7 +87,7 @@ public class UpdateDownloadWorker extends BaseWorker {
         if (size < 1) size = 1;
 
         Timber.d("WRITING DOWNLOADED APK TO %s (size %.2f KB)", file.getAbsolutePath(), size / 1024.0);
-        byte[] buffer = new byte[4196];
+        byte[] buffer = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
         int len;
         long processed = 0;
         int iteration = 0;

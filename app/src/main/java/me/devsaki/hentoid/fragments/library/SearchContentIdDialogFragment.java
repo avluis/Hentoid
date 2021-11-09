@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.library;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -25,8 +27,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 11/2018
@@ -80,6 +80,7 @@ public class SearchContentIdDialogFragment extends DialogFragment {
                 if (!foundSitesList.contains(Site.HBROWSE.getCode())) sites.add(Site.HBROWSE);
                 if (!foundSitesList.contains(Site.HENTAIFOX.getCode())) sites.add(Site.HENTAIFOX);
                 if (!foundSitesList.contains(Site.IMHENTAI.getCode())) sites.add(Site.IMHENTAI);
+                if (!foundSitesList.contains(Site.PIXIV.getCode())) sites.add(Site.PIXIV);
             }
             ItemAdapter<TextItem<Site>> itemAdapter = new ItemAdapter<>();
             itemAdapter.set(Stream.of(sites).map(s -> new TextItem<>(s.getDescription(), s, true)).toList());
@@ -114,6 +115,8 @@ public class SearchContentIdDialogFragment extends DialogFragment {
                 return site.getUrl().replace("manga", "albums") + id + "/";
             case HBROWSE:
                 return site.getUrl() + id + "/c00001";
+            case PIXIV:
+                return site.getUrl() + "artworks/" + id;
             default:
                 return site.getUrl();
         }
@@ -122,7 +125,7 @@ public class SearchContentIdDialogFragment extends DialogFragment {
     private boolean onItemSelected(Site s) {
         if (null == s) return false;
 
-        ContentHelper.launchBrowserFor(requireContext(), s, getUrlFromId(s, bookId));
+        ContentHelper.launchBrowserFor(requireContext(), getUrlFromId(s, bookId));
 
         this.dismiss();
         return true;

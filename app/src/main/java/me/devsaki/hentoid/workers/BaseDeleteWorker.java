@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.workers;
 
-import static me.devsaki.hentoid.util.GroupHelper.moveBook;
+import static me.devsaki.hentoid.util.GroupHelper.moveContentToCustomGroup;
 
 import android.content.Context;
 import android.util.Log;
@@ -26,8 +26,8 @@ import me.devsaki.hentoid.notification.delete.DeleteStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
-import me.devsaki.hentoid.util.exception.FileNotRemovedException;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
+import me.devsaki.hentoid.util.exception.FileNotProcessedException;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.DeleteData;
 
@@ -125,7 +125,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         try {
             ContentHelper.removeContent(getApplicationContext(), dao, content);
             trace(Log.INFO, "Removed item: %s from database and file system.", content.getTitle());
-        } catch (ContentNotRemovedException cnre) {
+        } catch (ContentNotProcessedException cnre) {
             nbError++;
             trace(Log.WARN, "Error when trying to delete %s", content.getId());
         } catch (Exception e) {
@@ -188,7 +188,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
             if (deleteGroupsOnly) {
                 List<Content> containedContentList = theGroup.getContents();
                 for (Content c : containedContentList) {
-                    Content movedContent = moveBook(c, null, dao);
+                    Content movedContent = moveContentToCustomGroup(c, null, dao);
                     ContentHelper.updateContentJson(getApplicationContext(), movedContent);
                 }
                 theGroup = dao.selectGroup(theGroup.id);
@@ -226,9 +226,9 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         try {
             progressItem(content, false);
             ContentHelper.removeQueuedContent(getApplicationContext(), dao, content);
-        } catch (ContentNotRemovedException e) {
+        } catch (ContentNotProcessedException e) {
             // Don't throw the exception if we can't remove something that isn't there
-            if (!(e instanceof FileNotRemovedException && content.getStorageUri().isEmpty())) {
+            if (!(e instanceof FileNotProcessedException && content.getStorageUri().isEmpty())) {
                 nbError++;
                 trace(Log.WARN, "Error when trying to delete queued %s : %s", content.getTitle(), e.getMessage());
             }
@@ -244,13 +244,13 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         if (title != null) {
             deleteProgress++;
             notificationManager.notify(new DeleteProgressNotification(title, deleteProgress + nbError, deleteMax, isPurge));
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_delete, 0, deleteProgress, nbError, deleteMax));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, deleteProgress, nbError, deleteMax));
         }
     }
 
     private void progressDone() {
         notificationManager.notify(new DeleteCompleteNotification(deleteMax, nbError > 0));
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_delete, 0, deleteProgress, nbError, deleteMax));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, deleteProgress, nbError, deleteMax));
     }
 
     /**

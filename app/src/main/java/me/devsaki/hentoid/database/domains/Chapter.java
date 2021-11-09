@@ -11,6 +11,7 @@ import io.objectbox.annotation.Id;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.util.Helper;
+import timber.log.Timber;
 
 @Entity
 public class Chapter {
@@ -23,6 +24,8 @@ public class Chapter {
     private ToOne<Content> content;
     @Backlink(to = "chapter")
     private ToMany<ImageFile> imageFiles;
+    private String uniqueId = "";
+
 
     public Chapter() { // Required by ObjectBox when an alternate constructor exists
     }
@@ -31,6 +34,10 @@ public class Chapter {
         this.order = order;
         this.url = url;
         this.name = name;
+    }
+
+    public static Chapter fromChapter(Chapter chap) {
+        return new Chapter(chap.order, chap.url, chap.name).setUniqueId(chap.uniqueId);
     }
 
 
@@ -69,8 +76,18 @@ public class Chapter {
         return this;
     }
 
-    public void setContentId(long contentId) {
+    public String getUniqueId() {
+        return (null == uniqueId) ? "" : uniqueId;
+    }
+
+    public Chapter setUniqueId(String uniqueId) {
+        this.uniqueId = uniqueId;
+        return this;
+    }
+
+    public Chapter setContentId(long contentId) {
         this.content.setTargetId(contentId);
+        return this;
     }
 
     public ToOne<Content> getContent() {
@@ -79,6 +96,14 @@ public class Chapter {
 
     public void setContent(ToOne<Content> content) {
         this.content = content;
+    }
+
+    public void setContent(Content content) {
+        if (null == this.content) {
+            Timber.d(">> INIT ToONE");
+            this.content = new ToOne<>(this, Chapter_.content);
+        }
+        this.content.setTarget(content);
     }
 
     @Nullable
@@ -94,22 +119,31 @@ public class Chapter {
         }
     }
 
+    public void removeImageFile(ImageFile img) {
+        if (imageFiles != null) imageFiles.remove(img);
+    }
+
+    public void addImageFile(ImageFile img) {
+        if (imageFiles != null) imageFiles.add(img);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Chapter imageFile = (Chapter) o;
-        return getId() == imageFile.getId() &&
-                Objects.equals(getUrl(), imageFile.getUrl());
+        Chapter chapter = (Chapter) o;
+        return getId() == chapter.getId() &&
+                Objects.equals(getOrder(), chapter.getOrder()) &&
+                Objects.equals(getUrl(), chapter.getUrl());
     }
 
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getUrl());
+        return Objects.hash(getId(), getOrder(), getUrl());
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + url).getBytes());
+        return Helper.hash64((id + "." + order + "." + url).getBytes());
     }
 }

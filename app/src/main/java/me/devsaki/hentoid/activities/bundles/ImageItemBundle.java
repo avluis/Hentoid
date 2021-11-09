@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
  */
 public class ImageItemBundle {
     private static final String KEY_FAV_STATE = "favourite";
+    private static final String KEY_CHP_ORDER = "chapterOrder";
 
     private ImageItemBundle() {
         throw new UnsupportedOperationException();
@@ -22,8 +23,12 @@ public class ImageItemBundle {
 
         private final Bundle bundle = new Bundle();
 
-        public void setIsFavourite(boolean isFavourite) {
-            bundle.putBoolean(KEY_FAV_STATE, isFavourite);
+        public void setIsFavourite(boolean value) {
+            bundle.putBoolean(KEY_FAV_STATE, value);
+        }
+
+        public void setChapterOrder(int value) {
+            bundle.putInt(KEY_CHP_ORDER, value);
         }
 
         public boolean isEmpty() {
@@ -46,6 +51,12 @@ public class ImageItemBundle {
         @Nullable
         public Boolean isFavourite() {
             if (bundle.containsKey(KEY_FAV_STATE)) return bundle.getBoolean(KEY_FAV_STATE);
+            else return null;
+        }
+
+        @Nullable
+        public Integer getChapterOrder() {
+            if (bundle.containsKey(KEY_CHP_ORDER)) return bundle.getInt(KEY_CHP_ORDER);
             else return null;
         }
     }

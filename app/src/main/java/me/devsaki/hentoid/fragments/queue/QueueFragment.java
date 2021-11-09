@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.queue;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -70,10 +72,11 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
-import me.devsaki.hentoid.fragments.DeleteProgressDialogFragment;
+import me.devsaki.hentoid.fragments.ProgressDialogFragment;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -93,8 +96,6 @@ import me.devsaki.hentoid.views.CircularProgressView;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by avluis on 04/10/2016.
@@ -489,37 +490,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         Timber.v("Event received : %s", event.eventType);
         errorStatsMenu.setVisible(event.pagesKO > 0);
 
-        // Display motive, if any
-        @StringRes int motiveMsg;
-        switch (event.motive) {
-            case DownloadEvent.Motive.NO_INTERNET:
-                motiveMsg = R.string.paused_no_internet;
-                break;
-            case DownloadEvent.Motive.NO_WIFI:
-                motiveMsg = R.string.paused_no_wifi;
-                break;
-            case DownloadEvent.Motive.NO_STORAGE:
-                motiveMsg = R.string.paused_no_storage;
-                break;
-            case DownloadEvent.Motive.NO_DOWNLOAD_FOLDER:
-                motiveMsg = R.string.paused_no_dl_folder;
-                break;
-            case DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND:
-                motiveMsg = R.string.paused_dl_folder_not_found;
-                break;
-            case DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS:
-                motiveMsg = R.string.paused_dl_folder_credentials;
-                PermissionHelper.requestExternalStorageReadWritePermission(getActivity(), PermissionHelper.RQST_STORAGE_PERMISSION);
-                break;
-            case DownloadEvent.Motive.STALE_CREDENTIALS:
-                motiveMsg = R.string.paused_dl_stale_online_credentials;
-                break;
-            case DownloadEvent.Motive.NONE:
-            default: // NONE
-                motiveMsg = -1;
-        }
-        if (motiveMsg != -1)
-            Snackbar.make(recyclerView, getString(motiveMsg), BaseTransientBottomBar.LENGTH_SHORT).show();
+        displayMotive(event);
 
         switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
@@ -550,6 +521,41 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 updateProgressFirstItem(true);
                 update(event.eventType);
         }
+    }
+
+    private void displayMotive(@NonNull final DownloadEvent event) {
+        // Display motive, if any
+        @StringRes int motiveMsg;
+        switch (event.motive) {
+            case DownloadEvent.Motive.NO_INTERNET:
+                motiveMsg = R.string.paused_no_internet;
+                break;
+            case DownloadEvent.Motive.NO_WIFI:
+                motiveMsg = R.string.paused_no_wifi;
+                break;
+            case DownloadEvent.Motive.NO_STORAGE:
+                String spaceLeft = FileHelper.formatHumanReadableSize(event.downloadedSizeB);
+                Snackbar.make(recyclerView, getString(R.string.paused_no_storage, spaceLeft), BaseTransientBottomBar.LENGTH_SHORT).show();
+                return;
+            case DownloadEvent.Motive.NO_DOWNLOAD_FOLDER:
+                motiveMsg = R.string.paused_no_dl_folder;
+                break;
+            case DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND:
+                motiveMsg = R.string.paused_dl_folder_not_found;
+                break;
+            case DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS:
+                motiveMsg = R.string.paused_dl_folder_credentials;
+                PermissionHelper.requestExternalStorageReadWritePermission(getActivity(), PermissionHelper.RQST_STORAGE_PERMISSION);
+                break;
+            case DownloadEvent.Motive.STALE_CREDENTIALS:
+                motiveMsg = R.string.paused_dl_stale_online_credentials;
+                break;
+            case DownloadEvent.Motive.NONE:
+            default: // NONE
+                motiveMsg = -1;
+        }
+        if (motiveMsg != -1)
+            Snackbar.make(recyclerView, getString(motiveMsg), BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     /**
@@ -793,7 +799,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
 
             if (c != null) {
-                if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null))
+                if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null, false))
                     ToastHelper.toast(R.string.err_no_content);
                 return true;
             } else return false;
@@ -816,21 +822,21 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void onCancelBooks(@NonNull List<Content> c) {
         if (c.size() > 2) {
             isCancelingAll = true;
-            DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
+            ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), getResources().getString(R.string.books));
         }
         viewModel.cancel(c);
     }
 
     private void onCancelAll() {
         isCancelingAll = true;
-        DeleteProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), getResources().getString(R.string.books));
         viewModel.cancelAll();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
         // Filter on cancel complete event
-        if (R.id.generic_delete != event.processId) return;
+        if (R.id.generic_progress != event.processId) return;
         if (event.eventType == ProcessEvent.EventType.COMPLETE) onCancelComplete();
     }
 

@@ -1,8 +1,9 @@
 package me.devsaki.hentoid.viewmodels;
 
-import static me.devsaki.hentoid.util.GroupHelper.moveBook;
+import static me.devsaki.hentoid.util.GroupHelper.moveContentToCustomGroup;
 
 import android.app.Application;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,18 +17,22 @@ import androidx.paging.PagedList;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
-import androidx.work.WorkRequest;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.greenrobot.eventbus.EventBus;
+import org.threeten.bp.Instant;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
@@ -40,12 +45,15 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Grouping;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -53,8 +61,11 @@ import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.PurgeWorker;
@@ -74,13 +85,12 @@ public class LibraryViewModel extends AndroidViewModel {
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
     private final LiveData<Integer> totalContent;
-    private LiveData<Integer> currentGroupCountSource;
-    private final MediatorLiveData<Integer> totalGroups = new MediatorLiveData<>();
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
     // Groups data
     private final MutableLiveData<Group> group = new MutableLiveData<>();
     private LiveData<List<Group>> currentGroupsSource;
     private final MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
+    private final MediatorLiveData<Integer> currentGroupTotal = new MediatorLiveData<>();
     private final MutableLiveData<Boolean> isCustomGroupingAvailable = new MutableLiveData<>();     // True if there's at least one existing custom group; false instead
 
     // Updated whenever a new search is performed
@@ -138,7 +148,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
     @NonNull
     public LiveData<Integer> getTotalGroup() {
-        return totalGroups;
+        return currentGroupTotal;
     }
 
     @NonNull
@@ -258,28 +268,37 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchContent();
     }
 
-    public void setGroup(Group group) {
-        searchManager.setGroup(group);
+    public void setGroup(Group group, boolean forceRefresh) {
+        Group currentGroup = this.group.getValue();
+        if (!forceRefresh && Objects.equals(group, currentGroup)) return;
+
         this.group.postValue(group);
+        searchManager.setGroup(group);
         newSearch.setValue(true);
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?
         doSearchContent();
     }
 
-    public void setGrouping(Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
+    public void setGrouping(@NonNull final Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
         if (grouping.equals(Grouping.FLAT)) {
-            setGroup(null);
+            setGroup(null, false);
             return;
         }
 
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
         currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
-        groups.addSource(currentGroupsSource, groups::setValue);
+        groups.addSource(currentGroupsSource, this::onGroupsChanged);
+    }
 
-        if (currentGroupCountSource != null) totalGroups.removeSource(currentGroupCountSource);
-        currentGroupCountSource = dao.countLiveGroupsFor(grouping);
-        totalGroups.addSource(currentGroupCountSource, totalGroups::setValue);
+    private void onGroupsChanged(@NonNull final List<Group> newGroups) {
+        groups.setValue(newGroups);
+        currentGroupTotal.postValue(newGroups.size());
+        refreshCustomGroupingAvailable();
+    }
+
+    public void refreshCustomGroupingAvailable() {
+        isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
     }
 
     // =========================
@@ -564,6 +583,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
+        // TODO update isCustomGroupingAvailable when the whole delete job is complete
     }
 
     public void purgeItem(@NonNull final Content content) {
@@ -796,20 +816,20 @@ public class LibraryViewModel extends AndroidViewModel {
         throw new InvalidParameterException("Invalid GroupId : " + groupId);
     }
 
-    public void moveBooksToNew(long[] bookIds, String newGroupName,
-                               @NonNull final Runnable onSuccess) {
+    public void moveContentsToNewCustomGroup(long[] contentIds, String newGroupName,
+                                             @NonNull final Runnable onSuccess) {
         Group newGroup = new Group(Grouping.CUSTOM, newGroupName.trim(), -1);
         newGroup.id = dao.insertGroup(newGroup);
-        moveBooks(bookIds, newGroup, onSuccess);
+        moveContentsToCustomGroup(contentIds, newGroup, onSuccess);
     }
 
-    public void moveBooks(long[] bookIds, @Nullable final Group group,
-                          @NonNull final Runnable onSuccess) {
+    public void moveContentsToCustomGroup(long[] contentIds, @Nullable final Group group,
+                                          @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
-                Observable.fromIterable(Helper.getListFromPrimitiveArray(bookIds))
+                Observable.fromIterable(Helper.getListFromPrimitiveArray(contentIds))
                         .observeOn(Schedulers.io())
                         .map(dao::selectContent)
-                        .map(c -> moveBook(c, group, dao))
+                        .map(c -> moveContentToCustomGroup(c, group, dao))
                         .doOnNext(c -> ContentHelper.updateContentJson(getApplication(), c))
                         .doOnComplete(() -> {
                             refreshCustomGroupingAvailable();
@@ -823,10 +843,6 @@ public class LibraryViewModel extends AndroidViewModel {
         );
     }
 
-    public void refreshCustomGroupingAvailable() {
-        isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
-    }
-
     public void resetCompletedFilter() {
         if (searchManager.isFilterBookCompleted())
             toggleCompletedFilter();
@@ -837,5 +853,193 @@ public class LibraryViewModel extends AndroidViewModel {
     public void shuffleContent() {
         RandomSeedSingleton.getInstance().renewSeed(Consts.SEED_CONTENT);
         dao.shuffleContent();
+    }
+
+    public void editContentTitle(@NonNull Content content, @NonNull String title) {
+        Content dbContent = dao.selectContent(content.getId()); // Instanciate a new Content from DB to avoid updating the UI reference
+        if (dbContent != null) {
+            dbContent.setTitle(title);
+            dao.insertContent(dbContent);
+        }
+    }
+
+    public void mergeContents(
+            @NonNull List<Content> contentList,
+            @NonNull String newTitle,
+            @NonNull Runnable onSuccess) {
+        if (contentList.isEmpty()) return;
+
+        // Flag the content as "being deleted" (triggers blink animation)
+        for (Content c : contentList) flagContentDelete(c, true);
+
+        compositeDisposable.add(
+                Single.fromCallable(() -> {
+                    boolean result = false;
+                    try {
+                        ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
+                        // Remove old contents
+                        deleteItems(contentList, Collections.emptyList(), false);
+                        result = true;
+                    } catch (ContentNotProcessedException e) {
+                        Timber.e(e);
+                        for (Content c : contentList) flagContentDelete(c, false);
+                    }
+                    return result;
+                })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                b -> {
+                                    if (b) onSuccess.run();
+                                },
+                                t -> {
+                                    Timber.e(t);
+                                    for (Content c : contentList) flagContentDelete(c, false);
+                                }
+                        )
+        );
+    }
+
+    public void splitContent(
+            @NonNull Content content,
+            @NonNull List<Chapter> chapters,
+            @NonNull Runnable onSuccess) {
+        compositeDisposable.add(
+                Single.fromCallable(() -> {
+                    boolean result = false;
+                    try {
+                        doSplitContent(content, chapters);
+                        result = true;
+                    } catch (ContentNotProcessedException e) {
+                        Timber.e(e);
+                    }
+                    return result;
+                })
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                b -> {
+                                    if (b) onSuccess.run();
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    private void doSplitContent(@NonNull Content content, @NonNull List<Chapter> chapters) throws Exception {
+        Helper.assertNonUiThread();
+        List<ImageFile> images = content.getImageFiles();
+        if (chapters.isEmpty())
+            throw new ContentNotProcessedException(content, "No chapters detected");
+        if (null == images || images.isEmpty())
+            throw new ContentNotProcessedException(content, "No images detected");
+
+        int nbProcessedPics = 0;
+        int nbImages = (int) Stream.of(chapters).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
+        for (Chapter chap : chapters) {
+            Content splitContent = createContentFromChapter(content, chap);
+
+            // Create a new folder for the split content
+            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent);
+            if (null == targetFolder || !targetFolder.exists())
+                throw new ContentNotProcessedException(splitContent, "Could not create target directory");
+
+            splitContent.setStorageUri(targetFolder.getUri().toString());
+
+            // Copy the corresponding images to that folder
+            List<ImageFile> splitContentImages = splitContent.getImageFiles();
+            if (null == splitContentImages)
+                throw new ContentNotProcessedException(splitContent, "No images detected in generated book");
+
+            for (ImageFile img : splitContentImages) {
+                if (img.getStatus().equals(StatusContent.DOWNLOADED)) {
+                    String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
+                    Uri newUri = FileHelper.copyFile(
+                            getApplication(),
+                            Uri.parse(img.getFileUri()),
+                            targetFolder.getUri(),
+                            img.getMimeType(),
+                            img.getName() + "." + extension);
+                    if (newUri != null)
+                        img.setFileUri(newUri.toString());
+                    else
+                        Timber.w("Could not move file %s", img.getFileUri());
+                    EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, nbImages));
+                }
+            }
+
+            // Save the JSON for the new book
+            DocumentFile jsonFile = ContentHelper.createContentJson(getApplication(), splitContent);
+            if (jsonFile != null) splitContent.setJsonUri(jsonFile.getUri().toString());
+
+            // Save new content (incl. onn-custom group operations)
+            ContentHelper.addContent(getApplication(), dao, splitContent);
+
+            // Set custom group, if any
+            List<GroupItem> customGroups = content.getGroupItems(Grouping.CUSTOM);
+            if (!customGroups.isEmpty())
+                GroupHelper.moveContentToCustomGroup(splitContent, customGroups.get(0).getGroup(), dao);
+        }
+
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
+    }
+
+    private Content createContentFromChapter(@NonNull Content content, @NonNull Chapter chapter) {
+        Content splitContent = new Content();
+
+        String url = StringHelper.protect(chapter.getUrl());
+        if (url.isEmpty()) { // Default (e.g. manually created chapters)
+            url = content.getUrl();
+            splitContent.setSite(content.getSite());
+        } else { // Detect site and cleanup full URL (e.g. previously merged books)
+            Site site = Site.searchByUrl(url);
+            if (site != null && !site.equals(Site.NONE)) {
+                splitContent.setSite(site);
+                url = url.replace(site.getUrl(), "");
+            }
+        }
+        splitContent.setUrl(url);
+
+        String id = chapter.getUniqueId();
+        if (id.isEmpty()) id = content.getUniqueSiteId() + "_"; // Don't create a copy of content
+        splitContent.setUniqueSiteId(id);
+        splitContent.setDownloadMode(content.getDownloadMode());
+        String newTitle = content.getTitle();
+        if (!newTitle.contains(chapter.getName()))
+            newTitle += " - " + chapter.getName(); // Avoid swelling the title after multiple merges and splits
+        splitContent.setTitle(newTitle);
+        splitContent.setUploadDate(content.getUploadDate());
+        splitContent.setDownloadDate(Instant.now().toEpochMilli());
+        splitContent.setStatus(content.getStatus());
+        splitContent.setBookPreferences(content.getBookPreferences());
+
+        List<ImageFile> images = chapter.getImageFiles();
+        if (images != null) {
+            images = Stream.of(chapter.getImageFiles()).sortBy(ImageFile::getOrder).toList();
+            int position = 0;
+            int nbMaxDigits = (int) (Math.floor(Math.log10(images.size()) + 1));
+            for (ImageFile img : images) {
+                img.setId(0); // Force working on a new picture
+                img.setChapter(null);
+                img.getContent().setTarget(null); // Clear content
+                img.setIsCover(0 == position);
+                img.setOrder(position++);
+                img.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", img.getOrder()));
+            }
+
+            splitContent.setImageFiles(images);
+            splitContent.setChapters(null);
+            splitContent.setQtyPages((int) Stream.of(images).filter(ImageFile::isReadable).count());
+            splitContent.computeSize();
+
+            String coverImageUrl = StringHelper.protect(images.get(0).getUrl());
+            if (coverImageUrl.isEmpty()) coverImageUrl = content.getCoverImageUrl();
+            splitContent.setCoverImageUrl(coverImageUrl);
+        }
+
+        List<Attribute> splitAttributes = Stream.of(content).flatMap(c -> Stream.of(c.getAttributes())).toList();
+        splitContent.addAttributes(splitAttributes);
+
+        return splitContent;
     }
 }

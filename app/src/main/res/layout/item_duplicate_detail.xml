@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item"
     android:layout_width="match_parent"
-    android:layout_height="130dp"
+    android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/default_cardview_margin"
     android:clickable="true"
     android:focusable="true"
@@ -102,18 +102,19 @@
             app:layout_constraintEnd_toEndOf="@id/guideline_middle"
             app:layout_constraintStart_toStartOf="@id/tvArtist"
             app:layout_constraintTop_toBottomOf="@id/tvArtist"
-            tools:text="@string/book_pages_queue" />
+            tools:text="@string/book_pages_library" />
 
         <ImageView
             android:id="@+id/ivSite"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
             android:background="@color/transparent"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/ic_menu_nhentai"
+            android:padding="8dp"
+            android:src="@drawable/ic_hentoid_shape"
             android:tooltipText="@string/view_source_help"
             app:layout_constraintEnd_toEndOf="@id/guideline_middle"
             app:layout_constraintTop_toBottomOf="@id/tvPages"
@@ -123,9 +124,10 @@
 
         <ImageView
             android:id="@+id/ivFavourite"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="8dp"
+            android:padding="8dp"
             android:src="@drawable/ic_fav_empty"
             android:tooltipText="@string/book_favourite_success"
             app:layout_constraintEnd_toStartOf="@id/ivSite"
@@ -136,9 +138,10 @@
 
         <ImageView
             android:id="@+id/ivExternal"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="8dp"
+            android:padding="8dp"
             android:src="@drawable/ic_external_library"
             android:tooltipText="@string/external_help"
             android:visibility="gone"
@@ -152,12 +155,11 @@
         <TextView
             android:id="@+id/delete_btn"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_gravity="center"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="4dp"
             android:layout_weight="1"
-            android:drawablePadding="4dp"
             android:gravity="center"
             android:singleLine="true"
             android:text="@string/duplicate_delete"
@@ -165,27 +167,30 @@
             android:textColor="@color/medium_gray"
             android:textSize="@dimen/caption"
             android:textStyle="bold"
-            app:drawableStartCompat="@drawable/ic_delete_sweep"
+            app:drawableStartCompat="@drawable/ic_action_delete_forever"
             app:drawableTint="@color/medium_gray"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/keep_delete"
             app:layout_constraintStart_toEndOf="@id/ivCover" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/keep_delete"
             android:layout_width="wrap_content"
-            android:layout_height="24dp"
+            android:layout_height="48dp"
+            android:layout_marginBottom="4dp"
             android:checked="true"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/keep_btn"
             app:layout_constraintStart_toEndOf="@id/delete_btn" />
 
         <TextView
             android:id="@+id/keep_btn"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_gravity="center"
+            android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
             android:layout_weight="1"
-            android:drawablePadding="4dp"
             android:gravity="center"
             android:singleLine="true"
             android:text="@string/duplicate_keep"
@@ -196,7 +201,9 @@
             app:drawableStartCompat="@drawable/ic_check"
             app:drawableTint="?colorSecondary"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@id/keep_delete" />
+            app:layout_constraintEnd_toStartOf="@id/guideline_middle"
+            app:layout_constraintStart_toEndOf="@id/keep_delete"
+            app:layout_constraintTop_toBottomOf="@id/ivSite" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_middle"
@@ -265,6 +272,13 @@
             android:layout_height="wrap_content"
             android:visibility="visible"
             app:constraint_referenced_ids="title_score,cover_score,artist_score,total_score" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/keep_delete_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="visible"
+            app:constraint_referenced_ids="keep_btn,keep_delete,delete_btn" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

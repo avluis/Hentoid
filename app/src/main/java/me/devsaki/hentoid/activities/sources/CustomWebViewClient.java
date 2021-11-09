@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.activities.sources;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
+import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
+
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -46,12 +49,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.util.AdBlocker;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -64,9 +69,6 @@ import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
-import static me.devsaki.hentoid.util.network.HttpHelper.getExtensionFromUri;
 
 /**
  * Analyze loaded HTML to display download button
@@ -313,12 +315,14 @@ class CustomWebViewClient extends WebViewClient {
      */
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
+        if (BuildConfig.DEBUG) Timber.v("WebView : page started %s", url);
         isPageLoading = true;
-        activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded);
+        activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded, true);
     }
 
     @Override
     public void onPageFinished(WebView view, String url) {
+        if (BuildConfig.DEBUG) Timber.v("WebView : page finished %s", url);
         isPageLoading = false;
         isHtmlLoaded = false; // Reset for the next page
         activity.onPageFinished(isResultsPage(StringHelper.protect(url)), isGalleryPage(url));
@@ -359,6 +363,7 @@ class CustomWebViewClient extends WebViewClient {
             return new WebResourceResponse("text/plain", "utf-8", NOTHING);
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
+            else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url);
 
             // If we're here to remove "dirty elements", we only do it
             // on HTML resources (URLs without extension) from the source's main domain
@@ -401,6 +406,9 @@ class CustomWebViewClient extends WebViewClient {
     @SuppressLint("NewApi")
     protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
         Helper.assertNonUiThread();
+
+        if (BuildConfig.DEBUG) Timber.v("WebView : parseResponse %s", urlStr);
+
         // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
 
@@ -503,7 +511,11 @@ class CustomWebViewClient extends WebViewClient {
             return;
 
         // Save useful download params for future use during download
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params;
+        if (content.getDownloadParams().length() > 2) // Params already contain values
+            params = ContentHelper.parseDownloadParams(content.getDownloadParams());
+        else params = new HashMap<>();
+
         params.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(url));
         params.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
 
@@ -548,7 +560,7 @@ class CustomWebViewClient extends WebViewClient {
     }
 
     interface CustomWebActivity {
-        void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded);
+        void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded, boolean isBookmarkable);
 
         void onPageFinished(boolean isResultsPage, boolean isGalleryPage);
 

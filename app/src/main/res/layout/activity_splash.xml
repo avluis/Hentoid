@@ -20,7 +20,7 @@
 
     <TextView
         android:id="@+id/quote"
-        style="@style/TextShadow"
+        style="@style/TextShadowLight"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="80dp"

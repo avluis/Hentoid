@@ -10,8 +10,8 @@ public abstract class Consts {
         throw new IllegalStateException("Utility class");
     }
 
-    public static final String DEFAULT_LOCAL_DIRECTORY_OLD = "Hentoid";
-    public static final String DEFAULT_LOCAL_DIRECTORY = ".Hentoid";
+    public static final String DEFAULT_PRIMARY_FOLDER_OLD = "Hentoid";
+    public static final String DEFAULT_PRIMARY_FOLDER = ".Hentoid";
 
     public static final String JSON_FILE_NAME_OLD = "data.json";
     public static final String JSON_FILE_NAME = "content.json";
@@ -23,6 +23,7 @@ public abstract class Consts {
 
     public static final String THUMB_FILE_NAME = "thumb";
     public static final String PICTURE_CACHE_FOLDER = "pictures";
+    public static final String UGOIRA_CACHE_FOLDER = "ugoira";
 
     public static final String SEED_CONTENT = "content";
     public static final String SEED_PAGES = "pages";

@@ -24,6 +24,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.util.download.DownloadHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
@@ -53,8 +54,6 @@ public class ToonilyParser extends BaseImageListParser {
             EventBus.getDefault().unregister(this);
         }
 
-        Timber.d("%s", result);
-
         return result;
     }
 
@@ -73,9 +72,7 @@ public class ToonilyParser extends BaseImageListParser {
         List<Chapter> chapters = new ArrayList<>();
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
         if (doc != null) {
-            // Get the canonical URL
-            String canonicalUrl = doc.select("head [rel=canonical]").first().attr("href");
-
+            String canonicalUrl = DownloadHelper.getCanonicalUrl(doc);
             // Retrieve the chapters page chunk
             doc = HttpHelper.postOnlineDocument(
                     canonicalUrl + "ajax/chapters/",

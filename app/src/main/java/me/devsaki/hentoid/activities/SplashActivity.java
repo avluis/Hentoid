@@ -115,6 +115,7 @@ public class SplashActivity extends BaseActivity {
     private void goToLibraryActivity() {
         Timber.d("Splash / Launch library");
         Intent intent = new Intent(this, LibraryActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent = UnlockActivity.wrapIntent(this, intent);
         goToActivity(intent);
     }

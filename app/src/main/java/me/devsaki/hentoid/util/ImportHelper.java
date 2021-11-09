@@ -52,7 +52,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
-import me.devsaki.hentoid.services.ExternalImportService;
+import me.devsaki.hentoid.workers.ExternalImportWorker;
 import me.devsaki.hentoid.workers.ImportWorker;
 import me.devsaki.hentoid.workers.data.ImportData;
 import timber.log.Timber;
@@ -88,8 +88,8 @@ public class ImportHelper {
         int KO_OTHER = 9; // Any other issue
     }
 
-    private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
-            || displayName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD);
+    private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_PRIMARY_FOLDER)
+            || displayName.equalsIgnoreCase(Consts.DEFAULT_PRIMARY_FOLDER_OLD);
 
     /**
      * Import options for the Hentoid folder
@@ -233,7 +233,7 @@ public class ImportHelper {
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
-            Timber.e("Could not create Hentoid folder in root %s", docFile.getUri().toString());
+            Timber.e("Could not create Hentoid folder in folder %s", docFile.getUri().toString());
             return ProcessFolderResult.KO_CREATE_FAIL;
         }
         // Set the folder as the app's downloads folder
@@ -244,9 +244,9 @@ public class ImportHelper {
         }
 
         // Scan the folder for an existing library; start the import
-        if (hasBooks(context)) {
+        if (hasBooks(context, hentoidFolder)) {
             if (!askScanExisting) {
-                runHentoidImport(context, options);
+                runPrimaryImport(context, options);
                 return ProcessFolderResult.OK_LIBRARY_DETECTED;
             } else return ProcessFolderResult.OK_LIBRARY_DETECTED_ASK;
         } else {
@@ -316,7 +316,7 @@ public class ImportHelper {
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            runHentoidImport(context, null);
+                            runPrimaryImport(context, null);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog2, which) -> {
@@ -328,7 +328,7 @@ public class ImportHelper {
     }
 
     /**
-     * Detect whether the current Hentoid folder contains books or not
+     * Detect whether the given folder contains books or not
      * by counting the elements inside each site's download folder (but not its subfolders)
      * <p>
      * NB : this method works approximately because it doesn't try to count JSON files
@@ -336,20 +336,26 @@ public class ImportHelper {
      * and might cause freezes -> we stick to that approximate method for ImportActivity
      *
      * @param context Context to be used
+     * @param folder  Folder to examine
      * @return True if the current Hentoid folder contains at least one book; false if not
      */
-    private static boolean hasBooks(@NonNull final Context context) {
-        List<DocumentFile> downloadDirs = new ArrayList<>();
+    private static boolean hasBooks(@NonNull final Context context, @NonNull final DocumentFile folder) {
+        try (FileExplorer explorer = new FileExplorer(context, folder.getUri())) {
+            List<DocumentFile> folders = explorer.listFolders(context, folder);
 
-        try (FileExplorer fe = new FileExplorer(context, Uri.parse(Preferences.getStorageUri()))) {
-            for (Site s : Site.values()) {
-                DocumentFile downloadDir = ContentHelper.getOrCreateSiteDownloadDir(context, fe, s);
-                if (downloadDir != null) downloadDirs.add(downloadDir);
-            }
-
-            for (DocumentFile downloadDir : downloadDirs) {
-                List<DocumentFile> contentFiles = fe.listFolders(context, downloadDir);
-                if (!contentFiles.isEmpty()) return true;
+            // Filter out download subfolders among listed subfolders
+            for (DocumentFile subfolder : folders) {
+                String subfolderName = subfolder.getName();
+                if (subfolderName != null) {
+                    for (Site s : Site.values())
+                        if (subfolderName.equals(s.getFolder())) {
+                            // Search subfolders within identified download folders
+                            // NB : for performance issues, we assume the mere presence of a subfolder inside a download folder means there's an existing book
+                            List<DocumentFile> bookFolders = explorer.listFolders(context, subfolder);
+                            if (!bookFolders.isEmpty()) return true;
+                            break;
+                        }
+                }
             }
         } catch (IOException e) {
             Timber.w(e);
@@ -357,7 +363,6 @@ public class ImportHelper {
 
         return false;
     }
-
 
     /**
      * Detect or create the Hentoid app folder inside the given base folder
@@ -368,32 +373,21 @@ public class ImportHelper {
      */
     @Nullable
     private static DocumentFile getOrCreateHentoidFolder(@NonNull final Context context, @NonNull final DocumentFile baseFolder) {
-        String folderName = baseFolder.getName();
-        if (null == folderName) folderName = "";
-
-        // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
-        if (!isHentoidFolderName(folderName)) {
-            DocumentFile targetFolder = getExistingHentoidDirFrom(context, baseFolder);
-
-            // If not, create one
-            if (targetFolder.getUri().equals(baseFolder.getUri()))
-                return targetFolder.createDirectory(Consts.DEFAULT_LOCAL_DIRECTORY);
-            else return targetFolder;
-        }
-        return baseFolder;
+        DocumentFile targetFolder = getExistingHentoidDirFrom(context, baseFolder);
+        if (targetFolder != null) return targetFolder;
+        else return baseFolder.createDirectory(Consts.DEFAULT_PRIMARY_FOLDER);
     }
 
     /**
-     * Try and detect any ".Hentoid" or "Hentoid" folder inside the given folder
-     * (the given folder itself being a candidate)
+     * Try and detect if the Hentoid primary folder is, or is inside the given folder
      *
      * @param context Context to use
-     * @param root    Root folder to search the Hentoid folder in
-     * @return DocumentFile being the given folder if nothing has been found, or another folder if a Hentoid folder has been found inside
-     * // TODO this contract sucks, it should return null when nothing is found, and a DocumentFile if any folder, including the root, qualifies
+     * @param root    Folder to search the Hentoid folder in
+     * @return Detected Hentoid folder; null if nothing detected
      */
+    @Nullable
     public static DocumentFile getExistingHentoidDirFrom(@NonNull final Context context, @NonNull final DocumentFile root) {
-        if (!root.exists() || !root.isDirectory() || null == root.getName()) return root;
+        if (!root.exists() || !root.isDirectory() || null == root.getName()) return null;
 
         // Selected folder _is_ the Hentoid folder
         if (isHentoidFolderName(root.getName())) return root;
@@ -401,7 +395,7 @@ public class ImportHelper {
         // If not, look for it in its children
         List<DocumentFile> hentoidDirs = FileHelper.listFoldersFilter(context, root, hentoidFolderNames);
         if (!hentoidDirs.isEmpty()) return hentoidDirs.get(0);
-        else return root;
+        else return null;
     }
 
     /**
@@ -410,7 +404,7 @@ public class ImportHelper {
      * @param context Context to use
      * @param options Import options to use
      */
-    private static void runHentoidImport(
+    private static void runPrimaryImport(
             @NonNull final Context context,
             @Nullable final ImportOptions options
     ) {
@@ -436,19 +430,18 @@ public class ImportHelper {
     private static void runExternalImport(
             @NonNull final Context context
     ) {
-        if (ExternalImportService.isRunning()) {
+        if (ExternalImportWorker.isRunning(context)) {
             ToastHelper.toast(R.string.service_running);
             return;
         }
 
         ImportNotificationChannel.init(context);
-        Intent intent = ExternalImportService.makeIntent(context);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            context.startForegroundService(intent);
-        } else {
-            context.startService(intent);
-        }
+        WorkManager workManager = WorkManager.getInstance(context);
+        workManager.enqueueUniqueWork(
+                Integer.toString(R.id.external_import_service),
+                ExistingWorkPolicy.KEEP,
+                new OneTimeWorkRequest.Builder(ExternalImportWorker.class).addTag(WORK_CLOSEABLE).build());
     }
 
     /**
@@ -649,8 +642,10 @@ public class ImportHelper {
      *
      * @param content Content to remove the "external" attribute flag, if it has been set
      */
-    public static void removeExternalAttribute(@NonNull final Content content) {
+    public static void removeExternalAttributes(@NonNull final Content content) {
         content.putAttributes(Stream.of(content.getAttributes()).filterNot(a -> a.getName().equalsIgnoreCase(EXTERNAL_LIB_TAG)).toList());
+        if (content.getStatus().equals(StatusContent.EXTERNAL))
+            content.setStatus(StatusContent.DOWNLOADED);
     }
 
     /**

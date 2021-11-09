@@ -77,6 +77,7 @@ import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.TooltipHelper;
@@ -157,8 +158,11 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem downloadMenu;
     private MenuItem streamMenu;
     private MenuItem coverMenu;
+    private MenuItem mergeMenu;
+    private MenuItem splitMenu;
 
     private ViewPager2 viewPager;
+    private FragmentStateAdapter pagerAdapter;
 
 
     // === NOTIFICATIONS
@@ -302,10 +306,13 @@ public class LibraryActivity extends BaseActivity {
         }
 
         Preferences.registerPrefsChangedListener(prefsListener);
+        pagerAdapter = new LibraryPagerAdapter(this);
 
-        initUI();
         initToolbar();
         initSelectionToolbar();
+        initUI();
+        updateToolbar();
+        updateSelectionToolbar(0, 0, 0);
 
         onCreated();
         sortCommandsAutoHide = new Debouncer<>(this, 3000, this::hideSearchSortBar);
@@ -368,7 +375,7 @@ public class LibraryActivity extends BaseActivity {
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle());
+                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle(), false);
                 } finally {
                     dao.cleanup();
                 }
@@ -432,14 +439,16 @@ public class LibraryActivity extends BaseActivity {
                 updateSelectionToolbar(0, 0, 0);
             }
         });
+        viewPager.setAdapter(pagerAdapter);
 
         updateDisplay();
     }
 
     private void updateDisplay() {
-        FragmentStateAdapter pagerAdapter = new LibraryPagerAdapter(this);
-        viewPager.setAdapter(pagerAdapter);
         pagerAdapter.notifyDataSetChanged();
+        if (Preferences.getGroupingDisplay().equals(Grouping.FLAT)) { // Display books right away
+            viewPager.setCurrentItem(1);
+        }
         enableCurrentFragment();
     }
 
@@ -511,8 +520,6 @@ public class LibraryActivity extends BaseActivity {
                 return true;
             }
         });
-        // Update icons visibility
-        updateToolbar();
     }
 
     public void initFragmentToolbars(
@@ -579,7 +586,6 @@ public class LibraryActivity extends BaseActivity {
         }
         return true;
     }
-
 
     private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
         if (showSort != null && showSort && View.VISIBLE == sortFieldButton.getVisibility()) {
@@ -656,6 +662,7 @@ public class LibraryActivity extends BaseActivity {
         selectionToolbar = findViewById(R.id.library_selection_toolbar);
         selectionToolbar.getMenu().clear();
         selectionToolbar.inflateMenu(R.menu.library_selection_menu);
+        Helper.tryShowMenuIcons(this, selectionToolbar.getMenu());
 
         editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
         deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
@@ -668,8 +675,8 @@ public class LibraryActivity extends BaseActivity {
         downloadMenu = selectionToolbar.getMenu().findItem(R.id.action_download);
         streamMenu = selectionToolbar.getMenu().findItem(R.id.action_stream);
         coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
-
-        updateSelectionToolbar(0, 0, 0);
+        mergeMenu = selectionToolbar.getMenu().findItem(R.id.action_merge);
+        splitMenu = selectionToolbar.getMenu().findItem(R.id.action_split);
     }
 
     private Grouping getGroupingFromMenuId(@IdRes int menuId) {
@@ -747,7 +754,7 @@ public class LibraryActivity extends BaseActivity {
             case Preferences.Key.SD_STORAGE_URI:
             case Preferences.Key.EXTERNAL_LIBRARY_URI:
                 Preferences.setGroupingDisplay(Grouping.FLAT.getId());
-                viewModel.setGroup(null);
+                viewModel.setGroup(null, true);
                 updateDisplay();
                 break;
             case Preferences.Key.GROUPING_DISPLAY:
@@ -907,7 +914,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private boolean isGroupDisplayed() {
-        return (0 == viewPager.getCurrentItem() && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
+        return 0 == viewPager.getCurrentItem();
     }
 
     public void goBackToGroups() {
@@ -921,7 +928,7 @@ public class LibraryActivity extends BaseActivity {
 
     public void showBooksInGroup(me.devsaki.hentoid.database.domains.Group group) {
         enableFragment(1);
-        viewModel.setGroup(group);
+        viewModel.setGroup(group, true);
         viewPager.setCurrentItem(1);
     }
 
@@ -945,9 +952,10 @@ public class LibraryActivity extends BaseActivity {
     public void updateSelectionToolbar(
             long selectedTotalCount,
             long selectedLocalCount,
-            long selectedOnlineCount) {
+            long selectedStreamedCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
-        long selectedDownloadedCount = selectedLocalCount - selectedOnlineCount;
+        long selectedDownloadedCount = selectedLocalCount - selectedStreamedCount;
+        long selectedExternalCount = selectedTotalCount - selectedLocalCount;
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
 
         if (isGroupDisplayed()) {
@@ -962,8 +970,10 @@ public class LibraryActivity extends BaseActivity {
             downloadMenu.setVisible(false);
             streamMenu.setVisible(false);
             coverMenu.setVisible(false);
+            mergeMenu.setVisible(false);
+            splitMenu.setVisible(false);
         } else {
-            editNameMenu.setVisible(false);
+            editNameMenu.setVisible(!isMultipleSelection);
             deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
             completedMenu.setVisible(true);
             shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
@@ -971,9 +981,15 @@ public class LibraryActivity extends BaseActivity {
             changeGroupMenu.setVisible(true);
             folderMenu.setVisible(!isMultipleSelection);
             redownloadMenu.setVisible(selectedDownloadedCount > 0);
-            downloadMenu.setVisible(selectedOnlineCount > 0);
+            downloadMenu.setVisible(selectedStreamedCount > 0);
             streamMenu.setVisible(selectedDownloadedCount > 0);
             coverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
+            mergeMenu.setVisible(
+                    (selectedLocalCount > 1 && 0 == selectedStreamedCount && 0 == selectedExternalCount)
+                            || (selectedStreamedCount > 1 && 0 == selectedLocalCount && 0 == selectedExternalCount)
+                            || (selectedExternalCount > 1 && 0 == selectedLocalCount && 0 == selectedStreamedCount)
+            ); // Can only merge downloaded or streamed content together
+            splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         }
     }
 
@@ -1116,6 +1132,7 @@ public class LibraryActivity extends BaseActivity {
      */
 
     private static class LibraryPagerAdapter extends FragmentStateAdapter {
+
         LibraryPagerAdapter(FragmentActivity fa) {
             super(fa);
         }
@@ -1123,20 +1140,16 @@ public class LibraryActivity extends BaseActivity {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
-            if (Grouping.FLAT.equals(Preferences.getGroupingDisplay())) {
-                return new LibraryContentFragment();
+            if (0 == position) {
+                return new LibraryGroupsFragment();
             } else {
-                if (0 == position) {
-                    return new LibraryGroupsFragment();
-                } else {
-                    return new LibraryContentFragment();
-                }
+                return new LibraryContentFragment();
             }
         }
 
         @Override
         public int getItemCount() {
-            return (Grouping.FLAT.equals(Preferences.getGroupingDisplay())) ? 1 : 2;
+            return 2;
         }
     }
 }

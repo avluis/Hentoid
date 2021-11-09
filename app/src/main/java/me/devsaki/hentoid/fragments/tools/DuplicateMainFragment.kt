@@ -72,7 +72,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     ): View {
         _binding = FragmentDuplicateMainBinding.inflate(inflater, container, false)
         addCustomBackControl()
-        activity.get()?.initFragmentToolbars(this::toolbarOnItemClicked)
+        activity.get()?.initFragmentToolbars(this::onToolbarItemClicked)
         return binding.root
     }
 
@@ -142,7 +142,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         requireActivity().onBackPressed()
     }
 
-    private fun toolbarOnItemClicked(menuItem: MenuItem): Boolean {
+    private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_settings -> setSettingsPanelVisibility()
         }
@@ -285,7 +285,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         // Group by reference book and count duplicates
         val entries: MutableList<DuplicateEntry> = ArrayList()
         val map =
-            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumBy { 1 } }.toMap()
+            duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumOf { 1 as Int } }
+                .toMap()
         for (mapEntry in map) {
             if (mapEntry.key != null) {
                 val entry = DuplicateEntry(mapEntry.key!!.id, mapEntry.key!!.size)
@@ -326,7 +327,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         if (ProcessEvent.EventType.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
             disableScanUi()
             setSettingsPanelVisibility(false)
-            ToastHelper.toast(requireContext(), R.string.duplicate_notif_complete_title);
+            ToastHelper.toast(requireContext(), R.string.duplicate_notif_complete_title)
         } else if (binding.controls.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
                 requireContext()
             )

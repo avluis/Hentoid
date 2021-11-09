@@ -192,7 +192,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         ExtensionsFactories.INSTANCE.register(new SelectExtensionFactory());
         EventBus.getDefault().register(this);
-        setRetainInstance(true);
     }
 
     @Override
@@ -203,7 +202,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         initUI(rootView);
-        activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
+        activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
 
         return rootView;
     }
@@ -229,12 +228,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
     public void onEnable() {
         enabled = true;
-        callback.setEnabled(true);
+        if (callback != null) callback.setEnabled(true);
     }
 
     public void onDisable() {
         enabled = false;
-        callback.setEnabled(false);
+        if (callback != null) callback.setEnabled(false);
     }
 
     /**
@@ -335,7 +334,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }
     }
 
-    private boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
+    private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
                 toggleEditMode();
@@ -352,7 +351,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         return true;
     }
 
-    private boolean selectionToolbarOnItemClicked(@NonNull MenuItem menuItem) {
+    private boolean onSelectionToolbarItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit_name:
                 editSelectedItemName();
@@ -469,11 +468,11 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
                 powerMenu.setOnMenuItemClickListener((position, item) -> {
                     int tag = (Integer) item.getTag();
-                    if (0 == tag) {
+                    if (0 == tag) { // Delete books only
                         viewModel.deleteItems(finalContent, Collections.emptyList(), false);
-                    } else if (1 == tag) {
+                    } else if (1 == tag) { // Delete group only
                         viewModel.deleteItems(Collections.emptyList(), finalGroups, true);
-                    } else if (2 == tag) {
+                    } else if (2 == tag) { // Delete groups and books
                         viewModel.deleteItems(finalContent, finalGroups, false);
                     } else {
                         selectExtension.deselect(selectExtension.getSelections()); // Cancel button
@@ -588,7 +587,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             case EV_UPDATE_SORT:
                 updateSortControls();
                 addCustomBackControl();
-                activity.get().initFragmentToolbars(selectExtension, this::toolbarOnItemClicked, this::selectionToolbarOnItemClicked);
+                activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
                 break;
             case EV_ENABLE:
                 onEnable();
@@ -740,6 +739,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      */
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">>Library changed (groups) ! Size=%s", result.size());
+        if (!enabled) return;
 
         // Refresh groups (new content -> updated book count or new groups)
         // TODO do we really want to do that, especially when deleting content ?
@@ -765,7 +765,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             else if (s.equals(Site.NONE))
                 Snackbar.make(recyclerView, R.string.unsupported_site, BaseTransientBottomBar.LENGTH_SHORT).show();
             else
-                ContentHelper.launchBrowserFor(requireContext(), s, query);
+                ContentHelper.launchBrowserFor(requireContext(), query);
         } else {
             viewModel.searchGroup(
                     Preferences.getGroupingDisplay(),

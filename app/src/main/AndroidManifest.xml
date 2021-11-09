@@ -34,7 +34,8 @@
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.SplashActivity"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -63,9 +64,6 @@
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.EHentaiActivity"
-            android:configChanges="orientation|screenSize" />
-        <activity
-            android:name=".activities.sources.FakkuActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.MusesActivity"
@@ -105,6 +103,9 @@
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.sources.AllPornComicActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
+            android:name=".activities.sources.PixivActivity"
             android:configChanges="orientation|screenSize" />
         <activity
             android:name=".activities.LibraryActivity"
@@ -179,7 +180,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activities.IntentActivity"
-            android:theme="@style/Theme.Invisible">
+            android:theme="@style/Theme.Invisible"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -339,7 +341,15 @@
                     android:pathPattern="..*/.*"
                     android:scheme="https" />
                 <data
+                    android:host="porncomixonline.com"
+                    android:pathPattern="..*/.*"
+                    android:scheme="https" />
+                <data
                     android:host="www.porncomixonline.net"
+                    android:pathPattern="..*/.*"
+                    android:scheme="https" />
+                <data
+                    android:host="www.porncomixonline.com"
                     android:pathPattern="..*/.*"
                     android:scheme="https" />
             </intent-filter>
@@ -431,11 +441,31 @@
                     android:pathPattern="/porncomic/..*/"
                     android:scheme="https" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="pixiv.net"
+                    android:pathPattern="/..*/artworks/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="pixiv.net"
+                    android:pathPattern="/..*/user/..*/series/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="pixiv.net"
+                    android:pathPattern="/..*/users/..*"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <activity
             android:name=".activities.ImageViewerActivity"
             android:label="Image Viewer"
+            android:launchMode="singleTask"
             android:theme="@style/Theme.Light.Monochrome">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -445,8 +475,6 @@
         <!-- Services -->
 
         <service android:name=".services.UpdateCheckService" />
-
-        <service android:name=".services.ExternalImportService" />
 
         <service android:name=".services.API29MigrationService" />
 

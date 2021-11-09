@@ -28,6 +28,10 @@ public class GroupItem {
         return content.getTarget();
     }
 
+    public Group getGroup() {
+        return group.getTarget();
+    }
+
     public long getContentId() {
         return content.getTargetId();
     }

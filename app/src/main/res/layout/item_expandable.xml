@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:padding="8dp"
+    tools:targetApi="o">
+
+    <ImageView
+        android:id="@+id/material_drawer_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_keyboard_arrow_up"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/material_drawer_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center_vertical|start"
+        android:lines="1"
+        android:singleLine="true"
+        android:textDirection="anyRtl"
+        android:textSize="@dimen/text_body_2"
+        app:layout_constraintEnd_toStartOf="@id/ivReorder"
+        app:layout_constraintStart_toEndOf="@id/material_drawer_icon"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Some drawer text" />
+
+    <TextView
+        android:id="@+id/material_drawer_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical|start"
+        android:lines="1"
+        android:singleLine="true"
+        android:textDirection="anyRtl"
+        android:textSize="@dimen/caption"
+        app:layout_constraintEnd_toStartOf="@id/ivReorder"
+        app:layout_constraintStart_toEndOf="@id/material_drawer_icon"
+        app:layout_constraintTop_toBottomOf="@id/material_drawer_name"
+        tools:text="Some drawer text" />
+
+    <ImageView
+        android:id="@+id/ivReorder"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_reorder"
+        android:tooltipText="@string/drag_help"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

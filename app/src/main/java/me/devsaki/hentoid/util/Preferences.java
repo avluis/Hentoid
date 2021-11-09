@@ -362,6 +362,17 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.BROWSER_QUICK_DL, Default.BROWSER_QUICK_DL);
     }
 
+    public static int getBrowserQuickDlThreshold() {
+        return Integer.parseInt(sharedPreferences.getString(Key.BROWSER_QUICK_DL_THRESHOLD, Integer.toString(Default.BROWSER_QUICK_DL_THRESHOLD)) + "");
+    }
+
+    public static void setBrowserQuickDlThreshold(int threshold) {
+        sharedPreferences.edit()
+                .putString(Key.BROWSER_QUICK_DL_THRESHOLD, Integer.toString(threshold))
+                .apply();
+    }
+
+
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.DL_THREADS_QUANTITY_LISTS,
                 Default.DL_THREADS_QUANTITY_DEFAULT + "") + "");
@@ -565,11 +576,11 @@ public final class Preferences {
         String siteCodesStr = sharedPreferences.getString(Key.ACTIVE_SITES, Default.ACTIVE_SITES) + "";
         if (siteCodesStr.isEmpty()) return Collections.emptyList();
 
-        return Stream.of(siteCodesStr.split(",")).map(s -> Site.searchByCode(Long.parseLong(s))).toList();
+        return Stream.of(siteCodesStr.split(",")).distinct().map(s -> Site.searchByCode(Long.parseLong(s))).toList();
     }
 
     public static void setActiveSites(List<Site> activeSites) {
-        List<Integer> siteCodes = Stream.of(activeSites).map(Site::getCode).toList();
+        List<Integer> siteCodes = Stream.of(activeSites).map(Site::getCode).distinct().toList();
         sharedPreferences.edit()
                 .putString(Key.ACTIVE_SITES, android.text.TextUtils.join(",", siteCodes))
                 .apply();
@@ -816,6 +827,7 @@ public final class Preferences {
         static final String BROWSER_AUGMENTED = "pref_browser_augmented";
         public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
         static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
+        static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";
         static final String FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
         public static final String VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
@@ -908,6 +920,7 @@ public final class Preferences {
         static final boolean BROWSER_AUGMENTED_DEFAULT = true;
         static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
         static final boolean BROWSER_QUICK_DL = true;
+        static final int BROWSER_QUICK_DL_THRESHOLD = 500; // 500ms
         static final int DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_100;
         static final boolean VIEWER_RESUME_LAST_LEFT = true;

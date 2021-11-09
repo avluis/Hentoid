@@ -84,7 +84,6 @@ public class SearchActivity extends BaseActivity {
         Intent intent = getIntent();
         List<Attribute> preSelectedAttributes = null;
         if (intent != null && intent.getExtras() != null) {
-
             SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(intent.getExtras());
             Uri searchUri = parser.getUri();
             excludeClicked = parser.getExcludeMode();
@@ -124,7 +123,7 @@ public class SearchActivity extends BaseActivity {
         sourceTypeButton = findViewById(R.id.textCategorySource);
         sourceTypeButton.setOnClickListener(v -> onAttrButtonClick(excludeClicked, AttributeType.SOURCE));
 
-        CheckBox excludeCheckBox = (CheckBox) findViewById(R.id.checkBox);
+        CheckBox excludeCheckBox = findViewById(R.id.checkBox);
         excludeCheckBox.setOnClickListener(this::onExcludeClick);
         excludeCheckBox.setChecked(excludeClicked);
 

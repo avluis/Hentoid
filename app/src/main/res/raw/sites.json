@@ -38,6 +38,10 @@
     "TOONILY": {
       "hasCoverBasedPageUpdates": true,
       "useCloudflare": true
+    },
+    "PIXIV": {
+      "useWebviewAgent": false,
+      "parallelDownloadCap": 3
     }
   }
 }
