@@ -5,11 +5,9 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,12 +29,12 @@ public class AdBlocker {
     private static final Set<String> universalUrlBlacklist = new HashSet<>();
     private static final Set<String> universalUrlWhitelist = new HashSet<>();
     // Local lists (applied to current site)
-    private final List<String> localUrlBlacklist = new ArrayList<>();
-    private final List<String> localUrlWhitelist = new ArrayList<>();
-    private final List<Pattern> jsUrlPatternWhitelist = Collections.synchronizedList(new ArrayList<>());
-    private final List<String> jsContentBlacklist = new ArrayList<>();
+    private final Set<String> localUrlBlacklist = Collections.synchronizedSet(new HashSet<>());
+    private final Set<String> localUrlWhitelist = Collections.synchronizedSet(new HashSet<>());
+    private final Set<Pattern> jsUrlPatternWhitelist = Collections.synchronizedSet(new HashSet<>());
+    private final Set<String> jsContentBlacklist = Collections.synchronizedSet(new HashSet<>());
 
-    private final List<String> jsBlacklistCache = Collections.synchronizedList(new ArrayList<>());
+    private final Set<String> jsBlacklistCache = Collections.synchronizedSet(new HashSet<>());
 
 
     static {
@@ -59,10 +57,12 @@ public class AdBlocker {
      */
     private boolean isUrlBlacklisted(@NonNull String url) {
         // First search into the local list...
-        for (String s : localUrlBlacklist) {
-            if (url.contains(s)) {
-                if (BuildConfig.DEBUG) Timber.v("Blacklisted URL blocked (local) : %s", url);
-                return true;
+        synchronized (localUrlBlacklist) {
+            for (String s : localUrlBlacklist) {
+                if (url.contains(s)) {
+                    if (BuildConfig.DEBUG) Timber.v("Blacklisted URL blocked (local) : %s", url);
+                    return true;
+                }
             }
         }
         // ...then into the universal list
@@ -83,10 +83,12 @@ public class AdBlocker {
      */
     private boolean isUrlWhitelisted(@NonNull String url) {
         // First search into the local simple list...
-        for (String s : localUrlWhitelist) {
-            if (url.contains(s)) {
-                if (BuildConfig.DEBUG) Timber.v("Whitelisted URL (local) : %s", url);
-                return true;
+        synchronized (localUrlWhitelist) {
+            for (String s : localUrlWhitelist) {
+                if (url.contains(s)) {
+                    if (BuildConfig.DEBUG) Timber.v("Whitelisted URL (local) : %s", url);
+                    return true;
+                }
             }
         }
         // ...then into the global simple list...
@@ -97,11 +99,13 @@ public class AdBlocker {
             }
         }
         // ...then into the js pattern list (more costly)
-        for (Pattern p : jsUrlPatternWhitelist) {
-            Matcher matcher = p.matcher(url);
-            if (matcher.find()) {
-                if (BuildConfig.DEBUG) Timber.v("Whitelisted URL (pattern) : %s", url);
-                return true;
+        synchronized (jsUrlPatternWhitelist) {
+            for (Pattern p : jsUrlPatternWhitelist) {
+                Matcher matcher = p.matcher(url);
+                if (matcher.find()) {
+                    if (BuildConfig.DEBUG) Timber.v("Whitelisted URL (pattern) : %s", url);
+                    return true;
+                }
             }
         }
         return false;
@@ -180,12 +184,14 @@ public class AdBlocker {
                 if (null == body) throw new IOException("Empty body");
 
                 String jsBody = body.string().toLowerCase();
-                for (String s : jsContentBlacklist)
-                    if (jsBody.contains(s)) {
-                        Timber.d(">> grey file %s BLOCKED", url);
-                        jsBlacklistCache.add(cleanUrl);
-                        return true;
-                    }
+                synchronized (jsContentBlacklist) {
+                    for (String s : jsContentBlacklist)
+                        if (jsBody.contains(s)) {
+                            Timber.d(">> grey file %s BLOCKED", url);
+                            jsBlacklistCache.add(cleanUrl);
+                            return true;
+                        }
+                }
             } catch (IOException e) {
                 Timber.e(e);
             } catch (IllegalArgumentException iae) {
