@@ -268,7 +268,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 fastAdapter2.setOnPreClickListener(helper::onPreClickListener);
                 fastAdapter2.setOnPreLongClickListener((v, a, i, p) -> {
                     // Warning : specific code for drag selection
-                    mDragSelectTouchListener.startDragSelection(p);
+                    mDragSelectTouchListener2.startDragSelection(p);
                     return helper.onPreLongClickListener(v, a, i, p);
                 });
             }
@@ -362,6 +362,8 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 };
                 glm.setSpanSizeLookup(spanSizeLookup);
             }
+
+            if (touchHelper != null) touchHelper.attachToRecyclerView(null);
 
             recyclerView.setAdapter(fastAdapter);
 
