@@ -255,24 +255,6 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             if (!fastAdapter2.hasObservers()) fastAdapter2.setHasStableIds(true);
             itemAdapter2.clear();
 
-            // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
-            SelectExtension<SubExpandableItem> selectExtension2 = fastAdapter2.getOrCreateExtension(SelectExtension.class);
-            if (selectExtension2 != null) {
-                selectExtension2.setSelectable(true);
-                selectExtension2.setMultiSelect(true);
-                selectExtension2.setSelectOnLongClick(true);
-                selectExtension2.setSelectWithItemUpdate(true);
-                selectExtension2.setSelectionListener((i, b) -> this.onSelectionChanged());
-
-                FastAdapterPreClickSelectHelper<SubExpandableItem> helper = new FastAdapterPreClickSelectHelper<>(selectExtension2);
-                fastAdapter2.setOnPreClickListener(helper::onPreClickListener);
-                fastAdapter2.setOnPreLongClickListener((v, a, i, p) -> {
-                    // Warning : specific code for drag selection
-                    mDragSelectTouchListener2.startDragSelection(p);
-                    return helper.onPreLongClickListener(v, a, i, p);
-                });
-            }
-
             ExpandableExtension<SubExpandableItem> expandableExtension = fastAdapter2.getOrCreateExtension(ExpandableExtension.class);
 
             GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
@@ -312,14 +294,10 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             );
 
             // Select on swipe
-            DragSelectTouchListener.OnDragSelectListener onDragSelectionListener = (start, end, isSelected) -> selectExtension2.select(IntStream.rangeClosed(start, end).boxed().toList());
-            mDragSelectTouchListener2 = new DragSelectTouchListener()
-                    .withSelectListener(onDragSelectionListener);
             if (mDragSelectTouchListener != null) {
                 recyclerView.removeOnItemTouchListener(mDragSelectTouchListener);
                 mDragSelectTouchListener = null;
             }
-            recyclerView.addOnItemTouchListener(mDragSelectTouchListener2);
         } else {
             if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
             itemAdapter.clear();
