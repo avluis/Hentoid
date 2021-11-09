@@ -887,7 +887,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         List<String> blockedTagsLocal = ContentHelper.getBlockedTags(currentContent);
         if (!blockedTagsLocal.isEmpty()) {
             if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
-                ToastHelper.toast(getResources().getString(R.string.blocked_tag, blockedTags.get(0)));
+                ToastHelper.toast(getResources().getString(R.string.blocked_tag, blockedTagsLocal.get(0)));
             } else { // Insert directly as an error
                 List<ErrorRecord> errors = new ArrayList<>();
                 errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tags : " + TextUtils.join(", ", blockedTagsLocal), Instant.now()));
