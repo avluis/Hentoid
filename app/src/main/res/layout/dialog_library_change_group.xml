@@ -38,8 +38,8 @@
         android:background="@drawable/bg_spinner_border"
         android:gravity="center_vertical"
         android:padding="8dp"
-        android:visibility="gone"
         android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/change_group_existing_radio"
         app:spinner_arrow_gravity="end"
@@ -55,26 +55,30 @@
         android:id="@+id/change_group_new_radio"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:checked="false"
         android:layout_marginTop="8dp"
+        android:checked="false"
         android:text="@string/group_new"
         android:textColor="?colorOnSurface"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/change_group_existing_list" />
 
-    <EditText
+    <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/change_group_new_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:ems="10"
-        android:inputType="textPersonName"
         android:hint="@string/group_new_name"
-        android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/change_group_new_radio"
-        tools:visibility="visible" />
+        tools:visibility="visible">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <RadioButton
         android:id="@+id/remove_group_radio"

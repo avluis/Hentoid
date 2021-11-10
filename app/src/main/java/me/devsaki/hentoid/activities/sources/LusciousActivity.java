@@ -36,7 +36,7 @@ public class LusciousActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         LusciousWebClient client = new LusciousWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        client.adBlocker.addUrlWhitelist(DOMAIN_FILTER);
+        client.adBlocker.addJsUrlWhitelist(DOMAIN_FILTER);
         //client.addDirtyElements(DIRTY_ELEMENTS);
 
         // Init fetch handler here for convenience
@@ -72,7 +72,8 @@ public class LusciousActivity extends BaseWebActivity {
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            content -> super.processContent(content, content.getGalleryUrl(), quickDownload)
+                            content -> super.processContent(content, content.getGalleryUrl(), quickDownload),
+                            Timber::e
                     )
             );
             return null;

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
@@ -12,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.annimon.stream.Stream
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -24,7 +26,10 @@ import me.devsaki.hentoid.activities.bundles.DuplicateItemBundle
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.databinding.FragmentDuplicateDetailsBinding
+import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.events.CommunicationEvent
+import me.devsaki.hentoid.fragments.ProgressDialogFragment
+import me.devsaki.hentoid.fragments.library.MergeDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewholders.DuplicateItem
@@ -37,7 +42,9 @@ import org.greenrobot.eventbus.ThreadMode
 import timber.log.Timber
 import java.lang.ref.WeakReference
 
-class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
+@Suppress("PrivatePropertyName")
+class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
+    MergeDialogFragment.Parent {
 
     private var _binding: FragmentDuplicateDetailsBinding? = null
     private val binding get() = _binding!!
@@ -100,6 +107,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
     ): View {
         _binding = FragmentDuplicateDetailsBinding.inflate(inflater, container, false)
         addCustomBackControl()
+        activity.get()?.initFragmentToolbars(this::onToolbarItemClicked)
         return binding.root
     }
 
@@ -119,14 +127,15 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val vmFactory = ViewModelFactory(requireActivity().application)
+        viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
 
+        // List
         binding.list.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         FastScrollerBuilder(binding.list).build()
         binding.list.adapter = fastAdapter
 
-        val vmFactory = ViewModelFactory(requireActivity().application)
-        viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
         viewModel.selectedDuplicates.observe(
             viewLifecycleOwner,
             { l: List<DuplicateEntry>? -> this.onDuplicatesChanged(l) })
@@ -186,7 +195,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
             return
         }
 
-        if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null))
+        if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null, false))
             ToastHelper.toast(R.string.err_no_content)
     }
 
@@ -203,6 +212,18 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
 
         // TODO update UI title
 
+        activity.get()?.updateTitle(duplicates.size)
+        val contentStream =
+            duplicates.map(DuplicateEntry::duplicateContent)
+        val localCount = contentStream.map { return@map Content::getStatus }
+            .filter { s -> !s.equals(StatusContent.EXTERNAL) }.count()
+        val externaCount = duplicates.size - localCount
+        val streamedCount = contentStream.map { return@map Content::getDownloadMode }
+            .filter { mode -> mode.equals(Content.DownloadMode.STREAM) }.count()
+
+        // streamed, external
+        activity.get()?.updateToolbar(localCount, externaCount, streamedCount)
+
         // Order by relevance desc and transforms to DuplicateItem
         val items = duplicates.sortedByDescending { it.calcTotalScore() }
             .map { DuplicateItem(it, DuplicateItem.ViewType.DETAILS) }.toMutableList()
@@ -218,6 +239,20 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
         }
     }
 
+    private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
+        when (menuItem.itemId) {
+            R.id.action_merge -> {
+                MergeDialogFragment.invoke(
+                    this,
+                    Stream.of(itemAdapter.adapterItems)
+                        .map<Content> { obj: DuplicateItem -> obj.content }
+                        .toList()
+                )
+            }
+        }
+        return true
+    }
+
     private fun onEnable() {
         enabled = true
         callback?.isEnabled = true
@@ -226,5 +261,24 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details) {
     private fun onDisable() {
         enabled = false
         callback?.isEnabled = false
+    }
+
+    override fun mergeContents(contentList: MutableList<Content>, newTitle: String) {
+        viewModel.mergeContents(
+            contentList,
+            newTitle
+        ) {
+            ToastHelper.toast(R.string.merge_success)
+            activity.get()?.goBackToMain()
+        }
+        ProgressDialogFragment.invoke(
+            parentFragmentManager,
+            resources.getString(R.string.merge_progress),
+            resources.getString(R.string.pages)
+        )
+    }
+
+    override fun leaveSelectionMode() {
+        // Not applicable to this screen
     }
 }

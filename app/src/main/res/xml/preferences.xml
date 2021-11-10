@@ -177,6 +177,15 @@
             android:summary="@string/pref_browser_quick_dl_summary"
             android:title="@string/pref_browser_quick_dl_title"
             app:iconSpaceReserved="false" />
+        <ListPreference
+            android:defaultValue="@string/pref_browser_quick_dl_threshold_default"
+            android:entries="@array/pref_browser_quick_dl_threshold_entries"
+            android:entryValues="@array/pref_browser_quick_dl_threshold_values"
+            android:dependency="pref_browser_quick_dl"
+            android:key="pref_browser_quick_dl_threshold"
+            android:summary="@string/pref_browser_quick_dl_threshold_summary"
+            android:title="@string/pref_browser_quick_dl_threshold_title"
+            app:iconSpaceReserved="false" />
         <CheckBoxPreference
             android:defaultValue="@string/pref_browser_resume_last_default"
             android:key="pref_browser_resume_last"

@@ -2,18 +2,23 @@ package me.devsaki.hentoid.util;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.drawable.InsetDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Pair;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
@@ -36,6 +41,7 @@ import javax.annotation.Nonnull;
 
 import io.reactivex.disposables.Disposable;
 import io.whitfin.siphash.SipHasher;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
@@ -140,7 +146,7 @@ public final class Helper {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
         int len;
         while ((len = stream.read(buffer)) > -1) baos.write(buffer, 0, len);
         baos.flush();
@@ -284,7 +290,9 @@ public final class Helper {
         return (denominator > 0) ? numerator / denominator : 0;
     }
 
-    // TODO doc
+    /**
+     * Cleans the given Disposable as soon as the attached Lifecycle is destroyed
+     */
     public static class LifecycleRxCleaner implements LifecycleObserver {
 
         private final Disposable disposable;
@@ -304,12 +312,41 @@ public final class Helper {
         }
     }
 
-    // TODO doc
+    /**
+     * Generate an ID for a RecyclerView ViewHolder without any ID to assign to
+     *
+     * @return Generated ID
+     */
     public static long generateIdForPlaceholder() {
         long result = new Random().nextLong();
         // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
         while (result < 1e6) result = new Random().nextLong();
         return result;
+    }
+
+    /**
+     * Try to enrich the given Menu to make its associated icons displayable
+     * Fails silently (with a log) if not possible
+     * Inspired by https://material.io/components/menus/android#dropdown-menus
+     *
+     * @param context Context to use
+     * @param menu    Menu to display
+     */
+    @SuppressLint("RestrictedApi")
+    public static void tryShowMenuIcons(@NonNull Context context, @NonNull Menu menu) {
+        try {
+            if (menu instanceof MenuBuilder) {
+                MenuBuilder builder = (MenuBuilder) menu;
+                builder.setOptionalIconsVisible(true);
+                int iconMarginPx = (int) context.getResources().getDimension(R.dimen.icon_margin);
+                for (MenuItem item : builder.getVisibleItems()) {
+                    if (item.getIcon() != null)
+                        item.setIcon(new InsetDrawable(item.getIcon(), iconMarginPx, 0, iconMarginPx, 0));
+                }
+            }
+        } catch (Exception e) {
+            Timber.i(e);
+        }
     }
 
     /**

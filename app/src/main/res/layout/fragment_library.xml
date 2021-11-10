@@ -13,7 +13,8 @@
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/library_menu"
-        app:navigationIcon="@drawable/ic_drawer" />
+        app:navigationIcon="@drawable/ic_drawer"
+        app:navigationContentDescription="@string/open_drawer"/>
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/library_selection_toolbar"

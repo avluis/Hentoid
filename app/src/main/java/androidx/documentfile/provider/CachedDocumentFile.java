@@ -130,7 +130,7 @@ public class CachedDocumentFile extends DocumentFile {
 
     public boolean renameTo(@NonNull String arg0) {
         if (mWrapped.renameTo(arg0)) {
-            invalidate();
+            invalidate(); // We can't value mName because renaming to an existing name in the same folder can result in unspecified behaviour (e.g. "newName (1).ext")
             return true;
         }
         return false;

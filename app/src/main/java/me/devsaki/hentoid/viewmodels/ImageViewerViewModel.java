@@ -25,15 +25,12 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Random;
@@ -41,6 +38,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -55,6 +53,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
@@ -69,17 +68,17 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException;
+import me.devsaki.hentoid.util.download.DownloadHelper;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -94,6 +93,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Number of concurrent image downloads
     private static final int CONCURRENT_DOWNLOADS = 3;
+
+    private static final Pattern VANILLA_CHAPTERNAME_PATTERN = Pattern.compile("Chapter [0-9]+");
 
     // Collection DAO
     private final CollectionDAO dao;
@@ -118,8 +119,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Write cache for read indicator (no need to update DB and JSON at every page turn)
     private final Set<Integer> readPageNumbers = new HashSet<>();
 
-    // TODO doc
-    private final Map<Integer, String> imageLocations = new HashMap<>();
+    // Cache for image locations according to their order
+    private final Map<Integer, String> imageLocationCache = new HashMap<>();
     // Switch to interrupt unarchiving when leaving the activity
     private final AtomicBoolean interruptArchiveLoad = new AtomicBoolean(false);
     // Page indexes that are being downloaded
@@ -225,7 +226,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
-        if (imageLocations.isEmpty() || newImages.size() != imageLocations.size()) {
+        if (imageLocationCache.isEmpty() || newImages.size() != imageLocationCache.size()) {
             if (theContent.isArchive())
                 observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptArchiveLoad, emitter));
             else
@@ -252,7 +253,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             () -> {
                                 EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
                                 for (ImageFile img : newImages)
-                                    imageLocations.put(img.getOrder(), img.getFileUri());
+                                    imageLocationCache.put(img.getOrder(), img.getFileUri());
                                 initViewer(theContent, -1, newImages);
                                 imageLoadDisposable.dispose();
                             }
@@ -261,7 +262,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             // Copy location properties of the new list on the current list
             for (int i = 0; i < newImages.size(); i++) {
                 ImageFile newImg = newImages.get(i);
-                String location = imageLocations.get(newImg.getOrder());
+                String location = imageLocationCache.get(newImg.getOrder());
                 newImg.setFileUri(location);
             }
 
@@ -370,7 +371,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         } else { // Refresh current book with new data
             for (int i = 0; i < newImageFiles.size(); i++) {
                 ImageFile newImg = newImageFiles.get(i);
-                String location = imageLocations.get(newImg.getOrder());
+                String location = imageLocationCache.get(newImg.getOrder());
                 newImg.setFileUri(location);
             }
 
@@ -395,7 +396,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Feed the Uri's of unzipped files back into the corresponding images for viewing
         for (ImageFile img : imageFiles) {
-            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(ArchiveHelper.extractCacheFileName(path))) {
+            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(ArchiveHelper.extractFileNameFromCacheName(path))) {
                 return img.setFileUri(uri.toString());
             }
         }
@@ -708,7 +709,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doDeleteBook(@NonNull Content targetContent) throws ContentNotRemovedException {
+    private void doDeleteBook(@NonNull Content targetContent) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
         ContentHelper.removeQueuedContent(getApplication(), dao, targetContent);
     }
@@ -786,13 +787,16 @@ public class ImageViewerViewModel extends AndroidViewModel {
         theContent.setFirst(0 == currentContentIndex);
         theContent.setLast(currentContentIndex >= contentIds.size() - 1);
         if (contentIds.size() > currentContentIndex && loadedContentId != contentIds.get(currentContentIndex))
-            imageLocations.clear();
+            imageLocationCache.clear();
         content.postValue(theContent);
+        processImages(theContent, pageNumber);
+    }
 
+    private void processImages(@NonNull Content theContent, int pageNumber) {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
-        currentImageSource = dao.selectDownloadedImagesFromContent(theContent.getId());
+        currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.getId());
         databaseImages.addSource(currentImageSource, imgs -> setImages(theContent, pageNumber, imgs));
     }
 
@@ -808,7 +812,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private Content doUpdateContentPreferences(@NonNull final Context context, long contentId, @NonNull final Map<String, String> newPrefs) {
+    private Content doUpdateContentPreferences(@NonNull final Context context, long contentId,
+                                               @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
 
         Content theContent = dao.selectContent(contentId);
@@ -849,12 +854,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
         readPageNumbers.add(pageNumber);
     }
 
+    public void repostImages() {
+        viewerImages.postValue(viewerImages.getValue());
+    }
+
     public synchronized void setCurrentPage(int pageIndex, int direction) {
         if (viewerImagesInternal.size() <= pageIndex) return;
 
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
-        if (isPictureDownloadable(pageIndex, viewerImagesInternal)) indexesToLoad.add(pageIndex);
+        if (isPictureDownloadable(pageIndex, viewerImagesInternal))
+            indexesToLoad.add(pageIndex);
         if (isPictureDownloadable(pageIndex + increment, viewerImagesInternal))
             indexesToLoad.add(pageIndex + increment);
         if (isPictureDownloadable(pageIndex + 2 * increment, viewerImagesInternal))
@@ -908,7 +918,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
                                                 // Instanciate a new list to trigger an actual Adapter UI refresh
                                                 viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
-                                                imageLocations.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
+                                                imageLocationCache.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
                                             }
                                         },
                                         Timber::w
@@ -951,7 +961,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull final AtomicBoolean stopDownload) {
         Helper.assertNonUiThread();
         Content content = getContent().getValue();
-        if (null == content || viewerImagesInternal.size() <= pageIndex) return Optional.empty();
+        if (null == content || viewerImagesInternal.size() <= pageIndex)
+            return Optional.empty();
 
         ImageFile img = viewerImagesInternal.get(pageIndex);
         // Already downloaded
@@ -989,7 +1000,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
                         if (!cookieStr.isEmpty())
                             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
-                        result = downloadPictureToCachedFile(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
+                        result = DownloadHelper.downloadToFile(
+                                content.getSite(),
+                                img.getUrl(),
+                                pageIndex,
+                                headers,
+                                targetFolder,
+                                targetFileName,
+                                null,
+                                stopDownload,
+                                f -> notifyDownloadProgress(f, pageIndex)
+                        );
                     }
                     targetFile = result.left;
                     mimeType = result.right;
@@ -1008,14 +1029,28 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return Optional.empty();
     }
 
-    // TODO doc
+    /**
+     * Download the picture represented by the given ImageFile to the given disk location
+     *
+     * @param content           Corresponding Content
+     * @param img               ImageFile of the page to download
+     * @param pageIndex         Index of the page to download
+     * @param requestHeaders    HTTP request headers to use
+     * @param targetFolder      Folder where to save the downloaded resource
+     * @param targetFileName    Name of the file to save the downloaded resource
+     * @param interruptDownload Used to interrupt the download whenever the value switches to true. If that happens, the file will be deleted.
+     * @return Pair containing
+     * - Left : Downloaded file
+     * - Right : Detected mime-type of the downloades resource
+     * @throws UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException in case something horrible happens
+     */
     private ImmutablePair<File, String> downloadPictureFromPage(@NonNull Content content,
                                                                 @NonNull ImageFile img,
                                                                 int pageIndex,
                                                                 List<Pair<String, String>> requestHeaders,
                                                                 @NonNull File targetFolder,
                                                                 @NonNull String targetFileName,
-                                                                @NonNull final AtomicBoolean stopDownload) throws
+                                                                @NonNull final AtomicBoolean interruptDownload) throws
             UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException {
         Site site = content.getSite();
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
@@ -1024,78 +1059,34 @@ public class ImageViewerViewModel extends AndroidViewModel {
         img.setUrl(pages.left);
         // Download the picture
         try {
-            return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
+            return DownloadHelper.downloadToFile(
+                    content.getSite(),
+                    img.getUrl(),
+                    pageIndex,
+                    requestHeaders,
+                    targetFolder,
+                    targetFileName,
+                    null,
+                    interruptDownload,
+                    f -> notifyDownloadProgress(f, pageIndex)
+            );
         } catch (IOException e) {
             if (pages.right.isPresent()) Timber.d("First download failed; trying backup URL");
             else throw e;
         }
         // Trying with backup URL
         img.setUrl(pages.right.get());
-        return downloadPictureToCachedFile(content, img, pageIndex, requestHeaders, targetFolder, targetFileName, stopDownload);
-    }
-
-    // TODO doc
-    private ImmutablePair<File, String> downloadPictureToCachedFile(
-            @NonNull Content content,
-            @NonNull ImageFile img,
-            int pageIndex,
-            List<Pair<String, String>> requestHeaders,
-            @NonNull File targetFolder,
-            @NonNull String targetFileName,
-            @NonNull final AtomicBoolean interruptDownload) throws IOException, UnsupportedContentException, DownloadInterruptedException {
-
-        if (interruptDownload.get()) throw new DownloadInterruptedException("Download interrupted");
-
-        Site site = content.getSite();
-        Timber.d("DOWNLOADING PIC %d %s", pageIndex, img.getUrl());
-        Response response = HttpHelper.getOnlineResourceFast(img.getUrl(), requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
-        Timber.d("DOWNLOADING PIC %d - RESPONSE %s", pageIndex, response.code());
-        if (response.code() >= 300) throw new IOException("Network error " + response.code());
-
-        ResponseBody body = response.body();
-        if (null == body)
-            throw new IOException("Could not read response : empty body for " + img.getUrl());
-
-        long size = body.contentLength();
-        // TODO if size can't be found (e.g. content-length header not set), guess it by looking at the size of the other downloaded pics
-        if (size < 1) size = 1;
-
-        File targetFile = new File(targetFolder.getAbsolutePath() + File.separator + targetFileName);
-        String mimeType = "";
-        if (!targetFile.createNewFile())
-            throw new IOException("Could not create file " + targetFile.getPath());
-
-        Timber.d("WRITING DOWNLOADED PIC %d TO %s (size %.2f KB)", pageIndex, targetFile.getAbsolutePath(), size / 1024.0);
-        byte[] buffer = new byte[4196];
-        int len;
-        long processed = 0;
-        int iteration = 0;
-        try (InputStream in = body.byteStream(); OutputStream out = FileHelper.getOutputStream(targetFile)) {
-            while ((len = in.read(buffer)) > -1) {
-                if (interruptDownload.get()) break;
-                processed += len;
-                // Read mime-type on the fly
-                if (0 == iteration) {
-                    mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
-                    if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
-                        String message = String.format(Locale.ENGLISH, "Invalid mime-type received from %s (size=%.2f)", img.getUrl(), size / 1024.0);
-                        throw new UnsupportedContentException(message);
-                    }
-                }
-                if (0 == ++iteration % 50) // Notify every 200KB
-                    notifyDownloadProgress((processed * 100f) / size, pageIndex);
-                out.write(buffer, 0, len);
-            }
-            if (!interruptDownload.get()) {
-                notifyDownloadProgress(100, pageIndex);
-                out.flush();
-                Timber.d("DOWNLOADED PIC %d [%s] WRITTEN TO %s (%.2f KB)", pageIndex, mimeType, targetFile.getAbsolutePath(), targetFile.length() / 1024.0);
-                return new ImmutablePair<>(targetFile, mimeType);
-            }
-        }
-        // Remove the remaining file chunk if download has been interrupted
-        FileHelper.removeFile(targetFile);
-        throw new DownloadInterruptedException("Download interrupted");
+        return DownloadHelper.downloadToFile(
+                content.getSite(),
+                img.getUrl(),
+                pageIndex,
+                requestHeaders,
+                targetFolder,
+                targetFileName,
+                null,
+                interruptDownload,
+                f -> notifyDownloadProgress(f, pageIndex)
+        );
     }
 
     /**
@@ -1158,5 +1149,325 @@ public class ImageViewerViewModel extends AndroidViewModel {
         } else {
             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.page_download, pageIndex, progress, 0, 100));
         }
+    }
+
+    /**
+     * Strip all chapters from the current Content
+     * NB : All images are kept; only chapters are removed
+     *
+     * @param onError Callback in case processing fails
+     */
+    public void stripChapters(@NonNull Consumer<Throwable> onError) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> dao.deleteChapters(theContent))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> processImages(theContent, -1), // Force reload images
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    /**
+     * Create or remove a chapter at the given position
+     * - If the given position is the first page of a chapter -> remove this chapter
+     * - If not, create a new chapter at this position
+     *
+     * @param selectedPage Position to remove or create a chapter at
+     * @param onError      Callback in case processing fails
+     */
+    public void createRemoveChapter(@NonNull ImageFile selectedPage, @NonNull Consumer<Throwable> onError) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doCreateRemoveChapter(theContent.getId(), selectedPage))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> processImages(theContent, -1), // Force reload images
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    /**
+     * Create or remove a chapter at the given position
+     * * - If the given position is the first page of a chapter -> remove this chapter
+     * * - If not, create a new chapter at this position
+     *
+     * @param contentId    ID of the corresponding content
+     * @param selectedPage Position to remove or create a chapter at
+     */
+    private void doCreateRemoveChapter(long contentId, @NonNull ImageFile selectedPage) {
+        Helper.assertNonUiThread();
+
+        Content theContent = dao.selectContent(contentId); // Work on a fresh content
+        if (null == theContent) throw new IllegalArgumentException("No content found");
+
+        Chapter currentChapter = selectedPage.getLinkedChapter();
+        // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
+        if (null == currentChapter) {
+            currentChapter = new Chapter(1, "", "Chapter 1");
+            currentChapter.setImageFiles(viewerImagesInternal);
+            // Link images the other way around so that what follows works properly
+            for (ImageFile img : viewerImagesInternal) img.setChapter(currentChapter);
+            currentChapter.setContent(theContent);
+        }
+
+        List<ImageFile> chapterImages = currentChapter.getImageFiles();
+        if (null == chapterImages || chapterImages.isEmpty())
+            throw new IllegalArgumentException("No images found for selection");
+
+        if (selectedPage.getOrder() < 2)
+            throw new IllegalArgumentException("Can't create or remove chapter on first page");
+
+        // If we tap the 1st page of an existing chapter, it means we're removing it
+        Optional<ImageFile> firstChapterPic = Stream.of(chapterImages).sortBy(ImageFile::getOrder).findFirst();
+        boolean isRemoving = (firstChapterPic.get().getOrder().intValue() == selectedPage.getOrder().intValue());
+
+        if (isRemoving) doRemoveChapter(theContent, currentChapter, chapterImages);
+        else doCreateChapter(theContent, selectedPage, currentChapter, chapterImages);
+
+        // Rearrange all chapters
+
+        // Work on a clean image set directly from the DAO
+        // (we don't want to depend on LiveData being on time here)
+        List<ImageFile> theViewerImages = dao.selectDownloadedImagesFromContent(theContent.getId());
+        // Rely on the order of pictures to get chapter in the right order
+        List<Chapter> allChapters = Stream.of(theViewerImages)
+                .map(ImageFile::getLinkedChapter)
+                .distinct()
+                .withoutNulls()
+                .filter(c -> c.getOrder() > -1)
+                .toList();
+
+        // Renumber all chapters to reflect changes
+        int order = 1;
+        List<Chapter> updatedChapters = new ArrayList<>();
+        for (Chapter c : allChapters) {
+            // Update names with the default "Chapter x" naming
+            if (VANILLA_CHAPTERNAME_PATTERN.matcher(c.getName()).matches())
+                c.setName("Chapter " + order);
+            // Update order
+            c.setOrder(order);
+            c.setContent(theContent);
+            order++;
+            updatedChapters.add(c);
+        }
+
+        // Save chapters
+        dao.insertChapters(updatedChapters);
+    }
+
+    /**
+     * Create a chapter at the given position, which will become the 1st page of the new chapter
+     *
+     * @param content        Corresponding Content
+     * @param selectedPage   Position to create a new chapter at
+     * @param currentChapter Current chapter at the given position
+     * @param chapterImages  Images of the current chapter at the given position
+     */
+    private void doCreateChapter(
+            @NonNull Content content,
+            @NonNull ImageFile selectedPage,
+            @NonNull Chapter currentChapter,
+            @NonNull List<ImageFile> chapterImages
+    ) {
+        int newChapterOrder = currentChapter.getOrder() + 1;
+        Chapter newChapter = new Chapter(newChapterOrder, "", "Chapter " + newChapterOrder);
+        newChapter.setContent(content);
+
+        // Sort by order
+        chapterImages = Stream.of(chapterImages).sortBy(ImageFile::getOrder).toList();
+
+        // Split pages
+        int firstPageOrder = selectedPage.getOrder();
+        int lastPageOrder = chapterImages.get(chapterImages.size() - 1).getOrder();
+        for (ImageFile img : chapterImages)
+            if (img.getOrder() >= firstPageOrder && img.getOrder() <= lastPageOrder) {
+                Chapter oldChapter = img.getLinkedChapter();
+                if (oldChapter != null) oldChapter.removeImageFile(img);
+                img.setChapter(newChapter);
+                newChapter.addImageFile(img);
+            }
+
+        // Save images
+        dao.insertImageFiles(chapterImages);
+    }
+
+    /**
+     * Remove the given chapter
+     * All pages from this chapter will be affected to the preceding chapter
+     *
+     * @param content       Corresponding Content
+     * @param toRemove      Chapter to remove
+     * @param chapterImages Images of the chapter to remove
+     */
+    private void doRemoveChapter(
+            @NonNull Content content,
+            @NonNull Chapter toRemove,
+            @NonNull List<ImageFile> chapterImages
+    ) {
+        List<Chapter> contentChapters = content.getChapters();
+        if (null == contentChapters) return;
+
+        contentChapters = Stream.of(contentChapters).sortBy(Chapter::getOrder).toList();
+        int removeOrder = toRemove.getOrder();
+
+        // Identify preceding chapter
+        Chapter precedingChapter = null;
+        for (Chapter c : contentChapters) {
+            if (c.getOrder() == removeOrder) break;
+            precedingChapter = c;
+        }
+
+        // Pages of selected chapter will join the preceding chapter
+        for (ImageFile img : chapterImages) img.setChapter(precedingChapter);
+        dao.insertImageFiles(chapterImages);
+        dao.deleteChapter(toRemove);
+    }
+
+    /**
+     * Move the chapter of the current Content from oldIndex to newIndex and renumber pages & files accordingly
+     *
+     * @param oldIndex Old index (0-based) of the chapter to move
+     * @param newIndex New index (0-based) of the chapter to move
+     * @param onError  Callback in case processing fails
+     */
+    public void moveChapter(int oldIndex, int newIndex, Consumer<Throwable> onError) {
+        Content theContent = content.getValue();
+        if (null == theContent) return;
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doMoveChapter(theContent.getId(), oldIndex, newIndex))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> { // Force reload the whole Content
+                                    Content updatedContent = dao.selectContent(theContent.getId());
+                                    if (updatedContent != null) processContent(updatedContent, -1);
+                                },
+                                e -> {
+                                    Timber.e(e);
+                                    onError.accept(e);
+                                }
+                        )
+        );
+    }
+
+    /**
+     * Move the chapter of the given Content from oldPosition to newPosition and renumber pages & files accordingly
+     *
+     * @param contentId ID of the Content to work on
+     * @param oldIndex  Old index (0-based) of the chapter to move
+     * @param newIndex  New index (0-based) of the chapter to move
+     */
+    private void doMoveChapter(long contentId, int oldIndex, int newIndex) {
+        Helper.assertNonUiThread();
+        List<Chapter> chapters = dao.selectChapters(contentId);
+        if (null == chapters || chapters.isEmpty())
+            throw new IllegalArgumentException("No chapters found");
+
+        if (oldIndex < 0 || oldIndex >= chapters.size()) return;
+
+        // Move the item
+        Chapter fromValue = chapters.get(oldIndex);
+        int delta = oldIndex < newIndex ? 1 : -1;
+        for (int i = oldIndex; i != newIndex; i += delta) {
+            chapters.set(i, chapters.get(i + delta));
+        }
+        chapters.set(newIndex, fromValue);
+
+        // Renumber all chapters and update the DB
+        int index = 1;
+        for (Chapter c : chapters) c.setOrder(index++);
+        dao.insertChapters(chapters);
+
+        // Renumber all images and update the DB
+        List<ImageFile> images = Stream.of(chapters).map(Chapter::getImageFiles).withoutNulls().flatMap(Stream::of).toList();
+        if (images.isEmpty())
+            throw new IllegalArgumentException("No imagesfound");
+
+        index = 1;
+        int nbMaxDigits = images.get(images.size() - 1).getName().length(); // Keep existing formatting
+        Map<String, ImageFile> fileNames = new HashMap<>();
+        for (ImageFile img : images) {
+            img.setOrder(index++);
+            img.computeName(nbMaxDigits);
+            fileNames.put(img.getFileUri(), img);
+        }
+
+        // = Rename all files that need to be renamed
+
+        // Compute all renaming tasks
+        List<ImmutableTriple<ImageFile, DocumentFile, String>> firstPass = new ArrayList<>();
+        DocumentFile parentFolder = FileHelper.getFolderFromTreeUriString(getApplication(), chapters.get(0).getContent().getTarget().getStorageUri());
+        if (parentFolder != null) {
+            List<DocumentFile> contentFiles = FileHelper.listFiles(getApplication(), parentFolder, null);
+            for (DocumentFile doc : contentFiles) {
+                ImageFile img = fileNames.get(doc.getUri().toString());
+                if (img != null) {
+                    String docName = doc.getName();
+                    if (docName != null) {
+                        String rawName = FileHelper.getFileNameWithoutExtension(docName);
+                        if (!rawName.equals(img.getName())) {
+                            Timber.d("Adding to 1st pass : %s != %s", rawName, img.getName());
+                            String extension = FileHelper.getExtension(docName);
+                            firstPass.add(new ImmutableTriple<>(img, doc, img.getName() + "." + extension));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Moving pages inside the same folder invariably result in having to give files a name that is already taken during processing
+        // => need to do two passes to make sure every file eventually gets its right name
+
+        // Keep an snapshot of all filenames to keep track of which files belong to the 2nd pass
+        List<String> existingNames = Stream.of(firstPass).map(i -> i.getMiddle().getName()).withoutNulls().toList();
+        List<ImmutableTriple<ImageFile, DocumentFile, String>> secondPass = new ArrayList<>();
+
+        // Run 1st pass
+        int nbImages = firstPass.size();
+        int nbProcessedPics = 1;
+        for (ImmutableTriple<ImageFile, DocumentFile, String> renamingTask : firstPass) {
+            DocumentFile doc = renamingTask.middle;
+            String existingName = StringHelper.protect(doc.getName());
+            String newName = renamingTask.getRight();
+            if (existingNames.contains(newName)) secondPass.add(renamingTask);
+            doc.renameTo(newName);
+            renamingTask.getLeft().setFileUri(doc.getUri().toString());
+            existingNames.remove(existingName);
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, nbImages));
+        }
+
+        // Run 2nd pass
+        nbImages = secondPass.size();
+        nbProcessedPics = 1;
+        for (ImmutableTriple<ImageFile, DocumentFile, String> renamingTask : secondPass) {
+            DocumentFile doc = renamingTask.middle;
+            String newName = renamingTask.getRight();
+            doc.renameTo(newName);
+            renamingTask.getLeft().setFileUri(doc.getUri().toString());
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, nbProcessedPics++, 0, nbImages));
+        }
+
+        dao.insertImageFiles(images);
+
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
+
+        // Reset locations cache as image order has changed
+        imageLocationCache.clear();
     }
 }

@@ -11,6 +11,9 @@
     <string name="goto_page">Go to page…</string>
     <string name="confirm">Confirm</string>
     <string name="please_wait">Please wait…</string>
+    <string name="books">books</string>
+    <string name="pages">pages</string>
+    <string name="files">files</string>
     <string name="undo">Undo</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
@@ -101,7 +104,7 @@
     <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
     <string name="paused_no_internet">Cannot download - No internet</string>
     <string name="paused_no_wifi">Cannot download - No WiFi</string>
-    <string name="paused_no_storage">Cannot download - Low on storage. Free space or change download folder location</string>
+    <string name="paused_no_storage">Cannot download - Low on storage (%s left). Free space or change download folder location</string>
     <string name="paused_no_dl_folder">Cannot download - No download folder. Use app settings to select one</string>
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
@@ -126,6 +129,7 @@
     <string name="work_artist">Artist: %s</string>
     <string name="work_pages_queue">Pages: %1$s%2$s</string>
     <string name="work_pages_library">%1$d pages / "%2$.1f MB</string>
+    <string name="library_metrics_storage">%.0f MB</string>
 
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
@@ -142,6 +146,7 @@
 
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
+    <string name="generic_progress">%1$d / %2$d %3$s</string>
     <string name="book_progress">%1$d / %2$d books</string>
     <string name="group_progress">%1$d / %2$d groups</string>
 
@@ -270,6 +275,7 @@
     </plurals>
     <string name="new_group_name">Name of the new group ?</string>
     <string name="group_edit_name">Edit group name</string>
+    <string name="book_edit_title">Edit book title</string>
     <string name="delete_progress">Deleting books</string>
     <string name="purge_progress">Purging books</string>
     <string name="cancel_queue_progress">Canceling queue items</string>
@@ -305,7 +311,8 @@
     <string name="book_artist">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
     <string name="book_pages_queue">Pages: 1234; estimated 125 MB</string>
     <string name="book_pages_library">1234 pages / 1125 MB</string>
-    <string name="book_tags">""tag1, tag2, tag3, etc.</string>
+    <string name="book_pages_library2">1234 pages / 30 chapters / 1125 MB [Merged]</string>
+    <string name="book_tags">tag1, tag2, tag3, etc.</string>
     <plurals name="number_of_book_search_results">
         <item quantity="one">%d/%d result</item>
         <item quantity="other">%d/%d results</item>
@@ -358,6 +365,7 @@
     <string name="group_new_name">New custom group name</string>
     <string name="group_remove">Detach from current group</string>
     <string name="group_name_exists">Group with that name already exists!</string>
+    <string name="group_name_empty">Group name is empty!</string>
     <plurals name="group_delete_selected_group">
         <item quantity="one">Delete group only</item>
         <item quantity="other">Delete groups only</item>
@@ -371,6 +379,18 @@
         <item quantity="other">Delete groups + books</item>
     </plurals>
     <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
+    <!-- Merge & split -->
+    <string name="merge_merge">Merge</string>
+    <string name="merge_progress">Merging books…</string>
+    <string name="split_progress">Splitting book…</string>
+    <string name="merge_split">Split</string>
+    <string name="new_title">New title</string>
+    <string name="merge_help">After merging, selected books will be deleted</string>
+    <string name="split_select_help">Hold and drag to select\nEach selected chapter creates one new book</string>
+    <string name="split_no_chapters">No chapters created yet :-(</string>
+    <string name="split_create_chapters">Create chapters</string>
+    <string name="merge_success">Content merged successfuly</string>
+    <string name="split_success">Content split successfuly</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
@@ -511,7 +531,6 @@
     <string name="previous_book_help">Previous book</string>
     <string name="next_book_help">Next book</string>
     <string name="gallery_help">Book gallery</string>
-    <string name="gallery_fav_help">Book gallery / favourites only</string>
     <string name="page_fav_help">Mark/unmark page as favourite</string>
     <string name="page_copy_help">Copy page to the Android Downloads folder</string>
     <string name="page_share_help">Share page using another app</string>
@@ -538,7 +557,11 @@
     <string name="viewer_fix">Fix download error</string>
     <string name="viewer_reload_page">Reload page</string>
     <string name="viewer_reparse_book">Reparse book</string>
-
+    <string name="menu_edit_chapters">Edit chapters</string>
+    <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
+    <string name="gallery_clear_chapters">Clear all chapters</string>
+    <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
+    <string name="renaming_progress">Renaming files…</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>
@@ -582,6 +605,7 @@
     <string name="duplicate_notif_complete_desc">%d duplicates detected successfully</string>
     <string name="duplicate_empty_first_use">Nothing to display - Run a new duplicate search</string>
     <string name="duplicate_processing">Duplicate detection in progress</string>
+    <string name="duplicate_detail_title">%d duplicates</string>
     <string name="duplicate_empty_no_result">No duplicates found</string>
     <string name="duplicate_keep">Keep</string>
     <string name="duplicate_delete">Delete</string>

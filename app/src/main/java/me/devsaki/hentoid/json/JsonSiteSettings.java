@@ -15,5 +15,6 @@ public class JsonSiteSettings {
         public Boolean hasCoverBasedPageUpdates = null;
         public Boolean useCloudflare = null;
         public Boolean simulateHumanReading = null;
+        public Integer parallelDownloadCap = null;
     }
 }

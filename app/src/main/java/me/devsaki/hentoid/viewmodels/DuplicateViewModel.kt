@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.work.*
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.subscribeBy
@@ -18,10 +19,11 @@ import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.notification.duplicates.DuplicateNotificationChannel
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
-import me.devsaki.hentoid.util.exception.ContentNotRemovedException
-import me.devsaki.hentoid.util.exception.FileNotRemovedException
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException
+import me.devsaki.hentoid.util.exception.FileNotProcessedException
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
 import me.devsaki.hentoid.workers.data.DuplicateData
+import okhttp3.internal.toImmutableList
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -85,7 +87,9 @@ class DuplicateViewModel(
     }
 
     fun setContent(content: Content) {
-        val selectedDupes = ArrayList(allDuplicates.value?.filter { it.referenceId == content.id })
+        if (null == allDuplicates.value) return
+        val selectedDupes =
+            allDuplicates.value!!.filter { it.referenceId == content.id }.toMutableList()
         // Add reference item on top
         val refEntry = DuplicateEntry(
             content.id,
@@ -103,7 +107,8 @@ class DuplicateViewModel(
     }
 
     fun setBookChoice(content: Content, choice: Boolean) {
-        val selectedDupes = ArrayList(selectedDuplicates.value)
+        if (null == selectedDuplicates.value) return
+        val selectedDupes = selectedDuplicates.value!!.toImmutableList()
         for (dupe in selectedDupes) {
             if (dupe.duplicateId == content.id) dupe.keep = choice
         }
@@ -111,7 +116,8 @@ class DuplicateViewModel(
     }
 
     fun applyChoices(onComplete: Runnable) {
-        val selectedDupes = ArrayList(selectedDuplicates.value)
+        if (null == selectedDuplicates.value) return
+        val selectedDupes = selectedDuplicates.value!!.toImmutableList()
 
         // Mark as "is being deleted" to trigger blink animation
         val toRemove = selectedDupes.toMutableList()
@@ -125,17 +131,18 @@ class DuplicateViewModel(
             Observable.fromIterable(selectedDupes)
                 .observeOn(Schedulers.io())
                 .map {
-                    if (!it.keep) doRemove(it.duplicateId)
+                    // Remove content
+                    if (!it.keep) doRemoveContent(it.duplicateId)
                     it
                 }
                 .doOnNext {
-                    // Update UI
+                    // Remove duplicate entries
                     if (!it.keep) {
                         val newList = selectedDupes.toMutableList()
                         newList.remove(it)
                         selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on
                     }
-                    if (it.titleScore <= 1f) // Just don't try to delete the fake reference entry that has been put there for display
+                    if (it.titleScore <= 1f) // Don't delete the fake reference entry that has been put there for display
                         duplicatesDao.delete(it)
                 }
                 .observeOn(AndroidSchedulers.mainThread())
@@ -151,16 +158,65 @@ class DuplicateViewModel(
         )
     }
 
-    @Throws(ContentNotRemovedException::class)
-    private fun doRemove(contentId: Long) {
+    @Throws(ContentNotProcessedException::class)
+    private fun doRemoveContent(contentId: Long) {
         Helper.assertNonUiThread()
         // Remove content altogether from the DB (including queue)
         val content: Content = dao.selectContent(contentId) ?: return
         try {
             ContentHelper.removeQueuedContent(getApplication(), dao, content)
-        } catch (e: ContentNotRemovedException) {
+        } catch (e: ContentNotProcessedException) {
             // Don't throw the exception if we can't remove something that isn't there
-            if (!(e is FileNotRemovedException && content.storageUri.isEmpty())) throw e
+            if (!(e is FileNotProcessedException && content.storageUri.isEmpty())) throw e
         }
+    }
+
+    fun mergeContents(
+        contentList: List<Content?>,
+        newTitle: String,
+        onSuccess: Runnable
+    ) {
+        if (contentList.isEmpty()) return
+        if (null == selectedDuplicates.value) return
+
+        val selectedDupes = selectedDuplicates.value!!.toImmutableList()
+        val context = getApplication<Application>().applicationContext
+
+        compositeDisposable.add(
+            Single.fromCallable {
+                var result = false
+                try {
+                    // Create merged book
+                    ContentHelper.mergeContents(context, contentList, newTitle, dao)
+
+                    // Mark as "is being deleted" to trigger blink animation
+                    val toRemove = selectedDupes.toMutableList()
+                    for (entry in toRemove) entry.isBeingDeleted = true
+                    selectedDuplicates.postValue(toRemove)
+
+                    // Remove old contents
+                    for (content in contentList) doRemoveContent(content!!.id)
+
+                    // Remove duplicate entries (update UI)
+                    for (dupeEntry in selectedDupes) {
+                        val newList = selectedDupes.toMutableList()
+                        newList.remove(dupeEntry)
+                        selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on
+
+                        if (dupeEntry.titleScore <= 1f) // Don't delete the fake reference entry that has been put there for display
+                            duplicatesDao.delete(dupeEntry)
+                    }
+                    result = true
+                } catch (e: ContentNotProcessedException) {
+                    Timber.e(e)
+                }
+                result
+            }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                    { b: Boolean -> if (b) onSuccess.run() }
+                ) { t: Throwable? -> Timber.e(t) }
+        )
     }
 }

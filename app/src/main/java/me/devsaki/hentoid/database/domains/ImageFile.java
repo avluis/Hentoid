@@ -105,11 +105,9 @@ public class ImageFile {
 
     private static void init(ImageFile imgFile, int order, StatusContent status, int maxPages) {
         imgFile.order = order;
-
-        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
-        imgFile.name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
-
         imgFile.status = status;
+        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
+        imgFile.computeName(nbMaxDigits);
     }
 
     public long getId() {
@@ -152,6 +150,11 @@ public class ImageFile {
 
     public ImageFile setName(String name) {
         this.name = name;
+        return this;
+    }
+
+    public ImageFile computeName(int nbMaxDigits) {
+        name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
         return this;
     }
 
@@ -271,6 +274,11 @@ public class ImageFile {
     }
 
     @Nullable
+    public Chapter getLinkedChapter() {
+        return (chapter != null && !chapter.isNull()) ? chapter.getTarget() : null;
+    }
+
+    @Nullable
     public ToOne<Chapter> getChapter() {
         return chapter;
     }
@@ -313,16 +321,17 @@ public class ImageFile {
                 Objects.equals(getUrl(), imageFile.getUrl())
                 && Objects.equals(getPageUrl(), imageFile.getPageUrl())
                 && Objects.equals(getFileUri(), imageFile.getFileUri())
+                && Objects.equals(getOrder(), imageFile.getOrder())
                 && Objects.equals(isCover(), imageFile.isCover()); // Sometimes the thumb picture has the same URL as the 1st page
     }
 
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getPageUrl(), getUrl(), getFileUri(), isCover());
+        return Objects.hash(getId(), getPageUrl(), getUrl(), getFileUri(), getOrder(), isCover());
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + pageUrl + "." + url + "." + isCover).getBytes());
+        return Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover).getBytes());
     }
 }

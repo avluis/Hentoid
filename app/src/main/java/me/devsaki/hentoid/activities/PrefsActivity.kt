@@ -9,7 +9,7 @@ import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle
 import me.devsaki.hentoid.events.ProcessEvent
-import me.devsaki.hentoid.fragments.preferences.PreferenceFragment
+import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
 import me.devsaki.hentoid.util.FileHelper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -27,7 +27,7 @@ class PrefsActivity : BaseActivity() {
             isDownloaderPrefs() -> rootKey = "downloader"
             isStoragePrefs() -> rootKey = "storage"
         }
-        val fragment = PreferenceFragment.newInstance(rootKey)
+        val fragment = PreferencesFragment.newInstance(rootKey)
 
         supportFragmentManager.commit {
             replace(android.R.id.content, fragment)

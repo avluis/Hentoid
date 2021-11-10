@@ -7,21 +7,37 @@
     android:layout_gravity="center"
     android:clipToPadding="false">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/bookmark_homepage_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+    <TextView
+        android:id="@+id/help"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="start|center_vertical"
-        android:text="@string/bookmark_homepage"
+        android:layout_marginTop="8dp"
+        android:background="@color/white_opacity_25"
+        android:paddingStart="48dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/merge_help"
         android:textColor="@color/white_opacity_87"
-        android:textSize="@dimen/text_body_1"
-        app:icon="@drawable/ic_menu_nhentai"
-        app:iconTint="@color/white_opacity_87"
+        android:textStyle="italic"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/warning_img"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:adjustViewBounds="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_info"
+        app:layout_constraintBottom_toBottomOf="@id/help"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/help"
+        app:tint="@color/white_opacity_87"
+        tools:ignore="ContentDescription" />
+
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
-        android:id="@+id/bookmarks_list"
+        android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipToPadding="false"
@@ -31,35 +47,35 @@
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/bookmark_homepage_btn"
+        app:layout_constraintTop_toBottomOf="@id/help"
         app:maxHeight="@dimen/dialog_max_height"
-        tools:listitem="@layout/item_text" />
+        tools:listitem="@layout/item_drawer_edit" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/title_new"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/new_title"
+        app:layout_constraintTop_toBottomOf="@id/list">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/bookmark_current_btn"
-        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+        android:id="@+id/action_button"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="match_parent"
         android:layout_height="?android:attr/actionBarSize"
+        android:layout_margin="8dp"
         android:layout_marginTop="8dp"
-        android:text="@string/bookmark_current"
+        android:text="@string/merge_merge"
         android:textColor="?colorSecondary"
         android:textSize="@dimen/text_body_1"
-        app:icon="@drawable/ic_bookmark"
+        app:icon="@drawable/ic_action_merge"
         app:iconTint="?colorSecondary"
-        app:layout_constraintTop_toBottomOf="@id/bookmarks_list" />
-
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?android:attr/actionBarSize"
-        android:layout_marginTop="8dp"
-        android:background="?colorPrimary"
-        android:elevation="@dimen/toolbar_layout_elevation"
-        android:gravity="center_vertical"
-        android:visibility="invisible"
-        app:layout_constraintTop_toBottomOf="@id/bookmarks_list"
-        app:layout_scrollFlags="scroll|enterAlways"
-        app:menu="@menu/web_bookmarks_selection_menu"
-        tools:visibility="visible" />
+        app:layout_constraintTop_toBottomOf="@id/title_new" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

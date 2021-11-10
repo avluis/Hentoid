@@ -5,15 +5,14 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.enums.Site;
@@ -30,11 +29,12 @@ public class AdBlocker {
     private static final Set<String> universalUrlBlacklist = new HashSet<>();
     private static final Set<String> universalUrlWhitelist = new HashSet<>();
     // Local lists (applied to current site)
-    private List<String> localUrlBlacklist;
-    private final List<Pattern> jsWhitelistUrlPatternList = new ArrayList<>();
-    private final List<String> jsContentBlacklist = new ArrayList<>();
+    private final Set<String> localUrlBlacklist = Collections.synchronizedSet(new HashSet<>());
+    private final Set<String> localUrlWhitelist = Collections.synchronizedSet(new HashSet<>());
+    private final Set<Pattern> jsUrlPatternWhitelist = Collections.synchronizedSet(new HashSet<>());
+    private final Set<String> jsContentBlacklist = Collections.synchronizedSet(new HashSet<>());
 
-    private final List<String> jsBlacklistCache = new ArrayList<>();
+    private final Set<String> jsBlacklistCache = Collections.synchronizedSet(new HashSet<>());
 
 
     static {
@@ -47,7 +47,6 @@ public class AdBlocker {
 
     public AdBlocker(Site site) {
         this.site = site;
-        for (String s : universalUrlWhitelist) addUrlWhitelist(s);
     }
 
     /**
@@ -57,14 +56,58 @@ public class AdBlocker {
      * @return True if URL is blacklisted according to current filters; false if not
      */
     private boolean isUrlBlacklisted(@NonNull String url) {
-        String comparisonUrl = url.toLowerCase();
-        for (String s : universalUrlBlacklist) {
-            if (comparisonUrl.contains(s)) return true;
-        }
-        if (localUrlBlacklist != null)
+        // First search into the local list...
+        synchronized (localUrlBlacklist) {
             for (String s : localUrlBlacklist) {
-                if (comparisonUrl.contains(s)) return true;
+                if (url.contains(s)) {
+                    if (BuildConfig.DEBUG) Timber.v("Blacklisted URL blocked (local) : %s", url);
+                    return true;
+                }
             }
+        }
+        // ...then into the universal list
+        for (String s : universalUrlBlacklist) {
+            if (url.contains(s)) {
+                if (BuildConfig.DEBUG) Timber.v("Blacklisted URL blocked (global) : %s", url);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Indicates if the given URL is whitelisted by the current content filters
+     *
+     * @param url URL to be examinated
+     * @return True if URL is whitelisted according to current filters; false if not
+     */
+    private boolean isUrlWhitelisted(@NonNull String url) {
+        // First search into the local simple list...
+        synchronized (localUrlWhitelist) {
+            for (String s : localUrlWhitelist) {
+                if (url.contains(s)) {
+                    if (BuildConfig.DEBUG) Timber.v("Whitelisted URL (local) : %s", url);
+                    return true;
+                }
+            }
+        }
+        // ...then into the global simple list...
+        for (String s : universalUrlWhitelist) {
+            if (url.contains(s)) {
+                if (BuildConfig.DEBUG) Timber.v("Whitelisted URL (global) : %s", url);
+                return true;
+            }
+        }
+        // ...then into the js pattern list (more costly)
+        synchronized (jsUrlPatternWhitelist) {
+            for (Pattern p : jsUrlPatternWhitelist) {
+                Matcher matcher = p.matcher(url);
+                if (matcher.find()) {
+                    if (BuildConfig.DEBUG) Timber.v("Whitelisted URL (pattern) : %s", url);
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -74,7 +117,6 @@ public class AdBlocker {
      * @param filter Filter to addAll to local blacklist
      */
     public void addToUrlBlacklist(String... filter) {
-        if (null == localUrlBlacklist) localUrlBlacklist = new ArrayList<>();
         Collections.addAll(localUrlBlacklist, filter);
     }
 
@@ -83,47 +125,54 @@ public class AdBlocker {
      *
      * @param filter Filter to addAll to local whitelist
      */
-    public void addUrlWhitelist(String... filter) {
-        for (String s : filter)
-            addJsWhitelistUrlPattern("^.*" + s.replace(".", "\\.") + ".*$");
+    public void addJsUrlWhitelist(String... filter) {
+        Collections.addAll(localUrlWhitelist, filter);
     }
 
-    // TODO doc
-    public void addJsWhitelistUrlPattern(String pattern) {
-        jsWhitelistUrlPatternList.add(Pattern.compile(pattern));
+    /**
+     * Add the given regexp pattern to the Javascript files URL whitelist
+     *
+     * @param pattern Pattern to add
+     */
+    public void addJsUrlPatternWhitelist(@NonNull final String pattern) {
+        jsUrlPatternWhitelist.add(Pattern.compile(pattern));
     }
 
-    // TODO doc
-    public void addJsContentBlacklist(String sequence) {
+    /**
+     * Add the given sequence to the Javascript content blacklist
+     *
+     * @param sequence Sequence to add to the Javascript content blacklist
+     */
+    public void addJsContentBlacklist(@NonNull final String sequence) {
         jsContentBlacklist.add(sequence);
     }
 
-    // TODO doc
-    public boolean isBlocked(@NonNull String url) {
-        // Create a snaphot of the original list to avoid concurrent iteration / modification
-        final List<Pattern> jsWhitelistUrlPatternListSnaphot = new ArrayList<>(jsWhitelistUrlPatternList);
+    /**
+     * Indicate if the resource at the given URL is blocked by the current adblock settings
+     *
+     * @param url Url to examine
+     * @return True if the resource is blocked; false if not
+     */
+    public boolean isBlocked(@NonNull final String url) {
+        final String cleanUrl = url.toLowerCase();
 
-        // 1- Process usual blacklist and cached dynamic blacklist
-        if (isUrlBlacklisted(url)) return true;
-        if (jsBlacklistCache.contains(url)) return true;
+        // 1- Accept whitelisted JS files
+        String extension = HttpHelper.getExtensionFromUri(cleanUrl);
+        boolean isJs = (extension.equals("js") || extension.isEmpty()); // Obvious js and hidden js
+        if (isJs && isUrlWhitelisted(cleanUrl)) return false;
 
-        // If no specific whitelist has been defined, stop there
-        if (jsWhitelistUrlPatternListSnaphot.size() == universalUrlWhitelist.size()) return false;
+        // 2- Process usual blacklist and cached dynamic blacklist
+        if (isUrlBlacklisted(cleanUrl)) return true;
+        if (jsBlacklistCache.contains(cleanUrl)) return true;
 
+        // 3- Accept non-JS files that are not blacklisted
+        if (!isJs) return false;
 
-        // 2- Accept non-JS files
-        String extension = HttpHelper.getExtensionFromUri(url);
-        if (!extension.equals("js") && !extension.isEmpty())
-            return false; // obvious JS and hidden JS
-
-        // 3- Accept JS files defined in the whitelist
-        for (Pattern p : jsWhitelistUrlPatternListSnaphot) {
-            Matcher matcher = p.matcher(url.toLowerCase());
-            if (matcher.find()) return false;
+        // If no grey list has been defined...
+        if (jsContentBlacklist.isEmpty()) {
+            // ...be lenient if there's no local whitelist set (vanilla adblocker); block instead as it has not been explicitly whitelisted
+            return (localUrlWhitelist.size() + jsUrlPatternWhitelist.size() > 0);
         }
-
-        // If no grey list has been defined, block url as it has not been whitelisted
-        if (jsContentBlacklist.isEmpty()) return true;
 
 
         // 4- If a grey list has been defined, block them if they _contain_ keywords
@@ -135,19 +184,21 @@ public class AdBlocker {
                 if (null == body) throw new IOException("Empty body");
 
                 String jsBody = body.string().toLowerCase();
-                for (String s : jsContentBlacklist)
-                    if (jsBody.contains(s)) {
-                        Timber.d(">> grey file %s BLOCKED", url);
-                        jsBlacklistCache.add(url);
-                        return true;
-                    }
+                synchronized (jsContentBlacklist) {
+                    for (String s : jsContentBlacklist)
+                        if (jsBody.contains(s)) {
+                            Timber.d(">> grey file %s BLOCKED", url);
+                            jsBlacklistCache.add(cleanUrl);
+                            return true;
+                        }
+                }
             } catch (IOException e) {
                 Timber.e(e);
             } catch (IllegalArgumentException iae) {
                 Timber.e(iae);
                 return true; // Avoid feeding malformed URLs to Chromium on older Androids (crash reported on Lollipop)
             }
-            addJsWhitelistUrlPattern("^" + url.replace(".", "\\.") + "$");
+            addJsUrlPatternWhitelist("^" + cleanUrl.replace(".", "\\.") + "$");
             Timber.d(">> grey file %s ALLOWED", url);
         }
 

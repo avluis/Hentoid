@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
@@ -118,8 +119,6 @@ public interface CollectionDAO {
 
     long countGroupsFor(Grouping grouping);
 
-    LiveData<Integer> countLiveGroupsFor(@NonNull final Grouping grouping);
-
     long insertGroup(Group group);
 
     void deleteGroup(long groupId);
@@ -193,7 +192,9 @@ public interface CollectionDAO {
 
     ImageFile selectImageFile(long id);
 
-    LiveData<List<ImageFile>> selectDownloadedImagesFromContent(long id);
+    LiveData<List<ImageFile>> selectDownloadedImagesFromContentLive(long id);
+
+    List<ImageFile> selectDownloadedImagesFromContent(long id);
 
     Map<StatusContent, ImmutablePair<Integer, Long>> countProcessedImagesById(long contentId);
 
@@ -235,6 +236,16 @@ public interface CollectionDAO {
             int orderStyle);
 
     Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
+
+    // CHAPTERS
+
+    List<Chapter> selectChapters(long contentId);
+
+    void insertChapters(@NonNull final List<Chapter> chapters);
+
+    void deleteChapters(@NonNull final Content content);
+
+    void deleteChapter(@NonNull final Chapter chapter);
 
 
     // SITE HISTORY

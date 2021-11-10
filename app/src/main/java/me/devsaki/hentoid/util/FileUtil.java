@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Locale;
 
 import timber.log.Timber;
@@ -143,16 +144,12 @@ class FileUtil {
      */
     // Directly copied from https://github.com/apache/commons-io/pull/74
     public static String byteCountToDisplayRoundedSize(final BigInteger size, final int places, final Locale locale) {
-        String displaySize;
-
-        if (size == null) {
-            return null;
-        }
+        if (size == null) return null;
 
         final long sizeInLong = size.longValue();
-
         final String formatPattern = "%." + places + "f";
 
+        String displaySize;
         if (size.divide(ONE_EB_BI).compareTo(BigInteger.ZERO) > 0) {
             displaySize = String.format(locale, formatPattern, sizeInLong / ONE_EB_BI.doubleValue()) + " EB";
         } else if (size.divide(ONE_PB_BI).compareTo(BigInteger.ZERO) > 0) {
@@ -169,7 +166,7 @@ class FileUtil {
             displaySize = size + " bytes";
         }
 
-        final DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance(locale);
+        final DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getInstance(locale);
         return displaySize.replaceFirst("[" +
                         decimalFormat.getDecimalFormatSymbols().getDecimalSeparator() +
                         "]" +
@@ -194,10 +191,6 @@ class FileUtil {
      * @see <a href="https://issues.apache.org/jira/browse/IO-226">IO-226 - should the rounding be changed?</a>
      */
     public static String byteCountToDisplayRoundedSize(final Long size, final int places, final Locale locale) {
-        if (size == null) {
-            return null;
-        }
-
         return byteCountToDisplayRoundedSize(BigInteger.valueOf(size), places, locale);
     }
 

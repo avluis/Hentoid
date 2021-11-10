@@ -197,16 +197,25 @@ public class DatabaseMaintenance {
             float pos = 1;
             for (Content c : contents) {
                 c.setCompleted(false);
-                db.insertContent(c);
+                db.updateContentObject(c);
                 emitter.onNext(pos++ / max);
             }
-            List<Content> content = db.selectContentWithNullDlModeField();
+            contents = db.selectContentWithNullDlModeField();
             Timber.i("Set default value for Content.downloadMode field : %s items detected", contents.size());
-            max = content.size();
+            max = contents.size();
             pos = 1;
-            for (Content c : content) {
+            for (Content c : contents) {
                 c.setDownloadMode(Content.DownloadMode.DOWNLOAD);
-                db.insertContent(c);
+                db.updateContentObject(c);
+                emitter.onNext(pos++ / max);
+            }
+            contents = db.selectContentWithNullMergeField();
+            Timber.i("Set default value for Content.manuallyMerged field : %s items detected", contents.size());
+            max = contents.size();
+            pos = 1;
+            for (Content c : contents) {
+                c.setManuallyMerged(false);
+                db.updateContentObject(c);
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Set default ObjectBox properties : done");

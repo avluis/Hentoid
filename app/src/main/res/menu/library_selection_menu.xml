@@ -74,6 +74,18 @@
         android:tooltipText="@string/group_make_cover"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_merge"
+        android:icon="@drawable/ic_action_merge"
+        android:title="@string/merge_merge"
+        android:tooltipText="@string/merge_merge"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_split"
+        android:icon="@drawable/ic_action_split"
+        android:title="@string/merge_split"
+        android:tooltipText="@string/merge_split"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_selectAll"
         android:icon="@drawable/ic_action_select_all"
         android:title="@string/menu_select_all"

@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.receiver.DownloadNotificationPauseReceiver
 import me.devsaki.hentoid.receiver.DuplicateNotificationStopReceiver
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.notification.Notification

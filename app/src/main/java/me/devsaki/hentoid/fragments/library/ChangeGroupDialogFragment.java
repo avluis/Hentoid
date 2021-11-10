@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.RadioButton;
 
 import androidx.annotation.NonNull;
@@ -14,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.annimon.stream.Stream;
+import com.google.android.material.textfield.TextInputLayout;
 import com.skydoves.powerspinner.PowerSpinnerView;
 
 import java.util.List;
@@ -42,7 +42,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
     private RadioButton existingRadio;
     private PowerSpinnerView existingSpin;
     private RadioButton newRadio;
-    private EditText newNameTxt;
+    private TextInputLayout newNameTxt;
     private RadioButton detachRadio;
 
 
@@ -150,18 +150,23 @@ public class ChangeGroupDialogFragment extends DialogFragment {
         LibraryViewModel viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         if (existingRadio.isChecked()) {
-            viewModel.moveBooks(bookIds, customGroups.get(existingSpin.getSelectedIndex()), getParent()::onChangeGroupSuccess);
+            viewModel.moveContentsToCustomGroup(bookIds, customGroups.get(existingSpin.getSelectedIndex()), getParent()::onChangeGroupSuccess);
             dismiss();
         } else if (detachRadio.isChecked()) {
-            viewModel.moveBooks(bookIds, null, getParent()::onChangeGroupSuccess);
+            viewModel.moveContentsToCustomGroup(bookIds, null, getParent()::onChangeGroupSuccess);
             dismiss();
-        } else { // New group
-            List<Group> groupMatchingName = Stream.of(customGroups).filter(g -> g.name.equalsIgnoreCase(newNameTxt.getText().toString())).toList();
-            if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
-                viewModel.moveBooksToNew(bookIds, newNameTxt.getText().toString(), getParent()::onChangeGroupSuccess);
-                dismiss();
+        } else if (newNameTxt != null && newNameTxt.getEditText() != null) { // New group
+            String newNameStr = newNameTxt.getEditText().getText().toString().trim();
+            if (!newNameStr.isEmpty()) {
+                List<Group> groupMatchingName = Stream.of(customGroups).filter(g -> g.name.equalsIgnoreCase(newNameStr)).toList();
+                if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
+                    viewModel.moveContentsToNewCustomGroup(bookIds, newNameStr, getParent()::onChangeGroupSuccess);
+                    dismiss();
+                } else {
+                    ToastHelper.toast(R.string.group_name_exists);
+                }
             } else {
-                ToastHelper.toast(R.string.group_name_exists);
+                ToastHelper.toast(R.string.group_name_empty);
             }
         }
     }

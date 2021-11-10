@@ -9,6 +9,8 @@ public class PorncomixActivity extends BaseWebActivity {
             "//www.porncomixonline.(com|net)/(?!m-comic)([\\w\\-]+)/[\\w\\-]+/$",
             "//www.porncomixonline.(com|net)/m-comic/[\\w\\-]+/[\\w\\-]+$",
             "//www.porncomixonline.(com|net)/m-comic/[\\w\\-]+/[\\w\\-]+/$",
+            "//www.porncomixonline.com/(?!m-comic)([\\w\\-]+)/[\\w\\-]+/$",
+            "//www.porncomixonline.com/m-comic/[\\w\\-]+/[\\w\\-]+$",
             "//porncomicszone.net/[0-9]+/[\\w\\-]+/[0-9]+/$",
             "//porncomixinfo.(com|net)/manga-comics/[\\w\\-]+/[\\w\\-]+/$",
             "//porncomixinfo.(com|net)/chapter/[\\w\\-]+/[\\w\\-]+/$",

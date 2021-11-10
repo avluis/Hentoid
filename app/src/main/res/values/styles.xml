@@ -65,11 +65,18 @@
         <item name="android:gravity">center</item>
     </style>
 
-    <style name="TextShadow">
+    <style name="TextShadowLight">
         <item name="android:shadowColor">@color/black</item>
         <item name="android:shadowDx">1</item>
         <item name="android:shadowDy">1</item>
         <item name="android:shadowRadius">1</item>
+    </style>
+
+    <style name="TextShadowMedium">
+        <item name="android:shadowColor">@color/black</item>
+        <item name="android:shadowDx">2</item>
+        <item name="android:shadowDy">2</item>
+        <item name="android:shadowRadius">2</item>
     </style>
 
     <style name="Divider">

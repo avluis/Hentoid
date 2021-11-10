@@ -4,6 +4,8 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.BasicNetwork;
@@ -25,10 +27,7 @@ import me.devsaki.hentoid.util.network.VolleyOkHttp3Stack;
 import timber.log.Timber;
 
 /**
- * Created by Robb_w on 2018/04
  * Manager class for image download queue (Volley)
- * <p>
- * NB : Class looks like a singleton but isn't really one, since it is reinstanciated everytime forceSlowMode changes
  */
 public class RequestQueueManager<T> implements RequestQueue.RequestEventListener {
     private static RequestQueueManager mInstance;           // Instance of the singleton
@@ -36,6 +35,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
     private RequestQueue mRequestQueue;                     // Volley download request queue
     private int nbRequests = 0;                             // Number of requests currently in the queue (for debug display)
+    private int manualDlThreadCount = -1;
 
     private boolean isSimulateHumanReading = false;
     private final LinkedList<Request<T>> waitingRequestQueue = new LinkedList<>();
@@ -43,14 +43,19 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
 
     private RequestQueueManager(Context context) {
-        int dlThreadCount = Preferences.getDownloadThreadCount();
-        if (dlThreadCount == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
-            dlThreadCount = getSuggestedThreadCount(context);
-        }
+        int dlThreadCount = getThreadCount(context);
         //Crashlytics.setInt("Download thread count", dlThreadCount);
         //crashlytics.setCustomKey("Download thread count", dlThreadCount);
 
-        mRequestQueue = getRequestQueue(context, dlThreadCount);
+        initRequestQueue(context, dlThreadCount, TIMEOUT_MS);
+    }
+
+    private static int getThreadCount(Context context) {
+        int result = Preferences.getDownloadThreadCount();
+        if (result == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
+            result = getSuggestedThreadCount(context);
+        }
+        return result;
     }
 
     private static int getSuggestedThreadCount(Context context) {
@@ -84,36 +89,46 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      * Start the app's Volley request queue
      *
      * @param ctx App context
-     * @return Hentoid Volley request queue
      */
-    private RequestQueue getRequestQueue(Context ctx) { // This is the safest code, as it relies on standard Volley interface
+    private void initRequestQueue(Context ctx, int timeoutMs) { // This is the safest code, as it relies on standard Volley interface
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext(), new VolleyOkHttp3Stack(TIMEOUT_MS));
+            mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext(), new VolleyOkHttp3Stack(timeoutMs));
             mRequestQueue.addRequestEventListener(this);
         }
-        return mRequestQueue;
     }
 
-    private RequestQueue getRequestQueue(Context ctx, int nbDlThreads) { // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
+    private void initRequestQueue(Context ctx, int nbDlThreads, int timeoutMs) {
         if (mRequestQueue == null) {
-            BasicNetwork network = new BasicNetwork(new VolleyOkHttp3Stack(TIMEOUT_MS));
-            DiskBasedCache.FileSupplier cacheSupplier =
-                    new DiskBasedCache.FileSupplier() {
-                        private File cacheDir = null;
-
-                        @Override
-                        public File get() {
-                            if (cacheDir == null) {
-                                cacheDir = new File(ctx.getCacheDir(), "volley"); // NB : this is dirty, as this value is supposed to be private in Volley.java
-                            }
-                            return cacheDir;
-                        }
-                    };
-            mRequestQueue = new RequestQueue(new DiskBasedCache(cacheSupplier), network, nbDlThreads);
+            mRequestQueue = createRequestQueue(ctx, nbDlThreads, timeoutMs);
             mRequestQueue.addRequestEventListener(this);
             mRequestQueue.start();
         }
-        return mRequestQueue;
+    }
+
+    private void forceRequestQueue(Context ctx, int nbDlThreads, int timeoutMs) {
+        if (mRequestQueue != null) {
+            mRequestQueue.removeRequestEventListener(this);
+            mRequestQueue.stop();
+            mRequestQueue = null;
+        }
+        initRequestQueue(ctx, nbDlThreads, timeoutMs);
+    }
+
+    private RequestQueue createRequestQueue(Context ctx, int nbDlThreads, int timeoutMs) { // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
+        BasicNetwork network = new BasicNetwork(new VolleyOkHttp3Stack(timeoutMs));
+        DiskBasedCache.FileSupplier cacheSupplier =
+                new DiskBasedCache.FileSupplier() {
+                    private File cacheDir = null;
+
+                    @Override
+                    public File get() {
+                        if (cacheDir == null) {
+                            cacheDir = new File(ctx.getCacheDir(), "volley"); // NB : this is dirty, as this value is supposed to be private in Volley.java
+                        }
+                        return cacheDir;
+                    }
+                };
+        return new RequestQueue(new DiskBasedCache(cacheSupplier), network, nbDlThreads);
     }
 
     /**
@@ -172,6 +187,18 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
     public boolean isSimulateHumanReading() {
         return isSimulateHumanReading;
+    }
+
+    // This will cancel any current download
+    public void setDownloadThreadCount(@NonNull Context ctx, int value) {
+        manualDlThreadCount = value;
+        int dlThreadCount = value;
+        if (-1 == manualDlThreadCount) dlThreadCount = getThreadCount(ctx);
+        forceRequestQueue(ctx, dlThreadCount, TIMEOUT_MS);
+    }
+
+    public int getDownloadThreadCount() {
+        return manualDlThreadCount;
     }
 
     /**

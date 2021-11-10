@@ -39,6 +39,7 @@ import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Chapter;
+import me.devsaki.hentoid.database.domains.Chapter_;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
@@ -125,7 +126,6 @@ public class ObjectBoxDB {
         return store.sizeOnDisk();
     }
 
-
     long insertContent(Content content) {
         ToMany<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
@@ -149,13 +149,18 @@ public class ObjectBoxDB {
                         dbAttr.addLocationsFrom(inputAttr);
                         attrBox.put(dbAttr);
                     } else {
-                        inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
+                        inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute name
                     }
                 }
             }
 
             return store.boxFor(Content.class).put(content);
         });
+    }
+
+    // Faster alternative to insertContent when Content fields only need to be updated
+    void updateContentObject(Content content) {
+        store.boxFor(Content.class).put(content);
     }
 
     public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
@@ -1203,7 +1208,7 @@ public class ObjectBoxDB {
         else return null;
     }
 
-    Query<ImageFile> selectDownloadedImagesFromContent(long id) {
+    Query<ImageFile> selectDownloadedImagesFromContentQ(long id) {
         QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
         builder.equal(ImageFile_.contentId, id);
         builder.in(ImageFile_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.EXTERNAL.getCode(), StatusContent.ONLINE.getCode()});
@@ -1361,6 +1366,24 @@ public class ObjectBoxDB {
         qb.build().remove();
     }
 
+    List<Chapter> selectChapters(long contentId) {
+        return store.boxFor(Chapter.class).query().equal(Chapter_.contentId, contentId).order(Chapter_.order).build().find();
+    }
+
+    void insertChapters(List<Chapter> chapters) {
+        store.boxFor(Chapter.class).put(chapters);
+    }
+
+    void deleteChaptersByContentId(long contentId) {
+        QueryBuilder<Chapter> qb = store.boxFor(Chapter.class).query();
+        qb.equal(Chapter_.contentId, contentId);
+        qb.build().remove();
+    }
+
+    void deleteChapter(long chapterId) {
+        store.boxFor(Chapter.class).remove(chapterId);
+    }
+
 
     /**
      * ONE-SHOT USE QUERIES (MIGRATION & MAINTENANCE)
@@ -1388,6 +1411,10 @@ public class ObjectBoxDB {
 
     List<Content> selectContentWithNullDlModeField() {
         return store.boxFor(Content.class).query().isNull(Content_.downloadMode).build().find();
+    }
+
+    List<Content> selectContentWithNullMergeField() {
+        return store.boxFor(Content.class).query().isNull(Content_.manuallyMerged).build().find();
     }
 
     public Query<Content> selectOldStoredContentQ() {

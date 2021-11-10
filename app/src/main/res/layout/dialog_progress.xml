@@ -9,7 +9,7 @@
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/delete_title"
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="16dp"
@@ -21,22 +21,22 @@
         tools:text="@string/delete_title" />
 
     <TextView
-        android:id="@+id/delete_progress"
+        android:id="@+id/progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/delete_title"
+        app:layout_constraintTop_toBottomOf="@id/title"
         tools:text="@string/book_progress" />
 
     <ProgressBar
-        android:id="@+id/delete_bar"
+        android:id="@+id/bar"
         style="@style/Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="0dp"
         android:layout_height="4dp"
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/delete_progress" />
+        app:layout_constraintTop_toBottomOf="@id/progress" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

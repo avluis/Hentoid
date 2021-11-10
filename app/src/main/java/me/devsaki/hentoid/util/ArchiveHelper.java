@@ -46,10 +46,8 @@ import io.reactivex.ObservableEmitter;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 09/11/2016.
- * Zip Utility
+ * Archive / unarchive helper for formats supported by 7Z
  */
-
 public class ArchiveHelper {
 
     private ArchiveHelper() {
@@ -187,15 +185,7 @@ public class ArchiveHelper {
 
         if (entriesToExtract != null && entriesToExtract.isEmpty()) return Observable.empty();
 
-        ArchiveFormat format;
-        try (InputStream fi = FileHelper.getInputStream(context, file)) {
-            byte[] header = new byte[8];
-            if (fi.read(header) < header.length) return Observable.empty();
-            format = getTypeFromArchiveHeader(header);
-        }
-        if (null == format) return Observable.empty();
-
-        return Observable.create(emitter -> extractArchiveEntries(context, file.getUri(), format, entriesToExtract, targetFolder, targetNames, interrupt, emitter));
+        return Observable.create(emitter -> extractArchiveEntries(context, file.getUri(), entriesToExtract, targetFolder, targetNames, interrupt, emitter));
     }
 
     /**
@@ -203,17 +193,15 @@ public class ArchiveHelper {
      *
      * @param context          Context to be used
      * @param uri              Uri of the archive file to extract from
-     * @param format           Format of the archive file to extract from
      * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
      * @param targetFolder     Target folder to create the archives into
      * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
      * @param emitter          Optional emitter to be used when the method is used with RxJava
      * @throws IOException If something horrible happens during I/O
      */
-    private static void extractArchiveEntries(
+    public static void extractArchiveEntries(
             @NonNull final Context context,
             @NonNull final Uri uri,
-            final ArchiveFormat format,
             @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
             @Nullable final List<String> targetNames,
@@ -221,6 +209,14 @@ public class ArchiveHelper {
             @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         Helper.assertNonUiThread();
         int targetIndex = 0;
+
+        ArchiveFormat format;
+        try (InputStream fi = FileHelper.getInputStream(context, uri)) {
+            byte[] header = new byte[8];
+            if (fi.read(header) < header.length) return;
+            format = getTypeFromArchiveHeader(header);
+        }
+        if (null == format) return;
 
         Map<Integer, String> fileNames = new HashMap<>();
 
@@ -257,7 +253,7 @@ public class ArchiveHelper {
     // ================= ZIP FILE CREATION
 
     /**
-     * Archive the given files into the given output stream
+     * Archive the given files into the given output stream using the ZIP format
      *
      * @param context Context to be used
      * @param files   List of the files to be archived
@@ -299,13 +295,25 @@ public class ArchiveHelper {
         }
     }
 
-    // TODO doc
-    // Not to overwrite files with the same name if they are located in different folders
+    /**
+     * Format the output file name to facilitate "flat" unarchival in one single folder
+     * NB : We do not want to overwrite files with the same name if they are located in different folders within the archive
+     *
+     * @param index    Index of the archived file
+     * @param fileName Name of the archived file (name only, without the path)
+     * @return Output file name of the given archived file
+     */
     static String formatCacheFileName(int index, @NonNull final String fileName) {
         return index + CACHE_SEPARATOR + fileName;
     }
 
-    public static String extractCacheFileName(@NonNull final String path) {
+    /**
+     * Extracts the original file name from the filename of the cached file
+     *
+     * @param path Path of the cached file
+     * @return Original filename of the given cached file
+     */
+    public static String extractFileNameFromCacheName(@NonNull final String path) {
         String result = FileHelper.getFileNameWithoutExtension(path);
 
         int folderSeparatorIndex = result.lastIndexOf(ArchiveHelper.CACHE_SEPARATOR);

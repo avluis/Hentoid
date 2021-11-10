@@ -57,6 +57,6 @@ data class DuplicateEntry(
         val scoreDelta = abs(calcTotalScore() - other.calcTotalScore())
         if (scoreDelta >= 0.01) return calcTotalScore().compareTo(other.calcTotalScore())
 
-        return duplicateSize.compareTo(other.duplicateSize);
+        return duplicateSize.compareTo(other.duplicateSize)
     }
 }

@@ -28,7 +28,7 @@
 
     <TextView
         android:id="@+id/viewer_pagenumber_text"
-        style="@style/TextShadow"
+        style="@style/TextShadowLight"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:clickable="false"

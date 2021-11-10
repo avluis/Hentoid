@@ -45,7 +45,7 @@ class DuplicateDetectorActivity : BaseActivity() {
 //        WorkManager.getInstance(application).cancelAllWorkByTag(DuplicateDetectorWorker.WORKER_TAG)
 
         initUI()
-        updateToolbar()
+        updateToolbar(0, 0, 0)
         initSelectionToolbar()
     }
 
@@ -66,7 +66,8 @@ class DuplicateDetectorActivity : BaseActivity() {
             override fun onPageSelected(position: Int) {
                 enableCurrentFragment()
                 hideSettingsBar()
-                updateToolbar()
+                updateToolbar(0, 0, 0)
+                updateTitle(-1)
                 updateSelectionToolbar()
             }
         })
@@ -75,7 +76,7 @@ class DuplicateDetectorActivity : BaseActivity() {
     }
 
     fun initFragmentToolbars(
-            toolbarOnItemClicked: Toolbar.OnMenuItemClickListener
+        toolbarOnItemClicked: Toolbar.OnMenuItemClickListener
     ) {
         binding?.toolbar?.setOnMenuItemClickListener(toolbarOnItemClicked)
     }
@@ -106,14 +107,42 @@ class DuplicateDetectorActivity : BaseActivity() {
     }
 
     private fun enableFragment(fragmentIndex: Int) {
-        EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.EV_ENABLE, if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_MAIN else CommunicationEvent.RC_DUPLICATE_DETAILS, null))
-        EventBus.getDefault().post(CommunicationEvent(CommunicationEvent.EV_DISABLE, if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_DETAILS else CommunicationEvent.RC_DUPLICATE_MAIN, null))
+        EventBus.getDefault().post(
+            CommunicationEvent(
+                CommunicationEvent.EV_ENABLE,
+                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_MAIN else CommunicationEvent.RC_DUPLICATE_DETAILS,
+                null
+            )
+        )
+        EventBus.getDefault().post(
+            CommunicationEvent(
+                CommunicationEvent.EV_DISABLE,
+                if (0 == fragmentIndex) CommunicationEvent.RC_DUPLICATE_DETAILS else CommunicationEvent.RC_DUPLICATE_MAIN,
+                null
+            )
+        )
     }
 
-    private fun updateToolbar() {
+    fun updateTitle(count: Int) {
+        binding!!.toolbar.title = if (count > -1) resources.getString(
+            R.string.duplicate_detail_title,
+            count
+        ) else resources.getString(R.string.title_activity_duplicate_detector)
+    }
+
+    fun updateToolbar(localCount: Int, externalCount: Int, streamedCount: Int) {
         if (null == binding) return
 
-        binding!!.toolbar.menu.findItem(R.id.action_settings).isVisible = (0 == viewPager.currentItem)
+        binding!!.toolbar.menu.findItem(R.id.action_settings).isVisible =
+            (0 == viewPager.currentItem)
+        binding!!.toolbar.menu.findItem(R.id.action_merge).isVisible = (
+                1 == viewPager.currentItem
+                        && (
+                        localCount > 1 && 0 == streamedCount && 0 == externalCount
+                                || streamedCount > 1 && 0 == localCount && 0 == externalCount
+                                || externalCount > 1 && 0 == localCount && 0 == streamedCount
+                        )
+                )
     }
 
     private fun initSelectionToolbar() {
@@ -132,7 +161,8 @@ class DuplicateDetectorActivity : BaseActivity() {
     /**
      * ============================== SUBCLASS
      */
-    private class DuplicatePagerAdapter constructor(fa: FragmentActivity?) : FragmentStateAdapter(fa!!) {
+    private class DuplicatePagerAdapter constructor(fa: FragmentActivity?) :
+        FragmentStateAdapter(fa!!) {
         override fun createFragment(position: Int): Fragment {
             return if (0 == position) {
                 DuplicateMainFragment()

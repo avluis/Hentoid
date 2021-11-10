@@ -37,6 +37,21 @@
         <item>98</item>
     </string-array>
 
+    <string-array name="pref_browser_quick_dl_threshold_entries">
+        <item>500ms (default)</item>
+        <item>1s</item>
+        <item>1.5s</item>
+        <item>2s</item>
+        <item>3s</item>
+    </string-array>
+    <string-array name="pref_browser_quick_dl_threshold_values">
+        <item>500</item>
+        <item>1000</item>
+        <item>1500</item>
+        <item>2000</item>
+        <item>3000</item>
+    </string-array>
+
     <string-array name="pref_queue_new_position_entries">
         <item>Top</item>
         <item>Bottom</item>

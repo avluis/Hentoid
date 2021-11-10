@@ -20,8 +20,8 @@ public class AllPornComicActivity extends BaseWebActivity {
         CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.addDirtyElements(DIRTY_ELEMENTS);
-        client.adBlocker.addUrlWhitelist(JS_WHITELIST);
-        for (String s : JS_WHITELIST) client.adBlocker.addJsWhitelistUrlPattern(s); // TODO duplicate of above ?
+        client.adBlocker.addJsUrlWhitelist(JS_WHITELIST);
+        for (String s : JS_WHITELIST) client.adBlocker.addJsUrlPatternWhitelist(s); // TODO duplicate of above ?
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         return client;
     }

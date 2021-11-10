@@ -2,10 +2,7 @@ package me.devsaki.hentoid.workers;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Rect;
+import android.net.Uri;
 import android.util.Pair;
 import android.webkit.MimeTypeMap;
 
@@ -25,12 +22,12 @@ import com.android.volley.VolleyError;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
-import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.threeten.bp.Instant;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -39,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
 
@@ -46,9 +44,6 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-//import me.devsaki.fakku.FakkuDecode;
-//import me.devsaki.fakku.PageInfo;
-//import me.devsaki.fakku.PointTranslation;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.core.HentoidApp;
@@ -65,6 +60,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadReviveEvent;
 import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.json.sources.PixivIllustMetadata;
 import me.devsaki.hentoid.notification.action.UserActionNotification;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
@@ -72,6 +68,7 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageHelper;
@@ -79,6 +76,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.download.DownloadHelper;
 import me.devsaki.hentoid.util.download.RequestQueueManager;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.exception.CaptchaException;
@@ -103,8 +101,12 @@ public class ContentDownloadWorker extends BaseWorker {
     // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
     private final CollectionDAO dao;
 
-    private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
-    private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
+    // True if a Cancel event has been processed; false by default
+    private final AtomicBoolean downloadCanceled = new AtomicBoolean(false);
+    // True if a Skip event has been processed; false by default
+    private final AtomicBoolean downloadSkipped = new AtomicBoolean(false);
+    // downloadCanceled || downloadSkipped
+    private final AtomicBoolean downloadInterrupted = new AtomicBoolean(false);
     private boolean isCloudFlareBlocked;
 
     private final NotificationManager userActionNotificationManager;
@@ -136,7 +138,8 @@ public class ContentDownloadWorker extends BaseWorker {
     @Override
     void onInterrupt() {
         requestQueueManager.cancelQueue();
-        downloadCanceled = true;
+        downloadCanceled.set(true);
+        downloadInterrupted.set(true);
     }
 
     @Override
@@ -225,9 +228,10 @@ public class ContentDownloadWorker extends BaseWorker {
             EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
-        if (new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes() < 2 * 1024 * 1024) {
+        long spaceLeftBytes = new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes();
+        if (spaceLeftBytes < 2L * 1024 * 1024) {
             Timber.w("Device very low on storage space (<2 MB). Queue paused.");
-            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE));
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE, DownloadEvent.Motive.NO_STORAGE, spaceLeftBytes));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
@@ -260,8 +264,9 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
 
-        downloadCanceled = false;
-        downloadSkipped = false;
+        downloadCanceled.set(false);
+        downloadSkipped.set(false);
+        downloadInterrupted.set(false);
         isCloudFlareBlocked = false;
         dao.deleteErrorRecords(content.getId());
 
@@ -301,6 +306,8 @@ public class ContentDownloadWorker extends BaseWorker {
                         }
                     }
                 }
+
+                if (content.isUpdatedProperties()) dao.insertContent(content);
 
                 // Manually insert new images (without using insertContent)
                 long contentId = content.getId();
@@ -353,7 +360,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadCanceled || downloadSkipped)
+        if (downloadInterrupted.get())
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
         // Create destination folder for images to be downloaded
@@ -404,14 +411,26 @@ public class ContentDownloadWorker extends BaseWorker {
             }
         }
 
+        if (content.getSite().getParallelDownloadCap() > 0 &&
+                (requestQueueManager.getDownloadThreadCount() > content.getSite().getParallelDownloadCap()
+                        || -1 == requestQueueManager.getDownloadThreadCount())
+        ) {
+            Timber.d("Setting parallel downloads count to %s", content.getSite().getParallelDownloadCap());
+            requestQueueManager.setDownloadThreadCount(getApplicationContext(), content.getSite().getParallelDownloadCap());
+        }
+        if (0 == content.getSite().getParallelDownloadCap() && requestQueueManager.getDownloadThreadCount() > -1) {
+            Timber.d("Resetting parallel downloads count to default");
+            requestQueueManager.setDownloadThreadCount(getApplicationContext(), -1);
+        }
         requestQueueManager.setSimulateHumanReading(content.getSite().isSimulateHumanReading());
 
         // In case the download has been canceled while in preparation phase
         // NB : No log of any sort because this is normal behaviour
-        if (downloadCanceled || downloadSkipped)
+        if (downloadInterrupted.get())
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
         List<ImageFile> pagesToParse = new ArrayList<>();
+        List<ImageFile> ugoirasToDownload = new ArrayList<>();
 
         // Queue image download requests
         for (ImageFile img : images) {
@@ -435,6 +454,8 @@ public class ContentDownloadWorker extends BaseWorker {
                 if (img.isCover() && images.size() > 1) img.setBackupUrl(images.get(1).getUrl());
 
                 if (img.needsPageParsing()) pagesToParse.add(img);
+                else if (img.getDownloadParams().contains(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES))
+                    ugoirasToDownload.add(img);
                 else requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
             }
         }
@@ -447,6 +468,21 @@ public class ContentDownloadWorker extends BaseWorker {
                             .observeOn(Schedulers.io())
                             .subscribe(
                                     img -> parsePageforImage(img, dir, contentFinal),
+                                    t -> {
+                                        // Nothing; just exit the Rx chain
+                                    }
+                            )
+            );
+        }
+
+        // Parse ugoiras for images
+        if (!ugoirasToDownload.isEmpty()) {
+            final Site siteFinal = content.getSite();
+            compositeDisposable.add(
+                    Observable.fromIterable(ugoirasToDownload)
+                            .observeOn(Schedulers.io())
+                            .subscribe(
+                                    img -> downloadAndUnzipUgoira(img, dir, siteFinal),
                                     t -> {
                                         // Nothing; just exit the Rx chain
                                     }
@@ -532,11 +568,11 @@ public class ContentDownloadWorker extends BaseWorker {
                 Thread.currentThread().interrupt();
             }
         }
-        while (!isDone && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
+        while (!isDone && !downloadInterrupted.get() && !contentQueueManager.isQueuePaused());
 
         if (contentQueueManager.isQueuePaused()) {
             Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
-            if (downloadCanceled) notificationManager.cancel();
+            if (downloadCanceled.get()) notificationManager.cancel();
         } else {
             // NB : no need to supply the Content itself as it has not been updated during the loop
             completeDownload(content.getId(), content.getTitle(), pagesOK, pagesKO, sizeDownloadedBytes);
@@ -559,7 +595,7 @@ public class ContentDownloadWorker extends BaseWorker {
             return;
         }
 
-        if (!downloadCanceled && !downloadSkipped) {
+        if (!downloadInterrupted.get()) {
             List<ImageFile> images = content.getImageFiles();
             if (null == images) images = Collections.emptyList();
             int nbImages = (int) Stream.of(images).filter(i -> !i.isCover()).count(); // Don't count the cover
@@ -676,7 +712,7 @@ public class ContentDownloadWorker extends BaseWorker {
             } else {
                 Timber.w("completeDownload : Directory %s does not exist - JSON not saved", content.getStorageUri());
             }
-        } else if (downloadCanceled) {
+        } else if (downloadCanceled.get()) {
             Timber.d("Content download canceled: %s [%s]", title, contentId);
             notificationManager.cancel();
         } else {
@@ -695,19 +731,7 @@ public class ContentDownloadWorker extends BaseWorker {
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
 
         // Apply image download parameters
-        Map<String, String> requestHeaders = new HashMap<>();
-        String cookieStr = null;
-        Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
-        if (!downloadParams.isEmpty()) {
-            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
-                cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-            if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
-                String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
-                if (value != null) requestHeaders.put(HttpHelper.HEADER_REFERER_KEY, value);
-            }
-        }
-        if (null == cookieStr) cookieStr = HttpHelper.getCookies(pageUrl);
-        requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+        Map<String, String> requestHeaders = getRequestHeaders(pageUrl, img.getDownloadParams());
 
         try {
             List<Pair<String, String>> reqHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, img.getPageUrl());
@@ -720,21 +744,21 @@ public class ContentDownloadWorker extends BaseWorker {
             requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
         } catch (UnsupportedOperationException | IllegalArgumentException e) {
             Timber.w(e, "Could not read image from page %s", img.getPageUrl());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "Could not read image from page " + img.getPageUrl() + " " + e.getMessage());
         } catch (IOException ioe) {
             Timber.w(ioe, "Could not read page data from %s", img.getPageUrl());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.IO, img.getPageUrl(), "Page " + img.getName(), "Could not read page data from " + img.getPageUrl() + " " + ioe.getMessage());
         } catch (LimitReachedException lre) {
             String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
             Timber.w(lre, description);
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Page " + img.getName(), description);
             throw lre;
         } catch (EmptyResultException ere) {
             Timber.w(ere, "No images have been found while parsing %s", content.getTitle());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "No images have been found. Error = " + ere.getMessage());
         }
     }
@@ -748,19 +772,7 @@ public class ContentDownloadWorker extends BaseWorker {
         String imageUrl = HttpHelper.fixUrl(img.getUrl(), site.getUrl());
 
         // Apply image download parameters
-        Map<String, String> requestHeaders = new HashMap<>();
-        String cookieStr = null;
-        Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
-        if (!downloadParams.isEmpty()) {
-            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
-                cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-            if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
-                String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
-                if (value != null) requestHeaders.put(HttpHelper.HEADER_REFERER_KEY, value);
-            }
-        }
-        if (null == cookieStr) cookieStr = HttpHelper.getCookies(imageUrl);
-        requestHeaders.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+        Map<String, String> requestHeaders = getRequestHeaders(imageUrl, img.getDownloadParams());
 
         final String backupUrlFinal = HttpHelper.fixUrl(img.getBackupUrl(), site.getUrl());
 
@@ -770,7 +782,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 requestHeaders,
                 site.useHentoidAgent(),
                 site.useWebviewAgent(),
-                result -> onImageRequestSuccess(result, img, dir, site.hasImageProcessing(), backupUrlFinal, requestHeaders),
+                result -> onImageRequestSuccess(result, img, dir, backupUrlFinal, requestHeaders),
                 error -> onRequestError(error, content, img, dir, backupUrlFinal, requestHeaders));
     }
 
@@ -778,16 +790,15 @@ public class ContentDownloadWorker extends BaseWorker {
             Map.Entry<byte[], Map<String, String>> result,
             @NonNull ImageFile img,
             @NonNull DocumentFile dir,
-            boolean hasImageProcessing,
             @NonNull String backupUrl,
             @NonNull Map<String, String> requestHeaders) {
         try {
             if (result != null) {
-                DocumentFile imgFile = processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey(), hasImageProcessing);
+                DocumentFile imgFile = processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey());
                 if (imgFile != null)
-                    updateImageStatusUri(img, true, imgFile.getUri().toString());
+                    updateImageProperties(img, true, imgFile.getUri().toString());
             } else {
-                updateImageStatusUri(img, false, "");
+                updateImageProperties(img, false, "");
                 logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "No picture (result is null)");
             }
         } catch (UnsupportedContentException e) {
@@ -795,16 +806,16 @@ public class ContentDownloadWorker extends BaseWorker {
             if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);
             else {
                 Timber.w("No backup URL found - aborting this image");
-                updateImageStatusUri(img, false, "");
+                updateImageProperties(img, false, "");
                 logErrorRecord(img.getContent().getTargetId(), ErrorType.UNDEFINED, img.getUrl(), "Picture " + img.getName(), e.getMessage());
             }
         } catch (InvalidParameterException e) {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(img.getContent().getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), "Picture " + img.getName(), "Download params : " + img.getDownloadParams());
         } catch (IOException | IllegalArgumentException e) {
             Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
-            updateImageStatusUri(img, false, "");
+            updateImageProperties(img, false, "");
             logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), "Picture " + img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
         }
     }
@@ -843,7 +854,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         Timber.w(error);
 
-        updateImageStatusUri(img, false, "");
+        updateImageProperties(img, false, "");
         logErrorRecord(content.getId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
         // Handle cloudflare blocks
         if (content.getSite().isUseCloudflare() && 503 == statusCode && !isCloudFlareBlocked) {
@@ -870,7 +881,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         Site site = content.getSite();
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
-        Chapter chp = (img.getChapter() != null) ? img.getChapter().getTarget() : null;
+        Chapter chp = img.getLinkedChapter();
 
         // per Volley behaviour, this method is called on the UI thread
         // -> need to create a new thread to do a network call
@@ -882,7 +893,7 @@ public class ContentDownloadWorker extends BaseWorker {
                                 imageFile -> processBackupImage(imageFile.orElse(null), img, dir, content),
                                 throwable ->
                                 {
-                                    updateImageStatusUri(img, false, "");
+                                    updateImageProperties(img, false, "");
                                     logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
                                     Timber.e(throwable, "Error processing backup image.");
                                 }
@@ -903,44 +914,93 @@ public class ContentDownloadWorker extends BaseWorker {
         } else Timber.w("Failed to parse backup URL");
     }
 
-    /*
-    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws
-            IOException {
-        Map<String, String> downloadParams = JsonHelper.jsonToObject(downloadParamsStr, JsonHelper.MAP_STRINGS);
+    // TODO doc
+    private void downloadAndUnzipUgoira(
+            @NonNull final ImageFile img,
+            @NonNull final DocumentFile dir,
+            @NonNull final Site site) {
+        boolean isError = false;
+        String errorMsg = "";
 
-        if (!downloadParams.containsKey("pageInfo"))
-            throw new InvalidParameterException("No pageInfo");
+        File ugoiraCacheFolder = FileHelper.getOrCreateCacheFolder(getApplicationContext(), Consts.UGOIRA_CACHE_FOLDER + File.separator + img.getId());
+        if (ugoiraCacheFolder != null) {
+            String targetFileName = img.getName();
+            try {
+                // == Download archive
+                ImmutablePair<File, String> result = DownloadHelper.downloadToFile(
+                        site,
+                        img.getUrl(),
+                        img.getOrder(),
+                        HttpHelper.webkitRequestHeadersToOkHttpHeaders(getRequestHeaders(img.getUrl(), img.getDownloadParams()), img.getUrl()),
+                        ugoiraCacheFolder,
+                        targetFileName,
+                        ArchiveHelper.ZIP_MIME_TYPE,
+                        downloadInterrupted,
+                        null
+                );
 
-        String pageInfoValue = downloadParams.get("pageInfo");
-        if (null == pageInfoValue) throw new InvalidParameterException("PageInfo is null");
+                // == Extract all frames
+                ArchiveHelper.extractArchiveEntries(
+                        getApplicationContext(),
+                        Uri.fromFile(result.left),
+                        null, // Extract everything
+                        ugoiraCacheFolder,
+                        null,
+                        downloadInterrupted,
+                        null
+                );
 
-        if (pageInfoValue.equals("unprotected"))
-            return binaryContent; // Free content, picture is not protected
+                // == Build the GIF using download params and extracted pics
+                List<ImmutablePair<Uri, Integer>> frames = new ArrayList<>();
 
-//        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
-        Bitmap sourcePicture = BitmapFactory.decodeByteArray(binaryContent, 0, binaryContent.length);
+                // Get frame information
+                Map<String, String> downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
+                String ugoiraFramesStr = downloadParams.get(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES);
+                List<Pair<String, Integer>> ugoiraFrames = JsonHelper.jsonToObject(ugoiraFramesStr, PixivIllustMetadata.UGOIRA_FRAMES_TYPE);
 
-        PageInfo page = JsonHelper.jsonToObject(pageInfoValue, PageInfo.class);
-        Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-        Bitmap destPicture = Bitmap.createBitmap(page.width, page.height, conf);
-        Canvas destCanvas = new Canvas(destPicture);
+                // Map frame name to the downloaded file
+                for (Pair<String, Integer> frame : ugoiraFrames) {
+                    File[] files = ugoiraCacheFolder.listFiles(pathname -> pathname.getName().endsWith(frame.first));
+                    if (files != null && files.length > 0) {
+                        frames.add(new ImmutablePair<>(Uri.fromFile(files[0]), frame.second));
+                    }
+                }
 
-        FakkuDecode.getTranslations(page);
+                // Assemble the GIF
+                Uri ugoiraGifFile = ImageHelper.assembleGif(
+                        getApplicationContext(),
+                        ugoiraCacheFolder,
+                        frames
+                );
 
-        if (page.translations.isEmpty())
-            throw new InvalidParameterException("No translation found");
-
-        for (PointTranslation t : page.translations) {
-            Rect sourceRect = new Rect(t.sourceX, t.sourceY, t.sourceX + FakkuDecode.TILE_EDGE_LENGTH, t.sourceY + FakkuDecode.TILE_EDGE_LENGTH);
-            Rect destRect = new Rect(t.destX, t.destY, t.destX + FakkuDecode.TILE_EDGE_LENGTH, t.destY + FakkuDecode.TILE_EDGE_LENGTH);
-
-            destCanvas.drawBitmap(sourcePicture, sourceRect, destRect, null);
+                // Save it to the book folder
+                Uri finalImgUri = FileHelper.copyFile(
+                        getApplicationContext(),
+                        ugoiraGifFile,
+                        dir.getUri(),
+                        ImageHelper.MIME_IMAGE_GIF,
+                        img.getName() + ".gif"
+                );
+                if (finalImgUri != null) {
+                    img.setMimeType(ImageHelper.MIME_IMAGE_GIF);
+                    img.setSize(FileHelper.fileSizeFromUri(getApplicationContext(), ugoiraGifFile));
+                    updateImageProperties(img, true, finalImgUri.toString());
+                } else
+                    throw new IOException("Couldn't copy result ugoira file");
+            } catch (Exception e) {
+                Timber.w(e);
+                isError = true;
+                errorMsg = e.getMessage();
+            } finally {
+                if (!ugoiraCacheFolder.delete())
+                    Timber.w("Couldn't delete ugoira folder %s", ugoiraCacheFolder.getAbsolutePath());
+            }
+            if (isError) {
+                updateImageProperties(img, false, "");
+                logErrorRecord(img.getContent().getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), errorMsg);
+            }
         }
-        ByteArrayOutputStream out = new ByteArrayOutputStream(1024);
-        destPicture.compress(Bitmap.CompressFormat.PNG, 100, out); // Fakku is _always_ PNG
-        return out.toByteArray();
     }
-     */
 
     /**
      * Create the given file in the given destination folder, and write binary data to it
@@ -955,8 +1015,7 @@ public class ContentDownloadWorker extends BaseWorker {
     private DocumentFile processAndSaveImage(@NonNull ImageFile img,
                                              @NonNull DocumentFile dir,
                                              @Nullable String contentType,
-                                             byte[] binaryContent,
-                                             boolean hasImageProcessing) throws IOException, UnsupportedContentException {
+                                             byte[] binaryContent) throws IOException, UnsupportedContentException {
 
         if (!dir.exists()) {
             // NB : Should not raise an exception here because that's what happens when some previously queued downloads are completed
@@ -966,14 +1025,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         /*
-        byte[] processedBinaryContent = null;
 
-        if (hasImageProcessing && !img.getName().equals(Consts.THUMB_FILE_NAME)) {
-            if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty())
-                processedBinaryContent = processImage(img.getDownloadParams(), binaryContent);
-            else throw new InvalidParameterException("No processing parameters found");
-        }
-        binaryContent = (null == processedBinaryContent) ? binaryContent : processedBinaryContent;
         */
         img.setSize((null == binaryContent) ? 0 : binaryContent.length);
 
@@ -1049,13 +1101,13 @@ public class ContentDownloadWorker extends BaseWorker {
     }
 
     /**
-     * Update given image status in DB
+     * Update given image properties in DB
      *
      * @param img     Image to update
      * @param success True if download is successful; false if download failed
      */
-    private void updateImageStatusUri(@NonNull ImageFile img, boolean success,
-                                      @NonNull String uriStr) {
+    private void updateImageProperties(@NonNull ImageFile img, boolean success,
+                                       @NonNull String uriStr) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         img.setFileUri(uriStr);
         if (success) img.setDownloadParams("");
@@ -1079,20 +1131,40 @@ public class ContentDownloadWorker extends BaseWorker {
                 break;
             case DownloadEvent.EV_CANCEL:
                 requestQueueManager.cancelQueue();
-                downloadCanceled = true;
+                downloadCanceled.set(true);
+                downloadInterrupted.set(true);
                 // Tracking Event (Download Canceled)
                 HentoidApp.trackDownloadEvent("Cancelled");
                 break;
             case DownloadEvent.EV_SKIP:
                 dao.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 requestQueueManager.cancelQueue();
-                downloadSkipped = true;
+                downloadSkipped.set(true);
+                downloadInterrupted.set(true);
                 // Tracking Event (Download Skipped)
                 HentoidApp.trackDownloadEvent("Skipped");
                 break;
             default:
                 // Other events aren't handled here
         }
+    }
+
+    // TODO doc
+    private Map<String, String> getRequestHeaders(@NonNull final String url, @NonNull final String downloadParamsStr) {
+        Map<String, String> result = new HashMap<>();
+        String cookieStr = null;
+        Map<String, String> downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr);
+        if (!downloadParams.isEmpty()) {
+            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
+                cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+            if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY)) {
+                String value = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                if (value != null) result.put(HttpHelper.HEADER_REFERER_KEY, value);
+            }
+        }
+        if (null == cookieStr) cookieStr = HttpHelper.getCookies(url);
+        result.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+        return result;
     }
 
     private void logErrorRecord(long contentId, ErrorType type, String url, String

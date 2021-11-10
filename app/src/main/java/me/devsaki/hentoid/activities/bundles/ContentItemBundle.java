@@ -18,6 +18,7 @@ public class ContentItemBundle {
     private static final String KEY_READ_COUNT = "read_count";
     private static final String KEY_COVER_URI = "cover_uri";
     private static final String KEY_COMPL_STATE = "completed";
+    private static final String KEY_TITLE = "title";
 
     private ContentItemBundle() {
         throw new UnsupportedOperationException();
@@ -49,6 +50,10 @@ public class ContentItemBundle {
 
         public void setCoverUri(String uri) {
             bundle.putString(KEY_COVER_URI, uri);
+        }
+
+        public void setTitle(String value) {
+            bundle.putString(KEY_TITLE, value);
         }
 
         public boolean isEmpty() {
@@ -103,6 +108,12 @@ public class ContentItemBundle {
         @Nullable
         public String getCoverUri() {
             if (bundle.containsKey(KEY_COVER_URI)) return bundle.getString(KEY_COVER_URI);
+            else return null;
+        }
+
+        @Nullable
+        public String getTitle() {
+            if (bundle.containsKey(KEY_TITLE)) return bundle.getString(KEY_TITLE);
             else return null;
         }
     }

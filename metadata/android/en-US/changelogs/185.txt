@@ -1,0 +1,39 @@
+New
+
+    Support for Pixiv (vanilla Pixiv, not Fanbox & other satellite sites)
+        Download individual artwork
+        Download manga/series
+        Download everything from an artist
+        Support for ugoira animations as animated GIF files
+    Merge books
+        Select multiple books on the library screen and merge them
+        Merge results of the duplicate detector (useful when it finds chapters of the same book)
+    Library screen : Book title can now be changed (long tap to select > pencil icon on top bar)
+    Library screen : A book can be split into multiple books using its chapters
+    Gallery screen : Add, remove and reorder chapters
+    Browser / Quick download : New setting to adjust long tap duration to higher values
+
+Changed
+
+    Overall : Action icons on book cards have a larger tap area to make navigation more comfortable
+    Queue screen : display remaining space on the "low on space" alert
+    Library screen : top right popup menu now has icons!
+    Library screen : New display for book pages, chapters and size; merged books have a specific chapter icon
+    Intro wizard / Storage screen : The "skip storage" button now behaves properly depending on what is happening
+    Intro wizard / Storage screen : "Please wait" message when the app is testing the selected folder
+    Metadata import / export dialog buttons are now visually updated when disabled
+    New group dialog : Modernize EditText + check for empty name
+
+Fixes
+
+    Manhwa Hentai : Fix download for certain books
+    Tsumino : Remove new ad on top of pages
+    Manhwa Hentai and Toonily books can now be redownloaded from scratch without being stuck
+    Library screen : Prevent duplicate sites from appearing on left menu
+    Gallery screen : Fix favourite filter not appearing when using "always open in gallery mode"
+    Prevent external import from being run multiple times at once
+    Duplicate detector : prevent deleting external books when "deleting from external library" setting is disabled
+    Prevent the viewer from launching twice when tapping the book card very quickly
+    Prevent cases where you'd have to tap the generic back button 4 times to exit after relaunching the app
+    A couple crashes reported by Firebase
+

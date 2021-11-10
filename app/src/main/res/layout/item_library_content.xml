@@ -5,7 +5,7 @@
     android:id="@+id/item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="1dp"
+    android:layout_marginTop="1dp"
     android:clickable="true"
     android:focusable="true"
     android:longClickable="true"
@@ -35,7 +35,6 @@
         android:focusable="true"
         android:longClickable="true"
         android:paddingStart="4dp"
-        android:paddingBottom="2dp"
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible">
 
@@ -59,27 +58,17 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <View
-            android:id="@+id/desensitiveArea"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/ivExternal"
-            app:layout_constraintTop_toTopOf="@id/ivFavourite" />
-
         <ImageView
             android:id="@+id/ivFavourite"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="24dp"
             android:layout_marginBottom="8dp"
             android:background="@color/transparent"
             android:clickable="true"
             android:focusable="true"
+            android:padding="8dp"
             android:src="@drawable/ic_fav_empty"
             android:tooltipText="@string/fav_help"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -91,13 +80,14 @@
 
         <ImageView
             android:id="@+id/queue_site_button"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
             android:clickable="true"
             android:focusable="true"
+            android:padding="8dp"
             android:tooltipText="@string/view_source_help"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/ivFavourite"
@@ -105,15 +95,16 @@
             app:layout_constraintVertical_bias="1.0"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_menu_nhentai" />
+            tools:src="@drawable/ic_hentoid_shape" />
 
         <ImageView
             android:id="@+id/ivExternal"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
+            android:padding="8dp"
             android:src="@drawable/ic_external_library"
             android:tooltipText="@string/external_help"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -125,11 +116,12 @@
 
         <ImageView
             android:id="@+id/ivOnline"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
+            android:padding="8dp"
             android:src="@drawable/ic_action_download_stream"
             android:tooltipText="@string/streamed_help"
             app:layout_constraintBottom_toBottomOf="parent"
