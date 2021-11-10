@@ -129,7 +129,7 @@ public class ObjectBoxDB {
     long insertContent(Content content) {
         ToMany<Attribute> attributes = content.getAttributes();
         Box<Attribute> attrBox = store.boxFor(Attribute.class);
-        Query<Attribute> attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
+        Query<Attribute> attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build();
 
         return store.callInTxNoException(() -> {
             // Master data management managed manually
@@ -197,7 +197,7 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectAllErrorJsonBooksQ() {
-        return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.ERROR.getCode()).notNull(Content_.jsonUri).notEqual(Content_.jsonUri, "").build();
+        return store.boxFor(Content.class).query().equal(Content_.status, StatusContent.ERROR.getCode()).notNull(Content_.jsonUri).notEqual(Content_.jsonUri, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build();
     }
 
     Query<Content> selectAllQueueBooksQ() {
@@ -392,15 +392,15 @@ public class ObjectBoxDB {
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrlStart) {
         // TODO combine these two queries with an OR
-        Content result = store.boxFor(Content.class).query().notEqual(Content_.url, "").equal(Content_.url, contentUrl).equal(Content_.site, site.getCode()).build().findFirst();
+        Content result = store.boxFor(Content.class).query().notEqual(Content_.url, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).equal(Content_.url, contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE).equal(Content_.site, site.getCode()).build().findFirst();
         if (null == result && !coverUrlStart.isEmpty())
-            result = store.boxFor(Content.class).query().notEqual(Content_.coverImageUrl, "").startsWith(Content_.coverImageUrl, coverUrlStart).equal(Content_.site, site.getCode()).build().findFirst();
+            result = store.boxFor(Content.class).query().notEqual(Content_.coverImageUrl, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).startsWith(Content_.coverImageUrl, coverUrlStart, QueryBuilder.StringOrder.CASE_INSENSITIVE).equal(Content_.site, site.getCode()).build().findFirst();
         return result;
     }
 
     @Nullable
     Content selectContentEndWithStorageUri(@NonNull final String folderUriEnd, boolean onlyFlagged) {
-        QueryBuilder<Content> queryBuilder = store.boxFor(Content.class).query().endsWith(Content_.storageUri, folderUriEnd);
+        QueryBuilder<Content> queryBuilder = store.boxFor(Content.class).query().endsWith(Content_.storageUri, folderUriEnd, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (onlyFlagged) queryBuilder.equal(Content_.isFlaggedForDeletion, true);
 
         return queryBuilder.build().findFirst();
@@ -531,7 +531,8 @@ public class ObjectBoxDB {
         if (bookCompletedOnly) query.equal(Content_.completed, true);
         else if (bookNotCompletedOnly) query.equal(Content_.completed, false);
 
-        if (hasTitleFilter) query.contains(Content_.title, title);
+        if (hasTitleFilter)
+            query.contains(Content_.title, title, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (hasTagFilter) {
             for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
                 AttributeType attrType = entry.getKey();
@@ -594,7 +595,8 @@ public class ObjectBoxDB {
         else if (bookNotCompletedOnly) contentQuery.equal(Content_.completed, false);
 
 
-        if (hasTitleFilter) contentQuery.contains(Content_.title, title);
+        if (hasTitleFilter)
+            contentQuery.contains(Content_.title, title, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (hasTagFilter) {
             for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
                 AttributeType attrType = entry.getKey();
@@ -660,7 +662,7 @@ public class ObjectBoxDB {
         if (filterPageFavourites) filterWithPageFavs(query);
 
         query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        query.or().equal(Content_.uniqueSiteId, queryStr);
+        query.or().equal(Content_.uniqueSiteId, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         query.or().in(Content_.id, additionalIds);
 
@@ -705,7 +707,7 @@ public class ObjectBoxDB {
 
 
         contentQuery.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        contentQuery.or().equal(Content_.uniqueSiteId, queryStr);
+        contentQuery.or().equal(Content_.uniqueSiteId, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         contentQuery.or().in(Content_.id, additionalIds);
         if (groupId > 0) contentQuery.in(Content_.id, selectFilteredContent(groupId));
@@ -854,7 +856,7 @@ public class ObjectBoxDB {
 
         contentFromAttributesQueryBuilder.link(Content_.attributes)
                 .equal(Attribute_.type, 0)
-                .equal(Attribute_.name, "");
+                .equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
         Query<Content> contentFromAttributesQuery = contentFromAttributesQueryBuilder.build();
 
         // Cumulative query loop
@@ -1065,7 +1067,7 @@ public class ObjectBoxDB {
 
     List<Content> selectContentWithTitle(@NonNull String word, int[] contentStatusCodes) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.contains(Content_.title, word);
+        query.contains(Content_.title, word, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         query.in(Content_.status, contentStatusCodes);
         return query.build().find();
     }
@@ -1304,7 +1306,8 @@ public class ObjectBoxDB {
             int artistGroupVisibility,
             boolean groupFavouritesOnly) {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
-        if (query != null) qb.contains(Group_.name, query);
+        if (query != null)
+            qb.contains(Group_.name, query, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
         if (grouping == Grouping.ARTIST.getId() && artistGroupVisibility != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS)
             qb.equal(Group_.subtype, artistGroupVisibility);
@@ -1390,11 +1393,11 @@ public class ObjectBoxDB {
      */
 
     List<Content> selectContentWithOldPururinHost() {
-        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
+        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
     }
 
     List<Content> selectContentWithOldTsuminoCovers() {
-        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/").build().find();
+        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
     }
 
     List<Content> selectDownloadedContentWithNoSize() {
@@ -1426,7 +1429,7 @@ public class ObjectBoxDB {
                 StatusContent.DOWNLOADED.getCode(),
                 StatusContent.MIGRATED.getCode()});
         query.notNull(Content_.storageFolder);
-        query.notEqual(Content_.storageFolder, "");
+        query.notEqual(Content_.storageFolder, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
         return query.build();
     }
 
@@ -1437,7 +1440,7 @@ public class ObjectBoxDB {
         else
             query.in(Content_.status, libraryStatus);
         query.notNull(Content_.storageUri);
-        query.notEqual(Content_.storageUri, "");
+        query.notEqual(Content_.storageUri, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (nonFavouritesOnly) query.equal(Content_.favourite, false);
         if (orderField > -1) {
             Property<Content> field = getPropertyFromField(orderField);
@@ -1456,7 +1459,7 @@ public class ObjectBoxDB {
                         StatusContent.MIGRATED.getCode()
                 })
                 .notNull(Content_.storageUri)
-                .notEqual(Content_.storageUri, "");
+                .notEqual(Content_.storageUri, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
         QueryBuilder<ImageFile> imageQuery = query.backlink(ImageFile_.content);
         imageQuery.equal(ImageFile_.isCover, true)
@@ -1474,7 +1477,7 @@ public class ObjectBoxDB {
         for (int i = 0; i < urls.length; i++) urls[i] = urls[i] + "/";
 
         QueryBuilder<SiteBookmark> query = store.boxFor(SiteBookmark.class).query();
-        query.in(SiteBookmark_.url, urls);
+        query.in(SiteBookmark_.url, urls, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
         return query.build();
     }
