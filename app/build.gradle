@@ -251,7 +251,7 @@ dependencies {
 
     // LeakCanary: github.com/square/leakcanary
     if (includeLeakCanary.toBoolean()) {
-        debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
+        debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
     }
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
