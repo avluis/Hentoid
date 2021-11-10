@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.webkit.MimeTypeMap
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
@@ -28,6 +29,10 @@ class UpdateInstallNotification(private val apkUri: Uri) : Notification {
         val intent = Intent(Intent.ACTION_VIEW)
         intent.setDataAndType(apkUri, APK_MIMETYPE)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-        return PendingIntent.getActivity(context, 0, intent, 0)
+        val flags =
+            if (Build.VERSION.SDK_INT > 30)
+                PendingIntent.FLAG_IMMUTABLE
+            else 0
+        return PendingIntent.getActivity(context, 0, intent, flags)
     }
 }
