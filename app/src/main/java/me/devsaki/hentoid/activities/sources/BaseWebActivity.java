@@ -981,7 +981,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 long pHash = Long.MIN_VALUE;
                 try {
                     List<Pair<String, String>> requestHeadersList = new ArrayList<>();
-                    Map<String, String> downloadParams = JsonHelper.jsonToObject(onlineContent.getDownloadParams(), JsonHelper.MAP_STRINGS);
+
+                    Map<String, String> downloadParams = ContentHelper.parseDownloadParams(onlineContent.getDownloadParams());
                     downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(onlineContent.getCoverImageUrl()));
                     downloadParams.put(HttpHelper.HEADER_REFERER_KEY, onlineContent.getSite().getUrl());
 
