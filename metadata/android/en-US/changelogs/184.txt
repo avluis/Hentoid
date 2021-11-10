@@ -1,0 +1,4 @@
+
+    Hitomi : Align with newest site layout; use "redownload from scratch" to fix your downloads
+    Fix exporting metadata under Android 7
+

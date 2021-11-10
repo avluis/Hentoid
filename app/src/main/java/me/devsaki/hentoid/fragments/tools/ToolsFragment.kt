@@ -24,13 +24,14 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import org.apache.commons.io.IOUtils
 import timber.log.Timber
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.*
 
 
+@Suppress("PrivatePropertyName")
 class ToolsFragment : PreferenceFragmentCompat() {
 
     private val DUPLICATE_DETECTOR_KEY = "tools_duplicate_detector"
@@ -44,7 +45,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
 
 
     lateinit var viewModel: PreferencesViewModel
-    lateinit var exportDisposable: Disposable
+    private lateinit var exportDisposable: Disposable
     private var rootView: View? = null
 
     companion object {
@@ -158,7 +159,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
                     targetFileName,
                     JsonHelper.JSON_MIME_TYPE
                 ).use { newDownload ->
-                    IOUtils.toInputStream(json, StandardCharsets.UTF_8)
+                    ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
                         .use { input -> FileHelper.copy(input, newDownload) }
                 }
                 Snackbar.make(
