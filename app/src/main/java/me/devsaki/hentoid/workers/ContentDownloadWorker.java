@@ -245,7 +245,6 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         Content content = queue.get(0).getContent().getTarget();
-        @Content.DownloadMode int downloadMode = queue.get(0).getDownloadMode();
 
         if (null == content) {
             Timber.w("Content is unavailable. Download aborted.");
@@ -268,6 +267,7 @@ public class ContentDownloadWorker extends BaseWorker {
         downloadSkipped.set(false);
         downloadInterrupted.set(false);
         isCloudFlareBlocked = false;
+        @Content.DownloadMode int downloadMode = content.getDownloadMode();
         dao.deleteErrorRecords(content.getId());
 
         boolean hasError = false;

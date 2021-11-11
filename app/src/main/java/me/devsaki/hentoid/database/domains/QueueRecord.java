@@ -36,8 +36,4 @@ public class QueueRecord {
     public void setRank(int rank) {
         this.rank = rank;
     }
-
-    public int getDownloadMode() {
-        return content.getTarget().getDownloadMode();
-    }
 }
