@@ -7,7 +7,6 @@ import io.objectbox.relation.ToOne;
 @Entity
 public class QueueRecord {
 
-
     @Id
     public long id;
     private ToOne<Content> content;
