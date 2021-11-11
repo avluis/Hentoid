@@ -24,10 +24,10 @@ public class EhentaiContent extends BaseContentParser {
 
         try {
             EHentaiGalleriesMetadata metadata = EHentaiServer.EHENTAI_API.getGalleryMetadata(query, null).execute().body();
-            return metadata.update(content, url, Site.EHENTAI, updateImages);
+            if (metadata != null) return metadata.update(content, url, Site.EHENTAI, updateImages);
         } catch (IOException e) {
             Timber.e(e, "Error parsing content.");
-            return new Content().setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED);
         }
+        return new Content().setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED);
     }
 }
