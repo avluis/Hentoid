@@ -149,7 +149,7 @@ dependencies {
     implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.15.0'
+    implementation 'com.github.penfeizhou.android.animation:apng:2.16.0'
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     implementation 'com.waynejo:androidndkgif:0.3.3'
