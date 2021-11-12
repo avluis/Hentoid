@@ -301,16 +301,20 @@ public class HttpHelper {
     }
 
     /**
-     * Extract the domain from the given URI
+     * Extract and return the main domain from the given URI
      *
      * @param uriStr URI to parse, in String form
-     * @return Domain of the URI; null if no domain found
+     * @return Main domain of the given URI (i.e. without any subdomain); null if no domain found
      */
     public static String getDomainFromUri(@NonNull String uriStr) {
-        Uri uri = Uri.parse(uriStr);
-        String result = uri.getHost();
-        if (result != null && result.startsWith("www")) result = result.substring(4);
-        return (null == result) ? "" : result;
+        String result = Uri.parse(uriStr).getHost();
+        if (null == result) return "";
+
+        String[] parts = result.split("\\.");
+        // Domain without extension
+        if (1 == parts.length) return parts[0];
+        // Main domain and extension
+        return parts[parts.length - 2] + "." + parts[parts.length - 1];
     }
 
     /**
