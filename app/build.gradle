@@ -33,8 +33,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
-        versionCode 185
-        versionName '1.15.13'
+        versionCode 186
+        versionName '1.15.13a'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -233,7 +233,7 @@ dependencies {
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
-    def objectbox_version = "2.9.1"
+    def objectbox_version = "3.0.1"
     if (includeObjectBoxBrowser.toBoolean()) {
         debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
         releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"
@@ -250,7 +250,7 @@ dependencies {
 
     // LeakCanary: github.com/square/leakcanary
     if (includeLeakCanary.toBoolean()) {
-        debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
+        debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.7'
     }
 
     // https://mvnrepository.com/artifact/commons-io/commons-io

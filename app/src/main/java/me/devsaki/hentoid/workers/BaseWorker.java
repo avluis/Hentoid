@@ -130,8 +130,8 @@ public abstract class BaseWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        ensureLongRunning();
         try {
+            ensureLongRunning();
             getToWork(getInputData());
         } catch (Exception e) {
             if (logs != null)

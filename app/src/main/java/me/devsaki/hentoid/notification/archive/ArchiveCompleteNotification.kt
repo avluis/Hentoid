@@ -3,6 +3,7 @@ package me.devsaki.hentoid.notification.archive
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import androidx.core.app.NotificationCompat
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.receiver.ArchiveNotificationSuccessReceiver
@@ -21,6 +22,10 @@ class ArchiveCompleteNotification(private val books: Int, private val isError: B
 
     private fun getIntent(context: Context): PendingIntent {
         val intent = Intent(context, ArchiveNotificationSuccessReceiver::class.java)
-        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT)
+        val flags =
+            if (Build.VERSION.SDK_INT > 30)
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            else PendingIntent.FLAG_CANCEL_CURRENT
+        return PendingIntent.getBroadcast(context, 0, intent, flags)
     }
 }

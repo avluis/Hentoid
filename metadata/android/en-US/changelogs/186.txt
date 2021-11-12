@@ -1,0 +1,4 @@
+
+Fixed : 
+	Downloads work under Android 12
+	F-droid build
