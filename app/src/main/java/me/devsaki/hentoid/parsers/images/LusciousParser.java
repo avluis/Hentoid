@@ -55,7 +55,7 @@ public class LusciousParser implements ImageListParser {
                     Timber.e("No metadata found @ ID %s", bookId);
                     return;
                 }
-                imageFiles.addAll(metadata.toImageFileList(imageFiles.size()));
+                imageFiles.addAll(metadata.toImageFileList(imageFiles.size() - 1)); // Don't count cover in the offset
                 if (metadata.getNbPages() > pageNumber) {
                     if (!progress.hasStarted())
                         progress.start(content.getId(), metadata.getNbPages());
