@@ -649,6 +649,9 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
         updateListAdapter(editMode == EditMode.EDIT_CHAPTERS);
 
+        // Dismiss spinner dropdown
+        if (chaptersSelector != null) chaptersSelector.dismiss();
+
         // Don't filter favs when editing chapters
         if (filterFavouritesState) {
             viewModel.filterFavouriteImages(editMode == EditMode.NONE);
