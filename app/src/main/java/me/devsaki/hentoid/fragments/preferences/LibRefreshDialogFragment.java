@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.preferences;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -41,8 +43,6 @@ import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.workers.ImportWorker;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 11/2018
@@ -246,7 +246,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                         .subscribeOn(io.reactivex.schedulers.Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                this::onScanHentoidFolderResult,
+                                this::onScanHentoidFolderResult, // TODO - Potential issue where the fragment is not attached to Context anymore when that line is run
                                 Timber::w
                         );
                 break;
