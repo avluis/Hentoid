@@ -169,7 +169,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                     .subscribe(
                             res -> {
                                 if (ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER == res || ImportHelper.ProcessFolderResult.KO_CREATE_FAIL == res || ImportHelper.ProcessFolderResult.KO_APP_FOLDER == res || ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER == res)
-                                    dismiss();
+                                    dismissAllowingStateLoss();
                             },
                             Timber::w
                     )
@@ -187,7 +187,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                     .subscribe(
                             res -> {
                                 if (ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER == res || ImportHelper.ProcessFolderResult.KO_CREATE_FAIL == res || ImportHelper.ProcessFolderResult.OK_EMPTY_FOLDER == res)
-                                    dismiss();
+                                    dismissAllowingStateLoss();
                             },
                             Timber::w
                     )
@@ -267,7 +267,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         importDisposable.dispose();
         switch (resultCode) {
             case ImportHelper.ProcessFolderResult.OK_EMPTY_FOLDER:
-                dismiss();
+                dismissAllowingStateLoss();
                 break;
             case ImportHelper.ProcessFolderResult.OK_LIBRARY_DETECTED:
                 // Hentoid folder is finally selected at this point -> Update UI
@@ -374,7 +374,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
             } else if (ImportWorker.STEP_4_QUEUE_FINAL == event.step) {
                 step4check.setVisibility(View.VISIBLE);
                 isServiceGracefulClose = true;
-                dismiss();
+                dismissAllowingStateLoss();
             }
         }
     }
@@ -389,7 +389,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         if (event.service != R.id.import_service) return;
         if (!isServiceGracefulClose) {
             Snackbar.make(rootView, R.string.import_unexpected, BaseTransientBottomBar.LENGTH_LONG).show();
-            new Handler(Looper.getMainLooper()).postDelayed(this::dismiss, 3000);
+            new Handler(Looper.getMainLooper()).postDelayed(this::dismissAllowingStateLoss, 3000);
         }
     }
 }
