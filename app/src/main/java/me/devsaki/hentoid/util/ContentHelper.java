@@ -388,7 +388,7 @@ public final class ContentHelper {
         if (isInQueueTab(content.getStatus())) {
             List<QueueRecord> queue = dao.selectQueue();
             if (!queue.isEmpty() && queue.get(0).getContent().getTargetId() == content.getId())
-                EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+                EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_CANCEL));
 
             // Remove from queue
             dao.deleteQueue(content);

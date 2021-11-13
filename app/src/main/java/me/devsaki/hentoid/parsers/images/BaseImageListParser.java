@@ -87,9 +87,9 @@ public abstract class BaseImageListParser implements ImageListParser {
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
         switch (event.eventType) {
-            case DownloadEvent.EV_PAUSE:
-            case DownloadEvent.EV_CANCEL:
-            case DownloadEvent.EV_SKIP:
+            case DownloadEvent.Type.EV_PAUSE:
+            case DownloadEvent.Type.EV_CANCEL:
+            case DownloadEvent.Type.EV_SKIP:
                 processHalted = true;
                 break;
             default:

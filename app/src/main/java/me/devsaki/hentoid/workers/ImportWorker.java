@@ -142,7 +142,7 @@ public class ImportWorker extends BaseWorker {
         Context context = getApplicationContext();
 
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
-        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
 
         final FileHelper.NameFilter imageNames = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 

@@ -1186,7 +1186,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
+        if (event.eventType == DownloadEvent.Type.EV_COMPLETE && event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
             setActionMode(ActionMode.READ);
         }
     }

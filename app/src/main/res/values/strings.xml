@@ -23,6 +23,7 @@
     <string name="cancel_all">Cancel all</string>
     <string name="menu_completed_single">Completed</string>
     <string name="service_running">Service is already running</string>
+    <string name="empty" />
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -93,7 +94,6 @@
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
     <string name="move_bottom">Move to bottom</string>
-    <string name="queue_empty2" />
     <string name="queue_paused">Queue paused</string>
     <string name="queue_preparing">Preparing download</string>
     <string name="queue_dl">Downloading %s</string>
