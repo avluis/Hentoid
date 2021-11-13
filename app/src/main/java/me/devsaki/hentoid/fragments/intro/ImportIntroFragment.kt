@@ -253,7 +253,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     }
 
     private fun nextStep() {
-        val parentActivity = context as IntroActivity
+        val parentActivity = requireActivity() as IntroActivity
         parentActivity.nextStep()
         binding.skipBtn.visibility = View.VISIBLE
     }
