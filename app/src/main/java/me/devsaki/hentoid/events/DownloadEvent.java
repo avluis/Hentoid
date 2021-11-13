@@ -13,19 +13,6 @@ import me.devsaki.hentoid.database.domains.Content;
  * Tracks downloads events for interested subscribers.
  */
 public class DownloadEvent {
-    @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI, Motive.NO_STORAGE, Motive.NO_DOWNLOAD_FOLDER
-            , Motive.DOWNLOAD_FOLDER_NOT_FOUND, Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS, Motive.STALE_CREDENTIALS})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface Motive {
-        int NONE = -1;
-        int NO_INTERNET = 0;
-        int NO_WIFI = 1;
-        int NO_STORAGE = 2;
-        int NO_DOWNLOAD_FOLDER = 3;
-        int DOWNLOAD_FOLDER_NOT_FOUND = 4;
-        int DOWNLOAD_FOLDER_NO_CREDENTIALS = 5;
-        int STALE_CREDENTIALS = 6;
-    }
 
     @IntDef({Type.EV_PROGRESS, Type.EV_PAUSE, Type.EV_UNPAUSE, Type.EV_CANCEL, Type.EV_COMPLETE, Type.EV_SKIP, Type.EV_PREPARATION})
     @Retention(RetentionPolicy.SOURCE)
@@ -40,6 +27,33 @@ public class DownloadEvent {
         int EV_PREPARATION = 6; // Informative event for the UI during preparation phase
     }
 
+    @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI, Motive.NO_STORAGE, Motive.NO_DOWNLOAD_FOLDER
+            , Motive.DOWNLOAD_FOLDER_NOT_FOUND, Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS, Motive.STALE_CREDENTIALS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Motive {
+        int NONE = -1;
+        int NO_INTERNET = 0;
+        int NO_WIFI = 1;
+        int NO_STORAGE = 2;
+        int NO_DOWNLOAD_FOLDER = 3;
+        int DOWNLOAD_FOLDER_NOT_FOUND = 4;
+        int DOWNLOAD_FOLDER_NO_CREDENTIALS = 5;
+        int STALE_CREDENTIALS = 6;
+    }
+
+    @IntDef({Step.NONE, Step.INIT, Step.PROCESS_IMG, Step.FETCH_IMG, Step.PREPARE_FOLDER, Step.PREPARE_DOWNLOAD, Step.SAVE_QUEUE, Step.START_DOWNLOAD})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Step {
+        int NONE = -1;
+        int INIT = 0;
+        int PROCESS_IMG = 1;
+        int FETCH_IMG = 2;
+        int PREPARE_FOLDER = 3;
+        int PREPARE_DOWNLOAD = 4;
+        int SAVE_QUEUE = 5;
+        int START_DOWNLOAD = 6;
+    }
+
     public final @Type
     int eventType;                 // Event type (see constants EV_XXX above)
     public final Content content;               // Corresponding book (for EV_CANCEL events that are the only ones not concerning the 1st book of the queue + EV_COMPLETE to update the proper book in library view)
@@ -49,6 +63,8 @@ public class DownloadEvent {
     public final long downloadedSizeB;          // Total size of downloaded content (bytes)
     public final @Motive
     int motive;            // Motive for certain events (EV_PAUSE)
+    public final @Step
+    int step;            // Step for EV_PREPARATION
 
     /**
      * Use for EV_PROGRESS and EV_COMPLETE events
@@ -67,6 +83,7 @@ public class DownloadEvent {
         this.pagesTotal = pagesTotal;
         this.downloadedSizeB = downloadedSizeB;
         this.motive = Motive.NONE;
+        this.step = Step.NONE;
     }
 
     /**
@@ -83,31 +100,40 @@ public class DownloadEvent {
         this.pagesTotal = 0;
         this.downloadedSizeB = 0;
         this.motive = Motive.NONE;
+        this.step = Step.NONE;
+    }
+
+    /**
+     * Use for EV_PREPARATION event
+     *
+     * @param step step code for the event
+     */
+    public static DownloadEvent fromPreparationStep(@Step int step) {
+        return new DownloadEvent(Type.EV_PREPARATION, Motive.NONE, step, 0);
     }
 
     /**
      * Use for EV_PAUSE event
      *
-     * @param eventType event type code (among DownloadEvent public static EV_ values)
-     * @param motive    motive for the event
+     * @param motive motive code for the event
      */
-    public DownloadEvent(@Type int eventType, @Motive int motive) {
-        this.content = null;
-        this.eventType = eventType;
-        this.pagesOK = 0;
-        this.pagesKO = 0;
-        this.pagesTotal = 0;
-        this.downloadedSizeB = 0;
-        this.motive = motive;
+    public static DownloadEvent fromPauseMotive(@Motive int motive) {
+        return new DownloadEvent(Type.EV_PAUSE, motive, Step.NONE, 0);
+    }
+
+    public static DownloadEvent fromPauseMotive(@Motive int motive, long spaceLeftBytes) {
+        return new DownloadEvent(Type.EV_PAUSE, motive, Step.NONE, spaceLeftBytes);
     }
 
     /**
-     * Use for out of memory EV_PAUSE event
+     * Use for EV_PAUSE event
      *
-     * @param eventType event type code (among DownloadEvent public static EV_ values)
-     * @param motive    motive for the event
+     * @param eventType      event type code (among DownloadEvent public static EV_ values)
+     * @param motive         motive for the event
+     * @param step           step for the event
+     * @param spaceLeftBytes space left on device
      */
-    public DownloadEvent(@Type int eventType, @Motive int motive, long spaceLeftBytes) {
+    DownloadEvent(@Type int eventType, @Motive int motive, @Step int step, long spaceLeftBytes) {
         this.content = null;
         this.eventType = eventType;
         this.pagesOK = 0;
@@ -115,6 +141,7 @@ public class DownloadEvent {
         this.pagesTotal = 0;
         this.downloadedSizeB = spaceLeftBytes;
         this.motive = motive;
+        this.step = step;
     }
 
     /**
@@ -130,6 +157,7 @@ public class DownloadEvent {
         this.pagesTotal = 0;
         this.downloadedSizeB = 0;
         this.motive = Motive.NONE;
+        this.step = Step.NONE;
     }
 
     public int getNumberRetries() {

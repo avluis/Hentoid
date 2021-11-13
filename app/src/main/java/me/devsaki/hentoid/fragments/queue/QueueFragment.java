@@ -493,6 +493,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         displayMotive(event);
 
         switch (event.eventType) {
+            case DownloadEvent.Type.EV_PREPARATION:
+                updateControlBar(event.step);
+                break;
             case DownloadEvent.Type.EV_PROGRESS:
                 updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal, event.getNumberRetries(), event.downloadedSizeB, false);
                 break;
@@ -514,7 +517,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 if (0 == itemAdapter.getAdapterItemCount()) errorStatsMenu.setVisible(false);
                 update(event.eventType);
                 break;
-            default: // EV_PAUSE, EV_CANCEL
+            case DownloadEvent.Type.EV_PAUSE:
+            case DownloadEvent.Type.EV_CANCEL:
+            default:
                 // Don't update the UI if it is in the process of canceling all items
                 if (isCancelingAll) return;
                 dlPreparationProgressBar.setVisibility(View.GONE);
@@ -556,6 +561,29 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
         if (motiveMsg != -1)
             Snackbar.make(recyclerView, getString(motiveMsg), BaseTransientBottomBar.LENGTH_SHORT).show();
+    }
+
+    private @StringRes
+    int formatStep(@DownloadEvent.Step int step) {
+        switch (step) {
+            case DownloadEvent.Step.INIT:
+                return R.string.step_init;
+            case DownloadEvent.Step.PROCESS_IMG:
+                return R.string.step_prepare_img;
+            case DownloadEvent.Step.FETCH_IMG:
+                return R.string.step_fetch_img;
+            case DownloadEvent.Step.PREPARE_FOLDER:
+                return R.string.step_prepare_folder;
+            case DownloadEvent.Step.PREPARE_DOWNLOAD:
+                return R.string.step_prepare_download;
+            case DownloadEvent.Step.SAVE_QUEUE:
+                return R.string.step_save_queue;
+            case DownloadEvent.Step.START_DOWNLOAD:
+                return R.string.step_start_download;
+            case DownloadEvent.Step.NONE:
+            default: // NONE
+                return R.string.empty;
+        }
     }
 
     /**
@@ -731,6 +759,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void updateControlBar() {
+        updateControlBar(DownloadEvent.Step.NONE);
+    }
+
+    private void updateControlBar(@DownloadEvent.Step int preparationStep) {
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, itemAdapter.getAdapterItemCount());
@@ -739,7 +771,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update control bar status
-        queueInfo.setText(isPreparingDownload && !isEmpty ? R.string.queue_preparing : R.string.empty);
+        queueInfo.setText(isPreparingDownload && !isEmpty ? R.string.queue_preparing : formatStep(preparationStep));
 
         if (isActive) {
             btnPause.setVisibility(View.VISIBLE);
