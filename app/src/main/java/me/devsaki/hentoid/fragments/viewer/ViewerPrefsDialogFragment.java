@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.fragments.viewer;
 
+import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_BROWSE_MODE;
+import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_RENDERING;
+
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Build;
@@ -26,9 +29,6 @@ import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
 import me.devsaki.hentoid.util.Preferences;
 
-import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_BROWSE_MODE;
-import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_RENDERING;
-
 public final class ViewerPrefsDialogFragment extends DialogFragment {
 
     private static final String RENDERING_MODE = "render_mode";
@@ -43,10 +43,12 @@ public final class ViewerPrefsDialogFragment extends DialogFragment {
         ViewerPrefsDialogFragment fragment = new ViewerPrefsDialogFragment();
 
         Bundle args = new Bundle();
-        if (bookPrefs.containsKey(VIEWER_RENDERING))
-            args.putInt(RENDERING_MODE, Preferences.isContentSmoothRendering(bookPrefs) ? 1 : 0);
-        if (bookPrefs.containsKey(VIEWER_BROWSE_MODE))
-            args.putInt(BROWSE_MODE, Preferences.getContentBrowseMode(bookPrefs));
+        if (bookPrefs != null) {
+            if (bookPrefs.containsKey(VIEWER_RENDERING))
+                args.putInt(RENDERING_MODE, Preferences.isContentSmoothRendering(bookPrefs) ? 1 : 0);
+            if (bookPrefs.containsKey(VIEWER_BROWSE_MODE))
+                args.putInt(BROWSE_MODE, Preferences.getContentBrowseMode(bookPrefs));
+        }
         fragment.setArguments(args);
 
         fragment.show(parent.getChildFragmentManager(), null);
