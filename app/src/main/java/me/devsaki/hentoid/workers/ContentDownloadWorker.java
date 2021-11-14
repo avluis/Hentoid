@@ -160,7 +160,7 @@ public class ContentDownloadWorker extends BaseWorker {
     private void iterateQueue() {
         // Process these here to avoid initializing notifications for downloads that will never start
         if (ContentQueueManager.getInstance().isQueuePaused()) {
-            Timber.w("Queue is paused. Download aborted.");
+            Timber.i("Queue is paused. Download aborted.");
             return;
         }
 
@@ -194,45 +194,45 @@ public class ContentDownloadWorker extends BaseWorker {
 
         // Check if queue has been paused
         if (ContentQueueManager.getInstance().isQueuePaused()) {
-            Timber.w("Queue is paused. Download aborted.");
+            Timber.i("Queue is paused. Download aborted.");
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
         @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(context);
         // Check for network connectivity
         if (NetworkHelper.Connectivity.NO_INTERNET == connectivity) {
-            Timber.w("No internet connection available. Queue paused.");
+            Timber.i("No internet connection available. Queue paused.");
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_INTERNET));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
         // Check for wifi if wifi-only mode is on
         if (Preferences.isQueueWifiOnly() && NetworkHelper.Connectivity.WIFI != connectivity) {
-            Timber.w("No wi-fi connection available. Queue paused.");
+            Timber.i("No wi-fi connection available. Queue paused.");
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_WIFI));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
         // Check for download folder existence, available free space and credentials
         if (Preferences.getStorageUri().trim().isEmpty()) {
-            Timber.w("No download folder set"); // May happen if user has skipped it during the intro
+            Timber.i("No download folder set"); // May happen if user has skipped it during the intro
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) {
-            Timber.w("Download folder has not been found. Please select it again."); // May happen if the folder has been moved or deleted after it has been selected
+            Timber.i("Download folder has not been found. Please select it again."); // May happen if the folder has been moved or deleted after it has been selected
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
         if (-2 == FileHelper.createNoMedia(context, rootFolder)) {
-            Timber.w("Insufficient credentials on download folder. Please select it again.");
+            Timber.i("Insufficient credentials on download folder. Please select it again.");
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
         long spaceLeftBytes = new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes();
         if (spaceLeftBytes < 2L * 1024 * 1024) {
-            Timber.w("Device very low on storage space (<2 MB). Queue paused.");
+            Timber.i("Device very low on storage space (<2 MB). Queue paused.");
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_STORAGE, spaceLeftBytes));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
@@ -242,14 +242,14 @@ public class ContentDownloadWorker extends BaseWorker {
         // Check if there is a first item to process
         List<QueueRecord> queue = dao.selectQueue();
         if (queue.isEmpty()) {
-            Timber.w("Queue is empty. Download aborted.");
+            Timber.i("Queue is empty. Download aborted.");
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
         Content content = queue.get(0).getContent().getTarget();
 
         if (null == content) {
-            Timber.w("Content is unavailable. Download aborted.");
+            Timber.i("Content is unavailable. Download aborted.");
             dao.deleteQueue(0);
             content = new Content().setId(queue.get(0).getContent().getTargetId()); // Must supply content ID to the event for the UI to update properly
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0));
@@ -258,7 +258,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         if (StatusContent.DOWNLOADED == content.getStatus()) {
-            Timber.w("Content is already downloaded. Download aborted.");
+            Timber.i("Content is already downloaded. Download aborted.");
             dao.deleteQueue(0);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_COMPLETE, 0, 0, 0, 0));
             notificationManager.notify(new DownloadErrorNotification(content));
@@ -323,24 +323,24 @@ public class ContentDownloadWorker extends BaseWorker {
                 if (null == content)
                     return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
             } catch (CaptchaException cpe) {
-                Timber.w(cpe, "A captcha has been found while parsing %s. Download aborted.", content.getTitle());
+                Timber.i(cpe, "A captcha has been found while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, "Captcha found. Please go back to the site, browse a book and solve the captcha.");
                 hasError = true;
             } catch (AccountException ae) {
                 String description = String.format("Your %s account does not allow to download the book %s. %s. Download aborted.", content.getSite().getDescription(), content.getTitle(), ae.getMessage());
-                Timber.w(ae, description);
+                Timber.i(ae, description);
                 logErrorRecord(content.getId(), ErrorType.ACCOUNT, content.getUrl(), CONTENT_PART_IMAGE_LIST, description);
                 hasError = true;
             } catch (LimitReachedException lre) {
                 String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
-                Timber.w(lre, description);
+                Timber.i(lre, description);
                 logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), CONTENT_PART_IMAGE_LIST, description);
                 hasError = true;
             } catch (PreparationInterruptedException ie) {
                 Timber.i(ie, "Preparation of %s interrupted", content.getTitle());
                 // not an error
             } catch (EmptyResultException ere) {
-                Timber.w(ere, "No images have been found while parsing %s. Download aborted.", content.getTitle());
+                Timber.i(ere, "No images have been found while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, "No images have been found. Error = " + ere.getMessage());
                 hasError = true;
             } catch (Exception e) {
@@ -416,7 +416,7 @@ public class ContentDownloadWorker extends BaseWorker {
             try {
                 Thread.sleep(delayMs);
             } catch (InterruptedException e) {
-                Timber.w(e);
+                Timber.d(e);
                 Thread.currentThread().interrupt();
             }
         }
@@ -577,7 +577,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 //noinspection BusyWait
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                Timber.w(e);
+                Timber.i(e);
                 Thread.currentThread().interrupt();
             }
         }
@@ -756,21 +756,21 @@ public class ContentDownloadWorker extends BaseWorker {
             // Queue the picture
             requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
         } catch (UnsupportedOperationException | IllegalArgumentException e) {
-            Timber.w(e, "Could not read image from page %s", img.getPageUrl());
+            Timber.i(e, "Could not read image from page %s", img.getPageUrl());
             updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "Could not read image from page " + img.getPageUrl() + " " + e.getMessage());
         } catch (IOException ioe) {
-            Timber.w(ioe, "Could not read page data from %s", img.getPageUrl());
+            Timber.i(ioe, "Could not read page data from %s", img.getPageUrl());
             updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.IO, img.getPageUrl(), "Page " + img.getName(), "Could not read page data from " + img.getPageUrl() + " " + ioe.getMessage());
         } catch (LimitReachedException lre) {
             String description = String.format("The bandwidth limit has been reached while parsing %s. %s. Download aborted.", content.getTitle(), lre.getMessage());
-            Timber.w(lre, description);
+            Timber.i(lre, description);
             updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.SITE_LIMIT, content.getUrl(), "Page " + img.getName(), description);
             throw lre;
         } catch (EmptyResultException ere) {
-            Timber.w(ere, "No images have been found while parsing %s", content.getTitle());
+            Timber.i(ere, "No images have been found while parsing %s", content.getTitle());
             updateImageProperties(img, false, "");
             logErrorRecord(content.getId(), ErrorType.PARSING, img.getPageUrl(), "Page " + img.getName(), "No images have been found. Error = " + ere.getMessage());
         }
@@ -815,19 +815,19 @@ public class ContentDownloadWorker extends BaseWorker {
                 logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "No picture (result is null)");
             }
         } catch (UnsupportedContentException e) {
-            Timber.w(e);
+            Timber.i(e);
             if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);
             else {
-                Timber.w("No backup URL found - aborting this image");
+                Timber.d("No backup URL found - aborting this image");
                 updateImageProperties(img, false, "");
                 logErrorRecord(img.getContent().getTargetId(), ErrorType.UNDEFINED, img.getUrl(), "Picture " + img.getName(), e.getMessage());
             }
         } catch (InvalidParameterException e) {
-            Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
+            Timber.i(e, "Processing error - Image %s not processed properly", img.getUrl());
             updateImageProperties(img, false, "");
             logErrorRecord(img.getContent().getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), "Picture " + img.getName(), "Download params : " + img.getDownloadParams());
         } catch (IOException | IllegalArgumentException e) {
-            Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
+            Timber.i(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
             updateImageProperties(img, false, "");
             logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), "Picture " + img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
         }
@@ -1047,7 +1047,7 @@ public class ContentDownloadWorker extends BaseWorker {
         if (img.getSize() < 1024 && binaryContent != null) {
             mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
             if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
-                Timber.w("Small non-image data received from %s", img.getUrl());
+                Timber.i("Small non-image data received from %s", img.getUrl());
                 throw new UnsupportedContentException(String.format("Small non-image data received from %s - data not processed", img.getUrl()));
             }
             fileExt = FileHelper.getExtensionFromMimeType(mimeType);
