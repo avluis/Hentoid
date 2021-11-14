@@ -104,17 +104,17 @@ public class ToonilyParser extends BaseImageListParser {
             doc = getOnlineDocument(chp.getUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
-                List<String> urls = new ArrayList<>();
+                List<String> imageUrls = new ArrayList<>();
                 for (Element e : images) {
                     String url = ParseHelper.getImgSrc(e);
-                    if (!url.isEmpty()) urls.add(url);
+                    if (!url.isEmpty()) imageUrls.add(url);
                 }
-                if (!urls.isEmpty())
-                    result.addAll(ParseHelper.urlsToImageFiles(urls, imgOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                if (!imageUrls.isEmpty())
+                    result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
                 else
-                    Timber.w("Chapter parsing failed for %s : no pictures found", chp.getUrl());
+                    Timber.i("Chapter parsing failed for %s : no pictures found", chp.getUrl());
             } else {
-                Timber.w("Chapter parsing failed for %s : no response", chp.getUrl());
+                Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
             }
             progressPlus();
         }
