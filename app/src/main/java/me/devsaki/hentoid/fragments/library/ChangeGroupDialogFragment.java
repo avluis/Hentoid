@@ -150,18 +150,22 @@ public class ChangeGroupDialogFragment extends DialogFragment {
         LibraryViewModel viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
         if (existingRadio.isChecked()) {
-            viewModel.moveContentsToCustomGroup(bookIds, customGroups.get(existingSpin.getSelectedIndex()), getParent()::onChangeGroupSuccess);
-            dismiss();
+            if (existingSpin.getSelectedIndex() > -1) {
+                viewModel.moveContentsToCustomGroup(bookIds, customGroups.get(existingSpin.getSelectedIndex()), getParent()::onChangeGroupSuccess);
+                dismissAllowingStateLoss();
+            } else {
+                ToastHelper.toast(R.string.group_not_selected);
+            }
         } else if (detachRadio.isChecked()) {
             viewModel.moveContentsToCustomGroup(bookIds, null, getParent()::onChangeGroupSuccess);
-            dismiss();
+            dismissAllowingStateLoss();
         } else if (newNameTxt != null && newNameTxt.getEditText() != null) { // New group
             String newNameStr = newNameTxt.getEditText().getText().toString().trim();
             if (!newNameStr.isEmpty()) {
                 List<Group> groupMatchingName = Stream.of(customGroups).filter(g -> g.name.equalsIgnoreCase(newNameStr)).toList();
                 if (groupMatchingName.isEmpty()) { // No existing group with same name -> OK
                     viewModel.moveContentsToNewCustomGroup(bookIds, newNameStr, getParent()::onChangeGroupSuccess);
-                    dismiss();
+                    dismissAllowingStateLoss();
                 } else {
                     ToastHelper.toast(R.string.group_name_exists);
                 }
