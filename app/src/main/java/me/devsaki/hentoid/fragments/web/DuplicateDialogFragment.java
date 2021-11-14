@@ -192,7 +192,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
                 Preferences.setDownloadDuplicateTry(false);
             parent.onDownloadDuplicate(downloadExtraPages);
         }
-        dismiss();
+        dismissAllowingStateLoss();
     }
 
 
