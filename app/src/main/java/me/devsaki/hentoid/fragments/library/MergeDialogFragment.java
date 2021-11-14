@@ -69,6 +69,8 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
         contentIds = getArguments().getLongArray(KEY_CONTENTS);
+        if (null == contentIds || 0 == contentIds.length)
+            throw new IllegalArgumentException("No content IDs");
 
         parent = (Parent) getParentFragment();
     }
@@ -102,6 +104,8 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         super.onViewCreated(rootView, savedInstanceState);
 
         List<Content> contentList = loadContentList();
+        if (contentList.isEmpty()) return;
+
         itemAdapter.set(Stream.of(contentList).map(s -> new TextItem<>(s.getTitle(), s, false, true, false, touchHelper)).toList());
 
         // Activate drag & drop
