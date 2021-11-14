@@ -865,7 +865,7 @@ public class ContentDownloadWorker extends BaseWorker {
             cause = "Network parse error";
         }
 
-        Timber.w(error);
+        Timber.d(error);
 
         updateImageProperties(img, false, "");
         logErrorRecord(content.getId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
