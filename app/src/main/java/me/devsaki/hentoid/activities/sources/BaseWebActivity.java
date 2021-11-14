@@ -367,8 +367,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     public void onDownloadPreparationEvent(DownloadPreparationEvent event) {
         // Show progress if it's about current content or its best duplicate
         if (
-                (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.contentId == currentContent.getId())
-                        || (duplicateId > 0 && event.contentId == duplicateId)
+                (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.getRelevantId() == currentContent.getId())
+                        || (duplicateId > 0 && event.getRelevantId() == duplicateId)
         ) {
             progressBar.setMax(event.total);
             progressBar.setProgress(event.done);
@@ -1031,6 +1031,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (null == currentContent) currentContent = onlineContent;
 
         if (isInCollection) {
+            onlineContent.setStoredId(contentDB.getId());
             if (!quickDownload) searchForExtraImages(contentDB, onlineContent);
             return ContentStatus.IN_COLLECTION;
         }

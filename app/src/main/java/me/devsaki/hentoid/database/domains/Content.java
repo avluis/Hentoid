@@ -159,6 +159,8 @@ public class Content implements Serializable {
     private String archiveLocationUri;  // Only used when importing external archives
     @Transient
     private boolean updatedProperties = false;  // Only used when using ImageListParsers to indicate the passed Content has been updated
+    @Transient
+    private long storedId = -1;  // Only used when fetching online images for a Content identified as identical as a stored Content
 
     public Content() { // Required by ObjectBox when an alternate constructor exists
     }
@@ -884,6 +886,14 @@ public class Content implements Serializable {
 
     public void setUpdatedProperties(boolean updatedProperties) {
         this.updatedProperties = updatedProperties;
+    }
+
+    public long getStoredId() {
+        return storedId;
+    }
+
+    public void setStoredId(long storedId) {
+        this.storedId = storedId;
     }
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {

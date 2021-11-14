@@ -230,8 +230,8 @@ public class ParseHelper {
     }
 
 
-    public static void signalProgress(long contentId, int current, int max) {
-        EventBus.getDefault().post(new DownloadPreparationEvent(contentId, current, max));
+    public static void signalProgress(long contentId, long storedId, int current, int max) {
+        EventBus.getDefault().post(new DownloadPreparationEvent(contentId, storedId, current, max));
     }
 
     public static String getSavedCookieStr(String downloadParams) {

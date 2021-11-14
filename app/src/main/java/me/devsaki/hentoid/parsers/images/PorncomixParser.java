@@ -77,7 +77,7 @@ public class PorncomixParser extends BaseImageListParser {
 
         List<String> pageUrls = Stream.of(pages).map(e -> e.attr("data-redirect")).withoutNulls().distinct().toList();
 
-        progressStart(content.getId(), pageUrls.size());
+        progressStart(content.getId(), content.getStoredId(), pageUrls.size());
 
         for (String pageUrl : pageUrls) {
             if (processHalted) break;

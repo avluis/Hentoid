@@ -100,7 +100,7 @@ public class PixivParser extends BaseImageListParser {
         int nbChapters = Integer.parseInt(nbChaptersStr);
 
         if (!progress.hasStarted())
-            progress.start(content.getId(), nbChapters);
+            progress.start(content.getId(), content.getStoredId(), nbChapters);
 
         // Page to list all Illust IDs
         List<Chapter> chapters = new ArrayList<>();
@@ -172,7 +172,7 @@ public class PixivParser extends BaseImageListParser {
 
         List<String> illustIds = userIllustsMetadata.getIllustIds();
         if (!progress.hasStarted())
-            progress.start(content.getId(), illustIds.size());
+            progress.start(content.getId(), content.getStoredId(), illustIds.size());
 
         // Cycle through all Illusts
         List<ImageFile> result = new ArrayList<>();

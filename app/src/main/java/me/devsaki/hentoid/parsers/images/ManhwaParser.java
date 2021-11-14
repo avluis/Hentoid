@@ -93,7 +93,7 @@ public class ManhwaParser extends BaseImageListParser {
         // Use chapter folder as a differentiator (as the whole URL may evolve)
         List<Chapter> extraChapters = ParseHelper.getExtraChapters(storedChapters, chapters);
 
-        progressStart(content.getId(), extraChapters.size());
+        progressStart(content.getId(), content.getStoredId(), extraChapters.size());
 
         // Start numbering extra images right after the last position of stored and chaptered images
         int orderOffset = 0;

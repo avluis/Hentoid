@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -16,8 +18,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
-
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
 /**
  * Created by robb_w on 2020/05
@@ -49,7 +49,7 @@ public class Hentai2ReadParser extends BaseImageListParser {
         }
         Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
 
-        progressStart(content.getId(), chapterUrls.size());
+        progressStart(content.getId(), content.getStoredId(), chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {

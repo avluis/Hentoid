@@ -67,8 +67,8 @@ public abstract class BaseImageListParser implements ImageListParser {
         throw new NotImplementedException();
     }
 
-    void progressStart(long contentId, int maxSteps) {
-        progress.start(contentId, maxSteps);
+    void progressStart(long contentId, long storedId, int maxSteps) {
+        progress.start(contentId, storedId, maxSteps);
     }
 
     void progressPlus() {

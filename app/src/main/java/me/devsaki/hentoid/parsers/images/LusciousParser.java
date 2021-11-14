@@ -58,7 +58,7 @@ public class LusciousParser implements ImageListParser {
                 imageFiles.addAll(metadata.toImageFileList(imageFiles.size() - 1)); // Don't count cover in the offset
                 if (metadata.getNbPages() > pageNumber) {
                     if (!progress.hasStarted())
-                        progress.start(content.getId(), metadata.getNbPages());
+                        progress.start(content.getId(), content.getStoredId(), metadata.getNbPages());
                     progress.advance();
                     getPages(content, bookId, pageNumber + 1, imageFiles);
                 } else {
