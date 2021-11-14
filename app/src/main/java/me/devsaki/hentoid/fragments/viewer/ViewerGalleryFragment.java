@@ -201,7 +201,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             } else if (clickedMenuItem.getItemId() == R.id.action_add_remove_chapters) {
                 setChapterEditMode(EditMode.ADD_CHAPTER);
             } else if (clickedMenuItem.getItemId() == R.id.action_remove_chapters) {
-                removeChapters();
+                stripChapters();
             }
             return true;
         });
@@ -641,7 +641,11 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 .create().show();
     }
 
-    // TODO doc
+    /**
+     * Switch the screen into the given edit mode
+     *
+     * @param editMode Edit mode to switch the screen to
+     */
     private void setChapterEditMode(@EditMode int editMode) {
         this.editMode = editMode;
         updateToolbar();
@@ -659,8 +663,10 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         } else viewModel.repostImages();
     }
 
-    // TODO doc
-    private void removeChapters() {
+    /**
+     * Strip all chapters from the current content
+     */
+    private void stripChapters() {
         viewModel.stripChapters(t -> ToastHelper.toast("Couldn't remove chapters"));
     }
 
