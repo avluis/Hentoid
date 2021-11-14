@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.signature.ObjectKey;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IExpandable;
 import com.mikepenz.fastadapter.IParentItem;
@@ -185,6 +186,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
             // Image
             Glide.with(image)
                     .load(Uri.parse(item.image.getFileUri()))
+                    .signature(new ObjectKey(item.image.uniqueHash()))
                     .apply(glideRequestOptions)
                     .into(image);
         }
