@@ -1260,9 +1260,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
             if (VANILLA_CHAPTERNAME_PATTERN.matcher(c.getName()).matches())
                 c.setName("Chapter " + order);
             // Update order
-            c.setOrder(order);
+            c.setOrder(order++);
             c.setContent(theContent);
-            order++;
             updatedChapters.add(c);
         }
 
@@ -1391,7 +1390,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Renumber all chapters and update the DB
         int index = 1;
-        for (Chapter c : chapters) c.setOrder(index++);
+        for (Chapter c : chapters) {
+            // Update names with the default "Chapter x" naming
+            if (VANILLA_CHAPTERNAME_PATTERN.matcher(c.getName()).matches())
+                c.setName("Chapter " + index);
+            // Update order
+            c.setOrder(index++);
+        }
         dao.insertChapters(chapters);
 
         // Renumber all images and update the DB
