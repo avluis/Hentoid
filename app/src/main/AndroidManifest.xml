@@ -467,6 +467,18 @@
                     android:host="pixiv.net"
                     android:pathPattern="/..*/users/..*"
                     android:scheme="https" />
+                <data
+                    android:host="www.pixiv.net"
+                    android:pathPattern="/..*/artworks/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="www.pixiv.net"
+                    android:pathPattern="/..*/user/..*/series/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="www.pixiv.net"
+                    android:pathPattern="/..*/users/..*"
+                    android:scheme="https" />
             </intent-filter>
         </activity>
 
