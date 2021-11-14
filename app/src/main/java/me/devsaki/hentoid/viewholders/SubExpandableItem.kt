@@ -18,12 +18,13 @@ import com.mikepenz.fastadapter.ui.utils.StringHolder
 import me.devsaki.hentoid.R
 
 /**
- * Created by mikepenz on 28.12.15.
+ * Inspired by mikepenz
  */
 open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
     AbstractExpandableItem<SubExpandableItem.ViewHolder>(),
     IClickable<SubExpandableItem>, ISubItem<SubExpandableItem.ViewHolder>,
-    IExtendedDraggable<SubExpandableItem.ViewHolder> {
+    IExtendedDraggable<SubExpandableItem.ViewHolder>,
+    INestedItem2<SubExpandableItem.ViewHolder> {
 
     var header: String? = null
     var name: StringHolder? = null
@@ -202,5 +203,9 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
                 false
             }
         }
+    }
+
+    override fun getLevel(): Int {
+        return 0
     }
 }
