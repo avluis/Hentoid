@@ -245,7 +245,10 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
     public void onDestroy() {
         if (recyclerView != null) recyclerView.setAdapter(null);
         recyclerView = null;
-        if (chaptersSelector != null) chaptersSelector.dismiss();
+        if (chaptersSelector != null) {
+            chaptersSelector.getSpinnerAdapter().setOnSpinnerItemSelectedListener(null); // Have to do that as the callback contains references to the fragment
+            chaptersSelector.dismiss();
+        }
 
         super.onDestroy();
     }
