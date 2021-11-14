@@ -104,7 +104,6 @@ import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
@@ -739,7 +738,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // it can interfere with Double-Back (press back twice) to exit
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(0, 0);
         finish();
     }
 
@@ -931,7 +930,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(0, 0);
     }
 
     @Override
