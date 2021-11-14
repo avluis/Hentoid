@@ -3,6 +3,7 @@ package me.devsaki.hentoid.ui;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -30,6 +31,7 @@ public class InputDialog {
         EditText input = new EditText(context);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
         input.setRawInputType(Configuration.KEYBOARD_12KEY);
+        input.setFilters(new InputFilter[]{new InputFilter.LengthFilter(9)}); // We don't expect any number longer than 9 chars (999 million)
 
         DialogInterface.OnClickListener onOk = (dialog, whichButton) -> {
             if (input.getText().length() > 0)
