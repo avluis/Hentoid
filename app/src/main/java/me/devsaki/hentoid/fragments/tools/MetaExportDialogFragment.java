@@ -209,6 +209,6 @@ public class MetaExportDialogFragment extends DialogFragment {
 
         if (dao != null) dao.cleanup();
         // Dismiss after 3s, for the user to be able to see and use the snackbar
-        new Handler(Looper.getMainLooper()).postDelayed(this::dismiss, 3000);
+        new Handler(Looper.getMainLooper()).postDelayed(this::dismissAllowingStateLoss, 3000);
     }
 }
