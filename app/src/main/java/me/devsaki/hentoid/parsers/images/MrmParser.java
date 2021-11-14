@@ -18,7 +18,6 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 
 /**
- * Created by robb_w on 2020/10
  * Handles parsing of content from myreadingmanga.info
  */
 public class MrmParser extends BaseImageListParser {
@@ -40,7 +39,7 @@ public class MrmParser extends BaseImageListParser {
             for (Element e : chapters) chapterUrls.add(e.attr("href"));
         }
         if (chapterUrls.isEmpty()) chapterUrls.add(content.getGalleryUrl()); // "one-shot" book
-        progressStart(content.getId(), content.getStoredId(), chapterUrls.size());
+        progressStart(content, null, chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {

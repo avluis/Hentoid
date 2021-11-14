@@ -1031,7 +1031,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (null == currentContent) currentContent = onlineContent;
 
         if (isInCollection) {
-            onlineContent.setStoredId(contentDB.getId());
             if (!quickDownload) searchForExtraImages(contentDB, onlineContent);
             return ContentStatus.IN_COLLECTION;
         }
@@ -1104,7 +1103,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         try {
             // Call the parser to retrieve all the pages
             // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
-            List<ImageFile> onlineImgs = parser.parseImageList(onlineContent);
+            List<ImageFile> onlineImgs = parser.parseImageList(onlineContent, storedContent);
             if (onlineImgs.isEmpty()) return result;
 
             int maxStoredImageOrder = 0;

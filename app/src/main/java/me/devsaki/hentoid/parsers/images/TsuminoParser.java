@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -17,10 +19,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.exception.CaptchaException;
 
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
-
 /**
- * Created by Shiro on 1/22/2016.
  * Handles parsing of content from tsumino
  */
 public class TsuminoParser extends BaseImageListParser {
@@ -34,8 +33,7 @@ public class TsuminoParser extends BaseImageListParser {
         Document doc = getOnlineDocument(content.getReaderUrl(), headers, Site.TSUMINO.useHentoidAgent(), Site.TSUMINO.useWebviewAgent());
         if (null != doc) {
             Elements captcha = doc.select(".g-recaptcha");
-            if (captcha != null && !captcha.isEmpty())
-                throw new CaptchaException();
+            if (!captcha.isEmpty()) throw new CaptchaException();
 
             Element contents = doc.select("#image-container").first();
             if (null != contents) {

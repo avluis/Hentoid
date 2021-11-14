@@ -20,7 +20,6 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 
 /**
- * Created by robb_w on 2020/05
  * Handles parsing of content from hentai2read.com
  */
 public class Hentai2ReadParser extends BaseImageListParser {
@@ -49,7 +48,7 @@ public class Hentai2ReadParser extends BaseImageListParser {
         }
         Collections.reverse(chapterUrls); // Put the chapters in the correct reading order
 
-        progressStart(content.getId(), content.getStoredId(), chapterUrls.size());
+        progressStart(content, null, chapterUrls.size());
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (String url : chapterUrls) {

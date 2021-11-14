@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.annimon.stream.Collectors;
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import org.greenrobot.eventbus.EventBus;
@@ -302,7 +303,7 @@ public class ParseHelper {
         return (parts[parts.length - 1].isEmpty()) ? parts[parts.length - 2] : parts[parts.length - 1];
     }
 
-    public static List<Chapter> getExtraChapters(
+    public static List<Chapter> getExtraChaptersbyUrl(
             @NonNull List<Chapter> storedChapters,
             @NonNull List<Chapter> detectedChapters
     ) {
@@ -320,6 +321,46 @@ public class ParseHelper {
             }
         }
         return Stream.of(result).sortBy(Chapter::getOrder).toList();
+    }
+
+    public static List<String> getExtraChaptersbyId(
+            @NonNull List<Chapter> storedChapters,
+            @NonNull List<String> detectedIds
+    ) {
+        List<String> result = new ArrayList<>();
+        Set<String> storedIds = new HashSet<>();
+        for (Chapter c : storedChapters) storedIds.add(c.getUniqueId());
+
+        for (String detectedId : detectedIds) {
+            if (!storedIds.contains(detectedId)) {
+                result.add(detectedId);
+            }
+        }
+        return result;
+    }
+
+    public static int getMaxImageOrder(@NonNull List<Chapter> storedChapters) {
+        if (!storedChapters.isEmpty()) {
+            Optional<Integer> optOrder = Stream.of(storedChapters)
+                    .map(Chapter::getImageFiles)
+                    .withoutNulls()
+                    .flatMap(Stream::of)
+                    .map(ImageFile::getOrder)
+                    .max(Integer::compareTo);
+            if (optOrder.isPresent()) return optOrder.get();
+        }
+        return 0;
+    }
+
+    public static int getMaxChapterOrder(@NonNull List<Chapter> storedChapters) {
+        if (!storedChapters.isEmpty()) {
+            Optional<Integer> optOrder = Stream.of(storedChapters)
+                    .withoutNulls()
+                    .map(Chapter::getOrder)
+                    .max(Integer::compareTo);
+            if (optOrder.isPresent()) return optOrder.get();
+        }
+        return 0;
     }
 
     public static String getImgSrc(Element e) {

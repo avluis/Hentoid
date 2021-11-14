@@ -3,6 +3,9 @@ package me.devsaki.hentoid.parsers.images;
 import static me.devsaki.hentoid.util.ContentHelper.KEY_DL_PARAMS_NB_CHAPTERS;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.annimon.stream.Stream;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -29,31 +32,28 @@ import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import timber.log.Timber;
 
 public class PixivParser extends BaseImageListParser {
 
     private static final int MAX_QUERY_WINDOW = 30;
 
-    private final ParseProgress progress = new ParseProgress();
-
     @Override
-    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
+    protected List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         EventBus.getDefault().register(this);
 
         List<ImageFile> result;
         try {
-            result = getPages(content);
+            result = getPages(onlineContent, storedContent);
         } finally {
             EventBus.getDefault().unregister(this);
         }
 
-        progress.complete();
+        progressComplete();
 
         return result;
     }
 
-    private List<ImageFile> getPages(@NonNull Content content) throws Exception {
+    private List<ImageFile> getPages(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
 
         try {
             boolean useMobileAgent = Site.PIXIV.useMobileAgent();
@@ -61,16 +61,16 @@ public class PixivParser extends BaseImageListParser {
             boolean useWebviewAgent = Site.PIXIV.useWebviewAgent();
 
             String cookieStr = HttpHelper.getCookies(
-                    content.getGalleryUrl(), null,
+                    onlineContent.getGalleryUrl(), null,
                     useMobileAgent, useHentoidAgent, useWebviewAgent);
 
-            if (content.getUrl().contains("/series/")) return parseSeries(content, cookieStr);
-            else if (content.getUrl().contains("/artworks/"))
-                return parseIllust(content, cookieStr);
-            else if (content.getUrl().contains("users/"))
-                return parseUser(content, cookieStr);
+            if (onlineContent.getUrl().contains("/series/"))
+                return parseSeries(onlineContent, storedContent, cookieStr);
+            else if (onlineContent.getUrl().contains("/artworks/"))
+                return parseIllust(onlineContent, cookieStr);
+            else if (onlineContent.getUrl().contains("users/"))
+                return parseUser(onlineContent, storedContent, cookieStr);
         } catch (Exception e) {
-            Timber.w(e);
             throw new EmptyResultException(StringHelper.protect(e.getMessage()));
         }
         return Collections.emptyList();
@@ -86,21 +86,20 @@ public class PixivParser extends BaseImageListParser {
         return ParseHelper.urlsToImageFiles(galleryMetadata.getPageUrls(), content.getCoverImageUrl(), StatusContent.SAVED);
     }
 
-    private List<ImageFile> parseSeries(@NonNull Content content, @NonNull String cookieStr) throws Exception {
-        String[] seriesIdParts = content.getUniqueSiteId().split("/");
+    private List<ImageFile> parseSeries(@NonNull Content onlineContent, @Nullable Content storedContent, @NonNull String cookieStr) throws Exception {
+        String[] seriesIdParts = onlineContent.getUniqueSiteId().split("/");
         String seriesId = seriesIdParts[seriesIdParts.length - 1];
         if (seriesId.contains("?")) {
             seriesId = seriesId.substring(0, seriesId.indexOf("?"));
         }
 
         // Retrieve the number of Illusts
-        String nbChaptersStr = ContentHelper.parseDownloadParams(content.getDownloadParams()).get(KEY_DL_PARAMS_NB_CHAPTERS);
+        String nbChaptersStr = ContentHelper.parseDownloadParams(onlineContent.getDownloadParams()).get(KEY_DL_PARAMS_NB_CHAPTERS);
         if (null == nbChaptersStr || !StringHelper.isNumeric(nbChaptersStr))
             throw new IllegalArgumentException("Chapter count not saved");
         int nbChapters = Integer.parseInt(nbChaptersStr);
 
-        if (!progress.hasStarted())
-            progress.start(content.getId(), content.getStoredId(), nbChapters);
+        progressStart(onlineContent, storedContent, nbChapters);
 
         // Page to list all Illust IDs
         List<Chapter> chapters = new ArrayList<>();
@@ -114,14 +113,14 @@ public class PixivParser extends BaseImageListParser {
                     message = seriesContentMetadata.getMessage();
                 throw new IllegalArgumentException(message);
             }
-            chapters.addAll(seriesContentMetadata.getChapters(content.getId()));
+            chapters.addAll(seriesContentMetadata.getChapters(onlineContent.getId()));
         }
         // Put back chapters in reading order
         Collections.reverse(chapters);
 
         // Retrieve all Illust detailed info
         List<ImageFile> result = new ArrayList<>();
-        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
         Set<Attribute> attrs = new HashSet<>();
         int order = 1;
         for (Chapter ch : chapters) {
@@ -143,25 +142,25 @@ public class PixivParser extends BaseImageListParser {
 
             result.addAll(chapterImages);
 
-            progress.advance();
+            progressPlus();
         }
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted) throw new PreparationInterruptedException();
 
-        content.putAttributes(attrs);
-        content.setUpdatedProperties(true);
+        onlineContent.putAttributes(attrs);
+        onlineContent.setUpdatedProperties(true);
         return result;
     }
 
-    private List<ImageFile> parseUser(@NonNull Content content, @NonNull String cookieStr) throws Exception {
-        String[] userIdParts = content.getUniqueSiteId().split("/");
+    private List<ImageFile> parseUser(@NonNull Content onlineContent, @Nullable Content storedContent, @NonNull String cookieStr) throws Exception {
+        String[] userIdParts = onlineContent.getUniqueSiteId().split("/");
         String userId = userIdParts[userIdParts.length - 1];
         if (userId.contains("?")) {
             userId = userId.substring(0, userId.indexOf("?"));
         }
 
-        // Retrieve the list of Illusts IDs
+        // Retrieve the list of Illusts IDs (=chapters)
         PixivUserIllustMetadata userIllustsMetadata = PixivServer.API.getUserIllusts(userId, cookieStr).execute().body();
         if (null == userIllustsMetadata || userIllustsMetadata.isError()) {
             String message = "Unreachable user illusts";
@@ -170,15 +169,26 @@ public class PixivParser extends BaseImageListParser {
             throw new IllegalArgumentException(message);
         }
 
+        // Detect extra chapters
         List<String> illustIds = userIllustsMetadata.getIllustIds();
-        if (!progress.hasStarted())
-            progress.start(content.getId(), content.getStoredId(), illustIds.size());
+        List<Chapter> storedChapters = null;
+        if (storedContent != null) {
+            storedChapters = storedContent.getChapters();
+            if (storedChapters != null) storedChapters = Stream.of(storedChapters).toList();
+        }
+        if (null == storedChapters) storedChapters = Collections.emptyList();
+        else illustIds = ParseHelper.getExtraChaptersbyId(storedChapters, illustIds);
+
+        // Work on detected extra chapters
+        progressStart(onlineContent, storedContent, illustIds.size());
+
+        // Start numbering extra images & chapters right after the last position of stored and chaptered images & chapters
+        int imgOffset = ParseHelper.getMaxImageOrder(storedChapters) + 1;
+        int chpOffset = ParseHelper.getMaxChapterOrder(storedChapters) + 1;
 
         // Cycle through all Illusts
         List<ImageFile> result = new ArrayList<>();
-        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
-        int imgOrder = 1;
-        int chpOrder = 0;
+        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
         Set<Attribute> attrs = new HashSet<>();
         for (String illustId : illustIds) {
             if (processHalted) break;
@@ -193,21 +203,21 @@ public class PixivParser extends BaseImageListParser {
             List<Attribute> chapterAttrs = illustMetadata.getAttributes();
             attrs.addAll(chapterAttrs);
 
-            Chapter chp = new Chapter(chpOrder++, illustMetadata.getUrl(), illustMetadata.getTitle()).setUniqueId(illustMetadata.getId()).setContentId(content.getId());
+            Chapter chp = new Chapter(chpOffset++, illustMetadata.getUrl(), illustMetadata.getTitle()).setUniqueId(illustMetadata.getId()).setContentId(onlineContent.getId());
             List<ImageFile> chapterImages = illustMetadata.getImageFiles();
             for (ImageFile img : chapterImages)
-                img.setOrder(imgOrder++).computeName(4).setChapter(chp);
+                img.setOrder(imgOffset++).computeName(4).setChapter(chp);
 
             result.addAll(chapterImages);
 
-            progress.advance();
+            progressPlus();
         }
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted) throw new PreparationInterruptedException();
 
-        content.putAttributes(attrs);
-        content.setUpdatedProperties(true);
+        onlineContent.putAttributes(attrs);
+        onlineContent.setUpdatedProperties(true);
         return result;
     }
 

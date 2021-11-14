@@ -4,6 +4,7 @@ import android.util.Pair;
 import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.annimon.stream.Optional;
 
@@ -33,8 +34,16 @@ public abstract class BaseImageListParser implements ImageListParser {
 
     protected abstract List<String> parseImages(@NonNull Content content) throws Exception;
 
+    public List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception {
+        return parseImageListImpl(onlineContent, storedContent);
+    }
+
     public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
-        String readerUrl = content.getReaderUrl();
+        return parseImageListImpl(content, null);
+    }
+
+    protected List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
+        String readerUrl = onlineContent.getReaderUrl();
 
         if (!URLUtil.isValidUrl(readerUrl))
             throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
@@ -45,9 +54,9 @@ public abstract class BaseImageListParser implements ImageListParser {
 
         List<ImageFile> result;
         try {
-            List<String> imgUrls = parseImages(content);
-            result = ParseHelper.urlsToImageFiles(imgUrls, content.getCoverImageUrl(), StatusContent.SAVED, null);
-            ParseHelper.setDownloadParams(result, content.getSite().getUrl());
+            List<String> imgUrls = parseImages(onlineContent);
+            result = ParseHelper.urlsToImageFiles(imgUrls, onlineContent.getCoverImageUrl(), StatusContent.SAVED, null);
+            ParseHelper.setDownloadParams(result, onlineContent.getSite().getUrl());
         } finally {
             EventBus.getDefault().unregister(this);
         }
@@ -58,17 +67,20 @@ public abstract class BaseImageListParser implements ImageListParser {
     }
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
+        // Default behaviour; this class does not use backup URLs
         ImageFile img = ImageFile.fromImageUrl(order, url, StatusContent.SAVED, maxPages);
         if (chapter != null) img.setChapter(chapter);
         return Optional.of(img);
     }
 
     public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Parser does not implement parseImagePage");
     }
 
-    void progressStart(long contentId, long storedId, int maxSteps) {
-        progress.start(contentId, storedId, maxSteps);
+    void progressStart(@NonNull Content onlineContent, @Nullable Content storedContent, int maxSteps) {
+        if (progress.hasStarted()) return;
+        long storedId = (storedContent != null) ? storedContent.getId() : -1;
+        progress.start(onlineContent.getId(), storedId, maxSteps);
     }
 
     void progressPlus() {
@@ -92,6 +104,10 @@ public abstract class BaseImageListParser implements ImageListParser {
             case DownloadEvent.Type.EV_SKIP:
                 processHalted = true;
                 break;
+            case DownloadEvent.Type.EV_COMPLETE:
+            case DownloadEvent.Type.EV_PREPARATION:
+            case DownloadEvent.Type.EV_PROGRESS:
+            case DownloadEvent.Type.EV_UNPAUSE:
             default:
                 // Other events aren't handled here
         }
