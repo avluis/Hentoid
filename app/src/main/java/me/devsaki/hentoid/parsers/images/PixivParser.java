@@ -99,9 +99,7 @@ public class PixivParser extends BaseImageListParser {
             throw new IllegalArgumentException("Chapter count not saved");
         int nbChapters = Integer.parseInt(nbChaptersStr);
 
-        progressStart(onlineContent, storedContent, nbChapters);
-
-        // Page to list all Illust IDs
+        // List all Illust IDs (API is paged, hence the loop)
         List<Chapter> chapters = new ArrayList<>();
         while (chapters.size() < nbChapters) {
             if (processHalted) break;
@@ -118,12 +116,29 @@ public class PixivParser extends BaseImageListParser {
         // Put back chapters in reading order
         Collections.reverse(chapters);
 
+
+        // If the stored content has chapters already, save them for comparison
+        List<Chapter> storedChapters = null;
+        if (storedContent != null) {
+            storedChapters = storedContent.getChapters();
+            if (storedChapters != null)
+                storedChapters = Stream.of(storedChapters).toList(); // Work on a copy
+        }
+        if (null == storedChapters) storedChapters = Collections.emptyList();
+
+        // Use chapter folder as a differentiator (as the whole URL may evolve)
+        List<Chapter> extraChapters = ParseHelper.getExtraChaptersbyUrl(storedChapters, chapters);
+
+        progressStart(onlineContent, storedContent, extraChapters.size());
+
+        // Start numbering extra images right after the last position of stored and chaptered images
+        int imgOffset = ParseHelper.getMaxImageOrder(storedChapters) + 1;
+
         // Retrieve all Illust detailed info
         List<ImageFile> result = new ArrayList<>();
         result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
         Set<Attribute> attrs = new HashSet<>();
-        int order = 1;
-        for (Chapter ch : chapters) {
+        for (Chapter ch : extraChapters) {
             if (processHalted) break;
             PixivIllustMetadata illustMetadata = PixivServer.API.getIllustMetadata(ch.getUniqueId(), cookieStr).execute().body();
             if (null == illustMetadata || illustMetadata.isError()) {
@@ -138,7 +153,7 @@ public class PixivParser extends BaseImageListParser {
 
             List<ImageFile> chapterImages = illustMetadata.getImageFiles();
             for (ImageFile img : chapterImages)
-                img.setOrder(order++).computeName(4).setChapter(ch);
+                img.setOrder(imgOffset++).computeName(4).setChapter(ch);
 
             result.addAll(chapterImages);
 
