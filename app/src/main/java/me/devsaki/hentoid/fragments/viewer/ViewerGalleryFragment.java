@@ -59,7 +59,7 @@ import me.devsaki.hentoid.fragments.ProgressDialogFragment;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
-import me.devsaki.hentoid.viewholders.INestedItem2;
+import me.devsaki.hentoid.viewholders.INestedItem;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewholders.SubExpandableItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -101,8 +101,8 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
     private final FastAdapter<ImageFileItem> fastAdapter = FastAdapter.with(itemAdapter);
     private SelectExtension<ImageFileItem> selectExtension;
 
-    private final ItemAdapter<INestedItem2<SubExpandableItem.ViewHolder>> itemAdapter2 = new ItemAdapter<>();
-    private final FastAdapter<INestedItem2<SubExpandableItem.ViewHolder>> fastAdapter2 = FastAdapter.with(itemAdapter2);
+    private final ItemAdapter<INestedItem<SubExpandableItem.ViewHolder>> itemAdapter2 = new ItemAdapter<>();
+    private final FastAdapter<INestedItem<SubExpandableItem.ViewHolder>> fastAdapter2 = FastAdapter.with(itemAdapter2);
     private ItemTouchHelper touchHelper;
 
     private DragSelectTouchListener mDragSelectTouchListener = null;
@@ -255,7 +255,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             if (!fastAdapter2.hasObservers()) fastAdapter2.setHasStableIds(true);
             itemAdapter2.clear();
 
-            ExpandableExtension<INestedItem2<SubExpandableItem.ViewHolder>> expandableExtension = fastAdapter2.getOrCreateExtension(ExpandableExtension.class);
+            ExpandableExtension<INestedItem<SubExpandableItem.ViewHolder>> expandableExtension = fastAdapter2.getOrCreateExtension(ExpandableExtension.class);
 
             GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
             if (glm != null) {
@@ -383,7 +383,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     private void onImagesChanged(List<ImageFile> images) {
         if (editMode == EditMode.EDIT_CHAPTERS) { // Expandable chapters
-            List<INestedItem2<SubExpandableItem.ViewHolder>> chapterItems = new ArrayList<>();
+            List<INestedItem<SubExpandableItem.ViewHolder>> chapterItems = new ArrayList<>();
 
             boolean isArchive = false;
             if (!images.isEmpty())
@@ -685,7 +685,6 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
-        Timber.i(">> onmove %s %s", oldPosition, newPosition);
         if (oldPosition < 0 || newPosition < 0) return false;
         if (itemAdapter2.getAdapterItem(oldPosition).getLevel() > 0) return false;
         long nbLevelZeroItems = Stream.of(itemAdapter2.getAdapterItems()).filter(i -> 0 == i.getLevel()).count();

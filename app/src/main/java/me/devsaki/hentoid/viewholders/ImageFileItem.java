@@ -32,7 +32,7 @@ import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Helper;
 
-public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> implements IExpandable<ImageFileItem.ImageViewHolder>, INestedItem2<ImageFileItem.ImageViewHolder> {
+public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> implements IExpandable<ImageFileItem.ImageViewHolder>, INestedItem<ImageFileItem.ImageViewHolder> {
 
     private final ImageFile image;
     private final Chapter chapter;

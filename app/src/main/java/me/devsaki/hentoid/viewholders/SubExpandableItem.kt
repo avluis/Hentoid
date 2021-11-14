@@ -24,7 +24,7 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
     AbstractExpandableItem<SubExpandableItem.ViewHolder>(),
     IClickable<SubExpandableItem>, ISubItem<SubExpandableItem.ViewHolder>,
     IExtendedDraggable<SubExpandableItem.ViewHolder>,
-    INestedItem2<SubExpandableItem.ViewHolder> {
+    INestedItem<SubExpandableItem.ViewHolder> {
 
     var header: String? = null
     var name: StringHolder? = null
