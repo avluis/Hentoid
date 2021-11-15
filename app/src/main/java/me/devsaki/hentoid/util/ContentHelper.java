@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Pair;
 
@@ -1124,13 +1123,8 @@ public final class ContentHelper {
         List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes == null) return "";
 
-        List<String> allTags = new ArrayList<>();
-        for (Attribute attribute : tagsAttributes) {
-            allTags.add(attribute.getName());
-        }
-        if (Build.VERSION.SDK_INT >= 24) {
-            allTags.sort(null);
-        }
+        List<String> allTags = Stream.of(tagsAttributes).map(Attribute::getName).sorted().limit(30).toList();
+
         return android.text.TextUtils.join(", ", allTags);
     }
 
