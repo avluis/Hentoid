@@ -12,6 +12,9 @@ import com.annimon.stream.Stream;
 
 import org.threeten.bp.Instant;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.core.HentoidApp;
 import timber.log.Timber;
 
 /**
@@ -172,6 +176,13 @@ public class LogHelper {
             if (entries.isEmpty()) entries = new ArrayList<>();
             entries.add(new LogEntry(message, formatArgs));
         }
+
+        /**
+         * Clear all log entries
+         */
+        public void clear() {
+            entries.clear();
+        }
     }
 
     /**
@@ -231,14 +242,20 @@ public class LogHelper {
             logFileName += ".txt";
             String log = buildLog(logInfo);
 
-            // Save it
+            // Save the log; use primary folder by default
             DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
-            if (null == folder) return null;
-
-            DocumentFile logDocumentFile = FileHelper.findOrCreateDocumentFile(context, folder, "text/plain", logFileName);
-            if (logDocumentFile != null)
-                FileHelper.saveBinary(context, logDocumentFile.getUri(), log.getBytes());
-            return logDocumentFile;
+            if (folder != null) {
+                DocumentFile logDocumentFile = FileHelper.findOrCreateDocumentFile(context, folder, "text/plain", logFileName);
+                if (logDocumentFile != null)
+                    FileHelper.saveBinary(context, logDocumentFile.getUri(), log.getBytes());
+                return logDocumentFile;
+            } else { // If it fails, use device's "download" folder (panic mode)
+                try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(HentoidApp.getInstance(), logFileName, "text/plain");) {
+                    try (InputStream input = new ByteArrayInputStream(log.getBytes())) {
+                        FileHelper.copy(input, newDownload);
+                    }
+                }
+            }
         } catch (Exception e) {
             Timber.e(e);
         }
