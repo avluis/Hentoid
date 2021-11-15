@@ -7,6 +7,7 @@ class JsonChapter {
     private Integer order;
     private String url;
     private String name;
+    private String uniqueId;
 
     private JsonChapter() {
     }
@@ -16,10 +17,11 @@ class JsonChapter {
         result.order = c.getOrder();
         result.url = c.getUrl();
         result.name = c.getName();
+        result.uniqueId = c.getUniqueId();
         return result;
     }
 
     Chapter toEntity() {
-        return new Chapter(order, url, name);
+        return new Chapter(order, url, name).setUniqueId(uniqueId);
     }
 }
