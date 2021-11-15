@@ -40,6 +40,7 @@ public class Hentai2ReadParser extends BaseImageListParser {
     @Override
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         List<ImageFile> result = new ArrayList<>();
+        processedUrl = onlineContent.getGalleryUrl();
 
         List<Pair<String, String>> headers = new ArrayList<>();
         ParseHelper.addSavedCookiesToHeader(onlineContent.getDownloadParams(), headers);
@@ -74,7 +75,7 @@ public class Hentai2ReadParser extends BaseImageListParser {
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (Chapter chp : extraChapters) {
-            if (processHalted) break;
+            if (processHalted.get()) break;
             doc = getOnlineDocument(chp.getUrl(), headers, Site.HENTAI2READ.useHentoidAgent(), Site.HENTAI2READ.useWebviewAgent());
             if (doc != null) {
                 List<Element> scripts = doc.select("script");
@@ -99,7 +100,7 @@ public class Hentai2ReadParser extends BaseImageListParser {
         progressComplete();
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted) throw new PreparationInterruptedException();
+        if (processHalted.get()) throw new PreparationInterruptedException();
 
         return result;
     }

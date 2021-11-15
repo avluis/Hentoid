@@ -40,6 +40,7 @@ public class PixivParser extends BaseImageListParser {
     @Override
     protected List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         EventBus.getDefault().register(this);
+        processedUrl = onlineContent.getGalleryUrl();
 
         List<ImageFile> result;
         try {
@@ -102,7 +103,7 @@ public class PixivParser extends BaseImageListParser {
         // List all Illust IDs (API is paged, hence the loop)
         List<Chapter> chapters = new ArrayList<>();
         while (chapters.size() < nbChapters) {
-            if (processHalted) break;
+            if (processHalted.get()) break;
             int chaptersToRead = Math.min(nbChapters - chapters.size(), MAX_QUERY_WINDOW);
             PixivSeriesIllustMetadata seriesContentMetadata = PixivServer.API.getSeriesIllusts(seriesId, chaptersToRead, chapters.size(), cookieStr).execute().body();
             if (null == seriesContentMetadata || seriesContentMetadata.isError()) {
@@ -139,7 +140,7 @@ public class PixivParser extends BaseImageListParser {
         result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
         Set<Attribute> attrs = new HashSet<>();
         for (Chapter ch : extraChapters) {
-            if (processHalted) break;
+            if (processHalted.get()) break;
             PixivIllustMetadata illustMetadata = PixivServer.API.getIllustMetadata(ch.getUniqueId(), cookieStr).execute().body();
             if (null == illustMetadata || illustMetadata.isError()) {
                 String message = "Unreachable illust";
@@ -161,7 +162,7 @@ public class PixivParser extends BaseImageListParser {
         }
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted) throw new PreparationInterruptedException();
+        if (processHalted.get()) throw new PreparationInterruptedException();
 
         onlineContent.putAttributes(attrs);
         onlineContent.setUpdatedProperties(true);
@@ -206,7 +207,7 @@ public class PixivParser extends BaseImageListParser {
         result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
         Set<Attribute> attrs = new HashSet<>();
         for (String illustId : illustIds) {
-            if (processHalted) break;
+            if (processHalted.get()) break;
             PixivIllustMetadata illustMetadata = PixivServer.API.getIllustMetadata(illustId, cookieStr).execute().body();
             if (null == illustMetadata || illustMetadata.isError()) {
                 String message = "Unreachable illust";
@@ -229,7 +230,7 @@ public class PixivParser extends BaseImageListParser {
         }
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted) throw new PreparationInterruptedException();
+        if (processHalted.get()) throw new PreparationInterruptedException();
 
         onlineContent.putAttributes(attrs);
         onlineContent.setUpdatedProperties(true);

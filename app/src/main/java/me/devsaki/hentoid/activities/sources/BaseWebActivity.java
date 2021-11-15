@@ -445,6 +445,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         Preferences.unregisterPrefsChangedListener(listener);
 
+        // Cancel any previous extra page load
+        EventBus.getDefault().post(new DownloadEvent(currentContent, DownloadEvent.Type.EV_INTERRUPT_CONTENT));
+
         if (objectBoxDAO != null) objectBoxDAO.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         super.onDestroy();
@@ -600,6 +603,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         extraImages.clear();
         duplicateId = -1;
         duplicateSimilarity = 0f;
+        // Cancel any previous extra page load
+        EventBus.getDefault().post(new DownloadEvent(currentContent, DownloadEvent.Type.EV_INTERRUPT_CONTENT));
         // Greys out the action button
         // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious, Pixiv)
         runOnUiThread(() -> {
@@ -1092,58 +1097,54 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         list -> onSearchForExtraImagesSuccess(storedContent, onlineContent, list),
-                        Timber::e
+                        Timber::w
                 );
     }
 
-    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent, @NonNull final Content onlineContent) {
+    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent, @NonNull final Content onlineContent) throws Exception {
         List<ImageFile> result = Collections.emptyList();
 
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(onlineContent);
-        try {
-            // Call the parser to retrieve all the pages
-            // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
-            List<ImageFile> onlineImgs = parser.parseImageList(onlineContent, storedContent);
-            if (onlineImgs.isEmpty()) return result;
+        // Call the parser to retrieve all the pages
+        // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
+        List<ImageFile> onlineImgs = parser.parseImageList(onlineContent, storedContent);
+        if (onlineImgs.isEmpty()) return result;
 
-            int maxStoredImageOrder = 0;
-            if (storedContent.getImageFiles() != null) {
-                Optional<Integer> opt = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
-                if (opt.isPresent()) maxStoredImageOrder = opt.get();
-            }
-            final int maxStoredImageOrderFinal = maxStoredImageOrder;
+        int maxStoredImageOrder = 0;
+        if (storedContent.getImageFiles() != null) {
+            Optional<Integer> opt = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
+            if (opt.isPresent()) maxStoredImageOrder = opt.get();
+        }
+        final int maxStoredImageOrderFinal = maxStoredImageOrder;
 
-            // Attach chapters to books downloaded before chapters were implemented
-            int maxOnlineImageOrder = 0;
-            int minOnlineImageOrder = Integer.MAX_VALUE;
-            Map<Integer, Chapter> positionMap = new HashMap<>();
-            for (ImageFile img : onlineImgs) {
-                maxOnlineImageOrder = Math.max(maxOnlineImageOrder, img.getOrder());
-                minOnlineImageOrder = Math.min(minOnlineImageOrder, img.getOrder());
-                if (null != img.getLinkedChapter())
-                    positionMap.put(img.getOrder(), img.getLinkedChapter());
-            }
+        // Attach chapters to books downloaded before chapters were implemented
+        int maxOnlineImageOrder = 0;
+        int minOnlineImageOrder = Integer.MAX_VALUE;
+        Map<Integer, Chapter> positionMap = new HashMap<>();
+        for (ImageFile img : onlineImgs) {
+            maxOnlineImageOrder = Math.max(maxOnlineImageOrder, img.getOrder());
+            minOnlineImageOrder = Math.min(minOnlineImageOrder, img.getOrder());
+            if (null != img.getLinkedChapter())
+                positionMap.put(img.getOrder(), img.getLinkedChapter());
+        }
 
-            List<Chapter> storedChapters = storedContent.getChapters();
-            if (!positionMap.isEmpty() && minOnlineImageOrder < maxStoredImageOrder && (null == storedChapters || storedChapters.isEmpty())) {
-                // Attach chapters to stored images
-                List<ImageFile> storedImages = storedContent.getImageFiles();
-                if (null == storedImages) storedImages = Collections.emptyList();
-                for (ImageFile img : storedImages) {
-                    if (null == img.getLinkedChapter()) {
-                        Chapter targetChapter = positionMap.get(img.getOrder());
-                        if (targetChapter != null) img.setChapter(targetChapter);
-                    }
+        List<Chapter> storedChapters = storedContent.getChapters();
+        if (!positionMap.isEmpty() && minOnlineImageOrder < maxStoredImageOrder && (null == storedChapters || storedChapters.isEmpty())) {
+            // Attach chapters to stored images
+            List<ImageFile> storedImages = storedContent.getImageFiles();
+            if (null == storedImages) storedImages = Collections.emptyList();
+            for (ImageFile img : storedImages) {
+                if (null == img.getLinkedChapter()) {
+                    Chapter targetChapter = positionMap.get(img.getOrder());
+                    if (targetChapter != null) img.setChapter(targetChapter);
                 }
-                objectBoxDAO.insertImageFiles(storedImages);
             }
+            objectBoxDAO.insertImageFiles(storedImages);
+        }
 
-            // Online book has more pictures than stored book -> that's what we're looking for
-            if (maxOnlineImageOrder > maxStoredImageOrder) {
-                return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxStoredImageOrderFinal).distinct().toList();
-            }
-        } catch (Exception e) {
-            Timber.w(e);
+        // Online book has more pictures than stored book -> that's what we're looking for
+        if (maxOnlineImageOrder > maxStoredImageOrder) {
+            return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxStoredImageOrderFinal).distinct().toList();
         }
         return result;
     }

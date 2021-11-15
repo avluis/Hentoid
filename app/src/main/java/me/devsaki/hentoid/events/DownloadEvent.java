@@ -14,7 +14,7 @@ import me.devsaki.hentoid.database.domains.Content;
  */
 public class DownloadEvent {
 
-    @IntDef({Type.EV_PROGRESS, Type.EV_PAUSE, Type.EV_UNPAUSE, Type.EV_CANCEL, Type.EV_COMPLETE, Type.EV_SKIP, Type.EV_PREPARATION})
+    @IntDef({Type.EV_PROGRESS, Type.EV_PAUSE, Type.EV_UNPAUSE, Type.EV_CANCEL, Type.EV_COMPLETE, Type.EV_SKIP, Type.EV_PREPARATION, Type.EV_INTERRUPT_CONTENT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
         int EV_PROGRESS = 0; // Download progress of current book (always one book at a time)
@@ -25,6 +25,7 @@ public class DownloadEvent {
         int EV_SKIP = 5; // Cancel without removing the Content; used when the 2nd book is prioritized to end up in the first place of the queue or when 1st book is deprioritized
         // /!\ Using EV_SKIP without moving the position of the book won't have any effect
         int EV_PREPARATION = 6; // Informative event for the UI during preparation phase
+        int EV_INTERRUPT_CONTENT = 7; // Interrupt extra page parsing only for a specific Content
     }
 
     @IntDef({Motive.NONE, Motive.NO_INTERNET, Motive.NO_WIFI, Motive.NO_STORAGE, Motive.NO_DOWNLOAD_FOLDER

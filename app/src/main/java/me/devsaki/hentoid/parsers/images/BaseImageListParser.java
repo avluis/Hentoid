@@ -16,6 +16,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
@@ -30,7 +31,8 @@ import timber.log.Timber;
 public abstract class BaseImageListParser implements ImageListParser {
 
     private final ParseProgress progress = new ParseProgress();
-    protected boolean processHalted = false;
+    protected AtomicBoolean processHalted = new AtomicBoolean(false);
+    protected String processedUrl = "";
 
     protected abstract List<String> parseImages(@NonNull Content content) throws Exception;
 
@@ -44,6 +46,7 @@ public abstract class BaseImageListParser implements ImageListParser {
 
     protected List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         String readerUrl = onlineContent.getReaderUrl();
+        processedUrl = onlineContent.getGalleryUrl();
 
         if (!URLUtil.isValidUrl(readerUrl))
             throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
@@ -102,7 +105,13 @@ public abstract class BaseImageListParser implements ImageListParser {
             case DownloadEvent.Type.EV_PAUSE:
             case DownloadEvent.Type.EV_CANCEL:
             case DownloadEvent.Type.EV_SKIP:
-                processHalted = true;
+                processHalted.set(true);
+                break;
+            case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
+                if (event.content != null && event.content.getGalleryUrl().equals(processedUrl)) {
+                    processHalted.set(true);
+                    processedUrl = "";
+                }
                 break;
             case DownloadEvent.Type.EV_COMPLETE:
             case DownloadEvent.Type.EV_PREPARATION:
