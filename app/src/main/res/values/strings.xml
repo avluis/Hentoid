@@ -496,7 +496,6 @@
     <string name="bookmark_copy_url">Copy bookmark URL to clipboard</string>
     <string name="alert_unwanted_tags">This book is tagged with %s</string>
     <string name="bookmark_homepage">Homepage</string>
-    <string name="no_extra_page">No extra pages found</string>
     <!-- Web browser (site specifics) -->
     <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
     <string name="help_web_fakku_premium">That book can\'t be viewed with your current Fakku access.</string>

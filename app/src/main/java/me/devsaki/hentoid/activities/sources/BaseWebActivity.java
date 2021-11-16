@@ -8,6 +8,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_P
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
@@ -372,7 +373,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         ) {
             progressBar.setMax(event.total);
             progressBar.setProgress(event.done);
-            progressBar.setVisibility(event.isCompleted() ? View.GONE : View.VISIBLE);
+            progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.secondary_light)));
+            progressBar.setVisibility(View.VISIBLE);
         }
     }
 
@@ -1154,11 +1156,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             @NonNull final Content onlineContent,
             @NonNull final List<ImageFile> additionalImages) {
         searchExtraImagesdisposable.dispose();
-        if (additionalImages.isEmpty()) {
-            ToastHelper.toast(R.string.no_extra_page);
-            return;
-        }
-        if (null == currentContent) return;
+        progressBar.setProgress(progressBar.getMax());
+        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.green)));
+
+        if (null == currentContent || additionalImages.isEmpty()) return;
 
         if (currentContent.getUrl().equalsIgnoreCase(onlineContent.getUrl()) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
             // Retrieve the URLs of stored pages
