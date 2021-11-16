@@ -1490,7 +1490,6 @@ public final class ContentHelper {
             Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
             if (customGroup.isPresent())
                 GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
-            // TODO test custom groups
         }
 
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));

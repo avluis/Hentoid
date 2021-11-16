@@ -36,6 +36,7 @@ import me.devsaki.hentoid.viewholders.TextItem;
 public final class MergeDialogFragment extends DialogFragment implements ItemTouchCallback {
 
     private static final String KEY_CONTENTS = "contents";
+    private static final String KEY_DELETE_DEFAULT = "delete_default";
 
     // === UI
     private DialogLibraryMergeBinding binding = null;
@@ -48,16 +49,19 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
     // === VARIABLES
     private Parent parent;
     private long[] contentIds;
+    private boolean deleteDefault;
     private String initialTitle = "";
 
 
     public static void invoke(
             @NonNull final Fragment parent,
-            @NonNull final List<Content> contentList) {
+            @NonNull final List<Content> contentList,
+            boolean deleteDefault) {
         MergeDialogFragment fragment = new MergeDialogFragment();
 
         Bundle args = new Bundle();
         args.putLongArray(KEY_CONTENTS, Helper.getPrimitiveLongArrayFromList(Stream.of(contentList).map(Content::getId).toList()));
+        args.putBoolean(KEY_DELETE_DEFAULT, deleteDefault);
         fragment.setArguments(args);
 
         fragment.show(parent.getChildFragmentManager(), null);
@@ -71,6 +75,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         contentIds = getArguments().getLongArray(KEY_CONTENTS);
         if (null == contentIds || 0 == contentIds.length)
             throw new IllegalArgumentException("No content IDs");
+        deleteDefault = getArguments().getBoolean(KEY_DELETE_DEFAULT, false);
 
         parent = (Parent) getParentFragment();
     }
@@ -128,6 +133,8 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         newTitleTxt = binding.titleNew.getEditText();
         if (newTitleTxt != null) newTitleTxt.setText(initialTitle);
 
+        binding.mergeDeleteSwitch.setChecked(deleteDefault);
+
         binding.actionButton.setOnClickListener(v -> onActionClick());
     }
 
@@ -145,8 +152,8 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
     private void onActionClick() {
         List<Content> contents = Stream.of(itemAdapter.getAdapterItems()).map(TextItem::getTag).toList();
         String newTitleStr = (null == newTitleTxt) ? "" : newTitleTxt.getText().toString();
-        parent.mergeContents(contents, newTitleStr);
-        this.dismiss();
+        parent.mergeContents(contents, newTitleStr, binding.mergeDeleteSwitch.isChecked());
+        this.dismissAllowingStateLoss();
     }
 
 
@@ -187,7 +194,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
     }
 
     public interface Parent {
-        void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle);
+        void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle, boolean deleteAfterMerging);
 
         void leaveSelectionMode();
     }
