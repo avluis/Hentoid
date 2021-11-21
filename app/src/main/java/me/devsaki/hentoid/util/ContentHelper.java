@@ -1368,6 +1368,8 @@ public final class ContentHelper {
             @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
+        // New book inherits properties of the first content of the list
+        // which takes "precedence" as the 1st chapter
         Content firstContent = contentList.get(0);
 
         // Initiate a new Content
@@ -1403,11 +1405,11 @@ public final class ContentHelper {
         List<ImageFile> mergedImages = new ArrayList<>();
         List<Chapter> mergedChapters = new ArrayList<>();
 
-        // Set cover
         ImageFile firstCover = firstContent.getCover();
         ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
         boolean isError = false;
         try {
+            // Set cover
             if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
                 String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
                 Uri newUri = FileHelper.copyFile(
@@ -1423,6 +1425,7 @@ public final class ContentHelper {
             }
             mergedImages.add(coverPic);
 
+            // Merge images and chapters
             int chapterOrder = 0;
             int pictureOrder = 1;
             int nbProcessedPics = 1;
@@ -1437,7 +1440,7 @@ public final class ContentHelper {
                     newImg.setId(0); // Force working on a new picture
                     newImg.getContent().setTarget(null); // Clear content
                     newImg.setOrder(pictureOrder++);
-                    newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
+                    newImg.computeName(nbMaxDigits);
                     Chapter chapLink = newImg.getLinkedChapter();
                     if (null == chapLink) { // No chapter -> set content chapter
                         newChapter = contentChapter;

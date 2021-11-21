@@ -1027,7 +1027,7 @@ public class LibraryViewModel extends AndroidViewModel {
                 img.getContent().setTarget(null); // Clear content
                 img.setIsCover(0 == position);
                 img.setOrder(position++);
-                img.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", img.getOrder()));
+                img.computeName(nbMaxDigits);
             }
 
             splitContent.setImageFiles(images);
