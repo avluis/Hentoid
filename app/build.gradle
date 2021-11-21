@@ -187,7 +187,7 @@ dependencies {
     implementation 'me.zhanghai.android.fastscroll:library:1.1.7'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
-    implementation 'com.google.android:flexbox:2.0.1'
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
     def auto_about_version = '8.9.1'
     implementation "com.mikepenz:aboutlibraries-core:$auto_about_version"

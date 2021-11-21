@@ -32,6 +32,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -84,6 +85,12 @@ public final class Helper {
         return list;
     }
 
+    public static Set<Long> getSetFromPrimitiveArray(long[] input) {
+        Set<Long> list = new HashSet<>(input.length);
+        for (long n : input) list.add(n);
+        return list;
+    }
+
     /**
      * Create a Collections.List from the given array of primitive values
      *
@@ -92,6 +99,12 @@ public final class Helper {
      */
     public static List<Integer> getListFromPrimitiveArray(int[] input) {
         List<Integer> list = new ArrayList<>(input.length);
+        for (int n : input) list.add(n);
+        return list;
+    }
+
+    public static Set<Integer> getSetFromPrimitiveArray(int[] input) {
+        Set<Integer> list = new HashSet<>(input.length);
         for (int n : input) list.add(n);
         return list;
     }

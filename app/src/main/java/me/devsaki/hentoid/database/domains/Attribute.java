@@ -42,7 +42,7 @@ public class Attribute {
     @Transient
     private boolean excluded = false;
     @Transient
-    private int count;
+    private int count = 0;
     @Transient
     private int externalId = 0;
     @Backlink(to = "attributes") // backed by the to-many relation in Content

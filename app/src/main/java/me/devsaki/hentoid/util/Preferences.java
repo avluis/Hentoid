@@ -269,8 +269,12 @@ public final class Preferences {
                 .apply();
     }
 
-    public static int getAttributesSortOrder() {
-        return Integer.parseInt(sharedPreferences.getString(Key.ORDER_ATTRIBUTE_LISTS, Default.ORDER_ATTRIBUTES_DEFAULT + "") + "");
+    public static int getSearchAttributesSortOrder() {
+        return Integer.parseInt(sharedPreferences.getString(Key.SEARCH_ORDER_ATTRIBUTE_LISTS, Default.SEARCH_ORDER_ATTRIBUTES_DEFAULT + "") + "");
+    }
+
+    public static boolean getSearchAttributesCount() {
+        return sharedPreferences.getBoolean(Key.SEARCH_COUNT_ATTRIBUTE_RESULTS, Default.SEARCH_COUNT_ATTRIBUTE_RESULTS_DEFAULT);
     }
 
     public static int getContentPageQuantity() {
@@ -808,7 +812,8 @@ public final class Preferences {
         static final String ORDER_CONTENT_DESC = "pref_order_content_desc";
         static final String ORDER_GROUP_FIELD = "pref_order_group_field";
         static final String ORDER_GROUP_DESC = "pref_order_group_desc";
-        static final String ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
+        static final String SEARCH_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
+        static final String SEARCH_COUNT_ATTRIBUTE_RESULTS = "pref_order_attribute_count";
         static final String FIRST_RUN = "pref_first_run";
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
         public static final String ENDLESS_SCROLL = "pref_endless_scroll";
@@ -908,7 +913,8 @@ public final class Preferences {
         public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
         static final boolean ORDER_CONTENT_DESC = false;
         static final boolean ORDER_GROUP_DESC = false;
-        static final int ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
+        static final int SEARCH_ORDER_ATTRIBUTES_DEFAULT = Constant.SEARCH_ORDER_ATTRIBUTES_COUNT;
+        static final boolean SEARCH_COUNT_ATTRIBUTE_RESULTS_DEFAULT = true;
         static final boolean FIRST_RUN_DEFAULT = true;
         static final boolean ENDLESS_SCROLL_DEFAULT = true;
         static final int MEMORY_ALERT_DEFAULT = 110;
@@ -1004,8 +1010,8 @@ public final class Preferences {
         public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 
-        public static final int ORDER_ATTRIBUTES_ALPHABETIC = 0;
-        static final int ORDER_ATTRIBUTES_COUNT = 1;
+        public static final int SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0;
+        static final int SEARCH_ORDER_ATTRIBUTES_COUNT = 1;
 
         public static final int LIBRARY_DISPLAY_LIST = 0;
         public static final int LIBRARY_DISPLAY_GRID = 1;
