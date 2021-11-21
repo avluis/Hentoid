@@ -79,7 +79,12 @@ public class FileExplorer implements Closeable {
         return listDocumentFiles(context, parent, null, true, false);
     }
 
-    // TODO doc
+    /**
+     * Returns true if the given parent folder contains at least one subfolder
+     *
+     * @param parent Parent folder to test
+     * @return True if the given parent folder contains at least one subfolder; false instead
+     */
     public boolean hasFolders(@NonNull DocumentFile parent) {
         return countDocumentFiles(parent, null, true, false, true) > 0;
     }
@@ -200,7 +205,7 @@ public class FileExplorer implements Closeable {
     /**
      * List the properties of the children of the given folder (non recursive) matching the given criteria
      *
-     * @param parent      Folder containing the document to count
+     * @param parent      Folder containing the document to list
      * @param nameFilter  NameFilter defining which documents to include
      * @param listFolders true if matching folders have to be listed in the results
      * @param listFiles   true if matching files have to be listed in the results
@@ -232,7 +237,16 @@ public class FileExplorer implements Closeable {
         return results;
     }
 
-    // TODO doc
+    /**
+     * Count the children of the given folder (non recursive) matching the given criteria
+     *
+     * @param parent        Folder containing the document to count
+     * @param nameFilter    NameFilter defining which documents to include
+     * @param listFolders   true if matching folders have to be listed in the results
+     * @param listFiles     true if matching files have to be listed in the results
+     * @param stopFindFirst true to stop at the first match (useful to optimize when the point is to check for emptiness)
+     * @return Number of children of the given folder, matching the given criteria
+     */
     private int countDocumentFiles(
             @NonNull final DocumentFile parent,
             final FileHelper.NameFilter nameFilter,

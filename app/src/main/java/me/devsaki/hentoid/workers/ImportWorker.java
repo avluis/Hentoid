@@ -204,8 +204,7 @@ public class ImportWorker extends BaseWorker {
                 if (cleanNoImages) {
                     bookFiles = explorer.listFiles(context, bookFolder, null);
                     long nbImages = Stream.of(bookFiles).filter(f -> ImageHelper.isSupportedImage(f.getName())).count();
-                    List<DocumentFile> subfolders = explorer.listFolders(context, bookFolder);
-                    if (0 == nbImages && subfolders.isEmpty()) { // No supported images nor subfolders
+                    if (0 == nbImages && !explorer.hasFolders(bookFolder)) { // No supported images nor subfolders
                         boolean doRemove = true;
                         try {
                             content = importJson(context, bookFolder, bookFiles, dao);
@@ -293,8 +292,7 @@ public class ImportWorker extends BaseWorker {
                         trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK : %s", bookFolder.getUri().toString());
                     } else { // JSON not found
                         List<DocumentFile> subfolders = explorer.listFolders(context, bookFolder);
-                        if (!subfolders.isEmpty()) // Folder doesn't contain books but contains subdirectories
-                        {
+                        if (!subfolders.isEmpty()) { // Folder doesn't contain books but contains subdirectories
                             bookFolders.addAll(subfolders);
                             trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Subfolders found in : %s", bookFolder.getUri().toString());
                             nbFolders++;
