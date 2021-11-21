@@ -151,7 +151,7 @@ public class QueueViewModel extends AndroidViewModel {
 
         // If the 1st item is involved, signal it being skipped
         if (0 == newPosition || 0 == oldPosition)
-            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_SKIP));
     }
 
     /**
@@ -218,7 +218,7 @@ public class QueueViewModel extends AndroidViewModel {
 
         // Update queue and signal skipping the 1st item
         dao.updateQueue(localQueue);
-        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_SKIP));
     }
 
     /**
@@ -264,7 +264,7 @@ public class QueueViewModel extends AndroidViewModel {
         if (localQueue.isEmpty()) return;
         List<Long> contentIdList = Stream.of(localQueue).map(qr -> qr.getContent().getTargetId()).toList();
 
-        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
 
         DeleteData.Builder builder = new DeleteData.Builder();
         if (!contentIdList.isEmpty()) builder.setQueueIds(contentIdList);

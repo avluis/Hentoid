@@ -110,7 +110,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             }
             ImportHelper.PickerResult.KO_CANCELED -> {
                 Snackbar.make(
-                    binding.main,
+                    binding.root,
                     R.string.import_canceled,
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
@@ -118,7 +118,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
             }
             ImportHelper.PickerResult.KO_OTHER, ImportHelper.PickerResult.KO_NO_URI -> {
                 Snackbar.make(
-                    binding.main,
+                    binding.root,
                     R.string.import_other,
                     BaseTransientBottomBar.LENGTH_LONG
                 ).show()
@@ -141,27 +141,27 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 return
             }
             ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER -> Snackbar.make(
-                binding.main,
+                binding.root,
                 R.string.import_invalid,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
             ImportHelper.ProcessFolderResult.KO_APP_FOLDER -> Snackbar.make(
-                binding.main,
+                binding.root,
                 R.string.import_invalid,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
             ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER -> Snackbar.make(
-                binding.main,
+                binding.root,
                 R.string.import_download_folder,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
             ImportHelper.ProcessFolderResult.KO_CREATE_FAIL -> Snackbar.make(
-                binding.main,
+                binding.root,
                 R.string.import_create_fail,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
             ImportHelper.ProcessFolderResult.KO_OTHER -> Snackbar.make(
-                binding.main,
+                binding.root,
                 R.string.import_other,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
@@ -253,7 +253,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     }
 
     private fun nextStep() {
-        val parentActivity = context as IntroActivity
+        val parentActivity = requireActivity() as IntroActivity
         parentActivity.nextStep()
         binding.skipBtn.visibility = View.VISIBLE
     }

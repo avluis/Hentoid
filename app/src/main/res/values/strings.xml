@@ -22,6 +22,7 @@
     <string name="cancel_all">Cancel all</string>
     <string name="menu_completed_single">Completed</string>
     <string name="service_running">Service is already running</string>
+    <string name="empty" />
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -92,7 +93,6 @@
     <string name="move_up">Move up</string>
     <string name="move_down">Move down</string>
     <string name="move_bottom">Move to bottom</string>
-    <string name="queue_empty2" />
     <string name="queue_paused">Queue paused</string>
     <string name="queue_preparing">Preparing download</string>
     <string name="queue_dl">Downloading %s</string>
@@ -109,6 +109,13 @@
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
     <string name="paused_dl_stale_online_credentials">Cannot download - Stale Cookies or credentials. Use the notification to regenerate them</string>
+    <string name="step_init">Initializing</string>
+    <string name="step_prepare_img">Preparing images</string>
+    <string name="step_fetch_img">Fetching images</string>
+    <string name="step_prepare_folder">Preparing download folder</string>
+    <string name="step_prepare_download">Preparing download chain</string>
+    <string name="step_save_queue">Saving queue</string>
+    <string name="step_start_download">Download chain started !</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <plurals name="redownloaded_scratch">
@@ -366,6 +373,7 @@
     <string name="group_remove">Detach from current group</string>
     <string name="group_name_exists">Group with that name already exists!</string>
     <string name="group_name_empty">Group name is empty!</string>
+    <string name="group_not_selected">Group has not been selected!</string>
     <plurals name="group_delete_selected_group">
         <item quantity="one">Delete group only</item>
         <item quantity="other">Delete groups only</item>
@@ -385,7 +393,7 @@
     <string name="split_progress">Splitting book…</string>
     <string name="merge_split">Split</string>
     <string name="new_title">New title</string>
-    <string name="merge_help">After merging, selected books will be deleted</string>
+    <string name="merge_delete_after_merging">Delete these books after merging</string>
     <string name="split_select_help">Hold and drag to select\nEach selected chapter creates one new book</string>
     <string name="split_no_chapters">No chapters created yet :-(</string>
     <string name="split_create_chapters">Create chapters</string>
@@ -476,7 +484,6 @@
     <string name="bookmark_copy_url">Copy bookmark URL to clipboard</string>
     <string name="alert_unwanted_tags">This book is tagged with %s</string>
     <string name="bookmark_homepage">Homepage</string>
-    <string name="no_extra_page">No extra pages found</string>
     <!-- Web browser (site specifics) -->
     <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHendroid won\'t work without.</string>
     <string name="help_web_fakku_premium">That book can\'t be viewed with your current Fakku access.</string>

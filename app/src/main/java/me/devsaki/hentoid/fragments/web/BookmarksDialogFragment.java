@@ -124,7 +124,9 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
                     }
                 }
         ).subscribeOn(Schedulers.io())
-                .subscribe(() -> disposable.dispose());
+                .subscribe(() -> {
+                    if (disposable != null) disposable.dispose();
+                });
         super.onDestroy();
     }
 

@@ -3,6 +3,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'org.sonarqube'
 //apply plugin: 'com.google.firebase.crashlytics'
+//apply plugin: 'com.google.gms.google-services'
+//apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.mikepenz.aboutlibraries.plugin'
 
 // apply signing configuration if config file exists
@@ -33,8 +35,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
-        versionCode 186
-        versionName '1.15.13a'
+        versionCode 187
+        versionName '1.15.14'
 
         def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
@@ -99,7 +101,7 @@ dependencies {
     testImplementation 'androidx.test:core:1.4.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation "androidx.arch.core:core-testing:2.1.0"
-    testImplementation 'org.robolectric:robolectric:4.6.1'
+    testImplementation 'org.robolectric:robolectric:4.7'
     // Auto Timber trees that redirect logs to the JUnit output
     testImplementation 'net.lachlanmckee:timber-junit-rule:1.0.1'
     androidTestImplementation 'androidx.test:runner:1.4.0'
@@ -120,7 +122,6 @@ dependencies {
     implementation 'androidx.media:media:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
-    //implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.2'
     implementation 'androidx.fragment:fragment-ktx:1.3.6'
     implementation "androidx.documentfile:documentfile:1.0.1"
@@ -148,7 +149,7 @@ dependencies {
     implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.15.0'
+    implementation 'com.github.penfeizhou.android.animation:apng:2.16.0'
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     // implementation 'com.waynejo:androidndkgif:0.3.3'

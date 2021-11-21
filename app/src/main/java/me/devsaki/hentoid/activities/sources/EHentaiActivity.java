@@ -15,6 +15,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.EhentaiContent;
+import timber.log.Timber;
 
 /**
  * Created by Robb_w on 2018/04
@@ -56,7 +57,8 @@ public class EHentaiActivity extends BaseWebActivity {
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            content -> super.processContent(content, urlStr, quickDownload)
+                            content -> super.processContent(content, urlStr, quickDownload),
+                            Timber::w
                     )
             );
             return null;

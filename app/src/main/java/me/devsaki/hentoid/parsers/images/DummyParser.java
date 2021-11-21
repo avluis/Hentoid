@@ -20,6 +20,12 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 
 public class DummyParser implements ImageListParser {
+
+    @Override
+    public List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception {
+        return parseImageList(onlineContent);
+    }
+
     @Override
     public List<ImageFile> parseImageList(@NonNull Content content) {
         return (null == content.getImageFiles()) ? new ArrayList<>() : new ArrayList<>(content.getImageFiles());

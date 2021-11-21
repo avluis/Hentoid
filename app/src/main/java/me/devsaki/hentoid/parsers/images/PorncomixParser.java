@@ -24,6 +24,8 @@ public class PorncomixParser extends BaseImageListParser {
 
     @Override
     protected List<String> parseImages(@NonNull Content content) throws Exception {
+        processedUrl = content.getGalleryUrl();
+
         // Fetch the book gallery page
         Document doc = getOnlineDocument(content.getGalleryUrl(), null, Site.PORNCOMIX.useHentoidAgent(), Site.PORNCOMIX.useWebviewAgent());
         if (null == doc)
@@ -77,10 +79,10 @@ public class PorncomixParser extends BaseImageListParser {
 
         List<String> pageUrls = Stream.of(pages).map(e -> e.attr("data-redirect")).withoutNulls().distinct().toList();
 
-        progressStart(content.getId(), pageUrls.size());
+        progressStart(content, null, pageUrls.size());
 
         for (String pageUrl : pageUrls) {
-            if (processHalted) break;
+            if (processHalted.get()) break;
             Document doc = getOnlineDocument(pageUrl, null, Site.PORNCOMIX.useHentoidAgent(), Site.PORNCOMIX.useWebviewAgent());
             if (doc != null) {
                 Element imageElement = doc.selectFirst(".entry-content img");
@@ -91,7 +93,7 @@ public class PorncomixParser extends BaseImageListParser {
         }
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted) throw new PreparationInterruptedException();
+        if (processHalted.get()) throw new PreparationInterruptedException();
 
         progressComplete();
 

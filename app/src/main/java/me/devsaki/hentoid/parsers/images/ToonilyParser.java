@@ -6,8 +6,8 @@ import android.util.Pair;
 import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import org.greenrobot.eventbus.EventBus;
@@ -30,14 +30,14 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 /**
- * Created by robb_w on 2021/02
  * Handles parsing of content from toonily.com
  */
 public class ToonilyParser extends BaseImageListParser {
 
     @Override
-    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
-        String readerUrl = content.getReaderUrl();
+    public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
+        String readerUrl = onlineContent.getReaderUrl();
+        processedUrl = onlineContent.getGalleryUrl();
 
         if (!URLUtil.isValidUrl(readerUrl))
             throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
@@ -48,8 +48,8 @@ public class ToonilyParser extends BaseImageListParser {
 
         List<ImageFile> result;
         try {
-            result = parseImageFiles(content);
-            ParseHelper.setDownloadParams(result, content.getSite().getUrl());
+            result = parseImageFiles(onlineContent, storedContent);
+            ParseHelper.setDownloadParams(result, onlineContent.getSite().getUrl());
         } finally {
             EventBus.getDefault().unregister(this);
         }
@@ -57,20 +57,15 @@ public class ToonilyParser extends BaseImageListParser {
         return result;
     }
 
-    private List<ImageFile> parseImageFiles(@NonNull Content content) throws Exception {
+    private List<ImageFile> parseImageFiles(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         List<ImageFile> result = new ArrayList<>();
 
         List<Pair<String, String>> headers = new ArrayList<>();
-        HttpHelper.addCurrentCookiesToHeader(content.getGalleryUrl(), headers);
-
-        // If the stored content has chapters already, save them for comparison
-        List<Chapter> storedChapters = content.getChapters();
-        if (storedChapters != null) storedChapters = Stream.of(storedChapters).toList();
-        else storedChapters = Collections.emptyList();
+        HttpHelper.addCurrentCookiesToHeader(onlineContent.getGalleryUrl(), headers);
 
         // 1- Detect chapters on gallery page
         List<Chapter> chapters = new ArrayList<>();
-        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
+        Document doc = getOnlineDocument(onlineContent.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
         if (doc != null) {
             String canonicalUrl = DownloadHelper.getCanonicalUrl(doc);
             // Retrieve the chapters page chunk
@@ -84,60 +79,60 @@ public class ToonilyParser extends BaseImageListParser {
             if (null == doc) return result;
             List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
             Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
-            chapters = ParseHelper.getChaptersFromLinks(chapterLinks, content.getId());
+            chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
         }
+
+        // If the stored content has chapters already, save them for comparison
+        List<Chapter> storedChapters = null;
+        if (storedContent != null) {
+            storedChapters = storedContent.getChapters();
+            if (storedChapters != null)
+                storedChapters = Stream.of(storedChapters).toList(); // Work on a copy
+        }
+        if (null == storedChapters) storedChapters = Collections.emptyList();
 
         // Use chapter folder as a differentiator (as the whole URL may evolve)
-        List<Chapter> extraChapters = ParseHelper.getExtraChapters(storedChapters, chapters);
+        List<Chapter> extraChapters = ParseHelper.getExtraChaptersbyUrl(storedChapters, chapters);
 
-        progressStart(content.getId(), extraChapters.size());
+        progressStart(onlineContent, storedContent, extraChapters.size());
 
         // Start numbering extra images right after the last position of stored and chaptered images
-        int orderOffset = 0;
-        if (!storedChapters.isEmpty()) {
-            Optional<Integer> optOrder = Stream.of(storedChapters)
-                    .map(Chapter::getImageFiles)
-                    .withoutNulls()
-                    .flatMap(Stream::of)
-                    .map(ImageFile::getOrder)
-                    .max(Integer::compareTo);
-            if (optOrder.isPresent()) orderOffset = optOrder.get();
-        }
+        int imgOffset = ParseHelper.getMaxImageOrder(storedChapters);
 
         // 2. Open each chapter URL and get the image data until all images are found
         for (Chapter chp : extraChapters) {
-            if (processHalted) break;
+            if (processHalted.get()) break;
             doc = getOnlineDocument(chp.getUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
             if (doc != null) {
                 List<Element> images = doc.select(".reading-content img");
-                List<String> urls = new ArrayList<>();
+                List<String> imageUrls = new ArrayList<>();
                 for (Element e : images) {
                     String url = ParseHelper.getImgSrc(e);
-                    if (!url.isEmpty()) urls.add(url);
+                    if (!url.isEmpty()) imageUrls.add(url);
                 }
-                if (!urls.isEmpty())
-                    result.addAll(ParseHelper.urlsToImageFiles(urls, orderOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                if (!imageUrls.isEmpty())
+                    result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
                 else
-                    Timber.w("Chapter parsing failed for %s : no pictures found", chp.getUrl());
+                    Timber.i("Chapter parsing failed for %s : no pictures found", chp.getUrl());
             } else {
-                Timber.w("Chapter parsing failed for %s : no response", chp.getUrl());
+                Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
             }
             progressPlus();
         }
         progressComplete();
 
         // Add cover
-        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
-        if (processHalted) throw new PreparationInterruptedException();
+        if (processHalted.get()) throw new PreparationInterruptedException();
 
         return result;
     }
 
     @Override
     protected List<String> parseImages(@NonNull Content content) {
-        /// We won't use that as parseImageList is overriden directly
+        /// We won't use that as parseImageListImpl is overriden directly
         return null;
     }
 }

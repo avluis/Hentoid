@@ -28,6 +28,7 @@ import com.squareup.moshi.JsonDataException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -226,9 +227,13 @@ public class ImportHelper {
         }
         // Check if the folder is not the device's Download folder
         List<String> pathSegments = treeUri.getPathSegments();
-        if (pathSegments.size() > 1 && (pathSegments.get(1).equalsIgnoreCase("download") || pathSegments.get(1).equalsIgnoreCase("primary:download") || pathSegments.get(1).equalsIgnoreCase("downloads") || pathSegments.get(1).equalsIgnoreCase("primary:downloads"))) {
-            Timber.e("Device's download folder detected : %s", treeUri.toString());
-            return ProcessFolderResult.KO_DOWNLOAD_FOLDER;
+        if (pathSegments.size() > 1) {
+            String firstSegment = pathSegments.get(1).toLowerCase();
+            firstSegment = firstSegment.split(File.separator)[0];
+            if (firstSegment.startsWith("download") || firstSegment.startsWith("primary:download")) {
+                Timber.e("Device's download folder detected : %s", treeUri.toString());
+                return ProcessFolderResult.KO_DOWNLOAD_FOLDER;
+            }
         }
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);

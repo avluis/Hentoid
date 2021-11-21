@@ -103,7 +103,8 @@ public class ExHentaiActivity extends BaseWebActivity {
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            content -> super.processContent(content, urlStr, quickDownload)
+                            content -> super.processContent(content, urlStr, quickDownload),
+                            Timber::w
                     )
             );
             return null;

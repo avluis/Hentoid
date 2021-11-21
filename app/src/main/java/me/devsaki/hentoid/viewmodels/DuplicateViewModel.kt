@@ -174,6 +174,7 @@ class DuplicateViewModel(
     fun mergeContents(
         contentList: List<Content?>,
         newTitle: String,
+        deleteAfterMerging: Boolean,
         onSuccess: Runnable
     ) {
         if (contentList.isEmpty()) return
@@ -190,21 +191,23 @@ class DuplicateViewModel(
                     ContentHelper.mergeContents(context, contentList, newTitle, dao)
 
                     // Mark as "is being deleted" to trigger blink animation
-                    val toRemove = selectedDupes.toMutableList()
-                    for (entry in toRemove) entry.isBeingDeleted = true
-                    selectedDuplicates.postValue(toRemove)
+                    if (deleteAfterMerging) {
+                        val toRemove = selectedDupes.toMutableList()
+                        for (entry in toRemove) entry.isBeingDeleted = true
+                        selectedDuplicates.postValue(toRemove)
 
-                    // Remove old contents
-                    for (content in contentList) doRemoveContent(content!!.id)
+                        // Remove old contents
+                        for (content in contentList) doRemoveContent(content!!.id)
 
-                    // Remove duplicate entries (update UI)
-                    for (dupeEntry in selectedDupes) {
-                        val newList = selectedDupes.toMutableList()
-                        newList.remove(dupeEntry)
-                        selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on
+                        // Remove duplicate entries (update UI)
+                        for (dupeEntry in selectedDupes) {
+                            val newList = selectedDupes.toMutableList()
+                            newList.remove(dupeEntry)
+                            selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on
 
-                        if (dupeEntry.titleScore <= 1f) // Don't delete the fake reference entry that has been put there for display
-                            duplicatesDao.delete(dupeEntry)
+                            if (dupeEntry.titleScore <= 1f) // Don't delete the fake reference entry that has been put there for display
+                                duplicatesDao.delete(dupeEntry)
+                        }
                     }
                     result = true
                 } catch (e: ContentNotProcessedException) {

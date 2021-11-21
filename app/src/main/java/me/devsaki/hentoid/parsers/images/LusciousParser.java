@@ -1,13 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
-import android.util.Pair;
-
 import androidx.annotation.NonNull;
-
-import com.annimon.stream.Optional;
-
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -25,17 +18,15 @@ import me.devsaki.hentoid.retrofit.sources.LusciousServer;
 import retrofit2.Response;
 import timber.log.Timber;
 
-public class LusciousParser implements ImageListParser {
+public class LusciousParser extends BaseImageListParser {
 
-    private final ParseProgress progress = new ParseProgress();
-
-    public List<ImageFile> parseImageList(@NonNull Content content) {
+    public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         List<ImageFile> result = new ArrayList<>();
 
-        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
-        getPages(content, content.getUniqueSiteId(), 1, result);
+        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
+        getPages(onlineContent, onlineContent.getUniqueSiteId(), 1, result);
 
-        progress.complete();
+        progressComplete();
 
         return result;
     }
@@ -55,11 +46,10 @@ public class LusciousParser implements ImageListParser {
                     Timber.e("No metadata found @ ID %s", bookId);
                     return;
                 }
-                imageFiles.addAll(metadata.toImageFileList(imageFiles.size()));
+                imageFiles.addAll(metadata.toImageFileList(imageFiles.size() - 1)); // Don't count cover in the offset
                 if (metadata.getNbPages() > pageNumber) {
-                    if (!progress.hasStarted())
-                        progress.start(content.getId(), metadata.getNbPages());
-                    progress.advance();
+                    progressStart(content, null, metadata.getNbPages());
+                    progressPlus();
                     getPages(content, bookId, pageNumber + 1, imageFiles);
                 } else {
                     content.setImageFiles(imageFiles);
@@ -74,15 +64,9 @@ public class LusciousParser implements ImageListParser {
         }
     }
 
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
-        // This class does not use backup URLs
-        ImageFile img = ImageFile.fromImageUrl(order, url, StatusContent.SAVED, maxPages);
-        if (chapter != null) img.setChapter(chapter);
-        return Optional.of(img);
-    }
-
     @Override
-    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) {
-        throw new NotImplementedException();
+    protected List<String> parseImages(@NonNull Content content) {
+        /// We won't use that as parseImageListImpl is overriden directly
+        return null;
     }
 }

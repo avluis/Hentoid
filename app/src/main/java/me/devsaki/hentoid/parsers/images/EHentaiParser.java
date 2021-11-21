@@ -61,6 +61,12 @@ public class EHentaiParser implements ImageListParser {
         Integer pagecount;
     }
 
+
+    @Override
+    public List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception {
+        return parseImageList(onlineContent);
+    }
+
     public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
         EventBus.getDefault().register(this);
 
@@ -132,7 +138,7 @@ public class EHentaiParser implements ImageListParser {
             throw new EmptyResultException("No exploitable data has been found on the multiple page viewer");
 
         int pageCount = Math.min(mpvInfo.pagecount, mpvInfo.images.size());
-        progress.start(content.getId(), pageCount);
+        progress.start(content.getId(), -1, pageCount);
 
         // B.2- Call the API to get the pictures URL
         for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
@@ -180,7 +186,7 @@ public class EHentaiParser implements ImageListParser {
         int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
         int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
-        progress.start(content.getId(), nbGalleryPages);
+        progress.start(content.getId(), -1, nbGalleryPages);
 
         // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
         List<String> pageUrls = new ArrayList<>();
@@ -344,11 +350,15 @@ public class EHentaiParser implements ImageListParser {
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
         switch (event.eventType) {
-            case DownloadEvent.EV_PAUSE:
-            case DownloadEvent.EV_CANCEL:
-            case DownloadEvent.EV_SKIP:
+            case DownloadEvent.Type.EV_PAUSE:
+            case DownloadEvent.Type.EV_CANCEL:
+            case DownloadEvent.Type.EV_SKIP:
                 processHalted = true;
                 break;
+            case DownloadEvent.Type.EV_COMPLETE:
+            case DownloadEvent.Type.EV_PREPARATION:
+            case DownloadEvent.Type.EV_PROGRESS:
+            case DownloadEvent.Type.EV_UNPAUSE:
             default:
                 // Other events aren't handled here
         }

@@ -321,7 +321,15 @@
                     android:pathPattern="..*/..*"
                     android:scheme="https" />
                 <data
+                    android:host="www.luscious.net"
+                    android:pathPattern="..*/..*"
+                    android:scheme="https" />
+                <data
                     android:host="members.luscious.net"
+                    android:pathPattern="..*/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="www.members.luscious.net"
                     android:pathPattern="..*/..*"
                     android:scheme="https" />
             </intent-filter>
@@ -452,6 +460,18 @@
                     android:scheme="https" />
                 <data
                     android:host="pixiv.net"
+                    android:pathPattern="/..*/users/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="www.pixiv.net"
+                    android:pathPattern="/..*/artworks/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="www.pixiv.net"
+                    android:pathPattern="/..*/user/..*/series/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="www.pixiv.net"
                     android:pathPattern="/..*/users/..*"
                     android:scheme="https" />
             </intent-filter>

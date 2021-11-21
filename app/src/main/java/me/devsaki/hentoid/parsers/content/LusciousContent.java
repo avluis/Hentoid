@@ -60,10 +60,10 @@ public class LusciousContent extends BaseContentParser {
 
         try {
             LusciousBookMetadata metadata = LusciousServer.API.getBookMetadata(query).execute().body();
-            return metadata.update(content, updateImages);
+            if (metadata != null) return metadata.update(content, updateImages);
         } catch (IOException e) {
             Timber.e(e, "Error parsing content.");
-            return new Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED);
         }
+        return new Content().setSite(Site.LUSCIOUS).setStatus(StatusContent.IGNORED);
     }
 }

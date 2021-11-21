@@ -7,7 +7,6 @@ import io.objectbox.relation.ToOne;
 @Entity
 public class QueueRecord {
 
-
     @Id
     public long id;
     private ToOne<Content> content;
@@ -35,9 +34,5 @@ public class QueueRecord {
 
     public void setRank(int rank) {
         this.rank = rank;
-    }
-
-    public int getDownloadMode() {
-        return content.getTarget().getDownloadMode();
     }
 }

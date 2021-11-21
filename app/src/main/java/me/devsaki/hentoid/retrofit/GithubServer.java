@@ -26,7 +26,7 @@ public class GithubServer {
             .baseUrl(GITHUB_BASE_URL)
             .client(OkHttpClientSingleton.getInstance())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
-            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .addConverterFactory(MoshiConverterFactory.create(moshi).asLenient())
             .build()
             .create(Api.class);
 

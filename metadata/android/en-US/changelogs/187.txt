@@ -1,0 +1,23 @@
+New
+
+    Hentai2Read : Books downloaded from H2R are now separated into chapters according to the site's chaptering
+
+Changed
+
+    Browser / stored books : "No extra pages found" popup replaced by the bottom progress bar becoming green after completing
+    Queue screen : Detailed feedback during preparation phase
+    Library screen : Book cards now only display the first 30 tags (no gigantic cards bigger than one screen anymore)
+    Library screen / Merge books dialog : You can now choose whether merged books are deleted after merging
+    Gallery / Edit chapters : Chapter named "Chapter xx" are renamed to their new position after being moved
+
+Fixed
+
+    Pixiv : Fix opening links with "Open with..."
+    Luscious : Add www subdomains to allow opening links with "Open with..."
+    Luscious : First page is now properly numbered 1
+    Browser : Extra pages are now properly detected
+    Gallery / Edit chapters : Crash when moving chapters after making their images visible
+    Gallery / Edit chapters : Image thumbs not being updated after moving chapters
+    Import : The app better detects when the primary folder is located inside the device's Download folder
+    A few crashes reported by Firebase
+

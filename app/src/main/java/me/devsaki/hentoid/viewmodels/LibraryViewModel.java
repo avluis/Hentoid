@@ -866,23 +866,25 @@ public class LibraryViewModel extends AndroidViewModel {
     public void mergeContents(
             @NonNull List<Content> contentList,
             @NonNull String newTitle,
+            boolean deleteAfterMerging,
             @NonNull Runnable onSuccess) {
         if (contentList.isEmpty()) return;
 
         // Flag the content as "being deleted" (triggers blink animation)
-        for (Content c : contentList) flagContentDelete(c, true);
+        if (deleteAfterMerging) for (Content c : contentList) flagContentDelete(c, true);
 
         compositeDisposable.add(
                 Single.fromCallable(() -> {
                     boolean result = false;
                     try {
                         ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
-                        // Remove old contents
-                        deleteItems(contentList, Collections.emptyList(), false);
+                        if (deleteAfterMerging)
+                            deleteItems(contentList, Collections.emptyList(), false);
                         result = true;
                     } catch (ContentNotProcessedException e) {
                         Timber.e(e);
-                        for (Content c : contentList) flagContentDelete(c, false);
+                        if (deleteAfterMerging)
+                            for (Content c : contentList) flagContentDelete(c, false);
                     }
                     return result;
                 })
@@ -894,7 +896,8 @@ public class LibraryViewModel extends AndroidViewModel {
                                 },
                                 t -> {
                                     Timber.e(t);
-                                    for (Content c : contentList) flagContentDelete(c, false);
+                                    if (deleteAfterMerging)
+                                        for (Content c : contentList) flagContentDelete(c, false);
                                 }
                         )
         );

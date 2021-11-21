@@ -4,6 +4,7 @@ import android.util.Pair;
 import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.annimon.stream.Optional;
 
@@ -15,6 +16,7 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
@@ -29,12 +31,22 @@ import timber.log.Timber;
 public abstract class BaseImageListParser implements ImageListParser {
 
     private final ParseProgress progress = new ParseProgress();
-    protected boolean processHalted = false;
+    protected AtomicBoolean processHalted = new AtomicBoolean(false);
+    protected String processedUrl = "";
 
     protected abstract List<String> parseImages(@NonNull Content content) throws Exception;
 
+    public List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception {
+        return parseImageListImpl(onlineContent, storedContent);
+    }
+
     public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
-        String readerUrl = content.getReaderUrl();
+        return parseImageListImpl(content, null);
+    }
+
+    protected List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
+        String readerUrl = onlineContent.getReaderUrl();
+        processedUrl = onlineContent.getGalleryUrl();
 
         if (!URLUtil.isValidUrl(readerUrl))
             throw new IllegalArgumentException("Invalid gallery URL : " + readerUrl);
@@ -45,9 +57,9 @@ public abstract class BaseImageListParser implements ImageListParser {
 
         List<ImageFile> result;
         try {
-            List<String> imgUrls = parseImages(content);
-            result = ParseHelper.urlsToImageFiles(imgUrls, content.getCoverImageUrl(), StatusContent.SAVED, null);
-            ParseHelper.setDownloadParams(result, content.getSite().getUrl());
+            List<String> imgUrls = parseImages(onlineContent);
+            result = ParseHelper.urlsToImageFiles(imgUrls, onlineContent.getCoverImageUrl(), StatusContent.SAVED, null);
+            ParseHelper.setDownloadParams(result, onlineContent.getSite().getUrl());
         } finally {
             EventBus.getDefault().unregister(this);
         }
@@ -58,17 +70,20 @@ public abstract class BaseImageListParser implements ImageListParser {
     }
 
     public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
+        // Default behaviour; this class does not use backup URLs
         ImageFile img = ImageFile.fromImageUrl(order, url, StatusContent.SAVED, maxPages);
         if (chapter != null) img.setChapter(chapter);
         return Optional.of(img);
     }
 
     public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Parser does not implement parseImagePage");
     }
 
-    void progressStart(long contentId, int maxSteps) {
-        progress.start(contentId, maxSteps);
+    void progressStart(@NonNull Content onlineContent, @Nullable Content storedContent, int maxSteps) {
+        if (progress.hasStarted()) return;
+        long storedId = (storedContent != null) ? storedContent.getId() : -1;
+        progress.start(onlineContent.getId(), storedId, maxSteps);
     }
 
     void progressPlus() {
@@ -87,11 +102,21 @@ public abstract class BaseImageListParser implements ImageListParser {
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
         switch (event.eventType) {
-            case DownloadEvent.EV_PAUSE:
-            case DownloadEvent.EV_CANCEL:
-            case DownloadEvent.EV_SKIP:
-                processHalted = true;
+            case DownloadEvent.Type.EV_PAUSE:
+            case DownloadEvent.Type.EV_CANCEL:
+            case DownloadEvent.Type.EV_SKIP:
+                processHalted.set(true);
                 break;
+            case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
+                if (event.content != null && event.content.getGalleryUrl().equals(processedUrl)) {
+                    processHalted.set(true);
+                    processedUrl = "";
+                }
+                break;
+            case DownloadEvent.Type.EV_COMPLETE:
+            case DownloadEvent.Type.EV_PREPARATION:
+            case DownloadEvent.Type.EV_PROGRESS:
+            case DownloadEvent.Type.EV_UNPAUSE:
             default:
                 // Other events aren't handled here
         }

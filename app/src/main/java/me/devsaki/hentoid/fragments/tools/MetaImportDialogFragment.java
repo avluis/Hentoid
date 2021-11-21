@@ -402,6 +402,6 @@ public class MetaImportDialogFragment extends DialogFragment {
             Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result_bookmarks, nbBookmarksSuccess, nbBookmarksSuccess), LENGTH_LONG).show();
 
         // Dismiss after 3s, for the user to be able to see the snackbar
-        new Handler(Looper.getMainLooper()).postDelayed(this::dismiss, 3000);
+        new Handler(Looper.getMainLooper()).postDelayed(this::dismissAllowingStateLoss, 3000);
     }
 }

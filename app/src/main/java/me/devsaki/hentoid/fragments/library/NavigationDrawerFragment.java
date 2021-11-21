@@ -1,5 +1,9 @@
 package me.devsaki.hentoid.fragments.library;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
+import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,7 +17,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
@@ -41,10 +44,6 @@ import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.json.UpdateInfo;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.DrawerItem;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
-import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
 
 public final class NavigationDrawerFragment extends Fragment {
 
@@ -144,12 +143,9 @@ public final class NavigationDrawerFragment extends Fragment {
 
     private void launchActivity(@NonNull Class<?> activityClass) {
         Intent intent = new Intent(parentActivity, activityClass);
-        Bundle bundle = ActivityOptionsCompat
-                .makeCustomAnimation(parentActivity, R.anim.fade_in, R.anim.fade_out)
-                .toBundle();
-        ContextCompat.startActivity(parentActivity, intent, bundle);
+        ContextCompat.startActivity(parentActivity, intent, null);
 
-        parentActivity.overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        parentActivity.overridePendingTransition(0, 0);
         parentActivity.closeNavigationDrawer();
     }
 

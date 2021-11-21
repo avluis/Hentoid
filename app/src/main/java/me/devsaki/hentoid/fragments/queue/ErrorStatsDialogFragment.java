@@ -128,13 +128,13 @@ public class ErrorStatsDialogFragment extends DialogFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE) {
+        if (event.eventType == DownloadEvent.Type.EV_COMPLETE) {
             details.setText(R.string.download_complete);
             previousNbErrors = 0;
-        } else if (event.eventType == DownloadEvent.EV_CANCEL) {
+        } else if (event.eventType == DownloadEvent.Type.EV_CANCEL) {
             details.setText(R.string.download_cancelled);
             previousNbErrors = 0;
-        } else if ((event.eventType == DownloadEvent.EV_PROGRESS)
+        } else if ((event.eventType == DownloadEvent.Type.EV_PROGRESS)
                 && (event.pagesKO > previousNbErrors)
                 && (event.content != null)) {
             currentId = event.content.getId();

@@ -341,7 +341,7 @@ public class QueueActivity extends BaseActivity {
                     final String cfcookie = HttpHelper.parseCookies(HttpHelper.getCookies(revivedSite.getUrl())).get(Consts.CLOUDFLARE_COOKIE);
                     if (cfcookie != null && !cfcookie.isEmpty() && !cfcookie.equals(oldCookie)) {
                         Timber.d("CF-COOKIE : refreshed !");
-                        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE));
+                        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_UNPAUSE));
                         cancelReviveDownload();
                     } else {
                         Timber.v("CF-COOKIE : not refreshed");

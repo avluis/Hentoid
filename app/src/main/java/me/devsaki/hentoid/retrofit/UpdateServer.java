@@ -14,7 +14,7 @@ public class UpdateServer {
     public static final Api API = new Retrofit.Builder()
             .baseUrl(BuildConfig.UPDATE_URL)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create().asLenient())
             .build()
             .create(Api.class);
 

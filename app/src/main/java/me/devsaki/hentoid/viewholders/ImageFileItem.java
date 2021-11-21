@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.signature.ObjectKey;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.IExpandable;
 import com.mikepenz.fastadapter.IParentItem;
@@ -32,7 +33,7 @@ import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Helper;
 
-public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> implements IExpandable<ImageFileItem.ImageViewHolder> {
+public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> implements IExpandable<ImageFileItem.ImageViewHolder>, INestedItem<ImageFileItem.ImageViewHolder> {
 
     private final ImageFile image;
     private final Chapter chapter;
@@ -123,6 +124,11 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
         // Nothing
     }
 
+    @Override
+    public int getLevel() {
+        return 1;
+    }
+
 
     public static class ImageViewHolder extends FastAdapter.ViewHolder<ImageFileItem> {
 
@@ -166,7 +172,8 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
             // Chapter overlay
             if (item.showChapter) {
                 String chapterText = String.format(Locale.ENGLISH, "Chp %d", item.chapter.getOrder());
-                if (item.chapter.getOrder() == Integer.MAX_VALUE) chapterText = ""; // Don't show temp values
+                if (item.chapter.getOrder() == Integer.MAX_VALUE)
+                    chapterText = ""; // Don't show temp values
                 chapterOverlay.setText(chapterText);
                 chapterOverlay.setBackgroundColor(
                         chapterOverlay.getResources().getColor(
@@ -179,6 +186,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
             // Image
             Glide.with(image)
                     .load(Uri.parse(item.image.getFileUri()))
+                    .signature(new ObjectKey(item.image.uniqueHash()))
                     .apply(glideRequestOptions)
                     .into(image);
         }

@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.webkit.MimeTypeMap;
 import android.util.Pair;
@@ -382,7 +381,7 @@ public final class ContentHelper {
         if (isInQueueTab(content.getStatus())) {
             List<QueueRecord> queue = dao.selectQueue();
             if (!queue.isEmpty() && queue.get(0).getContent().getTargetId() == content.getId())
-                EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+                EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_CANCEL));
 
             // Remove from queue
             dao.deleteQueue(content);
@@ -1118,13 +1117,8 @@ public final class ContentHelper {
         List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes == null) return "";
 
-        List<String> allTags = new ArrayList<>();
-        for (Attribute attribute : tagsAttributes) {
-            allTags.add(attribute.getName());
-        }
-        if (Build.VERSION.SDK_INT >= 24) {
-            allTags.sort(null);
-        }
+        List<String> allTags = Stream.of(tagsAttributes).map(Attribute::getName).sorted().limit(30).toList();
+
         return android.text.TextUtils.join(", ", allTags);
     }
 
@@ -1490,7 +1484,6 @@ public final class ContentHelper {
             Optional<Group> customGroup = Stream.of(contentList).flatMap(c -> Stream.of(c.groupItems)).map(GroupItem::getGroup).withoutNulls().distinct().filter(g -> g.grouping.equals(Grouping.CUSTOM)).findFirst();
             if (customGroup.isPresent())
                 GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
-            // TODO test custom groups
         }
 
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));

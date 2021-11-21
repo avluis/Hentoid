@@ -1,13 +1,12 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-import com.annimon.stream.Optional;
-
-import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
@@ -16,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
@@ -32,13 +30,10 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
-
 /**
- * Created by neko on 08/07/2015.
  * Handles parsing of content from hitomi.la
  */
-public class HitomiParser implements ImageListParser {
+public class HitomiParser extends BaseImageListParser {
 
     // Reproduction of the Hitomi.la Javascript to find the hostname of the image server
     private static final int NUMBER_OF_FRONTENDS = 2;
@@ -46,8 +41,8 @@ public class HitomiParser implements ImageListParser {
     private static final String HOSTNAME_SUFFIX_WEBP = "a";
     private static final char HOSTNAME_PREFIX_BASE = 97;
 
-    public List<ImageFile> parseImageList(@NonNull Content content) throws Exception {
-        String pageUrl = content.getReaderUrl();
+    public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
+        String pageUrl = onlineContent.getReaderUrl();
 
         Document doc = getOnlineDocument(pageUrl);
         if (null == doc) throw new ParseException("Document unreachable : " + pageUrl);
@@ -55,9 +50,9 @@ public class HitomiParser implements ImageListParser {
         Timber.d("Parsing: %s", pageUrl);
 
         List<ImageFile> result = new ArrayList<>();
-        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
 
-        String galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + content.getUniqueSiteId() + ".js";
+        String galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + onlineContent.getUniqueSiteId() + ".js";
 
         // Get the gallery JSON
         List<Pair<String, String>> headers = new ArrayList<>();
@@ -84,17 +79,12 @@ public class HitomiParser implements ImageListParser {
                 img = buildWebpPicture(page, order++, gallery.getFiles().size());
             else if (isHashAvailable)
                 img = buildHashPicture(page, order++, gallery.getFiles().size());
-            else img = buildSimplePicture(content, page, order++, gallery.getFiles().size());
+            else img = buildSimplePicture(onlineContent, page, order++, gallery.getFiles().size());
             img.setDownloadParams(downloadParamsStr);
             result.add(img);
         }
 
         return result;
-    }
-
-    @Override
-    public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) {
-        throw new NotImplementedException();
     }
 
     private ImageFile buildWebpPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
@@ -138,10 +128,9 @@ public class HitomiParser implements ImageListParser {
         return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % nbFrontends))) + suffix;
     }
 
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) {
-        // Hitomi does not use backup URLs
-        ImageFile img = ImageFile.fromImageUrl(order, url, StatusContent.SAVED, maxPages);
-        if (chapter != null) img.setChapter(chapter);
-        return Optional.of(img);
+    @Override
+    protected List<String> parseImages(@NonNull Content content) {
+        /// We won't use that as parseImageListImpl is overriden directly
+        return null;
     }
 }

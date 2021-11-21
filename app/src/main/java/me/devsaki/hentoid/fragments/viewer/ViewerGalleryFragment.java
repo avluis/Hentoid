@@ -59,6 +59,7 @@ import me.devsaki.hentoid.fragments.ProgressDialogFragment;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
+import me.devsaki.hentoid.viewholders.INestedItem;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewholders.SubExpandableItem;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -100,8 +101,8 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
     private final FastAdapter<ImageFileItem> fastAdapter = FastAdapter.with(itemAdapter);
     private SelectExtension<ImageFileItem> selectExtension;
 
-    private final ItemAdapter<SubExpandableItem> itemAdapter2 = new ItemAdapter<>();
-    private final FastAdapter<SubExpandableItem> fastAdapter2 = FastAdapter.with(itemAdapter2);
+    private final ItemAdapter<INestedItem<SubExpandableItem.ViewHolder>> itemAdapter2 = new ItemAdapter<>();
+    private final FastAdapter<INestedItem<SubExpandableItem.ViewHolder>> fastAdapter2 = FastAdapter.with(itemAdapter2);
     private ItemTouchHelper touchHelper;
 
     private DragSelectTouchListener mDragSelectTouchListener = null;
@@ -200,7 +201,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             } else if (clickedMenuItem.getItemId() == R.id.action_add_remove_chapters) {
                 setChapterEditMode(EditMode.ADD_CHAPTER);
             } else if (clickedMenuItem.getItemId() == R.id.action_remove_chapters) {
-                removeChapters();
+                stripChapters();
             }
             return true;
         });
@@ -242,10 +243,12 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     @Override
     public void onDestroy() {
-        if (recyclerView != null)
-            recyclerView.setAdapter(null);
+        if (recyclerView != null) recyclerView.setAdapter(null);
         recyclerView = null;
-        chaptersSelector.dismiss();
+        if (chaptersSelector != null) {
+            chaptersSelector.getSpinnerAdapter().setOnSpinnerItemSelectedListener(null); // Have to do that as the callback contains references to the fragment
+            chaptersSelector.dismiss();
+        }
 
         super.onDestroy();
     }
@@ -255,7 +258,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             if (!fastAdapter2.hasObservers()) fastAdapter2.setHasStableIds(true);
             itemAdapter2.clear();
 
-            ExpandableExtension<SubExpandableItem> expandableExtension = fastAdapter2.getOrCreateExtension(ExpandableExtension.class);
+            ExpandableExtension<INestedItem<SubExpandableItem.ViewHolder>> expandableExtension = fastAdapter2.getOrCreateExtension(ExpandableExtension.class);
 
             GridLayoutManager glm = (GridLayoutManager) recyclerView.getLayoutManager();
             if (glm != null) {
@@ -383,7 +386,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     private void onImagesChanged(List<ImageFile> images) {
         if (editMode == EditMode.EDIT_CHAPTERS) { // Expandable chapters
-            List<SubExpandableItem> chapterItems = new ArrayList<>();
+            List<INestedItem<SubExpandableItem.ViewHolder>> chapterItems = new ArrayList<>();
 
             boolean isArchive = false;
             if (!images.isEmpty())
@@ -641,7 +644,11 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 .create().show();
     }
 
-    // TODO doc
+    /**
+     * Switch the screen into the given edit mode
+     *
+     * @param editMode Edit mode to switch the screen to
+     */
     private void setChapterEditMode(@EditMode int editMode) {
         this.editMode = editMode;
         updateToolbar();
@@ -650,20 +657,29 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
         updateListAdapter(editMode == EditMode.EDIT_CHAPTERS);
 
+        // Dismiss spinner dropdown
+        if (chaptersSelector != null) chaptersSelector.dismiss();
+
         // Don't filter favs when editing chapters
         if (filterFavouritesState) {
             viewModel.filterFavouriteImages(editMode == EditMode.NONE);
         } else viewModel.repostImages();
     }
 
-    // TODO doc
-    private void removeChapters() {
+    /**
+     * Strip all chapters from the current content
+     */
+    private void stripChapters() {
         viewModel.stripChapters(t -> ToastHelper.toast("Couldn't remove chapters"));
     }
 
     @Override
     public void itemTouchDropped(int oldPosition, int newPosition) {
         if (oldPosition == newPosition) return;
+        if (oldPosition < 0 || newPosition < 0) return;
+        if (itemAdapter2.getAdapterItem(oldPosition).getLevel() > 0) return;
+        long nbLevelZeroItems = Stream.of(itemAdapter2.getAdapterItems()).filter(i -> 0 == i.getLevel()).count();
+        if (newPosition > nbLevelZeroItems - 1) return;
 
         // Save final position of item in DB
         viewModel.moveChapter(oldPosition, newPosition, this::onChapterMoveError);
@@ -678,6 +694,11 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
+        if (oldPosition < 0 || newPosition < 0) return false;
+        if (itemAdapter2.getAdapterItem(oldPosition).getLevel() > 0) return false;
+        long nbLevelZeroItems = Stream.of(itemAdapter2.getAdapterItems()).filter(i -> 0 == i.getLevel()).count();
+        if (newPosition > nbLevelZeroItems - 1) return false;
+
         // Update visuals
         DragDropUtil.onMove(itemAdapter2, oldPosition, newPosition);
         return true;

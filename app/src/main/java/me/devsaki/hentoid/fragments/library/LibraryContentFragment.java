@@ -605,7 +605,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 askSetCover();
                 break;
             case R.id.action_merge:
-                MergeDialogFragment.invoke(this, Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList());
+                MergeDialogFragment.invoke(this, Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList(), false);
                 keepToolbar = true;
                 break;
             case R.id.action_split:
@@ -1493,9 +1493,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         requireContext().startActivity(intent);
     }
 
-    public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle) {
+    public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle, boolean deleteAfterMerging) {
         leaveSelectionMode();
-        viewModel.mergeContents(contentList, newTitle, () -> ToastHelper.toast(R.string.merge_success));
+        viewModel.mergeContents(contentList, newTitle, deleteAfterMerging, () -> ToastHelper.toast(R.string.merge_success));
         ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), getResources().getString(R.string.pages));
     }
 

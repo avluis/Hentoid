@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
+
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
@@ -16,10 +18,7 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
 
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
-
 /**
- * Created by robb_w on 01/31/2018.
  * Handles parsing of content from pururin.to
  */
 public class PururinParser extends BaseImageListParser {

@@ -8,6 +8,7 @@ import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_P
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
@@ -105,7 +106,6 @@ import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
@@ -379,12 +379,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     public void onDownloadPreparationEvent(DownloadPreparationEvent event) {
         // Show progress if it's about current content or its best duplicate
         if (
-                (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.contentId == currentContent.getId())
-                        || (duplicateId > 0 && event.contentId == duplicateId)
+                (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.getRelevantId() == currentContent.getId())
+                        || (duplicateId > 0 && event.getRelevantId() == duplicateId)
         ) {
             progressBar.setMax(event.total);
             progressBar.setProgress(event.done);
-            progressBar.setVisibility(event.isCompleted() ? View.GONE : View.VISIBLE);
+            progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.secondary_light)));
+            progressBar.setVisibility(View.VISIBLE);
         }
     }
 
@@ -456,6 +457,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         Preferences.unregisterPrefsChangedListener(listener);
+
+        // Cancel any previous extra page load
+        EventBus.getDefault().post(new DownloadEvent(currentContent, DownloadEvent.Type.EV_INTERRUPT_CONTENT));
 
         if (objectBoxDAO != null) objectBoxDAO.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
@@ -612,6 +616,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         extraImages.clear();
         duplicateId = -1;
         duplicateSimilarity = 0f;
+        // Cancel any previous extra page load
+        EventBus.getDefault().post(new DownloadEvent(currentContent, DownloadEvent.Type.EV_INTERRUPT_CONTENT));
         // Greys out the action button
         // useful for sites with JS loading that do not trigger onPageStarted (e.g. Luscious, Pixiv)
         runOnUiThread(() -> {
@@ -776,7 +782,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // it can interfere with Double-Back (press back twice) to exit
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(0, 0);
         finish();
     }
 
@@ -969,7 +975,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(0, 0);
     }
 
     @Override
@@ -1131,58 +1137,54 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         list -> onSearchForExtraImagesSuccess(storedContent, onlineContent, list),
-                        Timber::e
+                        Timber::w
                 );
     }
 
-    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent, @NonNull final Content onlineContent) {
+    private List<ImageFile> doSearchForExtraImages(@NonNull final Content storedContent, @NonNull final Content onlineContent) throws Exception {
         List<ImageFile> result = Collections.emptyList();
 
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(onlineContent);
-        try {
-            // Call the parser to retrieve all the pages
-            // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
-            List<ImageFile> onlineImgs = parser.parseImageList(onlineContent);
-            if (onlineImgs.isEmpty()) return result;
+        // Call the parser to retrieve all the pages
+        // Progress bar on browser UI is refreshed through onDownloadPreparationEvent
+        List<ImageFile> onlineImgs = parser.parseImageList(onlineContent, storedContent);
+        if (onlineImgs.isEmpty()) return result;
 
-            int maxStoredImageOrder = 0;
-            if (storedContent.getImageFiles() != null) {
-                Optional<Integer> opt = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
-                if (opt.isPresent()) maxStoredImageOrder = opt.get();
-            }
-            final int maxStoredImageOrderFinal = maxStoredImageOrder;
+        int maxStoredImageOrder = 0;
+        if (storedContent.getImageFiles() != null) {
+            Optional<Integer> opt = Stream.of(storedContent.getImageFiles()).filter(i -> ContentHelper.isInLibrary(i.getStatus())).map(ImageFile::getOrder).max(Integer::compareTo);
+            if (opt.isPresent()) maxStoredImageOrder = opt.get();
+        }
+        final int maxStoredImageOrderFinal = maxStoredImageOrder;
 
-            // Attach chapters to books downloaded before chapters were implemented
-            int maxOnlineImageOrder = 0;
-            int minOnlineImageOrder = Integer.MAX_VALUE;
-            Map<Integer, Chapter> positionMap = new HashMap<>();
-            for (ImageFile img : onlineImgs) {
-                maxOnlineImageOrder = Math.max(maxOnlineImageOrder, img.getOrder());
-                minOnlineImageOrder = Math.min(minOnlineImageOrder, img.getOrder());
-                if (null != img.getLinkedChapter())
-                    positionMap.put(img.getOrder(), img.getLinkedChapter());
-            }
+        // Attach chapters to books downloaded before chapters were implemented
+        int maxOnlineImageOrder = 0;
+        int minOnlineImageOrder = Integer.MAX_VALUE;
+        Map<Integer, Chapter> positionMap = new HashMap<>();
+        for (ImageFile img : onlineImgs) {
+            maxOnlineImageOrder = Math.max(maxOnlineImageOrder, img.getOrder());
+            minOnlineImageOrder = Math.min(minOnlineImageOrder, img.getOrder());
+            if (null != img.getLinkedChapter())
+                positionMap.put(img.getOrder(), img.getLinkedChapter());
+        }
 
-            List<Chapter> storedChapters = storedContent.getChapters();
-            if (!positionMap.isEmpty() && minOnlineImageOrder < maxStoredImageOrder && (null == storedChapters || storedChapters.isEmpty())) {
-                // Attach chapters to stored images
-                List<ImageFile> storedImages = storedContent.getImageFiles();
-                if (null == storedImages) storedImages = Collections.emptyList();
-                for (ImageFile img : storedImages) {
-                    if (null == img.getLinkedChapter()) {
-                        Chapter targetChapter = positionMap.get(img.getOrder());
-                        if (targetChapter != null) img.setChapter(targetChapter);
-                    }
+        List<Chapter> storedChapters = storedContent.getChapters();
+        if (!positionMap.isEmpty() && minOnlineImageOrder < maxStoredImageOrder && (null == storedChapters || storedChapters.isEmpty())) {
+            // Attach chapters to stored images
+            List<ImageFile> storedImages = storedContent.getImageFiles();
+            if (null == storedImages) storedImages = Collections.emptyList();
+            for (ImageFile img : storedImages) {
+                if (null == img.getLinkedChapter()) {
+                    Chapter targetChapter = positionMap.get(img.getOrder());
+                    if (targetChapter != null) img.setChapter(targetChapter);
                 }
-                objectBoxDAO.insertImageFiles(storedImages);
             }
+            objectBoxDAO.insertImageFiles(storedImages);
+        }
 
-            // Online book has more pictures than stored book -> that's what we're looking for
-            if (maxOnlineImageOrder > maxStoredImageOrder) {
-                return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxStoredImageOrderFinal).distinct().toList();
-            }
-        } catch (Exception e) {
-            Timber.w(e);
+        // Online book has more pictures than stored book -> that's what we're looking for
+        if (maxOnlineImageOrder > maxStoredImageOrder) {
+            return Stream.of(onlineImgs).filter(i -> i.getOrder() > maxStoredImageOrderFinal).distinct().toList();
         }
         return result;
     }
@@ -1192,11 +1194,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             @NonNull final Content onlineContent,
             @NonNull final List<ImageFile> additionalImages) {
         searchExtraImagesdisposable.dispose();
-        if (additionalImages.isEmpty()) {
-            ToastHelper.toast(R.string.no_extra_page);
-            return;
-        }
-        if (null == currentContent) return;
+        progressBar.setProgress(progressBar.getMax());
+        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.green)));
+
+        if (null == currentContent || additionalImages.isEmpty()) return;
 
         if (currentContent.getUrl().equalsIgnoreCase(onlineContent.getUrl()) || duplicateId == storedContent.getId()) { // User hasn't left the book page since
             // Retrieve the URLs of stored pages
@@ -1224,7 +1226,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE && event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
+        if (event.eventType == DownloadEvent.Type.EV_COMPLETE && event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
             setActionMode(ActionMode.READ);
         }
     }

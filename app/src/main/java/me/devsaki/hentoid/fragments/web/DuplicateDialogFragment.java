@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.web;
 
+import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,8 +36,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
-
-import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
 public final class DuplicateDialogFragment extends DialogFragment {
 
@@ -85,7 +85,8 @@ public final class DuplicateDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
-        contentId = getArguments().getLong(KEY_CONTENT_ID);
+        contentId = getArguments().getLong(KEY_CONTENT_ID, -1);
+        if (contentId < 1) throw new IllegalArgumentException("No content ID found");
         similarity = getArguments().getFloat(KEY_CONTENT_SIMILARITY);
         isDownloadPlus = getArguments().getBoolean(KEY_IS_DOWNLOAD_PLUS, false);
 
@@ -111,6 +112,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
         super.onViewCreated(rootView, savedInstanceState);
         Context context = requireContext();
         Content content = loadContent();
+        if (null == content) return;
 
         binding.subtitle.setText(isDownloadPlus ? R.string.duplicate_alert_subtitle_pages : R.string.duplicate_alert_subtitle_book);
         binding.downloadPlusBtn.setVisibility(isDownloadPlus ? View.VISIBLE : View.GONE);
@@ -122,20 +124,19 @@ public final class DuplicateDialogFragment extends DialogFragment {
         String thumbLocation = cover.getUsableUri();
         if (thumbLocation.isEmpty()) {
             binding.ivCover.setVisibility(View.INVISIBLE);
-            return;
+        } else {
+            binding.ivCover.setVisibility(View.VISIBLE);
+            if (thumbLocation.startsWith("http"))
+                Glide.with(binding.ivCover)
+                        .load(thumbLocation)
+                        .apply(glideRequestOptions)
+                        .into(binding.ivCover);
+            else
+                Glide.with(binding.ivCover)
+                        .load(Uri.parse(thumbLocation))
+                        .apply(glideRequestOptions)
+                        .into(binding.ivCover);
         }
-
-        binding.ivCover.setVisibility(View.VISIBLE);
-        if (thumbLocation.startsWith("http"))
-            Glide.with(binding.ivCover)
-                    .load(thumbLocation)
-                    .apply(glideRequestOptions)
-                    .into(binding.ivCover);
-        else
-            Glide.with(binding.ivCover)
-                    .load(Uri.parse(thumbLocation))
-                    .apply(glideRequestOptions)
-                    .into(binding.ivCover);
 
         @DrawableRes int resId = ContentHelper.getFlagResourceId(context, content);
         if (resId != 0) {
@@ -175,6 +176,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
         binding.downloadPlusBtn.setOnClickListener(v -> submit(false, true));
     }
 
+    @Nullable
     private Content loadContent() {
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
         try {
@@ -192,7 +194,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
                 Preferences.setDownloadDuplicateTry(false);
             parent.onDownloadDuplicate(downloadExtraPages);
         }
-        dismiss();
+        dismissAllowingStateLoss();
     }
 
 

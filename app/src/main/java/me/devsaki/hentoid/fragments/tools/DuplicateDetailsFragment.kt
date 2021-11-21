@@ -246,7 +246,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
                     this,
                     Stream.of(itemAdapter.adapterItems)
                         .map<Content> { obj: DuplicateItem -> obj.content }
-                        .toList()
+                        .toList(), true
                 )
             }
         }
@@ -263,10 +263,15 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
         callback?.isEnabled = false
     }
 
-    override fun mergeContents(contentList: MutableList<Content>, newTitle: String) {
+    override fun mergeContents(
+        contentList: MutableList<Content>,
+        newTitle: String,
+        deleteAfterMerging: Boolean
+    ) {
         viewModel.mergeContents(
             contentList,
-            newTitle
+            newTitle,
+            deleteAfterMerging,
         ) {
             ToastHelper.toast(R.string.merge_success)
             activity.get()?.goBackToMain()
