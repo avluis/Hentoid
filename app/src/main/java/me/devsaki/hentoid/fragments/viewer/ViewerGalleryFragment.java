@@ -180,6 +180,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         updateListAdapter(editMode == EditMode.EDIT_CHAPTERS);
 
         new FastScrollerBuilder(recyclerView).build();
+        recyclerView.setHasFixedSize(true);
 
         // Toolbar
         toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);

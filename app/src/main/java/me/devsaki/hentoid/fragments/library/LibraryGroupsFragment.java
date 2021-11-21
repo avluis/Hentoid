@@ -695,6 +695,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         });
 
         recyclerView.setAdapter(fastAdapter);
+        recyclerView.setHasFixedSize(true);
     }
 
     private void onGroupsChanged(List<Group> result) {

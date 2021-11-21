@@ -1174,6 +1174,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         touchHelper.attachToRecyclerView(recyclerView);
 
         recyclerView.setAdapter(fastAdapter);
+        recyclerView.setHasFixedSize(true);
     }
 
     /**
