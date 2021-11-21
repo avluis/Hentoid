@@ -198,6 +198,8 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "1"));
+
         @NetworkHelper.Connectivity int connectivity = NetworkHelper.getConnectivity(context);
         // Check for network connectivity
         if (NetworkHelper.Connectivity.NO_INTERNET == connectivity) {
@@ -206,6 +208,8 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "2"));
+
         // Check for wifi if wifi-only mode is on
         if (Preferences.isQueueWifiOnly() && NetworkHelper.Connectivity.WIFI != connectivity) {
             Timber.i("No wi-fi connection available. Queue paused.");
@@ -213,29 +217,38 @@ public class ContentDownloadWorker extends BaseWorker {
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
 
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "3"));
+
         // Check for download folder existence, available free space and credentials
         if (Preferences.getStorageUri().trim().isEmpty()) {
             Timber.i("No download folder set"); // May happen if user has skipped it during the intro
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_DOWNLOAD_FOLDER));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "4"));
+
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) {
             Timber.i("Download folder has not been found. Please select it again."); // May happen if the folder has been moved or deleted after it has been selected
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NOT_FOUND));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "5"));
+
         if (-2 == FileHelper.createNoMedia(context, rootFolder)) {
             Timber.i("Insufficient credentials on download folder. Please select it again.");
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "6"));
+
         long spaceLeftBytes = new FileHelper.MemoryUsageFigures(context, rootFolder).getfreeUsageBytes();
         if (spaceLeftBytes < 2L * 1024 * 1024) {
             Timber.i("Device very low on storage space (<2 MB). Queue paused.");
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.NO_STORAGE, spaceLeftBytes));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "7"));
 
         // Work on first item of queue
 
@@ -245,6 +258,7 @@ public class ContentDownloadWorker extends BaseWorker {
             Timber.i("Queue is empty. Download aborted.");
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
         }
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "8"));
 
         Content content = queue.get(0).getContent().getTarget();
 
@@ -256,6 +270,7 @@ public class ContentDownloadWorker extends BaseWorker {
             notificationManager.notify(new DownloadErrorNotification());
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "9"));
 
         if (StatusContent.DOWNLOADED == content.getStatus()) {
             Timber.i("Content is already downloaded. Download aborted.");
@@ -264,6 +279,7 @@ public class ContentDownloadWorker extends BaseWorker {
             notificationManager.notify(new DownloadErrorNotification(content));
             return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
         }
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "10"));
 
         downloadCanceled.set(false);
         downloadSkipped.set(false);
