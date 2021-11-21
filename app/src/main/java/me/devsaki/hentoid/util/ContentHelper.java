@@ -37,7 +37,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -1429,9 +1428,10 @@ public final class ContentHelper {
             int chapterOrder = 0;
             int pictureOrder = 1;
             int nbProcessedPics = 1;
-            Chapter newChapter = null;
+            Chapter newChapter;
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
+                newChapter = null;
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
                 contentChapter.setUniqueId(c.getUniqueSiteId());
                 for (ImageFile img : c.getImageFiles()) {
@@ -1441,7 +1441,7 @@ public final class ContentHelper {
                     newImg.getContent().setTarget(null); // Clear content
                     newImg.setOrder(pictureOrder++);
                     newImg.computeName(nbMaxDigits);
-                    Chapter chapLink = newImg.getLinkedChapter();
+                    Chapter chapLink = img.getLinkedChapter();
                     if (null == chapLink) { // No chapter -> set content chapter
                         newChapter = contentChapter;
                     } else if (null == newChapter || (
@@ -1453,7 +1453,7 @@ public final class ContentHelper {
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
                     newImg.setChapter(newChapter);
 
-                    // If exists, move the picture to the merged books's folder
+                    // If exists, move the picture to the merged books' folder
                     if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
                         String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
                         Uri newUri = FileHelper.copyFile(
