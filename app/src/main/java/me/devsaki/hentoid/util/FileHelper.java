@@ -880,7 +880,6 @@ public class FileHelper {
     public static class MemoryUsageFigures {
         private long freeMemBytes = 0;
         private long totalMemBytes = 0;
-        private final LogHelper.LogInfo log;
 
         /**
          * Get memory usage figures for the volume containing the given folder
@@ -889,21 +888,9 @@ public class FileHelper {
          * @param f       Folder to get the figures from
          */
         public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
-            // TODO remove logging completely when no more incident about memory size is signalled for 1 month
-            log = new LogHelper.LogInfo("size");
-            if (Build.VERSION.SDK_INT >= 26) {
-                init26(context, f);
-                log.addEntry("init26 : %d / %d", totalMemBytes, freeMemBytes);
-            }
-            if (0 == totalMemBytes) {
-                init21(context, f);
-                log.addEntry("init21 : %d / %d", totalMemBytes, freeMemBytes);
-            }
-            if (0 == totalMemBytes) {
-                initLegacy(context, f);
-                log.addEntry("initLegacy : %d / %d", totalMemBytes, freeMemBytes);
-            }
-            if (BuildConfig.DEBUG) LogHelper.writeLog(context, log);
+            if (Build.VERSION.SDK_INT >= 26) init26(context, f);
+            if (0 == totalMemBytes) init21(context, f);
+            if (0 == totalMemBytes) initLegacy(context, f);
         }
 
         // Old way of measuring memory (inaccurate on certain devices)
@@ -935,7 +922,6 @@ public class FileHelper {
             String volumeId = getVolumeIdFromUri(f.getUri());
             StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
 
-            log.addEntry("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
             Timber.v("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
 
             List<StorageVolume> volumes = mgr.getStorageVolumes();
@@ -945,7 +931,6 @@ public class FileHelper {
             if (1 == volumes.size()) targetVolume = volumes.get(0);
             else { // Look for a match among listed volumes
                 for (StorageVolume v : volumes) {
-                    log.addEntry("Storage volume ID %s", v.getUuid());
                     Timber.v("Storage volume ID %s", v.getUuid());
 
                     if (v.isPrimary()) primaryVolume = v;
@@ -961,7 +946,6 @@ public class FileHelper {
             // NB : necessary to avoid defaulting to the root on rooted phones
             // (rooted phone's root is a separate volume with specific memory usage figures)
             if (null == targetVolume) {
-                log.addEntry("Defaulting to Primary");
                 Timber.v("Defaulting to Primary");
                 targetVolume = primaryVolume;
             }
@@ -979,7 +963,6 @@ public class FileHelper {
         // Use StorageStatsManager on primary volume
         @TargetApi(26)
         private void processPrimary(@NonNull Context context, @NonNull StorageVolume volume) {
-            log.addEntry(">> %s PRIMARY", volume.getUuid());
             Timber.v(">> %s PRIMARY", volume.getUuid());
 
             UUID uuid = StorageManager.UUID_DEFAULT;
@@ -998,7 +981,6 @@ public class FileHelper {
         // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
         @TargetApi(26)
         private void processSecondary(@NonNull StorageVolume volume) {
-            log.addEntry(">> %s NOT PRIMARY", volume.getUuid());
             Timber.v(">> %s NOT PRIMARY", volume.getUuid());
 
             try {
