@@ -1397,7 +1397,7 @@ public final class ContentHelper {
         mergedContent.setStorageUri(targetFolder.getUri().toString());
 
         // Renumber all picture files and dispatch chapters
-        long nbImages = Stream.of(contentList).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
+        long nbImages = Stream.of(contentList).map(Content::getImageFiles).withoutNulls().flatMap(Stream::of).filter(ImageFile::isReadable).count();
         int nbMaxDigits = (int) (Math.floor(Math.log10(nbImages)) + 1);
 
         List<ImageFile> mergedImages = new ArrayList<>();
