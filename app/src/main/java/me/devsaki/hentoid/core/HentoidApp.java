@@ -8,9 +8,9 @@ import android.app.Application;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -149,7 +149,7 @@ public class HentoidApp extends Application {
      * Listener used to auto-lock the app when it goes to background
      * and the PIN lock is enabled
      */
-    public static class LifeCycleListener implements LifecycleObserver {
+    public static class LifeCycleListener implements DefaultLifecycleObserver, LifecycleObserver {
 
         private static boolean enabled = true;
 
@@ -161,9 +161,8 @@ public class HentoidApp extends Application {
             enabled = false;
         }
 
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-        private void onMoveToBackground() {
+        @Override
+        public void onStop(@NonNull LifecycleOwner owner) {
             Timber.d("App moving to background");
             if (enabled && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
                 HentoidApp.setUnlocked(false);

@@ -20,9 +20,9 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -293,7 +293,7 @@ public final class Helper {
     /**
      * Cleans the given Disposable as soon as the attached Lifecycle is destroyed
      */
-    public static class LifecycleRxCleaner implements LifecycleObserver {
+    public static class LifecycleRxCleaner implements DefaultLifecycleObserver, LifecycleObserver {
 
         private final Disposable disposable;
 
@@ -301,8 +301,8 @@ public final class Helper {
             this.disposable = disposable;
         }
 
-        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        private void onDestroy() {
+        @Override
+        public void onDestroy(@NonNull LifecycleOwner owner) {
             disposable.dispose();
         }
 
