@@ -114,7 +114,6 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.google.android.material:material:1.4.0-alpha01'
     implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.media:media:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.2'
@@ -122,7 +121,7 @@ dependencies {
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
-    def android_work_version = '2.7.0'
+    def android_work_version = '2.7.1'
     implementation "androidx.work:work-runtime:$android_work_version"
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
