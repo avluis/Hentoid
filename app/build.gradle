@@ -114,7 +114,6 @@ dependencies {
     implementation 'com.google.android.material:material:1.4.0-alpha01'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
-    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
     implementation 'androidx.paging:paging-runtime:2.1.2'
     implementation 'androidx.fragment:fragment-ktx:1.4.0'
     implementation "androidx.documentfile:documentfile:1.0.1"
@@ -150,6 +149,8 @@ dependencies {
     /**
      * UI
      */
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+
     // https://github.com/mikepenz/FastAdapter
     def fastadapter_version = '5.5.1'
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
