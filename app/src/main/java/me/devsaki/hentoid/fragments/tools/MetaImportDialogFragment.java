@@ -340,8 +340,7 @@ public class MetaImportDialogFragment extends DialogFragment {
         }
         // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
         if (!filesFound) {
-            if (!c.getStatus().equals(StatusContent.DOWNLOADING) && !c.getStatus().equals(StatusContent.PAUSED))
-                c.setStatus(StatusContent.ERROR);
+            if (!ContentHelper.isInQueue(c.getStatus())) c.setStatus(StatusContent.ERROR);
             List<ErrorRecord> errors = new ArrayList<>();
             errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
             c.setErrorLog(errors);

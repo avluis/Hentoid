@@ -30,11 +30,13 @@ import me.devsaki.hentoid.database.DuplicatesDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -324,6 +326,14 @@ public class ImportWorker extends BaseWorker {
                         contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
                         content.setImageFiles(contentImages);
                     }
+                } else if (Preferences.isImportQueueEmptyBooks()
+                        && !content.isManuallyMerged()
+                        && content.getDownloadMode() == Content.DownloadMode.DOWNLOAD) { // If no image file found, it goes in the errors queue
+                    if (!ContentHelper.isInQueue(content.getStatus()))
+                        content.setStatus(StatusContent.ERROR);
+                    List<ErrorRecord> errors = new ArrayList<>();
+                    errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
+                    content.setErrorLog(errors);
                 }
 
                 // If content has an external-library tag or an EXTERNAL status, remove it because we're importing for the primary library now

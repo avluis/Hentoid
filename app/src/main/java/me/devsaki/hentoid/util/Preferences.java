@@ -214,6 +214,10 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isImportQueueEmptyBooks() {
+        return sharedPreferences.getBoolean(Key.IMPORT_QUEUE_EMPTY, Default.IMPORT_QUEUE_EMPTY);
+    }
+
     @Deprecated
     public static String getSettingsFolder() {
         return sharedPreferences.getString(Key.SETTINGS_FOLDER, "");
@@ -803,6 +807,7 @@ public final class Preferences {
         static final String WELCOME_DONE = "pref_welcome_done";
         static final String VERSION_KEY = "prefs_version";
         public static final String LIBRARY_DISPLAY = "pref_library_display";
+        public static final String IMPORT_QUEUE_EMPTY = "pref_import_queue_empty";
         static final String QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String ORDER_CONTENT_FIELD = "pref_order_content_field";
         static final String ORDER_CONTENT_DESC = "pref_order_content_desc";
@@ -912,6 +917,7 @@ public final class Preferences {
         static final boolean FIRST_RUN_DEFAULT = true;
         static final boolean ENDLESS_SCROLL_DEFAULT = true;
         static final int MEMORY_ALERT_DEFAULT = 110;
+        static final boolean IMPORT_QUEUE_EMPTY = false;
         static final boolean EXTERNAL_LIBRARY_DELETE = false;
         static final int FOLDER_NAMING_CONTENT_DEFAULT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
