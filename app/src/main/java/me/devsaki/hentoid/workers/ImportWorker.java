@@ -56,6 +56,7 @@ import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.ImportData;
@@ -505,13 +506,13 @@ public class ImportWorker extends BaseWorker {
             @NonNull DocumentFile folder,
             @NonNull List<DocumentFile> bookFiles,
             @NonNull CollectionDAO dao) throws ParseException {
-        Optional<DocumentFile> file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_V2)).findFirst();
+        Optional<DocumentFile> file = Stream.of(bookFiles).filter(f -> StringHelper.protect(f.getName()).equals(Consts.JSON_FILE_NAME_V2)).findFirst();
         if (file.isPresent()) return importJsonV2(context, file.get(), folder, dao);
 
-        file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME)).findFirst();
+        file = Stream.of(bookFiles).filter(f -> StringHelper.protect(f.getName()).equals(Consts.JSON_FILE_NAME)).findFirst();
         if (file.isPresent()) return importJsonV1(context, file.get(), folder);
 
-        file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_OLD)).findFirst();
+        file = Stream.of(bookFiles).filter(f -> StringHelper.protect(f.getName()).equals(Consts.JSON_FILE_NAME_OLD)).findFirst();
         if (file.isPresent()) return importJsonLegacy(context, file.get(), folder);
 
         return null;
