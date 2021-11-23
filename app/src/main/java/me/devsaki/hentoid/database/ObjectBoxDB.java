@@ -1511,9 +1511,8 @@ public class ObjectBoxDB {
     Set<Long> selectUngroupedContentIds() {
         // Select all eligible content
         QueryBuilder<Content> allContentQ = store.boxFor(Content.class).query().in(Content_.status, libraryStatus);
-        // TODO make it a set
         Set<Long> allContent = Helper.getSetFromPrimitiveArray(allContentQ.build().findIds());
-        // Select all content that have a Custom grouping
+        // Strip all content that have a Custom grouping
         allContent.removeAll(Helper.getSetFromPrimitiveArray(selectCustomGroupedContent()));
         return allContent;
     }
