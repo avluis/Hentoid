@@ -103,11 +103,14 @@ public interface CollectionDAO {
 
     void deleteAllExternalBooks();
 
-    // Groups
+
+    // GROUPS
 
     List<Group> selectGroups(long[] groupIds);
 
-    LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly);
+    LiveData<List<Group>> selectGroupsLive(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly);
+
+    List<Group> selectGroups(int grouping, int subType);
 
     List<Group> selectGroups(int grouping);
 
@@ -236,6 +239,7 @@ public interface CollectionDAO {
             int orderStyle);
 
     Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
+
 
     // CHAPTERS
 

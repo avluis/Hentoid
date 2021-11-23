@@ -31,7 +31,6 @@ import java.io.OutputStream;
 import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -220,7 +219,7 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void searchGroup(Grouping grouping, @NonNull String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping.getId(), query, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
+        currentGroupsSource = dao.selectGroupsLive(grouping.getId(), query, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
         groups.addSource(currentGroupsSource, groups::setValue);
     }
 
@@ -287,7 +286,7 @@ public class LibraryViewModel extends AndroidViewModel {
         }
 
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
+        currentGroupsSource = dao.selectGroupsLive(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
         groups.addSource(currentGroupsSource, this::onGroupsChanged);
     }
 

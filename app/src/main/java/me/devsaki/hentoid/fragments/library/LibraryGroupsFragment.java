@@ -156,7 +156,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         @Override
         public boolean areContentsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
             return oldItem.getGroup().picture.getTargetId() == newItem.getGroup().picture.getTargetId()
-                    && oldItem.getGroup().isFavourite() == newItem.getGroup().isFavourite();
+                    && oldItem.getGroup().isFavourite() == newItem.getGroup().isFavourite()
+                    && oldItem.getGroup().items.size() == newItem.getGroup().items.size();
         }
 
         @Override

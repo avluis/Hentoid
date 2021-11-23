@@ -549,6 +549,8 @@ public class ObjectBoxDB {
             Group group = store.boxFor(Group.class).get(groupId);
             if (group != null && group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
                 applyDownloadDateFilter(query, group.propertyMin, group.propertyMax);
+            else if (group != null && group.grouping.equals(Grouping.CUSTOM) && 1 == group.subtype) // Books with no CUSTOM group attached
+                applyUngroupedFilter(query);
             else // Direct link to group
                 query.in(Content_.id, selectFilteredContent(groupId));
         }
@@ -814,11 +816,18 @@ public class ObjectBoxDB {
     private long[] selectFilteredContent(long groupId) {
         if (groupId < 1) return new long[0];
 
-        Box<Group> box = store.boxFor(Group.class);
-        Group group = box.get(groupId);
-        if (null == group) return new long[0];
+        QueryBuilder<Content> qb = store.boxFor(Content.class).query();
+        qb.link(Content_.groupItems).equal(GroupItem_.groupId, groupId);
+        return qb.build().findIds();
 
-        return Helper.getPrimitiveLongArrayFromList(group.getContentIds());
+        // https://github.com/objectbox/objectbox-java/issues/1028
+        /*
+        return store.boxFor(GroupItem.class).query()
+                .equal(GroupItem_.groupId, groupId)
+                .build()
+                .property(GroupItem_.contentId)
+                .findLongs();
+         */
     }
 
     private long[] selectFilteredContent(List<Attribute> attrs, boolean filterFavourites, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
@@ -960,6 +969,10 @@ public class ObjectBoxDB {
         long minDownloadDate = today - (maxDays * DAY_IN_MILLIS);
         long maxDownloadDate = today - (minDays * DAY_IN_MILLIS);
         qb.between(Content_.downloadDate, minDownloadDate, maxDownloadDate);
+    }
+
+    private void applyUngroupedFilter(@NonNull final QueryBuilder<Content> qb) {
+        qb.notIn(Content_.id, selectCustomGroupedContent());
     }
 
     private Query<Attribute> queryAvailableAttributes(
@@ -1260,6 +1273,17 @@ public class ObjectBoxDB {
         return (int) store.boxFor(SiteBookmark.class).query().equal(SiteBookmark_.site, site.getCode()).build().property(SiteBookmark_.order).max();
     }
 
+    // Select all duplicate bookmarks that end with a "/"
+    public Query<SiteBookmark> selectAllDuplicateBookmarks() {
+        String[] urls = selectAllBooksmarkUrls();
+        for (int i = 0; i < urls.length; i++) urls[i] = urls[i] + "/";
+
+        QueryBuilder<SiteBookmark> query = store.boxFor(SiteBookmark.class).query();
+        query.in(SiteBookmark_.url, urls, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+
+        return query.build();
+    }
+
     long insertGroup(Group group) {
         return store.boxFor(Group.class).put(group);
     }
@@ -1303,14 +1327,15 @@ public class ObjectBoxDB {
             @Nullable String query,
             int orderField,
             boolean orderDesc,
-            int artistGroupVisibility,
+            int subType,
             boolean groupFavouritesOnly) {
         QueryBuilder<Group> qb = store.boxFor(Group.class).query().equal(Group_.grouping, grouping);
         if (query != null)
             qb.contains(Group_.name, query, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
-        if (grouping == Grouping.ARTIST.getId() && artistGroupVisibility != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS)
-            qb.equal(Group_.subtype, artistGroupVisibility);
+        if (subType != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
+                && (grouping == Grouping.ARTIST.getId() || grouping == Grouping.CUSTOM.getId())
+        ) qb.equal(Group_.subtype, subType);
 
         if (groupFavouritesOnly) qb.equal(Group_.favourite, true);
 
@@ -1420,7 +1445,7 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().isNull(Content_.manuallyMerged).build().find();
     }
 
-    public Query<Content> selectOldStoredContentQ() {
+    Query<Content> selectOldStoredContentQ() {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, new int[]{
                 StatusContent.DOWNLOADING.getCode(),
@@ -1471,14 +1496,25 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    // Select all duplicate bookmarks that end with a "/"
-    public Query<SiteBookmark> selectAllDuplicateBookmarks() {
-        String[] urls = selectAllBooksmarkUrls();
-        for (int i = 0; i < urls.length; i++) urls[i] = urls[i] + "/";
+    long[] selectCustomGroupedContent() {
+        QueryBuilder<Content> customContentQB = store.boxFor(Content.class).query();
+        customContentQB.link(Content_.groupItems).link(GroupItem_.group).equal(Group_.grouping, Grouping.CUSTOM.getId());
+        return customContentQB.build().findIds();
+        // See https://github.com/objectbox/objectbox-java/issues/1028
+        /*
+        QueryBuilder<GroupItem> customGContentQB = store.boxFor(GroupItem.class).query();
+        customGContentQB.link(GroupItem_.group).equal(Group_.grouping, Grouping.CUSTOM.getId());
+        return customGContentQB.build().property(GroupItem_.contentId).findLongs();
+         */
+    }
 
-        QueryBuilder<SiteBookmark> query = store.boxFor(SiteBookmark.class).query();
-        query.in(SiteBookmark_.url, urls, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-
-        return query.build();
+    Set<Long> selectUngroupedContentIds() {
+        // Select all eligible content
+        QueryBuilder<Content> allContentQ = store.boxFor(Content.class).query().in(Content_.status, libraryStatus);
+        // TODO make it a set
+        Set<Long> allContent = Helper.getSetFromPrimitiveArray(allContentQ.build().findIds());
+        // Select all content that have a Custom grouping
+        allContent.removeAll(Helper.getSetFromPrimitiveArray(selectCustomGroupedContent()));
+        return allContent;
     }
 }

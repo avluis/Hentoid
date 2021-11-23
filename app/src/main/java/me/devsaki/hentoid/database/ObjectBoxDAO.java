@@ -397,7 +397,12 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public LiveData<List<Group>> selectGroups(
+    public List<Group> selectGroups(int grouping, int subType) {
+        return db.selectGroupsQ(grouping, null, 0, false, subType, false).find();
+    }
+
+    @Override
+    public LiveData<List<Group>> selectGroupsLive(
             int grouping,
             @Nullable String query,
             int orderField,
@@ -407,13 +412,24 @@ public class ObjectBoxDAO implements CollectionDAO {
         LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly));
         LiveData<List<Group>> workingData = livedata;
 
-        // Download date grouping, groups are empty as they are dynamically generated
+        // Download date grouping : groups are empty as they are dynamically populated
         //   -> Manually add items inside each of them
         //   -> Manually set a cover for each of them
         if (grouping == Grouping.DL_DATE.getId()) {
             MediatorLiveData<List<Group>> livedata2 = new MediatorLiveData<>();
-            livedata2.addSource(livedata, v -> {
-                List<Group> enrichedWithItems = Stream.of(v).map(g -> enrichGroupWithItemsByDlDate(g, g.propertyMin, g.propertyMax)).toList();
+            livedata2.addSource(livedata, group -> {
+                List<Group> enrichedWithItems = Stream.of(group).map(g -> enrichGroupWithItemsByDlDate(g, g.propertyMin, g.propertyMax)).toList();
+                livedata2.setValue(enrichedWithItems);
+            });
+            workingData = livedata2;
+        }
+
+        // Custom grouping : "Ungrouped" special group is dynamically populated
+        // -> Manually add items
+        if (grouping == Grouping.CUSTOM.getId()) {
+            MediatorLiveData<List<Group>> livedata2 = new MediatorLiveData<>();
+            livedata2.addSource(livedata, group -> {
+                List<Group> enrichedWithItems = Stream.of(group).map(this::enrichUngroupedWithItems).toList();
                 livedata2.setValue(enrichedWithItems);
             });
             workingData = livedata2;
@@ -436,6 +452,15 @@ public class ObjectBoxDAO implements CollectionDAO {
         g.setItems(items);
         if (!items.isEmpty()) g.picture.setTarget(items.get(0).content.getTarget().getCover());
 
+        return g;
+    }
+
+    private Group enrichUngroupedWithItems(@NonNull final Group g) {
+        if (g.grouping.equals(Grouping.CUSTOM) && 1 == g.subtype) {
+            List<GroupItem> items = Stream.of(db.selectUngroupedContentIds()).map(id -> new GroupItem(id, g, -1)).toList();
+            g.setItems(items);
+//            if (!items.isEmpty()) g.picture.setTarget(items.get(0).content.getTarget().getCover()); Can't query Content here as it is detached
+        }
         return g;
     }
 

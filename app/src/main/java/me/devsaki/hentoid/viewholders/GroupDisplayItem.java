@@ -193,8 +193,10 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
                 ImageFile cover = null;
                 if (!item.group.picture.isNull()) cover = item.group.picture.getTarget();
                 else if (!item.group.items.isEmpty()) {
-                    Content c = item.group.items.get(0).content.getTarget();
-                    if (c != null) cover = c.getCover();
+                    if (item.group.items.get(0).content.isResolved()) {
+                        Content c = item.group.items.get(0).content.getTarget();
+                        if (c != null) cover = c.getCover();
+                    }
                 }
                 if (cover != null) attachCover(cover);
             }

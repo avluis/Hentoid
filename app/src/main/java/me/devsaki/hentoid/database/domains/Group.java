@@ -11,6 +11,7 @@ import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Index;
 import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
@@ -22,13 +23,16 @@ public class Group {
 
     @Id
     public long id;
+    @Index
     @Convert(converter = GroupingConverter.class, dbType = Integer.class)
     public Grouping grouping;
     public String name;
     @Backlink(to = "group")
     public ToMany<GroupItem> items;
     public ToOne<ImageFile> picture;
-    public int subtype; // in Grouping.ARTIST : 0 = Artist; 1 = Group
+    // in Grouping.ARTIST : 0 = Artist; 1 = Group
+    // in Grouping.CUSTOM : 0 = Custom; 1 = Ungrouped
+    public int subtype;
     public int order;
     public boolean hasCustomBookOrder = false;
     public int propertyMin;
@@ -80,8 +84,9 @@ public class Group {
         return subtype;
     }
 
-    public void setSubtype(int subtype) {
+    public Group setSubtype(int subtype) {
         this.subtype = subtype;
+        return this;
     }
 
     public int getOrder() {
@@ -112,23 +117,28 @@ public class Group {
         this.favourite = favourite;
     }
 
+    public String getName() {
+        return name;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Group group = (Group) o;
         return grouping == group.grouping &&
-                Objects.equals(name, group.name);
+                Objects.equals(name, group.name) &&
+                favourite == group.favourite;
     }
 
     @Override
     // Must be an int32, so we're bound to use Objects.hash
     public int hashCode() {
-        return Objects.hash(grouping, name);
+        return Objects.hash(grouping, name, favourite);
     }
 
     public long uniqueHash() {
-        return Helper.hash64((grouping + "." + name).getBytes());
+        return Helper.hash64((grouping + "." + name + "." + favourite).getBytes());
     }
 
     public static class GroupingConverter implements PropertyConverter<Grouping, Integer> {

@@ -24,6 +24,12 @@ public class GroupItem {
         this.order = order;
     }
 
+    public GroupItem(long contentId, @NonNull final Group group, int order) {
+        this.content.setTargetId(contentId);
+        this.group.setTarget(group);
+        this.order = order;
+    }
+
     public Content getContent() {
         return content.getTarget();
     }

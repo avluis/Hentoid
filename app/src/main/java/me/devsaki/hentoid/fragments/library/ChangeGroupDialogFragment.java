@@ -77,7 +77,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
             // Get existing custom groups
             CollectionDAO dao = new ObjectBoxDAO(requireContext());
             try {
-                customGroups = dao.selectGroups(Grouping.CUSTOM.getId());
+                customGroups = dao.selectGroups(Grouping.CUSTOM.getId(), 0); // Don't select the "Ungrouped" group there
                 customGroups = Stream.of(customGroups).toList();
 
                 if (!customGroups.isEmpty()) { // "Existing group" by default

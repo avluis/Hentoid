@@ -4,6 +4,8 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Stream;
+
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 import java.util.ArrayList;
@@ -252,12 +254,16 @@ public class DatabaseMaintenance {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Create non-existing groupings : start");
             List<Grouping> groupingsToProcess = new ArrayList<>();
-            for (Grouping grouping : new Grouping[]{Grouping.ARTIST, Grouping.DL_DATE, Grouping.CUSTOM})
+            for (Grouping grouping : new Grouping[]{Grouping.ARTIST, Grouping.DL_DATE})
                 if (0 == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping);
+
+            // Test the existence of the "Ungrouped" custom group
+            List<Group> ungroupedCustomGroup = db.selectGroupsQ(Grouping.CUSTOM.getId(), null, -1, false, 1, false).find();
+            if (ungroupedCustomGroup.isEmpty()) groupingsToProcess.add(Grouping.CUSTOM);
 
             Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
             int bookInsertCount = 0;
-            List<ImmutableTriple<Group, Attribute, List<Content>>> toInsert = new ArrayList<>();
+            List<ImmutableTriple<Group, Attribute, List<Long>>> toInsert = new ArrayList<>();
             for (Grouping g : groupingsToProcess) {
                 if (g.equals(Grouping.ARTIST)) {
                     List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC, 0, 0, false, false);
@@ -270,7 +276,7 @@ public class DatabaseMaintenance {
                             group.picture.setTarget(a.contents.get(0).getCover());
                         bookInsertCount += a.contents.size();
 
-                        toInsert.add(new ImmutableTriple<>(group, a, a.contents));
+                        toInsert.add(new ImmutableTriple<>(group, a, Stream.of(a.contents).map(Content::getId).toList()));
                     }
                 } else if (g.equals(Grouping.DL_DATE)) {
                     Group group = new Group(Grouping.DL_DATE, "Today", 1);
@@ -297,18 +303,21 @@ public class DatabaseMaintenance {
                     group.propertyMin = 366;
                     group.propertyMax = 9999999;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
+                } else if (g.equals(Grouping.CUSTOM)) {
+                    Group group = new Group(Grouping.CUSTOM, "Ungrouped", 1).setSubtype(1);
+                    toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
                 }
             }
 
             // Actual insert is inside its dedicated loop to allow displaying a proper progress bar
             Timber.i("Create non-existing groupings : %s relations to create", bookInsertCount);
             float pos = 1;
-            for (ImmutableTriple<Group, Attribute, List<Content>> data : toInsert) {
+            for (ImmutableTriple<Group, Attribute, List<Long>> data : toInsert) {
                 db.insertGroup(data.left);
                 if (data.middle != null) data.middle.putGroup(data.left);
                 int order = 0;
-                for (Content book : data.right) {
-                    GroupItem item = new GroupItem(book, data.left, order++);
+                for (Long contentId : data.right) {
+                    GroupItem item = new GroupItem(contentId, data.left, order++);
                     db.insertGroupItem(item);
                     emitter.onNext(pos++ / bookInsertCount);
                 }
