@@ -739,14 +739,16 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName,
-                            @NonNull final Runnable onNameExists, @NonNull final Runnable onSuccess) {
+                            @NonNull final Consumer<Integer> onFail, @NonNull final Runnable onSuccess) {
         // Check if the group already exists
         List<Group> localGroups = getGroups().getValue();
         if (null == localGroups) return;
 
         List<Group> groupMatchingName = Stream.of(localGroups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
         if (!groupMatchingName.isEmpty()) { // Existing group with the same name
-            onNameExists.run();
+            onFail.accept(R.string.group_name_exists);
+        } else if (group.grouping.equals(Grouping.CUSTOM) && 1 == group.getSubtype()) { // "Ungrouped" group can't be renamed because it stops to work (TODO investgate that)
+            onFail.accept(R.string.group_rename_forbidden);
         } else {
             group.name = newGroupName;
             compositeDisposable.add(

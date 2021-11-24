@@ -371,6 +371,7 @@
     <string name="group_new_name">New custom group name</string>
     <string name="group_remove">Detach from current group</string>
     <string name="group_name_exists">Group with that name already exists!</string>
+    <string name="group_rename_forbidden">Renaming that group is forbidden!</string>
     <string name="group_name_empty">Group name is empty!</string>
     <string name="group_not_selected">Group has not been selected!</string>
     <plurals name="group_delete_selected_group">

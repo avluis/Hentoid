@@ -539,8 +539,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void onEditName(@NonNull final String newName) {
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         Group g = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().findFirst().get();
-        viewModel.renameGroup(g, newName, () -> {
-            ToastHelper.toast(R.string.group_name_exists);
+        viewModel.renameGroup(g, newName, stringIntRes -> {
+            ToastHelper.toast(stringIntRes);
             editSelectedItemName();
         }, () -> selectExtension.setSelectOnLongClick(true));
     }
