@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,6 +55,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
+import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.util.AdBlocker;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -552,6 +554,29 @@ class CustomWebViewClient extends WebViewClient {
                     Timber.d("[%s] Removing node %s", baseUri, e.toString());
                     e.remove();
                 }
+
+            Element parentLink;
+            Set<String> siteGalleries = activity.getAllSiteUrls(site);
+
+            for (Element img : doc.select("a img")) {
+                int level = 0;
+                do {
+                    parentLink = img.parent();
+                    level++;
+                } while (parentLink != null && !parentLink.is("a") && level < 3);
+
+                if (parentLink != null && parentLink.is("a")) {
+                    String aHref = parentLink.attr("href");
+                    String imgSrc = ParseHelper.getImgSrc(img);
+                    for (String url : siteGalleries) {
+                        if (aHref.endsWith(url) || imgSrc.endsWith(url)) {
+                            img.attr("style", "filter: brightness(30%);");
+                            break;
+                        }
+                    }
+                }
+            }
+
             return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
         } catch (IOException e) {
             Timber.e(e);
@@ -578,6 +603,8 @@ class CustomWebViewClient extends WebViewClient {
          * Callback when the page should have been parsed into a Content, but the parsing failed
          */
         void onResultFailed();
+
+        Set<String> getAllSiteUrls(Site site);
     }
 
 }

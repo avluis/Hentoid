@@ -1259,6 +1259,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         startActivity(intent);
     }
 
+    @Override
+    public Set<String> getAllSiteUrls(Site site) {
+        return objectBoxDAO.selectAllSourceUrls(site);
+    }
+
     /**
      * Listener for preference changes (from the settings dialog)
      *

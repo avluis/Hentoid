@@ -19,6 +19,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -294,6 +295,10 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Nullable
     public Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl) {
         return db.selectContentBySourceAndUrl(site, contentUrl, Content.getNeutralCoverUrlRoot(coverUrl, site));
+    }
+
+    public Set<String> selectAllSourceUrls(@NonNull Site site) {
+        return db.selectAllContentUrls(site.getCode());
     }
 
     @Override

@@ -398,6 +398,14 @@ public class ObjectBoxDB {
         return result;
     }
 
+    Set<String> selectAllContentUrls(int siteCode) {
+        Query<Content> allContentQ = store.boxFor(Content.class).query().equal(Content_.site, siteCode).in(Content_.status, libraryStatus).build();
+        Set<String> result = new HashSet<>();
+        result.addAll(Stream.of(allContentQ.property(Content_.url).findStrings()).toList());
+        result.addAll(Stream.of(allContentQ.property(Content_.url).findStrings()).toList());
+        return result;
+    }
+
     @Nullable
     Content selectContentEndWithStorageUri(@NonNull final String folderUriEnd, boolean onlyFlagged) {
         QueryBuilder<Content> queryBuilder = store.boxFor(Content.class).query().endsWith(Content_.storageUri, folderUriEnd, QueryBuilder.StringOrder.CASE_INSENSITIVE);
