@@ -274,11 +274,11 @@
     <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
-        <item quantity="other">Are you sure you wish to delete the %d selected items ?</item>
+        <item quantity="other">Are you sure you wish to delete the selected %d items ?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
         <item quantity="one">Are you sure you wish to archive the selected item ?</item>
-        <item quantity="other">Are you sure you wish to archive the selected items ?</item>
+        <item quantity="other">Are you sure you wish to archive the selected %d items ?</item>
     </plurals>
     <string name="new_group_name">Name of the new group ?</string>
     <string name="group_edit_name">Edit group name</string>

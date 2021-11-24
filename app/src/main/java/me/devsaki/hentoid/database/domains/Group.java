@@ -127,18 +127,17 @@ public class Group {
         if (o == null || getClass() != o.getClass()) return false;
         Group group = (Group) o;
         return grouping == group.grouping &&
-                Objects.equals(name, group.name) &&
-                favourite == group.favourite;
+                Objects.equals(name, group.name);
     }
 
     @Override
     // Must be an int32, so we're bound to use Objects.hash
     public int hashCode() {
-        return Objects.hash(grouping, name, favourite);
+        return Objects.hash(grouping, name);
     }
 
     public long uniqueHash() {
-        return Helper.hash64((grouping + "." + name + "." + favourite).getBytes());
+        return Helper.hash64((grouping + "." + name).getBytes());
     }
 
     public static class GroupingConverter implements PropertyConverter<Grouping, Integer> {

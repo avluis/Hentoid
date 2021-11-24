@@ -739,7 +739,7 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName,
-                            @NonNull final Runnable onNameExists) {
+                            @NonNull final Runnable onNameExists, @NonNull final Runnable onSuccess) {
         // Check if the group already exists
         List<Group> localGroups = getGroups().getValue();
         if (null == localGroups) return;
@@ -759,8 +759,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             })
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
-                                    () -> { // Update is done through LiveData
-                                    },
+                                    onSuccess::run,
                                     Timber::e
                             )
             );

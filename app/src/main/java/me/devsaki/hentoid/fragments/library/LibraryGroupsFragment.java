@@ -532,7 +532,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         Group g = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().findFirst().get();
 
-        InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, g.name, this::onEditName);
+        InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, g.name,
+                this::onEditName, () -> selectExtension.deselect(selectExtension.getSelections()));
     }
 
     private void onEditName(@NonNull final String newName) {
@@ -540,8 +541,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         Group g = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().findFirst().get();
         viewModel.renameGroup(g, newName, () -> {
             ToastHelper.toast(R.string.group_name_exists);
-            LibraryGroupsFragment.this.editSelectedItemName();
-        });
+            editSelectedItemName();
+        }, () -> selectExtension.setSelectOnLongClick(true));
     }
 
     @Override
