@@ -10,6 +10,9 @@
         android:id="@+id/sort_books"
         android:title="@string/sort_books" />
     <item
+        android:id="@+id/sort_dl_date"
+        android:title="@string/sort_dl_date" />
+    <item
         android:id="@+id/sort_custom"
         android:title="@string/sort_custom"
         android:visible="false" />

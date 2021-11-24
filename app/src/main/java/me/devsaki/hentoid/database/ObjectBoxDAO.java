@@ -10,6 +10,7 @@ import androidx.paging.DataSource;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
@@ -417,8 +418,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         //   -> Manually set a cover for each of them
         if (grouping == Grouping.DL_DATE.getId()) {
             MediatorLiveData<List<Group>> livedata2 = new MediatorLiveData<>();
-            livedata2.addSource(livedata, group -> {
-                List<Group> enrichedWithItems = Stream.of(group).map(g -> enrichGroupWithItemsByDlDate(g, g.propertyMin, g.propertyMax)).toList();
+            livedata2.addSource(livedata, groups -> {
+                List<Group> enrichedWithItems = Stream.of(groups).map(g -> enrichGroupWithItemsByDlDate(g, g.propertyMin, g.propertyMax)).toList();
                 livedata2.setValue(enrichedWithItems);
             });
             workingData = livedata2;
@@ -428,8 +429,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         // -> Manually add items
         if (grouping == Grouping.CUSTOM.getId()) {
             MediatorLiveData<List<Group>> livedata2 = new MediatorLiveData<>();
-            livedata2.addSource(livedata, group -> {
-                List<Group> enrichedWithItems = Stream.of(group).map(this::enrichUngroupedWithItems).toList();
+            livedata2.addSource(livedata, groups -> {
+                List<Group> enrichedWithItems = Stream.of(groups).map(this::enrichUngroupedWithItems).toList();
                 livedata2.setValue(enrichedWithItems);
             });
             workingData = livedata2;
@@ -438,13 +439,26 @@ public class ObjectBoxDAO implements CollectionDAO {
         // Order by number of children (ObjectBox can't do that natively)
         if (Preferences.Constant.ORDER_FIELD_CHILDREN == orderField) {
             MediatorLiveData<List<Group>> result = new MediatorLiveData<>();
-            result.addSource(workingData, v -> {
+            result.addSource(workingData, groups -> {
                 int sortOrder = orderDesc ? -1 : 1;
-                List<Group> orderedByNbChildren = Stream.of(v).sortBy(g -> g.getItems().size() * sortOrder).toList();
+                List<Group> orderedByNbChildren = Stream.of(groups).sortBy(g -> g.getItems().size() * sortOrder).toList();
                 result.setValue(orderedByNbChildren);
             });
             return result;
-        } else return workingData;
+        }
+
+        // Order by latest download date of children (ObjectBox can't do that natively)
+        if (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE == orderField) {
+            MediatorLiveData<List<Group>> result = new MediatorLiveData<>();
+            result.addSource(workingData, groups -> {
+                int sortOrder = orderDesc ? -1 : 1;
+                List<Group> orderedByDlDate = Stream.of(groups).sortBy(g -> getLatestDlDate(g) * sortOrder).toList();
+                result.setValue(orderedByDlDate);
+            });
+            return result;
+        }
+
+        return workingData;
     }
 
     private Group enrichGroupWithItemsByDlDate(@NonNull final Group g, int minDays, int maxDays) {
@@ -462,6 +476,11 @@ public class ObjectBoxDAO implements CollectionDAO {
 //            if (!items.isEmpty()) g.picture.setTarget(items.get(0).content.getTarget().getCover()); Can't query Content here as it is detached
         }
         return g;
+    }
+
+    private long getLatestDlDate(@NonNull final Group g) {
+        Optional<Long> maxDlDate = Stream.of(g.getContents()).map(Content::getDownloadDate).max(Long::compareTo);
+        return maxDlDate.isPresent() ? maxDlDate.get() : 0;
     }
 
     @Nullable

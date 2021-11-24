@@ -315,6 +315,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 return Preferences.Constant.ORDER_FIELD_TITLE;
             case (R.id.sort_books):
                 return Preferences.Constant.ORDER_FIELD_CHILDREN;
+            case (R.id.sort_dl_date):
+                return Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE;
             case (R.id.sort_custom):
                 return Preferences.Constant.ORDER_FIELD_CUSTOM;
             default:
@@ -328,6 +330,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 return R.string.sort_title;
             case (Preferences.Constant.ORDER_FIELD_CHILDREN):
                 return R.string.sort_books;
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
+                return R.string.sort_dl_date;
             case (Preferences.Constant.ORDER_FIELD_CUSTOM):
                 return R.string.sort_custom;
             default:

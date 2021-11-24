@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -30,8 +31,9 @@ public class GroupItem {
         this.order = order;
     }
 
+    @Nullable
     public Content getContent() {
-        return content.getTarget();
+        return content.isResolved() ? content.getTarget() : null;
     }
 
     public Group getGroup() {

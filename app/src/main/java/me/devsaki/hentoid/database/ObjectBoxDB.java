@@ -1342,7 +1342,7 @@ public class ObjectBoxDB {
         Property<Group> property = Group_.name;
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.getId())
             property = Group_.order;
-        // Order by number of children is done by the DAO
+        // Order by number of children / download date is done by the DAO
 
         if (orderDesc) qb.orderDesc(property);
         else qb.order(property);
