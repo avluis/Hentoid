@@ -230,8 +230,6 @@ public class FileExplorer implements Closeable {
                     boolean isFolder = c.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
                     final long documentSize = c.getLong(3);
 
-                    Timber.d(">> cursor %s", documentName);
-
                     // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                     if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
                         results.add(new DocumentProperties(buildDocumentUriUsingTreeCached(parent.getUri(), documentId), documentName, documentSize, isFolder));
