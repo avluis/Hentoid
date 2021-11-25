@@ -1089,7 +1089,7 @@ public class FileHelper {
      * @param uri      Uri to check
      * @return true if the given Uri has persisted I/O permissions
      */
-    private static boolean isUriPermissionPersisted(@NonNull final ContentResolver resolver, @NonNull final Uri uri) {
+    public static boolean isUriPermissionPersisted(@NonNull final ContentResolver resolver, @NonNull final Uri uri) {
         String treeUriId = DocumentsContract.getTreeDocumentId(uri);
         for (UriPermission p : resolver.getPersistedUriPermissions()) {
             if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {

@@ -235,7 +235,8 @@ public class ContentDownloadWorker extends BaseWorker {
         }
         EventBus.getDefault().post(DownloadEvent.fromPreparationStepLog(DownloadEvent.Step.INIT, "5"));
 
-        if (-2 == FileHelper.createNoMedia(context, rootFolder)) {
+        //if (-2 == FileHelper.createNoMedia(context, rootFolder)) {
+        if (!FileHelper.isUriPermissionPersisted(context.getContentResolver(), rootFolder.getUri())) {
             Timber.i("Insufficient credentials on download folder. Please select it again.");
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.DOWNLOAD_FOLDER_NO_CREDENTIALS));
             return new ImmutablePair<>(QueuingResult.QUEUE_END, null);
