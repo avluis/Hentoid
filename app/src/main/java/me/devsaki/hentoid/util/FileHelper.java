@@ -424,9 +424,7 @@ public class FileHelper {
      */
     @Nullable
     public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
-        List<DocumentFile> result = listDocumentFiles(context, parent, subfolderName, true, false);
-        if (!result.isEmpty()) return result.get(0);
-        else return null;
+        return findDocumentFile(context, parent, subfolderName, true, false);
     }
 
     /**
@@ -439,9 +437,7 @@ public class FileHelper {
      */
     @Nullable
     public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String fileName) {
-        List<DocumentFile> result = listDocumentFiles(context, parent, fileName, false, true);
-        if (!result.isEmpty()) return result.get(0);
-        else return null;
+        return findDocumentFile(context, parent, fileName, false, true);
     }
 
     /**
@@ -467,7 +463,7 @@ public class FileHelper {
     public static List<DocumentFile> listFoldersFilter(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
         List<DocumentFile> result = Collections.emptyList();
         try (FileExplorer fe = new FileExplorer(context, parent)) {
-            result = fe.listDocumentFiles(context, parent, filter, true, false);
+            result = fe.listDocumentFiles(context, parent, filter, true, false, false);
         } catch (IOException e) {
             Timber.w(e);
         }
@@ -485,7 +481,7 @@ public class FileHelper {
     public static List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
         List<DocumentFile> result = Collections.emptyList();
         try (FileExplorer fe = new FileExplorer(context, parent)) {
-            result = fe.listDocumentFiles(context, parent, filter, false, true);
+            result = fe.listDocumentFiles(context, parent, filter, false, true, false);
         } catch (IOException e) {
             Timber.w(e);
         }
@@ -494,6 +490,7 @@ public class FileHelper {
 
     /**
      * List all elements inside the given parent folder (non recursive) that match the given criteria
+     * TODO udpate doc
      *
      * @param context     Context to use
      * @param parent      Parent folder to list elements from
@@ -502,18 +499,19 @@ public class FileHelper {
      * @param listFiles   True if the listed elements have to include files (non-folders)
      * @return Elements of the given parent folder matching the given criteria
      */
-    private static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
-                                                        @NonNull final DocumentFile parent,
-                                                        final String nameFilter,
-                                                        boolean listFolders,
-                                                        boolean listFiles) {
+    @Nullable
+    private static DocumentFile findDocumentFile(@NonNull final Context context,
+                                                 @NonNull final DocumentFile parent,
+                                                 final String nameFilter,
+                                                 boolean listFolders,
+                                                 boolean listFiles) {
         List<DocumentFile> result = Collections.emptyList();
         try (FileExplorer fe = new FileExplorer(context, parent)) {
-            result = fe.listDocumentFiles(context, parent, createNameFilterEquals(nameFilter), listFolders, listFiles);
+            result = fe.listDocumentFiles(context, parent, createNameFilterEquals(nameFilter), listFolders, listFiles, true);
         } catch (IOException e) {
             Timber.w(e);
         }
-        return result;
+        return result.isEmpty() ? null : result.get(0);
     }
 
     /**
