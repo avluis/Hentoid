@@ -66,6 +66,7 @@ public class DownloadEvent {
     int motive;            // Motive for certain events (EV_PAUSE)
     public final @Step
     int step;            // Step for EV_PREPARATION
+    public String log = "";
 
     /**
      * Use for EV_PROGRESS and EV_COMPLETE events
@@ -111,6 +112,10 @@ public class DownloadEvent {
      */
     public static DownloadEvent fromPreparationStep(@Step int step) {
         return new DownloadEvent(Type.EV_PREPARATION, Motive.NONE, step, 0);
+    }
+
+    public static DownloadEvent fromPreparationStepLog(@Step int step, @NonNull String log) {
+        return new DownloadEvent(Type.EV_PREPARATION, Motive.NONE, step, 0).setLog(log);
     }
 
     /**
@@ -163,5 +168,10 @@ public class DownloadEvent {
 
     public int getNumberRetries() {
         return (null == content) ? 0 : content.getNumberDownloadRetries();
+    }
+
+    private DownloadEvent setLog(@NonNull String log) {
+        this.log = log;
+        return this;
     }
 }
