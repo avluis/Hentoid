@@ -210,7 +210,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private List<String> blockedTags = Collections.emptyList();
     // Extra images found on the currently viewed Content
     private List<ImageFile> extraImages = Collections.emptyList();
-
+    // TODO doc
+    private final List<String> siteGalleries = new ArrayList<>();
 
     // === OTHER VARIABLES
     // Indicates which mode the download button is in
@@ -239,6 +240,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         objectBoxDAO = new ObjectBoxDAO(this);
         Preferences.registerPrefsChangedListener(listener);
+
+        // TODO condition
+        updateSiteGalleries();
 
         setContentView(R.layout.activity_base_web);
 
@@ -1180,6 +1184,18 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
     }
 
+    private void updateSiteGalleries() {
+        synchronized (siteGalleries) {
+            siteGalleries.clear();
+            siteGalleries.addAll(
+                    Stream.of(objectBoxDAO.selectAllSourceUrls(getStartSite()))
+                            .map(s -> s.replaceAll("\\p{Punct}", "."))
+                            .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
+                            .toList()
+            );
+        }
+    }
+
     /**
      * Listener for the events of the download engine
      * Used to switch the action button to Read when the download of the currently viewed is completed
@@ -1188,8 +1204,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.Type.EV_COMPLETE && event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
-            setActionMode(ActionMode.READ);
+        if (event.eventType == DownloadEvent.Type.EV_COMPLETE) {
+            //TODO condition
+            updateSiteGalleries();
+            if (event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
+                setActionMode(ActionMode.READ);
+            }
         }
     }
 
@@ -1260,8 +1280,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @Override
-    public Set<String> selectAllSiteUrls(Site site) {
-        return objectBoxDAO.selectAllSourceUrls(site);
+    public List<String> getAllSiteUrls() {
+        return new ArrayList<>(siteGalleries); // Work on a copy to avoid any thread-synch issue
     }
 
     /**

@@ -18,7 +18,6 @@ import android.webkit.WebViewClient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiFunction;
 
 import org.jsoup.Jsoup;
@@ -558,23 +557,18 @@ class CustomWebViewClient extends WebViewClient {
                         e.remove();
                     }
 
-            List<String> siteGalleries =
-                    Stream.of(activity.selectAllSiteUrls(site))
-                            .map(s -> s.replaceAll("\\p{Punct}", "."))
-                            .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
-                            .toList();
-
             Elements links = doc.select("a");
             Set<String> found = new HashSet<>(); // We only process the first match - usually the cover
             for (Element link : links) {
                 String aHref = link.attr("href").replaceAll("\\p{Punct}", ".");
                 if (aHref.length() < 2) continue;
                 if (aHref.endsWith(".")) aHref = aHref.substring(0, aHref.length() - 1);
-                for (String url : siteGalleries) {
+                List<String> siteUrls = activity.getAllSiteUrls();
+                for (String url : siteUrls) {
                     if (aHref.endsWith(url) && !found.contains(url)) {
                         Element img = link.select("img").first();
-                        if (img != null) img.attr("style", "filter: brightness(30%);");
-                        else link.attr("style", "filter: brightness(30%);");
+                        if (img != null) img.attr("style", "filter: blur(10px);");
+                        else link.attr("style", "filter: blur(10px);");
                         found.add(url);
                         break;
                     }
@@ -608,7 +602,6 @@ class CustomWebViewClient extends WebViewClient {
          */
         void onResultFailed();
 
-        Set<String> selectAllSiteUrls(Site site);
+        List<String> getAllSiteUrls();
     }
-
 }
