@@ -18,11 +18,13 @@ import android.webkit.WebViewClient;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiFunction;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -55,7 +57,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.util.AdBlocker;
 import me.devsaki.hentoid.util.ContentHelper;
@@ -369,7 +370,7 @@ class CustomWebViewClient extends WebViewClient {
 
             // If we're here to remove "dirty elements", we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if (dirtyElements != null && HttpHelper.getExtensionFromUri(url).isEmpty()) {
+            if (/*dirtyElements != null && */HttpHelper.getExtensionFromUri(url).isEmpty()) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
                     return parseResponse(url, headers, false, false);
@@ -453,10 +454,10 @@ class CustomWebViewClient extends WebViewClient {
                 }
 
                 // Remove dirty elements from HTML resources
-                if (dirtyElements != null) {
-                    browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
-                    if (null == browserStream) return null;
-                }
+//                if (dirtyElements != null) {
+                browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
+                if (null == browserStream) return null;
+//                }
 
                 // Convert OkHttp response to the expected format
                 result = HttpHelper.okHttpResponseToWebkitResponse(response, browserStream);
@@ -555,24 +556,18 @@ class CustomWebViewClient extends WebViewClient {
                     e.remove();
                 }
 
-            Element parentLink;
-            Set<String> siteGalleries = activity.getAllSiteUrls(site);
+            List<String> siteGalleries =
+                    Stream.of(activity.getAllSiteUrls(site)) // TODO remove cover URLs from the query
+                            .map(s -> s.replaceAll("\\p{Punct}", "."))
+                            .toList();
 
-            for (Element img : doc.select("a img")) {
-                int level = 0;
-                do {
-                    parentLink = img.parent();
-                    level++;
-                } while (parentLink != null && !parentLink.is("a") && level < 3);
-
-                if (parentLink != null && parentLink.is("a")) {
-                    String aHref = parentLink.attr("href");
-                    String imgSrc = ParseHelper.getImgSrc(img);
-                    for (String url : siteGalleries) {
-                        if (aHref.endsWith(url) || imgSrc.endsWith(url)) {
-                            img.attr("style", "filter: brightness(30%);");
-                            break;
-                        }
+            Elements links = doc.select("a");
+            for (Element link : links) {
+                String aHref = link.attr("href").replaceAll("\\p{Punct}", ".");
+                for (String url : siteGalleries) {
+                    if (aHref.endsWith(url)) {
+                        link.attr("style", "filter: brightness(30%);");
+                        break;
                     }
                 }
             }
