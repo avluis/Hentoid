@@ -559,7 +559,7 @@ class CustomWebViewClient extends WebViewClient {
                     }
 
             List<String> siteGalleries =
-                    Stream.of(activity.getAllSiteUrls(site)) // TODO remove cover URLs from the query
+                    Stream.of(activity.selectAllSiteUrls(site))
                             .map(s -> s.replaceAll("\\p{Punct}", "."))
                             .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
                             .toList();
@@ -608,7 +608,7 @@ class CustomWebViewClient extends WebViewClient {
          */
         void onResultFailed();
 
-        Set<String> getAllSiteUrls(Site site);
+        Set<String> selectAllSiteUrls(Site site);
     }
 
 }

@@ -1260,7 +1260,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @Override
-    public Set<String> getAllSiteUrls(Site site) {
+    public Set<String> selectAllSiteUrls(Site site) {
         return objectBoxDAO.selectAllSourceUrls(site);
     }
 
