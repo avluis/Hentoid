@@ -61,7 +61,9 @@ public class EHentaiActivity extends BaseWebActivity {
                             Timber::w
                     )
             );
-            return null;
+
+            //return null; TODO
+            return super.parseResponse(urlStr, requestHeaders, false, false); // Rewrite HTML
         }
     }
 }

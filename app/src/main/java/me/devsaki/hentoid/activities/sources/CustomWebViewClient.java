@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -546,27 +547,33 @@ class CustomWebViewClient extends WebViewClient {
      * @return Stream containing the HTML document stripped from the elements to remove
      */
     @Nullable
-    private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, @NonNull List<String> dirtyElements) {
+    private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, List<String> dirtyElements) {
         try {
             Document doc = Jsoup.parse(stream, null, baseUri);
 
-            for (String s : dirtyElements)
-                for (Element e : doc.select(s)) {
-                    Timber.d("[%s] Removing node %s", baseUri, e.toString());
-                    e.remove();
-                }
+            if (dirtyElements != null)
+                for (String s : dirtyElements)
+                    for (Element e : doc.select(s)) {
+                        Timber.d("[%s] Removing node %s", baseUri, e.toString());
+                        e.remove();
+                    }
 
             List<String> siteGalleries =
                     Stream.of(activity.getAllSiteUrls(site)) // TODO remove cover URLs from the query
                             .map(s -> s.replaceAll("\\p{Punct}", "."))
+                            .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
                             .toList();
 
             Elements links = doc.select("a");
+            Set<String> found = new HashSet<>(); // We only process the first match - usually the cover
             for (Element link : links) {
                 String aHref = link.attr("href").replaceAll("\\p{Punct}", ".");
+                if (aHref.length() < 2) continue;
+                if (aHref.endsWith(".")) aHref = aHref.substring(0, aHref.length() - 1);
                 for (String url : siteGalleries) {
-                    if (aHref.endsWith(url)) {
+                    if (aHref.endsWith(url) && !found.contains(url)) {
                         link.attr("style", "filter: brightness(30%);");
+                        found.add(url);
                         break;
                     }
                 }
