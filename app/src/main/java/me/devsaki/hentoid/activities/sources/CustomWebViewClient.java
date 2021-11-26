@@ -572,7 +572,9 @@ class CustomWebViewClient extends WebViewClient {
                 if (aHref.endsWith(".")) aHref = aHref.substring(0, aHref.length() - 1);
                 for (String url : siteGalleries) {
                     if (aHref.endsWith(url) && !found.contains(url)) {
-                        link.attr("style", "filter: brightness(30%);");
+                        Element img = link.select("img").first();
+                        if (img != null) img.attr("style", "filter: brightness(30%);");
+                        else link.attr("style", "filter: brightness(30%);");
                         found.add(url);
                         break;
                     }
