@@ -25,7 +25,7 @@ public class HitomiActivity extends BaseWebActivity {
     private static final String[] BLOCKED_CONTENT = {"hitomi-horizontal.js", "hitomi-vertical.js", "invoke.js", "ion.sound"};
     private static final String[] JS_WHITELIST = {"galleries/[\\w%\\-]+.js$", "jquery", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap"};
     private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder"};
-    private static final String[] DIRTY_ELEMENTS = {".top-content > div:not(.list-title)"};
+    private static final String[] DIRTY_ELEMENTS = {".top-content > div:not(.list-title)", ".content div[class^=hitomi-]"};
 
     Site getStartSite() {
         return Site.HITOMI;
