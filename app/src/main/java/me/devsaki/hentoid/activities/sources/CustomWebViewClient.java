@@ -585,12 +585,12 @@ class CustomWebViewClient extends WebViewClient {
                     }
 
             if (siteUrls != null && !siteUrls.isEmpty()) {
-                // Add custom inline CSS
+                // Add custom inline CSS to the main page only
                 if (!isHtmlLoaded.get())
                     doc.head().appendElement("style").attr("type", "text/css").appendText(activity.getCustomCss());
                 // Format elements
                 Elements links = doc.select("a");
-                Set<String> found = new HashSet<>(); // We only process the first match - usually the cover
+                Set<String> found = new HashSet<>();
                 for (Element link : links) {
                     String aHref = link.attr("href").replaceAll("\\p{Punct}", ".");
                     if (aHref.length() < 2) continue;
@@ -599,13 +599,13 @@ class CustomWebViewClient extends WebViewClient {
                         if (aHref.endsWith(url) && !found.contains(url)) {
                             Element markedElement = link;
                             Element img = link.select("img").first();
-                            if (img != null) {
+                            if (img != null) { // Mark two levels above the image
                                 Element imgParent = img.parent();
                                 if (imgParent != null) imgParent = imgParent.parent();
                                 if (imgParent != null) markedElement = imgParent;
                             }
                             markedElement.addClass("watermarked");
-                            found.add(url);
+                            found.add(url); // We only process the first match - usually the cover
                             break;
                         }
                     }
