@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -106,9 +107,9 @@ class CustomWebViewClient extends WebViewClient {
     // Domain name for which link navigation is restricted
     private final List<String> restrictedDomainNames = new ArrayList<>();
     // Loading state of the current webpage (used for the refresh/stop feature)
-    private boolean isPageLoading = false;
+    private final AtomicBoolean isPageLoading = new AtomicBoolean(false);
     // Loading state of the HTML code of the current webpage (used to trigger the action button)
-    boolean isHtmlLoaded = false;
+    private final AtomicBoolean isHtmlLoaded = new AtomicBoolean(false);
 
     protected final AdBlocker adBlocker;
 
@@ -332,15 +333,15 @@ class CustomWebViewClient extends WebViewClient {
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         if (BuildConfig.DEBUG) Timber.v("WebView : page started %s", url);
-        isPageLoading = true;
-        activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded, true);
+        isPageLoading.set(true);
+        activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded.get(), true);
     }
 
     @Override
     public void onPageFinished(WebView view, String url) {
         if (BuildConfig.DEBUG) Timber.v("WebView : page finished %s", url);
-        isPageLoading = false;
-        isHtmlLoaded = false; // Reset for the next page
+        isPageLoading.set(false);
+        isHtmlLoaded.set(false); // Reset for the next page
         activity.onPageFinished(isResultsPage(StringHelper.protect(url)), isGalleryPage(url));
     }
 
@@ -496,7 +497,7 @@ class CustomWebViewClient extends WebViewClient {
                 result = null; // Default webview behaviour
             }
 
-            if (analyzeForDownload)
+            if (analyzeForDownload) {
                 compositeDisposable.add(
                         Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
                                 .subscribeOn(Schedulers.computation())
@@ -505,10 +506,13 @@ class CustomWebViewClient extends WebViewClient {
                                         content -> processContent(content, urlStr, quickDownload),
                                         throwable -> {
                                             Timber.e(throwable, "Error parsing content.");
-                                            isHtmlLoaded = true;
+                                            isHtmlLoaded.set(true);
                                             activity.onResultFailed();
                                         })
                 );
+            } else {
+                isHtmlLoaded.set(true);
+            }
 
             return result;
         } catch (MalformedURLException e) {
@@ -539,7 +543,7 @@ class CustomWebViewClient extends WebViewClient {
         params.put(HttpHelper.HEADER_REFERER_KEY, content.getSite().getUrl());
 
         content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
-        isHtmlLoaded = true;
+        isHtmlLoaded.set(true);
 
         activity.onResultReady(content, quickDownload);
     }
@@ -550,7 +554,7 @@ class CustomWebViewClient extends WebViewClient {
      * @return True if current webpage is being loaded; false if not
      */
     boolean isLoading() {
-        return isPageLoading;
+        return isPageLoading.get();
     }
 
     /**
@@ -582,7 +586,8 @@ class CustomWebViewClient extends WebViewClient {
 
             if (siteUrls != null && !siteUrls.isEmpty()) {
                 // Add custom inline CSS
-                doc.head().appendElement("style").attr("type", "text/css").appendText(activity.getCustomCss());
+                if (!isHtmlLoaded.get())
+                    doc.head().appendElement("style").attr("type", "text/css").appendText(activity.getCustomCss());
                 // Format elements
                 Elements links = doc.select("a");
                 Set<String> found = new HashSet<>(); // We only process the first match - usually the cover
