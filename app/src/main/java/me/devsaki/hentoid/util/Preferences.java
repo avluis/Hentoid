@@ -370,13 +370,6 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.BROWSER_QUICK_DL_THRESHOLD, Integer.toString(Default.BROWSER_QUICK_DL_THRESHOLD)) + "");
     }
 
-    public static void setBrowserQuickDlThreshold(int threshold) {
-        sharedPreferences.edit()
-                .putString(Key.BROWSER_QUICK_DL_THRESHOLD, Integer.toString(threshold))
-                .apply();
-    }
-
-
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.DL_THREADS_QUANTITY_LISTS,
                 Default.DL_THREADS_QUANTITY + "") + "");
@@ -624,12 +617,6 @@ public final class Preferences {
         return Long.parseLong(sharedPreferences.getString(Key.DB_MAX_SIZE, Long.toString(Default.DB_MAX_SIZE_KB)) + "");
     }
 
-    public static void setMaxDbSizeKb(long maxDbSizeKb) {
-        sharedPreferences.edit()
-                .putString(Key.DB_MAX_SIZE, Long.toString(maxDbSizeKb))
-                .apply();
-    }
-
     public static Grouping getGroupingDisplay() {
         return Grouping.searchById(Integer.parseInt(sharedPreferences.getString(Key.GROUPING_DISPLAY, Integer.toString(Default.GROUPING_DISPLAY)) + ""));
     }
@@ -783,13 +770,6 @@ public final class Preferences {
     public static int getViewerGalleryColumns() {
         return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_GALLERY_COLUMNS, Integer.toString(Default.VIEWER_GALLERY_COLUMNS)) + "");
     }
-
-    public static void setViewerGalleryColumns(int value) {
-        sharedPreferences.edit()
-                .putString(Key.VIEWER_GALLERY_COLUMNS, Integer.toString(value))
-                .apply();
-    }
-
 
     public static final class Key {
 
@@ -986,6 +966,7 @@ public final class Preferences {
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
+    @SuppressWarnings("unused")
     public static final class Constant {
 
         private Constant() {
