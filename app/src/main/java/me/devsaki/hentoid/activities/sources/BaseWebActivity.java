@@ -260,7 +260,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
 
         bottomToolbar = findViewById(R.id.bottom_navigation);
-        bottomToolbar.setOnNavigationItemSelectedListener(this::onMenuItemSelected);
+        bottomToolbar.setOnItemSelectedListener(this::onMenuItemSelected);
         bottomToolbar.setItemIconTintList(null); // Hack to make selector resource work
         backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
         forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
