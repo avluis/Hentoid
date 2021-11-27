@@ -206,13 +206,6 @@
                 android:summaryOn="@string/pref_browser_duplicate_try_pages_on"
                 android:title="@string/pref_browser_duplicate_try_pages_title"
                 app:iconSpaceReserved="false" />
-            <CheckBoxPreference
-                android:defaultValue="@string/pref_browser_mark_downloaded_default"
-                android:key="browser_mark_downloaded"
-                android:summaryOff="@string/pref_browser_mark_downloaded_off"
-                android:summaryOn="@string/pref_browser_mark_downloaded_on"
-                android:title="@string/pref_browser_mark_downloaded_title"
-                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_browser_visuals"
@@ -223,6 +216,13 @@
                 android:summaryOff="@string/pref_browser_augmented_off"
                 android:summaryOn="@string/pref_browser_augmented_on"
                 android:title="@string/pref_browser_augmented_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_mark_downloaded_default"
+                android:key="browser_mark_downloaded"
+                android:summaryOff="@string/pref_browser_mark_downloaded_off"
+                android:summaryOn="@string/pref_browser_mark_downloaded_on"
+                android:title="@string/pref_browser_mark_downloaded_title"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_override_overview_default"
