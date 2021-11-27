@@ -210,8 +210,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private List<String> blockedTags = Collections.emptyList();
     // Extra images found on the currently viewed Content
     private List<ImageFile> extraImages = Collections.emptyList();
-    // TODO doc
-    private final List<String> siteGalleries = new ArrayList<>();
+    // List of URLs of downloaded books for the current site
+    private final List<String> downloadedBooksUrls = new ArrayList<>();
 
     // === OTHER VARIABLES
     // Indicates which mode the download button is in
@@ -241,8 +241,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         objectBoxDAO = new ObjectBoxDAO(this);
         Preferences.registerPrefsChangedListener(listener);
 
-        // TODO condition
-        updateSiteGalleries();
+        if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
 
         setContentView(R.layout.activity_base_web);
 
@@ -361,7 +360,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onUpdateEvent(UpdateEvent event) {
+    @SuppressWarnings("unused")
+    private void onUpdateEvent(UpdateEvent event) {
         if (event.sourceAlerts.containsKey(getStartSite())) {
             alert = event.sourceAlerts.get(getStartSite());
             displayTopAlertBanner();
@@ -369,7 +369,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onDownloadPreparationEvent(DownloadPreparationEvent event) {
+    @SuppressWarnings("unused")
+    private void onDownloadPreparationEvent(DownloadPreparationEvent event) {
         // Show progress if it's about current content or its best duplicate
         if (
                 (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.getRelevantId() == currentContent.getId())
@@ -1184,10 +1185,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
     }
 
-    private void updateSiteGalleries() {
-        synchronized (siteGalleries) {
-            siteGalleries.clear();
-            siteGalleries.addAll(
+    private void updateDownloadedBooksUrls() {
+        synchronized (downloadedBooksUrls) {
+            downloadedBooksUrls.clear();
+            downloadedBooksUrls.addAll(
                     Stream.of(objectBoxDAO.selectAllSourceUrls(getStartSite()))
                             .map(s -> s.replaceAll("\\p{Punct}", "."))
                             .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
@@ -1205,8 +1206,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
         if (event.eventType == DownloadEvent.Type.EV_COMPLETE) {
-            //TODO condition
-            updateSiteGalleries();
+            if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
             if (event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
                 setActionMode(ActionMode.READ);
             }
@@ -1281,7 +1281,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     @Override
     public List<String> getAllSiteUrls() {
-        return new ArrayList<>(siteGalleries); // Work on a copy to avoid any thread-synch issue
+        return new ArrayList<>(downloadedBooksUrls); // Work on a copy to avoid any thread-synch issue
     }
 
     /**
@@ -1294,6 +1294,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (Preferences.Key.BROWSER_DL_ACTION.equals(key)) {
             downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
             setActionMode(actionButtonMode);
+        } else if (Preferences.Key.BROWSER_MARK_DOWNLOADED.equals(key)) {
+            if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
         }
     }
 
@@ -1323,6 +1325,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         @JavascriptInterface
+        @SuppressWarnings("unused")
         public void onFetchCall(String url, String body) {
             Timber.w("AJAX Begin %s : %s", url, body);
             handler.accept(url, body);

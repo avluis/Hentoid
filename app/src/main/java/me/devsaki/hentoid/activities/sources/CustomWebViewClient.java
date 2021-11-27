@@ -454,10 +454,10 @@ class CustomWebViewClient extends WebViewClient {
                 }
 
                 // Remove dirty elements from HTML resources
-//                if (dirtyElements != null) {
-                browserStream = removeCssElementsFromStream(browserStream, urlStr, dirtyElements);
-                if (null == browserStream) return null;
-//                }
+                if (dirtyElements != null || Preferences.isBrowserMarkDownloaded()) {
+                    browserStream = ProcessHtml(browserStream, urlStr, dirtyElements, activity.getAllSiteUrls());
+                    if (null == browserStream) return null;
+                }
 
                 // Convert OkHttp response to the expected format
                 result = HttpHelper.okHttpResponseToWebkitResponse(response, browserStream);
@@ -538,15 +538,22 @@ class CustomWebViewClient extends WebViewClient {
     }
 
     /**
-     * Remove nodes from the HTML document contained in the given stream, using a list of CSS selectors to identify them
+     * Process the given HTML document contained in the given stream :
+     * - If set, remove nodes using the given list of CSS selectors to identify them
+     * - If set, mark book covers or links matching the given list of Urls
      *
      * @param stream        Stream containing the HTML document to process
      * @param baseUri       Base URI if the document
      * @param dirtyElements CSS selectors of the nodes to remove
+     * @param siteUrls      Urls of the covers or links to mark
      * @return Stream containing the HTML document stripped from the elements to remove
      */
     @Nullable
-    private InputStream removeCssElementsFromStream(@NonNull InputStream stream, @NonNull String baseUri, List<String> dirtyElements) {
+    private InputStream ProcessHtml(
+            @NonNull InputStream stream,
+            @NonNull String baseUri,
+            @Nullable List<String> dirtyElements,
+            @Nullable List<String> siteUrls) {
         try {
             Document doc = Jsoup.parse(stream, null, baseUri);
 
@@ -557,20 +564,21 @@ class CustomWebViewClient extends WebViewClient {
                         e.remove();
                     }
 
-            Elements links = doc.select("a");
-            Set<String> found = new HashSet<>(); // We only process the first match - usually the cover
-            for (Element link : links) {
-                String aHref = link.attr("href").replaceAll("\\p{Punct}", ".");
-                if (aHref.length() < 2) continue;
-                if (aHref.endsWith(".")) aHref = aHref.substring(0, aHref.length() - 1);
-                List<String> siteUrls = activity.getAllSiteUrls();
-                for (String url : siteUrls) {
-                    if (aHref.endsWith(url) && !found.contains(url)) {
-                        Element img = link.select("img").first();
-                        if (img != null) img.attr("style", "filter: blur(10px);");
-                        else link.attr("style", "filter: blur(10px);");
-                        found.add(url);
-                        break;
+            if (siteUrls != null && !siteUrls.isEmpty()) {
+                Elements links = doc.select("a");
+                Set<String> found = new HashSet<>(); // We only process the first match - usually the cover
+                for (Element link : links) {
+                    String aHref = link.attr("href").replaceAll("\\p{Punct}", ".");
+                    if (aHref.length() < 2) continue;
+                    if (aHref.endsWith(".")) aHref = aHref.substring(0, aHref.length() - 1);
+                    for (String url : siteUrls) {
+                        if (aHref.endsWith(url) && !found.contains(url)) {
+                            Element img = link.select("img").first();
+                            if (img != null) img.attr("style", "filter: blur(10px);");
+                            else link.attr("style", "filter: blur(10px);");
+                            found.add(url);
+                            break;
+                        }
                     }
                 }
             }

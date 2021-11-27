@@ -108,8 +108,9 @@ public class ExHentaiActivity extends BaseWebActivity {
                     )
             );
 
-            //return null; TODO
-            return super.parseResponse(urlStr, requestHeaders, false, false); // Rewrite HTML
+            if (Preferences.isBrowserMarkDownloaded())
+                return super.parseResponse(urlStr, requestHeaders, false, false); // Rewrite HTML
+            else return null;
         }
     }
 }
