@@ -85,9 +85,9 @@ class CustomWebViewClient extends WebViewClient {
 
     // Pre-built object to represent an empty input stream
     // (will be used instead of the actual stream when the requested resource is blocked)
-    private final ByteArrayInputStream NOTHING = new ByteArrayInputStream("".getBytes());
+    private final byte[] NOTHING = "".getBytes();
     // TODO optimize
-    private final ByteArrayInputStream checkmark;
+    private final byte[] checkmark;
 
     // Site for the session
     protected final Site site;
@@ -133,13 +133,12 @@ class CustomWebViewClient extends WebViewClient {
 
         for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
 
-        checkmark = new ByteArrayInputStream(
-                ImageHelper.BitmapToWebp(
-                        ImageHelper.tintBitmap(
-                                ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_check),
-                                HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
-                        )
-                ));
+        checkmark = ImageHelper.BitmapToWebp(
+                ImageHelper.tintBitmap(
+                        ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_check),
+                        HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
+                )
+        );
     }
 
     void destroy() {
@@ -377,9 +376,9 @@ class CustomWebViewClient extends WebViewClient {
     private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                @Nullable final Map<String, String> headers) {
         if (adBlocker.isBlocked(url) || !url.startsWith("http")) {
-            return new WebResourceResponse("text/plain", "utf-8", NOTHING);
+            return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(NOTHING));
         } else if (url.contains("hentoid-checkmark")) {
-            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", checkmark);
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(checkmark));
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
             else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url);
