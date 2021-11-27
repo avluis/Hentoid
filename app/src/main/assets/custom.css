@@ -9,14 +9,14 @@
 .watermarked:after {
   content: "";
   display: block;
-  width: 75px;
-  height: 75px;
+  width: 100%;
+  height: 100%;
   position: absolute;
   top: 0px;
   left: 0px;
   background-image: url("https://bogus.com/hentoid-checkmark.webp");
   background-size: 75px 75px;
-  background-position: 0px 0px;
+  background-position: 50% 50%;
   background-repeat: no-repeat;
   z-index:11;
 }
