@@ -225,6 +225,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // Handler for fetch interceptor
     protected BiConsumer<String, String> fetchHandler = null;
     protected String jsInterceptorScript = null;
+    protected String customCss = null;
 
 
     protected abstract CustomWebViewClient getWebClient();
@@ -1311,6 +1312,22 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             Timber.e(e);
         }
         return sb.toString();
+    }
+
+    public String getCustomCss() {
+        if (null == customCss) {
+            StringBuilder sb = new StringBuilder();
+            try (InputStream is = getAssets().open("custom.css"); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+                String sCurrentLine;
+                while ((sCurrentLine = br.readLine()) != null) {
+                    sb.append(sCurrentLine);
+                }
+            } catch (Exception e) {
+                Timber.e(e);
+            }
+            customCss = sb.toString();
+        }
+        return customCss;
     }
 
     // References :

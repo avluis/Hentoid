@@ -739,23 +739,6 @@ public class FileHelper {
     }
 
     /**
-     * Copy all data from the given InputStream to the given OutputStream
-     *
-     * @param in  InputStream to read data from
-     * @param out OutputStream to write data to
-     * @throws IOException If something horrible happens during I/O
-     */
-    public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
-        // Transfer bytes from in to out
-        byte[] buf = new byte[FILE_IO_BUFFER_SIZE];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
-        out.flush();
-    }
-
-    /**
      * Copy the given file to the target location, giving the copy the given name
      *
      * @param context         Context to use
@@ -780,7 +763,7 @@ public class FileHelper {
         if (null == newFile || !newFile.exists()) return null;
         try (OutputStream newDownload = FileHelper.getOutputStream(context, newFile)) {
             try (InputStream input = FileHelper.getInputStream(context, sourceFileUri)) {
-                FileHelper.copy(input, newDownload);
+                Helper.copy(input, newDownload);
             }
         }
         return newFile.getUri();

@@ -38,6 +38,7 @@ import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -239,7 +240,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, image.getMimeType())) {
                 try (InputStream input = FileHelper.getInputStream(requireContext(), fileUri)) {
-                    FileHelper.copy(input, newDownload);
+                    Helper.copy(input, newDownload);
                 }
             }
 

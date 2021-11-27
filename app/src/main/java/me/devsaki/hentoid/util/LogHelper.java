@@ -252,7 +252,7 @@ public class LogHelper {
             } else { // If it fails, use device's "download" folder (panic mode)
                 try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(HentoidApp.getInstance(), logFileName, "text/plain");) {
                     try (InputStream input = new ByteArrayInputStream(log.getBytes())) {
-                        FileHelper.copy(input, newDownload);
+                        Helper.copy(input, newDownload);
                     }
                 }
             }

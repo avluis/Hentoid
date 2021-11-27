@@ -31,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -158,11 +159,7 @@ public final class Helper {
         List<InputStream> result = new ArrayList<>();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        byte[] buffer = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
-        int len;
-        while ((len = stream.read(buffer)) > -1) baos.write(buffer, 0, len);
-        baos.flush();
+        copy(stream, baos);
 
         for (int i = 0; i < numberDuplicates; i++)
             result.add(new ByteArrayInputStream(baos.toByteArray()));
@@ -301,6 +298,23 @@ public final class Helper {
             denominator += operand.second;
         }
         return (denominator > 0) ? numerator / denominator : 0;
+    }
+
+    /**
+     * Copy all data from the given InputStream to the given OutputStream
+     *
+     * @param in  InputStream to read data from
+     * @param out OutputStream to write data to
+     * @throws IOException If something horrible happens during I/O
+     */
+    public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
+        // Transfer bytes from in to out
+        byte[] buf = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        out.flush();
     }
 
     /**

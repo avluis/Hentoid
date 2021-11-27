@@ -53,6 +53,8 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -62,6 +64,7 @@ import me.devsaki.hentoid.util.AdBlocker;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
@@ -82,6 +85,8 @@ class CustomWebViewClient extends WebViewClient {
     // Pre-built object to represent an empty input stream
     // (will be used instead of the actual stream when the requested resource is blocked)
     private final ByteArrayInputStream NOTHING = new ByteArrayInputStream("".getBytes());
+    // TODO optimize
+    private final ByteArrayInputStream checkmark;
 
     // Site for the session
     protected final Site site;
@@ -126,6 +131,14 @@ class CustomWebViewClient extends WebViewClient {
         adBlocker = new AdBlocker(site);
 
         for (String s : galleryUrl) galleryUrlPattern.add(Pattern.compile(s));
+
+        checkmark = new ByteArrayInputStream(
+                ImageHelper.BitmapToWebp(
+                        ImageHelper.tintBitmap(
+                                ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_check),
+                                HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
+                        )
+                ));
     }
 
     void destroy() {
@@ -364,13 +377,16 @@ class CustomWebViewClient extends WebViewClient {
                                                                @Nullable final Map<String, String> headers) {
         if (adBlocker.isBlocked(url) || !url.startsWith("http")) {
             return new WebResourceResponse("text/plain", "utf-8", NOTHING);
+        } else if (url.contains("hentoid-checkmark")) {
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", checkmark);
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
             else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url);
 
-            // If we're here to remove "dirty elements", we only do it
+            // If we're here to remove "dirty elements" or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if (/*dirtyElements != null && */HttpHelper.getExtensionFromUri(url).isEmpty()) {
+            if ((dirtyElements != null || Preferences.isBrowserMarkDownloaded())
+                    && HttpHelper.getExtensionFromUri(url).isEmpty()) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
                     return parseResponse(url, headers, false, false);
@@ -565,6 +581,9 @@ class CustomWebViewClient extends WebViewClient {
                     }
 
             if (siteUrls != null && !siteUrls.isEmpty()) {
+                // Add custom inline CSS
+                doc.head().appendElement("style").attr("type", "text/css").appendText(activity.getCustomCss());
+                // Format elements
                 Elements links = doc.select("a");
                 Set<String> found = new HashSet<>(); // We only process the first match - usually the cover
                 for (Element link : links) {
@@ -573,9 +592,14 @@ class CustomWebViewClient extends WebViewClient {
                     if (aHref.endsWith(".")) aHref = aHref.substring(0, aHref.length() - 1);
                     for (String url : siteUrls) {
                         if (aHref.endsWith(url) && !found.contains(url)) {
+                            Element markedElement = link;
                             Element img = link.select("img").first();
-                            if (img != null) img.attr("style", "filter: blur(10px);");
-                            else link.attr("style", "filter: blur(10px);");
+                            if (img != null) {
+                                Element imgParent = img.parent();
+                                if (imgParent != null) imgParent = imgParent.parent();
+                                if (imgParent != null) markedElement = imgParent;
+                            }
+                            markedElement.addClass("watermarked");
                             found.add(url);
                             break;
                         }
@@ -611,5 +635,7 @@ class CustomWebViewClient extends WebViewClient {
         void onResultFailed();
 
         List<String> getAllSiteUrls();
+
+        String getCustomCss();
     }
 }
