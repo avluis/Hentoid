@@ -85,8 +85,9 @@ class CustomWebViewClient extends WebViewClient {
 
     // Pre-built object to represent an empty input stream
     // (will be used instead of the actual stream when the requested resource is blocked)
-    private final byte[] NOTHING = "".getBytes();
-    // TODO optimize
+    private final byte[] nothing = "".getBytes();
+    // Pre-built object to represent WEBP binary data for the checkmark icon used to mark downloaded boks
+    // (will be fed directly to the browser when the resourcei is requested)
     private final byte[] checkmark;
 
     // Site for the session
@@ -376,7 +377,7 @@ class CustomWebViewClient extends WebViewClient {
     private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                @Nullable final Map<String, String> headers) {
         if (adBlocker.isBlocked(url) || !url.startsWith("http")) {
-            return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(NOTHING));
+            return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(nothing));
         } else if (url.contains("hentoid-checkmark")) {
             return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(checkmark));
         } else {
