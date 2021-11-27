@@ -40,6 +40,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import timber.log.Timber;
@@ -196,7 +197,7 @@ public class MetaExportDialogFragment extends DialogFragment {
         try {
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, JsonHelper.JSON_MIME_TYPE)) {
                 try (InputStream input = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))) {
-                    FileHelper.copy(input, newDownload);
+                    Helper.copy(input, newDownload);
                 }
             }
 

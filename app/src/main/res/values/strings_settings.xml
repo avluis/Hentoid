@@ -74,17 +74,11 @@
     <!-- Browser -->
     <string name="pref_screen_browser">Browser</string>
 
+    <string name="pref_browser_behaviour">Behaviour</string>
     <string name="pref_browser_resume_last_title">Resume at last viewed page</string>
     <string name="pref_browser_resume_last_off">Any site always opens on its homepage</string>
     <string name="pref_browser_resume_last_on">Any site opens on its last viewed page</string>
     <string name="pref_browser_resume_last_default" translatable="false">false</string>
-    <string name="pref_browser_override_overview_title">Disable Page Overview</string>
-    <string name="pref_browser_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below.</string>
-    <string name="pref_browser_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi and e-hentai.</string>
-    <string name="pref_browser_override_overview_default" translatable="false">false</string>
-    <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
-    <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
-    <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
     <string name="pref_browser_dl_action_title">Download action</string>
     <string name="pref_browser_dl_action_default" translatable="false">0</string>
     <string name="pref_browser_quick_dl_title">Quick download</string>
@@ -93,9 +87,6 @@
     <string name="pref_browser_quick_dl_threshold_title">Quick download long press threshold</string>
     <string name="pref_browser_quick_dl_threshold_summary">Hold down for this duration to start quick downloading.\nCurrent: %s</string>
     <string name="pref_browser_quick_dl_threshold_default" translatable="false">500</string>
-    <string name="pref_browser_augmented_title">Augmented browser</string>
-    <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
-    <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
     <string name="pref_browser_augmented_default" translatable="false">true</string>
     <string name="pref_browser_duplicate_ask_title">Duplicates checking</string>
     <string name="pref_browser_duplicate_ask_off">No : always download</string>
@@ -105,6 +96,21 @@
     <string name="pref_browser_duplicate_try_pages_off">Only try finding extra pages on the original book</string>
     <string name="pref_browser_duplicate_try_pages_on">Try finding extra pages on potential duplicates</string>
     <string name="pref_browser_duplicate_try_pages_default" translatable="false">true</string>
+    <string name="pref_browser_mark_downloaded_title">Mark downloaded books</string>
+    <string name="pref_browser_mark_downloaded_off">Downloaded books have no special display</string>
+    <string name="pref_browser_mark_downloaded_on">Downloaded books are marked (NB : does not work on all sites)</string>
+    <string name="pref_browser_mark_downloaded_default" translatable="false">false</string>
+    <string name="pref_browser_visuals">Visuals</string>
+    <string name="pref_browser_augmented_title">Augmented browser</string>
+    <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
+    <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
+    <string name="pref_browser_override_overview_title">Disable Page Overview</string>
+    <string name="pref_browser_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below.</string>
+    <string name="pref_browser_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi and e-hentai.</string>
+    <string name="pref_browser_override_overview_default" translatable="false">false</string>
+    <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
+    <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
+    <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
 
 
     <!-- Downloader -->

@@ -1,12 +1,16 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.net.Uri;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
 import java.util.Map;
 
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
 /**
@@ -21,6 +25,7 @@ public class HitomiActivity extends BaseWebActivity {
     private static final String[] BLOCKED_CONTENT = {"hitomi-horizontal.js", "hitomi-vertical.js", "invoke.js", "ion.sound"};
     private static final String[] JS_WHITELIST = {"galleries/[\\w%\\-]+.js$", "jquery", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap"};
     private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder"};
+    private static final String[] DIRTY_ELEMENTS = {".top-content > div:not(.list-title)", ".content div[class^=hitomi-]"};
 
     Site getStartSite() {
         return Site.HITOMI;
@@ -28,8 +33,9 @@ public class HitomiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
+        HitomiWebClient client = new HitomiWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
+        client.addDirtyElements(DIRTY_ELEMENTS);
         client.setResultsUrlPatterns(RESULTS_FILTER);
         client.setResultUrlRewriter(this::rewriteResultsUrl);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
@@ -53,5 +59,22 @@ public class HitomiActivity extends BaseWebActivity {
         }
 
         return builder.toString();
+    }
+
+    private static class HitomiWebClient extends CustomWebViewClient {
+
+        HitomiWebClient(Site site, String[] filter, CustomWebActivity activity) {
+            super(site, filter, activity);
+        }
+
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
+            String url = request.getUrl().toString();
+
+            if (Preferences.isBrowserMarkDownloaded() && url.contains("galleryblock")) // Process book blocks to mark existing ones
+                return parseResponse(url, request.getRequestHeaders(), false, false);
+
+            return super.shouldInterceptRequest(view, request);
+        }
     }
 }

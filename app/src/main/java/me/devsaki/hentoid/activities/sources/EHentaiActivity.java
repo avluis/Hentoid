@@ -15,6 +15,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.EhentaiContent;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -61,7 +62,10 @@ public class EHentaiActivity extends BaseWebActivity {
                             Timber::w
                     )
             );
-            return null;
+
+            if (Preferences.isBrowserMarkDownloaded())
+                return super.parseResponse(urlStr, requestHeaders, false, false); // Rewrite HTML
+            else return null;
         }
     }
 }

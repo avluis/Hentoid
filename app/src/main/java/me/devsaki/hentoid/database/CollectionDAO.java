@@ -13,6 +13,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -51,6 +52,8 @@ public interface CollectionDAO {
 
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl);
+
+    Set<String> selectAllSourceUrls(@NonNull Site site);
 
     List<Content> searchTitlesWith(@NonNull final String word, int[] contentStatusCodes);
 

@@ -20,13 +20,16 @@ public class EhentaiContent extends BaseContentParser {
     @Nullable
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         String[] galleryUrlParts = url.split("/");
-        EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
+        if (galleryUrlParts.length > 5) {
+            EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
 
-        try {
-            EHentaiGalleriesMetadata metadata = EHentaiServer.EHENTAI_API.getGalleryMetadata(query, null).execute().body();
-            if (metadata != null) return metadata.update(content, url, Site.EHENTAI, updateImages);
-        } catch (IOException e) {
-            Timber.e(e, "Error parsing content.");
+            try {
+                EHentaiGalleriesMetadata metadata = EHentaiServer.EHENTAI_API.getGalleryMetadata(query, null).execute().body();
+                if (metadata != null)
+                    return metadata.update(content, url, Site.EHENTAI, updateImages);
+            } catch (IOException e) {
+                Timber.e(e, "Error parsing content.");
+            }
         }
         return new Content().setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED);
     }

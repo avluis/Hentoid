@@ -210,7 +210,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private List<String> blockedTags = Collections.emptyList();
     // Extra images found on the currently viewed Content
     private List<ImageFile> extraImages = Collections.emptyList();
-
+    // List of URLs of downloaded books for the current site
+    private final List<String> downloadedBooksUrls = new ArrayList<>();
 
     // === OTHER VARIABLES
     // Indicates which mode the download button is in
@@ -224,6 +225,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // Handler for fetch interceptor
     protected BiConsumer<String, String> fetchHandler = null;
     protected String jsInterceptorScript = null;
+    protected String customCss = null;
 
 
     protected abstract CustomWebViewClient getWebClient();
@@ -239,6 +241,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         objectBoxDAO = new ObjectBoxDAO(this);
         Preferences.registerPrefsChangedListener(listener);
+
+        if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
 
         setContentView(R.layout.activity_base_web);
 
@@ -257,7 +261,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
 
         bottomToolbar = findViewById(R.id.bottom_navigation);
-        bottomToolbar.setOnNavigationItemSelectedListener(this::onMenuItemSelected);
+        bottomToolbar.setOnItemSelectedListener(this::onMenuItemSelected);
         bottomToolbar.setItemIconTintList(null); // Hack to make selector resource work
         backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
         forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
@@ -357,7 +361,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onUpdateEvent(UpdateEvent event) {
+    @SuppressWarnings("unused")
+    private void onUpdateEvent(UpdateEvent event) {
         if (event.sourceAlerts.containsKey(getStartSite())) {
             alert = event.sourceAlerts.get(getStartSite());
             displayTopAlertBanner();
@@ -365,7 +370,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onDownloadPreparationEvent(DownloadPreparationEvent event) {
+    @SuppressWarnings("unused")
+    private void onDownloadPreparationEvent(DownloadPreparationEvent event) {
         // Show progress if it's about current content or its best duplicate
         if (
                 (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.getRelevantId() == currentContent.getId())
@@ -494,7 +500,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             webView.setInitialScale(webViewInitialZoom);
             Timber.d("WebView Initial Scale: %s%%", webViewInitialZoom);
         } else {
-            webView.setInitialScale(Preferences.Default.WEBVIEW_INITIAL_ZOOM_DEFAULT);
+            webView.setInitialScale(Preferences.Default.WEBVIEW_INITIAL_ZOOM);
             webView.getSettings().setLoadWithOverviewMode(true);
         }
 
@@ -1180,6 +1186,18 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
     }
 
+    private void updateDownloadedBooksUrls() {
+        synchronized (downloadedBooksUrls) {
+            downloadedBooksUrls.clear();
+            downloadedBooksUrls.addAll(
+                    Stream.of(objectBoxDAO.selectAllSourceUrls(getStartSite()))
+                            .map(s -> s.replaceAll("\\p{Punct}", "."))
+                            .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
+                            .toList()
+            );
+        }
+    }
+
     /**
      * Listener for the events of the download engine
      * Used to switch the action button to Read when the download of the currently viewed is completed
@@ -1188,8 +1206,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.Type.EV_COMPLETE && event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
-            setActionMode(ActionMode.READ);
+        if (event.eventType == DownloadEvent.Type.EV_COMPLETE) {
+            if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
+            if (event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
+                setActionMode(ActionMode.READ);
+            }
         }
     }
 
@@ -1259,6 +1280,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         startActivity(intent);
     }
 
+    @Override
+    public List<String> getAllSiteUrls() {
+        return new ArrayList<>(downloadedBooksUrls); // Work on a copy to avoid any thread-synch issue
+    }
+
     /**
      * Listener for preference changes (from the settings dialog)
      *
@@ -1269,6 +1295,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (Preferences.Key.BROWSER_DL_ACTION.equals(key)) {
             downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
             setActionMode(actionButtonMode);
+        } else if (Preferences.Key.BROWSER_MARK_DOWNLOADED.equals(key)) {
+            if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
         }
     }
 
@@ -1286,6 +1314,22 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         return sb.toString();
     }
 
+    public String getCustomCss() {
+        if (null == customCss) {
+            StringBuilder sb = new StringBuilder();
+            try (InputStream is = getAssets().open("custom.css"); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+                String sCurrentLine;
+                while ((sCurrentLine = br.readLine()) != null) {
+                    sb.append(sCurrentLine);
+                }
+            } catch (Exception e) {
+                Timber.e(e);
+            }
+            customCss = sb.toString();
+        }
+        return customCss;
+    }
+
     // References :
     // https://stackoverflow.com/a/64961272/8374722
     // https://stackoverflow.com/questions/3941969/android-intercept-ajax-call-from-webview/5742194
@@ -1298,6 +1342,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         @JavascriptInterface
+        @SuppressWarnings("unused")
         public void onFetchCall(String url, String body) {
             Timber.w("AJAX Begin %s : %s", url, body);
             handler.accept(url, body);

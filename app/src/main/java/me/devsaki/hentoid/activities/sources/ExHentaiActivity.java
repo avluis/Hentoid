@@ -107,7 +107,10 @@ public class ExHentaiActivity extends BaseWebActivity {
                             Timber::w
                     )
             );
-            return null;
+
+            if (Preferences.isBrowserMarkDownloaded())
+                return super.parseResponse(urlStr, requestHeaders, false, false); // Rewrite HTML
+            else return null;
         }
     }
 }
