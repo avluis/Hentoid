@@ -205,7 +205,7 @@ public final class Preferences {
     }
 
     public static boolean isFirstRun() {
-        return sharedPreferences.getBoolean(Key.FIRST_RUN, Default.FIRST_RUN_DEFAULT);
+        return sharedPreferences.getBoolean(Key.FIRST_RUN, Default.FIRST_RUN);
     }
 
     public static void setIsFirstRun(boolean isFirstRun) {
@@ -274,12 +274,12 @@ public final class Preferences {
     }
 
     public static int getAttributesSortOrder() {
-        return Integer.parseInt(sharedPreferences.getString(Key.ORDER_ATTRIBUTE_LISTS, Default.ORDER_ATTRIBUTES_DEFAULT + "") + "");
+        return Integer.parseInt(sharedPreferences.getString(Key.ORDER_ATTRIBUTE_LISTS, Default.ORDER_ATTRIBUTES + "") + "");
     }
 
     public static int getContentPageQuantity() {
         return Integer.parseInt(sharedPreferences.getString(Key.QUANTITY_PER_PAGE_LISTS,
-                Default.QUANTITY_PER_PAGE_DEFAULT + "") + "");
+                Default.QUANTITY_PER_PAGE + "") + "");
     }
 
     public static String getAppLockPin() {
@@ -293,7 +293,7 @@ public final class Preferences {
     }
 
     public static boolean getEndlessScroll() {
-        return sharedPreferences.getBoolean(Key.ENDLESS_SCROLL, Default.ENDLESS_SCROLL_DEFAULT);
+        return sharedPreferences.getBoolean(Key.ENDLESS_SCROLL, Default.ENDLESS_SCROLL);
     }
 
     public static boolean getRecentVisibility() {
@@ -311,7 +311,7 @@ public final class Preferences {
     }
 
     public static int getMemoryAlertThreshold() {
-        return Integer.parseInt(sharedPreferences.getString(Key.MEMORY_ALERT, Integer.toString(Default.MEMORY_ALERT_DEFAULT)) + "");
+        return Integer.parseInt(sharedPreferences.getString(Key.MEMORY_ALERT, Integer.toString(Default.MEMORY_ALERT)) + "");
     }
 
     public static String getExternalLibraryUri() {
@@ -331,28 +331,28 @@ public final class Preferences {
     static int getFolderNameFormat() {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.FOLDER_NAMING_CONTENT_LISTS,
-                        Default.FOLDER_NAMING_CONTENT_DEFAULT + "") + "");
+                        Default.FOLDER_NAMING_CONTENT + "") + "");
     }
 
     public static int getWebViewInitialZoom() {
         return Integer.parseInt(
                 sharedPreferences.getString(
                         Key.WEBVIEW_INITIAL_ZOOM_LISTS,
-                        Default.WEBVIEW_INITIAL_ZOOM_DEFAULT + "") + "");
+                        Default.WEBVIEW_INITIAL_ZOOM + "") + "");
     }
 
     public static boolean getWebViewOverview() {
         return sharedPreferences.getBoolean(
                 Key.WEBVIEW_OVERRIDE_OVERVIEW_LISTS,
-                Default.WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT);
+                Default.WEBVIEW_OVERRIDE_OVERVIEW);
     }
 
     public static boolean isBrowserResumeLast() {
-        return sharedPreferences.getBoolean(Key.BROWSER_RESUME_LAST, Default.BROWSER_RESUME_LAST_DEFAULT);
+        return sharedPreferences.getBoolean(Key.BROWSER_RESUME_LAST, Default.BROWSER_RESUME_LAST);
     }
 
     public static boolean isBrowserAugmented() {
-        return sharedPreferences.getBoolean(Key.BROWSER_AUGMENTED, Default.BROWSER_AUGMENTED_DEFAULT);
+        return sharedPreferences.getBoolean(Key.BROWSER_AUGMENTED, Default.BROWSER_AUGMENTED);
     }
 
     public static int getBrowserDlAction() {
@@ -379,12 +379,12 @@ public final class Preferences {
 
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.DL_THREADS_QUANTITY_LISTS,
-                Default.DL_THREADS_QUANTITY_DEFAULT + "") + "");
+                Default.DL_THREADS_QUANTITY + "") + "");
     }
 
     static int getFolderTruncationNbChars() {
         return Integer.parseInt(sharedPreferences.getString(Key.FOLDER_TRUNCATION_LISTS,
-                Default.FOLDER_TRUNCATION_DEFAULT + "") + "");
+                Default.FOLDER_TRUNCATION + "") + "");
     }
 
     public static boolean isViewerResumeLastLeft() {
@@ -908,27 +908,28 @@ public final class Preferences {
         }
 
         public static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
-        static final int QUANTITY_PER_PAGE_DEFAULT = 20;
+        static final int QUANTITY_PER_PAGE = 20;
         public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
         public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
         static final boolean ORDER_CONTENT_DESC = false;
         static final boolean ORDER_GROUP_DESC = false;
-        static final int ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
-        static final boolean FIRST_RUN_DEFAULT = true;
-        static final boolean ENDLESS_SCROLL_DEFAULT = true;
-        static final int MEMORY_ALERT_DEFAULT = 110;
+        static final int ORDER_ATTRIBUTES = Constant.ORDER_ATTRIBUTES_COUNT;
+        static final boolean FIRST_RUN = true;
+        static final boolean ENDLESS_SCROLL = true;
+        static final int MEMORY_ALERT = 110;
         static final boolean IMPORT_QUEUE_EMPTY = false;
         static final boolean EXTERNAL_LIBRARY_DELETE = false;
-        static final int FOLDER_NAMING_CONTENT_DEFAULT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
-        static final boolean WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
-        public static final int WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
-        static final boolean BROWSER_RESUME_LAST_DEFAULT = false;
-        static final boolean BROWSER_AUGMENTED_DEFAULT = true;
+        static final int FOLDER_NAMING_CONTENT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
+        static final boolean WEBVIEW_OVERRIDE_OVERVIEW = false;
+        public static final int WEBVIEW_INITIAL_ZOOM = 20;
+        static final boolean BROWSER_RESUME_LAST = false;
+        static final boolean BROWSER_AUGMENTED = true;
+        static final boolean BROWSER_MARK_DOWNLOADED = false;
         static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
         static final boolean BROWSER_QUICK_DL = true;
         static final int BROWSER_QUICK_DL_THRESHOLD = 500; // 500ms
-        static final int DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
-        static final int FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_100;
+        static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
+        static final int FOLDER_TRUNCATION = Constant.TRUNCATE_FOLDER_100;
         static final boolean VIEWER_RESUME_LAST_LEFT = true;
         static final boolean VIEWER_KEEP_SCREEN_ON = true;
         static final int VIEWER_IMAGE_DISPLAY = Constant.VIEWER_DISPLAY_FIT;

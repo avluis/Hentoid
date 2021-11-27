@@ -498,7 +498,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             webView.setInitialScale(webViewInitialZoom);
             Timber.d("WebView Initial Scale: %s%%", webViewInitialZoom);
         } else {
-            webView.setInitialScale(Preferences.Default.WEBVIEW_INITIAL_ZOOM_DEFAULT);
+            webView.setInitialScale(Preferences.Default.WEBVIEW_INITIAL_ZOOM);
             webView.getSettings().setLoadWithOverviewMode(true);
         }
 
