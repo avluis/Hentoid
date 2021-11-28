@@ -23,6 +23,10 @@
     <string name="pref_attributes_list_order_title">Sort order of displayed metadata</string>
     <string name="pref_attributes_list_order_default" translatable="false">1</string>
     <string name="pref_attributes_list_order_summary">%s</string>
+    <string name="pref_attributes_list_count_title">Count available books</string>
+    <string name="pref_attributes_list_count_on">The number of available books is displayed next to every attribute</string>
+    <string name="pref_attributes_list_count_off">The number of available books is not displayed</string>
+    <string name="pref_attributes_list_count_default" translatable="false">true</string>
 
     <string name="pref_cat_theme">App theme</string>
     <string name="pref_color_theme_title">Color theme</string>
