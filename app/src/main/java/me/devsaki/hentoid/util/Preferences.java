@@ -908,6 +908,7 @@ public final class Preferences {
         static final boolean FIRST_RUN = true;
         static final boolean ENDLESS_SCROLL = true;
         static final int MEMORY_ALERT = 110;
+        static final boolean IMPORT_QUEUE_EMPTY = false;
         static final boolean EXTERNAL_LIBRARY_DELETE = false;
         static final int FOLDER_NAMING_CONTENT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean WEBVIEW_OVERRIDE_OVERVIEW = false;
