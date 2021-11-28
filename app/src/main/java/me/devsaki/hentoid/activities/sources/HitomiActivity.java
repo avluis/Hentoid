@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import java.util.Map;
 
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
 /**
@@ -71,8 +70,11 @@ public class HitomiActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
 
-            if (Preferences.isBrowserMarkDownloaded() && url.contains("galleryblock")) // Process book blocks to mark existing ones
-                return parseResponse(url, request.getRequestHeaders(), false, false);
+            if (isMarkDownloaded() && url.contains("galleryblock")) { // Process book blocks to mark existing ones
+                WebResourceResponse result = parseResponse(url, request.getRequestHeaders(), false, false);
+                if (result != null) return result;
+                else return sendRequest(request);
+            }
 
             return super.shouldInterceptRequest(view, request);
         }

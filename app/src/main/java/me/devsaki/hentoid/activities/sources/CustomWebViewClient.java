@@ -113,6 +113,7 @@ class CustomWebViewClient extends WebViewClient {
     private final AtomicBoolean isHtmlLoaded = new AtomicBoolean(false);
 
     protected final AdBlocker adBlocker;
+    private final AtomicBoolean markDownloaded = new AtomicBoolean(Preferences.isBrowserMarkDownloaded());
 
     // Disposable to be used for punctual search
     private Disposable disposable;
@@ -357,12 +358,12 @@ class CustomWebViewClient extends WebViewClient {
         // Data fetched with POST is out of scope of analysis and adblock
         if (!request.getMethod().equalsIgnoreCase("get")) {
             Timber.v("[%s] ignored by interceptor; method = %s", url, request.getMethod());
-            return super.shouldInterceptRequest(view, request);
+            return sendRequest(request);
         }
 
         WebResourceResponse result = shouldInterceptRequestInternal(url, request.getRequestHeaders());
         if (result != null) return result;
-        else return super.shouldInterceptRequest(view, request);
+        else return sendRequest(request);
     }
 
     /**
@@ -378,7 +379,7 @@ class CustomWebViewClient extends WebViewClient {
                                                                @Nullable final Map<String, String> headers) {
         if (adBlocker.isBlocked(url) || !url.startsWith("http")) {
             return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(nothing));
-        } else if (url.contains("hentoid-checkmark")) {
+        } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {
             return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(checkmark));
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
@@ -386,7 +387,7 @@ class CustomWebViewClient extends WebViewClient {
 
             // If we're here to remove "dirty elements" or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((dirtyElements != null || Preferences.isBrowserMarkDownloaded())
+            if ((dirtyElements != null || isMarkDownloaded())
                     && HttpHelper.getExtensionFromUri(url).isEmpty()) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
@@ -395,6 +396,23 @@ class CustomWebViewClient extends WebViewClient {
 
             return null;
         }
+    }
+
+    WebResourceResponse sendRequest(@NonNull WebResourceRequest request) {
+        if (true) { // TODO make dynamic
+            // Query resource using OkHttp
+            String urlStr = request.getUrl().toString();
+            List<Pair<String, String>> requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), urlStr);
+            try {
+                Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+                ResponseBody body = response.body();
+                if (null == body) throw new IOException("Empty body");
+                return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream());
+            } catch (IOException e) {
+                Timber.i(e);
+            }
+        }
+        return null;
     }
 
     /**
@@ -471,7 +489,7 @@ class CustomWebViewClient extends WebViewClient {
                 }
 
                 // Remove dirty elements from HTML resources
-                if (dirtyElements != null || Preferences.isBrowserMarkDownloaded()) {
+                if (dirtyElements != null || isMarkDownloaded()) {
                     browserStream = ProcessHtml(browserStream, urlStr, dirtyElements, activity.getAllSiteUrls());
                     if (null == browserStream) return null;
                 }
@@ -555,6 +573,14 @@ class CustomWebViewClient extends WebViewClient {
      */
     boolean isLoading() {
         return isPageLoading.get();
+    }
+
+    boolean isMarkDownloaded() {
+        return markDownloaded.get();
+    }
+
+    void setMarkDownloaded(boolean value) {
+        markDownloaded.set(value);
     }
 
     /**

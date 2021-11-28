@@ -7,9 +7,11 @@ import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.core.HentoidApp;
 import okhttp3.Cache;
+import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.dnsoverhttps.DnsOverHttps;
 
 /**
  * Manages a single instance of OkHttpClient per timeout delay
@@ -33,18 +35,7 @@ public class OkHttpClientSingleton {
         if (null == OkHttpClientSingleton.instance.get(key)) {
             synchronized (OkHttpClientSingleton.class) {
                 if (null == OkHttpClientSingleton.instance.get(key)) {
-
-                    int CACHE_SIZE = 2 * 1024 * 1024; // 2 MB
-
-                    OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
-                            .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
-                            .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-                            .readTimeout(ioTimeout, TimeUnit.MILLISECONDS)
-                            .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS)
-                            .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE));
-
-
-                    OkHttpClientSingleton.instance.put(key, clientBuilder.build());
+                    OkHttpClientSingleton.instance.put(key, buildClient(connectTimeout, ioTimeout));
                 }
             }
         }
@@ -55,21 +46,32 @@ public class OkHttpClientSingleton {
         if (null == OkHttpClientSingleton.instance.get(timeoutMs)) {
             synchronized (OkHttpClientSingleton.class) {
                 if (null == OkHttpClientSingleton.instance.get(timeoutMs)) {
-
-                    int CACHE_SIZE = 2 * 1024 * 1024; // 2 MB
-
-                    OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
-                            .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
-                            .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                            .writeTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                            .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE));
-
-
-                    OkHttpClientSingleton.instance.put(timeoutMs, clientBuilder.build());
+                    OkHttpClientSingleton.instance.put(timeoutMs, buildClient(timeoutMs, timeoutMs));
                 }
             }
         }
         return OkHttpClientSingleton.instance.get(timeoutMs);
+    }
+
+    private static OkHttpClient buildClient(int connectTimeout, int ioTimeout) {
+        long CACHE_SIZE = 5L * 1024 * 1024; // 5 MB
+
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
+                .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
+                .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+                .readTimeout(ioTimeout, TimeUnit.MILLISECONDS)
+                .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS)
+                .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE));
+
+        OkHttpClient bootstrapClient = clientBuilder.build();
+
+        DnsOverHttps dns = new DnsOverHttps.Builder() // TODO make dynamic
+                .client(bootstrapClient)
+                .url(HttpUrl.get("https://cloudflare-dns.com/dns-query")) // TODO make dynamic
+                .bootstrapDnsHosts(DnsOverHttpsProviders.getCloudflareHosts()) // TODO make dynamic
+                .build();
+
+        return bootstrapClient.newBuilder().dns(dns).build();
     }
 
     private static okhttp3.Response rewriteUserAgentInterceptor(Interceptor.Chain chain) throws IOException {

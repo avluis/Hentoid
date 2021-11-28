@@ -1207,7 +1207,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
         if (event.eventType == DownloadEvent.Type.EV_COMPLETE) {
-            if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
+            if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls();
             if (event.content != null && event.content.equals(currentContent) && event.content.getStatus().equals(StatusContent.DOWNLOADED)) {
                 setActionMode(ActionMode.READ);
             }
@@ -1296,7 +1296,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
             setActionMode(actionButtonMode);
         } else if (Preferences.Key.BROWSER_MARK_DOWNLOADED.equals(key)) {
-            if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
+            webClient.setMarkDownloaded(Preferences.isBrowserMarkDownloaded());
+            if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls();
         }
     }
 

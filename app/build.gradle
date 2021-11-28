@@ -198,7 +198,9 @@ dependencies {
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
 
     // HTTP & HTTP/2 client: github.com/square/okhttp
-    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    def okhttpVersion = "4.9.1"
+    implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
+    implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:$okhttpVersion"
 
     // For downloading images : github.com/google/volley
     implementation 'com.android.volley:volley:1.2.1'

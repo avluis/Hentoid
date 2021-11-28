@@ -63,7 +63,7 @@ public class EHentaiActivity extends BaseWebActivity {
                     )
             );
 
-            if (Preferences.isBrowserMarkDownloaded())
+            if (isMarkDownloaded())
                 return super.parseResponse(urlStr, requestHeaders, false, false); // Rewrite HTML
             else return null;
         }
