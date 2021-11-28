@@ -15,6 +15,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
+import me.devsaki.hentoid.util.StringHelper;
 import timber.log.Timber;
 
 /**
@@ -128,7 +129,7 @@ public class ImageFile {
     }
 
     public String getUrl() {
-        return url;
+        return StringHelper.protect(url);
     }
 
     public ImageFile setUrl(String url) {
