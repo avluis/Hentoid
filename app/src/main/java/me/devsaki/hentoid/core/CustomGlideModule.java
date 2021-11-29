@@ -16,6 +16,9 @@ import java.io.InputStream;
 import me.devsaki.hentoid.util.network.OkHttpClientSingleton;
 import okhttp3.OkHttpClient;
 
+/**
+ * Startup class to enable Glide over OkHttp
+ */
 @GlideModule
 public final class CustomGlideModule extends AppGlideModule {
 
