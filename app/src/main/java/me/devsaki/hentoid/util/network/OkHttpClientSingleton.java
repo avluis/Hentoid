@@ -12,6 +12,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.dnsoverhttps.DnsOverHttps;
+import timber.log.Timber;
 
 /**
  * Manages a single instance of OkHttpClient per timeout delay
@@ -27,51 +28,67 @@ public class OkHttpClientSingleton {
     }
 
     public static OkHttpClient getInstance() {
-        return getInstance(HttpHelper.DEFAULT_REQUEST_TIMEOUT);
+        return getInstance(HttpHelper.DEFAULT_REQUEST_TIMEOUT, HttpHelper.DEFAULT_REQUEST_TIMEOUT);
     }
 
     public static OkHttpClient getInstance(int connectTimeout, int ioTimeout) {
         int key = (connectTimeout * 100) + ioTimeout;
-        if (null == OkHttpClientSingleton.instance.get(key)) {
+        if (null == instance.get(key)) {
             synchronized (OkHttpClientSingleton.class) {
-                if (null == OkHttpClientSingleton.instance.get(key)) {
-                    OkHttpClientSingleton.instance.put(key, buildClient(connectTimeout, ioTimeout));
+                if (null == instance.get(key)) {
+                    instance.put(key, buildClient(connectTimeout, ioTimeout));
                 }
             }
         }
         return OkHttpClientSingleton.instance.get(key);
     }
 
-    public static OkHttpClient getInstance(int timeoutMs) {
-        if (null == OkHttpClientSingleton.instance.get(timeoutMs)) {
-            synchronized (OkHttpClientSingleton.class) {
-                if (null == OkHttpClientSingleton.instance.get(timeoutMs)) {
-                    OkHttpClientSingleton.instance.put(timeoutMs, buildClient(timeoutMs, timeoutMs));
-                }
+    public static void reset() {
+        int size = instance.size();
+        for (int i = 0; i < size; i++) {
+            instance.valueAt(i).dispatcher().executorService().shutdown();
+            instance.valueAt(i).connectionPool().evictAll();
+            try {
+                Cache cache = instance.valueAt(i).cache();
+                if (cache != null) cache.close();
+            } catch (IOException e) {
+                Timber.i(e);
             }
         }
-        return OkHttpClientSingleton.instance.get(timeoutMs);
+        instance.clear();
+    }
+
+    private static OkHttpClient buildBootstrapClient() {
+        long CACHE_SIZE = 5L * 1024 * 1024; // 5 MB
+
+        return new OkHttpClient.Builder()
+                .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
+                .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE))
+                .build();
     }
 
     private static OkHttpClient buildClient(int connectTimeout, int ioTimeout) {
-        long CACHE_SIZE = 5L * 1024 * 1024; // 5 MB
-
-        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
-                .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
-                .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-                .readTimeout(ioTimeout, TimeUnit.MILLISECONDS)
-                .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS)
-                .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE));
-
-        OkHttpClient bootstrapClient = clientBuilder.build();
+        if (null == instance.get(0)) {
+            synchronized (OkHttpClientSingleton.class) {
+                if (null == instance.get(0)) {
+                    instance.put(0, buildBootstrapClient());
+                }
+            }
+        }
+        OkHttpClient primaryClient = instance.get(0);
 
         DnsOverHttps dns = new DnsOverHttps.Builder() // TODO make dynamic
-                .client(bootstrapClient)
+                .client(primaryClient)
                 .url(HttpUrl.get("https://cloudflare-dns.com/dns-query")) // TODO make dynamic
                 .bootstrapDnsHosts(DnsOverHttpsProviders.getCloudflareHosts()) // TODO make dynamic
                 .build();
 
-        return bootstrapClient.newBuilder().dns(dns).build();
+        return primaryClient.newBuilder()
+                .dns(dns)
+                .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+                .readTimeout(ioTimeout, TimeUnit.MILLISECONDS)
+                .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS)
+                .build();
     }
 
     private static okhttp3.Response rewriteUserAgentInterceptor(Interceptor.Chain chain) throws IOException {
