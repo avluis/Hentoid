@@ -249,6 +249,18 @@
                 android:title="@string/pref_browser_initial_zoom_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_browser_dns"
+            app:iconSpaceReserved="false">
+            <ListPreference
+                android:defaultValue="@string/pref_browser_dns_default"
+                android:entries="@array/pref_browser_dns_entries"
+                android:entryValues="@array/pref_browser_dns_values"
+                android:key="pref_browser_dns_over_https"
+                android:summary="@string/pref_generic_summary"
+                android:title="@string/pref_browser_dns_title"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
     </PreferenceScreen>
 
     <PreferenceScreen

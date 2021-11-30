@@ -6,8 +6,9 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.core.HentoidApp;
+import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import okhttp3.Cache;
-import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -44,18 +45,21 @@ public class OkHttpClientSingleton {
     }
 
     public static void reset() {
-        int size = instance.size();
-        for (int i = 0; i < size; i++) {
-            instance.valueAt(i).dispatcher().executorService().shutdown();
-            instance.valueAt(i).connectionPool().evictAll();
-            try {
-                Cache cache = instance.valueAt(i).cache();
-                if (cache != null) cache.close();
-            } catch (IOException e) {
-                Timber.i(e);
+        Helper.assertNonUiThread(); // Closing network operations shouldn't happen on the UI thread either
+        synchronized (OkHttpClientSingleton.class) {
+            int size = instance.size();
+            for (int i = 0; i < size; i++) {
+                instance.valueAt(i).dispatcher().executorService().shutdown();
+                instance.valueAt(i).connectionPool().evictAll();
+                try {
+                    Cache cache = instance.valueAt(i).cache();
+                    if (cache != null) cache.close();
+                } catch (IOException e) {
+                    Timber.i(e);
+                }
             }
+            instance.clear();
         }
-        instance.clear();
     }
 
     private static OkHttpClient buildBootstrapClient() {
@@ -77,18 +81,24 @@ public class OkHttpClientSingleton {
         }
         OkHttpClient primaryClient = instance.get(0);
 
-        DnsOverHttps dns = new DnsOverHttps.Builder() // TODO make dynamic
-                .client(primaryClient)
-                .url(HttpUrl.get("https://cloudflare-dns.com/dns-query")) // TODO make dynamic
-                .bootstrapDnsHosts(DnsOverHttpsProviders.getCloudflareHosts()) // TODO make dynamic
-                .build();
-
-        return primaryClient.newBuilder()
-                .dns(dns)
+        // Set custom delays
+        OkHttpClient.Builder result = primaryClient.newBuilder()
                 .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
                 .readTimeout(ioTimeout, TimeUnit.MILLISECONDS)
-                .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS)
-                .build();
+                .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS);
+
+        // Add DNS over HTTPS if needed
+        @DnsOverHttpsProviders.Source int doHSource = Preferences.getDnsOverHttps();
+        if (doHSource != DnsOverHttpsProviders.Source.NONE) {
+            DnsOverHttps dns = new DnsOverHttps.Builder()
+                    .client(primaryClient)
+                    .url(DnsOverHttpsProviders.getPrimaryUrl(doHSource))
+                    .bootstrapDnsHosts(DnsOverHttpsProviders.getHosts(doHSource))
+                    .build();
+            result.dns(dns);
+        }
+
+        return result.build();
     }
 
     private static okhttp3.Response rewriteUserAgentInterceptor(Interceptor.Chain chain) throws IOException {

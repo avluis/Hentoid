@@ -17,6 +17,9 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposables
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
@@ -29,6 +32,7 @@ import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.network.OkHttpClientSingleton
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ExternalImportWorker
@@ -103,6 +107,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.SETTINGS_FOLDER,
             Preferences.Key.SD_STORAGE_URI -> onHentoidFolderChanged()
             Preferences.Key.EXTERNAL_LIBRARY_URI -> onExternalFolderChanged()
+            Preferences.Key.BROWSER_DNS_OVER_HTTPS -> onDoHChanged()
         }
     }
 
@@ -229,6 +234,14 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     private fun onPrefColorThemeChanged() {
         ThemeHelper.applyTheme(requireActivity() as AppCompatActivity)
+    }
+
+    private fun onDoHChanged() {
+        runBlocking {
+            launch(Dispatchers.Default) {
+                OkHttpClientSingleton.reset()
+            }
+        }
     }
 
     private fun populateMemoryUsage() {

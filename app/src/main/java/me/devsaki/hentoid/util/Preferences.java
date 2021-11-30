@@ -378,6 +378,10 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.BROWSER_QUICK_DL_THRESHOLD, Integer.toString(Default.BROWSER_QUICK_DL_THRESHOLD)) + "");
     }
 
+    public static int getDnsOverHttps() {
+        return Integer.parseInt(sharedPreferences.getString(Key.BROWSER_DNS_OVER_HTTPS, Integer.toString(Default.BROWSER_DNS_OVER_HTTPS)) + "");
+    }
+
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.DL_THREADS_QUANTITY_LISTS,
                 Default.DL_THREADS_QUANTITY + "") + "");
@@ -823,6 +827,7 @@ public final class Preferences {
         public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
         static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
         static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";
+        public static final String BROWSER_DNS_OVER_HTTPS = "pref_browser_dns_over_https";
         static final String FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
         public static final String VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
@@ -919,6 +924,7 @@ public final class Preferences {
         static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
         static final boolean BROWSER_QUICK_DL = true;
         static final int BROWSER_QUICK_DL_THRESHOLD = 500; // 500ms
+        static final int BROWSER_DNS_OVER_HTTPS = -1; // No DNS
         static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int FOLDER_TRUNCATION = Constant.TRUNCATE_FOLDER_100;
         static final boolean VIEWER_RESUME_LAST_LEFT = true;
