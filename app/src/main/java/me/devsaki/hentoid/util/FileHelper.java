@@ -1235,7 +1235,7 @@ public class FileHelper {
         try (InputStream is = mgr.open(assetName); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
             String sCurrentLine;
             while ((sCurrentLine = br.readLine()) != null) {
-                sb.append(sCurrentLine);
+                sb.append(sCurrentLine).append(System.lineSeparator());
             }
         } catch (Exception e) {
             Timber.e(e);
