@@ -54,10 +54,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.threeten.bp.Instant;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -104,6 +102,7 @@ import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -570,9 +569,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         swipeLayout = findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(() -> {
-            if (!swipeLayout.isRefreshing() || !webClient.isLoading()) {
-                webView.reload();
-            }
+            if (!swipeLayout.isRefreshing() || !webClient.isLoading()) webView.reload();
         });
         swipeLayout.setColorSchemeResources(
                 android.R.color.holo_blue_bright,
@@ -1292,40 +1289,38 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * @param key   Key that has been changed
      */
     private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        boolean reload = false;
         if (Preferences.Key.BROWSER_DL_ACTION.equals(key)) {
             downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
             setActionMode(actionButtonMode);
         } else if (Preferences.Key.BROWSER_MARK_DOWNLOADED.equals(key)) {
+            customCss = null;
             webClient.setMarkDownloaded(Preferences.isBrowserMarkDownloaded());
             if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls();
+            reload = true;
+        } else if (Preferences.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST.equals(key)) {
+            customCss = null;
+            reload = true;
         }
+        if (reload && !webClient.isLoading()) webView.reload();
     }
 
     private String getJsInterceptorScript() {
         StringBuilder sb = new StringBuilder();
         sb.append("javascript:");
-        try (InputStream is = getAssets().open("fetch_override.js"); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-            String sCurrentLine;
-            while ((sCurrentLine = br.readLine()) != null) {
-                sb.append(sCurrentLine);
-            }
-        } catch (Exception e) {
-            Timber.e(e);
-        }
+        FileHelper.getAssetAsString(getAssets(), "fetch_override.js", sb);
         return sb.toString();
     }
 
     public String getCustomCss() {
         if (null == customCss) {
             StringBuilder sb = new StringBuilder();
-            try (InputStream is = getAssets().open("custom.css"); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-                String sCurrentLine;
-                while ((sCurrentLine = br.readLine()) != null) {
-                    sb.append(sCurrentLine);
-                }
-            } catch (Exception e) {
-                Timber.e(e);
-            }
+            if (Preferences.isBrowserMarkDownloaded())
+                FileHelper.getAssetAsString(getAssets(), "downloaded.css", sb);
+            if (getStartSite().equals(Site.NHENTAI) && Preferences.isBrowserNhentaiInvisibleBlacklist())
+                FileHelper.getAssetAsString(getAssets(), "nhentai_invisible_blacklist.css", sb);
+            if (getStartSite().equals(Site.IMHENTAI))
+                FileHelper.getAssetAsString(getAssets(), "imhentai.css", sb);
             customCss = sb.toString();
         }
         return customCss;

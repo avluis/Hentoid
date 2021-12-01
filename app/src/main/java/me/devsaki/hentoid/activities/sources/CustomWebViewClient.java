@@ -489,8 +489,9 @@ class CustomWebViewClient extends WebViewClient {
                 }
 
                 // Remove dirty elements from HTML resources
-                if (dirtyElements != null || isMarkDownloaded()) {
-                    browserStream = ProcessHtml(browserStream, urlStr, dirtyElements, activity.getAllSiteUrls());
+                String customCss = activity.getCustomCss();
+                if (dirtyElements != null || isMarkDownloaded() || !customCss.isEmpty()) {
+                    browserStream = ProcessHtml(browserStream, urlStr, customCss, dirtyElements, activity.getAllSiteUrls());
                     if (null == browserStream) return null;
                 }
 
@@ -598,11 +599,17 @@ class CustomWebViewClient extends WebViewClient {
     private InputStream ProcessHtml(
             @NonNull InputStream stream,
             @NonNull String baseUri,
+            @Nullable String customCss,
             @Nullable List<String> dirtyElements,
             @Nullable List<String> siteUrls) {
         try {
             Document doc = Jsoup.parse(stream, null, baseUri);
 
+            // Add custom inline CSS to the main page only
+            if (customCss != null && !isHtmlLoaded.get())
+                doc.head().appendElement("style").attr("type", "text/css").appendText(customCss);
+
+            // Remove ad spaces
             if (dirtyElements != null)
                 for (String s : dirtyElements)
                     for (Element e : doc.select(s)) {
@@ -610,10 +617,8 @@ class CustomWebViewClient extends WebViewClient {
                         e.remove();
                     }
 
+            // Mark downloaded books
             if (siteUrls != null && !siteUrls.isEmpty()) {
-                // Add custom inline CSS to the main page only
-                if (!isHtmlLoaded.get())
-                    doc.head().appendElement("style").attr("type", "text/css").appendText(activity.getCustomCss());
                 // Format elements
                 Elements links = doc.select("a");
                 Set<String> found = new HashSet<>();

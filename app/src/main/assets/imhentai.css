@@ -1,0 +1,4 @@
+// Custom style to fix column display after ad blocker has been enabled
+.watermarked img {
+  filter: grayscale(100%) opacity(25%);
+}

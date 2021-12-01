@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.UriPermission;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -1228,6 +1229,17 @@ public class FileHelper {
             else return null;
         }
         return root;
+    }
+
+    public static void getAssetAsString(@NonNull AssetManager mgr, @NonNull String assetName, @NonNull StringBuilder sb) {
+        try (InputStream is = mgr.open(assetName); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+            String sCurrentLine;
+            while ((sCurrentLine = br.readLine()) != null) {
+                sb.append(sCurrentLine);
+            }
+        } catch (Exception e) {
+            Timber.e(e);
+        }
     }
 
     @FunctionalInterface

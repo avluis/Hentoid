@@ -233,6 +233,13 @@
                 android:title="@string/pref_browser_mark_downloaded_title"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_nhentai_invisible_blacklist_default"
+                android:key="pref_nhentai_invisible_blacklist"
+                android:summaryOff="@string/pref_browser_nhentai_invisible_blacklist_off"
+                android:summaryOn="@string/pref_browser_nhentai_invisible_blacklist_on"
+                android:title="@string/pref_browser_nhentai_invisible_blacklist_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_override_overview_default"
                 android:key="pref_webview_override_overview_lists"
                 android:summaryOff="@string/pref_browser_override_overview_summary_off"
