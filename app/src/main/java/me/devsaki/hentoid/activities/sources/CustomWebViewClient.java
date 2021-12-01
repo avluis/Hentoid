@@ -113,7 +113,10 @@ class CustomWebViewClient extends WebViewClient {
     private final AtomicBoolean isHtmlLoaded = new AtomicBoolean(false);
 
     protected final AdBlocker adBlocker;
+
+    // Faster access to Preferences settings
     private final AtomicBoolean markDownloaded = new AtomicBoolean(Preferences.isBrowserMarkDownloaded());
+    private final AtomicBoolean dnsOverHttpsEnabled = new AtomicBoolean(Preferences.getDnsOverHttps() > -1);
 
     // Disposable to be used for punctual search
     private Disposable disposable;
@@ -399,7 +402,7 @@ class CustomWebViewClient extends WebViewClient {
     }
 
     WebResourceResponse sendRequest(@NonNull WebResourceRequest request) {
-        if (true) { // TODO make dynamic
+        if (dnsOverHttpsEnabled.get()) {
             // Query resource using OkHttp
             String urlStr = request.getUrl().toString();
             List<Pair<String, String>> requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), urlStr);
@@ -582,6 +585,10 @@ class CustomWebViewClient extends WebViewClient {
 
     void setMarkDownloaded(boolean value) {
         markDownloaded.set(value);
+    }
+
+    void setDnsOverHttpsEnabled(boolean value) {
+        dnsOverHttpsEnabled.set(value);
     }
 
     /**

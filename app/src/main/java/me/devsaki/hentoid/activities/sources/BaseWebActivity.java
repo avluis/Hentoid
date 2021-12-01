@@ -1301,6 +1301,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         } else if (Preferences.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST.equals(key)) {
             customCss = null;
             reload = true;
+        } else if (Preferences.Key.BROWSER_DNS_OVER_HTTPS.equals(key)) {
+            webClient.setDnsOverHttpsEnabled(Preferences.getDnsOverHttps() > -1);
+            reload = true;
         }
         if (reload && !webClient.isLoading()) webView.reload();
     }
