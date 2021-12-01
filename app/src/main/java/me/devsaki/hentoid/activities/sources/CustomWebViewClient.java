@@ -408,6 +408,10 @@ class CustomWebViewClient extends WebViewClient {
             List<Pair<String, String>> requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.getRequestHeaders(), urlStr);
             try {
                 Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+
+                // Scram if the response is a redirection or an error
+                if (response.code() >= 300) return null;
+
                 ResponseBody body = response.body();
                 if (null == body) throw new IOException("Empty body");
                 return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream());
