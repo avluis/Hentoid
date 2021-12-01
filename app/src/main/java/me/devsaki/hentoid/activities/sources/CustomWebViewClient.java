@@ -387,7 +387,7 @@ class CustomWebViewClient extends WebViewClient {
 
             // If we're here to remove "dirty elements" or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((dirtyElements != null || isMarkDownloaded())
+            if ((dirtyElements != null || isMarkDownloaded() || !activity.getCustomCss().isEmpty())
                     && HttpHelper.getExtensionFromUri(url).isEmpty()) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
