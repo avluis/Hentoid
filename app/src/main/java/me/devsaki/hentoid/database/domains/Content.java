@@ -44,6 +44,7 @@ import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.ImhentaiActivity;
 import me.devsaki.hentoid.activities.sources.LusciousActivity;
+import me.devsaki.hentoid.activities.sources.Manhwa18Activity;
 import me.devsaki.hentoid.activities.sources.ManhwaActivity;
 import me.devsaki.hentoid.activities.sources.MrmActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
@@ -364,6 +365,8 @@ public class Content implements Serializable {
                 return AllPornComicActivity.class;
             case PIXIV:
                 return PixivActivity.class;
+            case MANHWA18:
+                return Manhwa18Activity.class;
             default:
                 return BaseWebActivity.class;
         }

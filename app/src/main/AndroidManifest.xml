@@ -108,6 +108,9 @@
             android:name=".activities.sources.PixivActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.Manhwa18Activity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -478,6 +481,21 @@
                 <data
                     android:host="www.pixiv.net"
                     android:pathPattern="/..*/users/..*"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="manhwa18.com"
+                    android:pathPattern="/manga/..*"
+                    android:scheme="https" />
+                <data
+                    android:host="manhwa18.com"
+                    android:pathPattern="/manga/..*/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>
