@@ -37,8 +37,10 @@ public class MrmContent extends BaseContentParser {
 
         content.setUrl(url.replace(Site.MRM.getUrl(), "").split("/")[0]);
         if (!title.isEmpty()) {
-            content.setTitle(StringHelper.removeNonPrintableChars(title));
-        } else content.setTitle("<no title>");
+            title = StringHelper.removeNonPrintableChars(title);
+            content.setTitle(title);
+
+        } else content.setTitle(NO_TITLE);
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, false, Site.MRM);

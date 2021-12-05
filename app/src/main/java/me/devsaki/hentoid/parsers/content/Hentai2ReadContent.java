@@ -39,7 +39,7 @@ public class Hentai2ReadContent extends BaseContentParser {
         if (!title.isEmpty()) {
             String titleStr = title.get(title.size() - 1).text();
             content.setTitle(!titleStr.isEmpty() ? StringHelper.removeNonPrintableChars(titleStr) : "");
-        } else content.setTitle("<no title>");
+        } else content.setTitle(NO_TITLE);
         content.setUniqueSiteId(uniqueId);
 
         AttributeMap attributes = new AttributeMap();
