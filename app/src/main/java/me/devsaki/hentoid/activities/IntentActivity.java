@@ -137,6 +137,7 @@ public class IntentActivity extends AppCompatActivity {
             case TOONILY:
             case ALLPORNCOMIC:
             case PIXIV:
+            case MANHWA18:
                 return toParse;
             default:
                 return null;
