@@ -164,7 +164,7 @@ public class HentoidApp extends Application {
         @Override
         public void onStop(@NonNull LifecycleOwner owner) {
             Timber.d("App moving to background");
-            if (enabled && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
+            if (enabled && isUnlocked && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
                 HentoidApp.setUnlocked(false);
                 HentoidApp.setLockInstant(Instant.now().toEpochMilli());
             }
