@@ -27,7 +27,6 @@ public class Manhwa18Content extends BaseContentParser {
     @Selector(value = ".series-information a[href*=genre]")
     private List<Element> tags;
 
-    // TODO single chapter
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.MANHWA18);
 
