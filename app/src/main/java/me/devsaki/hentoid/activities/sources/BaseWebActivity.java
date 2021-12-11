@@ -361,7 +361,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     @SuppressWarnings("unused")
-    private void onUpdateEvent(UpdateEvent event) {
+    public void onUpdateEvent(UpdateEvent event) {
         if (event.sourceAlerts.containsKey(getStartSite())) {
             alert = event.sourceAlerts.get(getStartSite());
             displayTopAlertBanner();
@@ -370,7 +370,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     @SuppressWarnings("unused")
-    private void onDownloadPreparationEvent(DownloadPreparationEvent event) {
+    public void onDownloadPreparationEvent(DownloadPreparationEvent event) {
         // Show progress if it's about current content or its best duplicate
         if (
                 (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.getRelevantId() == currentContent.getId())
