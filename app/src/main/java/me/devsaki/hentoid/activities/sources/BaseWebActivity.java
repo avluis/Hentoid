@@ -163,7 +163,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // === NUTS AND BOLTS
     private CustomWebViewClient webClient;
     // Database
-    private CollectionDAO objectBoxDAO;
+    private CollectionDAO dao;
     // Disposable to be used for punctual search
     private Disposable searchExtraImagesdisposable;
     // Disposable to be used for content processing
@@ -238,7 +238,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
-        objectBoxDAO = new ObjectBoxDAO(this);
+        dao = new ObjectBoxDAO(this);
         Preferences.registerPrefsChangedListener(listener);
 
         if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
@@ -315,9 +315,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // Priority 2 : Last viewed position, if option enabled
         if (Preferences.isBrowserResumeLast()) {
-            SiteHistory siteHistory = objectBoxDAO.selectHistory(getStartSite());
+            SiteHistory siteHistory = dao.selectHistory(getStartSite());
             if (siteHistory != null && !siteHistory.getUrl().isEmpty()) return siteHistory.getUrl();
         }
+
+        // Priority 3 : Homepage, if manually set through bookmarks
+        SiteBookmark welcomePage = dao.selectHomepage(getStartSite());
+        if (welcomePage != null) return welcomePage.getUrl();
 
         // Default site URL
         return getStartSite().getUrl();
@@ -431,7 +435,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     @Override
     protected void onStop() {
         if (webView.getUrl() != null)
-            objectBoxDAO.insertSiteHistory(getStartSite(), webView.getUrl());
+            dao.insertSiteHistory(getStartSite(), webView.getUrl());
         super.onStop();
     }
 
@@ -455,7 +459,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // Cancel any previous extra page load
         EventBus.getDefault().post(new DownloadEvent(currentContent, DownloadEvent.Type.EV_INTERRUPT_CONTENT));
 
-        if (objectBoxDAO != null) objectBoxDAO.cleanup();
+        if (dao != null) dao.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
@@ -596,7 +600,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (isGalleryPage) showTooltip(R.string.help_web_download, false);
         // Update bookmark button
         if (isBookmarkable) {
-            List<SiteBookmark> bookmarks = objectBoxDAO.selectBookmarks(getStartSite());
+            List<SiteBookmark> bookmarks = dao.selectBookmarks(getStartSite());
             Optional<SiteBookmark> currentBookmark = Stream.of(bookmarks).filter(b -> SiteBookmark.urlsAreSame(b.getUrl(), url)).findFirst();
             updateBookmarkButton(currentBookmark.isPresent());
         }
@@ -793,7 +797,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             case ActionMode.READ:
                 if (currentContent != null) {
                     String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
-                    currentContent = objectBoxDAO.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
+                    currentContent = dao.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
                     if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                             || StatusContent.ERROR == currentContent.getStatus()
                             || StatusContent.MIGRATED == currentContent.getStatus()))
@@ -850,7 +854,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (null == currentContent) return;
 
         if (currentContent.getId() > 0)
-            currentContent = objectBoxDAO.selectContent(currentContent.getId());
+            currentContent = dao.selectContent(currentContent.getId());
 
         if (null == currentContent) return;
 
@@ -869,7 +873,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
             // Determine base book : browsed downloaded book or best duplicate ?
             if (!ContentHelper.isInLibrary(currentContent.getStatus()) && duplicateId > 0) {
-                currentContent = objectBoxDAO.selectContent(duplicateId);
+                currentContent = dao.selectContent(duplicateId);
                 if (null == currentContent) return;
             }
 
@@ -889,7 +893,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             }
 
             currentContent.setStatus(StatusContent.SAVED);
-            objectBoxDAO.insertContent(currentContent);
+            dao.insertContent(currentContent);
         }
 
         // Check if the tag blocker applies here
@@ -902,7 +906,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tags : " + TextUtils.join(", ", blockedTagsLocal), Instant.now()));
                 currentContent.setErrorLog(errors);
                 currentContent.setStatus(StatusContent.ERROR);
-                objectBoxDAO.insertContent(currentContent);
+                dao.insertContent(currentContent);
                 ToastHelper.toast(getResources().getString(R.string.blocked_tag_queued, blockedTagsLocal.get(0)));
                 setActionMode(ActionMode.VIEW_QUEUE);
             }
@@ -921,7 +925,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         ((Animatable) animatedCheck.getDrawable()).start();
         new Handler(getMainLooper()).postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
         currentContent.setDownloadMode(downloadMode);
-        objectBoxDAO.addContentToQueue(currentContent, null, position, ContentQueueManager.getInstance().isQueueActive());
+        dao.addContentToQueue(currentContent, null, position, ContentQueueManager.getInstance().isQueueActive());
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
         setActionMode(ActionMode.VIEW_QUEUE);
     }
@@ -979,7 +983,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         Timber.i("Content Site, URL : %s, %s", onlineContent.getSite().getCode(), onlineContent.getUrl());
         String searchUrl = ""; //getStartSite().hasCoverBasedPageUpdates() ? content.getCoverImageUrl() : "";
-        Content contentDB = objectBoxDAO.selectContentBySourceAndUrl(onlineContent.getSite(), onlineContent.getUrl(), searchUrl);
+        Content contentDB = dao.selectContentBySourceAndUrl(onlineContent.getSite(), onlineContent.getUrl(), searchUrl);
 
         boolean isInCollection = (contentDB != null && ContentHelper.isInLibrary(contentDB.getStatus()));
         boolean isInQueue = (contentDB != null && ContentHelper.isInQueue(contentDB.getStatus()));
@@ -1013,7 +1017,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 }
                 // Look for duplicates
                 try {
-                    ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(this, onlineContent, pHash, objectBoxDAO);
+                    ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(this, onlineContent, pHash, dao);
                     if (duplicateResult != null) {
                         duplicateId = duplicateResult.left.getId();
                         duplicateSimilarity = duplicateResult.right;
@@ -1030,7 +1034,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
             if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
                 onlineContent.setStatus(StatusContent.SAVED);
-                ContentHelper.addContent(this, objectBoxDAO, onlineContent);
+                ContentHelper.addContent(this, dao, onlineContent);
             } else {
                 currentContent = contentDB;
             }
@@ -1144,7 +1148,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     if (targetChapter != null) img.setChapter(targetChapter);
                 }
             }
-            objectBoxDAO.insertImageFiles(storedImages);
+            dao.insertImageFiles(storedImages);
         }
 
         // Online book has more pictures than stored book -> that's what we're looking for
@@ -1187,7 +1191,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         synchronized (downloadedBooksUrls) {
             downloadedBooksUrls.clear();
             downloadedBooksUrls.addAll(
-                    Stream.of(objectBoxDAO.selectAllSourceUrls(getStartSite()))
+                    Stream.of(dao.selectAllSourceUrls(getStartSite()))
                             .map(s -> s.replaceAll("\\p{Punct}", "."))
                             .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
                             .toList()

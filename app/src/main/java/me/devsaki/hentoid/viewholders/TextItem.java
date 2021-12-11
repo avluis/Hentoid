@@ -2,6 +2,7 @@ package me.devsaki.hentoid.viewholders;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
+import android.graphics.Typeface;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -36,6 +37,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
     private final boolean centered;
     private final boolean draggable;
     private final boolean reformatCase;
+    private final boolean isHighlighted;
     private final ItemTouchHelper touchHelper;
 
 
@@ -46,24 +48,17 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         this.draggable = false;
         this.touchHelper = null;
         this.reformatCase = true;
+        this.isHighlighted = false;
     }
 
-    public TextItem(String text, T tag, boolean centered, boolean draggable, ItemTouchHelper touchHelper) {
+    public TextItem(String text, T tag, boolean draggable, boolean reformatCase, boolean isHighlighted, ItemTouchHelper touchHelper) {
         this.text = text;
         this.tag = tag;
-        this.centered = centered;
-        this.draggable = draggable;
-        this.touchHelper = touchHelper;
-        this.reformatCase = true;
-    }
-
-    public TextItem(String text, T tag, boolean centered, boolean draggable, boolean reformatCase, ItemTouchHelper touchHelper) {
-        this.text = text;
-        this.tag = tag;
-        this.centered = centered;
+        this.centered = false;
         this.draggable = draggable;
         this.touchHelper = touchHelper;
         this.reformatCase = reformatCase;
+        this.isHighlighted = isHighlighted;
     }
 
     @Nullable
@@ -145,6 +140,9 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
 
             title.setText(item.getDisplayText());
             if (item.centered) title.setGravity(Gravity.CENTER);
+
+            if (item.isHighlighted) title.setTypeface(null, Typeface.BOLD);
+            else title.setTypeface(null, Typeface.NORMAL);
         }
 
         @Override

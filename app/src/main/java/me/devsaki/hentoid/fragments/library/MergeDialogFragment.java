@@ -111,7 +111,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         List<Content> contentList = loadContentList();
         if (contentList.isEmpty()) return;
 
-        itemAdapter.set(Stream.of(contentList).map(s -> new TextItem<>(s.getTitle(), s, false, true, false, touchHelper)).toList());
+        itemAdapter.set(Stream.of(contentList).map(s -> new TextItem<>(s.getTitle(), s, true, false, false, touchHelper)).toList());
 
         // Activate drag & drop
         SimpleDragCallback dragCallback = new SimpleDragCallback(this);

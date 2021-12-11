@@ -270,6 +270,9 @@ public interface CollectionDAO {
 
     List<SiteBookmark> selectBookmarks(@NonNull Site s);
 
+    @Nullable
+    SiteBookmark selectHomepage(@NonNull Site s);
+
     long insertBookmark(@NonNull SiteBookmark bookmark);
 
     void insertBookmarks(@NonNull List<SiteBookmark> bookmarks);

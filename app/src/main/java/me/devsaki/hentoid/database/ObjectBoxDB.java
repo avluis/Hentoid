@@ -1307,6 +1307,15 @@ public class ObjectBoxDB {
         return qb.order(SiteBookmark_.order).build();
     }
 
+    @Nullable
+    SiteBookmark selectHomepage(@NonNull Site s) {
+        QueryBuilder<SiteBookmark> qb = store.boxFor(SiteBookmark.class).query();
+        qb.equal(SiteBookmark_.site, s.getCode());
+        qb.equal(SiteBookmark_.isHomepage, true);
+
+        return qb.build().findFirst();
+    }
+
     String[] selectAllBooksmarkUrls() {
         return store.boxFor(SiteBookmark.class).query().build().property(SiteBookmark_.url).findStrings();
     }

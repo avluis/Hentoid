@@ -823,6 +823,11 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectBookmarksQ(s).find();
     }
 
+    @Override
+    public SiteBookmark selectHomepage(@NonNull Site s) {
+        return db.selectHomepage(s);
+    }
+
     public long insertBookmark(@NonNull final SiteBookmark bookmark) {
         // Auto-number max order when not provided
         if (-1 == bookmark.getOrder())

@@ -23,6 +23,7 @@ public class SiteBookmark {
     private String title;
     private String url;
     private int order = -1;
+    private boolean isHomepage;
 
     public SiteBookmark() { // Required by ObjectBox when an alternate constructor exists
     }
@@ -57,6 +58,13 @@ public class SiteBookmark {
         this.order = order;
     }
 
+    public boolean isHomepage() {
+        return isHomepage;
+    }
+
+    public void setHomepage(boolean homepage) {
+        isHomepage = homepage;
+    }
 
     @Override
     public boolean equals(Object o) {

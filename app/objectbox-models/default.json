@@ -531,7 +531,7 @@
     },
     {
       "id": "12:6339833598022566662",
-      "lastPropertyId": "5:1710077713562043737",
+      "lastPropertyId": "6:5135118656468009739",
       "name": "SiteBookmark",
       "properties": [
         {
@@ -559,6 +559,11 @@
           "id": "5:1710077713562043737",
           "name": "title",
           "type": 9
+        },
+        {
+          "id": "6:5135118656468009739",
+          "name": "isHomepage",
+          "type": 1
         }
       ],
       "relations": []
