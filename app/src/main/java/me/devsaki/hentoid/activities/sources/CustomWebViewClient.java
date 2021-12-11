@@ -600,7 +600,7 @@ class CustomWebViewClient extends WebViewClient {
      * - If set, remove nodes using the given list of CSS selectors to identify them
      * - If set, mark book covers or links matching the given list of Urls
      *
-     * @param stream        Stream containing the HTML document to process
+     * @param stream        Stream containing the HTML document to process; will be closed during the process
      * @param baseUri       Base URI if the document
      * @param dirtyElements CSS selectors of the nodes to remove
      * @param siteUrls      Urls of the covers or links to mark
