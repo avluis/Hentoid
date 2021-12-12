@@ -98,6 +98,7 @@ public class QueueActivity extends BaseActivity {
         setContentView(R.layout.activity_queue);
 
         toolbar = findViewById(R.id.queue_toolbar);
+        Helper.tryShowMenuIcons(this, toolbar.getMenu());
         toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         selectionToolbar = findViewById(R.id.queue_selection_toolbar);
@@ -207,6 +208,7 @@ public class QueueActivity extends BaseActivity {
             selectionToolbar.inflateMenu(R.menu.queue_queue_selection_menu);
         else
             selectionToolbar.inflateMenu(R.menu.queue_error_selection_menu);
+        Helper.tryShowMenuIcons(this, selectionToolbar.getMenu());
 
         // Log the view of the tab
         Bundle bundle = new Bundle();

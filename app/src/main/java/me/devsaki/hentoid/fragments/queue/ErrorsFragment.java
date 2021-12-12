@@ -280,6 +280,13 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
                 askRedownloadSelectedScratch();
                 keepToolbar = true;
                 break;
+            case R.id.action_select_all:
+                // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
+                int count = 0;
+                while (selectExtension.getSelections().size() < itemAdapter.getAdapterItemCount() && ++count < 5)
+                    selectExtension.select(Stream.range(0, itemAdapter.getAdapterItemCount()).toList());
+                keepToolbar = true;
+                break;
             default:
                 selectionToolbar.setVisibility(View.GONE);
                 return false;

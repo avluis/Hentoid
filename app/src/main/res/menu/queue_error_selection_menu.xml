@@ -22,4 +22,10 @@
         android:title="@string/menu_redownload_scratch"
         android:tooltipText="@string/menu_redownload_scratch"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_select_all"
+        android:icon="@drawable/ic_action_select_all"
+        android:title="@string/menu_select_all"
+        android:tooltipText="@string/menu_select_all"
+        app:showAsAction="ifRoom" />
 </menu>

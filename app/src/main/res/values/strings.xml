@@ -89,6 +89,7 @@
     </plurals>
     <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
+    <string name="cancel_all_errors">Cancel all errors</string>
     <string name="canceled">Canceled</string>
     <string name="move_top">Move to top</string>
     <string name="move_up">Move up</string>

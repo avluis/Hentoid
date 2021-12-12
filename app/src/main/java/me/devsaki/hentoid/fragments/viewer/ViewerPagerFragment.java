@@ -161,6 +161,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         onUpdatePageNumDisplay();
 
         // Top bar controls
+        Helper.tryShowMenuIcons(requireActivity(), binding.controlsOverlay.viewerPagerToolbar.getMenu());
         binding.controlsOverlay.viewerPagerToolbar.setNavigationOnClickListener(v -> onBackClick());
         binding.controlsOverlay.viewerPagerToolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             switch (clickedMenuItem.getItemId()) {
