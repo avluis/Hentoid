@@ -371,6 +371,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     private fun onEnable() {
         enabled = true
+        activity.get()?.initFragmentToolbars(this::onToolbarItemClicked)
         callback?.isEnabled = true
     }
 
