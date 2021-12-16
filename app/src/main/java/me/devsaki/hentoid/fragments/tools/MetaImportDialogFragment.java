@@ -63,7 +63,6 @@ import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
- * Created by Robb on 05/2020
  * Dialog for the library metadata import feature
  */
 public class MetaImportDialogFragment extends DialogFragment {

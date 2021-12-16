@@ -13,7 +13,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.network.HttpHelper;
 
 /**
- * Created by Shiro on 1/20/2016.
  * Implements Hitomi.la source
  */
 public class HitomiActivity extends BaseWebActivity {

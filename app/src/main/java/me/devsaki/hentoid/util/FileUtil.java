@@ -20,7 +20,6 @@ import java.util.Locale;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 08/25/2016.
  * Methods for use by FileHelper
  */
 class FileUtil {

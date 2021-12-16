@@ -26,7 +26,6 @@ import me.devsaki.hentoid.json.adapters.AndroidPairAdapterFactory;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 06/05/2016.
  * JSON related utility class
  */
 public class JsonHelper {

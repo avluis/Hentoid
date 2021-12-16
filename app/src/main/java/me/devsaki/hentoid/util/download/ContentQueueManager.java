@@ -12,7 +12,6 @@ import me.devsaki.hentoid.workers.ContentDownloadWorker;
 import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
 
 /**
- * Created by Robb_w on 2018/04
  * Manager class for Content (book) download queue
  * <p>
  * By default at app launch :

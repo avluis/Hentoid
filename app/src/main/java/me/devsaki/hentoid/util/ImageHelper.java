@@ -30,7 +30,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * Created by Robb on 07/2020
  * Generic utility class
  */
 public final class ImageHelper {

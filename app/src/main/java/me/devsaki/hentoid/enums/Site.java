@@ -10,7 +10,6 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 /**
- * Created by neko on 20/06/2015.
  * Site enumerator
  */
 public enum Site {

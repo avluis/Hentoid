@@ -19,7 +19,6 @@ import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
- * Created by Robb_w on 2018/04
  * Implements E-Hentai source
  */
 public class EHentaiActivity extends BaseWebActivity {

@@ -6,7 +6,6 @@ import io.objectbox.annotation.Id;
 import me.devsaki.hentoid.enums.Site;
 
 /**
- * Created by Robb on 2019/11
  * Site browsing history
  */
 @Entity

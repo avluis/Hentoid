@@ -29,7 +29,6 @@ import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 
 /**
- * Created by Robb on 09/2020
  * Dialog to select or create a custom group
  */
 public class ChangeGroupDialogFragment extends DialogFragment {

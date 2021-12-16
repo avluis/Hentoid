@@ -46,7 +46,6 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import timber.log.Timber;
 
 /**
- * Created by Robb on 03/2021
  * Dialog for the settings metadata export feature
  */
 public class MetaExportDialogFragment extends DialogFragment {

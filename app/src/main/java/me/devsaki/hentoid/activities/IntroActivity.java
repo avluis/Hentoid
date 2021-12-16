@@ -28,8 +28,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 
 /**
- * Created by avluis on 03/20/2016.
- * Maintained by wightwulf1944 on 06/23/2018
  * Welcome (Intro Slide) Activity
  * Presents required permissions, then calls the proper activity to:
  * Set storage directory and library import

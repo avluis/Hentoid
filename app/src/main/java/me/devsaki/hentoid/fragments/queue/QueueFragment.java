@@ -98,7 +98,6 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
  */
 public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {

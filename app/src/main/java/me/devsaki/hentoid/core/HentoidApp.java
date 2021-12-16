@@ -31,7 +31,6 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 /**
- * Created by DevSaki on 20/05/2015.
  * Initializes required components:
  * Database, Bitmap Cache, Update checks, etc.
  */

@@ -3,7 +3,7 @@ package me.devsaki.hentoid.enums;
 import androidx.annotation.NonNull;
 
 /**
- * Created by Robb on 2019/12
+ * App themes
  */
 public enum Theme {
 

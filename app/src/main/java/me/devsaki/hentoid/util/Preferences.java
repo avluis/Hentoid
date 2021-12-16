@@ -21,7 +21,6 @@ import me.devsaki.hentoid.enums.Theme;
 import timber.log.Timber;
 
 /**
- * Created by Shiro on 2/21/2018.
  * Decorator class that wraps a SharedPreference to implement properties
  * Some properties do not have a setter because it is changed by PreferenceActivity
  * Some properties are parsed as ints because of limitations with the Preference subclass used

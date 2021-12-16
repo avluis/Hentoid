@@ -38,7 +38,6 @@ import me.devsaki.hentoid.util.ToastHelper;
 import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
- * Created by Robb on 11/2018
  * Info dialog for download errors details
  */
 public class ErrorStatsDialogFragment extends DialogFragment {

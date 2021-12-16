@@ -18,7 +18,6 @@ import me.devsaki.hentoid.util.ContentHelper;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 05/11/2016.
  * Responsible for resolving intents and sending them where appropriate
  * <p>
  * Manages how the app receives a "share" intent

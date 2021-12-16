@@ -68,7 +68,6 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 /**
- * Created by DevSaki on 09/05/2015.
  * Content builder
  */
 @SuppressWarnings("UnusedReturnValue")

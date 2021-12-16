@@ -19,7 +19,6 @@ import me.devsaki.hentoid.util.StringHelper;
 import timber.log.Timber;
 
 /**
- * Created by DevSaki on 10/05/2015.
  * Image File builder
  */
 @Entity

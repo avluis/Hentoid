@@ -21,7 +21,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * Created by Robb_w in 2018/04; heavily inspired by
+ * Heavily inspired by
  * https://gist.github.com/LOG-TAG/3ad1c191b3ca7eab3ea6834386e30eb9
  * and
  * https://gist.github.com/JakeWharton/5616899

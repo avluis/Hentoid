@@ -22,7 +22,6 @@ import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
 /**
- * Created by robb_w on 01/2021
  * Handles parsing of content from imhentai
  */
 public class ImhentaiParser extends BaseImageListParser {

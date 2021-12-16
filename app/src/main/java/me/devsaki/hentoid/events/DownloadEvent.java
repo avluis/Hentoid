@@ -9,7 +9,6 @@ import java.lang.annotation.RetentionPolicy;
 import me.devsaki.hentoid.database.domains.Content;
 
 /**
- * Created by avluis on 06/10/2016.
  * Tracks downloads events for interested subscribers.
  */
 public class DownloadEvent {

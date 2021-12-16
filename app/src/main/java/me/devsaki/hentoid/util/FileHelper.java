@@ -54,7 +54,6 @@ import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 08/05/2016.
  * Generic file-related utility class
  */
 public class FileHelper {

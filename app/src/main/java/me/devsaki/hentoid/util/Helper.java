@@ -51,7 +51,6 @@ import me.devsaki.hentoid.json.JsonContentCollection;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 06/05/2016.
  * Generic utility class
  */
 public final class Helper {

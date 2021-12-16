@@ -26,7 +26,7 @@ import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.SiteItem;
 
 /**
- * Created by Robb on 10/2019
+ * Activity to edit the left drawer where the sources are
  */
 public class DrawerEditActivity extends BaseActivity implements ItemTouchCallback {
 

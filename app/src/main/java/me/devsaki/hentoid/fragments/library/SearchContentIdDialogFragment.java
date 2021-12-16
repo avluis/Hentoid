@@ -29,7 +29,6 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
 
 /**
- * Created by Robb on 11/2018
  * Launcher dialog for the library refresh feature
  */
 public class SearchContentIdDialogFragment extends DialogFragment {

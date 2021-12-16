@@ -28,7 +28,6 @@ import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 
 /**
- * Created by Robb on 11/2018
  * Info dialog for download errors details
  */
 public class ErrorsDialogFragment extends DialogFragment {

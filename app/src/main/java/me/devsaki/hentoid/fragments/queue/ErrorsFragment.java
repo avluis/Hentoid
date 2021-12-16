@@ -63,7 +63,6 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 /**
- * Created by Robb on 04/2020
  * Presents the list of downloads with errors
  */
 public class ErrorsFragment extends Fragment implements ItemTouchCallback, ErrorsDialogFragment.Parent, SimpleSwipeDrawerCallback.ItemSwipeCallback {

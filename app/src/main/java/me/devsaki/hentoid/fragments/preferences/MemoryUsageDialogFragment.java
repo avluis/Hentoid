@@ -34,7 +34,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.CircularProgressView;
 
 /**
- * Created by Robb on 05/2020
  * Dialog for the library metadata export feature
  */
 public class MemoryUsageDialogFragment extends DialogFragment {

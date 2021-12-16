@@ -45,7 +45,6 @@ import me.devsaki.hentoid.workers.ImportWorker;
 import timber.log.Timber;
 
 /**
- * Created by Robb on 11/2018
  * Launcher dialog for the following features :
  * - Set download folder
  * - Library refresh

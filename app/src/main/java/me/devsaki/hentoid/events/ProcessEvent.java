@@ -8,7 +8,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Created by Robb on 17/10/2018.
  * Tracks processing events (e.g. import, migration) for interested subscribers.
  */
 public class ProcessEvent {

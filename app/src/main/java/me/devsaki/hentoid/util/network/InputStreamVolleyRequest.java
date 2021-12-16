@@ -10,8 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Robb_w on 2018/04
- * <p>
  * Specific Volley Request intended at transmitting :
  * - content as byte array
  * - raw HTTP response headers
