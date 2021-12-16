@@ -35,6 +35,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.ContextXKt;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Grouping;
@@ -109,6 +110,12 @@ public class MetaExportDialogFragment extends DialogFragment {
             bookmarksChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
             bookmarksChk.setVisibility(View.VISIBLE);
         }
+
+        // Open library transfer FAQ
+        requireViewById(rootView, R.id.export_file_help1_text)
+                .setOnClickListener(v -> ContextXKt.startBrowserActivity(requireActivity(), getResources().getString(R.string.export_faq_url)));
+        requireViewById(rootView, R.id.info_img)
+                .setOnClickListener(v -> ContextXKt.startBrowserActivity(requireActivity(), getResources().getString(R.string.export_faq_url)));
 
         runBtn = requireViewById(rootView, R.id.export_run_btn);
         runBtn.setEnabled(false);

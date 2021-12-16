@@ -208,7 +208,9 @@
         <item quantity="one">Export bookmarks (%d item)</item>
         <item quantity="other">Export bookmarks (%d items)</item>
     </plurals>
-    <string name="export_warning">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
+    <string name="export_warning1">Exporting metadata is meant to create a list of your books in JSON format.\nIt is not meant for moving your collection to your PC or your SD card.\nTap here to learn how to do that.</string>
+    <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
+    <string name="export_faq_url">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
     <string name="export_run">RUN EXPORT</string>
 
     <string name="import_settings_title">Import settings</string>
