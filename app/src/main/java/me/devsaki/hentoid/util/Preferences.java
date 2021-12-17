@@ -480,12 +480,20 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_TAP, Default.VIEWER_PAGE_TURN_TAP);
     }
 
+    public static boolean isViewerTapToTurn2x() {
+        return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_TAP_2X, Default.VIEWER_PAGE_TURN_TAP_2X);
+    }
+
     public static boolean isViewerSwipeToTurn() {
         return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_SWIPE, Default.VIEWER_PAGE_TURN_SWIPE);
     }
 
     public static boolean isViewerVolumeToTurn() {
         return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_VOLUME, Default.VIEWER_PAGE_TURN_VOLUME);
+    }
+
+    public static boolean isViewerKeyboardToTurn() {
+        return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_KEYBOARD, Default.VIEWER_PAGE_TURN_KEYBOARD);
     }
 
     public static boolean isViewerOpenBookInGalleryMode() {
@@ -847,7 +855,9 @@ public final class Preferences {
         static final String VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
         static final String VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
         static final String VIEWER_PAGE_TURN_TAP = "pref_viewer_page_turn_tap";
+        static final String VIEWER_PAGE_TURN_TAP_2X = "pref_viewer_page_turn_tap_2x";
         static final String VIEWER_PAGE_TURN_VOLUME = "pref_viewer_page_turn_volume";
+        static final String VIEWER_PAGE_TURN_KEYBOARD = "pref_viewer_page_turn_keyboard";
         public static final String VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars";
         static final String VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
         static final String VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
@@ -944,7 +954,9 @@ public final class Preferences {
         static final boolean VIEWER_CONTINUOUS = false;
         static final boolean VIEWER_PAGE_TURN_SWIPE = true;
         static final boolean VIEWER_PAGE_TURN_TAP = true;
+        static final boolean VIEWER_PAGE_TURN_TAP_2X = false;
         static final boolean VIEWER_PAGE_TURN_VOLUME = true;
+        static final boolean VIEWER_PAGE_TURN_KEYBOARD = true;
         static final boolean VIEWER_SWIPE_TO_FLING = false;
         static final boolean VIEWER_INVERT_VOLUME_ROCKER = false;
         static final int VIEWER_SEPARATING_BARS = Constant.VIEWER_SEPARATING_BARS_OFF;

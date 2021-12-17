@@ -449,28 +449,39 @@
                     android:title="@string/pref_viewer_page_turn_swipe"
                     app:iconSpaceReserved="false" />
                 <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_swipe_to_fling_default"
+                    android:dependency="pref_viewer_page_turn_swipe"
+                    android:key="pref_viewer_swipe_to_fling"
+                    android:title="@string/pref_viewer_swipe_to_fling"
+                    app:iconSpaceReserved="false" />
+                <CheckBoxPreference
                     android:defaultValue="@bool/pref_viewer_page_turn_tap_default"
                     android:key="pref_viewer_page_turn_tap"
                     android:title="@string/pref_viewer_page_turn_tap"
+                    app:iconSpaceReserved="false" />
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_page_turn_tap_2x_default"
+                    android:key="pref_viewer_page_turn_tap_2x"
+                    android:dependency="pref_viewer_page_turn_tap"
+                    android:title="@string/pref_viewer_page_turn_tap_2x"
                     app:iconSpaceReserved="false" />
                 <CheckBoxPreference
                     android:defaultValue="@bool/pref_viewer_page_turn_volume_default"
                     android:key="pref_viewer_page_turn_volume"
                     android:title="@string/pref_viewer_page_turn_volume"
                     app:iconSpaceReserved="false" />
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_invert_volume_default"
+                    android:dependency="pref_viewer_page_turn_volume"
+                    android:key="pref_viewer_invert_volume_rocker"
+                    android:title="@string/pref_viewer_invert_volume"
+                    app:iconSpaceReserved="false" />
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_page_turn_keyboard_default"
+                    android:key="pref_viewer_page_turn_keyboard"
+                    android:title="@string/pref_viewer_page_turn_keyboard"
+                    app:iconSpaceReserved="false" />
             </PreferenceCategory>
-            <CheckBoxPreference
-                android:defaultValue="@bool/pref_viewer_swipe_to_fling_default"
-                android:dependency="pref_viewer_page_turn_swipe"
-                android:key="pref_viewer_swipe_to_fling"
-                android:title="@string/pref_viewer_swipe_to_fling"
-                app:iconSpaceReserved="false" />
-            <CheckBoxPreference
-                android:defaultValue="@bool/pref_viewer_invert_volume_default"
-                android:dependency="pref_viewer_page_turn_volume"
-                android:key="pref_viewer_invert_volume_rocker"
-                android:title="@string/pref_viewer_invert_volume"
-                app:iconSpaceReserved="false" />
             <PreferenceCategory
                 android:title="@string/pref_viewer_zoom"
                 app:iconSpaceReserved="false">

@@ -211,8 +211,12 @@
     <bool name="pref_viewer_page_turn_swipe_default" translatable="false">true</bool>
     <string name="pref_viewer_page_turn_tap">Border tap</string>
     <bool name="pref_viewer_page_turn_tap_default" translatable="false">true</bool>
+    <string name="pref_viewer_page_turn_tap_2x">Tap zone width x2</string>
+    <bool name="pref_viewer_page_turn_tap_2x_default" translatable="false">false</bool>
     <string name="pref_viewer_page_turn_volume">Volume button</string>
     <bool name="pref_viewer_page_turn_volume_default" translatable="false">true</bool>
+    <string name="pref_viewer_page_turn_keyboard">Keyboard left/right</string>
+    <bool name="pref_viewer_page_turn_keyboard_default" translatable="false">true</bool>
 
     <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
     <bool name="pref_viewer_swipe_to_fling_default" translatable="false">false</bool>

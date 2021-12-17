@@ -89,7 +89,7 @@ import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.PageSnapWidget;
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
-import me.devsaki.hentoid.widget.VolumeKeyListener;
+import me.devsaki.hentoid.widget.ViewerKeyListener;
 import timber.log.Timber;
 
 // TODO : better document and/or encapsulate the difference between
@@ -262,10 +262,13 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         ((ImageViewerActivity) requireActivity()).registerKeyListener(
-                new VolumeKeyListener()
+                new ViewerKeyListener()
                         .setOnVolumeDownListener(this::previousPage)
                         .setOnVolumeUpListener(this::nextPage)
-                        .setOnBackListener(this::onBackClick));
+                        .setOnKeyLeftListener(this::onLeftTap)
+                        .setOnKeyRightListener(this::onRightTap)
+                        .setOnBackListener(this::onBackClick)
+        );
     }
 
     @Override
@@ -350,12 +353,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         });
         binding.recyclerView.setLongTapListener(ev -> false);
 
-        OnZoneTapListener onHorizontalZoneTapListener = new OnZoneTapListener(binding.recyclerView)
+        int tapZoneScale = Preferences.isViewerTapToTurn2x() ? 2 : 1;
+
+        OnZoneTapListener onHorizontalZoneTapListener = new OnZoneTapListener(binding.recyclerView, tapZoneScale)
                 .setOnLeftZoneTapListener(this::onLeftTap)
                 .setOnRightZoneTapListener(this::onRightTap)
                 .setOnMiddleZoneTapListener(this::onMiddleTap);
 
-        OnZoneTapListener onVerticalZoneTapListener = new OnZoneTapListener(binding.recyclerView)
+        OnZoneTapListener onVerticalZoneTapListener = new OnZoneTapListener(binding.recyclerView, 1)
                 .setOnMiddleZoneTapListener(this::onMiddleTap);
 
         binding.recyclerView.setTapListener(onVerticalZoneTapListener);       // For paper roll mode (vertical)

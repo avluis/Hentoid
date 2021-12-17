@@ -24,17 +24,18 @@ public class OnZoneTapListener implements View.OnTouchListener {
 
     private final int pagerTapZoneWidth;
 
+
     private Runnable onLeftZoneTapListener;
 
     private Runnable onRightZoneTapListener;
 
     private Runnable onMiddleZoneTapListener;
 
-    public OnZoneTapListener(View view) {
+    public OnZoneTapListener(View view, int tapZoneScale) {
         this.view = view;
         Context context = view.getContext();
         gestureDetector = new GestureDetectorCompat(context, new OnGestureListener());
-        pagerTapZoneWidth = context.getResources().getDimensionPixelSize(R.dimen.tap_zone_width);
+        pagerTapZoneWidth = context.getResources().getDimensionPixelSize(R.dimen.tap_zone_width) * tapZoneScale;
     }
 
     public OnZoneTapListener setOnLeftZoneTapListener(Runnable onLeftZoneTapListener) {
