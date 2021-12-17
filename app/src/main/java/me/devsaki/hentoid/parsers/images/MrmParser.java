@@ -36,8 +36,14 @@ public class MrmParser extends BaseImageListParser {
         List<String> chapterUrls = new ArrayList<>();
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, Site.MRM.useHentoidAgent(), Site.MRM.useWebviewAgent());
         if (doc != null) {
-            List<Element> chapters = doc.select("a.post-page-numbers");
-            for (Element e : chapters) chapterUrls.add(e.attr("href"));
+            Element chapterContainer = doc.select("div.entry-pagination").first();
+            if (chapterContainer != null) {
+                for (Element e : chapterContainer.children()) {
+                    if (e.hasClass("current"))
+                        chapterUrls.add(content.getGalleryUrl()); // current chapter
+                    else if (e.hasAttr("href")) chapterUrls.add(e.attr("href"));
+                }
+            }
         }
         if (chapterUrls.isEmpty()) chapterUrls.add(content.getGalleryUrl()); // "one-shot" book
         progressStart(content, null, chapterUrls.size());
