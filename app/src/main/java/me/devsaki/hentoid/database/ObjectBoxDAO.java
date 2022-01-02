@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
@@ -484,8 +485,13 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     private long getLatestDlDate(@NonNull final Group g) {
-        Optional<Long> maxDlDate = Stream.of(g.getContents()).map(Content::getDownloadDate).max(Long::compareTo);
-        return maxDlDate.isPresent() ? maxDlDate.get() : 0;
+        // Manually select all content as g.getContents won't work (unresolved items)
+        List<Content> contents = db.selectContentById(g.getContentIds());
+        if (contents != null) {
+            Optional<Long> maxDlDate = Stream.of(contents).map(Content::getDownloadDate).max(Long::compareTo);
+            return maxDlDate.isPresent() ? maxDlDate.get() : 0;
+        }
+        return 0;
     }
 
     @Nullable
