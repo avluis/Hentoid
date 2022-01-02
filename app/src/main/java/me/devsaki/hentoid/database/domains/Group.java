@@ -59,11 +59,6 @@ public class Group {
         return this.id;
     }
 
-    // NB : Won't retrieve unresolved objects
-    public List<Content> getContents() {
-        return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContent).withoutNulls().toList();
-    }
-
     public List<Long> getContentIds() {
         return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContentId).toList();
     }

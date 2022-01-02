@@ -710,6 +710,10 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
+    public List<Content> getGroupContents(@NonNull Group group) {
+        return dao.selectContent(Helper.getPrimitiveArrayFromList(group.getContentIds()));
+    }
+
     public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName,
                          @NonNull final Runnable onNameExists) {
         // Check if the group already exists

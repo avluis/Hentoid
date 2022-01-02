@@ -67,7 +67,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         // Queried here to avoid serialization hard-limit
         // of androidx.work.Data.Builder when passing a large long[] through DeleteData
         if (0 == askedContentIds.length && inputData.isDeleteAllContentExceptFavs())
-            askedContentIds = Helper.getPrimitiveLongArrayFromList(dao.selectStoredContentIds(true, false, -1, false));
+            askedContentIds = Helper.getPrimitiveArrayFromList(dao.selectStoredContentIds(true, false, -1, false));
         contentIds = askedContentIds;
 
         deleteMax = contentIds.length + contentPurgeIds.length + groupIds.length + queueIds.length;
@@ -186,7 +186,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         try {
             // Reassign group for contained items
             if (deleteGroupsOnly) {
-                List<Content> containedContentList = theGroup.getContents();
+                List<Content> containedContentList = dao.selectContent(Helper.getPrimitiveArrayFromList(theGroup.getContentIds()));
                 for (Content c : containedContentList) {
                     Content movedContent = moveContentToCustomGroup(c, null, dao);
                     ContentHelper.updateContentJson(getApplicationContext(), movedContent);

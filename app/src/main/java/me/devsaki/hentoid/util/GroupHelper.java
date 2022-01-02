@@ -132,7 +132,7 @@ public final class GroupHelper {
                 if (g != null && !g.picture.isNull()) {
                     ImageFile groupCover = g.picture.getTarget();
                     if (groupCover.getContent().getTargetId() == content.getId()) {
-                        updateGroupCover(g, content.getId());
+                        updateGroupCover(g, content.getId(), dao);
                     }
                 }
             }
@@ -163,9 +163,10 @@ public final class GroupHelper {
      *
      * @param g                 Group to update the cover from
      * @param contentIdToRemove Content ID removed from the given Group
+     * @param dao               DAO to use
      */
-    private static void updateGroupCover(@NonNull final Group g, long contentIdToRemove) {
-        List<Content> groupsContents = g.getContents();
+    private static void updateGroupCover(@NonNull final Group g, long contentIdToRemove, @NonNull CollectionDAO dao) {
+        List<Content> groupsContents = dao.selectContent(Helper.getPrimitiveArrayFromList(g.getContentIds()));
 
         // Empty group cover if there's just one content inside
         if (1 == groupsContents.size() && groupsContents.get(0).getId() == contentIdToRemove) {

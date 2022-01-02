@@ -23,7 +23,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
@@ -564,7 +563,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteGroupItems(@NonNull final List<Long> groupItemIds) {
         // Check if one of the GroupItems to delete is linked to the content that contains the group's cover picture
-        List<GroupItem> groupItems = db.selectGroupItems(Helper.getPrimitiveLongArrayFromList(groupItemIds));
+        List<GroupItem> groupItems = db.selectGroupItems(Helper.getPrimitiveArrayFromList(groupItemIds));
         for (GroupItem gi : groupItems) {
             ToOne<ImageFile> groupPicture = gi.group.getTarget().picture;
             // If so, remove the cover picture
@@ -572,7 +571,7 @@ public class ObjectBoxDAO implements CollectionDAO {
                 gi.group.getTarget().picture.setAndPutTarget(null);
         }
 
-        db.deleteGroupItems(Helper.getPrimitiveLongArrayFromList(groupItemIds));
+        db.deleteGroupItems(Helper.getPrimitiveArrayFromList(groupItemIds));
     }
 
 

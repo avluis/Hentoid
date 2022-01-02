@@ -31,19 +31,19 @@ public class DeleteData {
         private final Data.Builder builder = new Data.Builder();
 
         public void setContentIds(List<Long> value) {
-            builder.putLongArray(KEY_CONTENT_IDS, Helper.getPrimitiveLongArrayFromList(value));
+            builder.putLongArray(KEY_CONTENT_IDS, Helper.getPrimitiveArrayFromList(value));
         }
 
         public void setContentPurgeIds(List<Long> value) {
-            builder.putLongArray(KEY_CONTENT_PURGE_IDS, Helper.getPrimitiveLongArrayFromList(value));
+            builder.putLongArray(KEY_CONTENT_PURGE_IDS, Helper.getPrimitiveArrayFromList(value));
         }
 
         public void setGroupIds(List<Long> value) {
-            builder.putLongArray(KEY_GROUP_IDS, Helper.getPrimitiveLongArrayFromList(value));
+            builder.putLongArray(KEY_GROUP_IDS, Helper.getPrimitiveArrayFromList(value));
         }
 
         public void setQueueIds(List<Long> value) {
-            builder.putLongArray(KEY_QUEUE_IDS, Helper.getPrimitiveLongArrayFromList(value));
+            builder.putLongArray(KEY_QUEUE_IDS, Helper.getPrimitiveArrayFromList(value));
         }
 
         public void setDeleteGroupsOnly(boolean value) {

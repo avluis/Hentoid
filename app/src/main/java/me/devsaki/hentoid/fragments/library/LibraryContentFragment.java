@@ -705,7 +705,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         selectExtension.deselect(selectExtension.getSelections());
         List<Long> bookIds = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getId).toList();
-        ChangeGroupDialogFragment.invoke(this, Helper.getPrimitiveLongArrayFromList(bookIds));
+        ChangeGroupDialogFragment.invoke(this, Helper.getPrimitiveArrayFromList(bookIds));
     }
 
     /**

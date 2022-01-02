@@ -462,7 +462,7 @@ public class ObjectBoxDB {
             }
             List<Long> result = new ArrayList<>(filteredSiteCodes);
 
-            return Helper.getPrimitiveLongArrayFromList(result);
+            return Helper.getPrimitiveArrayFromList(result);
         } else {
             long[] result = new long[attrs.size()];
             if (!attrs.isEmpty()) {
@@ -644,7 +644,7 @@ public class ObjectBoxDB {
                 }
             }
         }
-        return Helper.getPrimitiveLongArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
+        return Helper.getPrimitiveArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
     }
 
     private Query<Content> selectContentUniversalAttributesQ(
@@ -748,7 +748,7 @@ public class ObjectBoxDB {
         contentQuery.or().in(Content_.id, additionalIds);
         if (groupId > 0) contentQuery.in(Content_.id, selectFilteredContent(groupId));
 
-        return Helper.getPrimitiveLongArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
+        return Helper.getPrimitiveArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
     }
 
     Query<Content> selectContentUniversalQ(
@@ -808,7 +808,7 @@ public class ObjectBoxDB {
             shuffleIds.addAll(queryIds);
         }
 
-        return Helper.getPrimitiveLongArrayFromList(shuffleIds);
+        return Helper.getPrimitiveArrayFromList(shuffleIds);
     }
 
     long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
@@ -950,7 +950,7 @@ public class ObjectBoxDB {
             }
         }
 
-        return Helper.getPrimitiveLongArrayFromList(results);
+        return Helper.getPrimitiveArrayFromList(results);
     }
 
     private void filterWithPageFavs(QueryBuilder<Content> builder) {

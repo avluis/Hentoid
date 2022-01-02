@@ -115,7 +115,7 @@ public final class Helper {
      * @param input List of values to transform
      * @return Given values as an array of primitive types
      */
-    public static long[] getPrimitiveLongArrayFromList(List<Long> input) {
+    public static long[] getPrimitiveArrayFromList(List<Long> input) {
         long[] ret = new long[input.size()];
         Iterator<Long> iterator = input.iterator();
         for (int i = 0; i < ret.length; i++) {
@@ -124,7 +124,7 @@ public final class Helper {
         return ret;
     }
 
-    public static int[] getPrimitiveLongArrayFromInt(Set<Integer> input) {
+    public static int[] getPrimitiveArrayFromSet(Set<Integer> input) {
         int[] ret = new int[input.size()];
         Iterator<Integer> iterator = input.iterator();
         for (int i = 0; i < ret.length; i++) {

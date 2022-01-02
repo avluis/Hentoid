@@ -415,7 +415,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             List<Group> selectedGroups = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().toList();
-            List<List<Content>> selectedContentLists = Stream.of(selectedGroups).map(Group::getContents).toList();
+            List<List<Content>> selectedContentLists = Stream.of(selectedGroups).map(g -> viewModel.getGroupContents(g)).toList();
             List<Content> selectedContent = new ArrayList<>();
             for (List<Content> list : selectedContentLists) selectedContent.addAll(list);
 
@@ -515,7 +515,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         List<Content> selectedContent = Stream.of(selectedItems)
                 .map(GroupDisplayItem::getGroup)
                 .withoutNulls()
-                .flatMap(g -> Stream.of(g.getContents()))
+                .flatMap(g -> Stream.of(viewModel.getGroupContents(g)))
                 .withoutNulls()
                 .filterNot(c -> c.getStorageUri().isEmpty())
                 .toList();
