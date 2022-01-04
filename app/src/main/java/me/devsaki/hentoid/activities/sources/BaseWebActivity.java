@@ -168,6 +168,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private Disposable searchExtraImagesdisposable;
     // Disposable to be used for content processing
     private Disposable processContentDisposable;
+    // Disposable to be used for content processing
+    protected Disposable extraProcessingDisposable;
 
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
 
@@ -461,6 +463,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         if (dao != null) dao.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
+        searchExtraImagesdisposable.dispose();
+        processContentDisposable.dispose();
+        extraProcessingDisposable.dispose();
         super.onDestroy();
     }
 

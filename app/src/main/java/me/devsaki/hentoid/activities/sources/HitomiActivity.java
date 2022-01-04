@@ -1,16 +1,31 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.net.Uri;
+import android.util.Pair;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.function.Consumer;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import okhttp3.ResponseBody;
+import timber.log.Timber;
 
 /**
  * Implements Hitomi.la source
@@ -59,7 +74,36 @@ public class HitomiActivity extends BaseWebActivity {
         return builder.toString();
     }
 
-    private static class HitomiWebClient extends CustomWebViewClient {
+    private void getImagesUrl(@NonNull Content onlineContent, @NonNull Consumer<List<String>> listCallback) {
+        // Get the gallery info file
+        String galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + onlineContent.getUniqueSiteId() + ".js";
+
+        // Get the gallery JSON
+        List<Pair<String, String>> headers = new ArrayList<>();
+        headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, onlineContent.getReaderUrl()));
+
+        if (extraProcessingDisposable != null)
+            extraProcessingDisposable.dispose(); // Cancel whichever process was happening before
+
+        extraProcessingDisposable = Single.fromCallable(() -> HttpHelper.getOnlineResource(galleryJsonUrl, headers, Site.HITOMI.useMobileAgent(), Site.HITOMI.useHentoidAgent(), Site.HITOMI.useWebviewAgent()))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        response -> {
+                            ResponseBody body = response.body();
+                            if (null == body) throw new IOException("Empty body");
+
+                            String json = body.string().replace("var galleryinfo = ", "");
+                            HitomiGalleryInfo gallery = JsonHelper.jsonToObject(json, HitomiGalleryInfo.class);
+                            HitomiGalleryInfo.HitomiGalleryPage firstPage = gallery.getFiles().get(0);
+                            webView.evaluateJavascript("url_from_url_from_hash(" + onlineContent.getUniqueSiteId() + "," + JsonHelper.serializeToJson(firstPage, HitomiGalleryInfo.HitomiGalleryPage.class) + ")",
+                                    s -> listCallback.accept(Collections.singletonList(s)));
+                        },
+                        Timber::w
+                );
+    }
+
+    private class HitomiWebClient extends CustomWebViewClient {
 
         HitomiWebClient(Site site, String[] filter, CustomWebActivity activity) {
             super(site, filter, activity);
@@ -76,6 +120,12 @@ public class HitomiActivity extends BaseWebActivity {
             }
 
             return super.shouldInterceptRequest(view, request);
+        }
+
+        @Override
+        protected void processContent(@NonNull Content content, @NonNull String url, boolean quickDownload) {
+            getImagesUrl(content, l -> Timber.i(">> %s", l.get(0)));
+            super.processContent(content, url, quickDownload);
         }
     }
 }
