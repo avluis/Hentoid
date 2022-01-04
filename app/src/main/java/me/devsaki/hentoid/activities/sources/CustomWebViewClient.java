@@ -527,9 +527,11 @@ class CustomWebViewClient extends WebViewClient {
                 compositeDisposable.add(
                         Single.fromCallable(() -> htmlAdapter.fromInputStream(parserStream, new URL(urlStr)).toContent(urlStr))
                                 .subscribeOn(Schedulers.computation())
+                                .observeOn(Schedulers.computation())
+                                .map(content -> processContent(content, urlStr, quickDownload))
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
-                                        content -> processContent(content, urlStr, quickDownload),
+                                        content2 -> activity.onResultReady(content2, quickDownload),
                                         throwable -> {
                                             Timber.e(throwable, "Error parsing content.");
                                             isHtmlLoaded.set(true);
@@ -555,9 +557,9 @@ class CustomWebViewClient extends WebViewClient {
      * @param content       Content to be processed
      * @param quickDownload True if the present call has been triggered by a quick download action
      */
-    protected void processContent(@Nonnull Content content, @NonNull String url, boolean quickDownload) {
+    protected Content processContent(@Nonnull Content content, @NonNull String url, boolean quickDownload) {
         if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
-            return;
+            return content;
 
         // Save useful download params for future use during download
         Map<String, String> params;
@@ -571,7 +573,8 @@ class CustomWebViewClient extends WebViewClient {
         content.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
         isHtmlLoaded.set(true);
 
-        activity.onResultReady(content, quickDownload);
+        return content;
+        //activity.onResultReady(content, quickDownload);
     }
 
     /**
