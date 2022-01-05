@@ -93,7 +93,6 @@ public class HitomiParser extends BaseImageListParser {
         String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
         String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
-        Timber.w("JSD RESULT = %s", jsResult);
         List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
 
         int order = 1;
@@ -111,7 +110,7 @@ public class HitomiParser extends BaseImageListParser {
     private String getJsPagesScript(@NonNull String galleryInfo) {
         StringBuilder sb = new StringBuilder();
         FileHelper.getAssetAsString(HentoidApp.getInstance().getAssets(), "hitomi_pages.js", sb);
-        return sb.toString().replace("$galleryInfo", galleryInfo).replace("$webp", Preferences.isDlHitomiWebp()?"true":"false");
+        return sb.toString().replace("$galleryInfo", galleryInfo).replace("$webp", Preferences.isDlHitomiWebp() ? "true" : "false");
     }
 
     @Override
