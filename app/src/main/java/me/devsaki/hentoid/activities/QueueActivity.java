@@ -324,7 +324,7 @@ public class QueueActivity extends BaseActivity {
             // Creating with the application Context fixes this, but is not generally recommended for view creation
             reviveWebview = new CloudflareWebView(Helper.getFixedContext(this), revivedSite);
         }
-        // TODO does is still work when not added to the layout at all ?
+        // TODO no need to add it to the layout
         reviveWebview.setVisibility(View.GONE);
         rootView.addView(reviveWebview);
         reviveWebview.loadUrl(revivedSite.getUrl());
