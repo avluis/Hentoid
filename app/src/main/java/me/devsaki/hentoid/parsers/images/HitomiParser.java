@@ -2,7 +2,10 @@ package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Pair;
+import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -11,10 +14,11 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import io.reactivex.Single;
+import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
@@ -22,10 +26,9 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.views.SingleLoadWebView;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
@@ -61,7 +64,103 @@ public class HitomiParser extends BaseImageListParser {
 
         ResponseBody body = response.body();
         if (null == body) throw new IOException("Empty body");
+        String galleryInfo = body.string();
 
+        final Object _lock = new Object();
+/*
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            SingleLoadWebView wv = new SingleLoadWebView(HentoidApp.getInstance(), Site.HITOMI);
+            wv.loadUrl(pageUrl);
+            Timber.i(">> loading");
+            while (wv.isLoading()) {
+                try {
+                    Thread.sleep(150);
+                } catch (InterruptedException e) {
+                    Timber.w(e);
+                    Thread.currentThread().interrupt();
+                }
+            }
+            Timber.i(">> done");
+//                    wv.evaluateJavascript(getJsPagesScript(galleryInfo), listCallback::accept);
+            String jsResult = getDataFromJs(getJsPagesScript(galleryInfo), wv).blockingGet();
+            Timber.w("JS RESULT = %s", jsResult);
+            synchronized (_lock) {
+                _lock.notifyAll();
+            }
+        });
+
+ */
+//        AppCompatActivity activity = HentoidApp.getCurrentActivity();
+//        if (null == activity) return result;
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
+            SingleLoadWebView wv = new SingleLoadWebView(HentoidApp.getInstance(), Site.HITOMI);
+//            wv.setVisibility(View.GONE);
+//            ViewGroup rootView = (ViewGroup) activity.findViewById(android.R.id.content).getRootView();
+//            rootView.addView(wv);
+            wv.loadUrl(pageUrl);
+            Timber.i(">> loading wv");
+
+            /*
+            while (wv.isLoading()) {
+                try {
+                    Thread.sleep(150);
+                } catch (InterruptedException e) {
+                    Timber.w(e);
+                    Thread.currentThread().interrupt();
+                }
+            }
+            Timber.i(">> done");
+//                    wv.evaluateJavascript(getJsPagesScript(galleryInfo), listCallback::accept);
+            String jsResult = getDataFromJs(getJsPagesScript(galleryInfo), wv).blockingGet();
+            Timber.w("JS RESULT = %s", jsResult);
+            synchronized (_lock) {
+                _lock.notifyAll();
+            }
+             */
+        });
+/*
+        ContextCompat.getMainExecutor(HentoidApp.getInstance()).execute(() -> {
+                    SingleLoadWebView wv = new SingleLoadWebView(HentoidApp.getInstance(), Site.HITOMI);
+                    wv.loadUrl(pageUrl);
+                    Timber.i(">> loading");
+                    while (wv.isLoading()) {
+                        try {
+                            Thread.sleep(150);
+                        } catch (InterruptedException e) {
+                            Timber.w(e);
+                            Thread.currentThread().interrupt();
+                        }
+                    }
+                    Timber.i(">> done");
+//                    wv.evaluateJavascript(getJsPagesScript(galleryInfo), listCallback::accept);
+                    String jsResult = getDataFromJs(getJsPagesScript(galleryInfo), wv).blockingGet();
+                    Timber.w("JS RESULT = %s", jsResult);
+                    synchronized (_lock) {
+                        _lock.notifyAll();
+                    }
+                }
+        );
+ */
+
+        synchronized (_lock) {
+            Timber.w("Waiting for lock");
+            _lock.wait();
+        }
+
+/*
+        ContextCompat.getMainExecutor(HentoidApp.getInstance()).execute(() -> {
+                    WebView wv = new WebView(HentoidApp.getInstance());
+                    wv.loadUrl(pageUrl);
+                }
+        );
+
+ */
+
+        /*
         String json = body.string().replace("var galleryinfo = ", "");
         HitomiGalleryInfo gallery = JsonHelper.jsonToObject(json, HitomiGalleryInfo.class);
 
@@ -83,8 +182,30 @@ public class HitomiParser extends BaseImageListParser {
             img.setDownloadParams(downloadParamsStr);
             result.add(img);
         }
+         */
 
         return result;
+    }
+
+    // TODO optimize
+    private String getJsPagesScript(@NonNull String galleryInfo) {
+        StringBuilder sb = new StringBuilder();
+        FileHelper.getAssetAsString(HentoidApp.getInstance().getAssets(), "hitomi_pages.js", sb);
+        return sb.toString().replace("$galleryInfo", galleryInfo);
+    }
+
+    private Single<String> getDataFromJs(@NonNull String command, @NonNull WebView webView) {
+        return Single.create(emitter -> {
+                    try {
+                        Timber.v(command);
+                        webView.evaluateJavascript(
+                                command, emitter::onSuccess
+                        );
+                    } catch (Exception e) {
+                        emitter.onError(e);
+                    }
+                }
+        );
     }
 
     private ImageFile buildWebpPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
@@ -103,7 +224,7 @@ public class HitomiParser extends BaseImageListParser {
         int nbFrontends = NUMBER_OF_FRONTENDS;
         int varG = Integer.valueOf(componentB, 16);
         int varO = 0;
-		if (varG < 0x80) nbFrontends = 2;
+        if (varG < 0x80) nbFrontends = 2;
         if (varG < 0x59) varG = 1;
 
         String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends, getSuffixFromExtension(extension));

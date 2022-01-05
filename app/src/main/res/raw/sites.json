@@ -2,6 +2,7 @@
   "sites": {
     "HITOMI": {
       "useMobileAgent": false,
+      "useWebviewAgent": false,
       "comment": "Hitomi needs a desktop agent to properly display gallery images on some devices"
     },
     "NHENTAI": {
