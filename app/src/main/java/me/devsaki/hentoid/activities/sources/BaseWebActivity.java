@@ -463,9 +463,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         if (dao != null) dao.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
-        searchExtraImagesdisposable.dispose();
-        processContentDisposable.dispose();
-        extraProcessingDisposable.dispose();
+        if (searchExtraImagesdisposable != null) searchExtraImagesdisposable.dispose();
+        if (searchExtraImagesdisposable != null) processContentDisposable.dispose();
+        if (searchExtraImagesdisposable != null) extraProcessingDisposable.dispose();
         super.onDestroy();
     }
 
