@@ -38,13 +38,12 @@ public class SingleLoadWebView extends WebView {
 
         if (BuildConfig.DEBUG) setWebContentsDebuggingEnabled(true);
 
-        client = new SingleLoadWebViewClient(site);
+        client = new SingleLoadWebViewClient();
         setWebViewClient(client);
     }
 
-    @Override
-    public void loadUrl(@NonNull String url) {
-        client.forceLoading();
+    public void loadUrl(@NonNull String url, Runnable onLoaded) {
+        client.startLoad(url, onLoaded);
         super.loadUrl(url);
     }
 
@@ -54,12 +53,9 @@ public class SingleLoadWebView extends WebView {
 
     static class SingleLoadWebViewClient extends WebViewClient {
 
-        private final Site site;
+        private String targetUrl;
+        private Runnable onLoaded;
         private final AtomicBoolean isPageLoading = new AtomicBoolean(false);
-
-        public SingleLoadWebViewClient(Site site) {
-            this.site = site;
-        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -71,10 +67,13 @@ public class SingleLoadWebView extends WebView {
         public void onPageFinished(WebView view, String url) {
             Timber.v(">>> onPageFinished %s", url);
             isPageLoading.set(false);
+            if (onLoaded != null && targetUrl.equalsIgnoreCase(url)) onLoaded.run();
         }
 
-        void forceLoading() {
+        void startLoad(String url, Runnable onLoaded) {
             isPageLoading.set(true);
+            this.targetUrl = url;
+            this.onLoaded = onLoaded;
         }
 
         boolean isLoading() {

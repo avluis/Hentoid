@@ -14,9 +14,11 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import io.reactivex.Single;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
@@ -26,6 +28,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.SingleLoadWebView;
@@ -43,6 +46,8 @@ public class HitomiParser extends BaseImageListParser {
     private static final String HOSTNAME_SUFFIX_JPG = "b";
     private static final String HOSTNAME_SUFFIX_WEBP = "a";
     private static final char HOSTNAME_PREFIX_BASE = 97;
+
+    private final Object loadedLock = new Object();
 
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         String pageUrl = onlineContent.getReaderUrl();
@@ -67,125 +72,48 @@ public class HitomiParser extends BaseImageListParser {
         String galleryInfo = body.string();
 
         final Object _lock = new Object();
-/*
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(() -> {
-            SingleLoadWebView wv = new SingleLoadWebView(HentoidApp.getInstance(), Site.HITOMI);
-            wv.loadUrl(pageUrl);
-            Timber.i(">> loading");
-            while (wv.isLoading()) {
-                try {
-                    Thread.sleep(150);
-                } catch (InterruptedException e) {
-                    Timber.w(e);
-                    Thread.currentThread().interrupt();
-                }
-            }
-            Timber.i(">> done");
-//                    wv.evaluateJavascript(getJsPagesScript(galleryInfo), listCallback::accept);
-            String jsResult = getDataFromJs(getJsPagesScript(galleryInfo), wv).blockingGet();
-            Timber.w("JS RESULT = %s", jsResult);
-            synchronized (_lock) {
-                _lock.notifyAll();
-            }
-        });
-
- */
-//        AppCompatActivity activity = HentoidApp.getCurrentActivity();
-//        if (null == activity) return result;
+        final AtomicReference<String> imagesStr = new AtomicReference<>();
 
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
             if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
             SingleLoadWebView wv = new SingleLoadWebView(HentoidApp.getInstance(), Site.HITOMI);
-//            wv.setVisibility(View.GONE);
-//            ViewGroup rootView = (ViewGroup) activity.findViewById(android.R.id.content).getRootView();
-//            rootView.addView(wv);
-            wv.loadUrl(pageUrl);
-            Timber.i(">> loading wv");
-
-            /*
-            while (wv.isLoading()) {
-                try {
-                    Thread.sleep(150);
-                } catch (InterruptedException e) {
-                    Timber.w(e);
-                    Thread.currentThread().interrupt();
-                }
-            }
-            Timber.i(">> done");
-//                    wv.evaluateJavascript(getJsPagesScript(galleryInfo), listCallback::accept);
-            String jsResult = getDataFromJs(getJsPagesScript(galleryInfo), wv).blockingGet();
-            Timber.w("JS RESULT = %s", jsResult);
-            synchronized (_lock) {
-                _lock.notifyAll();
-            }
-             */
-        });
-/*
-        ContextCompat.getMainExecutor(HentoidApp.getInstance()).execute(() -> {
-                    SingleLoadWebView wv = new SingleLoadWebView(HentoidApp.getInstance(), Site.HITOMI);
-                    wv.loadUrl(pageUrl);
-                    Timber.i(">> loading");
-                    while (wv.isLoading()) {
-                        try {
-                            Thread.sleep(150);
-                        } catch (InterruptedException e) {
-                            Timber.w(e);
-                            Thread.currentThread().interrupt();
-                        }
-                    }
-                    Timber.i(">> done");
-//                    wv.evaluateJavascript(getJsPagesScript(galleryInfo), listCallback::accept);
-                    String jsResult = getDataFromJs(getJsPagesScript(galleryInfo), wv).blockingGet();
-                    Timber.w("JS RESULT = %s", jsResult);
+            wv.loadUrl(pageUrl, () -> {
+                Timber.v(">> loaded wv");
+                wv.evaluateJavascript(getJsPagesScript(galleryInfo), s -> {
+                    imagesStr.set(s);
                     synchronized (_lock) {
                         _lock.notifyAll();
                     }
-                }
-        );
- */
+                });
+            });
+            Timber.i(">> loading wv");
+        });
 
         synchronized (_lock) {
             Timber.w("Waiting for lock");
             _lock.wait();
         }
 
-/*
-        ContextCompat.getMainExecutor(HentoidApp.getInstance()).execute(() -> {
-                    WebView wv = new WebView(HentoidApp.getInstance());
-                    wv.loadUrl(pageUrl);
-                }
-        );
-
- */
-
-        /*
-        String json = body.string().replace("var galleryinfo = ", "");
-        HitomiGalleryInfo gallery = JsonHelper.jsonToObject(json, HitomiGalleryInfo.class);
-
         Map<String, String> downloadParams = new HashMap<>();
         // Add referer information to downloadParams for future image download
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, pageUrl);
         String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
-        ImageFile img;
+        String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
+        Timber.w("JSD RESULT = %s", jsResult);
+        List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
+
         int order = 1;
-        boolean isHashAvailable;
-        for (HitomiGalleryInfo.HitomiGalleryPage page : gallery.getFiles()) {
-            isHashAvailable = (page.getHash() != null && !page.getHash().isEmpty());
-            if (1 == page.getHaswebp() && isHashAvailable && Preferences.isDlHitomiWebp())
-                img = buildWebpPicture(page, order++, gallery.getFiles().size());
-            else if (isHashAvailable)
-                img = buildHashPicture(page, order++, gallery.getFiles().size());
-            else img = buildSimplePicture(onlineContent, page, order++, gallery.getFiles().size());
+        for (String s : imageUrls) {
+            ImageFile img = ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED);
             img.setDownloadParams(downloadParamsStr);
             result.add(img);
         }
-         */
 
         return result;
     }
+
 
     // TODO optimize
     private String getJsPagesScript(@NonNull String galleryInfo) {
@@ -194,19 +122,6 @@ public class HitomiParser extends BaseImageListParser {
         return sb.toString().replace("$galleryInfo", galleryInfo);
     }
 
-    private Single<String> getDataFromJs(@NonNull String command, @NonNull WebView webView) {
-        return Single.create(emitter -> {
-                    try {
-                        Timber.v(command);
-                        webView.evaluateJavascript(
-                                command, emitter::onSuccess
-                        );
-                    } catch (Exception e) {
-                        emitter.onError(e);
-                    }
-                }
-        );
-    }
 
     private ImageFile buildWebpPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
         return buildHashPicture(page, order, maxPages, "webp", "webp");
