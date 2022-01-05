@@ -31,7 +31,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import me.devsaki.hentoid.views.SingleLoadWebView;
+import me.devsaki.hentoid.views.HitomiBackgroundWebView;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
@@ -77,7 +77,7 @@ public class HitomiParser extends BaseImageListParser {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
             if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
-            SingleLoadWebView wv = new SingleLoadWebView(HentoidApp.getInstance(), Site.HITOMI);
+            HitomiBackgroundWebView wv = new HitomiBackgroundWebView(HentoidApp.getInstance(), Site.HITOMI);
             wv.loadUrl(pageUrl, () -> {
                 Timber.v(">> loaded wv");
                 wv.evaluateJavascript(getJsPagesScript(galleryInfo), s -> {
