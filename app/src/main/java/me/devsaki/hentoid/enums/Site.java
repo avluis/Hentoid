@@ -69,6 +69,7 @@ public enum Site {
     private boolean hasCoverBasedPageUpdates = false;
     private boolean useCloudflare = false;
     private boolean simulateHumanReading = false;
+    private int requestsCapPerSecond = -1;
     private int parallelDownloadCap = 0;
 
     Site(int code,
@@ -159,6 +160,10 @@ public enum Site {
         return simulateHumanReading;
     }
 
+    public int getRequestsCapPerSecond() {
+        return requestsCapPerSecond;
+    }
+
     public int getParallelDownloadCap() {
         return parallelDownloadCap;
     }
@@ -196,6 +201,8 @@ public enum Site {
             simulateHumanReading = jsonSite.simulateHumanReading;
         if (jsonSite.parallelDownloadCap != null)
             parallelDownloadCap = jsonSite.parallelDownloadCap;
+        if (jsonSite.requestsCapPerSecond != null)
+            requestsCapPerSecond = jsonSite.requestsCapPerSecond;
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {
