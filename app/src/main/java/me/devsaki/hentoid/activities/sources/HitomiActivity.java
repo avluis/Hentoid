@@ -90,7 +90,8 @@ public class HitomiActivity extends BaseWebActivity {
             if (extraProcessingDisposable != null)
                 extraProcessingDisposable.dispose(); // Cancel whichever process was happening before
 
-            extraProcessingDisposable = Single.fromCallable(() -> HttpHelper.getOnlineResource(galleryJsonUrl, headers, Site.HITOMI.useMobileAgent(), Site.HITOMI.useHentoidAgent(), Site.HITOMI.useWebviewAgent()))
+            Timber.v(">> fetching gallery JS");
+            extraProcessingDisposable = Single.fromCallable(() -> HttpHelper.getOnlineResourceFast(galleryJsonUrl, headers, Site.HITOMI.useMobileAgent(), Site.HITOMI.useHentoidAgent(), Site.HITOMI.useWebviewAgent()))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
@@ -98,7 +99,9 @@ public class HitomiActivity extends BaseWebActivity {
                                 ResponseBody body = response.body();
                                 if (null == body) throw new IOException("Empty body");
 
+                                Timber.v(">> Gallery JS ready");
                                 String galleryInfo = body.string();
+                                Timber.v(">> Running reader JS");
                                 webView.evaluateJavascript(getJsPagesScript(galleryInfo), listCallback::accept);
                             },
                             Timber::w
@@ -159,13 +162,14 @@ public class HitomiActivity extends BaseWebActivity {
             final AtomicReference<String> imagesStr = new AtomicReference<>();
             final Object _lock = new Object();
             getImagesUrl(content, s -> {
+                Timber.v(">> Reader JS OK");
                 imagesStr.set(s);
                 synchronized (_lock) {
                     _lock.notifyAll();
                 }
             }, quickDownload);
             synchronized (_lock) {
-                Timber.w("Waiting for lock");
+                Timber.w(">> Waiting for lock");
                 try {
                     _lock.wait();
                 } catch (InterruptedException e) {
@@ -173,6 +177,7 @@ public class HitomiActivity extends BaseWebActivity {
                 }
             }
             String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
+            Timber.v(">> JSResult OK");
             try {
                 List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
 
