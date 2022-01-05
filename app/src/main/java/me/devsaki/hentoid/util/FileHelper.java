@@ -903,8 +903,6 @@ public class FileHelper {
             String volumeId = getVolumeIdFromUri(f.getUri());
             StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
 
-            Timber.v("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
-
             List<StorageVolume> volumes = mgr.getStorageVolumes();
             StorageVolume targetVolume = null;
             StorageVolume primaryVolume = null;
@@ -912,8 +910,6 @@ public class FileHelper {
             if (1 == volumes.size()) targetVolume = volumes.get(0);
             else { // Look for a match among listed volumes
                 for (StorageVolume v : volumes) {
-                    Timber.v("Storage volume ID %s", v.getUuid());
-
                     if (v.isPrimary()) primaryVolume = v;
 
                     if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
@@ -927,7 +923,6 @@ public class FileHelper {
             // NB : necessary to avoid defaulting to the root on rooted phones
             // (rooted phone's root is a separate volume with specific memory usage figures)
             if (null == targetVolume) {
-                Timber.v("Defaulting to Primary");
                 targetVolume = primaryVolume;
             }
 
@@ -944,8 +939,6 @@ public class FileHelper {
         // Use StorageStatsManager on primary volume
         @TargetApi(26)
         private void processPrimary(@NonNull Context context, @NonNull StorageVolume volume) {
-            Timber.v(">> %s PRIMARY", volume.getUuid());
-
             UUID uuid = StorageManager.UUID_DEFAULT;
             try {
                 StorageStatsManager storageStatsManager =
@@ -962,8 +955,6 @@ public class FileHelper {
         // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
         @TargetApi(26)
         private void processSecondary(@NonNull StorageVolume volume) {
-            Timber.v(">> %s NOT PRIMARY", volume.getUuid());
-
             try {
                 String volumePath = getVolumePath(volume);
                 if (!volumePath.isEmpty()) {
