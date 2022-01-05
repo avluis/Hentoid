@@ -25,10 +25,10 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.HitomiBackgroundWebView;
@@ -40,14 +40,6 @@ import timber.log.Timber;
  * Handles parsing of content from hitomi.la
  */
 public class HitomiParser extends BaseImageListParser {
-
-    // Reproduction of the Hitomi.la Javascript to find the hostname of the image server
-    private static final int NUMBER_OF_FRONTENDS = 3;
-    private static final String HOSTNAME_SUFFIX_JPG = "b";
-    private static final String HOSTNAME_SUFFIX_WEBP = "a";
-    private static final char HOSTNAME_PREFIX_BASE = 97;
-
-    private final Object loadedLock = new Object();
 
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         String pageUrl = onlineContent.getReaderUrl();
@@ -119,50 +111,7 @@ public class HitomiParser extends BaseImageListParser {
     private String getJsPagesScript(@NonNull String galleryInfo) {
         StringBuilder sb = new StringBuilder();
         FileHelper.getAssetAsString(HentoidApp.getInstance().getAssets(), "hitomi_pages.js", sb);
-        return sb.toString().replace("$galleryInfo", galleryInfo);
-    }
-
-
-    private ImageFile buildWebpPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
-        return buildHashPicture(page, order, maxPages, "webp", "webp");
-    }
-
-    private ImageFile buildHashPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
-        return buildHashPicture(page, order, maxPages, "images", FileHelper.getExtension(page.getName()));
-    }
-
-    private ImageFile buildHashPicture(@NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages, String folder, String extension) {
-        String hash = page.getHash();
-        String componentA = hash.substring(hash.length() - 1);
-        String componentB = hash.substring(hash.length() - 3, hash.length() - 1);
-
-        int nbFrontends = NUMBER_OF_FRONTENDS;
-        int varG = Integer.valueOf(componentB, 16);
-        int varO = 0;
-        if (varG < 0x80) nbFrontends = 2;
-        if (varG < 0x59) varG = 1;
-
-        String imageSubdomain = subdomainFromGalleryId(varG, nbFrontends, getSuffixFromExtension(extension));
-        //String imageSubdomain = (char) (HOSTNAME_PREFIX_BASE + varO) + getSuffixFromExtension(extension);
-        String pageUrl = "https://" + imageSubdomain + ".hitomi.la/" + folder + "/" + componentA + "/" + componentB + "/" + hash + "." + extension;
-
-        return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
-    }
-
-    private ImageFile buildSimplePicture(@NonNull Content content, @NonNull HitomiGalleryInfo.HitomiGalleryPage page, int order, int maxPages) {
-        int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
-        String imageSubdomain = subdomainFromGalleryId(referenceId, NUMBER_OF_FRONTENDS, getSuffixFromExtension(FileHelper.getExtension(page.getName())));
-        String pageUrl = "https://" + imageSubdomain + ".hitomi.la/galleries/" + content.getUniqueSiteId() + "/" + page.getName();
-
-        return ParseHelper.urlToImageFile(pageUrl, order, maxPages, StatusContent.SAVED);
-    }
-
-    private String getSuffixFromExtension(String extension) {
-        return extension.equalsIgnoreCase("webp") || extension.equalsIgnoreCase("avif") ? HOSTNAME_SUFFIX_WEBP : HOSTNAME_SUFFIX_JPG;
-    }
-
-    private String subdomainFromGalleryId(int referenceId, int nbFrontends, String suffix) {
-        return ((char) (HOSTNAME_PREFIX_BASE + (referenceId % nbFrontends))) + suffix;
+        return sb.toString().replace("$galleryInfo", galleryInfo).replace("$webp", Preferences.isDlHitomiWebp()?"true":"false");
     }
 
     @Override
