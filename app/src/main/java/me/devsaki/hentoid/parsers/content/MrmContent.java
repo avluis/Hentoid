@@ -30,6 +30,8 @@ public class MrmContent extends BaseContentParser {
     private List<Element> genres;
     @Selector(value = ".entry-header .entry-tags a[href*='/tag/']")
     private List<Element> tags;
+    @Selector(value = ".entry-content img")
+    private List<Element> images;
 
 
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
@@ -41,6 +43,8 @@ public class MrmContent extends BaseContentParser {
             title = StringHelper.removeNonPrintableChars(title.trim());
             content.setTitle(title);
         } else content.setTitle(NO_TITLE);
+
+        if (!images.isEmpty()) content.setCoverImageUrl(ParseHelper.getImgSrc(images.get(0)));
 
         AttributeMap attributes = new AttributeMap();
         // On MRM, most titles are formatted "[Artist] Title" although there's no actual artist field on the book page
