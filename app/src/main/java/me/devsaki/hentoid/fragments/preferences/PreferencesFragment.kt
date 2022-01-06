@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
@@ -13,6 +14,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposables
@@ -44,7 +47,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     SharedPreferences.OnSharedPreferenceChangeListener {
 
     lateinit var viewModel: PreferencesViewModel
-    private var rootView: View? = null
 
     companion object {
         private const val KEY_ROOT = "root"
@@ -72,7 +74,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        rootView = view
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel =
             ViewModelProvider(requireActivity(), vmFactory)[PreferencesViewModel::class.java]
@@ -87,7 +88,6 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     override fun onDestroy() {
         preferenceScreen.sharedPreferences
             .unregisterOnSharedPreferenceChangeListener(this)
-        rootView = null // Avoid leaks
         super.onDestroy()
     }
 
@@ -237,6 +237,17 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onDoHChanged() {
+        if (Preferences.getDnsOverHttps() > -1 && listView != null) {
+            val snack = Snackbar.make(
+                listView,
+                R.string.doh_warning,
+                BaseTransientBottomBar.LENGTH_INDEFINITE
+            )
+            snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).maxLines =
+                5
+            snack.setAction("OK") { snack.dismiss() }
+            snack.show()
+        }
         runBlocking {
             launch(Dispatchers.Default) {
                 OkHttpClientSingleton.reset()
