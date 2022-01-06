@@ -452,7 +452,8 @@ class CustomWebViewClient extends WebViewClient {
     protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
         Helper.assertNonUiThread();
 
-        if (BuildConfig.DEBUG) Timber.v("WebView : parseResponse %s", urlStr);
+        if (BuildConfig.DEBUG)
+            Timber.v("WebView : parseResponse %s %s", analyzeForDownload ? "DL" : "", urlStr);
 
         // If we're here for dirty content removal only, and can't use the OKHTTP request, it's no use going further
         if (!analyzeForDownload && !canUseSingleOkHttpRequest()) return null;
