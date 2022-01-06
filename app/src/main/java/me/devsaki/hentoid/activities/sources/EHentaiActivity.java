@@ -15,7 +15,6 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.EhentaiContent;
-import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -55,9 +54,11 @@ public class EHentaiActivity extends BaseWebActivity {
             ContentParser contentParser = new EhentaiContent();
             compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
                     .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.computation())
+                    .map(content -> super.processContent(content, urlStr, quickDownload))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            content -> super.processContent(content, urlStr, quickDownload),
+                            content2 -> activity.onResultReady(content2, quickDownload),
                             Timber::w
                     )
             );

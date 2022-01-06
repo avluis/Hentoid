@@ -105,9 +105,11 @@ public class PixivActivity extends BaseWebActivity {
             ContentParser contentParser = new PixivContent();
             compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
                     .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.computation())
+                    .map(content -> super.processContent(content, content.getGalleryUrl(), quickDownload))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            content -> super.processContent(content, content.getGalleryUrl(), quickDownload),
+                            content2 -> activity.onResultReady(content2, quickDownload),
                             Timber::e
                     )
             );

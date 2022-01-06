@@ -574,7 +574,6 @@ class CustomWebViewClient extends WebViewClient {
         isHtmlLoaded.set(true);
 
         return content;
-        //activity.onResultReady(content, quickDownload);
     }
 
     /**

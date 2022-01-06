@@ -70,9 +70,10 @@ public class LusciousActivity extends BaseWebActivity {
             ContentParser contentParser = new LusciousContent();
             compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
                     .subscribeOn(Schedulers.io())
+                    .map(content -> super.processContent(content, content.getGalleryUrl(), quickDownload))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            content -> super.processContent(content, content.getGalleryUrl(), quickDownload),
+                            content2 -> activity.onResultReady(content2, quickDownload),
                             Timber::e
                     )
             );
