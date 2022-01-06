@@ -10,7 +10,6 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 /**
- * Created by neko on 20/06/2015.
  * Site enumerator
  */
 public enum Site {
@@ -41,6 +40,7 @@ public enum Site {
     TOONILY(22, "Toonily", "https://toonily.com/", R.drawable.ic_site_toonily),
     ALLPORNCOMIC(23, "Allporncomic", "https://allporncomic.com/", R.drawable.ic_site_allporncomic),
     PIXIV(24, "Pixiv", "https://www.pixiv.net/", R.drawable.ic_site_pixiv),
+    MANHWA18(25, "Manhwa18", "https://manhwa18.com/", R.drawable.ic_site_manhwa18),
     NONE(98, "none", "", R.drawable.ic_external_library), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_site_panda); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
@@ -69,6 +69,7 @@ public enum Site {
     private boolean hasCoverBasedPageUpdates = false;
     private boolean useCloudflare = false;
     private boolean simulateHumanReading = false;
+    private int requestsCapPerSecond = -1;
     private int parallelDownloadCap = 0;
 
     Site(int code,
@@ -159,6 +160,10 @@ public enum Site {
         return simulateHumanReading;
     }
 
+    public int getRequestsCapPerSecond() {
+        return requestsCapPerSecond;
+    }
+
     public int getParallelDownloadCap() {
         return parallelDownloadCap;
     }
@@ -193,6 +198,8 @@ public enum Site {
             simulateHumanReading = jsonSite.simulateHumanReading;
         if (jsonSite.parallelDownloadCap != null)
             parallelDownloadCap = jsonSite.parallelDownloadCap;
+        if (jsonSite.requestsCapPerSecond != null)
+            requestsCapPerSecond = jsonSite.requestsCapPerSecond;
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {

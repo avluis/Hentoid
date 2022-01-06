@@ -18,10 +18,7 @@ import me.devsaki.hentoid.core.clearWebviewCache
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.json.JsonSettings
-import me.devsaki.hentoid.util.FileHelper
-import me.devsaki.hentoid.util.JsonHelper
-import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.*
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
@@ -160,7 +157,12 @@ class ToolsFragment : PreferenceFragmentCompat() {
                     JsonHelper.JSON_MIME_TYPE
                 ).use { newDownload ->
                     ByteArrayInputStream(json.toByteArray(StandardCharsets.UTF_8))
-                        .use { input -> FileHelper.copy(input, newDownload) }
+                        .use { input ->
+                            Helper.copy(
+                                input,
+                                newDownload
+                            )
+                        }
                 }
                 Snackbar.make(
                     it,

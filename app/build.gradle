@@ -35,14 +35,12 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
-        versionCode 187
-        versionName '1.15.14'
+        versionCode 188
+        versionName '1.15.15'
 
-        def fkToken = '\"' + (System.getenv("FK_TOKEN") ?: "") + '\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
 
-        buildConfigField "String", "FK_TOKEN", fkToken
         buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
         buildConfigField "boolean", "INCLUDE_LEAK_CANARY", includeLeakCanary
 
@@ -97,11 +95,11 @@ dependencies {
      * TESTING
      */
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:4.0.0'
+    testImplementation 'org.mockito:mockito-core:4.1.0'
     testImplementation 'androidx.test:core:1.4.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation "androidx.arch.core:core-testing:2.1.0"
-    testImplementation 'org.robolectric:robolectric:4.7'
+    testImplementation 'org.robolectric:robolectric:4.7.1'
     // Auto Timber trees that redirect logs to the JUnit output
     testImplementation 'net.lachlanmckee:timber-junit-rule:1.0.1'
     androidTestImplementation 'androidx.test:runner:1.4.0'
@@ -111,29 +109,24 @@ dependencies {
     /**
      * ANDROID FRAMEWORK
      */
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.31"
-
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'com.google.android.material:material:1.4.0-alpha01'
+    implementation 'androidx.appcompat:appcompat:1.4.0'
+    implementation 'com.google.android.material:material:1.5.0-beta01'
     implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.media:media:1.2.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
-    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     implementation 'androidx.paging:paging-runtime:2.1.2'
-    implementation 'androidx.fragment:fragment-ktx:1.3.6'
+    implementation 'androidx.fragment:fragment-ktx:1.4.0'
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
-    def android_work_version = '2.7.0'
+    def android_work_version = '2.7.1'
     implementation "androidx.work:work-runtime:$android_work_version"
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
     // For ViewModel to work
-    def android_lifecycle_version = '2.3.1'
-    implementation "androidx.lifecycle:lifecycle-viewmodel:$android_lifecycle_version"
+    def android_lifecycle_version = '2.4.0'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
     kapt("androidx.lifecycle:lifecycle-common-java8:$android_lifecycle_version")
@@ -145,11 +138,13 @@ dependencies {
     // Image loader: github.com/bumptech/glide
     def glide_version = "4.12.0"
     implementation "com.github.bumptech.glide:glide:$glide_version"
-    kapt("com.github.bumptech.glide:compiler:$glide_version")
-    implementation "com.github.bumptech.glide:okhttp3-integration:$glide_version"
+    kapt "com.github.bumptech.glide:compiler:$glide_version"
+    implementation ("com.github.bumptech.glide:okhttp3-integration:$glide_version"){
+        exclude group: 'glide-parent'
+    }
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.16.0'
+    implementation 'com.github.penfeizhou.android.animation:apng:2.17.0'
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     // implementation 'com.waynejo:androidndkgif:0.3.3'
@@ -157,6 +152,8 @@ dependencies {
     /**
      * UI
      */
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
+
     // https://github.com/mikepenz/FastAdapter
     def fastadapter_version = '5.5.1'
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
@@ -188,7 +185,7 @@ dependencies {
     implementation 'me.zhanghai.android.fastscroll:library:1.1.7'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
-    implementation 'com.google.android:flexbox:2.0.1'
+    implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
     def auto_about_version = '8.9.1'
     implementation "com.mikepenz:aboutlibraries-core:$auto_about_version"
@@ -198,13 +195,15 @@ dependencies {
     /**
      * NETWORKING
      */
-    // Java serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
+    // JSON serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
     def moshi_version = '1.12.0'
     implementation "com.squareup.moshi:moshi:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
 
     // HTTP & HTTP/2 client: github.com/square/okhttp
-    implementation 'com.squareup.okhttp3:okhttp:4.9.1'
+    def okhttpVersion = "4.9.1"
+    implementation "com.squareup.okhttp3:okhttp:$okhttpVersion"
+    implementation "com.squareup.okhttp3:okhttp-dnsoverhttps:$okhttpVersion"
 
     // For downloading images : github.com/google/volley
     implementation 'com.android.volley:volley:1.2.1'

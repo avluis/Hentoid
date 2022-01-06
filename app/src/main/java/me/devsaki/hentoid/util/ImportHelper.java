@@ -353,11 +353,10 @@ public class ImportHelper {
                 String subfolderName = subfolder.getName();
                 if (subfolderName != null) {
                     for (Site s : Site.values())
-                        if (subfolderName.equals(s.getFolder())) {
+                        if (subfolderName.equalsIgnoreCase(s.getFolder())) {
                             // Search subfolders within identified download folders
                             // NB : for performance issues, we assume the mere presence of a subfolder inside a download folder means there's an existing book
-                            List<DocumentFile> bookFolders = explorer.listFolders(context, subfolder);
-                            if (!bookFolders.isEmpty()) return true;
+                            if (explorer.hasFolders(subfolder)) return true;
                             break;
                         }
                 }

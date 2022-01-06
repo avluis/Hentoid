@@ -20,9 +20,9 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.documentfile.provider.DocumentFile;
-import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 //import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -31,7 +31,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -49,7 +51,6 @@ import me.devsaki.hentoid.json.JsonContentCollection;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 06/05/2016.
  * Generic utility class
  */
 public final class Helper {
@@ -84,6 +85,12 @@ public final class Helper {
         return list;
     }
 
+    public static Set<Long> getSetFromPrimitiveArray(long[] input) {
+        Set<Long> list = new HashSet<>(input.length);
+        for (long n : input) list.add(n);
+        return list;
+    }
+
     /**
      * Create a Collections.List from the given array of primitive values
      *
@@ -96,13 +103,19 @@ public final class Helper {
         return list;
     }
 
+    public static Set<Integer> getSetFromPrimitiveArray(int[] input) {
+        Set<Integer> list = new HashSet<>(input.length);
+        for (int n : input) list.add(n);
+        return list;
+    }
+
     /**
      * Create an array of primitive types from the given List of values
      *
      * @param input List of values to transform
      * @return Given values as an array of primitive types
      */
-    public static long[] getPrimitiveLongArrayFromList(List<Long> input) {
+    public static long[] getPrimitiveArrayFromList(List<Long> input) {
         long[] ret = new long[input.size()];
         Iterator<Long> iterator = input.iterator();
         for (int i = 0; i < ret.length; i++) {
@@ -111,7 +124,7 @@ public final class Helper {
         return ret;
     }
 
-    public static int[] getPrimitiveLongArrayFromInt(Set<Integer> input) {
+    public static int[] getPrimitiveArrayFromSet(Set<Integer> input) {
         int[] ret = new int[input.size()];
         Iterator<Integer> iterator = input.iterator();
         for (int i = 0; i < ret.length; i++) {
@@ -145,11 +158,7 @@ public final class Helper {
         List<InputStream> result = new ArrayList<>();
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-        byte[] buffer = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
-        int len;
-        while ((len = stream.read(buffer)) > -1) baos.write(buffer, 0, len);
-        baos.flush();
+        copy(stream, baos);
 
         for (int i = 0; i < numberDuplicates; i++)
             result.add(new ByteArrayInputStream(baos.toByteArray()));
@@ -291,9 +300,26 @@ public final class Helper {
     }
 
     /**
+     * Copy all data from the given InputStream to the given OutputStream
+     *
+     * @param in  InputStream to read data from
+     * @param out OutputStream to write data to
+     * @throws IOException If something horrible happens during I/O
+     */
+    public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
+        // Transfer bytes from in to out
+        byte[] buf = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        out.flush();
+    }
+
+    /**
      * Cleans the given Disposable as soon as the attached Lifecycle is destroyed
      */
-    public static class LifecycleRxCleaner implements LifecycleObserver {
+    public static class LifecycleRxCleaner implements DefaultLifecycleObserver, LifecycleObserver {
 
         private final Disposable disposable;
 
@@ -301,8 +327,8 @@ public final class Helper {
             this.disposable = disposable;
         }
 
-        @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
-        private void onDestroy() {
+        @Override
+        public void onDestroy(@NonNull LifecycleOwner owner) {
             disposable.dispose();
         }
 

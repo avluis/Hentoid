@@ -31,7 +31,6 @@ import java.io.OutputStream;
 import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -220,7 +219,7 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void searchGroup(Grouping grouping, @NonNull String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping.getId(), query, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
+        currentGroupsSource = dao.selectGroupsLive(grouping.getId(), query, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
         groups.addSource(currentGroupsSource, groups::setValue);
     }
 
@@ -287,7 +286,7 @@ public class LibraryViewModel extends AndroidViewModel {
         }
 
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroups(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
+        currentGroupsSource = dao.selectGroupsLive(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
         groups.addSource(currentGroupsSource, this::onGroupsChanged);
     }
 
@@ -711,6 +710,10 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
+    public List<Content> getGroupContents(@NonNull Group group) {
+        return dao.selectContent(Helper.getPrimitiveArrayFromList(group.getContentIds()));
+    }
+
     public void newGroup(@NonNull final Grouping grouping, @NonNull final String newGroupName,
                          @NonNull final Runnable onNameExists) {
         // Check if the group already exists
@@ -740,14 +743,16 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void renameGroup(@NonNull final Group group, @NonNull final String newGroupName,
-                            @NonNull final Runnable onNameExists) {
+                            @NonNull final Consumer<Integer> onFail, @NonNull final Runnable onSuccess) {
         // Check if the group already exists
         List<Group> localGroups = getGroups().getValue();
         if (null == localGroups) return;
 
         List<Group> groupMatchingName = Stream.of(localGroups).filter(g -> g.name.equalsIgnoreCase(newGroupName)).toList();
         if (!groupMatchingName.isEmpty()) { // Existing group with the same name
-            onNameExists.run();
+            onFail.accept(R.string.group_name_exists);
+        } else if (group.grouping.equals(Grouping.CUSTOM) && 1 == group.getSubtype()) { // "Ungrouped" group can't be renamed because it stops to work (TODO investgate that)
+            onFail.accept(R.string.group_rename_forbidden);
         } else {
             group.name = newGroupName;
             compositeDisposable.add(
@@ -760,8 +765,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             })
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
-                                    () -> { // Update is done through LiveData
-                                    },
+                                    onSuccess::run,
                                     Timber::e
                             )
             );
@@ -1027,7 +1031,7 @@ public class LibraryViewModel extends AndroidViewModel {
                 img.getContent().setTarget(null); // Clear content
                 img.setIsCover(0 == position);
                 img.setOrder(position++);
-                img.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", img.getOrder()));
+                img.computeName(nbMaxDigits);
             }
 
             splitContent.setImageFiles(images);

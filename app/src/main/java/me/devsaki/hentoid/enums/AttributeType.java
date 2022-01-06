@@ -9,7 +9,6 @@ import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
 
 /**
- * Created by DevSaki on 10/05/2015.
  * Attribute Type enumerator
  */
 public enum AttributeType {

@@ -5,11 +5,15 @@ import android.view.View;
 
 import me.devsaki.hentoid.util.Preferences;
 
-public final class VolumeKeyListener implements View.OnKeyListener {
+public final class ViewerKeyListener implements View.OnKeyListener {
 
     private Runnable onVolumeDownListener;
 
     private Runnable onVolumeUpListener;
+
+    private Runnable onKeyLeftListener;
+
+    private Runnable onKeyRightListener;
 
     private Runnable onBackListener;
 
@@ -23,32 +27,42 @@ public final class VolumeKeyListener implements View.OnKeyListener {
     private long nextNotifyTime;
 
 
-    public VolumeKeyListener setOnVolumeDownListener(Runnable onVolumeDownListener) {
+    public ViewerKeyListener setOnVolumeDownListener(Runnable onVolumeDownListener) {
         this.onVolumeDownListener = onVolumeDownListener;
         return this;
     }
 
-    public VolumeKeyListener setOnVolumeUpListener(Runnable onVolumeUpListener) {
+    public ViewerKeyListener setOnVolumeUpListener(Runnable onVolumeUpListener) {
         this.onVolumeUpListener = onVolumeUpListener;
         return this;
     }
 
-    public VolumeKeyListener setOnBackListener(Runnable onBackListener) {
+    public ViewerKeyListener setOnKeyLeftListener(Runnable onKeyLeftListener) {
+        this.onKeyLeftListener = onKeyLeftListener;
+        return this;
+    }
+
+    public ViewerKeyListener setOnKeyRightListener(Runnable onKeyRightListener) {
+        this.onKeyRightListener = onKeyRightListener;
+        return this;
+    }
+
+    public ViewerKeyListener setOnBackListener(Runnable onBackListener) {
         this.onBackListener = onBackListener;
         return this;
     }
 
-    public VolumeKeyListener setCooldown(int cooldown) {
+    public ViewerKeyListener setCooldown(int cooldown) {
         this.cooldown = cooldown;
         return this;
     }
 
-    public VolumeKeyListener setTurboCooldown(int turboCooldown) {
+    public ViewerKeyListener setTurboCooldown(int turboCooldown) {
         this.turboCooldown = turboCooldown;
         return this;
     }
 
-    public VolumeKeyListener setTurboEnabled(boolean isTurboEnabled) {
+    public ViewerKeyListener setTurboEnabled(boolean isTurboEnabled) {
         this.isTurboEnabled = isTurboEnabled;
         return this;
     }
@@ -75,6 +89,10 @@ public final class VolumeKeyListener implements View.OnKeyListener {
             listener = onVolumeDownListener;
         } else if (isVolumeKey(keyCode, KeyEvent.KEYCODE_VOLUME_UP)) {
             listener = onVolumeUpListener;
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT && Preferences.isViewerKeyboardToTurn()) {
+            listener = onKeyLeftListener;
+        } else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && Preferences.isViewerKeyboardToTurn()) {
+            listener = onKeyRightListener;
         } else if (keyCode == KeyEvent.KEYCODE_BACK) {
             listener = onBackListener;
         } else {
@@ -94,6 +112,8 @@ public final class VolumeKeyListener implements View.OnKeyListener {
     public void clear() {
         onVolumeDownListener = null;
         onVolumeUpListener = null;
+        onKeyLeftListener = null;
+        onKeyRightListener = null;
         onBackListener = null;
     }
 }

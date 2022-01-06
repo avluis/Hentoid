@@ -10,6 +10,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.UriPermission;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -53,7 +54,6 @@ import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 08/05/2016.
  * Generic file-related utility class
  */
 public class FileHelper {
@@ -424,9 +424,7 @@ public class FileHelper {
      */
     @Nullable
     public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
-        List<DocumentFile> result = listDocumentFiles(context, parent, subfolderName, true, false);
-        if (!result.isEmpty()) return result.get(0);
-        else return null;
+        return findDocumentFile(context, parent, subfolderName, true, false);
     }
 
     /**
@@ -439,9 +437,7 @@ public class FileHelper {
      */
     @Nullable
     public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String fileName) {
-        List<DocumentFile> result = listDocumentFiles(context, parent, fileName, false, true);
-        if (!result.isEmpty()) return result.get(0);
-        else return null;
+        return findDocumentFile(context, parent, fileName, false, true);
     }
 
     /**
@@ -467,7 +463,7 @@ public class FileHelper {
     public static List<DocumentFile> listFoldersFilter(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
         List<DocumentFile> result = Collections.emptyList();
         try (FileExplorer fe = new FileExplorer(context, parent)) {
-            result = fe.listDocumentFiles(context, parent, filter, true, false);
+            result = fe.listDocumentFiles(context, parent, filter, true, false, false);
         } catch (IOException e) {
             Timber.w(e);
         }
@@ -485,7 +481,7 @@ public class FileHelper {
     public static List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
         List<DocumentFile> result = Collections.emptyList();
         try (FileExplorer fe = new FileExplorer(context, parent)) {
-            result = fe.listDocumentFiles(context, parent, filter, false, true);
+            result = fe.listDocumentFiles(context, parent, filter, false, true, false);
         } catch (IOException e) {
             Timber.w(e);
         }
@@ -494,6 +490,7 @@ public class FileHelper {
 
     /**
      * List all elements inside the given parent folder (non recursive) that match the given criteria
+     * TODO udpate doc
      *
      * @param context     Context to use
      * @param parent      Parent folder to list elements from
@@ -502,18 +499,19 @@ public class FileHelper {
      * @param listFiles   True if the listed elements have to include files (non-folders)
      * @return Elements of the given parent folder matching the given criteria
      */
-    private static List<DocumentFile> listDocumentFiles(@NonNull final Context context,
-                                                        @NonNull final DocumentFile parent,
-                                                        final String nameFilter,
-                                                        boolean listFolders,
-                                                        boolean listFiles) {
+    @Nullable
+    private static DocumentFile findDocumentFile(@NonNull final Context context,
+                                                 @NonNull final DocumentFile parent,
+                                                 final String nameFilter,
+                                                 boolean listFolders,
+                                                 boolean listFiles) {
         List<DocumentFile> result = Collections.emptyList();
         try (FileExplorer fe = new FileExplorer(context, parent)) {
-            result = fe.listDocumentFiles(context, parent, createNameFilterEquals(nameFilter), listFolders, listFiles);
+            result = fe.listDocumentFiles(context, parent, createNameFilterEquals(nameFilter), listFolders, listFiles, true);
         } catch (IOException e) {
             Timber.w(e);
         }
-        return result;
+        return result.isEmpty() ? null : result.get(0);
     }
 
     /**
@@ -739,23 +737,6 @@ public class FileHelper {
     }
 
     /**
-     * Copy all data from the given InputStream to the given OutputStream
-     *
-     * @param in  InputStream to read data from
-     * @param out OutputStream to write data to
-     * @throws IOException If something horrible happens during I/O
-     */
-    public static void copy(@NonNull InputStream in, @NonNull OutputStream out) throws IOException {
-        // Transfer bytes from in to out
-        byte[] buf = new byte[FILE_IO_BUFFER_SIZE];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
-        out.flush();
-    }
-
-    /**
      * Copy the given file to the target location, giving the copy the given name
      *
      * @param context         Context to use
@@ -780,7 +761,7 @@ public class FileHelper {
         if (null == newFile || !newFile.exists()) return null;
         try (OutputStream newDownload = FileHelper.getOutputStream(context, newFile)) {
             try (InputStream input = FileHelper.getInputStream(context, sourceFileUri)) {
-                FileHelper.copy(input, newDownload);
+                Helper.copy(input, newDownload);
             }
         }
         return newFile.getUri();
@@ -880,7 +861,6 @@ public class FileHelper {
     public static class MemoryUsageFigures {
         private long freeMemBytes = 0;
         private long totalMemBytes = 0;
-        private final LogHelper.LogInfo log;
 
         /**
          * Get memory usage figures for the volume containing the given folder
@@ -889,21 +869,9 @@ public class FileHelper {
          * @param f       Folder to get the figures from
          */
         public MemoryUsageFigures(@NonNull Context context, @NonNull DocumentFile f) {
-            // TODO remove logging completely when no more incident about memory size is signalled for 1 month
-            log = new LogHelper.LogInfo("size");
-            if (Build.VERSION.SDK_INT >= 26) {
-                init26(context, f);
-                log.addEntry("init26 : %d / %d", totalMemBytes, freeMemBytes);
-            }
-            if (0 == totalMemBytes) {
-                init21(context, f);
-                log.addEntry("init21 : %d / %d", totalMemBytes, freeMemBytes);
-            }
-            if (0 == totalMemBytes) {
-                initLegacy(context, f);
-                log.addEntry("initLegacy : %d / %d", totalMemBytes, freeMemBytes);
-            }
-            if (BuildConfig.DEBUG) LogHelper.writeLog(context, log);
+            if (Build.VERSION.SDK_INT >= 26) init26(context, f);
+            if (0 == totalMemBytes) init21(context, f);
+            if (0 == totalMemBytes) initLegacy(context, f);
         }
 
         // Old way of measuring memory (inaccurate on certain devices)
@@ -935,9 +903,6 @@ public class FileHelper {
             String volumeId = getVolumeIdFromUri(f.getUri());
             StorageManager mgr = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
 
-            log.addEntry("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
-            Timber.v("init26 URI=%s; Tree volume ID=%s", f.getUri(), volumeId);
-
             List<StorageVolume> volumes = mgr.getStorageVolumes();
             StorageVolume targetVolume = null;
             StorageVolume primaryVolume = null;
@@ -945,9 +910,6 @@ public class FileHelper {
             if (1 == volumes.size()) targetVolume = volumes.get(0);
             else { // Look for a match among listed volumes
                 for (StorageVolume v : volumes) {
-                    log.addEntry("Storage volume ID %s", v.getUuid());
-                    Timber.v("Storage volume ID %s", v.getUuid());
-
                     if (v.isPrimary()) primaryVolume = v;
 
                     if (volumeIdMatch(v, StringHelper.protect(volumeId))) {
@@ -961,8 +923,6 @@ public class FileHelper {
             // NB : necessary to avoid defaulting to the root on rooted phones
             // (rooted phone's root is a separate volume with specific memory usage figures)
             if (null == targetVolume) {
-                log.addEntry("Defaulting to Primary");
-                Timber.v("Defaulting to Primary");
                 targetVolume = primaryVolume;
             }
 
@@ -979,9 +939,6 @@ public class FileHelper {
         // Use StorageStatsManager on primary volume
         @TargetApi(26)
         private void processPrimary(@NonNull Context context, @NonNull StorageVolume volume) {
-            log.addEntry(">> %s PRIMARY", volume.getUuid());
-            Timber.v(">> %s PRIMARY", volume.getUuid());
-
             UUID uuid = StorageManager.UUID_DEFAULT;
             try {
                 StorageStatsManager storageStatsManager =
@@ -998,9 +955,6 @@ public class FileHelper {
         // StorageStatsManager. We must revert to statvfs(path) for non-primary volumes.
         @TargetApi(26)
         private void processSecondary(@NonNull StorageVolume volume) {
-            log.addEntry(">> %s NOT PRIMARY", volume.getUuid());
-            Timber.v(">> %s NOT PRIMARY", volume.getUuid());
-
             try {
                 String volumePath = getVolumePath(volume);
                 if (!volumePath.isEmpty()) {
@@ -1091,7 +1045,7 @@ public class FileHelper {
      * @param uri      Uri to check
      * @return true if the given Uri has persisted I/O permissions
      */
-    private static boolean isUriPermissionPersisted(@NonNull final ContentResolver resolver, @NonNull final Uri uri) {
+    public static boolean isUriPermissionPersisted(@NonNull final ContentResolver resolver, @NonNull final Uri uri) {
         String treeUriId = DocumentsContract.getTreeDocumentId(uri);
         for (UriPermission p : resolver.getPersistedUriPermissions()) {
             if (DocumentsContract.getTreeDocumentId(p.getUri()).equals(treeUriId)) {
@@ -1265,6 +1219,17 @@ public class FileHelper {
             else return null;
         }
         return root;
+    }
+
+    public static void getAssetAsString(@NonNull AssetManager mgr, @NonNull String assetName, @NonNull StringBuilder sb) {
+        try (InputStream is = mgr.open(assetName); BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
+            String sCurrentLine;
+            while ((sCurrentLine = br.readLine()) != null) {
+                sb.append(sCurrentLine).append(System.lineSeparator());
+            }
+        } catch (Exception e) {
+            Timber.e(e);
+        }
     }
 
     @FunctionalInterface

@@ -88,6 +88,7 @@
     </plurals>
     <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
+    <string name="cancel_all_errors">Cancel all errors</string>
     <string name="canceled">Canceled</string>
     <string name="move_top">Move to top</string>
     <string name="move_up">Move up</string>
@@ -206,7 +207,9 @@
         <item quantity="one">Export bookmarks (%d item)</item>
         <item quantity="other">Export bookmarks (%d items)</item>
     </plurals>
-    <string name="export_warning">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
+    <string name="export_warning1">Exporting metadata is meant to create a list of your books in JSON format.\nIt is not meant for moving your collection to your PC or your SD card.\nTap here to learn how to do that.</string>
+    <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
+    <string name="export_faq_url">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
     <string name="export_run">RUN EXPORT</string>
 
     <string name="import_settings_title">Import settings</string>
@@ -274,11 +277,11 @@
     <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Are you sure you wish to delete the selected item ?</item>
-        <item quantity="other">Are you sure you wish to delete the %d selected items ?</item>
+        <item quantity="other">Are you sure you wish to delete the selected %d items ?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
         <item quantity="one">Are you sure you wish to archive the selected item ?</item>
-        <item quantity="other">Are you sure you wish to archive the selected items ?</item>
+        <item quantity="other">Are you sure you wish to archive the selected %d items ?</item>
     </plurals>
     <string name="new_group_name">Name of the new group ?</string>
     <string name="group_edit_name">Edit group name</string>
@@ -372,6 +375,7 @@
     <string name="group_new_name">New custom group name</string>
     <string name="group_remove">Detach from current group</string>
     <string name="group_name_exists">Group with that name already exists!</string>
+    <string name="group_rename_forbidden">Renaming that group is forbidden!</string>
     <string name="group_name_empty">Group name is empty!</string>
     <string name="group_not_selected">Group has not been selected!</string>
     <plurals name="group_delete_selected_group">
@@ -482,6 +486,7 @@
     <string name="bookmark_current">Bookmark current page</string>
     <string name="unbookmark_current">Remove bookmark on current page</string>
     <string name="bookmark_copy_url">Copy bookmark URL to clipboard</string>
+    <string name="bookmark_toggle_welcome">Toggle bookmark URL as welcome page</string>
     <string name="alert_unwanted_tags">This book is tagged with %s</string>
     <string name="bookmark_homepage">Homepage</string>
     <!-- Web browser (site specifics) -->

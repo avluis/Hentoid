@@ -21,7 +21,6 @@ import me.devsaki.hentoid.enums.Theme;
 import timber.log.Timber;
 
 /**
- * Created by Shiro on 2/21/2018.
  * Decorator class that wraps a SharedPreference to implement properties
  * Some properties do not have a setter because it is changed by PreferenceActivity
  * Some properties are parsed as ints because of limitations with the Preference subclass used
@@ -213,13 +212,17 @@ public final class Preferences {
      */
 
     public static boolean isFirstRun() {
-        return sharedPreferences.getBoolean(Key.FIRST_RUN, Default.FIRST_RUN_DEFAULT);
+        return sharedPreferences.getBoolean(Key.FIRST_RUN, Default.FIRST_RUN);
     }
 
     public static void setIsFirstRun(boolean isFirstRun) {
         sharedPreferences.edit()
                 .putBoolean(Key.FIRST_RUN, isFirstRun)
                 .apply();
+    }
+
+    public static boolean isImportQueueEmptyBooks() {
+        return sharedPreferences.getBoolean(Key.IMPORT_QUEUE_EMPTY, Default.IMPORT_QUEUE_EMPTY);
     }
 
     @Deprecated
@@ -277,13 +280,17 @@ public final class Preferences {
                 .apply();
     }
 
-    public static int getAttributesSortOrder() {
-        return Integer.parseInt(sharedPreferences.getString(Key.ORDER_ATTRIBUTE_LISTS, Default.ORDER_ATTRIBUTES_DEFAULT + "") + "");
+    public static int getSearchAttributesSortOrder() {
+        return Integer.parseInt(sharedPreferences.getString(Key.SEARCH_ORDER_ATTRIBUTE_LISTS, Default.SEARCH_ORDER_ATTRIBUTES + "") + "");
+    }
+
+    public static boolean getSearchAttributesCount() {
+        return sharedPreferences.getBoolean(Key.SEARCH_COUNT_ATTRIBUTE_RESULTS, Default.SEARCH_COUNT_ATTRIBUTE_RESULTS);
     }
 
     public static int getContentPageQuantity() {
         return Integer.parseInt(sharedPreferences.getString(Key.QUANTITY_PER_PAGE_LISTS,
-                Default.QUANTITY_PER_PAGE_DEFAULT + "") + "");
+                Default.QUANTITY_PER_PAGE + "") + "");
     }
 
     public static String getAppLockPin() {
@@ -297,7 +304,7 @@ public final class Preferences {
     }
 
     public static boolean getEndlessScroll() {
-        return sharedPreferences.getBoolean(Key.ENDLESS_SCROLL, Default.ENDLESS_SCROLL_DEFAULT);
+        return sharedPreferences.getBoolean(Key.ENDLESS_SCROLL, Default.ENDLESS_SCROLL);
     }
 
     public static boolean getRecentVisibility() {
@@ -315,7 +322,7 @@ public final class Preferences {
     }
 
     public static int getMemoryAlertThreshold() {
-        return Integer.parseInt(sharedPreferences.getString(Key.MEMORY_ALERT, Integer.toString(Default.MEMORY_ALERT_DEFAULT)) + "");
+        return Integer.parseInt(sharedPreferences.getString(Key.MEMORY_ALERT, Integer.toString(Default.MEMORY_ALERT)) + "");
     }
 
     public static String getExternalLibraryUri() {
@@ -335,7 +342,7 @@ public final class Preferences {
     static int getFolderNameFormat() {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.FOLDER_NAMING_CONTENT_LISTS,
-                        Default.FOLDER_NAMING_CONTENT_DEFAULT + "") + "");
+                        Default.FOLDER_NAMING_CONTENT + "") + "");
     }
 
     /*
@@ -360,21 +367,25 @@ public final class Preferences {
         return Integer.parseInt(
                 sharedPreferences.getString(
                         Key.WEBVIEW_INITIAL_ZOOM_LISTS,
-                        Default.WEBVIEW_INITIAL_ZOOM_DEFAULT + "") + "");
+                        Default.WEBVIEW_INITIAL_ZOOM + "") + "");
     }
 
     public static boolean getWebViewOverview() {
         return sharedPreferences.getBoolean(
                 Key.WEBVIEW_OVERRIDE_OVERVIEW_LISTS,
-                Default.WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT);
+                Default.WEBVIEW_OVERRIDE_OVERVIEW);
     }
 
     public static boolean isBrowserResumeLast() {
-        return sharedPreferences.getBoolean(Key.BROWSER_RESUME_LAST, Default.BROWSER_RESUME_LAST_DEFAULT);
+        return sharedPreferences.getBoolean(Key.BROWSER_RESUME_LAST, Default.BROWSER_RESUME_LAST);
     }
 
     public static boolean isBrowserAugmented() {
-        return sharedPreferences.getBoolean(Key.BROWSER_AUGMENTED, Default.BROWSER_AUGMENTED_DEFAULT);
+        return sharedPreferences.getBoolean(Key.BROWSER_AUGMENTED, Default.BROWSER_AUGMENTED);
+    }
+
+    public static boolean isBrowserMarkDownloaded() {
+        return sharedPreferences.getBoolean(Key.BROWSER_MARK_DOWNLOADED, Default.BROWSER_MARK_DOWNLOADED);
     }
 
     public static int getBrowserDlAction() {
@@ -392,21 +403,22 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.BROWSER_QUICK_DL_THRESHOLD, Integer.toString(Default.BROWSER_QUICK_DL_THRESHOLD)) + "");
     }
 
-    public static void setBrowserQuickDlThreshold(int threshold) {
-        sharedPreferences.edit()
-                .putString(Key.BROWSER_QUICK_DL_THRESHOLD, Integer.toString(threshold))
-                .apply();
+    public static int getDnsOverHttps() {
+        return Integer.parseInt(sharedPreferences.getString(Key.BROWSER_DNS_OVER_HTTPS, Integer.toString(Default.BROWSER_DNS_OVER_HTTPS)) + "");
     }
 
+    public static boolean isBrowserNhentaiInvisibleBlacklist() {
+        return sharedPreferences.getBoolean(Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST, Default.BROWSER_NHENTAI_INVISIBLE_BLACKLIST);
+    }
 
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.DL_THREADS_QUANTITY_LISTS,
-                Default.DL_THREADS_QUANTITY_DEFAULT + "") + "");
+                Default.DL_THREADS_QUANTITY + "") + "");
     }
 
     static int getFolderTruncationNbChars() {
         return Integer.parseInt(sharedPreferences.getString(Key.FOLDER_TRUNCATION_LISTS,
-                Default.FOLDER_TRUNCATION_DEFAULT + "") + "");
+                Default.FOLDER_TRUNCATION + "") + "");
     }
 
     public static boolean isViewerResumeLastLeft() {
@@ -494,12 +506,20 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_TAP, Default.VIEWER_PAGE_TURN_TAP);
     }
 
+    public static boolean isViewerTapToTurn2x() {
+        return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_TAP_2X, Default.VIEWER_PAGE_TURN_TAP_2X);
+    }
+
     public static boolean isViewerSwipeToTurn() {
         return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_SWIPE, Default.VIEWER_PAGE_TURN_SWIPE);
     }
 
     public static boolean isViewerVolumeToTurn() {
         return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_VOLUME, Default.VIEWER_PAGE_TURN_VOLUME);
+    }
+
+    public static boolean isViewerKeyboardToTurn() {
+        return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_KEYBOARD, Default.VIEWER_PAGE_TURN_KEYBOARD);
     }
 
     public static boolean isViewerOpenBookInGalleryMode() {
@@ -644,12 +664,6 @@ public final class Preferences {
 
     public static long getMaxDbSizeKb() {
         return Long.parseLong(sharedPreferences.getString(Key.DB_MAX_SIZE, Long.toString(Default.DB_MAX_SIZE_KB)) + "");
-    }
-
-    public static void setMaxDbSizeKb(long maxDbSizeKb) {
-        sharedPreferences.edit()
-                .putString(Key.DB_MAX_SIZE, Long.toString(maxDbSizeKb))
-                .apply();
     }
 
     public static Grouping getGroupingDisplay() {
@@ -806,13 +820,6 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_GALLERY_COLUMNS, Integer.toString(Default.VIEWER_GALLERY_COLUMNS)) + "");
     }
 
-    public static void setViewerGalleryColumns(int value) {
-        sharedPreferences.edit()
-                .putString(Key.VIEWER_GALLERY_COLUMNS, Integer.toString(value))
-                .apply();
-    }
-
-
     public static final class Key {
         //public static final String PREF_ANALYTICS_PREFERENCE = "pref_analytics_preference";
         //static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
@@ -831,12 +838,14 @@ public final class Preferences {
         static final String WELCOME_DONE = "pref_welcome_done";
         static final String VERSION_KEY = "prefs_version";
         public static final String LIBRARY_DISPLAY = "pref_library_display";
+        public static final String IMPORT_QUEUE_EMPTY = "pref_import_queue_empty";
         static final String QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String ORDER_CONTENT_FIELD = "pref_order_content_field";
         static final String ORDER_CONTENT_DESC = "pref_order_content_desc";
         static final String ORDER_GROUP_FIELD = "pref_order_group_field";
         static final String ORDER_GROUP_DESC = "pref_order_group_desc";
-        static final String ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
+        static final String SEARCH_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
+        static final String SEARCH_COUNT_ATTRIBUTE_RESULTS = "pref_order_attribute_count";
         static final String FIRST_RUN = "pref_first_run";
         public static final String DRAWER_SOURCES = "pref_drawer_sources";
         public static final String ENDLESS_SCROLL = "pref_endless_scroll";
@@ -853,9 +862,12 @@ public final class Preferences {
         static final String WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         static final String BROWSER_RESUME_LAST = "pref_browser_resume_last";
         static final String BROWSER_AUGMENTED = "pref_browser_augmented";
+        public static final String BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded";
         public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
         static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
         static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";
+        public static final String BROWSER_DNS_OVER_HTTPS = "pref_browser_dns_over_https";
+        public static final String BROWSER_NHENTAI_INVISIBLE_BLACKLIST = "pref_nhentai_invisible_blacklist";
         static final String FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
         public static final String VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
@@ -871,7 +883,9 @@ public final class Preferences {
         static final String VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
         static final String VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
         static final String VIEWER_PAGE_TURN_TAP = "pref_viewer_page_turn_tap";
+        static final String VIEWER_PAGE_TURN_TAP_2X = "pref_viewer_page_turn_tap_2x";
         static final String VIEWER_PAGE_TURN_VOLUME = "pref_viewer_page_turn_volume";
+        static final String VIEWER_PAGE_TURN_KEYBOARD = "pref_viewer_page_turn_keyboard";
         public static final String VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars";
         static final String VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
         static final String VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
@@ -932,26 +946,31 @@ public final class Preferences {
         }
 
         public static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
-        static final int QUANTITY_PER_PAGE_DEFAULT = 20;
+        static final int QUANTITY_PER_PAGE = 20;
         public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
         public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
         static final boolean ORDER_CONTENT_DESC = false;
         static final boolean ORDER_GROUP_DESC = false;
-        static final int ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
-        static final boolean FIRST_RUN_DEFAULT = true;
-        static final boolean ENDLESS_SCROLL_DEFAULT = true;
-        static final int MEMORY_ALERT_DEFAULT = 110;
+        static final int SEARCH_ORDER_ATTRIBUTES = Constant.SEARCH_ORDER_ATTRIBUTES_COUNT;
+        static final boolean SEARCH_COUNT_ATTRIBUTE_RESULTS = true;
+        static final boolean FIRST_RUN = true;
+        static final boolean ENDLESS_SCROLL = true;
+        static final int MEMORY_ALERT = 110;
+        static final boolean IMPORT_QUEUE_EMPTY = false;
         static final boolean EXTERNAL_LIBRARY_DELETE = false;
-        static final int FOLDER_NAMING_CONTENT_DEFAULT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
-        static final boolean WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
-        public static final int WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
-        static final boolean BROWSER_RESUME_LAST_DEFAULT = false;
-        static final boolean BROWSER_AUGMENTED_DEFAULT = true;
+        static final int FOLDER_NAMING_CONTENT = Constant.FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
+        static final boolean WEBVIEW_OVERRIDE_OVERVIEW = false;
+        public static final int WEBVIEW_INITIAL_ZOOM = 20;
+        static final boolean BROWSER_RESUME_LAST = false;
+        static final boolean BROWSER_AUGMENTED = true;
+        static final boolean BROWSER_MARK_DOWNLOADED = false;
         static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
         static final boolean BROWSER_QUICK_DL = true;
         static final int BROWSER_QUICK_DL_THRESHOLD = 500; // 500ms
-        static final int DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
-        static final int FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_100;
+        static final int BROWSER_DNS_OVER_HTTPS = -1; // No DNS
+        static final boolean BROWSER_NHENTAI_INVISIBLE_BLACKLIST = false;
+        static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
+        static final int FOLDER_TRUNCATION = Constant.TRUNCATE_FOLDER_100;
         static final boolean VIEWER_RESUME_LAST_LEFT = true;
         static final boolean VIEWER_KEEP_SCREEN_ON = true;
         static final int VIEWER_IMAGE_DISPLAY = Constant.VIEWER_DISPLAY_FIT;
@@ -964,7 +983,9 @@ public final class Preferences {
         static final boolean VIEWER_CONTINUOUS = false;
         static final boolean VIEWER_PAGE_TURN_SWIPE = true;
         static final boolean VIEWER_PAGE_TURN_TAP = true;
+        static final boolean VIEWER_PAGE_TURN_TAP_2X = false;
         static final boolean VIEWER_PAGE_TURN_VOLUME = true;
+        static final boolean VIEWER_PAGE_TURN_KEYBOARD = true;
         static final boolean VIEWER_SWIPE_TO_FLING = false;
         static final boolean VIEWER_INVERT_VOLUME_ROCKER = false;
         //static final int PREF_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_ON;
@@ -1015,6 +1036,7 @@ public final class Preferences {
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
+    @SuppressWarnings("unused")
     public static final class Constant {
 
         private Constant() {
@@ -1040,8 +1062,8 @@ public final class Preferences {
         public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 
-        public static final int ORDER_ATTRIBUTES_ALPHABETIC = 0;
-        static final int ORDER_ATTRIBUTES_COUNT = 1;
+        public static final int SEARCH_ORDER_ATTRIBUTES_ALPHABETIC = 0;
+        static final int SEARCH_ORDER_ATTRIBUTES_COUNT = 1;
 
         public static final int LIBRARY_DISPLAY_LIST = 0;
         public static final int LIBRARY_DISPLAY_GRID = 1;

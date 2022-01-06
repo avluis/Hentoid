@@ -255,6 +255,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
 
     private fun onEnable() {
         enabled = true
+        activity.get()?.initFragmentToolbars(this::onToolbarItemClicked)
         callback?.isEnabled = true
     }
 

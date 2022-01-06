@@ -21,7 +21,6 @@ import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
 /**
- * Created by DevSaki on 09/05/2015.
  * Attribute builder
  */
 @Entity
@@ -42,7 +41,7 @@ public class Attribute {
     @Transient
     private boolean excluded = false;
     @Transient
-    private int count;
+    private int count = 0;
     @Transient
     private int externalId = 0;
     @Backlink(to = "attributes") // backed by the to-many relation in Content

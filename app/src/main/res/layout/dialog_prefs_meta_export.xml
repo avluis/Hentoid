@@ -75,7 +75,41 @@
         tools:visibility="visible" />
 
     <TextView
-        android:id="@+id/export_file_help_text"
+        android:id="@+id/export_file_help1_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/white_opacity_25"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingStart="64dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/export_warning1"
+        android:textColor="@color/white_opacity_87"
+        android:textStyle="italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_file_bookmarks_chk" />
+
+    <ImageView
+        android:id="@+id/info_img"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_info"
+        app:layout_constraintBottom_toBottomOf="@id/export_file_help1_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/export_file_help1_text"
+        app:tint="@color/white_opacity_87"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/export_file_help2_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -84,12 +118,12 @@
         android:paddingTop="8dp"
         android:paddingEnd="8dp"
         android:paddingBottom="8dp"
-        android:text="@string/export_warning"
+        android:text="@string/export_warning2"
         android:textColor="@color/white_opacity_87"
         android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_file_bookmarks_chk" />
+        app:layout_constraintTop_toBottomOf="@id/export_file_help1_text" />
 
     <ImageView
         android:id="@+id/warning_img"
@@ -98,9 +132,9 @@
         android:adjustViewBounds="true"
         android:padding="8dp"
         android:src="@drawable/ic_warning"
-        app:layout_constraintBottom_toBottomOf="@id/export_file_help_text"
+        app:layout_constraintBottom_toBottomOf="@id/export_file_help2_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/export_file_help_text"
+        app:layout_constraintTop_toTopOf="@id/export_file_help2_text"
         app:tint="@color/white_opacity_87"
         tools:ignore="ContentDescription" />
 
@@ -117,7 +151,7 @@
         app:iconTint="@color/secondary_color_selector"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_file_help_text"
+        app:layout_constraintTop_toBottomOf="@id/export_file_help2_text"
         app:strokeColor="@color/secondary_color_selector" />
 
     <ProgressBar

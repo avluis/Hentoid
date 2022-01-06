@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import io.objectbox.converter.PropertyConverter;
 
 /**
- * Created by DevSaki on 10/05/2015.
  * Content Status enumerator
  */
 public enum StatusContent {

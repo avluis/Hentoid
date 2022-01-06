@@ -11,6 +11,7 @@ import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Index;
 import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
@@ -22,13 +23,16 @@ public class Group {
 
     @Id
     public long id;
+    @Index
     @Convert(converter = GroupingConverter.class, dbType = Integer.class)
     public Grouping grouping;
     public String name;
     @Backlink(to = "group")
     public ToMany<GroupItem> items;
     public ToOne<ImageFile> picture;
-    public int subtype; // in Grouping.ARTIST : 0 = Artist; 1 = Group
+    // in Grouping.ARTIST : 0 = Artist; 1 = Group
+    // in Grouping.CUSTOM : 0 = Custom; 1 = Ungrouped
+    public int subtype;
     public int order;
     public boolean hasCustomBookOrder = false;
     public int propertyMin;
@@ -55,10 +59,6 @@ public class Group {
         return this.id;
     }
 
-    public List<Content> getContents() {
-        return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContent).withoutNulls().toList();
-    }
-
     public List<Long> getContentIds() {
         return Stream.of(items).withoutNulls().sortBy(i -> i.order).map(GroupItem::getContentId).toList();
     }
@@ -80,8 +80,9 @@ public class Group {
         return subtype;
     }
 
-    public void setSubtype(int subtype) {
+    public Group setSubtype(int subtype) {
         this.subtype = subtype;
+        return this;
     }
 
     public int getOrder() {
@@ -110,6 +111,10 @@ public class Group {
 
     public void setFavourite(boolean favourite) {
         this.favourite = favourite;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override

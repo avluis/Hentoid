@@ -10,6 +10,7 @@ import androidx.paging.DataSource;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
@@ -18,6 +19,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -295,6 +297,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectContentBySourceAndUrl(site, contentUrl, Content.getNeutralCoverUrlRoot(coverUrl, site));
     }
 
+    public Set<String> selectAllSourceUrls(@NonNull Site site) {
+        return db.selectAllContentUrls(site.getCode());
+    }
+
     @Override
     public List<Content> searchTitlesWith(@NonNull String word, int[] contentStatusCodes) {
         return db.selectContentWithTitle(word, contentStatusCodes);
@@ -397,7 +403,12 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public LiveData<List<Group>> selectGroups(
+    public List<Group> selectGroups(int grouping, int subType) {
+        return db.selectGroupsQ(grouping, null, 0, false, subType, false).find();
+    }
+
+    @Override
+    public LiveData<List<Group>> selectGroupsLive(
             int grouping,
             @Nullable String query,
             int orderField,
@@ -407,13 +418,24 @@ public class ObjectBoxDAO implements CollectionDAO {
         LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly));
         LiveData<List<Group>> workingData = livedata;
 
-        // Download date grouping, groups are empty as they are dynamically generated
+        // Download date grouping : groups are empty as they are dynamically populated
         //   -> Manually add items inside each of them
         //   -> Manually set a cover for each of them
         if (grouping == Grouping.DL_DATE.getId()) {
             MediatorLiveData<List<Group>> livedata2 = new MediatorLiveData<>();
-            livedata2.addSource(livedata, v -> {
-                List<Group> enrichedWithItems = Stream.of(v).map(g -> enrichGroupWithItemsByDlDate(g, g.propertyMin, g.propertyMax)).toList();
+            livedata2.addSource(livedata, groups -> {
+                List<Group> enrichedWithItems = Stream.of(groups).map(g -> enrichGroupWithItemsByDlDate(g, g.propertyMin, g.propertyMax)).toList();
+                livedata2.setValue(enrichedWithItems);
+            });
+            workingData = livedata2;
+        }
+
+        // Custom grouping : "Ungrouped" special group is dynamically populated
+        // -> Manually add items
+        if (grouping == Grouping.CUSTOM.getId()) {
+            MediatorLiveData<List<Group>> livedata2 = new MediatorLiveData<>();
+            livedata2.addSource(livedata, groups -> {
+                List<Group> enrichedWithItems = Stream.of(groups).map(this::enrichUngroupedWithItems).toList();
                 livedata2.setValue(enrichedWithItems);
             });
             workingData = livedata2;
@@ -422,13 +444,26 @@ public class ObjectBoxDAO implements CollectionDAO {
         // Order by number of children (ObjectBox can't do that natively)
         if (Preferences.Constant.ORDER_FIELD_CHILDREN == orderField) {
             MediatorLiveData<List<Group>> result = new MediatorLiveData<>();
-            result.addSource(workingData, v -> {
+            result.addSource(workingData, groups -> {
                 int sortOrder = orderDesc ? -1 : 1;
-                List<Group> orderedByNbChildren = Stream.of(v).sortBy(g -> g.getItems().size() * sortOrder).toList();
+                List<Group> orderedByNbChildren = Stream.of(groups).sortBy(g -> g.getItems().size() * sortOrder).toList();
                 result.setValue(orderedByNbChildren);
             });
             return result;
-        } else return workingData;
+        }
+
+        // Order by latest download date of children (ObjectBox can't do that natively)
+        if (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE == orderField) {
+            MediatorLiveData<List<Group>> result = new MediatorLiveData<>();
+            result.addSource(workingData, groups -> {
+                int sortOrder = orderDesc ? -1 : 1;
+                List<Group> orderedByDlDate = Stream.of(groups).sortBy(g -> getLatestDlDate(g) * sortOrder).toList();
+                result.setValue(orderedByDlDate);
+            });
+            return result;
+        }
+
+        return workingData;
     }
 
     private Group enrichGroupWithItemsByDlDate(@NonNull final Group g, int minDays, int maxDays) {
@@ -437,6 +472,25 @@ public class ObjectBoxDAO implements CollectionDAO {
         if (!items.isEmpty()) g.picture.setTarget(items.get(0).content.getTarget().getCover());
 
         return g;
+    }
+
+    private Group enrichUngroupedWithItems(@NonNull final Group g) {
+        if (g.grouping.equals(Grouping.CUSTOM) && 1 == g.subtype) {
+            List<GroupItem> items = Stream.of(db.selectUngroupedContentIds()).map(id -> new GroupItem(id, g, -1)).toList();
+            g.setItems(items);
+//            if (!items.isEmpty()) g.picture.setTarget(items.get(0).content.getTarget().getCover()); Can't query Content here as it is detached
+        }
+        return g;
+    }
+
+    private long getLatestDlDate(@NonNull final Group g) {
+        // Manually select all content as g.getContents won't work (unresolved items)
+        List<Content> contents = db.selectContentById(g.getContentIds());
+        if (contents != null) {
+            Optional<Long> maxDlDate = Stream.of(contents).map(Content::getDownloadDate).max(Long::compareTo);
+            return maxDlDate.isPresent() ? maxDlDate.get() : 0;
+        }
+        return 0;
     }
 
     @Nullable
@@ -509,7 +563,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteGroupItems(@NonNull final List<Long> groupItemIds) {
         // Check if one of the GroupItems to delete is linked to the content that contains the group's cover picture
-        List<GroupItem> groupItems = db.selectGroupItems(Helper.getPrimitiveLongArrayFromList(groupItemIds));
+        List<GroupItem> groupItems = db.selectGroupItems(Helper.getPrimitiveArrayFromList(groupItemIds));
         for (GroupItem gi : groupItems) {
             ToOne<ImageFile> groupPicture = gi.group.getTarget().picture;
             // If so, remove the cover picture
@@ -517,7 +571,7 @@ public class ObjectBoxDAO implements CollectionDAO {
                 gi.group.getTarget().picture.setAndPutTarget(null);
         }
 
-        db.deleteGroupItems(Helper.getPrimitiveLongArrayFromList(groupItemIds));
+        db.deleteGroupItems(Helper.getPrimitiveArrayFromList(groupItemIds));
     }
 
 
@@ -772,6 +826,11 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public List<SiteBookmark> selectBookmarks(@NonNull Site s) {
         return db.selectBookmarksQ(s).find();
+    }
+
+    @Override
+    public SiteBookmark selectHomepage(@NonNull Site s) {
+        return db.selectHomepage(s);
     }
 
     public long insertBookmark(@NonNull final SiteBookmark bookmark) {

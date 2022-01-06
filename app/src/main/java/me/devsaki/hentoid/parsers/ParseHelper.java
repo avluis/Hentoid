@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -153,7 +152,9 @@ public class ParseHelper {
         if (null == childElementClass) {
             name = element.ownText();
         } else {
-            name = element.selectFirst("." + childElementClass).ownText();
+            Element e = element.selectFirst("." + childElementClass);
+            if (e != null) name = e.ownText();
+            else name = "";
         }
         name = StringHelper.removeNonPrintableChars(name);
         name = removeBrackets(name);
@@ -183,8 +184,7 @@ public class ParseHelper {
         ImageFile result = new ImageFile();
 
         int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
-        String name = String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", order);
-        result.setName(name).setOrder(order).setUrl(imgUrl).setStatus(status);
+        result.setOrder(order).setUrl(imgUrl).setStatus(status).computeName(nbMaxDigits);
         if (chapter != null) result.setChapter(chapter);
 
         return result;

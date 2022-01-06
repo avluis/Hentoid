@@ -1,0 +1,35 @@
+New
+
+    Support for Manhwa18.com
+    Browser settings : Built-in support for DNS over HTTPS
+    NB1 : has an effect on the entire app, not only the browser
+    NB2 : some sites have issues with it due to technical constraints of Android. Please continue using a DNS app if your navigation experience is degraded.
+    Browser settings : New option to show which books have been downloaded on the summary / results page for nhentai, hitomi, exhentai, ehentai and imhentai
+    Browser / nhentai settings : New option to hide blacklisted galleries
+    Browser / bookmarks : New option to set a given bookmark as the current site's welcome page
+    Import : New option to add empty books to the download queue
+    Library / Groups : Ungrouped books now have their own group in "Custom" group view
+    Library / Groups : Groups can now be sorted by the latest download date of their books
+    Groups and queue screens : New "select all" command
+    Picture viewer settings : New option to double the size of the left & right tap zones
+    Picture viewer settings : New "keyboard left/right" input mode (enabled by default)
+    Advanced search settings : New "count available books" option - unckeck to speed up advanced search on very large libraries
+
+Changed
+
+    Viewer and queue screens : Command menu icons are now visible
+    Link to the Hentoid FAQ from the export metadata dialog
+
+Fixed
+
+    Hitomi : Align with new site layout - use "redownload from scratch" to fix your error queue
+    NB : Hitomi downloads are slower due to a new speed limiter Hitomi have set up. The app has no choice but to align on it.
+    Hitomi : Remove huge blank ad space on top of pages
+    IMHentai : Remove ads
+    MyReadingManga : Artist is now detected by using the book's title, when available (e.g. "[Artist] Title")
+    MyReadingManga : All chapters are now correctly detected and downloaded
+    Fix a bug that allowed to bypass the PIN lock
+    Library / Groups : Going from the books screen back to the groups screen now keeps the initial scrolling on the groups screen
+    Duplicate detector : Options menu can now be opened after viewing duplicate details
+    A few performance optimizations on advanced search
+    A few performance optimizations on file I/O (might speed up queue processing for some users)

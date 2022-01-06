@@ -63,7 +63,6 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 /**
- * Created by Robb on 04/2020
  * Presents the list of downloads with errors
  */
 public class ErrorsFragment extends Fragment implements ItemTouchCallback, ErrorsDialogFragment.Parent, SimpleSwipeDrawerCallback.ItemSwipeCallback {
@@ -278,6 +277,13 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
                 break;
             case R.id.action_download_scratch:
                 askRedownloadSelectedScratch();
+                keepToolbar = true;
+                break;
+            case R.id.action_select_all:
+                // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
+                int count = 0;
+                while (selectExtension.getSelections().size() < itemAdapter.getAdapterItemCount() && ++count < 5)
+                    selectExtension.select(Stream.range(0, itemAdapter.getAdapterItemCount()).toList());
                 keepToolbar = true;
                 break;
             default:

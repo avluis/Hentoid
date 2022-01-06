@@ -243,7 +243,7 @@ public class ArchiveHelper {
             }
 
             ArchiveExtractCallback callback = new ArchiveExtractCallback(targetFolder, fileNames, interrupt, emitter);
-            int[] indexes = Helper.getPrimitiveLongArrayFromInt(fileNames.keySet());
+            int[] indexes = Helper.getPrimitiveArrayFromSet(fileNames.keySet());
             inArchive.extract(indexes, false, callback);
         } catch (SevenZipException e) {
             Timber.w(e);

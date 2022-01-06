@@ -43,7 +43,7 @@ public class AllPornComicContent extends BaseContentParser {
         content.setUrl(url.replace(Site.ALLPORNCOMIC.getUrl(), ""));
         if (!title.isEmpty()) {
             content.setTitle(StringHelper.removeNonPrintableChars(title));
-        } else content.setTitle("<no title>");
+        } else content.setTitle(NO_TITLE);
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characterTags, false, Site.ALLPORNCOMIC);

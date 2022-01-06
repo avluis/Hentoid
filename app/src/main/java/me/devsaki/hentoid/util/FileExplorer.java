@@ -8,6 +8,7 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.RemoteException;
 import android.provider.DocumentsContract;
 
 import androidx.annotation.NonNull;
@@ -75,7 +76,17 @@ public class FileExplorer implements Closeable {
      * @return Subfolders of the given parent folder
      */
     public List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
-        return listDocumentFiles(context, parent, null, true, false);
+        return listDocumentFiles(context, parent, null, true, false, false);
+    }
+
+    /**
+     * Returns true if the given parent folder contains at least one subfolder
+     *
+     * @param parent Parent folder to test
+     * @return True if the given parent folder contains at least one subfolder; false instead
+     */
+    public boolean hasFolders(@NonNull DocumentFile parent) {
+        return countDocumentFiles(parent, null, true, false, true) > 0;
     }
 
     /**
@@ -87,7 +98,7 @@ public class FileExplorer implements Closeable {
      * @return Files of the given parent folder matching the given name filter
      */
     public List<DocumentFile> listFiles(@NonNull Context context, @NonNull DocumentFile parent, final FileHelper.NameFilter filter) {
-        return listDocumentFiles(context, parent, filter, false, true);
+        return listDocumentFiles(context, parent, filter, false, true, false);
     }
 
     /**
@@ -111,7 +122,7 @@ public class FileExplorer implements Closeable {
      */
     @Nullable
     public DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
-        List<DocumentFile> result = listDocumentFiles(context, parent, createNameFilterEquals(subfolderName), true, false);
+        List<DocumentFile> result = listDocumentFiles(context, parent, createNameFilterEquals(subfolderName), true, false, true);
         if (!result.isEmpty()) return result.get(0);
         else return null;
     }
@@ -126,7 +137,7 @@ public class FileExplorer implements Closeable {
      */
     @Nullable
     public DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String fileName) {
-        List<DocumentFile> result = listDocumentFiles(context, parent, createNameFilterEquals(fileName), false, true);
+        List<DocumentFile> result = listDocumentFiles(context, parent, createNameFilterEquals(fileName), false, true, true);
         if (!result.isEmpty()) return result.get(0);
         else return null;
     }
@@ -141,7 +152,7 @@ public class FileExplorer implements Closeable {
      */
     public List<DocumentFile> listDocumentFiles(@NonNull final Context context,
                                                 @NonNull final DocumentFile parent) {
-        return listDocumentFiles(context, parent, null, true, true);
+        return listDocumentFiles(context, parent, null, true, true, false);
     }
 
 
@@ -159,8 +170,7 @@ public class FileExplorer implements Closeable {
             final FileHelper.NameFilter nameFilter,
             boolean countFolders,
             boolean countFiles) {
-        final List<DocumentProperties> results = queryDocumentFiles(parent, nameFilter, countFolders, countFiles);
-        return results.size();
+        return countDocumentFiles(parent, nameFilter, countFolders, countFiles, false);
     }
 
     /**
@@ -178,34 +188,41 @@ public class FileExplorer implements Closeable {
             @NonNull final DocumentFile parent,
             final FileHelper.NameFilter nameFilter,
             boolean listFolders,
-            boolean listFiles) {
-        final List<DocumentProperties> results = queryDocumentFiles(parent, nameFilter, listFolders, listFiles);
+            boolean listFiles,
+            boolean stopFirst) {
+        final List<DocumentProperties> results = queryDocumentFiles(parent, nameFilter, listFolders, listFiles, stopFirst);
         return convertFromProperties(context, results);
+    }
+
+    private Cursor getCursorFor(Uri rootFolderUri) throws RemoteException {
+        final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(rootFolderUri, DocumentsContract.getDocumentId(rootFolderUri));
+        return client.query(searchUri, new String[]{
+                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                DocumentsContract.Document.COLUMN_MIME_TYPE,
+                DocumentsContract.Document.COLUMN_SIZE}, null, null, null);
     }
 
     /**
      * List the properties of the children of the given folder (non recursive) matching the given criteria
      *
-     * @param parent      Folder containing the document to count
+     * @param parent      Folder containing the document to list
      * @param nameFilter  NameFilter defining which documents to include
      * @param listFolders true if matching folders have to be listed in the results
      * @param listFiles   true if matching files have to be listed in the results
+     * @param stopFirst   true to stop at the first match (useful to optimize when the point is to check for emptiness)
      * @return List of properties of the children of the given folder, matching the given criteria
      */
     private List<DocumentProperties> queryDocumentFiles(
             @NonNull final DocumentFile parent,
             final FileHelper.NameFilter nameFilter,
             boolean listFolders,
-            boolean listFiles) {
+            boolean listFiles,
+            boolean stopFirst) {
         if (null == client) return Collections.emptyList();
         final List<DocumentProperties> results = new ArrayList<>();
 
-        final Uri searchUri = DocumentsContract.buildChildDocumentsUriUsingTree(parent.getUri(), DocumentsContract.getDocumentId(parent.getUri()));
-        try (Cursor c = client.query(searchUri, new String[]{
-                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-                DocumentsContract.Document.COLUMN_MIME_TYPE,
-                DocumentsContract.Document.COLUMN_SIZE}, null, null, null)) {
+        try (Cursor c = getCursorFor(parent.getUri())) {
             if (c != null)
                 while (c.moveToNext()) {
                     final String documentId = c.getString(0);
@@ -216,11 +233,52 @@ public class FileExplorer implements Closeable {
                     // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
                     if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
                         results.add(new DocumentProperties(buildDocumentUriUsingTreeCached(parent.getUri(), documentId), documentName, documentSize, isFolder));
+
+                    // Don't do the whole loop if the point is to find a single element
+                    if (stopFirst && !results.isEmpty()) break;
                 }
         } catch (Exception e) {
             Timber.w(e, "Failed query");
         }
         return results;
+    }
+
+    /**
+     * Count the children of the given folder (non recursive) matching the given criteria
+     *
+     * @param parent      Folder containing the document to count
+     * @param nameFilter  NameFilter defining which documents to include
+     * @param listFolders true if matching folders have to be listed in the results
+     * @param listFiles   true if matching files have to be listed in the results
+     * @param stopFirst   true to stop at the first match (useful to optimize when the point is to check for emptiness)
+     * @return Number of children of the given folder, matching the given criteria
+     */
+    private int countDocumentFiles(
+            @NonNull final DocumentFile parent,
+            final FileHelper.NameFilter nameFilter,
+            boolean listFolders,
+            boolean listFiles,
+            boolean stopFirst) {
+        if (null == client) return 0;
+        int result = 0;
+
+        try (Cursor c = getCursorFor(parent.getUri())) {
+            if (c != null)
+                while (c.moveToNext()) {
+                    final String documentName = c.getString(1);
+                    boolean isFolder = c.getString(2).equals(DocumentsContract.Document.MIME_TYPE_DIR);
+
+                    // FileProvider doesn't take query selection arguments into account, so the selection has to be done manually
+                    if ((null == nameFilter || nameFilter.accept(documentName)) && ((listFiles && !isFolder) || (listFolders && isFolder)))
+                        result++;
+
+                    // Don't do the whole loop if the point is to check for emptiness
+                    if (stopFirst && result > 0) break;
+                }
+        } catch (Exception e) {
+            Timber.w(e, "Failed query");
+        }
+        return result;
     }
 
     /**

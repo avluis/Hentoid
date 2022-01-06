@@ -25,7 +25,6 @@ import timber.log.Timber;
 import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
- * Created by Robb on 11/2018
  * Launcher dialog for the library refresh feature
  */
 public class UpdateSuccessDialogFragment extends DialogFragment {

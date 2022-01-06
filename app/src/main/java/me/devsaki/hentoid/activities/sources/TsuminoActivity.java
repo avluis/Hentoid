@@ -6,7 +6,6 @@ import android.webkit.WebView;
 import me.devsaki.hentoid.enums.Site;
 
 /**
- * Created by Shiro on 1/22/2016.
  * Implements tsumino source
  */
 public class TsuminoActivity extends BaseWebActivity {

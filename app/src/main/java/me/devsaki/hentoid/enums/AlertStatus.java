@@ -6,7 +6,7 @@ import androidx.annotation.DrawableRes;
 import me.devsaki.hentoid.R;
 
 /**
- * Created by Robb on 2019/11
+ * Site issues alert levels
  */
 public enum AlertStatus {
 

@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.events;
 
 /**
- * Created by Robb on 2019/06/19
  * Tracks download preparation events for interested subscribers.
  */
 public class DownloadPreparationEvent {

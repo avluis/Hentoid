@@ -10,9 +10,9 @@ import android.os.Bundle;
 import android.os.StrictMode;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleObserver;
-import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 //import com.google.android.gms.security.ProviderInstaller;
@@ -33,7 +33,6 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
 /**
- * Created by DevSaki on 20/05/2015.
  * Initializes required components:
  * Database, Bitmap Cache, Update checks, etc.
  */
@@ -157,7 +156,7 @@ public class HentoidApp extends Application {
      * Listener used to auto-lock the app when it goes to background
      * and the PIN lock is enabled
      */
-    public static class LifeCycleListener implements LifecycleObserver {
+    public static class LifeCycleListener implements DefaultLifecycleObserver, LifecycleObserver {
 
         private static boolean enabled = true;
 
@@ -169,11 +168,10 @@ public class HentoidApp extends Application {
             enabled = false;
         }
 
-
-        @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-        private void onMoveToBackground() {
+        @Override
+        public void onStop(@NonNull LifecycleOwner owner) {
             Timber.d("App moving to background");
-            if (enabled && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
+            if (enabled && isUnlocked && !Preferences.getAppLockPin().isEmpty() && Preferences.isLockOnAppRestore()) {
                 HentoidApp.setUnlocked(false);
                 HentoidApp.setLockInstant(Instant.now().toEpochMilli());
             }

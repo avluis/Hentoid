@@ -3,7 +3,6 @@ package me.devsaki.hentoid.activities.sources;
 import me.devsaki.hentoid.enums.Site;
 
 /**
- * Created by avluis on 07/21/2016.
  * Implements ASMHentai source
  */
 public class ASMHentaiActivity extends BaseWebActivity {

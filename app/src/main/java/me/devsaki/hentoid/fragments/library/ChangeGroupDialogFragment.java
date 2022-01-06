@@ -29,7 +29,6 @@ import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 
 /**
- * Created by Robb on 09/2020
  * Dialog to select or create a custom group
  */
 public class ChangeGroupDialogFragment extends DialogFragment {
@@ -77,7 +76,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
             // Get existing custom groups
             CollectionDAO dao = new ObjectBoxDAO(requireContext());
             try {
-                customGroups = dao.selectGroups(Grouping.CUSTOM.getId());
+                customGroups = dao.selectGroups(Grouping.CUSTOM.getId(), 0); // Don't select the "Ungrouped" group there
                 customGroups = Stream.of(customGroups).toList();
 
                 if (!customGroups.isEmpty()) { // "Existing group" by default

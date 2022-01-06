@@ -1068,9 +1068,8 @@ public class LibraryActivity extends BaseActivity {
      */
     public void askArchiveItems(@NonNull final List<Content> items,
                                 @NonNull final SelectExtension<?> selectExtension) {
-        // TODO display the number of books to archive
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        String title = getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size());
+        String title = getResources().getQuantityString(R.plurals.ask_archive_multiple, items.size(), items.size());
         builder.setMessage(title)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {

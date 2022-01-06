@@ -23,7 +23,7 @@ public class ASMHentaiContent extends BaseContentParser {
     private String galleryUrl;
     @Selector(value = "div.cover a img")
     private Element cover;
-    @Selector(value = "div.info h1:first-child", defValue = "<no title>")
+    @Selector(value = "div.info h1:first-child", defValue = NO_TITLE)
     private String title;
     @Selector("div.pages h3")
     private List<String> pages;

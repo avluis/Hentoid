@@ -35,17 +35,18 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.ContextXKt;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import timber.log.Timber;
 
 /**
- * Created by Robb on 03/2021
  * Dialog for the settings metadata export feature
  */
 public class MetaExportDialogFragment extends DialogFragment {
@@ -109,6 +110,12 @@ public class MetaExportDialogFragment extends DialogFragment {
             bookmarksChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
             bookmarksChk.setVisibility(View.VISIBLE);
         }
+
+        // Open library transfer FAQ
+        requireViewById(rootView, R.id.export_file_help1_text)
+                .setOnClickListener(v -> ContextXKt.startBrowserActivity(requireActivity(), getResources().getString(R.string.export_faq_url)));
+        requireViewById(rootView, R.id.info_img)
+                .setOnClickListener(v -> ContextXKt.startBrowserActivity(requireActivity(), getResources().getString(R.string.export_faq_url)));
 
         runBtn = requireViewById(rootView, R.id.export_run_btn);
         runBtn.setEnabled(false);
@@ -196,7 +203,7 @@ public class MetaExportDialogFragment extends DialogFragment {
         try {
             try (OutputStream newDownload = FileHelper.openNewDownloadOutputStream(requireContext(), targetFileName, JsonHelper.JSON_MIME_TYPE)) {
                 try (InputStream input = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8))) {
-                    FileHelper.copy(input, newDownload);
+                    Helper.copy(input, newDownload);
                 }
             }
 

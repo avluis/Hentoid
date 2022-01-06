@@ -98,7 +98,6 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
  */
 public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
@@ -494,7 +493,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         switch (event.eventType) {
             case DownloadEvent.Type.EV_PREPARATION:
-                updateControlBar(event.step);
+                updateControlBar(event.step, event.log);
                 break;
             case DownloadEvent.Type.EV_PROGRESS:
                 updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal, event.getNumberRetries(), event.downloadedSizeB, false);
@@ -519,6 +518,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case DownloadEvent.Type.EV_PAUSE:
             case DownloadEvent.Type.EV_CANCEL:
+            case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
             default:
                 // Don't update the UI if it is in the process of canceling all items
                 if (isCancelingAll) return;
@@ -561,6 +561,12 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         }
         if (motiveMsg != -1)
             Snackbar.make(recyclerView, getString(motiveMsg), BaseTransientBottomBar.LENGTH_SHORT).show();
+    }
+
+    private String formatStep(@DownloadEvent.Step int step, String log) {
+        String standardMsg = activity.get().getResources().getString(formatStep(step));
+        if (log != null) return standardMsg + " " + log;
+        else return standardMsg;
     }
 
     private @StringRes
@@ -759,10 +765,10 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     }
 
     private void updateControlBar() {
-        updateControlBar(DownloadEvent.Step.NONE);
+        updateControlBar(DownloadEvent.Step.NONE, null);
     }
 
-    private void updateControlBar(@DownloadEvent.Step int preparationStep) {
+    private void updateControlBar(@DownloadEvent.Step int preparationStep, String log) {
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, itemAdapter.getAdapterItemCount());
@@ -771,7 +777,11 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update control bar status
-        queueInfo.setText(isPreparingDownload && !isEmpty ? R.string.queue_preparing : formatStep(preparationStep));
+        if (isPreparingDownload && !isEmpty) {
+            queueInfo.setText(R.string.queue_preparing);
+        } else {
+            queueInfo.setText(formatStep(preparationStep, log));
+        }
 
         if (isActive) {
             btnPause.setVisibility(View.VISIBLE);
@@ -1006,6 +1016,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 break;
             case R.id.action_download_scratch:
                 askRedownloadSelectedScratch();
+                keepToolbar = true;
+                break;
+            case R.id.action_select_all:
+                // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
+                int count = 0;
+                while (selectExtension.getSelections().size() < itemAdapter.getAdapterItemCount() && ++count < 5)
+                    selectExtension.select(Stream.range(0, itemAdapter.getAdapterItemCount()).toList());
                 keepToolbar = true;
                 break;
             default:

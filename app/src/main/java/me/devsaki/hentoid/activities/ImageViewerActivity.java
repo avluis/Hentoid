@@ -18,14 +18,14 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
-import me.devsaki.hentoid.widget.VolumeKeyListener;
+import me.devsaki.hentoid.widget.ViewerKeyListener;
 
 
 public class ImageViewerActivity extends BaseActivity {
 
     private static boolean isRunning = false;
 
-    private VolumeKeyListener volumeKeyListener = null;
+    private ViewerKeyListener viewerKeyListener = null;
     private ImageViewerViewModel viewModel = null;
 
 
@@ -96,7 +96,7 @@ public class ImageViewerActivity extends BaseActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (volumeKeyListener != null) return volumeKeyListener.onKey(null, keyCode, event);
+        if (viewerKeyListener != null) return viewerKeyListener.onKey(null, keyCode, event);
         else return super.onKeyDown(keyCode, event);
     }
 
@@ -112,13 +112,13 @@ public class ImageViewerActivity extends BaseActivity {
         super.onStop();
     }
 
-    public void registerKeyListener(VolumeKeyListener listener) {
+    public void registerKeyListener(ViewerKeyListener listener) {
         takeKeyEvents(true);
-        this.volumeKeyListener = listener;
+        this.viewerKeyListener = listener;
     }
 
     public void unregisterKeyListener() {
-        if (volumeKeyListener != null) volumeKeyListener.clear();
-        volumeKeyListener = null;
+        if (viewerKeyListener != null) viewerKeyListener.clear();
+        viewerKeyListener = null;
     }
 }

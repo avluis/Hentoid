@@ -10,7 +10,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 
 /**
- * Created by DevSaki on 09/05/2015.
  * Content builder (legacy: kept to support older library)
  *
  * @deprecated Replaced by {@link Content}; class is kept for retrocompatibilty

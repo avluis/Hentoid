@@ -6,6 +6,14 @@
     tools:ignore="AlwaysShowAction"
     tools:targetApi="o">
     <item
+        android:id="@+id/action_home"
+        android:icon="@drawable/ic_menu_home"
+        android:title="@string/bookmark_toggle_welcome"
+        android:tooltipText="@string/bookmark_toggle_welcome"
+        android:visible="false"
+        app:showAsAction="always"
+        tools:visible="true" />
+    <item
         android:id="@+id/action_copy"
         android:icon="@drawable/ic_action_copy"
         android:title="@string/bookmark_copy_url"

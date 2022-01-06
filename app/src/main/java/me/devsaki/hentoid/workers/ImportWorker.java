@@ -30,11 +30,13 @@ import me.devsaki.hentoid.database.DuplicatesDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -56,6 +58,7 @@ import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.ImportData;
@@ -72,6 +75,13 @@ public class ImportWorker extends BaseWorker {
     public static final int STEP_2_BOOK_FOLDERS = 2;
     public static final int STEP_3_BOOKS = 3;
     public static final int STEP_4_QUEUE_FINAL = 4;
+
+    final FileHelper.NameFilter imageNames = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
+
+    // VARIABLES
+    int booksOK;                        // Number of books imported
+    int booksKO;                        // Number of folders found with no valid book inside
+    int nbFolders;                      // Number of folders found with no content but subfolders
 
 
     public ImportWorker(
@@ -133,18 +143,14 @@ public class ImportWorker extends BaseWorker {
      * @param cleanNoImages True if the user has asked for a cleanup of folders with no images when calling import from Preferences
      */
     private void startImport(boolean rename, boolean cleanNoJSON, boolean cleanNoImages) {
-        int booksOK = 0;                        // Number of books imported
-        int booksKO = 0;                        // Number of folders found with no valid book inside
-        int nbFolders = 0;                      // Number of folders found with no content but subfolders
-        Content content;
-        List<DocumentFile> bookFiles;
+        booksOK = 0;
+        booksKO = 0;
+        nbFolders = 0;
         List<LogHelper.LogEntry> log = new ArrayList<>();
         Context context = getApplicationContext();
 
         // Stop downloads; it can get messy if downloading _and_ refresh / import happen at the same time
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
-
-        final FileHelper.NameFilter imageNames = displayName -> ImageHelper.isImageExtensionSupported(FileHelper.getExtension(displayName));
 
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) {
@@ -196,171 +202,7 @@ public class ImportWorker extends BaseWorker {
 
             for (int i = 0; i < bookFolders.size(); i++) {
                 if (isStopped()) throw new InterruptedException();
-                DocumentFile bookFolder = bookFolders.get(i);
-                content = null;
-                bookFiles = null;
-
-                // Detect the presence of images if the corresponding cleanup option has been enabled
-                if (cleanNoImages) {
-                    bookFiles = explorer.listFiles(context, bookFolder, null);
-                    long nbImages = Stream.of(bookFiles).filter(f -> ImageHelper.isSupportedImage(f.getName())).count();
-                    List<DocumentFile> subfolders = explorer.listFolders(context, bookFolder);
-                    if (0 == nbImages && subfolders.isEmpty()) { // No supported images nor subfolders
-                        boolean doRemove = true;
-                        try {
-                            content = importJson(context, bookFolder, bookFiles, dao);
-                            // Don't delete books that are _not supposed to_ have downloaded images
-                            if (content != null && content.getDownloadMode() == Content.DownloadMode.STREAM)
-                                doRemove = false;
-                        } catch (ParseException e) {
-                            trace(Log.WARN, STEP_1, log, "[Remove no image] Folder %s : unreadable JSON", bookFolder.getUri().toString());
-                        }
-                        if (doRemove) {
-                            booksKO++;
-                            boolean success = bookFolder.delete();
-                            trace(Log.INFO, STEP_1, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
-                            continue;
-                        }
-                    }
-                }
-
-                // Find the corresponding flagged book in the library
-                Content existingFlaggedContent = dao.selectContentByStorageUri(bookFolder.getUri().toString(), true);
-
-                // Detect JSON and try to parse it
-                try {
-                    if (null == bookFiles)
-                        bookFiles = explorer.listFiles(context, bookFolder, null);
-                    if (null == content) content = importJson(context, bookFolder, bookFiles, dao);
-                    if (content != null) {
-                        // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
-                        if (existingFlaggedContent != null)
-                            dao.deleteContent(existingFlaggedContent);
-
-                        // If the very same book still exists in the DB at this point, it means it's present in the queue
-                        // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
-                        Content existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), "");
-                        if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
-                            booksKO++;
-                            String location = ContentHelper.isInQueue(existingDuplicate.getStatus()) ? "queue" : "collection";
-                            trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book KO! (already in " + location + ") : %s", bookFolder.getUri().toString());
-                            continue;
-                        }
-
-                        List<ImageFile> contentImages;
-                        if (content.getImageFiles() != null)
-                            contentImages = content.getImageFiles();
-                        else contentImages = new ArrayList<>();
-
-                        if (rename) {
-                            ImmutablePair<String, String> canonicalBookFolderName = ContentHelper.formatBookFolderName(content);
-
-                            List<String> currentPathParts = bookFolder.getUri().getPathSegments();
-                            String[] bookUriParts = currentPathParts.get(currentPathParts.size() - 1).split(":");
-                            String[] bookPathParts = bookUriParts[bookUriParts.length - 1].split("/");
-                            String bookFolderName = bookPathParts[bookPathParts.length - 1];
-
-                            if (!canonicalBookFolderName.left.equalsIgnoreCase(bookFolderName)) {
-                                if (renameFolder(context, bookFolder, content, explorer, canonicalBookFolderName.left)) {
-                                    trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName.left);
-                                    // Rescan files inside the renamed folder
-                                    bookFiles = explorer.listFiles(context, bookFolder, null);
-                                } else {
-                                    trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName.left);
-                                }
-                            }
-                        }
-
-                        // Attach image file Uri's to the book's images
-                        List<DocumentFile> imageFiles = Stream.of(bookFiles).filter(f -> imageNames.accept(f.getName())).toList();
-                        if (!imageFiles.isEmpty()) {
-                            // No images described in the JSON -> recreate them
-                            if (contentImages.isEmpty()) {
-                                contentImages = ContentHelper.createImageListFromFiles(imageFiles);
-                                content.setImageFiles(contentImages);
-                                content.getCover().setUrl(content.getCoverImageUrl());
-                            } else { // Existing images described in the JSON -> map them
-                                contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
-                                content.setImageFiles(contentImages);
-                            }
-                        }
-
-                        // If content has an external-library tag or an EXTERNAL status, remove it because we're importing for the primary library now
-                        ImportHelper.removeExternalAttributes(content);
-
-                        content.computeSize();
-                        ContentHelper.addContent(context, dao, content);
-                        trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK : %s", bookFolder.getUri().toString());
-                    } else { // JSON not found
-                        List<DocumentFile> subfolders = explorer.listFolders(context, bookFolder);
-                        if (!subfolders.isEmpty()) // Folder doesn't contain books but contains subdirectories
-                        {
-                            bookFolders.addAll(subfolders);
-                            trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Subfolders found in : %s", bookFolder.getUri().toString());
-                            nbFolders++;
-                            continue;
-                        } else { // No JSON nor any subdirectory
-                            trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "Import book KO! (no JSON found) : %s", bookFolder.getUri().toString());
-                            // Deletes the folder if cleanup is active
-                            if (cleanNoJSON) {
-                                boolean success = bookFolder.delete();
-                                trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Remove no JSON %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
-                            }
-                        }
-                    }
-
-                    if (null == content) booksKO++;
-                    else booksOK++;
-                } catch (ParseException jse) {
-                    // If the book is still present in the DB, regenerate the JSON and unflag the book
-                    if (existingFlaggedContent != null) {
-                        try {
-                            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(existingFlaggedContent), JsonContent.class, bookFolder);
-                            existingFlaggedContent.setJsonUri(newJson.getUri().toString());
-                            existingFlaggedContent.setFlaggedForDeletion(false);
-                            dao.insertContent(existingFlaggedContent);
-                            trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK (JSON regenerated) : %s", bookFolder.getUri().toString());
-                            booksOK++;
-                        } catch (IOException | JsonDataException e) {
-                            Timber.w(e);
-                            trace(Log.ERROR, STEP_2_BOOK_FOLDERS, log, "Import book ERROR while regenerating JSON : %s for Folder %s", jse.getMessage(), bookFolder.getUri().toString());
-                            booksKO++;
-                        }
-                    } else { // If not, rebuild the book and regenerate the JSON according to stored data
-                        try {
-                            List<String> parentFolder = new ArrayList<>();
-                            // Try and detect the site according to the parent folder
-                            String[] parents = bookFolder.getUri().getPath().split("/"); // _not_ File.separator but the universal Uri separator
-                            if (parents.length > 1) {
-                                for (Site s : Site.values())
-                                    if (parents[parents.length - 2].equalsIgnoreCase(s.getFolder())) {
-                                        parentFolder.add(s.getFolder());
-                                        break;
-                                    }
-                            }
-                            // Scan the folder
-                            Content storedContent = ImportHelper.scanBookFolder(context, bookFolder, explorer, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
-                            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
-                            storedContent.setJsonUri(newJson.getUri().toString());
-                            ContentHelper.addContent(context, dao, storedContent);
-                            trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK (Content regenerated) : %s", bookFolder.getUri().toString());
-                            booksOK++;
-                        } catch (IOException | JsonDataException e) {
-                            Timber.w(e);
-                            trace(Log.ERROR, STEP_2_BOOK_FOLDERS, log, "Import book ERROR while regenerating Content : %s for Folder %s", jse.getMessage(), bookFolder.getUri().toString());
-                            booksKO++;
-                        }
-                    }
-                } catch (Exception e) {
-                    Timber.w(e);
-                    if (null == content)
-                        content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
-                    booksKO++;
-                    trace(Log.ERROR, STEP_2_BOOK_FOLDERS, log, "Import book ERROR : %s for Folder %s", e.getMessage(), bookFolder.getUri().toString());
-                }
-                String bookName = (null == bookFolder.getName()) ? "" : bookFolder.getName();
-                notificationManager.notify(new ImportProgressNotification(bookName, booksOK + booksKO, bookFolders.size() - nbFolders));
-                eventProgress(STEP_3_BOOKS, bookFolders.size() - nbFolders, booksOK, booksKO);
+                importFolder(context, explorer, dao, bookFolders, bookFolders.get(i), log, rename, cleanNoJSON, cleanNoImages);
             }
             trace(Log.INFO, STEP_3_BOOKS, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
             eventComplete(STEP_3_BOOKS, bookFolders.size(), booksOK, booksKO, null);
@@ -388,6 +230,185 @@ public class ImportWorker extends BaseWorker {
             eventComplete(STEP_4_QUEUE_FINAL, bookFolders.size(), booksOK, booksKO, logFile);
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
         }
+    }
+
+    private void importFolder(
+            @NonNull final Context context,
+            @NonNull final FileExplorer explorer,
+            @NonNull final CollectionDAO dao,
+            @NonNull final List<DocumentFile> bookFolders,
+            @NonNull final DocumentFile bookFolder,
+            @NonNull final List<LogHelper.LogEntry> log,
+            boolean rename, boolean cleanNoJSON, boolean cleanNoImages
+    ) {
+        Content content = null;
+        List<DocumentFile> bookFiles = null;
+
+        // Detect the presence of images if the corresponding cleanup option has been enabled
+        if (cleanNoImages) {
+            bookFiles = explorer.listFiles(context, bookFolder, null);
+            long nbImages = Stream.of(bookFiles).filter(f -> ImageHelper.isSupportedImage(StringHelper.protect(f.getName()))).count();
+            if (0 == nbImages && !explorer.hasFolders(bookFolder)) { // No supported images nor subfolders
+                boolean doRemove = true;
+                try {
+                    content = importJson(context, bookFolder, bookFiles, dao);
+                    // Don't delete books that are _not supposed to_ have downloaded images
+                    if (content != null && content.getDownloadMode() == Content.DownloadMode.STREAM)
+                        doRemove = false;
+                } catch (ParseException e) {
+                    trace(Log.WARN, STEP_1, log, "[Remove no image] Folder %s : unreadable JSON", bookFolder.getUri().toString());
+                }
+                if (doRemove) {
+                    booksKO++;
+                    boolean success = bookFolder.delete();
+                    trace(Log.INFO, STEP_1, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
+                    return;
+                }
+            }
+        }
+
+        // Find the corresponding flagged book in the library
+        Content existingFlaggedContent = dao.selectContentByStorageUri(bookFolder.getUri().toString(), true);
+
+        // Detect JSON and try to parse it
+        try {
+            if (null == bookFiles)
+                bookFiles = explorer.listFiles(context, bookFolder, null);
+            if (null == content) content = importJson(context, bookFolder, bookFiles, dao);
+            if (content != null) {
+                // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
+                if (existingFlaggedContent != null)
+                    dao.deleteContent(existingFlaggedContent);
+
+                // If the very same book still exists in the DB at this point, it means it's present in the queue
+                // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
+                Content existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), "");
+                if (existingDuplicate != null && !existingDuplicate.isFlaggedForDeletion()) {
+                    booksKO++;
+                    String location = ContentHelper.isInQueue(existingDuplicate.getStatus()) ? "queue" : "collection";
+                    trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book KO! (already in " + location + ") : %s", bookFolder.getUri().toString());
+                    return;
+                }
+
+                List<ImageFile> contentImages;
+                if (content.getImageFiles() != null)
+                    contentImages = content.getImageFiles();
+                else contentImages = new ArrayList<>();
+
+                if (rename) {
+                    ImmutablePair<String, String> canonicalBookFolderName = ContentHelper.formatBookFolderName(content);
+
+                    List<String> currentPathParts = bookFolder.getUri().getPathSegments();
+                    String[] bookUriParts = currentPathParts.get(currentPathParts.size() - 1).split(":");
+                    String[] bookPathParts = bookUriParts[bookUriParts.length - 1].split("/");
+                    String bookFolderName = bookPathParts[bookPathParts.length - 1];
+
+                    if (!canonicalBookFolderName.left.equalsIgnoreCase(bookFolderName)) {
+                        if (renameFolder(context, bookFolder, content, explorer, canonicalBookFolderName.left)) {
+                            trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Rename OK] Folder %s renamed to %s", bookFolderName, canonicalBookFolderName.left);
+                            // Rescan files inside the renamed folder
+                            bookFiles = explorer.listFiles(context, bookFolder, null);
+                        } else {
+                            trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "[Rename KO] Could not rename file %s to %s", bookFolderName, canonicalBookFolderName.left);
+                        }
+                    }
+                }
+
+                // Attach image file Uri's to the book's images
+                List<DocumentFile> imageFiles = Stream.of(bookFiles).filter(f -> imageNames.accept(StringHelper.protect(f.getName()))).toList();
+                if (!imageFiles.isEmpty()) {
+                    // No images described in the JSON -> recreate them
+                    if (contentImages.isEmpty()) {
+                        contentImages = ContentHelper.createImageListFromFiles(imageFiles);
+                        content.setImageFiles(contentImages);
+                        content.getCover().setUrl(content.getCoverImageUrl());
+                    } else { // Existing images described in the JSON -> map them
+                        contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
+                        content.setImageFiles(contentImages);
+                    }
+                } else if (Preferences.isImportQueueEmptyBooks()
+                        && !content.isManuallyMerged()
+                        && content.getDownloadMode() == Content.DownloadMode.DOWNLOAD) { // If no image file found, it goes in the errors queue
+                    if (!ContentHelper.isInQueue(content.getStatus()))
+                        content.setStatus(StatusContent.ERROR);
+                    List<ErrorRecord> errors = new ArrayList<>();
+                    errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
+                    content.setErrorLog(errors);
+                }
+
+                // If content has an external-library tag or an EXTERNAL status, remove it because we're importing for the primary library now
+                ImportHelper.removeExternalAttributes(content);
+
+                content.computeSize();
+                ContentHelper.addContent(context, dao, content);
+                trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK : %s", bookFolder.getUri().toString());
+            } else { // JSON not found
+                List<DocumentFile> subfolders = explorer.listFolders(context, bookFolder);
+                if (!subfolders.isEmpty()) { // Folder doesn't contain books but contains subdirectories
+                    bookFolders.addAll(subfolders);
+                    trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Subfolders found in : %s", bookFolder.getUri().toString());
+                    nbFolders++;
+                    return;
+                } else { // No JSON nor any subdirectory
+                    trace(Log.WARN, STEP_2_BOOK_FOLDERS, log, "Import book KO! (no JSON found) : %s", bookFolder.getUri().toString());
+                    // Deletes the folder if cleanup is active
+                    if (cleanNoJSON) {
+                        boolean success = bookFolder.delete();
+                        trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "[Remove no JSON %s] Folder %s", success ? "OK" : "KO", bookFolder.getUri().toString());
+                    }
+                }
+            }
+
+            if (null == content) booksKO++;
+            else booksOK++;
+        } catch (ParseException jse) {
+            // If the book is still present in the DB, regenerate the JSON and unflag the book
+            if (existingFlaggedContent != null) {
+                try {
+                    DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(existingFlaggedContent), JsonContent.class, bookFolder);
+                    existingFlaggedContent.setJsonUri(newJson.getUri().toString());
+                    existingFlaggedContent.setFlaggedForDeletion(false);
+                    dao.insertContent(existingFlaggedContent);
+                    trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK (JSON regenerated) : %s", bookFolder.getUri().toString());
+                    booksOK++;
+                } catch (IOException | JsonDataException e) {
+                    Timber.w(e);
+                    trace(Log.ERROR, STEP_2_BOOK_FOLDERS, log, "Import book ERROR while regenerating JSON : %s for Folder %s", jse.getMessage(), bookFolder.getUri().toString());
+                    booksKO++;
+                }
+            } else { // If not, rebuild the book and regenerate the JSON according to stored data
+                try {
+                    List<String> parentFolder = new ArrayList<>();
+                    // Try and detect the site according to the parent folder
+                    String[] parents = bookFolder.getUri().getPath().split("/"); // _not_ File.separator but the universal Uri separator
+                    if (parents.length > 1) {
+                        for (Site s : Site.values())
+                            if (parents[parents.length - 2].equalsIgnoreCase(s.getFolder())) {
+                                parentFolder.add(s.getFolder());
+                                break;
+                            }
+                    }
+                    // Scan the folder
+                    Content storedContent = ImportHelper.scanBookFolder(context, bookFolder, explorer, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
+                    DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
+                    storedContent.setJsonUri(newJson.getUri().toString());
+                    ContentHelper.addContent(context, dao, storedContent);
+                    trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK (Content regenerated) : %s", bookFolder.getUri().toString());
+                    booksOK++;
+                } catch (IOException | JsonDataException e) {
+                    Timber.w(e);
+                    trace(Log.ERROR, STEP_2_BOOK_FOLDERS, log, "Import book ERROR while regenerating Content : %s for Folder %s", jse.getMessage(), bookFolder.getUri().toString());
+                    booksKO++;
+                }
+            }
+        } catch (Exception e) {
+            Timber.w(e);
+            booksKO++;
+            trace(Log.ERROR, STEP_2_BOOK_FOLDERS, log, "Import book ERROR : %s for Folder %s", e.getMessage(), bookFolder.getUri().toString());
+        }
+        String bookName = StringHelper.protect(bookFolder.getName());
+        notificationManager.notify(new ImportProgressNotification(bookName, booksOK + booksKO, bookFolders.size() - nbFolders));
+        eventProgress(STEP_3_BOOKS, bookFolders.size() - nbFolders, booksOK, booksKO);
     }
 
     private LogHelper.LogInfo buildLogInfo(boolean cleanup, @NonNull List<LogHelper.LogEntry> log) {
@@ -507,13 +528,13 @@ public class ImportWorker extends BaseWorker {
             @NonNull DocumentFile folder,
             @NonNull List<DocumentFile> bookFiles,
             @NonNull CollectionDAO dao) throws ParseException {
-        Optional<DocumentFile> file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_V2)).findFirst();
+        Optional<DocumentFile> file = Stream.of(bookFiles).filter(f -> StringHelper.protect(f.getName()).equals(Consts.JSON_FILE_NAME_V2)).findFirst();
         if (file.isPresent()) return importJsonV2(context, file.get(), folder, dao);
 
-        file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME)).findFirst();
+        file = Stream.of(bookFiles).filter(f -> StringHelper.protect(f.getName()).equals(Consts.JSON_FILE_NAME)).findFirst();
         if (file.isPresent()) return importJsonV1(context, file.get(), folder);
 
-        file = Stream.of(bookFiles).filter(f -> f.getName().equals(Consts.JSON_FILE_NAME_OLD)).findFirst();
+        file = Stream.of(bookFiles).filter(f -> StringHelper.protect(f.getName()).equals(Consts.JSON_FILE_NAME_OLD)).findFirst();
         if (file.isPresent()) return importJsonLegacy(context, file.get(), folder);
 
         return null;

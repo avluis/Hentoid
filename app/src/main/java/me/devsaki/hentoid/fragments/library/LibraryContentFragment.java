@@ -594,7 +594,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 askStreamSelectedItems();
                 keepToolbar = true;
                 break;
-            case R.id.action_selectAll:
+            case R.id.action_select_all:
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 int count = 0;
                 while (selectExtension.getSelections().size() < getItemAdapter().getAdapterItemCount() && ++count < 5)
@@ -624,7 +624,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     if (c != null)
                         InputDialog.invokeInputDialog(requireActivity(), R.string.book_edit_title,
                                 c.getTitle(),
-                                s -> viewModel.editContentTitle(c, s));
+                                s -> viewModel.editContentTitle(c, s), null);
                 }
                 keepSelection = false;
                 break;
@@ -708,7 +708,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         selectExtension.deselect(selectExtension.getSelections());
         List<Long> bookIds = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getId).toList();
-        ChangeGroupDialogFragment.invoke(this, Helper.getPrimitiveLongArrayFromList(bookIds));
+        ChangeGroupDialogFragment.invoke(this, Helper.getPrimitiveArrayFromList(bookIds));
     }
 
     /**
@@ -1180,6 +1180,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         touchHelper.attachToRecyclerView(recyclerView);
 
         recyclerView.setAdapter(fastAdapter);
+        recyclerView.setHasFixedSize(true);
     }
 
     /**

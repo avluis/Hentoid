@@ -21,6 +21,7 @@ import com.waynejo.androidndkgif.GifEncoder;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +30,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
- * Created by Robb on 07/2020
  * Generic utility class
  */
 public final class ImageHelper {
@@ -129,6 +129,12 @@ public final class ImageHelper {
         } else {
             return Bitmap.createBitmap(0, 0, Bitmap.Config.ARGB_8888);
         }
+    }
+
+    public static byte[] BitmapToWebp(@NonNull Bitmap bitmap) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.WEBP, 100, output);
+        return output.toByteArray();
     }
 
     /**
@@ -254,6 +260,4 @@ public final class ImageHelper {
 
         return Uri.fromFile(new File(path));
     }
-
-
 }

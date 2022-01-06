@@ -25,14 +25,17 @@ public class ExhentaiContent extends BaseContentParser {
         String cookiesStr = mgr.getCookie(".exhentai.org");
 
         String[] galleryUrlParts = url.split("/");
-        EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
+        if (galleryUrlParts.length > 5) {
+            EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
 
-        try {
-            EHentaiGalleriesMetadata metadata = EHentaiServer.EXHENTAI_API.getGalleryMetadata(query, cookiesStr).execute().body();
-            return metadata.update(content, url, Site.EXHENTAI, updateImages);
-        } catch (IOException e) {
-            Timber.e(e, "Error parsing content.");
-            return new Content().setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED);
+            try {
+                EHentaiGalleriesMetadata metadata = EHentaiServer.EXHENTAI_API.getGalleryMetadata(query, cookiesStr).execute().body();
+                if (metadata != null)
+                    return metadata.update(content, url, Site.EXHENTAI, updateImages);
+            } catch (IOException e) {
+                Timber.e(e, "Error parsing content.");
+            }
         }
+        return new Content().setSite(Site.EXHENTAI).setStatus(StatusContent.IGNORED);
     }
 }

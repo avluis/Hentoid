@@ -53,14 +53,15 @@ public class InputDialog {
             @NonNull final Context context,
             final @StringRes int message,
             @NonNull final Consumer<String> onResult) {
-        invokeInputDialog(context, message, null, onResult);
+        invokeInputDialog(context, message, null, onResult, null);
     }
 
     public static void invokeInputDialog(
             @NonNull final Context context,
             final @StringRes int message,
             @Nullable final String text,
-            @NonNull final Consumer<String> onResult) {
+            @NonNull final Consumer<String> onResult,
+            @Nullable final Runnable onCancelled) {
         EditText input = new EditText(context);
         if (text != null) input.setText(text);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
@@ -76,6 +77,7 @@ public class InputDialog {
         DialogInterface.OnClickListener onCancel = (dialog, whichButton) -> {
             InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.toggleSoftInput(0, 0);
+            if (onCancelled != null) onCancelled.run();
         };
 
         showDialog(context, message, input, onOk, onCancel);

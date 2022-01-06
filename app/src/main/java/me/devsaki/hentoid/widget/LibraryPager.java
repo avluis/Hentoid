@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.widget;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.view.View;
 
 import androidx.annotation.NonNull;
@@ -12,8 +14,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.ui.CarouselDecorator;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.TooltipHelper;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Page navigation bar for the library screen's paged mode
@@ -56,7 +56,7 @@ public class LibraryPager {
         pageCarousel = requireViewById(rootView, R.id.pager_pageCarousel);
         pageCarousel.setHasFixedSize(true);
 
-        View.OnTouchListener tapListener = new OnZoneTapListener(pageCarousel).setOnMiddleZoneTapListener(this::onCarouselClick);
+        View.OnTouchListener tapListener = new OnZoneTapListener(pageCarousel, 1).setOnMiddleZoneTapListener(this::onCarouselClick);
         decorator = new CarouselDecorator(rootView.getContext(), R.layout.item_pagecarousel);
         decorator.decorate(pageCarousel);
         decorator.setOnPageChangeListener(this::pageChanged);

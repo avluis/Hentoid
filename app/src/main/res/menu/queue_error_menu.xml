@@ -28,22 +28,26 @@
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_invert_queue"
+        android:icon="@drawable/ic_import_export"
         android:title="@string/invert_queue"
         android:tooltipText="@string/invert_queue"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_cancel_all"
+        android:icon="@drawable/ic_action_delete_forever"
         android:title="@string/cancel_all"
         android:tooltipText="@string/cancel_all"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_redownload_all"
+        android:icon="@drawable/ic_action_download"
         android:title="@string/redownload_all"
         android:tooltipText="@string/redownload_all"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_cancel_all_errors"
-        android:title="@string/cancel_all"
-        android:tooltipText="@string/cancel_all"
+        android:icon="@drawable/ic_action_delete_forever"
+        android:title="@string/cancel_all_errors"
+        android:tooltipText="@string/cancel_all_errors"
         app:showAsAction="never" />
 </menu>

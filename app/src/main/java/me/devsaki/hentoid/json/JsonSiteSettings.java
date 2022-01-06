@@ -16,5 +16,6 @@ public class JsonSiteSettings {
         public Boolean useCloudflare = null;
         public Boolean simulateHumanReading = null;
         public Integer parallelDownloadCap = null;
+        public Integer requestsCapPerSecond = null;
     }
 }

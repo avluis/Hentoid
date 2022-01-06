@@ -1,0 +1,4 @@
+/* Custom style to hide blacklisted books */
+.blacklisted.gallery {
+    display: none !important;
+}

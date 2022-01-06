@@ -12,8 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -81,7 +79,6 @@ import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
@@ -97,9 +94,6 @@ import timber.log.Timber;
 
 @SuppressLint("NonConstantResourceId")
 public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
-
-    private static final String KEY_LAST_LIST_POSITION = "last_list_position";
-
 
     // ======== COMMUNICATION
     private OnBackPressedCallback callback;
@@ -135,14 +129,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private long backButtonPressed;
     // Total number of books in the whole unfiltered library
     private int totalContentCount;
-    // Position of top item to memorize or restore (used when activity is destroyed and recreated)
-    private int topItemPosition = -1;
     // TODO doc
     private boolean firstLibraryLoad = true;
-
-    // Used to start processing when the recyclerView has finished updating
-    private Debouncer<Integer> listRefreshDebouncer;
-    private int itemToRefreshIndex = -1;
     // TODO doc
     private boolean enabled = true;
 
@@ -156,7 +144,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         @Override
         public boolean areContentsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
             return oldItem.getGroup().picture.getTargetId() == newItem.getGroup().picture.getTargetId()
-                    && oldItem.getGroup().isFavourite() == newItem.getGroup().isFavourite();
+                    && oldItem.getGroup().isFavourite() == newItem.getGroup().isFavourite()
+                    && oldItem.getGroup().items.size() == newItem.getGroup().items.size();
         }
 
         @Override
@@ -182,8 +171,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (!(requireActivity() instanceof LibraryActivity))
             throw new IllegalStateException("Parent activity has to be a LibraryActivity");
         activity = new WeakReference<>((LibraryActivity) requireActivity());
-
-        listRefreshDebouncer = new Debouncer<>(context, 75, this::onRecyclerUpdated);
     }
 
     @Override
@@ -314,6 +301,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 return Preferences.Constant.ORDER_FIELD_TITLE;
             case (R.id.sort_books):
                 return Preferences.Constant.ORDER_FIELD_CHILDREN;
+            case (R.id.sort_dl_date):
+                return Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE;
             case (R.id.sort_custom):
                 return Preferences.Constant.ORDER_FIELD_CUSTOM;
             default:
@@ -327,6 +316,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 return R.string.sort_title;
             case (Preferences.Constant.ORDER_FIELD_CHILDREN):
                 return R.string.sort_books;
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
+                return R.string.sort_dl_date;
             case (Preferences.Constant.ORDER_FIELD_CUSTOM):
                 return R.string.sort_custom;
             default:
@@ -352,6 +343,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     private boolean onSelectionToolbarItemClicked(@NonNull MenuItem menuItem) {
+        boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
             case R.id.action_edit_name:
                 editSelectedItemName();
@@ -362,11 +354,18 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             case R.id.action_archive:
                 archiveSelectedItems();
                 break;
+            case R.id.action_select_all:
+                // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
+                int count = 0;
+                while (selectExtension.getSelections().size() < itemAdapter.getAdapterItemCount() && ++count < 5)
+                    selectExtension.select(Stream.range(0, itemAdapter.getAdapterItemCount()).toList());
+                keepToolbar = true;
+                break;
             default:
                 activity.get().getSelectionToolbar().setVisibility(View.GONE);
                 return false;
         }
-        activity.get().getSelectionToolbar().setVisibility(View.GONE);
+        if (!keepToolbar) activity.get().getSelectionToolbar().setVisibility(View.GONE);
         return true;
     }
 
@@ -416,7 +415,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         if (!selectedItems.isEmpty()) {
             List<Group> selectedGroups = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().toList();
-            List<List<Content>> selectedContentLists = Stream.of(selectedGroups).map(Group::getContents).toList();
+            List<List<Content>> selectedContentLists = Stream.of(selectedGroups).map(g -> viewModel.getGroupContents(g)).toList();
             List<Content> selectedContent = new ArrayList<>();
             for (List<Content> list : selectedContentLists) selectedContent.addAll(list);
 
@@ -516,7 +515,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         List<Content> selectedContent = Stream.of(selectedItems)
                 .map(GroupDisplayItem::getGroup)
                 .withoutNulls()
-                .flatMap(g -> Stream.of(g.getContents()))
+                .flatMap(g -> Stream.of(viewModel.getGroupContents(g)))
                 .withoutNulls()
                 .filterNot(c -> c.getStorageUri().isEmpty())
                 .toList();
@@ -531,16 +530,17 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         Group g = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().findFirst().get();
 
-        InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, g.name, this::onEditName);
+        InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, g.name,
+                this::onEditName, () -> selectExtension.deselect(selectExtension.getSelections()));
     }
 
     private void onEditName(@NonNull final String newName) {
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         Group g = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().findFirst().get();
-        viewModel.renameGroup(g, newName, () -> {
-            ToastHelper.toast(R.string.group_name_exists);
-            LibraryGroupsFragment.this.editSelectedItemName();
-        });
+        viewModel.renameGroup(g, newName, stringIntRes -> {
+            ToastHelper.toast(stringIntRes);
+            editSelectedItemName();
+        }, () -> selectExtension.setSelectOnLongClick(true));
     }
 
     @Override
@@ -548,26 +548,16 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         super.onSaveInstanceState(outState);
         if (viewModel != null) viewModel.onSaveState(outState);
         if (fastAdapter != null) fastAdapter.saveInstanceState(outState);
-
-        // Remember current position in the sorted list
-        int currentPosition = getTopItemPosition();
-        if (currentPosition > 0 || -1 == topItemPosition) topItemPosition = currentPosition;
-
-        outState.putInt(KEY_LAST_LIST_POSITION, topItemPosition);
-        //topItemPosition = -1;
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
 
-        topItemPosition = 0;
         if (null == savedInstanceState) return;
 
         if (viewModel != null) viewModel.onRestoreState(savedInstanceState);
         if (fastAdapter != null) fastAdapter.withSavedInstanceState(savedInstanceState);
-        // Mark last position in the list to be the one it will come back to
-        topItemPosition = savedInstanceState.getInt(KEY_LAST_LIST_POSITION, 0);
     }
 
     /*
@@ -677,7 +667,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }
 
         // Item click listener
-        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(p, i));
+        fastAdapter.setOnClickListener((v, a, i, p) -> onItemClick(i));
 
         // Favourite button click listener
         fastAdapter.addEventHook(new ClickEventHook<GroupDisplayItem>() {
@@ -696,7 +686,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             }
         });
 
+        fastAdapter.setStateRestorationPolicy(RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY);
+
         recyclerView.setAdapter(fastAdapter);
+        recyclerView.setHasFixedSize(true);
     }
 
     private void onGroupsChanged(List<Group> result) {
@@ -716,7 +709,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).withoutNulls().distinct().toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK);
-        new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
 
         // Reset library load indicator
         firstLibraryLoad = true;
@@ -783,10 +775,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      *
      * @param item GroupDisplayItem that has been clicked on
      */
-    private boolean onItemClick(int position, @NonNull GroupDisplayItem item) {
+    private boolean onItemClick(@NonNull GroupDisplayItem item) {
         if (selectExtension.getSelections().isEmpty()) {
             if (item.getGroup() != null && !item.getGroup().isBeingDeleted()) {
-                topItemPosition = position;
                 activity.get().showBooksInGroup(item.getGroup());
             }
             return true;
@@ -812,28 +803,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     /**
-     * Callback for the end of item diff calculations
-     * Activated when all _adapter_ items are placed on their definitive position
-     */
-    private void differEndCallback() {
-        if (topItemPosition > -1) {
-            int targetPos = topItemPosition;
-            listRefreshDebouncer.submit(targetPos);
-            topItemPosition = -1;
-        }
-    }
-
-    /**
-     * Callback for the end of recycler updates
-     * Activated when all _displayed_ items are placed on their definitive position
-     */
-    private void onRecyclerUpdated(int topItemPosition) {
-        int currentPosition = getTopItemPosition();
-        if (currentPosition != topItemPosition)
-            llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
-    }
-
-    /**
      * Calculate the position of the top visible item of the book list
      *
      * @return position of the top visible item of the book list
@@ -846,20 +815,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * DRAG, DROP & SWIPE METHODS
      */
 
-    private void recordMoveFromFirstPos(int from, int to) {
-        if (0 == from) itemToRefreshIndex = to;
-    }
-
-    private void recordMoveFromFirstPos(List<Integer> positions) {
-        // Only useful when moving the 1st item to the bottom
-        if (!positions.isEmpty() && 0 == positions.get(0))
-            itemToRefreshIndex = itemAdapter.getAdapterItemCount() - positions.size();
-    }
-
     @Override
     public boolean itemTouchOnMove(int oldPosition, int newPosition) {
         DragDropUtil.onMove(itemAdapter, oldPosition, newPosition); // change position
-        recordMoveFromFirstPos(oldPosition, newPosition);
         return true;
     }
 

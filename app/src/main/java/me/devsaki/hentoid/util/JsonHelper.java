@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -26,7 +27,6 @@ import me.devsaki.hentoid.json.adapters.AndroidPairAdapterFactory;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 06/05/2016.
  * JSON related utility class
  */
 public class JsonHelper {
@@ -39,6 +39,7 @@ public class JsonHelper {
 
     private static final FileHelper.NameFilter jsonFilter = displayName -> FileHelper.getExtension(displayName).equalsIgnoreCase("json");
 
+    public static final Type LIST_STRINGS = Types.newParameterizedType(List.class, String.class);
     public static final Type MAP_STRINGS = Types.newParameterizedType(Map.class, String.class, String.class);
 
     private static final Moshi MOSHI = new Moshi.Builder()

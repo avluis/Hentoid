@@ -13,6 +13,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -51,6 +52,8 @@ public interface CollectionDAO {
 
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl);
+
+    Set<String> selectAllSourceUrls(@NonNull Site site);
 
     List<Content> searchTitlesWith(@NonNull final String word, int[] contentStatusCodes);
 
@@ -103,11 +106,14 @@ public interface CollectionDAO {
 
     void deleteAllExternalBooks();
 
-    // Groups
+
+    // GROUPS
 
     List<Group> selectGroups(long[] groupIds);
 
-    LiveData<List<Group>> selectGroups(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly);
+    LiveData<List<Group>> selectGroupsLive(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly);
+
+    List<Group> selectGroups(int grouping, int subType);
 
     List<Group> selectGroups(int grouping);
 
@@ -237,6 +243,7 @@ public interface CollectionDAO {
 
     Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
 
+
     // CHAPTERS
 
     List<Chapter> selectChapters(long contentId);
@@ -262,6 +269,9 @@ public interface CollectionDAO {
     List<SiteBookmark> selectAllBookmarks();
 
     List<SiteBookmark> selectBookmarks(@NonNull Site s);
+
+    @Nullable
+    SiteBookmark selectHomepage(@NonNull Site s);
 
     long insertBookmark(@NonNull SiteBookmark bookmark);
 

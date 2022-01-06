@@ -29,7 +29,7 @@ public class NhentaiContent extends BaseContentParser {
     @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
     private String title;
     // Fallback value for title (see #449)
-    @Selector(value = "#info h1", defValue = "<no title>")
+    @Selector(value = "#info h1", defValue = NO_TITLE)
     private String titleAlt;
 
     @Selector(value = "#info a[href*='/artist']")

@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
@@ -1362,6 +1361,8 @@ public final class ContentHelper {
             @NonNull final CollectionDAO dao) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
+        // New book inherits properties of the first content of the list
+        // which takes "precedence" as the 1st chapter
         Content firstContent = contentList.get(0);
 
         // Initiate a new Content
@@ -1391,17 +1392,17 @@ public final class ContentHelper {
         mergedContent.setStorageUri(targetFolder.getUri().toString());
 
         // Renumber all picture files and dispatch chapters
-        long nbImages = Stream.of(contentList).flatMap(c -> Stream.of(c.getImageFiles())).filter(ImageFile::isReadable).count();
+        long nbImages = Stream.of(contentList).map(Content::getImageFiles).withoutNulls().flatMap(Stream::of).filter(ImageFile::isReadable).count();
         int nbMaxDigits = (int) (Math.floor(Math.log10(nbImages)) + 1);
 
         List<ImageFile> mergedImages = new ArrayList<>();
         List<Chapter> mergedChapters = new ArrayList<>();
 
-        // Set cover
         ImageFile firstCover = firstContent.getCover();
         ImageFile coverPic = ImageFile.newCover(firstCover.getUrl(), firstCover.getStatus());
         boolean isError = false;
         try {
+            // Set cover
             if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
                 String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
                 Uri newUri = FileHelper.copyFile(
@@ -1417,12 +1418,14 @@ public final class ContentHelper {
             }
             mergedImages.add(coverPic);
 
+            // Merge images and chapters
             int chapterOrder = 0;
             int pictureOrder = 1;
             int nbProcessedPics = 1;
-            Chapter newChapter = null;
+            Chapter newChapter;
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
+                newChapter = null;
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
                 contentChapter.setUniqueId(c.getUniqueSiteId());
                 for (ImageFile img : c.getImageFiles()) {
@@ -1431,8 +1434,8 @@ public final class ContentHelper {
                     newImg.setId(0); // Force working on a new picture
                     newImg.getContent().setTarget(null); // Clear content
                     newImg.setOrder(pictureOrder++);
-                    newImg.setName(String.format(Locale.ENGLISH, "%0" + nbMaxDigits + "d", newImg.getOrder()));
-                    Chapter chapLink = newImg.getLinkedChapter();
+                    newImg.computeName(nbMaxDigits);
+                    Chapter chapLink = img.getLinkedChapter();
                     if (null == chapLink) { // No chapter -> set content chapter
                         newChapter = contentChapter;
                     } else if (null == newChapter || (
@@ -1444,7 +1447,7 @@ public final class ContentHelper {
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
                     newImg.setChapter(newChapter);
 
-                    // If exists, move the picture to the merged books's folder
+                    // If exists, move the picture to the merged books' folder
                     if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
                         String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
                         Uri newUri = FileHelper.copyFile(

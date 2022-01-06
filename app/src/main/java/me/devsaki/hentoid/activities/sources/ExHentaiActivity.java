@@ -25,7 +25,6 @@ import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
- * Created by Robb_w on 2018/04
  * Implements Ex-Hentai source
  */
 public class ExHentaiActivity extends BaseWebActivity {
@@ -107,7 +106,10 @@ public class ExHentaiActivity extends BaseWebActivity {
                             Timber::w
                     )
             );
-            return null;
+
+            if (isMarkDownloaded())
+                return super.parseResponse(urlStr, requestHeaders, false, false); // Rewrite HTML
+            else return null;
         }
     }
 }

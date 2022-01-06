@@ -60,7 +60,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         MergeDialogFragment fragment = new MergeDialogFragment();
 
         Bundle args = new Bundle();
-        args.putLongArray(KEY_CONTENTS, Helper.getPrimitiveLongArrayFromList(Stream.of(contentList).map(Content::getId).toList()));
+        args.putLongArray(KEY_CONTENTS, Helper.getPrimitiveArrayFromList(Stream.of(contentList).map(Content::getId).toList()));
         args.putBoolean(KEY_DELETE_DEFAULT, deleteDefault);
         fragment.setArguments(args);
 
@@ -111,7 +111,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         List<Content> contentList = loadContentList();
         if (contentList.isEmpty()) return;
 
-        itemAdapter.set(Stream.of(contentList).map(s -> new TextItem<>(s.getTitle(), s, false, true, false, touchHelper)).toList());
+        itemAdapter.set(Stream.of(contentList).map(s -> new TextItem<>(s.getTitle(), s, true, false, false, touchHelper)).toList());
 
         // Activate drag & drop
         SimpleDragCallback dragCallback = new SimpleDragCallback(this);

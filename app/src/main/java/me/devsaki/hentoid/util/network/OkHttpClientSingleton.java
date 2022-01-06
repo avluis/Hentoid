@@ -6,10 +6,14 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.core.HentoidApp;
+import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.dnsoverhttps.DnsOverHttps;
+import timber.log.Timber;
 
 /**
  * Manages a single instance of OkHttpClient per timeout delay
@@ -25,51 +29,76 @@ public class OkHttpClientSingleton {
     }
 
     public static OkHttpClient getInstance() {
-        return getInstance(HttpHelper.DEFAULT_REQUEST_TIMEOUT);
+        return getInstance(HttpHelper.DEFAULT_REQUEST_TIMEOUT, HttpHelper.DEFAULT_REQUEST_TIMEOUT);
     }
 
     public static OkHttpClient getInstance(int connectTimeout, int ioTimeout) {
         int key = (connectTimeout * 100) + ioTimeout;
-        if (null == OkHttpClientSingleton.instance.get(key)) {
+        if (null == instance.get(key)) {
             synchronized (OkHttpClientSingleton.class) {
-                if (null == OkHttpClientSingleton.instance.get(key)) {
-
-                    int CACHE_SIZE = 2 * 1024 * 1024; // 2 MB
-
-                    OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
-                            .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
-                            .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
-                            .readTimeout(ioTimeout, TimeUnit.MILLISECONDS)
-                            .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS)
-                            .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE));
-
-
-                    OkHttpClientSingleton.instance.put(key, clientBuilder.build());
+                if (null == instance.get(key)) {
+                    instance.put(key, buildClient(connectTimeout, ioTimeout));
                 }
             }
         }
         return OkHttpClientSingleton.instance.get(key);
     }
 
-    public static OkHttpClient getInstance(int timeoutMs) {
-        if (null == OkHttpClientSingleton.instance.get(timeoutMs)) {
+    public static void reset() {
+        Helper.assertNonUiThread(); // Closing network operations shouldn't happen on the UI thread either
+        synchronized (OkHttpClientSingleton.class) {
+            int size = instance.size();
+            for (int i = 0; i < size; i++) {
+                instance.valueAt(i).dispatcher().executorService().shutdown();
+                instance.valueAt(i).connectionPool().evictAll();
+                try {
+                    Cache cache = instance.valueAt(i).cache();
+                    if (cache != null) cache.close();
+                } catch (IOException e) {
+                    Timber.i(e);
+                }
+            }
+            instance.clear();
+        }
+    }
+
+    private static OkHttpClient buildBootstrapClient() {
+        long CACHE_SIZE = 5L * 1024 * 1024; // 5 MB
+
+        return new OkHttpClient.Builder()
+                .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
+                .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE))
+                .build();
+    }
+
+    private static OkHttpClient buildClient(int connectTimeout, int ioTimeout) {
+        if (null == instance.get(0)) {
             synchronized (OkHttpClientSingleton.class) {
-                if (null == OkHttpClientSingleton.instance.get(timeoutMs)) {
-
-                    int CACHE_SIZE = 2 * 1024 * 1024; // 2 MB
-
-                    OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
-                            .addInterceptor(OkHttpClientSingleton::rewriteUserAgentInterceptor)
-                            .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                            .writeTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                            .cache(new Cache(HentoidApp.getInstance().getCacheDir(), CACHE_SIZE));
-
-
-                    OkHttpClientSingleton.instance.put(timeoutMs, clientBuilder.build());
+                if (null == instance.get(0)) {
+                    instance.put(0, buildBootstrapClient());
                 }
             }
         }
-        return OkHttpClientSingleton.instance.get(timeoutMs);
+        OkHttpClient primaryClient = instance.get(0);
+
+        // Set custom delays
+        OkHttpClient.Builder result = primaryClient.newBuilder()
+                .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
+                .readTimeout(ioTimeout, TimeUnit.MILLISECONDS)
+                .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS);
+
+        // Add DNS over HTTPS if needed
+        @DnsOverHttpsProviders.Source int doHSource = Preferences.getDnsOverHttps();
+        if (doHSource != DnsOverHttpsProviders.Source.NONE) {
+            DnsOverHttps dns = new DnsOverHttps.Builder()
+                    .client(primaryClient)
+                    .url(DnsOverHttpsProviders.getPrimaryUrl(doHSource))
+                    .bootstrapDnsHosts(DnsOverHttpsProviders.getHosts(doHSource))
+                    .build();
+            result.dns(dns);
+        }
+
+        return result.build();
     }
 
     private static okhttp3.Response rewriteUserAgentInterceptor(Interceptor.Chain chain) throws IOException {
