@@ -53,5 +53,6 @@
         <item>adservice.google</item>
         <item>googleadservices</item>
         <item>googlesyndication</item>
+        <item>adoperatorcore</item>
     </string-array>
 </resources>
