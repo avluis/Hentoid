@@ -71,6 +71,7 @@ import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -416,12 +417,7 @@ public class ContentDownloadWorker extends BaseWorker {
         // Wait a delay corresponding to book browsing if we're between two sources with "simulate human reading"
         if (content.getSite().isSimulateHumanReading() && requestQueueManager.isSimulateHumanReading()) {
             int delayMs = 3000 + new Random().nextInt(2000);
-            try {
-                Thread.sleep(delayMs);
-            } catch (InterruptedException e) {
-                Timber.d(e);
-                Thread.currentThread().interrupt();
-            }
+            Helper.pause(delayMs);
         }
 
         if (content.getSite().getParallelDownloadCap() > 0 &&
@@ -577,13 +573,7 @@ public class ContentDownloadWorker extends BaseWorker {
             }
 
             // We're polling the DB because we can't observe LiveData from a background service
-            try {
-                //noinspection BusyWait
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Timber.i(e);
-                Thread.currentThread().interrupt();
-            }
+            Helper.pause(1000);
         }
         while (!isDone && !downloadInterrupted.get() && !contentQueueManager.isQueuePaused());
 
