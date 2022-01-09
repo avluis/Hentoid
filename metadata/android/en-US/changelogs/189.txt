@@ -1,0 +1,5 @@
+Fixed
+
+    Hitomi : The browser doesn't crash anymore
+    Hitomi : Removed a few ads
+    The app should stop being laggy during Hitomi downloads

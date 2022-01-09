@@ -1008,6 +1008,8 @@ public final class ContentHelper {
 
         ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(url));
         Content newContent = contentParser.update(content, url, true);
+        List<ImageFile> imgs = newContent.getImageFiles();
+        if (null == imgs || imgs.isEmpty()) newContent.setQtyPages(0);
 
         if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
             String canonicalUrl = contentParser.getCanonicalUrl();

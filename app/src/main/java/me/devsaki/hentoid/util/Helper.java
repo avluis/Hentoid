@@ -375,6 +375,17 @@ public final class Helper {
         }
     }
 
+    // TODO doc
+    public static void pause(int millis) {
+        assertNonUiThread();
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Timber.w(e);
+            Thread.currentThread().interrupt();
+        }
+    }
+
     /**
      * Update the JSON file that stores bookmarks with the current bookmarks
      *

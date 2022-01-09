@@ -21,10 +21,11 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.VolleyOkHttp3Stack;
 import timber.log.Timber;
@@ -178,12 +179,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         long now = Instant.now().toEpochMilli();
         int allowedNewRequests = getAllowedNewRequests(now);
         while (0 == allowedNewRequests && 0 == nbActiveRequests) { // Dry queue
-            try {
-                Thread.sleep(250);
-            } catch (InterruptedException e) {
-                Timber.w(e);
-                Thread.currentThread().interrupt();
-            }
+            Helper.pause(250);
             now = Instant.now().toEpochMilli();
             allowedNewRequests = getAllowedNewRequests(now);
         }
@@ -220,19 +216,30 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
                 Timber.d("Waiting requests queue ::: waiting %d ms", delayMs);
                 waitDisposable = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
                         .subscribeOn(Schedulers.computation())
-                        .observeOn(AndroidSchedulers.mainThread())
+                        .observeOn(Schedulers.computation())
+                        .map(v -> {
+                            // Add the next request to the queue
+                            Timber.d("Waiting requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
+                            Request<T> req = waitingRequestQueue.removeFirst();
+                            addToRequestQueue(req);
+                            return true;
+                        })
+                        .observeOn(Schedulers.computation())
                         .subscribe(
-                                v -> {
-                                    // Add the next request to the queue
-                                    Timber.d("Waiting requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
-                                    Request<T> req = waitingRequestQueue.removeFirst();
-                                    addToRequestQueue(req);
-                                    waitDisposable.dispose();
-                                },
+                                v -> waitDisposable.dispose(),
                                 Timber::e
                         );
             }
-            if (nbRequestsPerSecond > -1) refillRequestQueue();
+            if (nbRequestsPerSecond > -1) {
+                waitDisposable = Completable.fromRunnable(this::refillRequestQueue)
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(Schedulers.computation())
+                        .subscribe(
+                                () -> waitDisposable.dispose(),
+                                Timber::e
+                        );
+
+            }
         }
     }
 
@@ -246,10 +253,6 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
     public void setNbRequestsPerSecond(int value) {
         nbRequestsPerSecond = value;
-    }
-
-    public int getNbRequestsPerSecond() {
-        return nbRequestsPerSecond;
     }
 
     // This will cancel any current download

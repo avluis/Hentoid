@@ -36,6 +36,7 @@ import me.devsaki.hentoid.json.sources.EHentaiImageMetadata;
 import me.devsaki.hentoid.json.sources.EHentaiImageQuery;
 import me.devsaki.hentoid.json.sources.EHentaiImageResponse;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
@@ -43,7 +44,6 @@ import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import timber.log.Timber;
 
 public class EHentaiParser implements ImageListParser {
 
@@ -158,14 +158,7 @@ public class EHentaiParser implements ImageListParser {
             result.add(ParseHelper.urlToImageFile(imageMetadata.getUrl(), pageNum, pageCount, StatusContent.SAVED));
             progress.advance();
             // Emulate JS loader
-            if (0 == pageNum % 10) {
-                try {
-                    Thread.sleep(750);
-                } catch (InterruptedException e) {
-                    Timber.w(e);
-                    Thread.currentThread().interrupt();
-                }
-            }
+            if (0 == pageNum % 10) Helper.pause(750);
         }
 
         return result;

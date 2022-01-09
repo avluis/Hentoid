@@ -35,8 +35,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
-        versionCode 188
-        versionName '1.15.15'
+        versionCode 189
+        versionName '1.15.17'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"

@@ -198,7 +198,7 @@ public class AdBlocker {
                 Timber.e(iae);
                 return true; // Avoid feeding malformed URLs to Chromium on older Androids (crash reported on Lollipop)
             }
-            addJsUrlPatternWhitelist("^" + cleanUrl.replace(".", "\\.") + "$");
+            addJsUrlWhitelist(cleanUrl);
             Timber.d(">> grey file %s ALLOWED", url);
         }
 

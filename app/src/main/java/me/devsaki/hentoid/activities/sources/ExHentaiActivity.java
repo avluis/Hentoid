@@ -100,9 +100,11 @@ public class ExHentaiActivity extends BaseWebActivity {
             ContentParser contentParser = new ExhentaiContent();
             compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
                     .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.computation())
+                    .map(content -> super.processContent(content, urlStr, quickDownload))
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            content -> super.processContent(content, urlStr, quickDownload),
+                            content2 -> activity.onResultReady(content2, quickDownload),
                             Timber::w
                     )
             );

@@ -25,6 +25,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
@@ -140,23 +141,9 @@ public class HitomiActivity extends BaseWebActivity {
             // Wait until the page's resources are all loaded
             if (!quickDownload) {
                 Timber.i(">> not loading");
-                while (!isLoading()) {
-                    try {
-                        Thread.sleep(20);
-                    } catch (InterruptedException e) {
-                        Timber.w(e);
-                        Thread.currentThread().interrupt();
-                    }
-                }
+                while (!isLoading()) Helper.pause(20);
                 Timber.i(">> loading");
-                while (isLoading()) {
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        Timber.w(e);
-                        Thread.currentThread().interrupt();
-                    }
-                }
+                while (isLoading()) Helper.pause(100);
                 Timber.i(">> done");
             }
             final AtomicReference<String> imagesStr = new AtomicReference<>();
