@@ -44,6 +44,7 @@ public class Manhwa18Parser extends BaseImageListParser {
         if (null == doc) return result;
 
         List<Element> chapterLinks = doc.select("div ul a[href*=chap]");
+        if (chapterLinks.isEmpty()) chapterLinks = doc.select("div ul a[href*=ch-]");
         Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
         chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
 
