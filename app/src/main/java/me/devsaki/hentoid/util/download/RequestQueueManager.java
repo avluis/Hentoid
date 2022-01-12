@@ -199,6 +199,11 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         Timber.v("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbActiveRequests);
     }
 
+    public void restartRequestQueue() {
+        mRequestQueue.stop();
+        mRequestQueue.start();
+    }
+
     /**
      * Generic handler called when a request is completed
      * NB : This method is run on the app's main thread
