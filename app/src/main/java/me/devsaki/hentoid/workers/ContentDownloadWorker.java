@@ -572,7 +572,7 @@ public class ContentDownloadWorker extends BaseWorker {
             Timber.d("deltaPages: %d / deltaNetworkBytes: %s", deltaPages, FileHelper.formatHumanReadableSize(deltaNetworkBytes));
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
 
-            if (nbDeltaLowNetwork > 10 || nbDeltaZeroPages > 10) {
+            if (nbDeltaLowNetwork > 10 && nbDeltaZeroPages > 10) {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
                 Timber.d("Inactivity detected - restarting request queue");
