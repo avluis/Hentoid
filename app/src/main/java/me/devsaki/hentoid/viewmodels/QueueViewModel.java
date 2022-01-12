@@ -204,6 +204,11 @@ public class QueueViewModel extends AndroidViewModel {
         return result;
     }
 
+    public void unpauseQueue() {
+        dao.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
+        ContentQueueManager.getInstance().unpauseQueue();
+        ContentQueueManager.getInstance().resumeQueue(getApplication());
+    }
 
     public void invertQueue() {
         // Get unpaged data to be sure we have everything in one collection
@@ -296,7 +301,7 @@ public class QueueViewModel extends AndroidViewModel {
                                 if (reparseImages) purgeItem(content);
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position,
-                                        ContentQueueManager.getInstance().isQueueActive());
+                                        ContentQueueManager.getInstance().isQueueActive(getApplication()));
                             } else {
                                 errorCount.incrementAndGet();
                                 onError.accept(new EmptyResultException("Content unreachable"));

@@ -149,8 +149,10 @@ public class ContentDownloadWorker extends BaseWorker {
         compositeDisposable.clear();
 
         if (dao != null) dao.cleanup();
+    }
 
-        ContentQueueManager.getInstance().setInactive();
+    public static boolean isRunning(@NonNull Context context) {
+        return isRunning(context, R.id.download_service);
     }
 
     @Override
@@ -523,6 +525,7 @@ public class ContentDownloadWorker extends BaseWorker {
         int pagesOK = 0;
         int pagesKO = 0;
         long sizeDownloadedBytes = 0;
+        long deltaDownloadedBytes = 0;
 
         List<ImageFile> images = content.getImageFiles();
         int totalPages = (null == images) ? 0 : images.size();
@@ -533,6 +536,7 @@ public class ContentDownloadWorker extends BaseWorker {
             ImmutablePair<Integer, Long> status = statuses.get(StatusContent.DOWNLOADED);
             if (status != null) {
                 pagesOK = status.left;
+                deltaDownloadedBytes = status.right - sizeDownloadedBytes;
                 sizeDownloadedBytes = status.right;
             }
             status = statuses.get(StatusContent.ERROR);
@@ -542,7 +546,7 @@ public class ContentDownloadWorker extends BaseWorker {
             double sizeDownloadedMB = sizeDownloadedBytes / (1024.0 * 1024);
             int progress = pagesOK + pagesKO;
             isDone = progress == totalPages;
-            Timber.d("Progress: OK:%d size:%dMB - KO:%d - Total:%d", pagesOK, (int) sizeDownloadedMB, pagesKO, totalPages);
+            Timber.d("Progress: OK:%d size:%dMB - KO:%d - Total:%d; delta = %d", pagesOK, (int) sizeDownloadedMB, pagesKO, totalPages, deltaDownloadedBytes);
 
             // Download speed and size estimation
             downloadSpeedCalculator.addSampleNow(NetworkHelper.getIncomingNetworkUsage(getApplicationContext()));

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util.download;
 
+import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
+
 import android.content.Context;
 
 import androidx.work.ExistingWorkPolicy;
@@ -8,8 +10,6 @@ import androidx.work.WorkManager;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.workers.ContentDownloadWorker;
-
-import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
 
 /**
  * Manager class for Content (book) download queue
@@ -26,13 +26,11 @@ public class ContentQueueManager {
     private static ContentQueueManager mInstance;   // Instance of the singleton
 
     private boolean isQueuePaused;                  // True if queue paused; false if not
-    private boolean isQueueActive;                  // True if queue active; false if not
     private int downloadCount = 0;                  // Used to store the number of downloads completed during current session
     // in order to display notifications correctly ("download completed" vs. "N downloads completed")
 
     private ContentQueueManager() {
         isQueuePaused = false;
-        isQueueActive = false;
     }
 
     public static synchronized ContentQueueManager getInstance() {
@@ -56,23 +54,18 @@ public class ContentQueueManager {
         return isQueuePaused;
     }
 
-    public boolean isQueueActive() {
-        return isQueueActive;
-    }
-
-    public void setInactive() {
-        isQueueActive = false;
+    public boolean isQueueActive(Context context) {
+        return ContentDownloadWorker.isRunning(context);
     }
 
     public void resumeQueue(Context context) {
-        if (!isQueueActive) {
+        if (!isQueueActive(context)) {
             WorkManager workManager = WorkManager.getInstance(context);
             workManager.enqueueUniqueWork(
                     Integer.toString(R.id.download_service),
                     ExistingWorkPolicy.KEEP,
                     new OneTimeWorkRequest.Builder(ContentDownloadWorker.class).addTag(WORK_CLOSEABLE).build()
             );
-            isQueueActive = true;
         }
     }
 

@@ -930,7 +930,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         ((Animatable) animatedCheck.getDrawable()).start();
         new Handler(getMainLooper()).postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
         currentContent.setDownloadMode(downloadMode);
-        dao.addContentToQueue(currentContent, null, position, ContentQueueManager.getInstance().isQueueActive());
+        dao.addContentToQueue(currentContent, null, position, ContentQueueManager.getInstance().isQueueActive(this));
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
         setActionMode(ActionMode.VIEW_QUEUE);
     }

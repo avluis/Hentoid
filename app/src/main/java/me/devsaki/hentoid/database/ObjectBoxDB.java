@@ -192,7 +192,7 @@ public class ObjectBoxDB {
         store.boxFor(Content.class).put(content);
     }
 
-    public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
+    void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
         List<Content> contentList = selectContentByStatus(updateFrom);
         for (Content c : contentList) c.setStatus(updateTo);
         store.boxFor(Content.class).put(contentList);
