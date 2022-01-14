@@ -186,8 +186,8 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
         if (allowedNewRequests > 0) {
             for (int i = 0; i < allowedNewRequests; i++) {
-                addToRequestQueue(waitingRequestQueue.removeFirst(), now);
                 if (waitingRequestQueue.isEmpty()) break;
+                addToRequestQueue(waitingRequestQueue.removeFirst(), now);
             }
         }
     }
