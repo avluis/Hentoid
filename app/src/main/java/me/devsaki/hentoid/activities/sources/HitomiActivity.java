@@ -163,22 +163,23 @@ public class HitomiActivity extends BaseWebActivity {
                     Timber.w(e);
                 }
             }
+            List<ImageFile> result = new ArrayList<>();
+            result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
+
             String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
             Timber.v(">> JSResult OK");
             try {
                 List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
-
-                List<ImageFile> result = new ArrayList<>();
-                result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
-                int order = 1;
-                for (String s : imageUrls) {
-                    ImageFile img = ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED);
-                    result.add(img);
+                if (imageUrls != null) {
+                    int order = 1;
+                    for (String s : imageUrls)
+                        result.add(ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED));
                 }
-                content.setImageFiles(result);
             } catch (IOException e) {
                 Timber.w(e);
             }
+
+            content.setImageFiles(result);
             return super.processContent(content, url, quickDownload);
         }
     }
