@@ -8,8 +8,8 @@ import androidx.annotation.NonNull;
 public enum Theme {
 
     LIGHT(0, "Light"),
-    DARK(1, "Dark"),
-    BLACK(2, "Black"),
+    DARK(1, "Deep red"),
+    BLACK(2, "Dark"),
     NONE(99, "None");
 
     private final int id;

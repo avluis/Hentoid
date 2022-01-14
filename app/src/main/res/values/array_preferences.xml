@@ -182,8 +182,8 @@
 
     <string-array name="pref_color_theme_entries">
         <item>Light</item>
+        <item>Deep red</item>
         <item>Dark</item>
-        <item>Black</item>
     </string-array>
     <string-array name="pref_color_theme_values">
         <item>0</item>
