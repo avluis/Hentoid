@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -193,6 +194,7 @@ public class JsonHelper {
      * @return Object of the given type representing the JSON data contained in the given string
      * @throws IOException If anything happens during file I/O
      */
+    @Nullable
     public static <T> T jsonToObject(String s, Type type) throws IOException {
         JsonAdapter<T> jsonAdapter = MOSHI.adapter(type);
 

@@ -96,12 +96,13 @@ public class HitomiParser extends BaseImageListParser {
 
         String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
         List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
-
-        int order = 1;
-        for (String s : imageUrls) {
-            ImageFile img = ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED);
-            img.setDownloadParams(downloadParamsStr);
-            result.add(img);
+        if (imageUrls != null) {
+            int order = 1;
+            for (String s : imageUrls) {
+                ImageFile img = ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED);
+                img.setDownloadParams(downloadParamsStr);
+                result.add(img);
+            }
         }
 
         return result;
