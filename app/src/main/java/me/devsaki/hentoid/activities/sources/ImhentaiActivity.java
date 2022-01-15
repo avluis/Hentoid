@@ -16,7 +16,7 @@ public class ImhentaiActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        client.addDirtyElements(DIRTY_ELEMENTS);
+        client.addRemovableElements(DIRTY_ELEMENTS);
         return client;
     }
 }

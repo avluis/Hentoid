@@ -1,13 +1,17 @@
 package me.devsaki.hentoid.util;
 
 import android.os.Looper;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -150,10 +154,11 @@ public class AdBlocker {
     /**
      * Indicate if the resource at the given URL is blocked by the current adblock settings
      *
-     * @param url Url to examine
+     * @param url     Url to examine
+     * @param headers HTTP request headers to use
      * @return True if the resource is blocked; false if not
      */
-    public boolean isBlocked(@NonNull final String url) {
+    public boolean isBlocked(@NonNull final String url, @Nullable final Map<String, String> headers) {
         final String cleanUrl = url.toLowerCase();
 
         // 1- Accept whitelisted JS files
@@ -179,7 +184,13 @@ public class AdBlocker {
         if (Looper.getMainLooper().getThread() != Thread.currentThread()) { // No network call on UI thread
             Timber.d(">> examining grey file : %s", url);
             try {
-                Response response = HttpHelper.getOnlineResourceFast(url, null, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+                List<Pair<String, String>> requestHeadersList = HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url);
+                Response response = HttpHelper.getOnlineResourceFast(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+                if (response.code() >= 400) {
+                    Timber.d(">> grey file KO (%d) : %s", response.code(), url);
+                    return false; // Better safe than sorry
+                }
+
                 ResponseBody body = response.body();
                 if (null == body) throw new IOException("Empty body");
                 Timber.d(">> grey file downloaded : %s", url);
