@@ -35,7 +35,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.15.18'
+        versionName '1.15.19-dev'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
