@@ -186,8 +186,9 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
         if (allowedNewRequests > 0) {
             for (int i = 0; i < allowedNewRequests; i++) {
-                addToRequestQueue(waitingRequestQueue.removeFirst(), now);
                 if (waitingRequestQueue.isEmpty()) break;
+                Request<T> r = waitingRequestQueue.removeFirst();
+                if (r != null) addToRequestQueue(r, now);
             }
         }
     }
@@ -197,6 +198,11 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         nbActiveRequests++;
         if (nbRequestsPerSecond > -1) previousRequestsTimestamps.add(now);
         Timber.v("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbActiveRequests);
+    }
+
+    public void restartRequestQueue() {
+        mRequestQueue.stop();
+        mRequestQueue.start();
     }
 
     /**

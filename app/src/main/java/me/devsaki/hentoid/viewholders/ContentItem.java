@@ -358,7 +358,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
 
             if (progressBar != null)
-                updateProgress(item.content, baseLayout, getAbsoluteAdapterPosition(), false);
+                updateProgress(item.content, baseLayout, getAbsoluteAdapterPosition(), false, ContentQueueManager.getInstance().isQueueActive(baseLayout.getContext()));
             if (ivReorder != null)
                 DragDropUtil.bindDragHandle(this, item);
         }
@@ -579,8 +579,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             }
         }
 
-        public static void updateProgress(@NonNull final Content content, @NonNull View rootCardView, int position, boolean isPausedEvent) {
-            boolean isQueueReady = ContentQueueManager.getInstance().isQueueActive() && !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
+        public static void updateProgress(@NonNull final Content content, @NonNull View rootCardView, int position, boolean isPausedEvent, boolean isQueueActive) {
+            boolean isQueueReady = !ContentQueueManager.getInstance().isQueuePaused() && !isPausedEvent;
             boolean isFirstItem = (0 == position);
             ProgressBar pb = rootCardView.findViewById(R.id.pbDownload);
 

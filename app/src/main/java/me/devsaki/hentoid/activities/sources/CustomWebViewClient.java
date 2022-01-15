@@ -122,8 +122,11 @@ class CustomWebViewClient extends WebViewClient {
     private Disposable disposable;
 
 
-    // List of "dirty" elements (CSS selector) to be cleaned before displaying the page
-    private List<String> dirtyElements;
+    // List of elements (CSS selector) to be removed before displaying the page
+    private List<String> removableElements;
+
+    // List of elements (CSS selector) to be hidden by inline CSS
+    private List<String> hideableElements;
 
 
     CustomWebViewClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
@@ -156,9 +159,19 @@ class CustomWebViewClient extends WebViewClient {
      *
      * @param elements Elements (CSS selector) to addAll to page cleaner
      */
-    protected void addDirtyElements(String... elements) {
-        if (null == dirtyElements) dirtyElements = new ArrayList<>();
-        Collections.addAll(dirtyElements, elements);
+    protected void addRemovableElements(String... elements) {
+        if (null == removableElements) removableElements = new ArrayList<>();
+        Collections.addAll(removableElements, elements);
+    }
+
+    /**
+     * Add an element filter to current site
+     *
+     * @param elements Elements (CSS selector) to addAll to page cleaner
+     */
+    protected void addHideableElements(String... elements) {
+        if (null == hideableElements) hideableElements = new ArrayList<>();
+        Collections.addAll(hideableElements, elements);
     }
 
 
@@ -273,7 +286,7 @@ class CustomWebViewClient extends WebViewClient {
             @NonNull final WebView view,
             @NonNull final String url,
             @Nullable final Map<String, String> requestHeaders) {
-        if (adBlocker.isBlocked(url) || !url.startsWith("http")) return true;
+        if (adBlocker.isBlocked(url, requestHeaders) || !url.startsWith("http")) return true;
 
         // Download and open the torrent file
         // NB : Opening the URL itself won't work when the tracker is private
@@ -380,7 +393,7 @@ class CustomWebViewClient extends WebViewClient {
     @Nullable
     private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                @Nullable final Map<String, String> headers) {
-        if (adBlocker.isBlocked(url) || !url.startsWith("http")) {
+        if (adBlocker.isBlocked(url, headers) || !url.startsWith("http")) {
             return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(nothing));
         } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {
             return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(checkmark));
@@ -390,7 +403,7 @@ class CustomWebViewClient extends WebViewClient {
 
             // If we're here to remove "dirty elements" or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((dirtyElements != null || isMarkDownloaded() || !activity.getCustomCss().isEmpty())
+            if ((removableElements != null || hideableElements != null || isMarkDownloaded() || !activity.getCustomCss().isEmpty())
                     && (HttpHelper.getExtensionFromUri(url).isEmpty() || HttpHelper.getExtensionFromUri(url).equalsIgnoreCase("html"))) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
@@ -498,8 +511,8 @@ class CustomWebViewClient extends WebViewClient {
 
                 // Remove dirty elements from HTML resources
                 String customCss = activity.getCustomCss();
-                if (dirtyElements != null || isMarkDownloaded() || !customCss.isEmpty()) {
-                    browserStream = ProcessHtml(browserStream, urlStr, customCss, dirtyElements, activity.getAllSiteUrls());
+                if (removableElements != null || hideableElements != null || isMarkDownloaded() || !customCss.isEmpty()) {
+                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, hideableElements, activity.getAllSiteUrls());
                     if (null == browserStream) return null;
                 }
 
@@ -603,10 +616,11 @@ class CustomWebViewClient extends WebViewClient {
      * - If set, remove nodes using the given list of CSS selectors to identify them
      * - If set, mark book covers or links matching the given list of Urls
      *
-     * @param stream        Stream containing the HTML document to process; will be closed during the process
-     * @param baseUri       Base URI if the document
-     * @param dirtyElements CSS selectors of the nodes to remove
-     * @param siteUrls      Urls of the covers or links to mark
+     * @param stream            Stream containing the HTML document to process; will be closed during the process
+     * @param baseUri           Base URI if the document
+     * @param removableElements CSS selectors of the nodes to remove
+     * @param hideableElements  CSS selectors of the nodes to hide
+     * @param siteUrls          Urls of the covers or links to mark
      * @return Stream containing the HTML document stripped from the elements to remove
      */
     @Nullable
@@ -614,7 +628,8 @@ class CustomWebViewClient extends WebViewClient {
             @NonNull InputStream stream,
             @NonNull String baseUri,
             @Nullable String customCss,
-            @Nullable List<String> dirtyElements,
+            @Nullable List<String> removableElements,
+            @Nullable List<String> hideableElements,
             @Nullable List<String> siteUrls) {
         try {
             Document doc = Jsoup.parse(stream, null, baseUri);
@@ -624,12 +639,21 @@ class CustomWebViewClient extends WebViewClient {
                 doc.head().appendElement("style").attr("type", "text/css").appendText(customCss);
 
             // Remove ad spaces
-            if (dirtyElements != null)
-                for (String s : dirtyElements)
+            if (removableElements != null)
+                for (String s : removableElements)
                     for (Element e : doc.select(s)) {
                         Timber.d("[%s] Removing node %s", baseUri, e.toString());
                         e.remove();
                     }
+
+            // Hide ad spaces
+            if (hideableElements != null) {
+                for (String s : hideableElements)
+                    for (Element e : doc.select(s)) {
+                        Timber.d("[%s] Hiding node %s", baseUri, e.toString());
+                        e.attr("style", "min-height:0px;height:0%;");
+                    }
+            }
 
             // Mark downloaded books
             if (siteUrls != null && !siteUrls.isEmpty()) {

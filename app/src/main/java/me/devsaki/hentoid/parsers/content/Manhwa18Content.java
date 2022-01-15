@@ -20,7 +20,7 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 public class Manhwa18Content extends BaseContentParser {
     @Selector(value = ".series-cover div div", attr = "style", defValue = "")
     private String cover;
-    @Selector(value = ".series-name a", defValue = "")
+    @Selector(value = ".series-name a")
     private Element title;
     @Selector(value = ".series-information a[href*=tac-gia]")
     private List<Element> artists;
@@ -41,8 +41,11 @@ public class Manhwa18Content extends BaseContentParser {
             content.setCoverImageUrl(cover);
         }
 
-        String titleStr = StringHelper.removeNonPrintableChars(title.text());
-        titleStr = ParseHelper.removeTextualTags(titleStr);
+        String titleStr = NO_TITLE;
+        if (title != null) {
+            titleStr = StringHelper.removeNonPrintableChars(title.text());
+            titleStr = ParseHelper.removeTextualTags(titleStr);
+        }
         content.setTitle(titleStr);
 
         if (updateImages) content.setImageFiles(Collections.emptyList());

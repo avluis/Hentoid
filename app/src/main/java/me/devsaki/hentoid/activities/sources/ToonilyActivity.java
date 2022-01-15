@@ -21,7 +21,7 @@ public class ToonilyActivity extends BaseWebActivity {
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
         client.adBlocker.addJsUrlWhitelist(DOMAIN_FILTER);
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
-        client.addDirtyElements(DIRTY_ELEMENTS);
+        client.addRemovableElements(DIRTY_ELEMENTS);
         return client;
     }
 }

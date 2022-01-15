@@ -50,7 +50,7 @@ public class StartupWorker extends BaseWorker {
 
     @Override
     void onClear() {
-        launchTasks.clear();
+        if (launchTasks != null) launchTasks.clear();
         launchDisposable.dispose();
     }
 

@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import me.devsaki.hentoid.BuildConfig;
@@ -27,6 +28,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.exception.ParseException;
@@ -63,29 +65,29 @@ public class HitomiParser extends BaseImageListParser {
         if (null == body) throw new IOException("Empty body");
         String galleryInfo = body.string();
 
-        final Object _lock = new Object();
+        final AtomicBoolean done = new AtomicBoolean(false);
         final AtomicReference<String> imagesStr = new AtomicReference<>();
 
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
             if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
             HitomiBackgroundWebView wv = new HitomiBackgroundWebView(HentoidApp.getInstance(), Site.HITOMI);
+            Timber.d(">> loading url %s", pageUrl);
             wv.loadUrl(pageUrl, () -> {
-                Timber.v(">> loaded wv");
+                Timber.i(">> evaluating JS");
                 wv.evaluateJavascript(getJsPagesScript(galleryInfo), s -> {
+                    Timber.i(">> JS evaluated");
                     imagesStr.set(s);
-                    synchronized (_lock) {
-                        _lock.notifyAll();
-                    }
+                    done.set(true);
                 });
             });
             Timber.i(">> loading wv");
         });
 
-        synchronized (_lock) {
-            Timber.w("Waiting for lock");
-            _lock.wait();
-        }
+        do {
+            Helper.pause(1000);
+        } while (!done.get() && !processHalted.get());
+        if (processHalted.get()) return result;
 
         Map<String, String> downloadParams = new HashMap<>();
         // Add referer information to downloadParams for future image download
@@ -94,12 +96,13 @@ public class HitomiParser extends BaseImageListParser {
 
         String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
         List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
-
-        int order = 1;
-        for (String s : imageUrls) {
-            ImageFile img = ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED);
-            img.setDownloadParams(downloadParamsStr);
-            result.add(img);
+        if (imageUrls != null) {
+            int order = 1;
+            for (String s : imageUrls) {
+                ImageFile img = ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED);
+                img.setDownloadParams(downloadParamsStr);
+                result.add(img);
+            }
         }
 
         return result;

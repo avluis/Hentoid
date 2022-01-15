@@ -149,8 +149,10 @@ public class ContentDownloadWorker extends BaseWorker {
         compositeDisposable.clear();
 
         if (dao != null) dao.cleanup();
+    }
 
-        ContentQueueManager.getInstance().setInactive();
+    public static boolean isRunning(@NonNull Context context) {
+        return isRunning(context, R.id.download_service);
     }
 
     @Override
@@ -522,7 +524,14 @@ public class ContentDownloadWorker extends BaseWorker {
         boolean isDone;
         int pagesOK = 0;
         int pagesKO = 0;
-        long sizeDownloadedBytes = 0;
+        long downloadedBytes = 0;
+
+        boolean firstPageDownloaded = false;
+        long deltaPages = 0;
+        int nbDeltaZeroPages = 0;
+        long networkBytes = 0;
+        long deltaNetworkBytes;
+        int nbDeltaLowNetwork = 0;
 
         List<ImageFile> images = content.getImageFiles();
         int totalPages = (null == images) ? 0 : images.size();
@@ -532,30 +541,52 @@ public class ContentDownloadWorker extends BaseWorker {
             Map<StatusContent, ImmutablePair<Integer, Long>> statuses = dao.countProcessedImagesById(content.getId());
             ImmutablePair<Integer, Long> status = statuses.get(StatusContent.DOWNLOADED);
             if (status != null) {
+                deltaPages = status.left - pagesOK;
+                if (deltaPages == 0) nbDeltaZeroPages++;
+                else {
+                    firstPageDownloaded = true;
+                    nbDeltaZeroPages = 0;
+                }
                 pagesOK = status.left;
-                sizeDownloadedBytes = status.right;
+                downloadedBytes = status.right;
             }
             status = statuses.get(StatusContent.ERROR);
             if (status != null)
                 pagesKO = status.left;
 
-            double sizeDownloadedMB = sizeDownloadedBytes / (1024.0 * 1024);
+            double downloadedMB = downloadedBytes / (1024.0 * 1024);
             int progress = pagesOK + pagesKO;
             isDone = progress == totalPages;
-            Timber.d("Progress: OK:%d size:%dMB - KO:%d - Total:%d", pagesOK, (int) sizeDownloadedMB, pagesKO, totalPages);
+            Timber.d("Progress: OK:%d size:%dMB - KO:%d - Total:%d", pagesOK, (int) downloadedMB, pagesKO, totalPages);
 
             // Download speed and size estimation
-            downloadSpeedCalculator.addSampleNow(NetworkHelper.getIncomingNetworkUsage(getApplicationContext()));
+            long networkBytesNow = NetworkHelper.getIncomingNetworkUsage(getApplicationContext());
+            deltaNetworkBytes = networkBytesNow - networkBytes;
+            if (deltaNetworkBytes < 1024 * 10 && firstPageDownloaded)
+                nbDeltaLowNetwork++; // 10 Kbps threshold once download has started
+            else nbDeltaLowNetwork = 0;
+            networkBytes = networkBytesNow;
+            downloadSpeedCalculator.addSampleNow(networkBytes);
             int avgSpeedKbps = (int) downloadSpeedCalculator.getAvgSpeedKbps();
+
+            Timber.d("deltaPages: %d / deltaNetworkBytes: %s", deltaPages, FileHelper.formatHumanReadableSize(deltaNetworkBytes));
+            Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
+
+            if (nbDeltaLowNetwork > 10 && nbDeltaZeroPages > 10) {
+                nbDeltaLowNetwork = 0;
+                nbDeltaZeroPages = 0;
+                Timber.d("Inactivity detected - restarting request queue");
+                requestQueueManager.restartRequestQueue();
+            }
 
             double estimateBookSizeMB = -1;
             if (pagesOK > 3 && progress > 0 && totalPages > 0) {
-                estimateBookSizeMB = sizeDownloadedMB / (progress * 1.0 / totalPages);
+                estimateBookSizeMB = downloadedMB / (progress * 1.0 / totalPages);
                 Timber.v("Estimate book size calculated for wifi check : %s MB", estimateBookSizeMB);
             }
 
-            notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages, (int) sizeDownloadedMB, (int) estimateBookSizeMB, avgSpeedKbps));
-            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_PROGRESS, pagesOK, pagesKO, totalPages, sizeDownloadedBytes));
+            notificationManager.notify(new DownloadProgressNotification(content.getTitle(), progress, totalPages, (int) downloadedMB, (int) estimateBookSizeMB, avgSpeedKbps));
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.Type.EV_PROGRESS, pagesOK, pagesKO, totalPages, downloadedBytes));
 
             // If the "skip large downloads on mobile data" is on, skip if needed
             if (Preferences.isDownloadLargeOnlyWifi() &&
@@ -582,7 +613,7 @@ public class ContentDownloadWorker extends BaseWorker {
             if (downloadCanceled.get()) notificationManager.cancel();
         } else {
             // NB : no need to supply the Content itself as it has not been updated during the loop
-            completeDownload(content.getId(), content.getTitle(), pagesOK, pagesKO, sizeDownloadedBytes);
+            completeDownload(content.getId(), content.getTitle(), pagesOK, pagesKO, downloadedBytes);
         }
     }
 

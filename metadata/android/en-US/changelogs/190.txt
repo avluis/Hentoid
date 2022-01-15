@@ -1,0 +1,12 @@
+Changed
+
+    Renamed color themes not to mistake "Black" theme with AMOLED theme anymore
+
+Fixed
+
+    Manhwa18, Manhwahentai : Fixed certain books where the download button wouldn't appear
+    Hitomi : Search result pages, tag pages and artist pages are no longer blank when augmented browser is on
+    Hitomi : Pausing and restarting the queue shouldn't be randomly unresponsive anymore
+    Hitomi : Redownloading from scratch shouldn't be randomly unresponsive anymore
+    The download queue now cre-creates connexions when the download rate drops too low for more than 10 seconds
+    A few crashes fixed here and there

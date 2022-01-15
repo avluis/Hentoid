@@ -35,8 +35,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
-        versionCode 189
-        versionName '1.15.17'
+        versionCode 190
+        versionName '1.15.18'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -187,7 +187,7 @@ dependencies {
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
-    def auto_about_version = '8.9.1'
+    def auto_about_version = '8.9.4'
     implementation "com.mikepenz:aboutlibraries-core:$auto_about_version"
     implementation "com.mikepenz:aboutlibraries:$auto_about_version"
 

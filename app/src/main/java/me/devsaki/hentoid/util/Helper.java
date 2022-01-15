@@ -375,7 +375,12 @@ public final class Helper {
         }
     }
 
-    // TODO doc
+    /**
+     * Pauses the calling thread for the given number of milliseconds
+     * For safety reasons, this method crahses if called from the main thread
+     *
+     * @param millis Number of milliseconds to pause the calling thread for
+     */
     public static void pause(int millis) {
         assertNonUiThread();
         try {

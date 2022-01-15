@@ -422,7 +422,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 if (reparseImages) purgeItem(content);
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position,
-                                        ContentQueueManager.getInstance().isQueueActive());
+                                        ContentQueueManager.getInstance().isQueueActive(getApplication()));
                             } else {
                                 errorCount.incrementAndGet();
                                 onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
@@ -470,7 +470,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 c.get().setDownloadMode(Content.DownloadMode.DOWNLOAD);
                                 dao.addContentToQueue(
                                         c.get(), StatusContent.SAVED, position,
-                                        ContentQueueManager.getInstance().isQueueActive());
+                                        ContentQueueManager.getInstance().isQueueActive(getApplication()));
                             } else {
                                 nbErrors.incrementAndGet();
                                 onError.accept(new EmptyResultException(getApplication().getString(R.string.download_canceled)));
