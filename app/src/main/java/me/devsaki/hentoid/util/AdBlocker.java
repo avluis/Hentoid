@@ -177,11 +177,12 @@ public class AdBlocker {
 
         // 4- If a grey list has been defined, block them if they _contain_ keywords
         if (Looper.getMainLooper().getThread() != Thread.currentThread()) { // No network call on UI thread
-            Timber.d(">> examining grey file %s", url);
+            Timber.d(">> examining grey file : %s", url);
             try {
-                Response response = HttpHelper.getOnlineResource(url, null, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+                Response response = HttpHelper.getOnlineResourceFast(url, null, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
                 ResponseBody body = response.body();
                 if (null == body) throw new IOException("Empty body");
+                Timber.d(">> grey file downloaded : %s", url);
 
                 String jsBody = body.string().toLowerCase();
                 synchronized (jsContentBlacklist) {
@@ -193,7 +194,7 @@ public class AdBlocker {
                         }
                 }
             } catch (IOException e) {
-                Timber.e(e);
+                Timber.d(e, ">> I/O issue while retrieving %s", url);
             } catch (IllegalArgumentException iae) {
                 Timber.e(iae);
                 return true; // Avoid feeding malformed URLs to Chromium on older Androids (crash reported on Lollipop)
