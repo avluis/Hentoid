@@ -42,7 +42,7 @@ public class ThemeHelper {
      */
     private static void applyTheme(@NonNull AppCompatActivity activity, Theme targetTheme) {
         String themeName = renameTheme(getThemeName(activity), targetTheme);
-        if (themeName.equals(targetTheme.getName())) return; // Nothing to do
+        if (themeName.equals(targetTheme.getResourceName())) return; // Nothing to do
 
         activity.setTheme(getThemeId(activity, themeName));
     }
@@ -158,10 +158,10 @@ public class ThemeHelper {
      */
     private static String renameTheme(@NonNull String themeName, @NonNull Theme targetTheme) {
         for (Theme t : Theme.values())
-            if (themeName.contains(t.getName())) {
+            if (themeName.contains(t.getResourceName())) {
                 if (t.equals(targetTheme))
                     return themeName; // Nothing to do; target theme is already set
-                themeName = themeName.replace(t.getName(), targetTheme.getName());
+                themeName = themeName.replace(t.getResourceName(), targetTheme.getResourceName());
                 break;
             }
         return themeName;
@@ -189,10 +189,10 @@ public class ThemeHelper {
      */
     private static String renameColorToTheme(@NonNull String colorName, @NonNull Theme targetTheme) {
         for (Theme t : Theme.values())
-            if (colorName.contains("_" + t.getName().toLowerCase())) {
+            if (colorName.contains("_" + t.getResourceName().toLowerCase())) {
                 if (t.equals(targetTheme))
                     return colorName; // Nothing to do; target theme is already set
-                colorName = colorName.replace("_" + t.getName().toLowerCase(), "_" + targetTheme.getName().toLowerCase());
+                colorName = colorName.replace("_" + t.getResourceName().toLowerCase(), "_" + targetTheme.getResourceName().toLowerCase());
                 break;
             }
         return colorName;

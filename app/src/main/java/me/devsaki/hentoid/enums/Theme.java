@@ -7,25 +7,26 @@ import androidx.annotation.NonNull;
  */
 public enum Theme {
 
+    // Warning : names are _resoure names_ that should match the xml files, not display names
     LIGHT(0, "Light"),
-    DARK(1, "Deep red"),
-    BLACK(2, "Dark"),
-    NONE(99, "None");
+    DARK(1, "Dark"),
+    BLACK(2, "Black"),
+    NONE(99, "Light");
 
     private final int id;
-    private final String name;
+    private final String resourceName;
 
-    Theme(int id, @NonNull String name) {
+    Theme(int id, @NonNull String resourceName) {
         this.id = id;
-        this.name = name;
+        this.resourceName = resourceName;
     }
 
     public int getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getResourceName() {
+        return resourceName;
     }
 
 
