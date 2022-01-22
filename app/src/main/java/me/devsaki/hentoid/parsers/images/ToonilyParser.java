@@ -66,6 +66,7 @@ public class ToonilyParser extends BaseImageListParser {
 
         // 1- Detect chapters on gallery page
         List<Chapter> chapters = new ArrayList<>();
+        String reason = "";
         Document doc = getOnlineDocument(onlineContent.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
         if (doc != null) {
             String canonicalUrl = DownloadHelper.getCanonicalUrl(doc);
@@ -77,12 +78,18 @@ public class ToonilyParser extends BaseImageListParser {
                     "",
                     HttpHelper.POST_MIME_TYPE
             );
-            if (null == doc) return result;
-            List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
-            Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
-            chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
+            if (doc != null) {
+                List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
+                Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
+                chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
+            } else {
+                reason = "Chapters page couldn't be downloaded @ " + canonicalUrl;
+            }
+        } else {
+            reason = "Index page couldn't be downloaded @ " + onlineContent.getGalleryUrl();
         }
-        if (chapters.isEmpty()) throw new EmptyResultException("Unable to detect chapters");
+        if (chapters.isEmpty())
+            throw new EmptyResultException("Unable to detect chapters : " + reason);
 
         // If the stored content has chapters already, save them for comparison
         List<Chapter> storedChapters = null;

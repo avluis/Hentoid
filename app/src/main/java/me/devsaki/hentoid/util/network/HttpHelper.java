@@ -96,9 +96,7 @@ public class HttpHelper {
     @Nullable
     public static Document getOnlineDocument(String url, List<Pair<String, String>> headers, boolean useHentoidAgent, boolean useWebviewAgent) throws IOException {
         ResponseBody resource = getOnlineResource(url, headers, true, useHentoidAgent, useWebviewAgent).body();
-        if (resource != null) {
-            return Jsoup.parse(resource.string());
-        }
+        if (resource != null) return Jsoup.parse(resource.string());
         return null;
     }
 
