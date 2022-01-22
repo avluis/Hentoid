@@ -25,6 +25,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.download.DownloadHelper;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
@@ -84,6 +85,7 @@ public class ManhwaParser extends BaseImageListParser {
             Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
             chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
         }
+        if (chapters.isEmpty()) throw new EmptyResultException("Unable to detect chapters");
 
         // If the stored content has chapters already, save them for comparison
         List<Chapter> storedChapters = null;
