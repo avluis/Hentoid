@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.parsers.images;
 
-import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
-
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Pair;
@@ -9,8 +7,6 @@ import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,7 +27,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.HitomiBackgroundWebView;
 import okhttp3.Response;
@@ -46,13 +41,13 @@ public class HitomiParser extends BaseImageListParser {
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
         String pageUrl = onlineContent.getReaderUrl();
 
-        Document doc = getOnlineDocument(pageUrl);
-        if (null == doc) throw new ParseException("Document unreachable : " + pageUrl);
-
-        Timber.d("Parsing: %s", pageUrl);
+        // Add referer information to downloadParams for future image download
+        Map<String, String> downloadParams = new HashMap<>();
+        downloadParams.put(HttpHelper.HEADER_REFERER_KEY, pageUrl);
+        String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
         List<ImageFile> result = new ArrayList<>();
-        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
+        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED).setDownloadParams(downloadParamsStr));
 
         String galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + onlineContent.getUniqueSiteId() + ".js";
 
@@ -88,11 +83,6 @@ public class HitomiParser extends BaseImageListParser {
             Helper.pause(1000);
         } while (!done.get() && !processHalted.get());
         if (processHalted.get()) return result;
-
-        Map<String, String> downloadParams = new HashMap<>();
-        // Add referer information to downloadParams for future image download
-        downloadParams.put(HttpHelper.HEADER_REFERER_KEY, pageUrl);
-        String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
         String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
         List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
