@@ -438,12 +438,23 @@ class CustomWebViewClient extends WebViewClient {
     /**
      * Process the given webpage in a background thread (used by quick download)
      *
-     * @param urlStr URL of the page to parse
+     * @param url URL of the page to parse
      */
-    void parseResponseAsync(@NonNull String urlStr) {
+    void parseResponseAsync(@NonNull String url) {
         compositeDisposable.add(
-                Completable.fromCallable(() -> parseResponse(urlStr, null, true, true))
+                Completable.fromCallable(() -> parseResponse(url, null, true, true))
                         .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(() -> {
+                        }, Timber::e)
+        );
+    }
+
+    // TODO doc
+    void browserLoad(@NonNull String url) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> activity.loadUrl(url))
+                        .subscribeOn(AndroidSchedulers.mainThread())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(() -> {
                         }, Timber::e)
@@ -477,10 +488,23 @@ class CustomWebViewClient extends WebViewClient {
 
         try {
             // Query resource here, using OkHttp
-            Response response = HttpHelper.getOnlineResource(urlStr, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+            Response response = HttpHelper.getOnlineResourceFast(urlStr, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent(), false);
 
-            // Scram if the response is a redirection or an error
-            if (response.code() >= 300) return null;
+            // Scram if the response is an error
+            if (response.code() >= 400) return null;
+
+            // Handle redirection and force the browser to reload to be able to process the page
+            // NB1 : shouldInterceptRequest doesn't trigger on redirects
+            // NB2 : parsing alone won't cut it because the adblocker needs the new content on the new URL
+            if (response.code() >= 300) {
+                String targetUrl = StringHelper.protect(response.header("location"));
+                if (targetUrl.isEmpty())
+                    targetUrl = StringHelper.protect(response.header("Location"));
+                if (BuildConfig.DEBUG)
+                    Timber.v("WebView : redirection from %s to %s", urlStr, targetUrl);
+                if (!targetUrl.isEmpty()) browserLoad(targetUrl);
+                return null;
+            }
 
             // Scram if the response is something else than html
             String rawContentType = response.header(HEADER_CONTENT_TYPE, "");
@@ -650,8 +674,11 @@ class CustomWebViewClient extends WebViewClient {
             if (hideableElements != null) {
                 for (String s : hideableElements)
                     for (Element e : doc.select(s)) {
-                        Timber.d("[%s] Hiding node %s", baseUri, e.toString());
-                        e.attr("style", "min-height:0px;height:0%;");
+                        String existingStyle = e.attr("style");
+                        if (existingStyle.isEmpty() || !existingStyle.contains("min-height:0px;height:0%;")) {
+                            Timber.d("[%s] Hiding node %s", baseUri, e.toString());
+                            e.attr("style", "min-height:0px;height:0%;");
+                        }
                     }
             }
 
@@ -689,6 +716,10 @@ class CustomWebViewClient extends WebViewClient {
     }
 
     interface CustomWebActivity {
+        // ACTIONS
+        void loadUrl(@NonNull final String url);
+
+        // CALLBACKS
         void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded, boolean isBookmarkable);
 
         void onPageFinished(boolean isResultsPage, boolean isGalleryPage);
@@ -708,6 +739,7 @@ class CustomWebViewClient extends WebViewClient {
          */
         void onResultFailed();
 
+        // GETTERS
         List<String> getAllSiteUrls();
 
         String getCustomCss();

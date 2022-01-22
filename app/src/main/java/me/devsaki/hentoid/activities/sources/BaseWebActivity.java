@@ -761,7 +761,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         finish();
     }
 
-    public void openUrl(@NonNull final String url) {
+    public void loadUrl(@NonNull final String url) {
         webView.loadUrl(url);
     }
 

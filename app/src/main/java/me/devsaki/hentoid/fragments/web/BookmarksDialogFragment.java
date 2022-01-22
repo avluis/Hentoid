@@ -143,7 +143,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
 
         MaterialButton homepage = requireViewById(rootView, R.id.bookmark_homepage_btn);
         homepage.setIcon(ContextCompat.getDrawable(requireContext(), site.getIco()));
-        homepage.setOnClickListener(v -> parent.openUrl(site.getUrl()));
+        homepage.setOnClickListener(v -> parent.loadUrl(site.getUrl()));
 
         List<SiteBookmark> bookmarks = reloadBookmarks();
 
@@ -404,7 +404,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
 
         if (selectExtension.getSelectedItems().isEmpty()) {
             if (!invalidateNextBookClick && item.getTag() != null) {
-                parent.openUrl(item.getTag().getUrl());
+                parent.loadUrl(item.getTag().getUrl());
                 this.dismiss();
             } else invalidateNextBookClick = false;
 
@@ -471,7 +471,7 @@ public final class BookmarksDialogFragment extends DialogFragment implements Ite
     }
 
     public interface Parent {
-        void openUrl(@NonNull final String url);
+        void loadUrl(@NonNull final String url);
 
         void updateBookmarkButton(boolean newValue);
     }

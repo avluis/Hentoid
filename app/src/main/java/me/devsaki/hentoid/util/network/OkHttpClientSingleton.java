@@ -29,15 +29,15 @@ public class OkHttpClientSingleton {
     }
 
     public static OkHttpClient getInstance() {
-        return getInstance(HttpHelper.DEFAULT_REQUEST_TIMEOUT, HttpHelper.DEFAULT_REQUEST_TIMEOUT);
+        return getInstance(HttpHelper.DEFAULT_REQUEST_TIMEOUT, HttpHelper.DEFAULT_REQUEST_TIMEOUT, true);
     }
 
-    public static OkHttpClient getInstance(int connectTimeout, int ioTimeout) {
-        int key = (connectTimeout * 100) + ioTimeout;
+    public static OkHttpClient getInstance(int connectTimeout, int ioTimeout, boolean followRedirects) {
+        int key = (connectTimeout * 100) + ioTimeout + (followRedirects ? 1 : 0);
         if (null == instance.get(key)) {
             synchronized (OkHttpClientSingleton.class) {
                 if (null == instance.get(key)) {
-                    instance.put(key, buildClient(connectTimeout, ioTimeout));
+                    instance.put(key, buildClient(connectTimeout, ioTimeout, followRedirects));
                 }
             }
         }
@@ -71,7 +71,7 @@ public class OkHttpClientSingleton {
                 .build();
     }
 
-    private static OkHttpClient buildClient(int connectTimeout, int ioTimeout) {
+    private static OkHttpClient buildClient(int connectTimeout, int ioTimeout, boolean followRedirects) {
         if (null == instance.get(0)) {
             synchronized (OkHttpClientSingleton.class) {
                 if (null == instance.get(0)) {
@@ -83,6 +83,7 @@ public class OkHttpClientSingleton {
 
         // Set custom delays
         OkHttpClient.Builder result = primaryClient.newBuilder()
+                .followRedirects(followRedirects)
                 .connectTimeout(connectTimeout, TimeUnit.MILLISECONDS)
                 .readTimeout(ioTimeout, TimeUnit.MILLISECONDS)
                 .writeTimeout(ioTimeout, TimeUnit.MILLISECONDS);

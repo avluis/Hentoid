@@ -130,9 +130,13 @@ public class HttpHelper {
     }
 
     public static Response getOnlineResourceFast(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) throws IOException {
+        return getOnlineResourceFast(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent, true);
+    }
+
+    public static Response getOnlineResourceFast(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent, boolean followRedirects) throws IOException {
         Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
         Request request = requestBuilder.get().build();
-        return OkHttpClientSingleton.getInstance(2000, 10000).newCall(request).execute();
+        return OkHttpClientSingleton.getInstance(2000, 10000, followRedirects).newCall(request).execute();
     }
 
     /**

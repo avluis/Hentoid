@@ -129,7 +129,7 @@ public class AdBlocker {
      *
      * @param filter Filter to addAll to local whitelist
      */
-    public void addJsUrlWhitelist(String... filter) {
+    public void addToJsUrlWhitelist(String... filter) {
         Collections.addAll(localUrlWhitelist, filter);
     }
 
@@ -162,15 +162,19 @@ public class AdBlocker {
         final String cleanUrl = url.toLowerCase();
 
         // 1- Accept whitelisted JS files
-        String extension = HttpHelper.getExtensionFromUri(cleanUrl);
-        boolean isJs = (extension.equals("js") || extension.isEmpty()); // Obvious js and hidden js
-        if (isJs && isUrlWhitelisted(cleanUrl)) return false;
+        if (isUrlWhitelisted(cleanUrl)) return false;
 
         // 2- Process usual blacklist and cached dynamic blacklist
         if (isUrlBlacklisted(cleanUrl)) return true;
-        if (jsBlacklistCache.contains(cleanUrl)) return true;
+        if (jsBlacklistCache.contains(cleanUrl)) {
+            if (BuildConfig.DEBUG)
+                Timber.v("Blacklisted file BLOCKED (jsBlacklistCache) : %s", cleanUrl);
+            return true;
+        }
 
         // 3- Accept non-JS files that are not blacklisted
+        String extension = HttpHelper.getExtensionFromUri(cleanUrl);
+        boolean isJs = (extension.equals("js") || extension.isEmpty()); // Obvious js and hidden js
         if (!isJs) return false;
 
         // If no grey list has been defined...
@@ -210,7 +214,7 @@ public class AdBlocker {
                 Timber.e(iae);
                 return true; // Avoid feeding malformed URLs to Chromium on older Androids (crash reported on Lollipop)
             }
-            addJsUrlWhitelist(cleanUrl);
+            addToJsUrlWhitelist(cleanUrl);
             Timber.d(">> grey file %s ALLOWED", url);
         }
 
