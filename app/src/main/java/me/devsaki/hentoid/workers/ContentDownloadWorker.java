@@ -540,6 +540,8 @@ public class ContentDownloadWorker extends BaseWorker {
         do {
             Map<StatusContent, ImmutablePair<Integer, Long>> statuses = dao.countProcessedImagesById(content.getId());
             ImmutablePair<Integer, Long> status = statuses.get(StatusContent.DOWNLOADED);
+
+            // Measure idle time since last iteration
             if (status != null) {
                 deltaPages = status.left - pagesOK;
                 if (deltaPages == 0) nbDeltaZeroPages++;
@@ -572,6 +574,7 @@ public class ContentDownloadWorker extends BaseWorker {
             Timber.d("deltaPages: %d / deltaNetworkBytes: %s", deltaPages, FileHelper.formatHumanReadableSize(deltaNetworkBytes));
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
 
+            // Restart request queue when the queue has idled for too long
             if (nbDeltaLowNetwork > 10 && nbDeltaZeroPages > 10) {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
