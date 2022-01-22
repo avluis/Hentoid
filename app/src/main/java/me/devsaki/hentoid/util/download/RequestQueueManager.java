@@ -146,7 +146,9 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     public void queueRequest(Request<T> request) {
         if ((isSimulateHumanReading && nbActiveRequests > 0) || nbRequestsPerSecond > -1 && nbActiveRequests == nbRequestsPerSecond) {
             Timber.d("Waiting requests queue ::: request stored for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
-            waitingRequestQueue.add(request);
+            synchronized (waitingRequestQueue) {
+                waitingRequestQueue.add(request);
+            }
         } else {
             addToRequestQueue(request);
         }
@@ -186,9 +188,11 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
         if (allowedNewRequests > 0) {
             for (int i = 0; i < allowedNewRequests; i++) {
-                if (waitingRequestQueue.isEmpty()) break;
-                Request<T> r = waitingRequestQueue.removeFirst();
-                if (r != null) addToRequestQueue(r, now);
+                synchronized (waitingRequestQueue) {
+                    if (waitingRequestQueue.isEmpty()) break;
+                    Request<T> r = waitingRequestQueue.removeFirst();
+                    if (r != null) addToRequestQueue(r, now);
+                }
             }
         }
     }
@@ -226,8 +230,10 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
                         .map(v -> {
                             // Add the next request to the queue
                             Timber.d("Waiting requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
-                            Request<T> req = waitingRequestQueue.removeFirst();
-                            addToRequestQueue(req);
+                            synchronized (waitingRequestQueue) {
+                                Request<T> req = waitingRequestQueue.removeFirst();
+                                addToRequestQueue(req);
+                            }
                             return true;
                         })
                         .observeOn(Schedulers.computation())
@@ -279,7 +285,9 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     public void cancelQueue() {
         RequestQueue.RequestFilter filterForAll = request -> true;
         mRequestQueue.cancelAll(filterForAll);
-        waitingRequestQueue.clear();
+        synchronized (waitingRequestQueue) {
+            waitingRequestQueue.clear();
+        }
         isSimulateHumanReading = false;
         if (waitDisposable != null) waitDisposable.dispose();
         Timber.d("RequestQueue ::: canceled");
