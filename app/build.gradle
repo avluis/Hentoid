@@ -242,7 +242,7 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
     // EventBus: github.com/greenrobot/EventBus
-    implementation 'org.greenrobot:eventbus:3.2.0'
+    implementation 'org.greenrobot:eventbus:3.3.1'
 
     // Lightweight Stream : github.com/aNNiMON/Lightweight-Stream-API
     implementation 'com.annimon:stream:1.2.2'
