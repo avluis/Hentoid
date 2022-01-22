@@ -203,7 +203,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_middle"
             app:layout_constraintStart_toEndOf="@id/keep_delete"
-            app:layout_constraintTop_toBottomOf="@id/ivSite" />
+            app:layout_constraintTop_toBottomOf="@id/ivFavourite" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guideline_middle"
