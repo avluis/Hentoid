@@ -154,7 +154,7 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = '5.5.1'
+    def fastadapter_version = '5.6.0'
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"
