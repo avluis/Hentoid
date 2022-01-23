@@ -8,6 +8,7 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Specific Volley Request intended at transmitting :
@@ -23,7 +24,6 @@ public class InputStreamVolleyRequest extends Request<Object> {
     private final Map<String, String> headers;
     private final boolean useHentoidAgent;
     private final boolean useWebviewAgent;
-
 
     public InputStreamVolleyRequest(
             int method,
@@ -65,5 +65,19 @@ public class InputStreamVolleyRequest extends Request<Object> {
         params.put("Accept", "image/jpeg,image/png,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*"); // Required to pass through cloudflare filtering on some sites
         params.putAll(headers);
         return params;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InputStreamVolleyRequest req = (InputStreamVolleyRequest) o;
+        return getUrl().equals(req.getUrl())
+                && getMethod() == req.getMethod();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUrl(), getMethod());
     }
 }
