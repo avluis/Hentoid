@@ -423,13 +423,13 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         if (content.getSite().getParallelDownloadCap() > 0 &&
-                (requestQueueManager.getDownloadThreadCount() > content.getSite().getParallelDownloadCap()
-                        || -1 == requestQueueManager.getDownloadThreadCount())
+                (requestQueueManager.getDownloadThreadCap() > content.getSite().getParallelDownloadCap()
+                        || -1 == requestQueueManager.getDownloadThreadCap())
         ) {
             Timber.d("Setting parallel downloads count to %s", content.getSite().getParallelDownloadCap());
             requestQueueManager.setDownloadThreadCount(getApplicationContext(), content.getSite().getParallelDownloadCap());
         }
-        if (0 == content.getSite().getParallelDownloadCap() && requestQueueManager.getDownloadThreadCount() > -1) {
+        if (0 == content.getSite().getParallelDownloadCap() && requestQueueManager.getDownloadThreadCap() > -1) {
             Timber.d("Resetting parallel downloads count to default");
             requestQueueManager.setDownloadThreadCount(getApplicationContext(), -1);
         }
