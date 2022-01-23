@@ -18,10 +18,10 @@ import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.database.domains.DuplicateEntry
 import me.devsaki.hentoid.notification.duplicates.DuplicateNotificationChannel
 import me.devsaki.hentoid.util.ContentHelper
-import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException
-import me.devsaki.hentoid.util.exception.FileNotProcessedException
+import me.devsaki.hentoid.workers.DeleteWorker
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
+import me.devsaki.hentoid.workers.data.DeleteData
 import me.devsaki.hentoid.workers.data.DuplicateData
 import okhttp3.internal.toImmutableList
 import timber.log.Timber
@@ -120,27 +120,27 @@ class DuplicateViewModel(
         val selectedDupes = selectedDuplicates.value!!.toImmutableList()
 
         // Mark as "is being deleted" to trigger blink animation
-        val toRemove = selectedDupes.toMutableList()
-        for (entry in toRemove) {
-            if (!entry.keep) entry.isBeingDeleted = true
+        val deleteList = ArrayList<Long>()
+        val updateDisplayList = selectedDupes.toMutableList()
+        for (entry in updateDisplayList) {
+            if (!entry.keep) {
+                entry.isBeingDeleted = true
+                deleteList.add(entry.duplicateId)
+            }
         }
-        selectedDuplicates.postValue(toRemove)
+        selectedDuplicates.postValue(updateDisplayList)
+        if (deleteList.isNotEmpty()) remove(deleteList)
 
         // Actually delete
         compositeDisposable.add(
             Observable.fromIterable(selectedDupes)
                 .observeOn(Schedulers.io())
-                .map {
-                    // Remove content
-                    if (!it.keep) doRemoveContent(it.duplicateId)
-                    it
-                }
                 .doOnNext {
-                    // Remove duplicate entries
+                    // Remove duplicate entries on display
                     if (!it.keep) {
-                        val newList = selectedDupes.toMutableList()
-                        newList.remove(it)
-                        selectedDuplicates.postValue(newList) // Post a copy so that we don't modify the collection we're looping on
+                        val updateDisplayList2 = selectedDupes.toMutableList()
+                        updateDisplayList2.remove(it)
+                        selectedDuplicates.postValue(updateDisplayList2) // Post a copy so that we don't modify the collection we're looping on
                     }
                     if (it.titleScore <= 1f) // Don't delete the fake reference entry that has been put there for display
                         duplicatesDao.delete(it)
@@ -158,21 +158,17 @@ class DuplicateViewModel(
         )
     }
 
-    @Throws(ContentNotProcessedException::class)
-    private fun doRemoveContent(contentId: Long) {
-        Helper.assertNonUiThread()
-        // Remove content altogether from the DB (including queue)
-        val content: Content = dao.selectContent(contentId) ?: return
-        try {
-            ContentHelper.removeQueuedContent(getApplication(), dao, content)
-        } catch (e: ContentNotProcessedException) {
-            // Don't throw the exception if we can't remove something that isn't there
-            if (!(e is FileNotProcessedException && content.storageUri.isEmpty())) throw e
-        }
+    fun remove(contentList: List<Long>) {
+        val builder = DeleteData.Builder()
+        if (contentList.isNotEmpty()) builder.setContentIds(contentList)
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueue(
+            OneTimeWorkRequest.Builder(DeleteWorker::class.java).setInputData(builder.data).build()
+        )
     }
 
     fun mergeContents(
-        contentList: List<Content?>,
+        contentList: List<Content>,
         newTitle: String,
         deleteAfterMerging: Boolean,
         onSuccess: Runnable
@@ -197,7 +193,7 @@ class DuplicateViewModel(
                         selectedDuplicates.postValue(toRemove)
 
                         // Remove old contents
-                        for (content in contentList) doRemoveContent(content!!.id)
+                        remove(contentList.map { c -> c.id })
 
                         // Remove duplicate entries (update UI)
                         for (dupeEntry in selectedDupes) {
