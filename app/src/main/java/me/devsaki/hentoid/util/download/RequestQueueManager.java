@@ -156,19 +156,20 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
     private int getAllowedNewRequests(long now) {
         if (nbRequestsPerSecond > -1) {
-            boolean polled;
+            synchronized (previousRequestsTimestamps) {
+                boolean polled;
+                do {
+                    polled = false;
+                    Long earliestRequestTimestamp = previousRequestsTimestamps.peek();
+                    if (null != earliestRequestTimestamp && now - earliestRequestTimestamp > 1000) {
+                        previousRequestsTimestamps.poll();
+                        polled = true;
+                    }
+                } while (polled);
 
-            do {
-                polled = false;
-                Long earliestRequestTimestamp = previousRequestsTimestamps.peek();
-                if (null != earliestRequestTimestamp && now - earliestRequestTimestamp > 1000) {
-                    previousRequestsTimestamps.poll();
-                    polled = true;
-                }
-            } while (polled);
-
-            int nbRequestsLastSecond = previousRequestsTimestamps.size();
-            return nbRequestsPerSecond - nbRequestsLastSecond;
+                int nbRequestsLastSecond = previousRequestsTimestamps.size();
+                return nbRequestsPerSecond - nbRequestsLastSecond;
+            }
         } else return Integer.MAX_VALUE;
     }
 
@@ -200,7 +201,11 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     private void addToRequestQueue(@NonNull Request<T> request, long now) {
         mRequestQueue.add(request);
         nbActiveRequests++;
-        if (nbRequestsPerSecond > -1) previousRequestsTimestamps.add(now);
+        if (nbRequestsPerSecond > -1) {
+            synchronized (previousRequestsTimestamps) {
+                previousRequestsTimestamps.add(now);
+            }
+        }
         Timber.v("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbActiveRequests);
     }
 
