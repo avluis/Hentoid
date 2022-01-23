@@ -1000,10 +1000,12 @@ public class ContentDownloadWorker extends BaseWorker {
                 List<Pair<String, Integer>> ugoiraFrames = JsonHelper.jsonToObject(ugoiraFramesStr, PixivIllustMetadata.UGOIRA_FRAMES_TYPE);
 
                 // Map frame name to the downloaded file
-                for (Pair<String, Integer> frame : ugoiraFrames) {
-                    File[] files = ugoiraCacheFolder.listFiles(pathname -> pathname.getName().endsWith(frame.first));
-                    if (files != null && files.length > 0) {
-                        frames.add(new ImmutablePair<>(Uri.fromFile(files[0]), frame.second));
+                if (ugoiraFrames != null) {
+                    for (Pair<String, Integer> frame : ugoiraFrames) {
+                        File[] files = ugoiraCacheFolder.listFiles(pathname -> pathname.getName().endsWith(frame.first));
+                        if (files != null && files.length > 0) {
+                            frames.add(new ImmutablePair<>(Uri.fromFile(files[0]), frame.second));
+                        }
                     }
                 }
 
