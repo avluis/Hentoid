@@ -1074,6 +1074,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     private void onContentProcessed(@ContentStatus int status, boolean quickDownload) {
         processContentDisposable.dispose();
+        if (null == currentContent) return;
         switch (status) {
             case ContentStatus.UNKNOWN:
                 if (quickDownload) {
