@@ -201,7 +201,9 @@ public final class ContentHelper {
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return null;
         try {
-            return JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            content.setJsonUri(newJson.getUri().toString());
+            return newJson;
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getStorageUri());
         }
