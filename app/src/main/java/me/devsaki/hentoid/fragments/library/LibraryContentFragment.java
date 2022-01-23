@@ -621,7 +621,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     if (c != null)
                         InputDialog.invokeInputDialog(requireActivity(), R.string.book_edit_title,
                                 c.getTitle(),
-                                s -> viewModel.editContentTitle(c, s), null);
+                                s -> viewModel.renameContent(c, s), null);
                 }
                 keepSelection = false;
                 break;

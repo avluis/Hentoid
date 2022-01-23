@@ -859,10 +859,14 @@ public class LibraryViewModel extends AndroidViewModel {
         dao.shuffleContent();
     }
 
-    public void editContentTitle(@NonNull Content content, @NonNull String title) {
+    public void renameContent(@NonNull Content content, @NonNull String title) {
         Content dbContent = dao.selectContent(content.getId()); // Instanciate a new Content from DB to avoid updating the UI reference
         if (dbContent != null) {
             dbContent.setTitle(title);
+            // Persist in JSON
+            if (!dbContent.getJsonUri().isEmpty())
+                ContentHelper.updateContentJson(getApplication(), dbContent);
+            else ContentHelper.createContentJson(getApplication(), dbContent);
             dao.insertContent(dbContent);
         }
     }
