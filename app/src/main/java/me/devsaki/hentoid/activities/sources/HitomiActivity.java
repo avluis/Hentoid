@@ -83,6 +83,8 @@ public class HitomiActivity extends BaseWebActivity {
     }
 
     private void getImagesUrl(@NonNull Content onlineContent, @NonNull Consumer<String> listCallback, boolean fetchGalleryJs) {
+        if (null == webView) return;
+
         // Get the gallery info file
         if (!fetchGalleryJs) {
             runOnUiThread(() -> webView.evaluateJavascript(getJsPagesScript(""), listCallback::accept));
