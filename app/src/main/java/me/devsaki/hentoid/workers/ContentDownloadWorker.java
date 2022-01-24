@@ -579,7 +579,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
                 Timber.d("Inactivity detected - restarting request queue");
-                requestQueueManager.restartRequestQueue();
+                requestQueueManager.restartRequestQueue(getApplicationContext());
             }
 
             double estimateBookSizeMB = -1;

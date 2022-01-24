@@ -3,6 +3,7 @@ package me.devsaki.hentoid.parsers.content;
 import androidx.annotation.NonNull;
 
 import java.util.Collections;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
@@ -11,6 +12,8 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 
 public class HitomiContent extends BaseContentParser {
+    private static final Pattern CANONICAL_URL = Pattern.compile("/galleries/[0-9]+\\.html");
+
     /*
 }
     @Selector(value = "h1 a[href*='/reader/']", attr = "href", defValue = "")
@@ -40,20 +43,26 @@ public class HitomiContent extends BaseContentParser {
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
         if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
          */
-
-        // Extract unique site ID (hitomi.la/category/stuff-<ID>.html#stuff)
-        int pathEndIndex = url.lastIndexOf("?");
-        if (-1 == pathEndIndex) pathEndIndex = url.lastIndexOf("#");
-        if (-1 == pathEndIndex) pathEndIndex = url.length();
-        int firstIndex = url.lastIndexOf("-", pathEndIndex);
-        int lastIndex = url.lastIndexOf(".", pathEndIndex);
-        if (-1 == lastIndex) lastIndex = pathEndIndex;
-        String uniqueId = url.substring(firstIndex + 1, lastIndex);
-
-        content.setUniqueSiteId(uniqueId);
-
         content.setSite(Site.HITOMI);
-        content.setUrl("/" + uniqueId + ".html"); // Forge canonical URL
+
+        // If given URL is canonical, set it as is
+        if (CANONICAL_URL.matcher(url).find()) {
+            content.setUrl(url.replace(Site.HITOMI.getUrl(), "").replace("/reader", "").replace("/galleries", ""));
+        } else { // If not, extract unique site ID (hitomi.la/category/stuff-<ID>.html#stuff)...
+            int pathEndIndex = url.lastIndexOf("?");
+            if (-1 == pathEndIndex) pathEndIndex = url.lastIndexOf("#");
+            if (-1 == pathEndIndex) pathEndIndex = url.length();
+            int firstIndex = url.lastIndexOf("-", pathEndIndex);
+            int lastIndex = url.lastIndexOf(".", pathEndIndex);
+            if (-1 == lastIndex) lastIndex = pathEndIndex;
+            String uniqueId = url.substring(firstIndex + 1, lastIndex);
+
+            content.setUniqueSiteId(uniqueId);
+
+            // ...and forge canonical URL
+            content.setUrl("/" + uniqueId + ".html");
+        }
+
 /*        content.setTitle(StringHelper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();
