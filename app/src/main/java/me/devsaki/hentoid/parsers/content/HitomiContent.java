@@ -41,8 +41,19 @@ public class HitomiContent extends BaseContentParser {
         if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
          */
 
+        // Extract unique site ID (hitomi.la/category/stuff-<ID>.html#stuff)
+        int pathEndIndex = url.lastIndexOf("?");
+        if (-1 == pathEndIndex) pathEndIndex = url.lastIndexOf("#");
+        if (-1 == pathEndIndex) pathEndIndex = url.length();
+        int firstIndex = url.lastIndexOf("-", pathEndIndex);
+        int lastIndex = url.lastIndexOf(".", pathEndIndex);
+        if (-1 == lastIndex) lastIndex = pathEndIndex;
+        String uniqueId = url.substring(firstIndex + 1, lastIndex);
+
+        content.setUniqueSiteId(uniqueId);
+
         content.setSite(Site.HITOMI);
-        content.setUrl(url.replace(Site.HITOMI.getUrl(), "").replace("/reader", ""));
+        content.setUrl("/" + uniqueId + ".html"); // Forge canonical URL
 /*        content.setTitle(StringHelper.removeNonPrintableChars(title));
 
         AttributeMap attributes = new AttributeMap();

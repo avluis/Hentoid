@@ -9,6 +9,7 @@ import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.StringHelper;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class HitomiGalleryInfo {
@@ -56,7 +57,7 @@ public class HitomiGalleryInfo {
     }
 
     public void updateContent(@NonNull Content content) {
-        content.setTitle(title);
+        content.setTitle(StringHelper.removeNonPrintableChars(title));
 //        content.setUploadDate(date.getTime()); TODO
 
         AttributeMap attributes = new AttributeMap();
