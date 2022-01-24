@@ -198,11 +198,11 @@
 
                 <data
                     android:host="hitomi.la"
-                    android:pathPattern="..*/..*"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
                 <data
                     android:host="www.hitomi.la"
-                    android:pathPattern="..*/..*"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
