@@ -76,8 +76,10 @@ public class HitomiGalleryInfo {
         if (artists != null)
             for (HitomiArtist artist : artists)
                 addAttribute(AttributeType.ARTIST, artist.artist, artist.url, attributes);
-        addAttribute(AttributeType.LANGUAGE, language, language_url, attributes);
-        addAttribute(AttributeType.CATEGORY, type, "", attributes);
+        if (language != null)
+            addAttribute(AttributeType.LANGUAGE, language, language_url, attributes);
+        if (type != null)
+            addAttribute(AttributeType.CATEGORY, type, "", attributes);
         content.putAttributes(attributes);
     }
 }
