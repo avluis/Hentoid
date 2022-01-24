@@ -22,6 +22,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -39,6 +40,10 @@ import timber.log.Timber;
 public class HitomiParser extends BaseImageListParser {
 
     public List<ImageFile> parseImageListImpl(@NonNull Content onlineContent, @Nullable Content storedContent) throws Exception {
+        return parseImageListWithWebview(onlineContent, null);
+    }
+
+    public List<ImageFile> parseImageListWithWebview(@NonNull Content onlineContent, WebView webview) throws Exception {
         String pageUrl = onlineContent.getReaderUrl();
 
         // Add referer information to downloadParams for future image download
@@ -47,37 +52,36 @@ public class HitomiParser extends BaseImageListParser {
         String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
 
         List<ImageFile> result = new ArrayList<>();
-        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED).setDownloadParams(downloadParamsStr));
 
         String galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + onlineContent.getUniqueSiteId() + ".js";
 
         // Get the gallery JSON
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, pageUrl));
-        Response response = HttpHelper.getOnlineResource(galleryJsonUrl, headers, Site.HITOMI.useMobileAgent(), Site.HITOMI.useHentoidAgent(), Site.HITOMI.useWebviewAgent());
+        Response response = HttpHelper.getOnlineResourceFast(galleryJsonUrl, headers, Site.HITOMI.useMobileAgent(), Site.HITOMI.useHentoidAgent(), Site.HITOMI.useWebviewAgent());
 
         ResponseBody body = response.body();
         if (null == body) throw new IOException("Empty body");
         String galleryInfo = body.string();
 
+        updateContentInfo(onlineContent, galleryInfo);
+        onlineContent.setUpdatedProperties(true);
+
+        // Get pages URL
         final AtomicBoolean done = new AtomicBoolean(false);
         final AtomicReference<String> imagesStr = new AtomicReference<>();
-
         Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(() -> {
-            if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
-            HitomiBackgroundWebView wv = new HitomiBackgroundWebView(HentoidApp.getInstance(), Site.HITOMI);
-            Timber.d(">> loading url %s", pageUrl);
-            wv.loadUrl(pageUrl, () -> {
-                Timber.i(">> evaluating JS");
-                wv.evaluateJavascript(getJsPagesScript(galleryInfo), s -> {
-                    Timber.i(">> JS evaluated");
-                    imagesStr.set(s);
-                    done.set(true);
-                });
+        if (null == webview) {
+            handler.post(() -> {
+                if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
+                HitomiBackgroundWebView hitomiWv = new HitomiBackgroundWebView(HentoidApp.getInstance(), Site.HITOMI);
+                Timber.d(">> loading url %s", pageUrl);
+                hitomiWv.loadUrl(pageUrl, () -> evaluateJs(hitomiWv, galleryInfo, imagesStr, done));
+                Timber.i(">> loading wv");
             });
-            Timber.i(">> loading wv");
-        });
+        } else { // We suppose the caller is the main thread if the webview is provided
+            handler.post(() -> evaluateJs(webview, galleryInfo, imagesStr, done));
+        }
 
         do {
             Helper.pause(1000);
@@ -86,7 +90,9 @@ public class HitomiParser extends BaseImageListParser {
 
         String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
         List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
-        if (imageUrls != null) {
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            onlineContent.setCoverImageUrl(imageUrls.get(0));
+            result.add(ImageFile.newCover(imageUrls.get(0), StatusContent.SAVED));
             int order = 1;
             for (String s : imageUrls) {
                 ImageFile img = ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED);
@@ -98,12 +104,33 @@ public class HitomiParser extends BaseImageListParser {
         return result;
     }
 
+    // TODO doc
+    private void evaluateJs(@NonNull WebView webview, @NonNull String galleryInfo, @NonNull AtomicReference<String> imagesStr, @NonNull AtomicBoolean done) {
+        try {
+            Timber.d(">> evaluating JS");
+            webview.evaluateJavascript(getJsPagesScript(galleryInfo), s -> {
+                Timber.d(">> JS evaluated");
+                imagesStr.set(s);
+            });
+        } finally {
+            done.set(true);
+        }
+    }
 
     // TODO optimize
     private String getJsPagesScript(@NonNull String galleryInfo) {
         StringBuilder sb = new StringBuilder();
         FileHelper.getAssetAsString(HentoidApp.getInstance().getAssets(), "hitomi_pages.js", sb);
         return sb.toString().replace("$galleryInfo", galleryInfo).replace("$webp", Preferences.isDlHitomiWebp() ? "true" : "false");
+    }
+
+    // TODO doc
+    private void updateContentInfo(@NonNull Content content, @NonNull String galleryInfoStr) throws Exception {
+        int firstBrace = galleryInfoStr.indexOf("{");
+        int lastBrace = galleryInfoStr.lastIndexOf("}");
+        String galleryJson = galleryInfoStr.substring(firstBrace, lastBrace + 1);
+        HitomiGalleryInfo galleryInfo = JsonHelper.jsonToObject(galleryJson, HitomiGalleryInfo.class);
+        galleryInfo.updateContent(content);
     }
 
     @Override

@@ -137,9 +137,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         int READ = 3;
     }
 
-    @IntDef({ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE})
+    @IntDef({ContentStatus.UNDOWNLOADABLE, ContentStatus.UNKNOWN, ContentStatus.IN_COLLECTION, ContentStatus.IN_QUEUE})
     @Retention(RetentionPolicy.SOURCE)
     private @interface ContentStatus {
+        // Content is undownloadable
+        int UNDOWNLOADABLE = -1;
         // Content is unknown (i.e. ready to be downloaded)
         int UNKNOWN = 0;
         // Content is already in the library
@@ -983,7 +985,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private @ContentStatus
     int processContent(@NonNull Content onlineContent, boolean quickDownload) {
         Helper.assertNonUiThread();
-        if (onlineContent.getUrl().isEmpty()) return ContentStatus.UNKNOWN;
+        if (onlineContent.getUrl().isEmpty()) return ContentStatus.UNDOWNLOADABLE;
+        if (onlineContent.getStatus() != null && onlineContent.getStatus().equals(StatusContent.IGNORED))
+            return ContentStatus.UNDOWNLOADABLE;
         currentContent = null;
 
         Timber.i("Content Site, URL : %s, %s", onlineContent.getSite().getCode(), onlineContent.getUrl());
@@ -1076,6 +1080,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         processContentDisposable.dispose();
         if (null == currentContent) return;
         switch (status) {
+            case ContentStatus.UNDOWNLOADABLE:
+                onResultFailed();
+                break;
             case ContentStatus.UNKNOWN:
                 if (quickDownload) {
                     if (duplicateId > -1 && Preferences.isDownloadDuplicateAsk())

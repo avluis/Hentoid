@@ -1,35 +1,22 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.net.Uri;
-import android.util.Pair;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
-import com.annimon.stream.function.Consumer;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -82,7 +69,8 @@ public class HitomiActivity extends BaseWebActivity {
         return builder.toString();
     }
 
-    private void getImagesUrl(@NonNull Content onlineContent, @NonNull Consumer<String> listCallback, boolean fetchGalleryJs) {
+    /*
+    private void getContentInfo(@NonNull Content onlineContent, @NonNull Consumer<String> listCallback, boolean fetchGalleryJs) {
         if (null == webView) return;
 
         // Get the gallery info file
@@ -121,6 +109,7 @@ public class HitomiActivity extends BaseWebActivity {
         FileHelper.getAssetAsString(getAssets(), "hitomi_pages.js", sb);
         return sb.toString().replace("$galleryInfo", galleryInfo).replace("$webp", Preferences.isDlHitomiWebp() ? "true" : "false");
     }
+     */
 
     private class HitomiWebClient extends CustomWebViewClient {
 
@@ -151,9 +140,19 @@ public class HitomiActivity extends BaseWebActivity {
                 while (isLoading()) Helper.pause(100);
                 Timber.i(">> done");
             }
+            HitomiParser parser = new HitomiParser();
+            try {
+                List<ImageFile> images = parser.parseImageListWithWebview(content, webView);
+                content.setImageFiles(images);
+                content.setStatus(StatusContent.SAVED);
+            } catch (Exception e) {
+                Timber.w(e);
+                content.setStatus(StatusContent.IGNORED);
+            }
+/*
             final AtomicReference<String> imagesStr = new AtomicReference<>();
             final Object _lock = new Object();
-            getImagesUrl(content, s -> {
+            getContentInfo(content, s -> {
                 Timber.v(">> Reader JS OK");
                 imagesStr.set(s);
                 synchronized (_lock) {
@@ -170,13 +169,13 @@ public class HitomiActivity extends BaseWebActivity {
             }
             Timber.w(">> Lock freed");
             List<ImageFile> result = new ArrayList<>();
-            result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
 
             String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
             Timber.v(">> JSResult OK");
             try {
                 List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
-                if (imageUrls != null) {
+                if (imageUrls != null && !imageUrls.isEmpty()) {
+                    result.add(ImageFile.newCover(imageUrls.get(0), StatusContent.SAVED));
                     int order = 1;
                     for (String s : imageUrls)
                         result.add(ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED));
@@ -184,8 +183,9 @@ public class HitomiActivity extends BaseWebActivity {
             } catch (IOException e) {
                 Timber.w(e);
             }
-
             content.setImageFiles(result);
+ */
+
             return super.processContent(content, url, quickDownload);
         }
     }

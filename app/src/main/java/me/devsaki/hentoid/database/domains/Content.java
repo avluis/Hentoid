@@ -252,9 +252,17 @@ public class Content implements Serializable {
             case HBROWSE:
                 return url.split("/")[0];
             case HITOMI:
+                /*
                 paths = url.split("/");
                 String expression = (paths.length > 1) ? paths[1] : paths[0];
                 return expression.replace(".html", "");
+                 */
+                int anchorIndex = url.lastIndexOf("#");
+                if (-1 == anchorIndex) anchorIndex = url.length();
+                int firstIndex = url.lastIndexOf("-", anchorIndex);
+                int lastIndex = url.lastIndexOf(".", anchorIndex);
+                if (-1 == lastIndex) lastIndex = anchorIndex;
+                return url.substring(firstIndex + 1, lastIndex); // hitomi.la/category/stuff-<ID>.html#stuff
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
@@ -275,7 +283,7 @@ public class Content implements Serializable {
             case DOUJINS:
                 // ID is the last numeric part of the URL
                 // e.g. lewd-title-ch-1-3-42116 -> 42116 is the ID
-                int lastIndex = url.lastIndexOf('-');
+                lastIndex = url.lastIndexOf('-');
                 return url.substring(lastIndex + 1);
             case LUSCIOUS:
                 // ID is the last numeric part of the URL
