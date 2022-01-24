@@ -125,6 +125,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         }
         synchronized (currentRequests) {
             currentRequests.clear();
+            nbActiveRequests = 0;
         }
         initRequestQueue(ctx, nbDlThreads, connectTimeoutMs, ioTimeoutMs);
     }
@@ -237,9 +238,10 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      * @param request Completed request
      */
     public void onRequestFinished(Request<T> request) {
-        nbActiveRequests--;
-        if (request.hasHadResponseDelivered())
+        if (request.hasHadResponseDelivered()) {
             currentRequests.remove(request); // NB : equals and hashCode are InputStreamVolleyRequest's
+            nbActiveRequests--;
+        }
 
         Timber.v("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbActiveRequests);
 
@@ -311,6 +313,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         }
         synchronized (currentRequests) {
             currentRequests.clear();
+            nbActiveRequests = 0;
         }
         isSimulateHumanReading = false;
         waitDisposable.clear();
