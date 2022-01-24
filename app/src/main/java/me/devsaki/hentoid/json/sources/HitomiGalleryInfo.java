@@ -19,7 +19,9 @@ public class HitomiGalleryInfo {
     private List<HitomiCharacter> characters;
     private List<HitomiGroup> groups;
     //    private Date date; TODO
-    private List<HitomiLanguage> languages;
+    private String language;
+    private String language_localname;
+    private String language_url;
     private List<HitomiArtist> artists;
     private String type;
 
@@ -41,11 +43,6 @@ public class HitomiGalleryInfo {
     private static class HitomiGroup {
         private String url;
         private String group;
-    }
-
-    private static class HitomiLanguage {
-        private String url;
-        private String language;
     }
 
     private static class HitomiArtist {
@@ -75,12 +72,10 @@ public class HitomiGalleryInfo {
         if (groups != null)
             for (HitomiGroup group : groups)
                 addAttribute(AttributeType.CIRCLE, group.group, group.url, attributes);
-        if (languages != null)
-            for (HitomiLanguage language : languages)
-                addAttribute(AttributeType.LANGUAGE, language.language, language.url, attributes);
         if (artists != null)
             for (HitomiArtist artist : artists)
                 addAttribute(AttributeType.ARTIST, artist.artist, artist.url, attributes);
+        addAttribute(AttributeType.LANGUAGE, language, language_url, attributes);
         addAttribute(AttributeType.CATEGORY, type, "", attributes);
         content.putAttributes(attributes);
     }
