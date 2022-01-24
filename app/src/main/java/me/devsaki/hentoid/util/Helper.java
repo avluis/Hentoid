@@ -392,7 +392,7 @@ public final class Helper {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
-            Timber.w(e);
+            Timber.d(e);
             Thread.currentThread().interrupt();
         }
     }
