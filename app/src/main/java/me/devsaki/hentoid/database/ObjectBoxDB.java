@@ -1481,11 +1481,15 @@ public class ObjectBoxDB {
      */
 
     List<Content> selectContentWithOldPururinHost() {
-        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
+        return store.boxFor(Content.class).query().equal(Content_.site, Site.PURURIN.getCode()).contains(Content_.coverImageUrl, "://api.pururin.io/images/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
     }
 
     List<Content> selectContentWithOldTsuminoCovers() {
-        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
+        return store.boxFor(Content.class).query().equal(Content_.site, Site.TSUMINO.getCode()).contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
+    }
+
+    List<Content> selectContentWithOldHitomiCovers() {
+        return store.boxFor(Content.class).query().equal(Content_.site, Site.HITOMI.getCode()).contains(Content_.coverImageUrl, "/smallbigtn/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
     }
 
     List<Content> selectDownloadedContentWithNoSize() {

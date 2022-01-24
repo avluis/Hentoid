@@ -44,6 +44,7 @@ public class DatabaseMaintenance {
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot3));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
         result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeReadingProgress));
@@ -167,6 +168,28 @@ public class DatabaseMaintenance {
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Upgrading Tsumino covers : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void cleanPropertiesOneShot3(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Update URLs from deprecated Hitomi image covers
+            Timber.i("Upgrading Hitomi covers : start");
+            List<Content> contents = db.selectContentWithOldHitomiCovers();
+            Timber.i("Upgrading Hitomi covers : %s books detected", contents.size());
+            int max = contents.size();
+            float pos = 1;
+            for (Content c : contents) {
+                String url = c.getCoverImageUrl().replace("/smallbigtn/", "/webpbigtn/").replace(".jpg", ".webp");
+                c.setCoverImageUrl(url);
+                db.insertContent(c);
+                emitter.onNext(pos++ / max);
+            }
+            Timber.i("Upgrading Hitomi covers : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();
