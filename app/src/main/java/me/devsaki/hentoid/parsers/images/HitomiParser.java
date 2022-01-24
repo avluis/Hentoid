@@ -83,9 +83,10 @@ public class HitomiParser extends BaseImageListParser {
             handler.post(() -> evaluateJs(webview, galleryInfo, imagesStr, done));
         }
 
+        int remainingIterations = 15; // Timeout
         do {
             Helper.pause(1000);
-        } while (!done.get() && !processHalted.get());
+        } while (!done.get() && !processHalted.get() && remainingIterations-- > 0);
         if (processHalted.get()) return result;
 
         String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
@@ -106,15 +107,12 @@ public class HitomiParser extends BaseImageListParser {
 
     // TODO doc
     private void evaluateJs(@NonNull WebView webview, @NonNull String galleryInfo, @NonNull AtomicReference<String> imagesStr, @NonNull AtomicBoolean done) {
-        try {
-            Timber.d(">> evaluating JS");
-            webview.evaluateJavascript(getJsPagesScript(galleryInfo), s -> {
-                Timber.d(">> JS evaluated");
-                imagesStr.set(s);
-            });
-        } finally {
+        Timber.d(">> evaluating JS");
+        webview.evaluateJavascript(getJsPagesScript(galleryInfo), s -> {
+            Timber.d(">> JS evaluated");
+            imagesStr.set(s);
             done.set(true);
-        }
+        });
     }
 
     // TODO optimize
