@@ -575,11 +575,11 @@ public class ContentDownloadWorker extends BaseWorker {
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
 
             // Restart request queue when the queue has idled for too long
-            if (nbDeltaLowNetwork > 10 && nbDeltaZeroPages > 10) {
+            if (nbDeltaLowNetwork > 10 || nbDeltaZeroPages > 10) {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
-                Timber.d("Inactivity detected - restarting request queue");
-                requestQueueManager.restartRequestQueue(getApplicationContext());
+                Timber.d("Inactivity detected ====> restarting request queue");
+                requestQueueManager.restartRequestQueue();
             }
 
             double estimateBookSizeMB = -1;

@@ -22,6 +22,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -40,13 +41,20 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     private static final int CONNECT_TIMEOUT_MS = 4000;
     private static final int IO_TIMEOUT_MS = 15000;
 
-    private RequestQueue mRequestQueue;                     // Volley download request queue
-    private int nbActiveRequests = 0;                       // Number of requests currently in the queue (for debug display)
-    private int downloadThreadCap = -1;                     // Maximum number of allowed parallel download threads (-1 = not capped)
-    private int downloadThreadCount = -1;                     // TODO doc
-    private int nbRequestsPerSecond = -1;                   // Maximum number of allowed requests per second (-1 = not capped)
-    private boolean isSimulateHumanReading = false;         // True to mark pauses between pages to simulate human reading
-    private final CompositeDisposable waitDisposable = new CompositeDisposable(); // Used when waiting between requests
+    // Volley download request queue
+    private RequestQueue mRequestQueue;
+    // Number of requests currently in the queue (for debug display)
+    private final AtomicInteger nbActiveRequests = new AtomicInteger(0);
+    // Maximum number of allowed parallel download threads (-1 = not capped)
+    private int downloadThreadCap = -1;
+    // TODO doc
+    private int downloadThreadCount = -1;
+    // Maximum number of allowed requests per second (-1 = not capped)
+    private int nbRequestsPerSecond = -1;
+    // True to mark pauses between pages to simulate human reading
+    private boolean isSimulateHumanReading = false;
+    // Used when waiting between requests
+    private final CompositeDisposable waitDisposable = new CompositeDisposable();
 
     private final LinkedList<Request<T>> waitingRequestQueue = new LinkedList<>(); // Requests waiting to be executed
     private final Set<Request<T>> currentRequests = new HashSet<>(); // Requests being currently executed
@@ -60,7 +68,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
         crashlytics.setCustomKey("Download thread count", dlThreadCount);
 
-        initRequestQueue(context, dlThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, false);
+        initRequestQueue(context, dlThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS);
     }
 
     private static int getThreadCount(Context context) {
@@ -110,8 +118,8 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         }
     }
 
-    private void initRequestQueue(Context ctx, int nbDlThreads, int connectTimeoutMs, int ioTimeoutMs, boolean force) {
-        if (force || mRequestQueue == null) {
+    private void initRequestQueue(Context ctx, int nbDlThreads, int connectTimeoutMs, int ioTimeoutMs) {
+        if (mRequestQueue == null) {
             mRequestQueue = createRequestQueue(ctx, nbDlThreads, connectTimeoutMs, ioTimeoutMs);
             mRequestQueue.addRequestEventListener(this);
             mRequestQueue.start();
@@ -126,22 +134,20 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         }
         synchronized (currentRequests) {
             currentRequests.clear();
-            nbActiveRequests = 0;
+            nbActiveRequests.set(0);
         }
-        initRequestQueue(ctx, nbDlThreads, connectTimeoutMs, ioTimeoutMs, false);
+        initRequestQueue(ctx, nbDlThreads, connectTimeoutMs, ioTimeoutMs);
     }
 
-    public void restartRequestQueue(@NonNull Context ctx) {
+    public void restartRequestQueue() {
         if (mRequestQueue != null) {
             mRequestQueue.removeRequestEventListener(this); // Prevent interrupted requests from messing with downloads
-            mRequestQueue.stop();
-                        /*
+            mRequestQueue.cancelAll(request -> true);
             mRequestQueue.addRequestEventListener(this);
-            mRequestQueue.start();
-             */
-            initRequestQueue(ctx, downloadThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, true);
-            for (Request<T> request : currentRequests)
-                executeRequest(request); // Requeue interrupted requests
+            synchronized (currentRequests) {
+                for (Request<T> request : currentRequests)
+                    executeRequest(request); // Requeue interrupted requests
+            }
         }
     }
 
@@ -170,7 +176,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      * @param request Request to addAll to the queue
      */
     public void queueRequest(Request<T> request) {
-        if ((isSimulateHumanReading && nbActiveRequests > 0) || nbRequestsPerSecond > -1 && nbActiveRequests == nbRequestsPerSecond) {
+        if ((isSimulateHumanReading && nbActiveRequests.get() > 0) || nbRequestsPerSecond > -1 && nbActiveRequests.get() == nbRequestsPerSecond) {
             Timber.d("Waiting requests queue ::: request stored for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
             synchronized (waitingRequestQueue) {
                 waitingRequestQueue.add(request);
@@ -207,7 +213,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     private void refillRequestQueue() {
         long now = Instant.now().toEpochMilli();
         int allowedNewRequests = getAllowedNewRequests(now);
-        while (0 == allowedNewRequests && 0 == nbActiveRequests) { // Dry queue
+        while (0 == allowedNewRequests && 0 == nbActiveRequests.get()) { // Dry queue
             Helper.pause(250);
             now = Instant.now().toEpochMilli();
             allowedNewRequests = getAllowedNewRequests(now);
@@ -225,9 +231,11 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     }
 
     private void executeRequest(@NonNull Request<T> request, long now) {
-        currentRequests.add(request);
+        synchronized (currentRequests) {
+            currentRequests.add(request);
+            nbActiveRequests.incrementAndGet();
+        }
         mRequestQueue.add(request);
-        nbActiveRequests++;
         if (nbRequestsPerSecond > -1) {
             synchronized (previousRequestsTimestamps) {
                 previousRequestsTimestamps.add(now);
@@ -244,14 +252,16 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      */
     public void onRequestFinished(Request<T> request) {
         if (request.hasHadResponseDelivered()) {
-            currentRequests.remove(request); // NB : equals and hashCode are InputStreamVolleyRequest's
-            nbActiveRequests--;
+            synchronized (currentRequests) {
+                currentRequests.remove(request); // NB : equals and hashCode are InputStreamVolleyRequest's
+                nbActiveRequests.decrementAndGet();
+            }
         }
 
         Timber.v("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbActiveRequests);
 
         if (!waitingRequestQueue.isEmpty()) {
-            if (isSimulateHumanReading && 0 == nbActiveRequests) {
+            if (isSimulateHumanReading && 0 == nbActiveRequests.get()) {
                 // Wait on a separate thread as we're currently on the app's main thread
                 int delayMs = 500 + new Random().nextInt(1500);
                 Timber.d("Waiting requests queue ::: waiting %d ms", delayMs);
@@ -318,7 +328,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         }
         synchronized (currentRequests) {
             currentRequests.clear();
-            nbActiveRequests = 0;
+            nbActiveRequests.set(0);
         }
         isSimulateHumanReading = false;
         waitDisposable.clear();
