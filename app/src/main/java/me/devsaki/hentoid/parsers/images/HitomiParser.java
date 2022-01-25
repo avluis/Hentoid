@@ -28,6 +28,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.HitomiBackgroundWebView;
 import okhttp3.Response;
@@ -110,7 +111,7 @@ public class HitomiParser extends BaseImageListParser {
         Timber.d(">> evaluating JS");
         webview.evaluateJavascript(getJsPagesScript(galleryInfo), s -> {
             Timber.d(">> JS evaluated");
-            imagesStr.set(s);
+            imagesStr.set(StringHelper.protect(s));
             done.set(true);
         });
     }
