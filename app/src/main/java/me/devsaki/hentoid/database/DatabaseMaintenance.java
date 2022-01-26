@@ -17,6 +17,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.BiConsumer;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
@@ -45,6 +46,7 @@ public class DatabaseMaintenance {
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot3));
+        result.add(createObservableFrom(context, DatabaseMaintenance::renameEmptyChapters));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
         result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeReadingProgress));
@@ -190,6 +192,27 @@ public class DatabaseMaintenance {
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Upgrading Hitomi covers : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void renameEmptyChapters(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Update URLs from deprecated Hitomi image covers
+            Timber.i("Empying empty chapters : start");
+            List<Chapter> chapters = db.selecChaptersEmptyName();
+            Timber.i("Empying empty chapters : %s chapters detected", chapters.size());
+            int max = chapters.size();
+            float pos = 1;
+            for (Chapter c : chapters) {
+                c.setName("Chapter " + (c.getOrder() + 1)); // 0-indexed
+                emitter.onNext(pos++ / max);
+            }
+            db.insertChapters(chapters);
+            Timber.i("Empying empty chapters : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

@@ -1492,6 +1492,10 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.site, Site.HITOMI.getCode()).contains(Content_.coverImageUrl, "/smallbigtn/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
     }
 
+    List<Chapter> selecChaptersEmptyName() {
+        return store.boxFor(Chapter.class).query().equal(Chapter_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
+    }
+
     List<Content> selectDownloadedContentWithNoSize() {
         return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.size).build().find();
     }
