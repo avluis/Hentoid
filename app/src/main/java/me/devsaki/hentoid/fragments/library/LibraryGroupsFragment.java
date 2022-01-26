@@ -69,7 +69,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
-import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.Site;
@@ -486,9 +486,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                     // Open prefs on the "storage" category
                     Intent intent = new Intent(requireActivity(), PrefsActivity.class);
 
-                    PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
-                    builder.setIsStoragePrefs(true);
-                    intent.putExtras(builder.getBundle());
+                    PrefsBundle prefsBundle = new PrefsBundle();
+                    prefsBundle.setStoragePrefs(true);
+                    intent.putExtras(prefsBundle.toBundle());
 
                     requireContext().startActivity(intent);
                 });

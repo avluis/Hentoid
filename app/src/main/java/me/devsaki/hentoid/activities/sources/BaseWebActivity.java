@@ -77,7 +77,7 @@ import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -1287,9 +1287,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private void onSettingsClick() {
         Intent intent = new Intent(this, PrefsActivity.class);
 
-        PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
-        builder.setIsBrowserPrefs(true);
-        intent.putExtras(builder.getBundle());
+        PrefsBundle prefsBundle = new PrefsBundle();
+        prefsBundle.setBrowserPrefs(true);
+        intent.putExtras(prefsBundle.toBundle());
 
         startActivity(intent);
     }
