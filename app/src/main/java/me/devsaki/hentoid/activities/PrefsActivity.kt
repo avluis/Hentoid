@@ -7,7 +7,7 @@ import androidx.fragment.app.commit
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle
+import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
 import me.devsaki.hentoid.util.FileHelper
@@ -46,28 +46,28 @@ class PrefsActivity : BaseActivity() {
 
     private fun isViewerPrefs(): Boolean {
         return if (intent.extras != null) {
-            val parser = PrefsActivityBundle.Parser(intent.extras!!)
+            val parser = PrefsBundle(intent.extras!!)
             parser.isViewerPrefs
         } else false
     }
 
     private fun isBrowserPrefs(): Boolean {
         return if (intent.extras != null) {
-            val parser = PrefsActivityBundle.Parser(intent.extras!!)
+            val parser = PrefsBundle(intent.extras!!)
             parser.isBrowserPrefs
         } else false
     }
 
     private fun isDownloaderPrefs(): Boolean {
         return if (intent.extras != null) {
-            val parser = PrefsActivityBundle.Parser(intent.extras!!)
+            val parser = PrefsBundle(intent.extras!!)
             parser.isDownloaderPrefs
         } else false
     }
 
     private fun isStoragePrefs(): Boolean {
         return if (intent.extras != null) {
-            val parser = PrefsActivityBundle.Parser(intent.extras!!)
+            val parser = PrefsBundle(intent.extras!!)
             parser.isStoragePrefs
         } else false
     }

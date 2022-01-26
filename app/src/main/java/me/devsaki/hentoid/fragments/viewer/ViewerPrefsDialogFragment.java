@@ -26,7 +26,7 @@ import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.PrefsActivity;
-import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.util.Preferences;
 
 public final class ViewerPrefsDialogFragment extends DialogFragment {
@@ -120,9 +120,9 @@ public final class ViewerPrefsDialogFragment extends DialogFragment {
         appSettingsBtn.setOnClickListener(v -> {
             Intent intent = new Intent(requireActivity(), PrefsActivity.class);
 
-            PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
-            builder.setIsViewerPrefs(true);
-            intent.putExtras(builder.getBundle());
+            PrefsBundle prefsBundle = new PrefsBundle();
+            prefsBundle.setViewerPrefs(true);
+            intent.putExtras(prefsBundle.toBundle());
 
             requireContext().startActivity(intent);
         });
