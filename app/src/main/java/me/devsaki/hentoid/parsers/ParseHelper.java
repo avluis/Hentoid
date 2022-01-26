@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -282,17 +283,28 @@ public class ParseHelper {
         List<Chapter> result = new ArrayList<>();
         Set<String> urls = new HashSet<>();
 
-        int order = 0;
+
+        // First extract data and filter URL duplicates
+        List<Pair<String, String>> chapterData = new ArrayList<>();
         for (Element e : chapterLinks) {
-            String url = e.attr("href");
-            String name = StringHelper.removeNonPrintableChars(e.ownText());
+            String url = e.attr("href").trim();
+            String name = e.attr("title").trim();
+            if (name.isEmpty())
+                name = StringHelper.removeNonPrintableChars(e.ownText()).trim();
             // Make sure we're not adding duplicates
             if (!urls.contains(url)) {
                 urls.add(url);
-                Chapter chp = new Chapter(order++, url, name);
-                chp.setContentId(contentId);
-                result.add(chp);
+                chapterData.add(new Pair<>(url, name));
             }
+        }
+        Collections.reverse(chapterData); // Put unique results in their chronological order
+
+        int order = 0;
+        // Build the final list
+        for (Pair<String, String> chapter : chapterData) {
+            Chapter chp = new Chapter(order++, chapter.first, chapter.second);
+            chp.setContentId(contentId);
+            result.add(chp);
         }
 
         return result;

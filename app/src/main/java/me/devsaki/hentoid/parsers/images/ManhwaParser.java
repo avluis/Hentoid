@@ -83,7 +83,6 @@ public class ManhwaParser extends BaseImageListParser {
             );
             if (doc != null) {
                 List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
-                Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
                 chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
             } else {
                 reason = "Chapters page couldn't be downloaded @ " + canonicalUrl;

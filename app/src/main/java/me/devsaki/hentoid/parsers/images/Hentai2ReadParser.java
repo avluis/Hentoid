@@ -53,7 +53,6 @@ public class Hentai2ReadParser extends BaseImageListParser {
         if (null == doc) return result;
 
         List<Element> chapterLinks = doc.select(".nav-chapters a[href^=" + onlineContent.getGalleryUrl() + "]");
-        Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
         chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
 
         // If the stored content has chapters already, save them for comparison
