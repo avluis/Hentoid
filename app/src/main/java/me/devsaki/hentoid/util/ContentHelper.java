@@ -158,9 +158,9 @@ public final class ContentHelper {
         if (content.getSite().equals(Site.NONE)) return;
 
         Intent intent = new Intent(context, Content.getWebActivityClass(content.getSite()));
-        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-        builder.setUrl(content.getGalleryUrl());
-        intent.putExtras(builder.getBundle());
+        BaseWebActivityBundle bundle = new BaseWebActivityBundle();
+        bundle.setUrl(content.getGalleryUrl());
+        intent.putExtras(bundle.toBundle());
         if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
@@ -931,9 +931,9 @@ public final class ContentHelper {
 
         Intent intent = new Intent(context, Content.getWebActivityClass(targetSite));
 
-        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-        builder.setUrl(targetUrl);
-        intent.putExtras(builder.getBundle());
+        BaseWebActivityBundle bundle = new BaseWebActivityBundle();
+        bundle.setUrl(targetUrl);
+        intent.putExtras(bundle.toBundle());
 
         context.startActivity(intent);
     }

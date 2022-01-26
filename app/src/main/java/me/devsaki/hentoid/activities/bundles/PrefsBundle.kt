@@ -7,7 +7,7 @@ import me.devsaki.hentoid.util.boolean
  * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.activities.PrefsActivity}
  * through a Bundle
  */
-class PrefsBundle(val bundle: Bundle) {
+class PrefsBundle(private val bundle: Bundle) {
 
     constructor() : this(Bundle())
 

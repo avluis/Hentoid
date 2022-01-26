@@ -312,8 +312,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private String getStartUrl() {
         // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
         if (getIntent().getExtras() != null) {
-            BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
-            String intentUrl = parser.getUrl();
+            BaseWebActivityBundle bundle = new BaseWebActivityBundle(getIntent().getExtras());
+            String intentUrl = StringHelper.protect(bundle.getUrl());
             if (!intentUrl.isEmpty()) return intentUrl;
         }
 
@@ -397,9 +397,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
-        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-        builder.setUrl(webView.getUrl());
-        outState.putAll(builder.getBundle());
+        BaseWebActivityBundle bundle = new BaseWebActivityBundle();
+        bundle.setUrl(webView.getUrl());
+        outState.putAll(bundle.toBundle());
     }
 
     @Override
@@ -408,7 +408,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
-        String url = new BaseWebActivityBundle.Parser(savedInstanceState).getUrl();
+        String url = new BaseWebActivityBundle(savedInstanceState).getUrl();
         if (url != null && !url.isEmpty())
             webView.loadUrl(url);
     }
