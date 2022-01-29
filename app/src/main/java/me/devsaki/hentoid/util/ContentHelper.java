@@ -144,7 +144,7 @@ public final class ContentHelper {
      * @param content Content to view
      */
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content) {
-        viewContentGalleryPage(context, content, false);
+        viewContentGalleryPage(context, content, false, false);
     }
 
     /**
@@ -153,11 +153,15 @@ public final class ContentHelper {
      * @param context Context to use for the action
      * @param content Content to view
      * @param wrapPin True if the intent should be wrapped with PIN protection
+     * @param openAsOnlyTask True if the intent should be opened as the only task of the app
      */
-    public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
+    public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin, boolean openAsOnlyTask) {
         if (content.getSite().equals(Site.NONE)) return;
 
         Intent intent = new Intent(context, Content.getWebActivityClass(content.getSite()));
+        if (openAsOnlyTask) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        }
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
         bundle.setUrl(content.getGalleryUrl());
         intent.putExtras(bundle.toBundle());

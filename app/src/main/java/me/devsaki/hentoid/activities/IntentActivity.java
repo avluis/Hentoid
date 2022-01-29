@@ -86,7 +86,7 @@ public class IntentActivity extends AppCompatActivity {
         Content content = new Content();
         content.setSite(site);
         content.setUrl(parsedPath);
-        ContentHelper.viewContentGalleryPage(this, content, true);
+        ContentHelper.viewContentGalleryPage(this, content, true, true);
     }
 
     @Nullable
