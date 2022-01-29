@@ -582,7 +582,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
-        // TODO update isCustomGroupingAvailable when the whole delete job is complete
+        // TODO update isCustomGroupingAvailable when the whole delete chain is complete
     }
 
     public void purgeItem(@NonNull final Content content) {
