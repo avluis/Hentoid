@@ -312,7 +312,7 @@ public class LibraryActivity extends BaseActivity {
         initSelectionToolbar();
         initUI();
         updateToolbar();
-        updateSelectionToolbar(0, 0, 0);
+        updateSelectionToolbar(0, 0, 0, 0);
 
         onCreated();
         sortCommandsAutoHide = new Debouncer<>(this, 3000, this::hideSearchSortBar);
@@ -436,7 +436,7 @@ public class LibraryActivity extends BaseActivity {
                 enableCurrentFragment();
                 hideSearchSortBar(false);
                 updateToolbar();
-                updateSelectionToolbar(0, 0, 0);
+                updateSelectionToolbar(0, 0, 0, 0);
             }
         });
         viewPager.setAdapter(pagerAdapter);
@@ -952,7 +952,8 @@ public class LibraryActivity extends BaseActivity {
     public void updateSelectionToolbar(
             long selectedTotalCount,
             long selectedLocalCount,
-            long selectedStreamedCount) {
+            long selectedStreamedCount,
+            long selectedEligibleExternalCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
         long selectedDownloadedCount = selectedLocalCount - selectedStreamedCount;
         long selectedExternalCount = selectedTotalCount - selectedLocalCount;
@@ -987,8 +988,8 @@ public class LibraryActivity extends BaseActivity {
             mergeMenu.setVisible(
                     (selectedLocalCount > 1 && 0 == selectedStreamedCount && 0 == selectedExternalCount)
                             || (selectedStreamedCount > 1 && 0 == selectedLocalCount && 0 == selectedExternalCount)
-                            || (selectedExternalCount > 1 && 0 == selectedLocalCount && 0 == selectedStreamedCount)
-            ); // Can only merge downloaded or streamed content together
+                            || (selectedExternalCount > 1 && 0 == selectedLocalCount && 0 == selectedStreamedCount && selectedEligibleExternalCount == selectedExternalCount)
+            ); // Can only merge downloaded, streamed or non-archive external content together
             splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         }
     }

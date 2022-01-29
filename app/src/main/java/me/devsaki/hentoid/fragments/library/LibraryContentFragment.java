@@ -1465,9 +1465,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
         } else {
-            long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
-            long selectedStreamedCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedStreamedCount);
+            List<Content> contentList = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+            long selectedLocalCount = Stream.of(contentList).map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
+            long selectedStreamedCount = Stream.of(contentList).map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
+            long selectedEligibleExternalCount = Stream.of(contentList).filter(c -> c.getStatus().equals(StatusContent.EXTERNAL) && !c.isArchive()).count();
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedStreamedCount, selectedEligibleExternalCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }

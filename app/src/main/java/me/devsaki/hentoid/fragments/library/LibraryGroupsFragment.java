@@ -795,7 +795,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             selectExtension.setSelectOnLongClick(true);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, 0);
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, 0, 0);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }
