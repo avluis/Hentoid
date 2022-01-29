@@ -45,6 +45,8 @@ public class ImageFile {
     // Temporary attributes during SAVED state only; no need to expose them for JSON persistence
     private String downloadParams = "";
 
+    // WARNING : Update copy constructor when adding attributes
+
 
     // Runtime attributes; no need to expose them nor to persist them
 
@@ -57,6 +59,9 @@ public class ImageFile {
     // Has the image been read from a backup URL ? (download-time only)
     @Transient
     private boolean isBackup = false;
+
+    // WARNING : Update copy constructor when adding attributes
+
 
     public ImageFile() { // Required by ObjectBox when an alternate constructor exists
     }
@@ -78,6 +83,7 @@ public class ImageFile {
         this.size = img.size;
         this.imageHash = img.imageHash;
         this.downloadParams = img.downloadParams;
+
         this.displayOrder = img.displayOrder;
         this.backupUrl = img.backupUrl;
         this.isBackup = img.isBackup;
