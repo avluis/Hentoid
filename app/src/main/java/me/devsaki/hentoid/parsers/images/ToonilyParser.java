@@ -129,8 +129,9 @@ public class ToonilyParser extends BaseImageListParser {
         }
         progressComplete();
 
-        // Add cover
-        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
+        // Add cover if it's a first download
+        if (storedChapters.isEmpty())
+            result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();
