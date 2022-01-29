@@ -193,7 +193,8 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
                 do {
                     polled = false;
                     Long earliestRequestTimestamp = previousRequestsTimestamps.peek();
-                    if (null != earliestRequestTimestamp && now - earliestRequestTimestamp > 1000) {
+                    if (null == earliestRequestTimestamp) break; // Empty collection
+                    if (now - earliestRequestTimestamp > 1000) {
                         previousRequestsTimestamps.poll();
                         polled = true;
                     }
