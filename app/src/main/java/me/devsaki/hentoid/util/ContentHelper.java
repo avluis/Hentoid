@@ -441,7 +441,7 @@ public final class ContentHelper {
                                     group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
                                     group.setSubtype(a.getType().equals(AttributeType.ARTIST) ? Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS : Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS);
                                     if (!a.contents.isEmpty())
-                                        group.picture.setTarget(a.contents.get(0).getCover());
+                                        group.coverContent.setTarget(a.contents.get(0));
                                 }
                                 GroupHelper.addContentToAttributeGroup(dao, group, a, content);
                             }

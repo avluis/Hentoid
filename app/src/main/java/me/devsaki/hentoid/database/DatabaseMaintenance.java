@@ -52,6 +52,7 @@ public class DatabaseMaintenance {
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
         result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeReadingProgress));
+        result.add(createObservableFrom(context, DatabaseMaintenance::reattachGroupCovers));
         return result;
     }
 
@@ -355,7 +356,7 @@ public class DatabaseMaintenance {
                         Group group = new Group(Grouping.ARTIST, a.getName(), order++);
                         group.setSubtype(a.getType().equals(AttributeType.ARTIST) ? Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS : Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS);
                         if (!a.contents.isEmpty())
-                            group.picture.setTarget(a.contents.get(0).getCover());
+                            group.coverContent.setTarget(a.contents.get(0));
                         bookInsertCount += a.contents.size();
 
                         toInsert.add(new ImmutableTriple<>(group, a, Stream.of(a.contents).map(Content::getId).toList()));
@@ -426,6 +427,30 @@ public class DatabaseMaintenance {
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Computing downloaded content read progress : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void reattachGroupCovers(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Compute missing downloaded Content size according to underlying ImageFile sizes
+            Timber.i("Reattaching group covers : start");
+            List<Group> groups = db.selecGroupsWithNoCoverContent();
+            Timber.i("Reattaching group covers : %s groups detected", groups.size());
+            int max = groups.size();
+            float pos = 1;
+            for (Group g : groups) {
+                List<Long> contentIds = g.getContentIds();
+                if (!contentIds.isEmpty()) {
+                    g.coverContent.setTargetId(contentIds.get(0));
+                    db.insertGroup(g);
+                }
+                emitter.onNext(pos++ / max);
+            }
+            Timber.i("Reattaching group covers : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

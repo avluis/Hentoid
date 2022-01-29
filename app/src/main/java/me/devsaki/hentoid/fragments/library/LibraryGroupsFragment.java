@@ -143,7 +143,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         @Override
         public boolean areContentsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
-            return oldItem.getGroup().picture.getTargetId() == newItem.getGroup().picture.getTargetId()
+            return oldItem.getGroup().coverContent.getTargetId() == newItem.getGroup().coverContent.getTargetId()
                     && oldItem.getGroup().isFavourite() == newItem.getGroup().isFavourite()
                     && oldItem.getGroup().items.size() == newItem.getGroup().items.size();
         }
@@ -152,8 +152,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         public @org.jetbrains.annotations.Nullable Object getChangePayload(GroupDisplayItem oldItem, int oldPos, GroupDisplayItem newItem, int newPos) {
             GroupItemBundle.Builder diffBundleBuilder = new GroupItemBundle.Builder();
 
-            if (!newItem.getGroup().picture.isNull() && oldItem.getGroup().picture.getTargetId() != newItem.getGroup().picture.getTargetId()) {
-                diffBundleBuilder.setCoverUri(newItem.getGroup().picture.getTarget().getUsableUri());
+            if (!newItem.getGroup().coverContent.isNull() && oldItem.getGroup().coverContent.getTargetId() != newItem.getGroup().coverContent.getTargetId()) {
+                diffBundleBuilder.setCoverUri(newItem.getGroup().coverContent.getTarget().getCover().getUsableUri());
             }
             if (oldItem.getGroup().isFavourite() != newItem.getGroup().isFavourite()) {
                 diffBundleBuilder.setFavourite(newItem.getGroup().isFavourite());

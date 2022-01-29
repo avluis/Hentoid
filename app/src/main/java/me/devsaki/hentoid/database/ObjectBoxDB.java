@@ -1508,6 +1508,10 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.readProgress).build().find();
     }
 
+    List<Group> selecGroupsWithNoCoverContent() {
+        return store.boxFor(Group.class).query().isNull(Group_.coverContentId).build().find();
+    }
+
     List<Content> selectContentWithNullCompleteField() {
         return store.boxFor(Content.class).query().isNull(Content_.completed).build().find();
     }

@@ -867,6 +867,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (selectedItems.isEmpty()) return;
 
         Content content = Stream.of(selectedItems).findFirst().get().getContent();
+        if (null == content) return;
 
         new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                 .setCancelable(false)
@@ -875,7 +876,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            viewModel.setGroupCover(group.id, content.getCover());
+                            viewModel.setGroupCoverContent(group.id, content);
                             leaveSelectionMode();
                         })
                 .setNegativeButton(R.string.no,
