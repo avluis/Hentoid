@@ -236,8 +236,9 @@ public class ImageFile {
         return this;
     }
 
-    public void setContentId(long contentId) {
+    public ImageFile setContentId(long contentId) {
         this.content.setTargetId(contentId);
+        return this;
     }
 
     public long getSize() {

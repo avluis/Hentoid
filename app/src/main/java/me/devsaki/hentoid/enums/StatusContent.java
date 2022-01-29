@@ -18,7 +18,7 @@ public enum StatusContent {
     IGNORED(6, "Ignored"), // Transient status set by the web parser to indicate a content page that cannot be parsed
     UNHANDLED_ERROR(7, "Unhandled Error"), // Default status for image files
     CANCELED(8, "Canceled"), // Unused value; kept for retrocompatibility
-    ONLINE(9, "Online"), // Used for ImageFiles only : image can be viewed on-demand (streamed content)
+    ONLINE(9, "Online"), // Used for ImageFiles only : image can be viewed on-demand (streamed content; undownloaded covers)
     EXTERNAL(10, "External"); // Content is accessible in the external library
 
     private final int code;
