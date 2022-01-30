@@ -286,10 +286,24 @@ public class ParseHelper {
         return result;
     }
 
-    public static void signalProgress(long contentId, long storedId, int current, int max) {
-        EventBus.getDefault().post(new DownloadPreparationEvent(contentId, storedId, current, max));
+    /**
+     * Signal download preparation event for the given processed elements
+     *
+     * @param contentId   Online content ID being processed
+     * @param storedId    Stored content ID being processed
+     * @param currentStep Current processing step
+     * @param maxSteps    Maximum processing step
+     */
+    public static void signalProgress(long contentId, long storedId, int currentStep, int maxSteps) {
+        EventBus.getDefault().post(new DownloadPreparationEvent(contentId, storedId, currentStep, maxSteps));
     }
 
+    /**
+     * Extract the cookie string, if it exists, from the given download parameters
+     *
+     * @param downloadParams Download parameters to extract the cookie string from
+     * @return Cookie string, if any in the given download parameters; empty string if none
+     */
     public static String getSavedCookieStr(String downloadParams) {
         Map<String, String> downloadParamsMap = ContentHelper.parseDownloadParams(downloadParams);
         if (downloadParamsMap.containsKey(HttpHelper.HEADER_COOKIE_KEY))
@@ -298,13 +312,25 @@ public class ParseHelper {
         return "";
     }
 
+    /**
+     * Copy the cookie string, if it exists, from the given download parameters to the given HTTP headers
+     *
+     * @param downloadParams Download parameters to extract the cookie string from
+     * @param headers        HTTP headers to copy the cookie string to, if it exists
+     */
     public static void addSavedCookiesToHeader(String downloadParams, @NonNull List<Pair<String, String>> headers) {
         String cookieStr = getSavedCookieStr(downloadParams);
         if (!cookieStr.isEmpty())
             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
     }
 
-    // Save download params for future use during download
+    /**
+     * Save the given referrer and the relevant cookie string as download parameters
+     * to each image of the given list for future use during download
+     *
+     * @param imgs     List of images to save download params to
+     * @param referrer Referrer to set
+     */
     public static void setDownloadParams(@NonNull final List<ImageFile> imgs, @NonNull final String referrer) {
         Map<String, String> params = new HashMap<>();
         for (ImageFile img : imgs) {
@@ -316,8 +342,14 @@ public class ParseHelper {
         }
     }
 
-    // TODO doc
-    public static String getExtensionFromFormat(Map<String, String> imgFormat, int i) {
+    /**
+     * Get the image extension from the given ImHentai / Hentaifox format code
+     *
+     * @param imgFormat Format map provided by the site
+     * @param i         index to look up
+     * @return Image extension (without the dot), if found; empty string if not
+     */
+    public static String getExtensionFromFormat(@NonNull Map<String, String> imgFormat, int i) {
         String format = imgFormat.get((i + 1) + "");
         if (format != null) {
             switch (format.charAt(0)) {
@@ -333,10 +365,16 @@ public class ParseHelper {
         } else return "";
     }
 
+    /**
+     * Extract a list of Chapters from the given list of links, for the given Content ID
+     *
+     * @param chapterLinks List of HTML links to extract Chapters from
+     * @param contentId    Content ID to associate with all extracted Chapters
+     * @return Chapters detected from the given list of links, associated with the given Content ID
+     */
     public static List<Chapter> getChaptersFromLinks(@NonNull List<Element> chapterLinks, long contentId) {
         List<Chapter> result = new ArrayList<>();
         Set<String> urls = new HashSet<>();
-
 
         // First extract data and filter URL duplicates
         List<Pair<String, String>> chapterData = new ArrayList<>();
@@ -364,11 +402,19 @@ public class ParseHelper {
         return result;
     }
 
+    /**
+     * Extract the last useful part of the path of the given URL
+     * e.g. if the url is "http://aa.com/look/at/me" or "http://aa.com/look/at/me/", the result will be "me"
+     *
+     * @param url URL to extract from
+     * @return Last useful part of the path of the given URL
+     */
     private static String getLastPathPart(@NonNull final String url) {
         String[] parts = url.split("/");
         return (parts[parts.length - 1].isEmpty()) ? parts[parts.length - 2] : parts[parts.length - 1];
     }
 
+    // TODO doc
     public static List<Chapter> getExtraChaptersbyUrl(
             @NonNull List<Chapter> storedChapters,
             @NonNull List<Chapter> detectedChapters
@@ -389,6 +435,7 @@ public class ParseHelper {
         return Stream.of(result).sortBy(Chapter::getOrder).toList();
     }
 
+    // TODO doc
     public static List<String> getExtraChaptersbyId(
             @NonNull List<Chapter> storedChapters,
             @NonNull List<String> detectedIds
@@ -405,6 +452,7 @@ public class ParseHelper {
         return result;
     }
 
+    // TODO doc
     public static int getMaxImageOrder(@NonNull List<Chapter> storedChapters) {
         if (!storedChapters.isEmpty()) {
             Optional<Integer> optOrder = Stream.of(storedChapters)
@@ -418,6 +466,7 @@ public class ParseHelper {
         return 0;
     }
 
+    // TODO doc
     public static int getMaxChapterOrder(@NonNull List<Chapter> storedChapters) {
         if (!storedChapters.isEmpty()) {
             Optional<Integer> optOrder = Stream.of(storedChapters)
@@ -429,6 +478,12 @@ public class ParseHelper {
         return 0;
     }
 
+    /**
+     * Extract the image URL from the given HTML element
+     *
+     * @param e HTML element to extract the URL from
+     * @return Image URL contained in the given HTML element
+     */
     public static String getImgSrc(Element e) {
         String result = e.attr("data-src").trim();
         if (result.isEmpty()) result = e.attr("data-lazy-src").trim();
