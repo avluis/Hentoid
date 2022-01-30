@@ -100,6 +100,9 @@ public class ParseHelper {
         return s;
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static void parseAttributes(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
@@ -110,6 +113,9 @@ public class ParseHelper {
             for (Element a : elements) parseAttribute(map, type, a, removeTrailingNumbers, site);
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static void parseAttributes(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
@@ -122,15 +128,21 @@ public class ParseHelper {
                 parseAttribute(map, type, a, removeTrailingNumbers, childElementClass, site);
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static void parseAttribute(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
             @NonNull Element element,
             boolean removeTrailingNumbers,
             @NonNull Site site) {
-        parseAttribute(map, type, element, removeTrailingNumbers, null, site, "");
+        parseAttribute(element, map, type, site, "", removeTrailingNumbers, null);
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static void parseAttribute(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
@@ -138,17 +150,26 @@ public class ParseHelper {
             boolean removeTrailingNumbers,
             @NonNull String childElementClass,
             @NonNull Site site) {
-        parseAttribute(map, type, element, removeTrailingNumbers, childElementClass, site, "");
+        parseAttribute(element, map, type, site, "", removeTrailingNumbers, childElementClass);
     }
 
+    /**
+     * Extract Attributes from the given Element and put them into the given AttributeMap,
+     * using the given properties
+     *
+     * @param element               Element to parse Attributes from
+     * @param map                   Output map where the detected attributes will be put
+     * @param type                  AttributeType to give to the detected Attributes
+     * @param site                  Site to give to the detected Attributes
+     * @param prefix                If set, detected attributes will have this prefix added to their name
+     * @param removeTrailingNumbers If true trailing numbers will be removed from the attribute name
+     * @param childElementClass     If set, the parser will look for sub-elements of the given class
+     */
     public static void parseAttribute(
-            @NonNull AttributeMap map,
+            @NonNull Element element, @NonNull AttributeMap map,
             @NonNull AttributeType type,
-            @NonNull Element element,
-            boolean removeTrailingNumbers,
-            @Nullable String childElementClass,
-            @NonNull Site site,
-            @NonNull final String prefix) {
+            @NonNull Site site, @NonNull final String prefix, boolean removeTrailingNumbers,
+            @Nullable String childElementClass) {
         String name;
         if (null == childElementClass) {
             name = element.ownText();
