@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.objectbox.relation.ToOne;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -77,7 +78,7 @@ import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
@@ -312,8 +313,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private String getStartUrl() {
         // Priority 1 : URL specifically given to the activity (e.g. "view source" action)
         if (getIntent().getExtras() != null) {
-            BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
-            String intentUrl = parser.getUrl();
+            BaseWebActivityBundle bundle = new BaseWebActivityBundle(getIntent().getExtras());
+            String intentUrl = StringHelper.protect(bundle.getUrl());
             if (!intentUrl.isEmpty()) return intentUrl;
         }
 
@@ -397,9 +398,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
-        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-        builder.setUrl(webView.getUrl());
-        outState.putAll(builder.getBundle());
+        BaseWebActivityBundle bundle = new BaseWebActivityBundle();
+        bundle.setUrl(webView.getUrl());
+        outState.putAll(bundle.toBundle());
     }
 
     @Override
@@ -408,7 +409,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
-        String url = new BaseWebActivityBundle.Parser(savedInstanceState).getUrl();
+        String url = new BaseWebActivityBundle(savedInstanceState).getUrl();
         if (url != null && !url.isEmpty())
             webView.loadUrl(url);
     }
@@ -872,7 +873,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         if (isDownloadPlus) {
-            // Copy the _current_ content's download params to the images
+            // Copy the _current_ content's download params to the extra images
             String downloadParamsStr = currentContent.getDownloadParams();
             if (downloadParamsStr != null && downloadParamsStr.length() > 2) {
                 for (ImageFile i : extraImages) i.setDownloadParams(downloadParamsStr);
@@ -884,19 +885,39 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 if (null == currentContent) return;
             }
 
-            // Append additional pages to the base book's list of pages
+            // Append additional pages & chapters to the base book's list of pages & chapters
             List<ImageFile> updatedImgs = new ArrayList<>(); // Entire image set to update
-            Set<String> existingUrls = new HashSet<>(); // URLs of known images
+            Set<String> existingImageUrls = new HashSet<>(); // URLs of known images
+            Set<Integer> existingChapterOrders = new HashSet<>(); // Positions of known chapters
             if (currentContent.getImageFiles() != null) {
-                existingUrls.addAll(Stream.of(currentContent.getImageFiles()).map(ImageFile::getUrl).toList());
+                existingImageUrls.addAll(Stream.of(currentContent.getImageFiles()).map(ImageFile::getUrl).toList());
+                existingChapterOrders.addAll(Stream.of(currentContent.getImageFiles()).map(i -> {
+                    if (null == i.getChapter()) return -1;
+                    if (null == i.getChapter().getTarget()) return -1;
+                    return i.getChapter().getTarget().getOrder();
+                }).toList());
                 updatedImgs.addAll(currentContent.getImageFiles());
             }
 
-            // Save additional detected pages references to base book, without duplicate URLs
-            List<ImageFile> additionalNonExistingImages = Stream.of(extraImages).filterNot(i -> existingUrls.contains(i.getUrl())).toList();
+            // Save additional pages references to stored book, without duplicate URLs
+            List<ImageFile> additionalNonExistingImages = Stream.of(extraImages).filterNot(i -> existingImageUrls.contains(i.getUrl())).toList();
             if (!additionalNonExistingImages.isEmpty()) {
                 updatedImgs.addAll(additionalNonExistingImages);
                 currentContent.setImageFiles(updatedImgs);
+            }
+            // Save additional chapters to stored book
+            List<Chapter> additionalNonExistingChapters = Stream.of(additionalNonExistingImages)
+                    .map(ImageFile::getChapter).withoutNulls()
+                    .map(ToOne::getTarget).withoutNulls()
+                    .filterNot(c -> existingChapterOrders.contains(c.getOrder())).toList();
+            if (!additionalNonExistingChapters.isEmpty()) {
+                List<Chapter> updatedChapters;
+                if (currentContent.getChapters() != null)
+                    updatedChapters = new ArrayList<>(currentContent.getChapters());
+                else
+                    updatedChapters = new ArrayList<>();
+                updatedChapters.addAll(additionalNonExistingChapters);
+                currentContent.setChapters(updatedChapters);
             }
 
             currentContent.setStatus(StatusContent.SAVED);
@@ -1150,9 +1171,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 positionMap.put(img.getOrder(), img.getLinkedChapter());
         }
 
+        // Attach chapters to stored images if they don't have any (old downloads made with versions of the app that didn't detect chapters)
         List<Chapter> storedChapters = storedContent.getChapters();
         if (!positionMap.isEmpty() && minOnlineImageOrder < maxStoredImageOrder && (null == storedChapters || storedChapters.isEmpty())) {
-            // Attach chapters to stored images
             List<ImageFile> storedImages = storedContent.getImageFiles();
             if (null == storedImages) storedImages = Collections.emptyList();
             for (ImageFile img : storedImages) {
@@ -1287,9 +1308,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private void onSettingsClick() {
         Intent intent = new Intent(this, PrefsActivity.class);
 
-        PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
-        builder.setIsBrowserPrefs(true);
-        intent.putExtras(builder.getBundle());
+        PrefsBundle prefsBundle = new PrefsBundle();
+        prefsBundle.setBrowserPrefs(true);
+        intent.putExtras(prefsBundle.toBundle());
 
         startActivity(intent);
     }

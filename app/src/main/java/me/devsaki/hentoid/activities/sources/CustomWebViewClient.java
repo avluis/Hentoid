@@ -502,7 +502,7 @@ class CustomWebViewClient extends WebViewClient {
                     targetUrl = StringHelper.protect(response.header("Location"));
                 if (BuildConfig.DEBUG)
                     Timber.v("WebView : redirection from %s to %s", urlStr, targetUrl);
-                if (!targetUrl.isEmpty()) browserLoad(targetUrl);
+                if (!targetUrl.isEmpty()) browserLoad(HttpHelper.fixUrl(targetUrl, site.getUrl()));
                 return null;
             }
 

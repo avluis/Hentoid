@@ -86,9 +86,9 @@ public class HbrowseContent extends BaseContentParser {
     private void addAttribute(@NonNull final Element metaContent, @NonNull AttributeMap attributes, @NonNull AttributeType type, @NonNull final String prefix) {
         if (!metaContent.children().isEmpty()) {
             List<Element> links = metaContent.select("a");
-            if (links != null && !links.isEmpty())
+            if (!links.isEmpty())
                 for (Element e : links)
-                    ParseHelper.parseAttribute(attributes, type, e, false, null, Site.HBROWSE, prefix);
+                    ParseHelper.parseAttribute(e, attributes, type, Site.HBROWSE, prefix, false, null);
         } else
             attributes.add(new Attribute(type, prefix.isEmpty() ? "" : prefix + ":" + metaContent.childNode(0).toString(), metaContent.childNode(0).toString(), Site.HBROWSE));
     }

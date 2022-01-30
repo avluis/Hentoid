@@ -190,15 +190,16 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             }
 
             if (ivCover != null) {
-                ImageFile cover = null;
-                if (!item.group.picture.isNull()) cover = item.group.picture.getTarget();
+                Content coverContent = null;
+                if (!item.group.coverContent.isNull())
+                    coverContent = item.group.coverContent.getTarget();
                 else if (!item.group.items.isEmpty()) {
                     if (item.group.items.get(0).content.isResolved()) {
                         Content c = item.group.items.get(0).content.getTarget();
-                        if (c != null) cover = c.getCover();
+                        if (c != null) coverContent = c;
                     }
                 }
-                if (cover != null) attachCover(cover);
+                if (coverContent != null) attachCover(coverContent.getCover());
             }
             List<GroupItem> items = item.group.items;
             title.setText(String.format("%s%s", item.group.name, (null == items || items.isEmpty()) ? "" : " (" + items.size() + ")"));

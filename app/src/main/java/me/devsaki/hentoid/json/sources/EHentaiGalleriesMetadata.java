@@ -71,6 +71,9 @@ public class EHentaiGalleriesMetadata {
                         case "artist":
                             type = AttributeType.ARTIST;
                             break;
+                        case "group":
+                            type = AttributeType.CIRCLE;
+                            break;
                         default:
                             type = AttributeType.TAG;
                             name = s;

@@ -62,11 +62,10 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
@@ -965,9 +964,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void onSettingsClick() {
         Intent intent = new Intent(requireActivity(), PrefsActivity.class);
 
-        PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
-        builder.setIsDownloaderPrefs(true);
-        intent.putExtras(builder.getBundle());
+        PrefsBundle prefsBundle = new PrefsBundle();
+        prefsBundle.setDownloaderPrefs(true);
+        intent.putExtras(prefsBundle.toBundle());
 
         requireContext().startActivity(intent);
     }

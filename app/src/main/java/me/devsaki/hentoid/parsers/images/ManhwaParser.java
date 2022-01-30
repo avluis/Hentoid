@@ -83,7 +83,6 @@ public class ManhwaParser extends BaseImageListParser {
             );
             if (doc != null) {
                 List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
-                Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
                 chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
             } else {
                 reason = "Chapters page couldn't be downloaded @ " + canonicalUrl;
@@ -123,7 +122,7 @@ public class ManhwaParser extends BaseImageListParser {
                     if (!url.isEmpty()) urls.add(url);
                 }
                 if (!urls.isEmpty())
-                    result.addAll(ParseHelper.urlsToImageFiles(urls, imgOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                    result.addAll(ParseHelper.urlsToImageFiles(urls, imgOffset + result.size() + 1, StatusContent.SAVED, 1000, chp));
                 else
                     Timber.w("Chapter parsing failed for %s : no pictures found", chp.getUrl());
             } else {
@@ -133,8 +132,9 @@ public class ManhwaParser extends BaseImageListParser {
         }
         progressComplete();
 
-        // Add cover
-        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
+        // Add cover if it's a first download
+        if (storedChapters.isEmpty())
+            result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();

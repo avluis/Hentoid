@@ -35,7 +35,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.15.19'
+        versionName '1.15.20'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -75,7 +75,9 @@ android {
         }
     }
     packagingOptions {
-        exclude 'META-INF/rxjava.properties'
+        resources {
+            excludes += ['META-INF/rxjava.properties']
+        }
     }
     testOptions {
         unitTests.includeAndroidResources = true
@@ -111,7 +113,7 @@ dependencies {
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0-beta01'
+    implementation 'com.google.android.material:material:1.6.0-alpha02'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     implementation 'androidx.paging:paging-runtime:2.1.2'
@@ -232,7 +234,7 @@ dependencies {
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
-    def objectbox_version = "3.0.1"
+    def objectbox_version = "3.1.1"
     if (includeObjectBoxBrowser.toBoolean()) {
         debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
         releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"

@@ -70,7 +70,10 @@ public class AppStartup {
             @NonNull Consumer<Float> onSecondaryProgress,
             @NonNull Runnable onComplete
     ) {
-        if (isInitialized) onComplete.run();
+        if (isInitialized) {
+            onComplete.run();
+            return;
+        }
 
         // Wait until pre-launch tasks are completed
         launchTasks = getPreLaunchTasks(context);

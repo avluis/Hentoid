@@ -4,6 +4,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -17,6 +18,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.BiConsumer;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
@@ -45,9 +47,12 @@ public class DatabaseMaintenance {
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot1));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot2));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot3));
+        result.add(createObservableFrom(context, DatabaseMaintenance::cleanPropertiesOneShot4));
+        result.add(createObservableFrom(context, DatabaseMaintenance::renameEmptyChapters));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeContentSize));
         result.add(createObservableFrom(context, DatabaseMaintenance::createGroups));
         result.add(createObservableFrom(context, DatabaseMaintenance::computeReadingProgress));
+        result.add(createObservableFrom(context, DatabaseMaintenance::reattachGroupCovers));
         return result;
     }
 
@@ -196,6 +201,61 @@ public class DatabaseMaintenance {
         }
     }
 
+    private static void cleanPropertiesOneShot4(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Update URLs from deprecated Hitomi image covers
+            Timber.i("Fixing M18 covers : start");
+            List<Content> contents = db.selectDownloadedM18Books();
+            contents = Stream.of(contents).filter(DatabaseMaintenance::isM18WrongCover).toList();
+            Timber.i("Fixing M18 covers : %s books detected", contents.size());
+            int max = contents.size();
+            float pos = 1;
+            for (Content c : contents) {
+                List<ImageFile> images = c.getImageFiles();
+                if (null != images) {
+                    ImageFile newCover = ImageFile.newCover(c.getCoverImageUrl(), StatusContent.ONLINE).setContentId(c.getId());
+                    images.add(0, newCover);
+                    images.get(1).setIsCover(false);
+                    db.insertImageFiles(images);
+                }
+                emitter.onNext(pos++ / max);
+            }
+            Timber.i("Fixing M18 covers : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static boolean isM18WrongCover(@NonNull Content c) {
+        List<ImageFile> images = c.getImageFiles();
+        if (null == images || images.isEmpty()) return false;
+        Optional<ImageFile> cover = Stream.of(images).filter(ImageFile::isCover).findFirst();
+        return (cover.isEmpty() || (cover.get().getOrder() == 1 && !cover.get().getUrl().equals(c.getCoverImageUrl())));
+    }
+
+    private static void renameEmptyChapters(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Update URLs from deprecated Hitomi image covers
+            Timber.i("Empying empty chapters : start");
+            List<Chapter> chapters = db.selecChaptersEmptyName();
+            Timber.i("Empying empty chapters : %s chapters detected", chapters.size());
+            int max = chapters.size();
+            float pos = 1;
+            for (Chapter c : chapters) {
+                c.setName("Chapter " + (c.getOrder() + 1)); // 0-indexed
+                emitter.onNext(pos++ / max);
+            }
+            db.insertChapters(chapters);
+            Timber.i("Empying empty chapters : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
     private static void cleanBookmarksOneShot(@NonNull final Context context, ObservableEmitter<Float> emitter) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         try {
@@ -296,7 +356,7 @@ public class DatabaseMaintenance {
                         Group group = new Group(Grouping.ARTIST, a.getName(), order++);
                         group.setSubtype(a.getType().equals(AttributeType.ARTIST) ? Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS : Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS);
                         if (!a.contents.isEmpty())
-                            group.picture.setTarget(a.contents.get(0).getCover());
+                            group.coverContent.setTarget(a.contents.get(0));
                         bookInsertCount += a.contents.size();
 
                         toInsert.add(new ImmutableTriple<>(group, a, Stream.of(a.contents).map(Content::getId).toList()));
@@ -367,6 +427,30 @@ public class DatabaseMaintenance {
                 emitter.onNext(pos++ / max);
             }
             Timber.i("Computing downloaded content read progress : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void reattachGroupCovers(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Compute missing downloaded Content size according to underlying ImageFile sizes
+            Timber.i("Reattaching group covers : start");
+            List<Group> groups = db.selecGroupsWithNoCoverContent();
+            Timber.i("Reattaching group covers : %s groups detected", groups.size());
+            int max = groups.size();
+            float pos = 1;
+            for (Group g : groups) {
+                List<Long> contentIds = g.getContentIds();
+                if (!contentIds.isEmpty()) {
+                    g.coverContent.setTargetId(contentIds.get(0));
+                    db.insertGroup(g);
+                }
+                emitter.onNext(pos++ / max);
+            }
+            Timber.i("Reattaching group covers : done");
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

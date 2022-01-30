@@ -29,6 +29,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.HitomiBackgroundWebView;
 import okhttp3.Response;
@@ -90,7 +91,11 @@ public class HitomiParser extends BaseImageListParser {
         } while (!done.get() && !processHalted.get() && remainingIterations-- > 0);
         if (processHalted.get()) return result;
 
-        String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
+        String jsResult = imagesStr.get();
+        if (null == jsResult)
+            throw new EmptyResultException("Unable to detect pages (empty result)");
+
+        jsResult = jsResult.replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
         List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
         if (imageUrls != null && !imageUrls.isEmpty()) {
             onlineContent.setCoverImageUrl(imageUrls.get(0));

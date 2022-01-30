@@ -867,6 +867,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (selectedItems.isEmpty()) return;
 
         Content content = Stream.of(selectedItems).findFirst().get().getContent();
+        if (null == content) return;
 
         new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                 .setCancelable(false)
@@ -875,7 +876,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 .setPositiveButton(R.string.yes,
                         (dialog1, which) -> {
                             dialog1.dismiss();
-                            viewModel.setGroupCover(group.id, content.getCover());
+                            viewModel.setGroupCoverContent(group.id, content);
                             leaveSelectionMode();
                         })
                 .setNegativeButton(R.string.no,
@@ -1465,9 +1466,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
             selectExtension.setSelectOnLongClick(true);
         } else {
-            long selectedLocalCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
-            long selectedStreamedCount = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedStreamedCount);
+            List<Content> contentList = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+            long selectedLocalCount = Stream.of(contentList).map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
+            long selectedStreamedCount = Stream.of(contentList).map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
+            long selectedEligibleExternalCount = Stream.of(contentList).filter(c -> c.getStatus().equals(StatusContent.EXTERNAL) && !c.isArchive()).count();
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedStreamedCount, selectedEligibleExternalCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }
