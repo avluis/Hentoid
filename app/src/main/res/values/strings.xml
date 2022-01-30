@@ -50,6 +50,7 @@
     <string name="api29_migration_step3">Scan library (%1$d / %2$d)</string>
     <string name="api29_migration_step4_init">Importing queue…</string>
     <string name="api29_migration_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
+    <string name="api29_migration_allow_write">Please allow write permission</string>
 
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>

@@ -1051,7 +1051,7 @@ public class LibraryActivity extends BaseActivity {
         if (nbGroups > 0)
             msg += getResources().getQuantityString(R.plurals.delete_success_groups, nbGroups, nbGroups);
         if (nbContent > 0) {
-            if (!msg.isEmpty()) msg += " and ";
+            if (!msg.isEmpty()) msg += " & ";
             msg += getResources().getQuantityString(R.plurals.delete_success_books, nbContent, nbContent);
         }
         msg += " " + getResources().getString(R.string.delete_success);
