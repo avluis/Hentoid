@@ -38,11 +38,10 @@
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/merge_delete_switch"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:paddingStart="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title_new"
-        android:text="@string/merge_delete_after_merging"/>
+        android:text="@string/merge_delete_after_merging"
+        app:layout_constraintTop_toBottomOf="@id/title_new" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/action_button"
