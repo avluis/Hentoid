@@ -573,7 +573,7 @@ public class FileHelper {
                 openFileWithIntent(context, uri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(fileName)));
         } catch (ActivityNotFoundException e) {
             Timber.e(e, "No activity found to open %s", uri.toString());
-            ToastHelper.toast(context, R.string.error_open, Toast.LENGTH_LONG);
+            ToastHelper.toastLong(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
 

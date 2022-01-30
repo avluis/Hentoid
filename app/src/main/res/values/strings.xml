@@ -46,6 +46,7 @@
     <string name="api29_migration_step3_init">Library scan starting…</string>
     <string name="api29_migration_step3">Scan library (%1$d / %2$d)</string>
     <string name="api29_migration_step4_init">Importing queue…</string>
+    <string name="api29_migration_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
 
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
@@ -501,6 +502,8 @@
     <string name="bookmark_toggle_welcome">Toggle bookmark URL as welcome page</string>
     <string name="alert_unwanted_tags">This book is tagged with %s</string>
     <string name="bookmark_homepage">Homepage</string>
+    <string name="torrent_dl_fail">Downloading torrent failed : %s</string>
+    <string name="web_storage_permission_denied">Storage permission denied - cannot use the downloader</string>
     <!-- Web browser (site specifics) -->
     <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
     <string name="help_web_fakku_premium">That book can\'t be viewed with your current Fakku access.</string>
@@ -586,6 +589,13 @@
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
     <string name="renaming_progress">Renaming files…</string>
+    <string name="storage_permission_denied">Storage permission denied - cannot open the viewer</string>
+    <string name="book_list_loading_failed">Book list loading failed</string>
+    <string name="chapter_toggle_failed">Couldn\'t toggle chapter at page %d</string>
+    <string name="chapters_remove_failed">Couldn\'t remove chapters</string>
+    <string name="chapter_move_failed">Couldn\'t move chapter</string>
+    <string name="slideshow_start">Starting slideshow (delay %.1fs)</string>
+    <string name="slideshow_stop">Slideshow stopped</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>

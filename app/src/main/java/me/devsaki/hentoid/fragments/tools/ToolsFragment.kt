@@ -92,12 +92,12 @@ class ToolsFragment : PreferenceFragmentCompat() {
             }
             CLEAR_BROWSER_CACHE -> {
                 context?.clearWebviewCache()
-                ToastHelper.toast("Webview cache successfuly cleared")
+                ToastHelper.toast(R.string.tools_cache_browser_success)
                 true
             }
             CLEAR_APP_CACHE -> {
                 context?.clearAppCache()
-                ToastHelper.toast("App cache successfuly cleared")
+                ToastHelper.toast(R.string.tools_cache_app_success)
                 true
             }
             ACCESS_LATEST_LOGS -> {

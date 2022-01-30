@@ -526,7 +526,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
                 }
             } else { // Create/remove chapter
-                viewModel.createRemoveChapter(img, t -> ToastHelper.toast("Couldn't toggle chapter at page " + img.getOrder()));
+                viewModel.createRemoveChapter(img, t -> ToastHelper.toast(R.string.chapter_toggle_failed, img.getOrder()));
             }
             return true;
         }
@@ -671,7 +671,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
      * Strip all chapters from the current content
      */
     private void stripChapters() {
-        viewModel.stripChapters(t -> ToastHelper.toast("Couldn't remove chapters"));
+        viewModel.stripChapters(t -> ToastHelper.toast(R.string.chapters_remove_failed));
     }
 
     @Override
@@ -689,7 +689,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     private void onChapterMoveError(Throwable t) {
         Timber.e(t);
-        Snackbar.make(recyclerView, "Failed moving chapter", BaseTransientBottomBar.LENGTH_LONG).show();
+        Snackbar.make(recyclerView, R.string.chapter_move_failed, BaseTransientBottomBar.LENGTH_LONG).show();
     }
 
 

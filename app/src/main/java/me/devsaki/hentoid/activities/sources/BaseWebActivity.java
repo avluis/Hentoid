@@ -476,7 +476,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // TODO find something better than that
     private void checkPermissions() {
         if (!PermissionHelper.requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
-            ToastHelper.toast("Storage permission denied - cannot use the downloader");
+            ToastHelper.toast(R.string.web_storage_permission_denied);
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -928,14 +928,14 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         List<String> blockedTagsLocal = ContentHelper.getBlockedTags(currentContent);
         if (!blockedTagsLocal.isEmpty()) {
             if (Preferences.getTagBlockingBehaviour() == Preferences.Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE) { // Stop right here
-                ToastHelper.toast(getResources().getString(R.string.blocked_tag, blockedTagsLocal.get(0)));
+                ToastHelper.toast(R.string.blocked_tag, blockedTagsLocal.get(0));
             } else { // Insert directly as an error
                 List<ErrorRecord> errors = new ArrayList<>();
                 errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tags : " + TextUtils.join(", ", blockedTagsLocal), Instant.now()));
                 currentContent.setErrorLog(errors);
                 currentContent.setStatus(StatusContent.ERROR);
                 dao.insertContent(currentContent);
-                ToastHelper.toast(getResources().getString(R.string.blocked_tag_queued, blockedTagsLocal.get(0)));
+                ToastHelper.toast(R.string.blocked_tag_queued, blockedTagsLocal.get(0));
                 setActionMode(ActionMode.VIEW_QUEUE);
             }
             return;

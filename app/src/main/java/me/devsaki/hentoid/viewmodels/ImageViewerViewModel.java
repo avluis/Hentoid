@@ -210,7 +210,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 },
                 throwable -> {
                     Timber.w(throwable);
-                    ToastHelper.toast("Book list loading failed");
+                    ToastHelper.toast(R.string.book_list_loading_failed);
                 }
         );
     }
