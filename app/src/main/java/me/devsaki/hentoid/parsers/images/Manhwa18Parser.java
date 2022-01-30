@@ -72,7 +72,7 @@ public class Manhwa18Parser extends BaseImageListParser {
                 List<Element> images = doc.select("#chapter-content img");
                 List<String> imageUrls = Stream.of(images).map(ParseHelper::getImgSrc).toList();
                 if (!imageUrls.isEmpty())
-                    result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                    result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, 1000, chp));
                 else
                     Timber.i("Chapter parsing failed for %s : no pictures found", chp.getUrl());
             } else {

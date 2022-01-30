@@ -122,7 +122,7 @@ public class ManhwaParser extends BaseImageListParser {
                     if (!url.isEmpty()) urls.add(url);
                 }
                 if (!urls.isEmpty())
-                    result.addAll(ParseHelper.urlsToImageFiles(urls, imgOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                    result.addAll(ParseHelper.urlsToImageFiles(urls, imgOffset + result.size() + 1, StatusContent.SAVED, 1000, chp));
                 else
                     Timber.w("Chapter parsing failed for %s : no pictures found", chp.getUrl());
             } else {

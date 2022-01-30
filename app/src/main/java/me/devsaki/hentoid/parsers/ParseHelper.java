@@ -189,29 +189,9 @@ public class ParseHelper {
         map.add(attribute);
     }
 
-    public static ImageFile urlToImageFile(
-            @Nonnull String imgUrl,
-            int order,
-            int nbPages,
-            @NonNull final StatusContent status) {
-        return urlToImageFile(imgUrl, order, nbPages, status, null);
-    }
-
-    public static ImageFile urlToImageFile(
-            @Nonnull String imgUrl,
-            int order,
-            int maxPages,
-            @NonNull final StatusContent status,
-            final Chapter chapter) {
-        ImageFile result = new ImageFile();
-
-        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
-        result.setOrder(order).setUrl(imgUrl).setStatus(status).computeName(nbMaxDigits);
-        if (chapter != null) result.setChapter(chapter);
-
-        return result;
-    }
-
+    /**
+     * See definition of the main method below
+     */
     public static List<ImageFile> urlsToImageFiles(
             @Nonnull List<String> imgUrls,
             @NonNull String coverUrl,
@@ -220,6 +200,9 @@ public class ParseHelper {
         return urlsToImageFiles(imgUrls, coverUrl, status, null);
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static List<ImageFile> urlsToImageFiles(
             @Nonnull List<String> imgUrls,
             @NonNull String coverUrl,
@@ -229,17 +212,26 @@ public class ParseHelper {
         List<ImageFile> result = new ArrayList<>();
 
         result.add(ImageFile.newCover(coverUrl, status));
-        result.addAll(urlsToImageFiles(imgUrls, 1, status, chapter, imgUrls.size()));
+        result.addAll(urlsToImageFiles(imgUrls, 1, status, imgUrls.size(), chapter));
 
         return result;
     }
 
+    /**
+     * Build a list of ImageFiles using the given properties
+     *
+     * @param imgUrls        URLs of the images
+     * @param initialOrder   Order of the 1st image to be generated
+     * @param status         Status of the resulting ImageFiles
+     * @param totalBookPages Total number of pages of the corresponding book
+     * @param chapter        Chapter to link to the resulting ImageFiles (optional)
+     * @return List of ImageFiles built using all given arguments
+     */
     public static List<ImageFile> urlsToImageFiles(
             @Nonnull List<String> imgUrls,
             int initialOrder,
             @NonNull final StatusContent status,
-            final Chapter chapter,
-            int maxPages
+            int totalBookPages, final Chapter chapter
     ) {
         List<ImageFile> result = new ArrayList<>();
 
@@ -247,11 +239,52 @@ public class ParseHelper {
         // Remove duplicates before creationg the ImageFiles
         List<String> imgUrlsUnique = Stream.of(imgUrls).distinct().toList();
         for (String s : imgUrlsUnique)
-            result.add(urlToImageFile(s.trim(), order++, maxPages, status, chapter));
+            result.add(urlToImageFile(s.trim(), order++, totalBookPages, status, chapter));
 
         return result;
     }
 
+    /**
+     * Build an ImageFile using the given properties
+     *
+     * @param imgUrl         URL of the image
+     * @param order          Order of the image
+     * @param totalBookPages Total number of pages of the corresponding book
+     * @param status         Status of the resulting ImageFile
+     * @return ImageFile built using all given arguments
+     */
+    public static ImageFile urlToImageFile(
+            @Nonnull String imgUrl,
+            int order,
+            int totalBookPages,
+            @NonNull final StatusContent status) {
+        return urlToImageFile(imgUrl, order, totalBookPages, status, null);
+    }
+
+    /**
+     * Build an ImageFile using the given given properties
+     *
+     * @param imgUrl         URL of the image
+     * @param order          Order of the image
+     * @param totalBookPages Total number of pages of the corresponding book
+     * @param status         Status of the resulting ImageFile
+     * @param chapter        Chapter to link to the resulting ImageFile (optional)
+     * @return ImageFile built using all given arguments
+     */
+    public static ImageFile urlToImageFile(
+            @Nonnull String imgUrl,
+            int order,
+            int totalBookPages,
+            @NonNull final StatusContent status,
+            final Chapter chapter) {
+        ImageFile result = new ImageFile();
+
+        int nbMaxDigits = (int) (Math.floor(Math.log10(totalBookPages)) + 1);
+        result.setOrder(order).setUrl(imgUrl).setStatus(status).computeName(nbMaxDigits);
+        if (chapter != null) result.setChapter(chapter);
+
+        return result;
+    }
 
     public static void signalProgress(long contentId, long storedId, int current, int max) {
         EventBus.getDefault().post(new DownloadPreparationEvent(contentId, storedId, current, max));
