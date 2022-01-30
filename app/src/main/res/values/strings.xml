@@ -5,6 +5,7 @@
     <string name="app_intro">Welcome</string>
     <string name="yes">Yes</string> <!-- because Android default "OK" value for "yes" key is nonsense -->
     <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
+    <string name="ok">OK</string>
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="select_all">Select all</string>
@@ -23,6 +24,8 @@
     <string name="cancel_all">Cancel all</string>
     <string name="menu_completed_single">Completed</string>
     <string name="service_running">Service is already running</string>
+    <string name="open_folder">Open folder</string>
+    <string name="error">Error</string>
     <string name="empty" />
 
     <!-- Activities -->
@@ -80,6 +83,7 @@
     <string name="permissions_lost">File permissions have been lost</string>
     <string name="low_memory">Your device is low on memory !</string>
     <string name="fix_permissions">Fix</string>
+    <string name="view_queue">View queue</string>
 
     <!-- Queue / Downloader -->
     <string name="queue_queue_tab">In progress</string>
@@ -251,7 +255,11 @@
     <!-- Logs -->
     <string name="logs_title">Latest logs</string>
     <string name="logs_open">Open log</string>
+    <string name="read_log">Read log</string>
     <string name="logs_share">Share log</string>
+    <string name="no_error_detected">No error detected.</string>
+    <string name="error_log_header">Error log for %s [%s@%s] : %d errors</string>
+    <string name="error_log_header_queue">Error log for queue</string>
 
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>

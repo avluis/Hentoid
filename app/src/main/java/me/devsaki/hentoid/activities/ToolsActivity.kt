@@ -54,7 +54,7 @@ class ToolsActivity : BaseActivity() {
             val contentView = findViewById<View>(android.R.id.content)
             val snackbar =
                 Snackbar.make(contentView, R.string.task_done, BaseTransientBottomBar.LENGTH_LONG)
-            snackbar.setAction("READ LOG") { FileHelper.openFile(this, event.logFile) }
+            snackbar.setAction(R.string.read_log) { FileHelper.openFile(this, event.logFile) }
             snackbar.show()
         }
     }

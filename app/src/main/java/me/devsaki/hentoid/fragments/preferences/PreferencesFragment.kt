@@ -245,7 +245,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             )
             snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).maxLines =
                 5
-            snack.setAction("OK") { snack.dismiss() }
+            snack.setAction(R.string.ok) { snack.dismiss() }
             snack.show()
         }
         runBlocking {

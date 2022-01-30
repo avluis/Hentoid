@@ -1097,7 +1097,7 @@ public class LibraryActivity extends BaseActivity {
     private void onContentArchiveSuccess() {
         archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, false));
         Snackbar.make(viewPager, getResources().getQuantityString(R.plurals.archive_success, archiveProgress, archiveProgress), LENGTH_LONG)
-                .setAction("OPEN FOLDER", v -> FileHelper.openFile(this, FileHelper.getDownloadsFolder()))
+                .setAction(R.string.open_folder, v -> FileHelper.openFile(this, FileHelper.getDownloadsFolder()))
                 .show();
     }
 

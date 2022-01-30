@@ -169,7 +169,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
                     R.string.copy_download_folder_success,
                     BaseTransientBottomBar.LENGTH_LONG
                 )
-                    .setAction("OPEN FOLDER") {
+                    .setAction(R.string.open_folder) {
                         FileHelper.openFile(
                             requireContext(),
                             FileHelper.getDownloadsFolder()

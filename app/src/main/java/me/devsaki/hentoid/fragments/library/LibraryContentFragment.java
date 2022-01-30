@@ -1421,7 +1421,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 nbSuccess -> {
                     String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
-                    snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+                    snackbar.setAction(R.string.view_queue, v -> viewQueue());
                     snackbar.show();
                 },
                 t -> {
@@ -1445,7 +1445,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 nbSuccess -> {
                     String message = getResources().getQuantityString(R.plurals.add_to_queue, nbSuccess, nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
-                    snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+                    snackbar.setAction(R.string.view_queue, v -> viewQueue());
                     snackbar.show();
                 },
                 onError);
