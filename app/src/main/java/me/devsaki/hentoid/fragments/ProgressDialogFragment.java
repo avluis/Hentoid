@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.PluralsRes;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
@@ -28,17 +29,18 @@ public class ProgressDialogFragment extends DialogFragment {
     private DialogProgressBinding binding = null;
 
     private String dialogTitle;
-    private String progressUnit;
+    private @PluralsRes
+    int progressUnit;
 
     public static void invoke(
             @NonNull final FragmentManager fragmentManager,
             @NonNull final String title,
-            @NonNull final String progressUnit) {
+            @PluralsRes final int progressUnit) {
         ProgressDialogFragment fragment = new ProgressDialogFragment();
 
         Bundle args = new Bundle();
         args.putString(TITLE, title);
-        args.putString(PROGRESS_UNIT, progressUnit);
+        args.putInt(PROGRESS_UNIT, progressUnit);
         fragment.setArguments(args);
 
         fragment.show(fragmentManager, null);
@@ -50,7 +52,7 @@ public class ProgressDialogFragment extends DialogFragment {
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
         dialogTitle = getArguments().getString(TITLE, "");
-        progressUnit = getArguments().getString(PROGRESS_UNIT, "");
+        progressUnit = getArguments().getInt(PROGRESS_UNIT, -1);
 
         EventBus.getDefault().register(this);
     }
@@ -82,7 +84,11 @@ public class ProgressDialogFragment extends DialogFragment {
 
         binding.bar.setMax(event.elementsTotal);
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
-            binding.progress.setText(getString(R.string.generic_progress, event.elementsOK + event.elementsKO, event.elementsTotal, progressUnit));
+            binding.progress.setText(getString(
+                    R.string.generic_progress,
+                    event.elementsOK + event.elementsKO, event.elementsTotal,
+                    getResources().getQuantityString(progressUnit, event.elementsOK + event.elementsKO)
+            ));
             binding.bar.setProgress(event.elementsOK + event.elementsKO);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             dismiss();

@@ -1,7 +1,7 @@
 <resources>
     <!-- Generic usage -->
     <string name="app_name">Hentoid</string>
-    <string name="app_id">me.devsaki.hentoid</string>
+    <string name="app_id" translatable="false">me.devsaki.hentoid</string>
     <string name="app_intro">Welcome</string>
     <string name="yes">Yes</string> <!-- because Android default "OK" value for "yes" key is nonsense -->
     <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
@@ -13,9 +13,18 @@
     <string name="goto_page">Go to page…</string>
     <string name="confirm">Confirm</string>
     <string name="please_wait">Please wait…</string>
-    <string name="books">books</string>
-    <string name="pages">pages</string>
-    <string name="files">files</string>
+    <plurals name="book">
+        <item quantity="one">book</item>
+        <item quantity="other">books</item>
+    </plurals>
+    <plurals name="page">
+        <item quantity="one">book</item>
+        <item quantity="other">pages</item>
+    </plurals>
+    <plurals name="file">
+        <item quantity="one">file</item>
+        <item quantity="other">files</item>
+    </plurals>
     <string name="undo">Undo</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
@@ -162,8 +171,14 @@
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
     <string name="generic_progress">%1$d / %2$d %3$s</string>
-    <string name="book_progress">%1$d / %2$d books</string>
-    <string name="group_progress">%1$d / %2$d groups</string>
+    <plurals name="book_progress">
+        <item quantity="one">%1$d / %2$d book</item>
+        <item quantity="other">%1$d / %2$d books</item>
+    </plurals>
+    <plurals name="group_progress">
+        <item quantity="one">%1$d / %2$d group</item>
+        <item quantity="other">%1$d / %2$d groups</item>
+    </plurals>
 
     <!-- Import metadata -->
     <string name="import_title">Import metadata</string>

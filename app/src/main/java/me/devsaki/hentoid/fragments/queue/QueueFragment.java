@@ -859,14 +859,14 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private void onCancelBooks(@NonNull List<Content> c) {
         if (c.size() > 2) {
             isCancelingAll = true;
-            ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), getResources().getString(R.string.books));
+            ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), R.plurals.book);
         }
         viewModel.cancel(c);
     }
 
     private void onCancelAll() {
         isCancelingAll = true;
-        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), getResources().getString(R.string.books));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.cancel_queue_progress), R.plurals.book);
         viewModel.cancelAll();
     }
 

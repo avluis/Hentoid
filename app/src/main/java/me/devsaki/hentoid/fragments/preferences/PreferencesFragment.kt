@@ -296,7 +296,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                             ProgressDialogFragment.invoke(
                                 parentFragmentManager,
                                 resources.getString(R.string.delete_title),
-                                resources.getString(R.string.books)
+                                R.plurals.book
                             )
                             viewModel.deleteAllItemsExceptFavourites()
                         }

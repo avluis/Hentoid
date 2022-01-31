@@ -684,7 +684,9 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
         // Save final position of item in DB
         viewModel.moveChapter(oldPosition, newPosition, this::onChapterMoveError);
-        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.renaming_progress), getResources().getString(R.string.files));
+        ProgressDialogFragment.invoke(
+                getParentFragmentManager(),
+                getResources().getString(R.string.renaming_progress), R.plurals.file);
     }
 
     private void onChapterMoveError(Throwable t) {
