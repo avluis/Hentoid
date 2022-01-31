@@ -57,7 +57,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -1320,7 +1319,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         }
 
         if (showToast)
-            ToastHelper.toast(String.format(Locale.ENGLISH, "Starting slideshow (delay %.1fs)", delayMs / 1000f));
+            ToastHelper.toast(R.string.slideshow_start, delayMs / 1000f);
         scrollListener.disableScroll();
 
         slideshowTimer = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
@@ -1335,7 +1334,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             slideshowTimer.dispose();
             slideshowTimer = null;
             scrollListener.enableScroll();
-            ToastHelper.toast("Slideshow stopped");
+            ToastHelper.toast(R.string.slideshow_stop);
         }
     }
 }

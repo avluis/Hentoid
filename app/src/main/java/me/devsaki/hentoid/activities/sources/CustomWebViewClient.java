@@ -300,7 +300,7 @@ class CustomWebViewClient extends WebViewClient {
                         FileHelper.openFile(view.getContext(), uri);
                     }, e -> {
                         disposable.dispose();
-                        ToastHelper.toast("Downloading torrent failed : " + e.getMessage());
+                        ToastHelper.toast(R.string.torrent_dl_fail, e.getMessage());
                         Timber.w(e);
                     });
         }

@@ -1051,7 +1051,7 @@ public class LibraryActivity extends BaseActivity {
         if (nbGroups > 0)
             msg += getResources().getQuantityString(R.plurals.delete_success_groups, nbGroups, nbGroups);
         if (nbContent > 0) {
-            if (!msg.isEmpty()) msg += " and ";
+            if (!msg.isEmpty()) msg += " & ";
             msg += getResources().getQuantityString(R.plurals.delete_success_books, nbContent, nbContent);
         }
         msg += " " + getResources().getString(R.string.delete_success);
@@ -1097,7 +1097,7 @@ public class LibraryActivity extends BaseActivity {
     private void onContentArchiveSuccess() {
         archiveNotificationManager.notify(new ArchiveCompleteNotification(archiveProgress, false));
         Snackbar.make(viewPager, getResources().getQuantityString(R.plurals.archive_success, archiveProgress, archiveProgress), LENGTH_LONG)
-                .setAction("OPEN FOLDER", v -> FileHelper.openFile(this, FileHelper.getDownloadsFolder()))
+                .setAction(R.string.open_folder, v -> FileHelper.openFile(this, FileHelper.getDownloadsFolder()))
                 .show();
     }
 

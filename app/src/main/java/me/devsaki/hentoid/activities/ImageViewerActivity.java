@@ -10,6 +10,7 @@ import android.view.WindowManager;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.fragments.viewer.ViewerGalleryFragment;
 import me.devsaki.hentoid.fragments.viewer.ViewerPagerFragment;
@@ -68,7 +69,7 @@ public class ImageViewerActivity extends BaseActivity {
         }
 
         if (!PermissionHelper.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION)) {
-            ToastHelper.toast("Storage permission denied - cannot open the viewer");
+            ToastHelper.toast(R.string.storage_permission_denied);
             return;
         }
 

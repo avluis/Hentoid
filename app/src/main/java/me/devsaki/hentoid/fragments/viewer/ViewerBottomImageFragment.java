@@ -245,7 +245,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
             }
 
             Snackbar.make(rootView, R.string.copy_download_folder_success, LENGTH_LONG)
-                    .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
+                    .setAction(R.string.open_folder, v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                     .show();
         } catch (IOException | IllegalArgumentException e) {
             Snackbar.make(rootView, R.string.copy_download_folder_fail, LENGTH_LONG).show();
