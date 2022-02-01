@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.database;
 
 import android.content.Context;
+import android.content.res.Resources;
 
 import androidx.annotation.NonNull;
 
@@ -17,6 +18,7 @@ import io.objectbox.query.Query;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.functions.BiConsumer;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
@@ -347,6 +349,7 @@ public class DatabaseMaintenance {
             Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
             int bookInsertCount = 0;
             List<ImmutableTriple<Group, Attribute, List<Long>>> toInsert = new ArrayList<>();
+            Resources res = context.getResources();
             for (Grouping g : groupingsToProcess) {
                 if (g.equals(Grouping.ARTIST)) {
                     List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC, 0, 0, false, false);
@@ -362,32 +365,32 @@ public class DatabaseMaintenance {
                         toInsert.add(new ImmutableTriple<>(group, a, Stream.of(a.contents).map(Content::getId).toList()));
                     }
                 } else if (g.equals(Grouping.DL_DATE)) {
-                    Group group = new Group(Grouping.DL_DATE, "Today", 1);
+                    Group group = new Group(Grouping.DL_DATE, res.getString(R.string.group_today), 1);
                     group.propertyMin = 0;
                     group.propertyMax = 1;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
-                    group = new Group(Grouping.DL_DATE, "Last 7 days", 2);
+                    group = new Group(Grouping.DL_DATE, res.getString(R.string.group_7), 2);
                     group.propertyMin = 1;
                     group.propertyMax = 8;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
-                    group = new Group(Grouping.DL_DATE, "Last 30 days", 3);
+                    group = new Group(Grouping.DL_DATE, res.getString(R.string.group_30), 3);
                     group.propertyMin = 8;
                     group.propertyMax = 31;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
-                    group = new Group(Grouping.DL_DATE, "Last 60 days", 4);
+                    group = new Group(Grouping.DL_DATE, res.getString(R.string.group_60), 4);
                     group.propertyMin = 31;
                     group.propertyMax = 61;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
-                    group = new Group(Grouping.DL_DATE, "Last year", 5);
+                    group = new Group(Grouping.DL_DATE, res.getString(R.string.group_year), 5);
                     group.propertyMin = 61;
                     group.propertyMax = 366;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
-                    group = new Group(Grouping.DL_DATE, "A long time ago", 6);
+                    group = new Group(Grouping.DL_DATE, res.getString(R.string.group_long), 6);
                     group.propertyMin = 366;
                     group.propertyMax = 9999999;
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
                 } else if (g.equals(Grouping.CUSTOM)) {
-                    Group group = new Group(Grouping.CUSTOM, "Ungrouped", 1).setSubtype(1);
+                    Group group = new Group(Grouping.CUSTOM, res.getString(R.string.group_no_group), 1).setSubtype(1);
                     toInsert.add(new ImmutableTriple<>(group, null, Collections.emptyList()));
                 }
             }

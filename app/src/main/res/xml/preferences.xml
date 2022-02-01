@@ -401,7 +401,7 @@
             app:iconSpaceReserved="false">
             <Preference
                 android:key="pref_app_lock"
-                android:title="App Lock"
+                android:title="@string/title_activity_app_lock"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_app_preview_default"
@@ -461,8 +461,8 @@
                     app:iconSpaceReserved="false" />
                 <CheckBoxPreference
                     android:defaultValue="@bool/pref_viewer_page_turn_tap_2x_default"
-                    android:key="pref_viewer_page_turn_tap_2x"
                     android:dependency="pref_viewer_page_turn_tap"
+                    android:key="pref_viewer_page_turn_tap_2x"
                     android:title="@string/pref_viewer_page_turn_tap_2x"
                     app:iconSpaceReserved="false" />
                 <CheckBoxPreference

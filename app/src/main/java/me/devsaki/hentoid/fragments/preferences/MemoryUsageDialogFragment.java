@@ -102,7 +102,11 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         ((TextView) requireViewById(rootView, R.id.memory_hentoid_ext)).setText(getResources().getString(R.string.memory_hentoid_ext, FileHelper.formatHumanReadableSize(hentoidExternalUsageBytes)));
 
         table = requireViewById(rootView, R.id.memory_details_table);
-        addRow(table, "Source", "Books", "Size");
+        addRow(table,
+                getResources().getString(R.string.memory_details_source),
+                getResources().getString(R.string.memory_details_books),
+                getResources().getString(R.string.memory_details_size)
+        );
 
         // Sort sources by largest size
         List<Map.Entry<Site, ImmutablePair<Integer, Long>>> sitesBySize = Stream.of(primaryMemUsage).sortBy(entry -> -entry.getValue().right).toList();

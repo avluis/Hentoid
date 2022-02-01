@@ -862,7 +862,7 @@ public class LibraryActivity extends BaseActivity {
     public void updateTitle(long totalSelectedCount, long totalCount) {
         String title;
         if (totalSelectedCount == totalCount)
-            title = totalCount + " items";
+            title = getResources().getQuantityString(R.plurals.number_of_items, (int) totalSelectedCount, (int) totalSelectedCount);
         else {
             title = getResources().getQuantityString(R.plurals.number_of_book_search_results, (int) totalSelectedCount, (int) totalSelectedCount, totalCount);
         }
