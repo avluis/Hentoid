@@ -26,9 +26,9 @@
 
     <string-array name="pref_memory_alert_entries">
         <item>Не уведомлять</item>
-        <item>когда заполнено на 90%</item>
-        <item>когда заполнено на 95%</item>
-        <item>когда заполнено на 98%</item>
+        <item>когда заполнена на 90%</item>
+        <item>когда заполнена на 95%</item>
+        <item>когда заполнена на 98%</item>
     </string-array>
     <string-array name="pref_memory_alert_values">
         <item>110</item>
@@ -135,7 +135,7 @@
     </string-array>
 
     <string-array name="pref_folder_trunc_content_entries">
-        <item>Нет</item>
+        <item>Не сокращать</item>
         <item>60 символов</item>
         <item>80 символов</item>
         <item>100 символов</item>
@@ -163,8 +163,8 @@
     </string-array>
 
     <string-array name="pref_viewer_dl_action_entries">
-        <item>Загрузить все страницы</item>
-        <item>Передавать страницы потоком</item>
+        <item>Загружать все страницы</item>
+        <item>Передавать страницы потоком (стримить)</item>
     </string-array>
     <string-array name="pref_viewer_dl_action_values">
         <item>0</item>

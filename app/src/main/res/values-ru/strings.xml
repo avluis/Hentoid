@@ -56,9 +56,9 @@
     <string name="api29_migration_step1_external">Внешняя папка</string>
     <string name="api29_migration_step1_select">Выбрать папку Hentoid</string>
     <string name="api29_migration_step1_select_external">Выбрать внешнюю папку</string>
-    <string name="api29_migration_step2">Сканировать папки сайтов</string>
+    <string name="api29_migration_step2">Сканирую папки сайтов</string>
     <string name="api29_migration_step3_init">Сканирую библиотеку…</string>
-    <string name="api29_migration_step3">Скнирование библиотеки (%1$d из %2$d)</string>
+    <string name="api29_migration_step3">Сканирование библиотеки (%1$d из %2$d)</string>
     <string name="api29_migration_step4_init">Импорт очереди…</string>
     <string name="api29_migration_select_folder">Пожалуйста, выберите существующую папку Hentoid. Её расположение показано на экране.</string>
     <string name="api29_migration_allow_write">Пожалуйста, подтвердите разрешение на запись</string>
@@ -89,13 +89,13 @@
     <string name="menu_archive_help">Заархивировать книгу в ZIP</string>
     <string name="search_hint">Название, автор, тэг или ID книги</string>
     <string name="send_to">Поделиться через:</string>
-    <string name="open_settings">Открыть настройки</string>
+    <string name="open_settings">Настройки</string>
     <string name="app_settings">Настройки приложения</string>
     <string name="book_settings">Настройки книги</string>
     <string name="permissions_lost">Разрешения на работу с файлами были утеряны</string>
     <string name="low_memory">Заканчивается память на устройстве!</string>
     <string name="fix_permissions">Исправить</string>
-    <string name="view_queue">Посмотреть очередь</string>
+    <string name="view_queue">Просмотреть очередь</string>
 
     <!-- Queue / Downloader -->
     <string name="queue_queue_tab">В процессе</string>
@@ -108,10 +108,10 @@
     <string name="redownload_all">Загрузить всё снова</string>
     <string name="cancel_all_errors">Отменить все ошибки</string>
     <string name="canceled">Отменено</string>
-    <string name="move_top">Переместить в начало</string>
-    <string name="move_up">Переместить вверх</string>
-    <string name="move_down">Переместить вниз</string>
-    <string name="move_bottom">Переместить в конец</string>
+    <string name="move_top">В начало</string>
+    <string name="move_up">Вверх</string>
+    <string name="move_down">Вниз</string>
+    <string name="move_bottom">В конец</string>
     <string name="queue_paused">Очередь приостановлена</string>
     <string name="queue_preparing">Подготовка загрузки</string>
     <string name="queue_dl">Загружается: %s</string>
@@ -157,13 +157,30 @@
     <string name="revive_wait">Пожалуйста, не закрывайте это окно, пока ваша загрузка возобновляется</string>
     <string name="queue_json_saved">JSON очереди успешно сохранён</string>
     <string name="queue_json_failed">Не удалось сохранить JSON очереди</string>
+    <string name="queue_content_size_estimate">примерно %.1f МБ</string>
+    <string name="queue_bottom_bar_processed">%s из %d обработано</string>
+    <plurals name="queue_bottom_bar_errors">
+	<item quantity="one">(%d ошибка)</item>
+	<item quantity="few">(%d ошибки)</item>
+	<item quantity="other">(%d ошибок)</item>
+    </plurals>
+    <string name="queue_bottom_bar_retry">[попытка %d из %d]</string>
+    <string name="queue_bottom_bar_speed">%d Кб/с</string>
 
     <!-- TextViews -->
     <string name="work_series">Серия: %s</string>
     <string name="work_artist">Художник: %s</string>
-    <!-- TODO: Plurals -->
+    <plurals name="work_pages_missing">
+	<item quantity="one">(%d пропущена)</item>
+	<item quantity="few">(%d пропущены)</item>
+	<item quantity="other">(%d пропущено)</item>
+    </plurals>
     <string name="work_pages_queue">Страниц: %1$s%2$s</string>
-    <string name="work_pages_library">%1$d страниц / "%2$.1f МБ</string>
+    <plurals name="work_pages_library">
+	<item quantity="one">%1$d страница / %2$.1f МБ</item>
+	<item quantity="few">%1$d страницы / %2$.1f МБ</item>
+	<item quantity="other">%1$d страниц / %2$.1f МБ</item>
+    </plurals>
     <string name="library_metrics_storage">%.0f МБ</string>
 
     <!-- Refresh library -->
@@ -277,8 +294,6 @@
     <string name="importing_library">Импорт библиотеки</string>
     <string name="importing_please_wait">Импортирую, пожалуйста, подождите…</string>
     <string name="updating_please_wait">Обновляю, пожалуйста, подождите…</string>
-    <string name="enabled">ВКЛ.</string>
-    <string name="disabled">ВЫКЛ.</string>
 
     <!-- Memory usage -->
     <string name="memory_title">Использование памяти</string>
@@ -288,13 +303,16 @@
     <string name="memory_hentoid_ext">Hentoid (внешнее хранилище): %s</string>
     <string name="memory_database">База данных : %1$s (заполнено на %2$.1f%%)</string>
     <string name="memory_details">Подробности (основное хранилище)</string>
+    <string name="memory_details_source">Источник</string>
+    <string name="memory_details_books">Книги</string>
+    <string name="memory_details_size">Размер</string>
 
     <!-- Logs -->
     <string name="logs_title">Последние логи</string>
     <string name="logs_open">Открыть логи</string>
     <string name="read_log">Читать логи</string>
     <string name="logs_share">Поделиться логами</string>
-    <string name="no_error_detected">Ошибок не обнаружено.</string>
+    <string name="no_error_detected">Ошибок нет</string>
     <string name="error_log_header">Лог ошибок: %s [%s@%s] (ошибок: %d)</string>
     <string name="error_log_header_queue">Лог ошибок очереди</string>
 
@@ -373,6 +391,11 @@
     <string name="book_pages_library">1234 страниц / 1125 МБ</string>
     <string name="book_pages_library2">1234 страниц / 30 глав / 1125 МБ [Совмещено]</string>
     <string name="book_tags">тэг1, тэг2, тэг3 и т.д.</string>
+    <plurals name="number_of_items">
+	<item quantity="one">%d элемент</item>
+	<item quantity="few">%d элемента</item>
+	<item quantity="other">%d элементов</item>
+    </plurals>
     <plurals name="number_of_book_search_results">
         <item quantity="one">%d результат из %d</item>
 	<item quantity="few">%d результата из %d</item>
@@ -456,18 +479,18 @@
     <string name="groups_custom">Своё</string>
     <string name="no_artist_group_name">[без художника]</string>
     <!-- Sorting fields -->
-    <string name="sort_title">Название</string>
-    <string name="sort_artist">Художник</string>
-    <string name="sort_pages">Страницы</string>
-    <string name="sort_dl_date">Дата загрузки</string>
-    <string name="sort_read_date">Дата чтения</string>
-    <string name="sort_reads">Прочтения</string>
-    <string name="sort_size">Размер</string>
-    <string name="sort_reading_progress">Прочтено на</string>
+    <string name="sort_title">По названиям</string>
+    <string name="sort_artist">По художникам</string>
+    <string name="sort_pages">По страницам</string>
+    <string name="sort_dl_date">По дате загрузки</string>
+    <string name="sort_read_date">По дате чтения</string>
+    <string name="sort_reads">По прочтениям</string>
+    <string name="sort_size">По размеру</string>
+    <string name="sort_reading_progress">По прогрессу</string>
     <string name="sort_random">Случайно</string>
     <string name="sort_custom">Своё</string>
     <string name="sort_invalid">-неверно-</string>
-    <string name="sort_books">Книги</string>
+    <string name="sort_books">По кол-ву книг</string>
     <!-- Item card tooltips -->
     <string name="drag_help">Переместить элемент</string>
     <string name="external_help">Находится во внешней библиотеке</string>
@@ -475,9 +498,9 @@
     <string name="view_source_help">Просмотреть источник в браузере</string>
     <string name="fav_help">Добавить/убрать из избранного</string>
     <!-- Visibility fields -->
-    <string name="show_artists">Показать художников</string>
-    <string name="show_groups">Показать группы</string>
-    <string name="show_artists_and_groups">Показать художников и группы</string>
+    <string name="show_artists">Художники</string>
+    <string name="show_groups">Группы</string>
+    <string name="show_artists_and_groups">Художники и группы</string>
     <string name="launchcode_present">У вас уже есть эта книга. Искать в других источниках?</string>
 
     <!-- Updates -->
@@ -507,7 +530,7 @@
     <string name="app_lock_pin_prefs">Код-пароль приложения</string>
     <string name="app_lock_enable">Блокировка включена</string>
     <string name="app_lock_disabled">Блокировка выключена</string>
-    <string name="pin_reset">Сбросить код-пароль</string>
+    <string name="pin_reset">Изменить код-пароль</string>
     <string name="pin_reset_success">Код-пароль был сброшен</string>
     <string name="pin_ok">Код-пароль верный!</string>
     <string name="pin_current">Введите текущий код-пароль</string>
@@ -632,7 +655,11 @@
     <string name="gallery_edit_chapters_help">Чтобы создать или удалить главы, нажмите на её первую страницу</string>
     <string name="gallery_clear_chapters">Очистить все главы</string>
     <string name="gallery_add_remove_chapters">Добавить и удалить главы</string>
+    <string name="gallery_display_page">%sСтраница %d%s%s</string>
+    <string name="gallery_display_chapter">Гл. %d</string>
+    <string name="gallery_no_chapter">Нет глав</string>
     <string name="renaming_progress">Переименовываю файлы…</string>
+    <string name="page_removal_failed">Не удалось удалить страницу</string>
     <string name="storage_permission_denied">Отсутствует разрешение на запись — невозможно начать просмотр</string>
     <string name="book_list_loading_failed">Не удалось загрузить список книг</string>
     <string name="chapter_toggle_failed">Не удалось открыть главу на странице %d</string>
@@ -642,8 +669,8 @@
     <string name="slideshow_stop">Слайдшоу остановлено</string>
 
     <!-- Changelog -->
-    <string name="view_changelog">Посмотреть список изменений</string>
-    <string name="view_changelog_flagged">Посмотреть список изменений*</string>
+    <string name="view_changelog">Что нового?</string>
+    <string name="view_changelog_flagged">*Что нового?*</string>
     <string name="changelog">Что нового?</string>
     <string name="get_latest">Доступна новая версия (%1$s)</string>
     <string name="update_success">Обновление завершено!</string>
@@ -665,7 +692,7 @@
         <item>Обычная</item>
         <item>Сильная</item>
     </string-array>
-    <string name="duplicate_find_action">Поиск дубликатов</string>
+    <string name="duplicate_find_action">Начать поиск</string>
     <string name="duplicate_index_covers">Индексирую обложки</string>
     <string name="duplicate_find">Определяю дубликаты</string>
     <plurals name="duplicate_count">
@@ -689,7 +716,7 @@
 	<item quantity="few">%d дубликата успешно определено</item>
 	<item quantity="other">%d дубликатов успешно определено</item>
     </plurals>
-    <string name="duplicate_empty_first_use">Нечего показывать — Начните новый поиск</string>
+    <string name="duplicate_empty_first_use">Нечего показывать, начните новый поиск</string>
     <string name="duplicate_processing">Идёт определение дубликатов</string>
     <plurals name="duplicate_detail_title">
 	<item quantity="one">%d дубликат</item>
@@ -717,7 +744,23 @@
     <string name="title_startup_progress">Запускаю…</string>
     <string name="title_startup_complete">Запуск завершён</string>
 
+    <!-- Group names -->
+    <string name="group_today">Сегодня</string>
+    <string name="group_7">На неделе</string>
+    <string name="group_30">За этот месяц</string>
+    <string name="group_60">За последние 60 дней</string>
+    <string name="group_year">За последний год</string>
+    <string name="group_long">Давно</string>
+    <string name="group_no_group">Без группы</string>
+
     <!-- Misc -->
     <string name="select_file_manager">Выберите ваш файловый менеджер</string>
     <string name="default_permission">Стандартное разрешение</string>
+    <string name="u_byte">б.</string>
+    <string name="u_kilobyte">КБ</string>
+    <string name="u_megabyte">МБ</string>
+    <string name="u_gigabyte">ГБ</string>
+    <string name="u_terabyte">ТБ</string>
+    <string name="u_petabyte">ПБ</string>
+    <string name="u_exabyte">ЭБ</string>
 </resources>

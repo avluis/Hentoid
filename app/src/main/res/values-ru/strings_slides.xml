@@ -24,5 +24,5 @@
     <string name="slide_06_subtext">Вы сможете изменить этот выбор позднее в любой момент, нажав на \'Изменить\' в меню слева.</string>
     <!-- Last slide -->
     <string name="slide_end_header">Вот и всё!</string>
-    <string name="slide_end_text">Мы готовы!\nНаслаждайтесь приложением.</string>
+    <string name="slide_end_text">Всё готово!\nНаслаждайтесь приложением.</string>
 </resources>
