@@ -151,8 +151,14 @@
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: %s</string>
     <string name="work_artist">Artist: %s</string>
-    <string name="work_pages_queue">Pages: %1$s%2$s</string>
-    <string name="work_pages_library">%1$d pages / "%2$.1f MB</string>
+    <plurals name="work_pages_queue">
+        <item quantity="one">Pages: %1$s%2$s</item>
+        <item quantity="other">Pages: %1$s%2$s</item>
+    </plurals>
+    <plurals name="work_pages_library">
+        <item quantity="one">%1$d page / "%2$.1f MB</item>
+        <item quantity="other">%1$d pages / "%2$.1f MB</item>
+    </plurals>
     <string name="library_metrics_storage">%.0f MB</string>
 
     <!-- Refresh library -->

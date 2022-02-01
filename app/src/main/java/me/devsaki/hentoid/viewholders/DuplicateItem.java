@@ -317,7 +317,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
             Context context = tvPages.getContext();
 
-            String template = context.getResources().getString(R.string.work_pages_library, content.getNbDownloadedPages(), content.getSize() * 1.0 / (1024 * 1024));
+            String template = context.getResources().getQuantityString(R.plurals.work_pages_library, (int) content.getNbDownloadedPages(), content.getNbDownloadedPages(), content.getSize() * 1.0 / (1024 * 1024));
 
             tvPages.setText(template);
         }
