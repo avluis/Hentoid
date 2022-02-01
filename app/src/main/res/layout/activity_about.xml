@@ -15,7 +15,7 @@
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="About"
+        app:title="@string/title_activity_about"
         tools:ignore="UnusedAttribute" />
 
     <ScrollView

@@ -182,7 +182,7 @@ public final class Helper {
     public static boolean copyPlainTextToClipboard(@NonNull Context context, @NonNull String text) {
         ClipboardManager clipboard = (ClipboardManager) context.getSystemService(CLIPBOARD_SERVICE);
         if (clipboard != null) {
-            ClipData clip = ClipData.newPlainText("book URL", text);
+            ClipData clip = ClipData.newPlainText(context.getString(R.string.menu_share_title), text);
             clipboard.setPrimaryClip(clip);
             return true;
         } else return false;

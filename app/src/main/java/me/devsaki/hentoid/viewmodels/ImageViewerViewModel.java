@@ -94,7 +94,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Number of concurrent image downloads
     private static final int CONCURRENT_DOWNLOADS = 3;
 
-    private static final Pattern VANILLA_CHAPTERNAME_PATTERN = Pattern.compile("Chapter [0-9]+");
+    private static Pattern VANILLA_CHAPTERNAME_PATTERN = null;
 
     // Collection DAO
     private final CollectionDAO dao;
@@ -1211,6 +1211,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
      */
     private void doCreateRemoveChapter(long contentId, @NonNull ImageFile selectedPage) {
         Helper.assertNonUiThread();
+        String chapterStr = getApplication().getString(R.string.gallery_chapter_prefix);
+        if (null == VANILLA_CHAPTERNAME_PATTERN)
+            VANILLA_CHAPTERNAME_PATTERN = Pattern.compile(chapterStr + " [0-9]+");
 
         Content theContent = dao.selectContent(contentId); // Work on a fresh content
         if (null == theContent) throw new IllegalArgumentException("No content found");
@@ -1218,7 +1221,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Chapter currentChapter = selectedPage.getLinkedChapter();
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
         if (null == currentChapter) {
-            currentChapter = new Chapter(1, "", "Chapter 1");
+            currentChapter = new Chapter(1, "", chapterStr + " 1");
             currentChapter.setImageFiles(viewerImagesInternal);
             // Link images the other way around so that what follows works properly
             for (ImageFile img : viewerImagesInternal) img.setChapter(currentChapter);
@@ -1258,7 +1261,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         for (Chapter c : allChapters) {
             // Update names with the default "Chapter x" naming
             if (VANILLA_CHAPTERNAME_PATTERN.matcher(c.getName()).matches())
-                c.setName("Chapter " + order);
+                c.setName(chapterStr + " " + order);
             // Update order
             c.setOrder(order++);
             c.setContent(theContent);
@@ -1284,7 +1287,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull List<ImageFile> chapterImages
     ) {
         int newChapterOrder = currentChapter.getOrder() + 1;
-        Chapter newChapter = new Chapter(newChapterOrder, "", "Chapter " + newChapterOrder);
+        Chapter newChapter = new Chapter(newChapterOrder, "", getApplication().getString(R.string.gallery_chapter_prefix) + " " + newChapterOrder);
         newChapter.setContent(content);
 
         // Sort by order
@@ -1374,6 +1377,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
      */
     private void doMoveChapter(long contentId, int oldIndex, int newIndex) {
         Helper.assertNonUiThread();
+        String chapterStr = getApplication().getString(R.string.gallery_chapter_prefix);
+        if (null == VANILLA_CHAPTERNAME_PATTERN)
+            VANILLA_CHAPTERNAME_PATTERN = Pattern.compile(chapterStr + " [0-9]+");
+
         List<Chapter> chapters = dao.selectChapters(contentId);
         if (null == chapters || chapters.isEmpty())
             throw new IllegalArgumentException("No chapters found");
@@ -1393,7 +1400,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         for (Chapter c : chapters) {
             // Update names with the default "Chapter x" naming
             if (VANILLA_CHAPTERNAME_PATTERN.matcher(c.getName()).matches())
-                c.setName("Chapter " + index);
+                c.setName(chapterStr + " " + index);
             // Update order
             c.setOrder(index++);
         }
@@ -1402,7 +1409,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Renumber all images and update the DB
         List<ImageFile> images = Stream.of(chapters).map(Chapter::getImageFiles).withoutNulls().flatMap(Stream::of).toList();
         if (images.isEmpty())
-            throw new IllegalArgumentException("No imagesfound");
+            throw new IllegalArgumentException("No images found");
 
         index = 1;
         int nbMaxDigits = images.get(images.size() - 1).getName().length(); // Keep existing formatting
