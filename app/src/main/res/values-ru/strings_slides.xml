@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Slide 01 -->
+    <string name="slide_01_header">Добро пожаловать в Hentoid!</string>
+    <string name="slide_01_text">Hentoid — это приложение для скачивания додзинси и хентай-манги.</string>
+    <!-- Slide 02 -->
+    <string name="slide_02_header">Разрешения</string>
+    <string name="slide_02_text">Нам необходимо ваше разрешение, чтобы хранить файлы на устройстве.</string>
+    <!-- Slide 04 -->
+    <string name="slide_04_header">Библиотека</string>
+    <string name="slide_04_text">Hentoid необходима отдельная папка для хранения ваших файлов.</string>
+    <string name="slide_04_skip">Пропустить</string>
+    <string name="slide_04_skip_title">Пропустить?</string>
+    <string name="slide_04_skip_msg">Вы не сможете ничего загрузить, если пропустите этот шаг. Для загрузки вам понадобится выбрать папку загрузок в настройках приложения.</string>
+    <!-- Slide 05 -->
+    <string name="slide_05_header">Тема</string>
+    <string name="slide_05_text">Выберите тему.</string>
+    <string name="slide_05_light">Светлая</string>
+    <string name="slide_05_dark">Тёмно-красная</string>
+    <string name="slide_05_black">Тёмная</string>
+    <!-- Slide 06 -->
+    <string name="slide_06_header">Источники</string>
+    <string name="slide_06_text">Выберите источники для загрузок.</string>
+    <string name="slide_06_subtext">Вы сможете изменить этот выбор позднее в любой момент, нажав на \'Изменить\' в меню слева.</string>
+    <!-- Last slide -->
+    <string name="slide_end_header">Вот и всё!</string>
+    <string name="slide_end_text">Всё готово!\nНаслаждайтесь приложением.</string>
+</resources>

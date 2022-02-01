@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="audio_reactions">
+        <item>ямете~~♡</item>
+        <item>стой, это… не та дырка~</item>
+        <item>ах~</item>
+        <item>фууу ♡ ♡</item>
+        <item>не сюда~~♡</item>
+        <item>плохой, плохой мальчик~~</item>
+        <item>так… тесно…♡</item>
+    </string-array>
+    <string-array name="power_reactions">
+        <item>♡~</item>
+        <item>мне нравится там~~</item>
+        <item>глубже~~~♡</item>
+        <item>икуууу~~</item>
+        <item>а-ах ♡</item>
+        <item>ооох~</item>
+        <item>ещё ♡</item>
+    </string-array>
+</resources>
