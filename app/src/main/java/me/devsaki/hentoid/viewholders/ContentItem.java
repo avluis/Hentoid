@@ -495,11 +495,11 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (viewType == ViewType.ERRORS) {
                     long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
                     if (nbMissingPages > 0)
-                        template = context.getString(R.string.work_pages_queue, nbPages, " (" + nbMissingPages + " missing)");
+                        template = context.getResources().getQuantityString(R.plurals.work_pages_queue, content.getQtyPages(), nbPages, " (" + nbMissingPages + " missing)");
                     else
-                        template = context.getString(R.string.work_pages_queue, nbPages, "");
+                        template = context.getResources().getQuantityString(R.plurals.work_pages_queue, content.getQtyPages(), nbPages, "");
                 } else
-                    template = context.getString(R.string.work_pages_queue, nbPages, "");
+                    template = context.getResources().getQuantityString(R.plurals.work_pages_queue, content.getQtyPages(), nbPages, "");
                 tvPages.setText(template);
             } else { // Library
                 tvPages.setText(String.format(Locale.ENGLISH, "%d", content.getNbDownloadedPages()));
