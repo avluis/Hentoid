@@ -533,7 +533,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 motiveMsg = R.string.paused_no_wifi;
                 break;
             case DownloadEvent.Motive.NO_STORAGE:
-                String spaceLeft = FileHelper.formatHumanReadableSize(event.downloadedSizeB);
+                String spaceLeft = FileHelper.formatHumanReadableSize(event.downloadedSizeB, getResources());
                 Snackbar.make(recyclerView, getString(R.string.paused_no_storage, spaceLeft), BaseTransientBottomBar.LENGTH_SHORT).show();
                 return;
             case DownloadEvent.Motive.NO_DOWNLOAD_FOLDER:

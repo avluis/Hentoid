@@ -720,4 +720,11 @@
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>
+    <string name="u_byte">bytes</string>
+    <string name="u_kilobyte">KB</string>
+    <string name="u_megabyte">MB</string>
+    <string name="u_gigabyte">GB</string>
+    <string name="u_terabyte">TB</string>
+    <string name="u_petabyte">PB</string>
+    <string name="u_exabyte">EB</string>
 </resources>
