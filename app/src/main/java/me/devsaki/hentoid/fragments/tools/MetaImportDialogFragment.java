@@ -385,7 +385,7 @@ public class MetaImportDialogFragment extends DialogFragment {
 
     private void updateProgress(boolean isGroup) {
         currentProgress++;
-        progressTxt.setText(getResources().getString(isGroup ? R.string.group_progress : R.string.book_progress, currentProgress, totalItems));
+        progressTxt.setText(getResources().getQuantityString(isGroup ? R.plurals.group_progress : R.plurals.book_progress, currentProgress, currentProgress, totalItems));
         progressBar.setProgress(currentProgress);
         progressTxt.setVisibility(View.VISIBLE);
         progressBar.setVisibility(View.VISIBLE);

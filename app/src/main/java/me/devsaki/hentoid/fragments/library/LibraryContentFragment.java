@@ -1494,13 +1494,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle, boolean deleteAfterMerging) {
         leaveSelectionMode();
         viewModel.mergeContents(contentList, newTitle, deleteAfterMerging, () -> ToastHelper.toast(R.string.merge_success));
-        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), getResources().getString(R.string.pages));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), R.plurals.page);
     }
 
     public void splitContent(@NonNull Content content, @NonNull List<Chapter> chapters) {
         leaveSelectionMode();
         viewModel.splitContent(content, chapters, () -> ToastHelper.toast(R.string.split_success));
-        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.split_progress), getResources().getString(R.string.pages));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.split_progress), R.plurals.page);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

@@ -16,8 +16,8 @@
     <string name="slide_05_header">Theme</string>
     <string name="slide_05_text">Choose a display theme.</string>
     <string name="slide_05_light">Light</string>
-    <string name="slide_05_dark">Dark</string>
-    <string name="slide_05_black">Black</string>
+    <string name="slide_05_dark">Deep red</string>
+    <string name="slide_05_black">Dark</string>
     <!-- Slide 06 -->
     <string name="slide_06_header">Sources</string>
     <string name="slide_06_text">Select sources to download from.</string>
