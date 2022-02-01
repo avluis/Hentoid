@@ -146,6 +146,11 @@
     <string name="revive_wait">Please stay on this screen while your download is revived</string>
     <string name="queue_json_saved">Queue JSON successfully saved</string>
     <string name="queue_json_failed">Queue JSON saving failed</string>
+    <string name="queue_content_size_estimate">estimated %.1f MB</string>
+    <string name="queue_bottom_bar_processed">%s/%d processed</string>
+    <string name="queue_bottom_bar_errors">(%d errors)</string>
+    <string name="queue_bottom_bar_retry">[retry %d/%d]</string>
+    <string name="queue_bottom_bar_speed">%d KBps</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
