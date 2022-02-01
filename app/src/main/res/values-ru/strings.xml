@@ -87,6 +87,7 @@
     <string name="menu_share_help">Поделиться ссылкой на книгу и её названием через стороннее приложение</string>
     <string name="menu_archive">В архив</string>
     <string name="menu_archive_help">Заархивировать книгу в ZIP</string>
+    <string name="menu_share_title">Ссылка на книгу</string>
     <string name="search_hint">Название, автор, тэг или ID книги</string>
     <string name="send_to">Поделиться через:</string>
     <string name="open_settings">Настройки</string>
@@ -98,6 +99,7 @@
     <string name="view_queue">Просмотреть очередь</string>
 
     <!-- Queue / Downloader -->
+    <string name="downloader_title">Загрузчик</string>
     <string name="queue_queue_tab">В процессе</string>
     <string name="queue_errors_tab">Ошибки</string>
     <plurals name="ask_cancel_multiple">
@@ -166,6 +168,9 @@
     </plurals>
     <string name="queue_bottom_bar_retry">[попытка %d из %d]</string>
     <string name="queue_bottom_bar_speed">%d Кб/с</string>
+    <string name="download_notif_speed">%d%s МБ, %d Кб/c</string>
+    <string name="download_notif_failed">Загрузка не удалась</string>
+    <string name="download_notif_failed_details">Невозможно загрузить %s: не удалось создать папку %s. Пожалуйста, проверьте папку Hentoid и повторите загрузку с помощью кнопки \'!\'.</string>
 
     <!-- TextViews -->
     <string name="work_series">Серия: %s</string>
@@ -290,10 +295,15 @@
     <string name="task_done">Задание завершено — смотрите логи для подробностей</string>
     <string name="content_not_found">Ошибка — контент не обнаружен</string>
     <string name="contents_detected">Hentoid обнаружил существующую библиотеку.\nХотите ли вы импортировать её?</string>
+    <string name="library_imports_title">Импорт библиотеки</string>
     <string name="starting_import">Импорт начинается…</string>
     <string name="importing_library">Импорт библиотеки</string>
     <string name="importing_please_wait">Импортирую, пожалуйста, подождите…</string>
     <string name="updating_please_wait">Обновляю, пожалуйста, подождите…</string>
+    <string name="import_complete">Импорт завершён</string>
+    <string name="import_complete_details">Импорт завершён</string>
+    <string name="import_complete_details_success">Успешно импортировано: %s</string>
+    <string name="import_complete_details_failure">Не удалось импортировать: %s</string>
 
     <!-- Memory usage -->
     <string name="memory_title">Использование памяти</string>
@@ -315,6 +325,10 @@
     <string name="no_error_detected">Ошибок нет</string>
     <string name="error_log_header">Лог ошибок: %s [%s@%s] (ошибок: %d)</string>
     <string name="error_log_header_queue">Лог ошибок очереди</string>
+    <string name="log_import_external">Обновление/импорт внешней библиотеки</string>
+    <string name="log_import">Обновление/импорт основной библиотеки</string>
+    <string name="log_cleanup">Очистка основной библиотеки</string>
+    <string name="log_api29_migration">Миграция библиотеки с Hentoid 1.11-</string>
 
     <!-- Errors -->
     <string name="error_write_permission">У вас нет прав на запись в этой папке, попробуйте другую.</string>
@@ -367,6 +381,15 @@
     </plurals>
     <string name="delete_success">успешно удалено</string>
     <string name="archive_progress">Архивирую книги</string>
+    <string name="archive_progress_subtitle">Готово: %s</string>
+    <string name="notif_archive_complete">Архивирование завершено</string>
+    <plurals name="notif_archive_complete_details">
+	<item quantity="one">%d книга успешно заархивирована</item>
+	<item quantity="few">%d книги успешно заархивировано</item>
+	<item quantity="other">%d книг успешно заархивированы</item>
+    </plurals>
+    <string name="notif_archive_fail">Архивация не удалась</string>
+    <string name="notif_archive_fail_details">Не удалось архивировать по крайней мере одну книгу</string>
     <plurals name="archive_success">
         <item quantity="one">%d книга заархивирована в Загрузках</item>
 	<item quantity="few">%d книги заархивировано в Загрузках</item>
@@ -504,6 +527,7 @@
     <string name="launchcode_present">У вас уже есть эта книга. Искать в других источниках?</string>
 
     <!-- Updates -->
+    <string name="updates_title">Обновления</string>
     <string name="checking_updates">Проверка обновлений</string>
     <string name="update_available">Доступно обновление!</string>
     <string name="tap_to_download">Нажмите для загрузки</string>
@@ -586,6 +610,8 @@
     <string name="category_series">Серия (%1$d)</string>
     <string name="category_language">Язык (%1$d)</string>
     <string name="category_source">Источник (%1$d)</string>
+    <string name="search_category">Ищем %s</string>
+    <string name="search_prompt">Поиск %s</string>
     <plurals name="search_button">
         <item quantity="one">Найден %s результат</item>
 	<item quantity="few">Найдено %s результата</item>
@@ -601,6 +627,7 @@
     <string name="loading_archive">Загрузка: %1$d из %2$d</string>
     <string name="loading_image">Загрузка изображения: %d%%</string>
     <string name="no_image">Изображение не найдено</string>
+    <string name="viewer_img_details">%d x %d (масштаб %.0f%%) - %s</string>
     <string name="viewer_choose_direction">Выберите направление чтения</string>
     <string name="viewer_direction_ltr">Слева направо</string>
     <string name="viewer_direction_rtl">Справа налево</string>
@@ -652,6 +679,7 @@
     <string name="viewer_reload_page">Перезагрузить страницу</string>
     <string name="viewer_reparse_book">Передобавить книгу</string>
     <string name="menu_edit_chapters">Редактировать главы</string>
+    <string name="gallery_chapter_prefix">Глава</string>
     <string name="gallery_edit_chapters_help">Чтобы создать или удалить главы, нажмите на её первую страницу</string>
     <string name="gallery_clear_chapters">Очистить все главы</string>
     <string name="gallery_add_remove_chapters">Добавить и удалить главы</string>
@@ -660,6 +688,7 @@
     <string name="gallery_no_chapter">Нет глав</string>
     <string name="renaming_progress">Переименовываю файлы…</string>
     <string name="page_removal_failed">Не удалось удалить страницу</string>
+    <string name="file_removal_failed">Не удалось удалить файл</string>
     <string name="storage_permission_denied">Отсутствует разрешение на запись — невозможно начать просмотр</string>
     <string name="book_list_loading_failed">Не удалось загрузить список книг</string>
     <string name="chapter_toggle_failed">Не удалось открыть главу на странице %d</string>
@@ -740,8 +769,15 @@
     <string name="duplicate_alert_download_pages">Загрузить дополнительные страницы</string>
     <string name="duplicate_wait_index">Пожалуйста, подождите — идёт индексирование</string>
 
+    <!-- Generic delete & purge -->
+    <string name="notif_delete_complete">Удаление завершено</string>
+    <string name="notif_delete_complete_details">Удалено: %d</string>
+    <string name="notif_delete_fail">Удаление не удалось</string>
+    <string name="notif_delete_fail_details">Не удалось удалить по крайней мере одну книгу</string>
+
     <!-- Startup -->
-    <string name="title_startup_progress">Запускаю…</string>
+    <string name="title_startup">Запуск</string>
+    <string name="title_startup_progress">Запускается…</string>
     <string name="title_startup_complete">Запуск завершён</string>
 
     <!-- Group names -->
