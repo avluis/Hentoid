@@ -156,6 +156,7 @@
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: %s</string>
     <string name="work_artist">Artist: %s</string>
+    <string name="work_pages_missing">(%d missing)</string>
     <plurals name="work_pages_queue">
         <item quantity="one">Pages: %1$s%2$s</item>
         <item quantity="other">Pages: %1$s%2$s</item>
@@ -630,7 +631,11 @@
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
+    <string name="gallery_display_page">%sPage %d%s%s</string>
+    <string name="gallery_display_chapter">Chp %d</string>
+    <string name="gallery_no_chapter">No chapter</string>
     <string name="renaming_progress">Renaming files…</string>
+    <string name="page_removal_failed">Page removal failed</string>
     <string name="storage_permission_denied">Storage permission denied - cannot open the viewer</string>
     <string name="book_list_loading_failed">Book list loading failed</string>
     <string name="chapter_toggle_failed">Couldn\'t toggle chapter at page %d</string>

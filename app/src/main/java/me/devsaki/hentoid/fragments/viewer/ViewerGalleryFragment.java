@@ -422,7 +422,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     .toList();
 
             if (!chapterlessImages.isEmpty()) {
-                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName("No chapter").withDraggable(!isArchive);
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName(getResources().getString(R.string.gallery_no_chapter)).withDraggable(!isArchive);
                 expandableItem.setIdentifier(Long.MAX_VALUE);
 
                 List<ImageFileItem> imgs = new ArrayList<>();
@@ -605,7 +605,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         Timber.e(t);
         if (t instanceof ContentNotProcessedException) {
             ContentNotProcessedException e = (ContentNotProcessedException) t;
-            String message = (null == e.getMessage()) ? "Page removal failed" : e.getMessage();
+            String message = (null == e.getMessage()) ? getResources().getString(R.string.page_removal_failed) : e.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
     }

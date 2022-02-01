@@ -25,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
@@ -48,7 +47,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
         if (image.getLinkedChapter() != null)
             this.chapter = image.getLinkedChapter();
         else
-            this.chapter = new Chapter(1, "", "Chapter 1"); // Default display when nothing is set
+            this.chapter = new Chapter(1, "", ""); // Default display when nothing is set
         this.showChapter = showChapter;
         setIdentifier(image.uniqueHash());
     }
@@ -171,7 +170,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
 
             // Chapter overlay
             if (item.showChapter) {
-                String chapterText = String.format(Locale.ENGLISH, "Chp %d", item.chapter.getOrder());
+                String chapterText = checkedIndicator.getContext().getResources().getString(R.string.gallery_display_chapter, item.chapter.getOrder());
                 if (item.chapter.getOrder() == Integer.MAX_VALUE)
                     chapterText = ""; // Don't show temp values
                 chapterOverlay.setText(chapterText);
@@ -195,7 +194,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
             String currentBegin = item.isCurrent ? ">" : "";
             String currentEnd = item.isCurrent ? "<" : "";
             String isFavourite = item.isFavourite() ? HEART_SYMBOL : "";
-            pageNumberTxt.setText(String.format("%sPage %s%s%s", currentBegin, item.image.getOrder(), isFavourite, currentEnd));
+            pageNumberTxt.setText(pageNumberTxt.getResources().getString(R.string.gallery_display_page, currentBegin, item.image.getOrder(), isFavourite, currentEnd));
             if (item.isCurrent) pageNumberTxt.setTypeface(null, Typeface.BOLD);
         }
 
