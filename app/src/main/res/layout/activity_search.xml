@@ -15,7 +15,7 @@
         android:elevation="@dimen/toolbar_layout_elevation"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_close"
-        app:title="Advanced search"
+        app:title="@string/title_activity_search"
         tools:targetApi="lollipop" />
 
     <TextView

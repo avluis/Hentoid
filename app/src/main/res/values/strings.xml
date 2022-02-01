@@ -83,6 +83,7 @@
     <string name="menu_select_all">Select All</string>
     <string name="menu_share">Share</string>
     <string name="menu_share_help">Share book URL and title using another app</string>
+    <string name="menu_share_title">Book URL</string>
     <string name="menu_archive">Archive</string>
     <string name="menu_archive_help">Archive the book in a ZIP file</string>
     <string name="search_hint">Title, author, tag or book ID</string>
@@ -96,6 +97,7 @@
     <string name="view_queue">View queue</string>
 
     <!-- Queue / Downloader -->
+    <string name="downloader_title">Downloader</string>
     <string name="queue_queue_tab">In progress</string>
     <string name="queue_errors_tab">Errors</string>
     <plurals name="ask_cancel_multiple">
@@ -151,6 +153,9 @@
     <string name="queue_bottom_bar_errors">(%d errors)</string>
     <string name="queue_bottom_bar_retry">[retry %d/%d]</string>
     <string name="queue_bottom_bar_speed">%d KBps</string>
+    <string name="download_notif_speed">%d%s MB @ %d KBps</string>
+    <string name="download_notif_failed">Warning : download failed</string>
+    <string name="download_notif_failed_details">Cannot download %s : unable to create folder %s. Please check your Hentoid folder and retry downloading using the (!) button.</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
@@ -264,10 +269,22 @@
     <string name="task_done">Task complete - see details in the log</string>
     <string name="content_not_found">Error - content not found</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
+    <string name="library_imports_title">Library imports</string>
     <string name="starting_import">Starting import…</string>
     <string name="importing_library">Importing Library</string>
     <string name="importing_please_wait">Importing, please wait…</string>
     <string name="updating_please_wait">Updating, please wait…</string>
+    <string name="import_complete">Import complete</string>
+    <string name="import_complete_details">Import complete</string>
+    <plurals name="import_complete_details_success">
+        <item quantity="one">%s imported successfully</item>
+        <item quantity="other">%s imported successfully</item>
+    </plurals>
+    <plurals name="import_complete_details_failure">
+        <item quantity="one">%s failed</item>
+        <item quantity="other">%s failed</item>
+    </plurals>
+
     <string name="enabled" translatable="false">ENABLED</string> <!-- for logging only -->
     <string name="disabled" translatable="false">DISABLED</string> <!-- for logging only -->
 
@@ -291,6 +308,10 @@
     <string name="no_error_detected">No error detected.</string>
     <string name="error_log_header">Error log for %s [%s@%s] : %d errors</string>
     <string name="error_log_header_queue">Error log for queue</string>
+    <string name="log_import_external">External library import/refresh</string>
+    <string name="log_import">Primary library import/refresh</string>
+    <string name="log_cleanup">Primary library cleanup</string>
+    <string name="log_api29_migration">Library migration from Hentoid v1.11-</string>
 
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
@@ -339,6 +360,14 @@
     </plurals>
     <string name="delete_success">successfuly deleted</string>
     <string name="archive_progress">Archiving books</string>
+    <string name="archive_progress_subtitle">Done : %s</string>
+    <string name="notif_archive_complete">Archival complete</string>
+    <plurals name="notif_archive_complete_details">
+        <item quantity="one">%d book archived successfully</item>
+        <item quantity="other">%d books archived successfully</item>
+    </plurals>
+    <string name="notif_archive_fail">Archival failed</string>
+    <string name="notif_archive_fail_details">At least one book failed to be archived</string>
     <plurals name="archive_success">
         <item quantity="one">One book archived in your Download folder</item>
         <item quantity="other">%d books archived in your Download folder</item>
@@ -478,6 +507,7 @@
     <string name="launchcode_present">You already have this book. Search other sources ?</string>
 
     <!-- Updates -->
+    <string name="updates_title">Updates</string>
     <string name="checking_updates">Checking for updates</string>
     <string name="update_available">An update is available!</string>
     <string name="tap_to_download">Tap to download</string>
@@ -563,6 +593,8 @@
     <string name="category_series">Series (%1$d)</string>
     <string name="category_language">Language (%1$d)</string>
     <string name="category_source">Source (%1$d)</string>
+    <string name="search_category">%s search</string>
+    <string name="search_prompt">Search %s</string>
     <plurals name="search_button">
         <item quantity="one">%s Result found</item>
         <item quantity="other">%s Results found</item>
@@ -577,6 +609,7 @@
     <string name="loading_archive">Loading : %1$d/%2$d</string>
     <string name="loading_image">Loading image : %d%%</string>
     <string name="no_image">Image not found</string>
+    <string name="viewer_img_details">%d x %d (scale %.0f%%) - %s</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
@@ -628,6 +661,7 @@
     <string name="viewer_reload_page">Reload page</string>
     <string name="viewer_reparse_book">Reparse book</string>
     <string name="menu_edit_chapters">Edit chapters</string>
+    <string name="gallery_chapter_prefix">Chapter</string>
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
@@ -636,6 +670,7 @@
     <string name="gallery_no_chapter">No chapter</string>
     <string name="renaming_progress">Renaming files…</string>
     <string name="page_removal_failed">Page removal failed</string>
+    <string name="file_removal_failed">File removal failed</string>
     <string name="storage_permission_denied">Storage permission denied - cannot open the viewer</string>
     <string name="book_list_loading_failed">Book list loading failed</string>
     <string name="chapter_toggle_failed">Couldn\'t toggle chapter at page %d</string>
@@ -704,7 +739,17 @@
     <string name="duplicate_alert_download_pages">Download extra pages</string>
     <string name="duplicate_wait_index">Please wait while indexing</string>
 
+    <!-- Generic delete & purge -->
+    <string name="notif_delete_complete">Delete complete</string>
+    <plurals name="notif_delete_complete_details">
+        <item quantity="one">%d deleted successfully</item>
+        <item quantity="other">%d deleted successfully</item>
+    </plurals>
+    <string name="notif_delete_fail">Delete failed</string>
+    <string name="notif_delete_fail_details">At least one book failed to be deleted</string>
+
     <!-- Startup -->
+    <string name="title_startup">Startup</string>
     <string name="title_startup_progress">Startup in progress…</string>
     <string name="title_startup_complete">Startup complete</string>
 

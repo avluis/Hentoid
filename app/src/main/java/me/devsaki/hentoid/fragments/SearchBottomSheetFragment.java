@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments;
 
 import static androidx.core.view.ViewCompat.requireViewById;
-import static java.lang.String.format;
 
 import android.app.Activity;
 import android.app.SearchManager;
@@ -144,7 +143,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         // Image that displays current metadata type title (e.g. "Character search")
         TextView tagWaitTitle = requireViewById(rootView, R.id.tag_wait_title);
-        tagWaitTitle.setText(format("%s search", StringHelper.capitalizeString(mainAttr.getDisplayName())));
+        tagWaitTitle.setText(getResources().getString(R.string.search_category, StringHelper.capitalizeString(mainAttr.getDisplayName())));
 
         tagWaitPanel = requireViewById(rootView, R.id.tag_wait_panel);
         tagWaitMessage = requireViewById(rootView, R.id.tag_wait_description);
@@ -162,7 +161,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         tagSearchView = requireViewById(rootView, R.id.tag_filter);
         tagSearchView.setSearchableInfo(getSearchableInfo(requireActivity())); // Associate searchable configuration with the SearchView
         List<String> attrTypesNames = Stream.of(selectedAttributeTypes).map(AttributeType::getDisplayName).toList();
-        tagSearchView.setQueryHint("Search " + android.text.TextUtils.join(", ", attrTypesNames));
+        tagSearchView.setQueryHint(getResources().getString(R.string.search_prompt, android.text.TextUtils.join(", ", attrTypesNames)));
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
