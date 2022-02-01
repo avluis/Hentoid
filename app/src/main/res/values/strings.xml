@@ -146,11 +146,17 @@
     <string name="revive_wait">Please stay on this screen while your download is revived</string>
     <string name="queue_json_saved">Queue JSON successfully saved</string>
     <string name="queue_json_failed">Queue JSON saving failed</string>
+    <string name="queue_content_size_estimate">estimated %.1f MB</string>
+    <string name="queue_bottom_bar_processed">%s/%d processed</string>
+    <string name="queue_bottom_bar_errors">(%d errors)</string>
+    <string name="queue_bottom_bar_retry">[retry %d/%d]</string>
+    <string name="queue_bottom_bar_speed">%d KBps</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: %s</string>
     <string name="work_artist">Artist: %s</string>
+    <string name="work_pages_missing">(%d missing)</string>
     <plurals name="work_pages_queue">
         <item quantity="one">Pages: %1$s%2$s</item>
         <item quantity="other">Pages: %1$s%2$s</item>
@@ -262,8 +268,8 @@
     <string name="importing_library">Importing Library</string>
     <string name="importing_please_wait">Importing, please wait…</string>
     <string name="updating_please_wait">Updating, please wait…</string>
-    <string name="enabled">ENABLED</string>
-    <string name="disabled">DISABLED</string>
+    <string name="enabled" translatable="false">ENABLED</string> <!-- for logging only -->
+    <string name="disabled" translatable="false">DISABLED</string> <!-- for logging only -->
 
     <!-- Memory usage -->
     <string name="memory_title">Memory usage</string>
@@ -273,6 +279,9 @@
     <string name="memory_hentoid_ext">Hentoid (external) : %s</string>
     <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
     <string name="memory_details">View details (primary)</string>
+    <string name="memory_details_source">Source</string>
+    <string name="memory_details_books">Books</string>
+    <string name="memory_details_size">Size</string>
 
     <!-- Logs -->
     <string name="logs_title">Latest logs</string>
@@ -353,6 +362,10 @@
     <string name="book_pages_library">1234 pages / 1125 MB</string>
     <string name="book_pages_library2">1234 pages / 30 chapters / 1125 MB [Merged]</string>
     <string name="book_tags">tag1, tag2, tag3, etc.</string>
+    <plurals name="number_of_items">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
     <plurals name="number_of_book_search_results">
         <item quantity="one">%d/%d result</item>
         <item quantity="other">%d/%d results</item>
@@ -618,7 +631,11 @@
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
+    <string name="gallery_display_page">%sPage %d%s%s</string>
+    <string name="gallery_display_chapter">Chp %d</string>
+    <string name="gallery_no_chapter">No chapter</string>
     <string name="renaming_progress">Renaming files…</string>
+    <string name="page_removal_failed">Page removal failed</string>
     <string name="storage_permission_denied">Storage permission denied - cannot open the viewer</string>
     <string name="book_list_loading_failed">Book list loading failed</string>
     <string name="chapter_toggle_failed">Couldn\'t toggle chapter at page %d</string>
@@ -690,6 +707,15 @@
     <!-- Startup -->
     <string name="title_startup_progress">Startup in progress…</string>
     <string name="title_startup_complete">Startup complete</string>
+
+    <!-- Group names -->
+    <string name="group_today">Today</string>
+    <string name="group_7">Last 7 days</string>
+    <string name="group_30">Last 30 days</string>
+    <string name="group_60">Last 60 days</string>
+    <string name="group_year">Last year</string>
+    <string name="group_long">A long time ago</string>
+    <string name="group_no_group">Ungrouped</string>
 
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>

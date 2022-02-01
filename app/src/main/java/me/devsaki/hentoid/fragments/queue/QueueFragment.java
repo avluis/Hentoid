@@ -51,7 +51,6 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -657,14 +656,14 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 // Update information bar
                 StringBuilder message = new StringBuilder();
                 String processedPagesFmt = StringHelper.formatIntAsStr(pagesOKDisplay, String.valueOf(totalPagesDisplay).length());
-                message.append(processedPagesFmt).append("/").append(totalPagesDisplay).append(" processed");
+                message.append(getResources().getString(R.string.queue_bottom_bar_processed, processedPagesFmt, totalPagesDisplay));
                 if (pagesKO > 0)
-                    message.append(" (").append(pagesKO).append(" errors)");
+                    message.append(" ").append(getResources().getString(R.string.queue_bottom_bar_errors, pagesKO));
                 if (numberRetries > 0)
-                    message.append(" [ retry").append(numberRetries).append("/").append(Preferences.getDlRetriesNumber()).append("]");
+                    message.append(" ").append(getResources().getString(R.string.queue_bottom_bar_retry, numberRetries, Preferences.getDlRetriesNumber()));
                 int avgSpeedKbps = (int) downloadSpeedCalculator.getAvgSpeedKbps();
                 if (avgSpeedKbps > 0)
-                    message.append(String.format(Locale.ENGLISH, " @ %d KBps", avgSpeedKbps));
+                    message.append(" @ ").append(getResources().getString(R.string.queue_bottom_bar_speed, avgSpeedKbps));
 
                 queueInfo.setText(message.toString());
                 isPreparingDownload = false;

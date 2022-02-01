@@ -588,7 +588,8 @@ public class HttpHelper {
         if (buildIndex > -1) {
             int closeIndex = result.indexOf(")", buildIndex);
             int separatorIndex = result.indexOf(";", buildIndex);
-            int firstIndex = Math.min(closeIndex, separatorIndex);
+            int firstIndex = closeIndex;
+            if (separatorIndex > -1) firstIndex = Math.min(closeIndex, separatorIndex);
             result = result.substring(0, buildIndex) + result.substring(firstIndex);
         }
         int versionIndex = result.indexOf(" Version/");
