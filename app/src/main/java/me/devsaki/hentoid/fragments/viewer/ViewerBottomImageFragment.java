@@ -170,10 +170,10 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
             Point dimensions = getImageDimensions(requireContext(), image.getFileUri());
             String sizeStr;
             if (image.getSize() > 0) {
-                sizeStr = FileHelper.formatHumanReadableSize(image.getSize());
+                sizeStr = FileHelper.formatHumanReadableSize(image.getSize(), getResources());
             } else {
                 long size = FileHelper.fileSizeFromUri(requireContext(), Uri.parse(image.getFileUri()));
-                sizeStr = FileHelper.formatHumanReadableSize(size);
+                sizeStr = FileHelper.formatHumanReadableSize(size, getResources());
             }
             imgStats.setText(String.format(Locale.ENGLISH, "%s x %s (scale %.0f%%) - %s", dimensions.x, dimensions.y, scale * 100, sizeStr));
             Glide.with(imgThumb)

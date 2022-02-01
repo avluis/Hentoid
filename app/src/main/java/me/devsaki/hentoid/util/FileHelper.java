@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.UriPermission;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -851,8 +852,8 @@ public class FileHelper {
      * @param bytes Size to format, in bytes
      * @return Given file size using human-readable units, two decimals precision
      */
-    public static String formatHumanReadableSize(long bytes) {
-        return FileUtil.byteCountToDisplayRoundedSize(bytes, 2);
+    public static String formatHumanReadableSize(long bytes, final Resources res) {
+        return FileUtil.byteCountToDisplayRoundedSize(bytes, 2, res);
     }
 
     /**

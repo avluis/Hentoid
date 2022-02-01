@@ -571,7 +571,7 @@ public class ContentDownloadWorker extends BaseWorker {
             downloadSpeedCalculator.addSampleNow(networkBytes);
             int avgSpeedKbps = (int) downloadSpeedCalculator.getAvgSpeedKbps();
 
-            Timber.d("deltaPages: %d / deltaNetworkBytes: %s", deltaPages, FileHelper.formatHumanReadableSize(deltaNetworkBytes));
+            Timber.d("deltaPages: %d / deltaNetworkBytes: %s", deltaPages, FileHelper.formatHumanReadableSize(deltaNetworkBytes, getApplicationContext().getResources()));
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
 
             // Restart request queue when the queue has idled for too long
