@@ -432,7 +432,7 @@
     </plurals>
     <string name="reset">Разрешения были сброшены.\nПриложение перезапускается.</string>
     <string name="restart_needed">"Изменения будут применены после перезапуска Hentoid"</string>
-    <plurals name="redownload_confirm">
+    <plurals name="redownload_confirm" tools:ignore="MissingQuantity">
         <item quantity="one">Загрузить эту книгу снова?</item>
         <item quantity="other">Загрузить эти книги снова?</item>
     </plurals>
