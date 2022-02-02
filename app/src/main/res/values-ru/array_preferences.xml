@@ -214,7 +214,7 @@
 
     <string-array name="pref_dl_blocked_tags_behaviour_entries">
         <item>Не добавлять в очередь</item>
-        <item>Добавлять в очередь как неудачные загрузк</item>
+        <item>Добавлять в очередь как неудачные загрузки</item>
     </string-array>
     <string-array name="pref_dl_blocked_tags_behaviour_values">
         <item>0</item>

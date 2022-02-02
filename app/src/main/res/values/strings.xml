@@ -119,8 +119,12 @@
     <string name="err_stats_help">Show detailed stats about current download errors</string>
     <string name="err_no_content">Book does not exist yet</string>
     <string name="confirm_cancel_all">You are about to cancel the whole queue. Continue ?</string>
-    <string name="confirm_cancel_all_errors">You are about to cancel all %d books with errors. Continue ?</string>
-    <string name="confirm_redownload_all">You are about to redownload %d items. Continue ?</string>
+    <plurals name="confirm_cancel_all_errors">
+        <item quantity="other">You are about to cancel all %d books with errors. Continue ?</item>
+    </plurals>
+    <plurals name="confirm_redownload_all">
+        <item quantity="other">You are about to redownload %d items. Continue ?</item>
+    </plurals>
     <string name="paused_no_internet">Cannot download - No internet</string>
     <string name="paused_no_wifi">Cannot download - No WiFi</string>
     <string name="paused_no_storage">Cannot download - Low on storage (%s left). Free space or change download folder location</string>
@@ -150,7 +154,10 @@
     <string name="queue_json_failed">Queue JSON saving failed</string>
     <string name="queue_content_size_estimate">estimated %.1f MB</string>
     <string name="queue_bottom_bar_processed">%s/%d processed</string>
-    <string name="queue_bottom_bar_errors">(%d errors)</string>
+    <plurals name="queue_bottom_bar_errors">
+        <item quantity="one">(%d error)</item>
+        <item quantity="other">(%d errors)</item>
+    </plurals>
     <string name="queue_bottom_bar_retry">[retry %d/%d]</string>
     <string name="queue_bottom_bar_speed">%d KBps</string>
     <string name="download_notif_speed">%d%s MB @ %d KBps</string>
@@ -161,11 +168,10 @@
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: %s</string>
     <string name="work_artist">Artist: %s</string>
-    <string name="work_pages_missing">(%d missing)</string>
-    <plurals name="work_pages_queue">
-        <item quantity="one">Pages: %1$s%2$s</item>
-        <item quantity="other">Pages: %1$s%2$s</item>
+    <plurals name="work_pages_missing">
+        <item quantity="other">(%d missing)</item>
     </plurals>
+    <string name="work_pages_queue">Pages: %1$s%2$s</string>
     <plurals name="work_pages_library">
         <item quantity="one">%1$d page / "%2$.1f MB</item>
         <item quantity="other">%1$d pages / "%2$.1f MB</item>
@@ -248,7 +254,7 @@
     </plurals>
     <string name="export_warning1">Exporting metadata is meant to create a list of your books in JSON format.\nIt is not meant for moving your collection to your PC or your SD card.\nTap here to learn how to do that.</string>
     <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
-    <string name="export_faq_url">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
+    <string name="export_faq_url" translatable="false">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
     <string name="export_run">RUN EXPORT</string>
 
     <string name="import_settings_title">Import settings</string>
@@ -706,7 +712,9 @@
     <string name="duplicate_find_action">Find duplicates</string>
     <string name="duplicate_index_covers">Indexing cover pictures</string>
     <string name="duplicate_find">Detecting duplicate books</string>
-    <string name="duplicate_count">%d duplicates ></string>
+    <plurals name="duplicate_count">
+        <item quantity="other">%d duplicates ></item>
+    </plurals>
     <string name="duplicate_title_score">Title : %.0f%%</string>
     <string name="duplicate_title_score_nodata">Title : no data</string>
     <string name="duplicate_cover_score">Cover : %.0f%%</string>
@@ -718,10 +726,16 @@
     <string name="apply_final">Apply choices</string>
     <string name="duplicate_notif_start">Starting duplicate detection</string>
     <string name="duplicate_notif_complete_title">Duplicate detection complete</string>
-    <string name="duplicate_notif_complete_desc">%d duplicates detected successfully</string>
+    <plurals name="duplicate_notif_complete_desc">
+        <item quantity="one">%d duplicate detected successfully</item>
+        <item quantity="other">%d duplicates detected successfully</item>
+    </plurals>
     <string name="duplicate_empty_first_use">Nothing to display - Run a new duplicate search</string>
     <string name="duplicate_processing">Duplicate detection in progress</string>
-    <string name="duplicate_detail_title">%d duplicates</string>
+    <plurals name="duplicate_detail_title">
+        <item quantity="one">%d duplicate</item>
+        <item quantity="other">%d duplicates</item>
+    </plurals>
     <string name="duplicate_empty_no_result">No duplicates found</string>
     <string name="duplicate_keep">Keep</string>
     <string name="duplicate_delete">Delete</string>
