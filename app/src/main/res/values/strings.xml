@@ -235,6 +235,7 @@
         <item quantity="one">%d bookmark imported successfully</item>
         <item quantity="other">%d bookmarks imported successfully</item>
     </plurals>
+    <string name="dialog_prompt">Allow write permission</string>
 
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>

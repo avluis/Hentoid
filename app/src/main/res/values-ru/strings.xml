@@ -270,6 +270,7 @@
         <item quantity="many">%d закладок успешно импортировано</item>
         <item quantity="other">%d закладок успешно импортировано</item>
     </plurals>
+    <string name="dialog_prompt">Allow write permission</string> <!-- TODO translate -->
 
     <!-- Export metadata -->
     <string name="export_title">Экспорт метаданных</string>

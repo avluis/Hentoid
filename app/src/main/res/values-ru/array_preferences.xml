@@ -56,11 +56,13 @@
         <item>Нет</item>
         <item>Cloudflare</item>
         <item>Quad9</item>
+        <item>AdGuard</item>
     </string-array>
     <string-array name="pref_browser_dns_values">
         <item>-1</item>
         <item>0</item>
         <item>1</item>
+        <item>2</item>
     </string-array>
 
     <string-array name="pref_queue_new_position_entries">
@@ -105,7 +107,7 @@
     </string-array>
 
     <string-array name="pref_dl_threads_quantity_entries">
-	<item>Автоматически (по умолчанию)</item>
+        <item>Автоматически (по умолчанию)</item>
         <item>2 (медленный интернет)</item>
         <item>4</item>
         <item>6</item>
@@ -173,7 +175,7 @@
 
     <string-array name="pref_attribute_list_order_entries">
         <item>По алфавиту</item>
-	<item>Сначала наиболее используемые</item>
+        <item>Сначала наиболее используемые</item>
     </string-array>
     <string-array name="pref_attribute_list_order_values">
         <item>0</item>
@@ -203,7 +205,7 @@
         <item>90%</item>
         <item>95%</item>
         <item>98%</item>
-	<item>Нет</item>
+        <item>Нет</item>
     </string-array>
     <string-array name="pref_dl_retries_mem_limit_values">
         <item>90</item>
