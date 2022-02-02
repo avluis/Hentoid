@@ -60,10 +60,9 @@
     <string name="pref_delete_all_except_favs_title">Удалить все книги, кроме избранных</string>
     <string name="pref_delete_all_except_favs_summary">Очистить библиотеку и оставить лишь избранные книги\nВнимание: не относится к внешней библиотеке</string>
     <plurals name="pref_ask_delete_all_except_favs">
-	<item quantity="one">Вы действительно хотите удалить %d книгу?</item>
-	<item quantity="few">Вы действительно хотите удалить %d книги?</item>
-    <item quantity="many">Вы действительно хотите удалить %d книг?</item>
-	<item quantity="other">Вы действительно хотите удалить %d книг?</item>
+        <item quantity="one">Вы действительно хотите удалить %d книгу?</item>
+        <item quantity="few">Вы действительно хотите удалить %d книги?</item>
+        <item quantity="many">Вы действительно хотите удалить %d книг?</item>
     </plurals>
 
 
