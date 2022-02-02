@@ -191,7 +191,7 @@
 
     <!-- Refresh library -->
     <string name="refresh_title">Обновить библиотеку</string>
-    <string name="refresh_caption">Автоматически обновлять библиотеку, сканируя файлы и папки снова.</string>
+    <string name="refresh_caption">Автоматически обновить библиотеку, сканируя файлы и папки снова.</string>
     <string name="refresh_options">Опции очистки</string>
     <string name="refresh_location_internal">Библиотека Hentoid</string>
     <string name="refresh_location_external">Внешняя библиотека</string>
@@ -433,9 +433,8 @@
     <string name="reset">Разрешения были сброшены.\nПриложение перезапускается.</string>
     <string name="restart_needed">"Изменения будут применены после перезапуска Hentoid"</string>
     <plurals name="redownload_confirm">
-        <item quantity="one">Загрузить эту %d книгу снова?</item>
-        <item quantity="few">Загрузить эти %d книги снова?</item>
-        <item quantity="many">Загрузить эти %d книг снова?</item>
+        <item quantity="one">Загрузить эту книгу снова?</item>
+        <item quantity="other">Загрузить эти книги снова?</item>
     </plurals>
     <plurals name="download_confirm" tools:ignore="MissingQuantity">
         <item quantity="other">Загрузить выбранное?</item>
@@ -616,7 +615,7 @@
     <string name="help_web_incomplete_exh_credentials">Авторизация не завершена, пожалуйста, повторите попытку входа. Если проблема сохраняется, попробуйте посетить сайт из другой страны или создайте новый аккаунт.</string>
 
     <!-- SearchActivity -->
-    <string name="category_any">Любая</string>
+    <string name="category_any">Любое</string>
     <string name="category_tag">Тэг (%1$d)</string>
     <string name="exclude">Исключить</string>
     <string name="category_character">Персонаж (%1$d)</string>
