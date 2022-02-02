@@ -161,7 +161,7 @@
     <string name="pref_check_updates_manual_no_new">Обновлений не найдено — Вы уже используете последнюю версию</string>
     <string name="pref_check_updates_manual_no_connection">Не удалось проверить обновления. Проверьте соединение или попытайтесь позднее.</string>
     <string name="pref_check_updates_title">Автоматические обновления</string>
-    <string name="pref_check_updates_summary_off">Вы так же можете включить автоматическую проверку обновлений по мобильной сети</string>
+    <string name="pref_check_updates_summary_off">Вы также можете включить автоматическую проверку обновлений по мобильной сети</string>
     <string name="pref_check_updates_summary_on">Это не отключает возможность ручной проверки обновлений.</string>
 
     <!-- Viewer -->
