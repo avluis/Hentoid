@@ -4,7 +4,6 @@
         <item quantity="one">%d загрузка завершена</item>
         <item quantity="few">%d загрузки завершены</item>
         <item quantity="many">%d загрузок завершено</item>
-        <item quantity="other">%d загрузок завершено</item>
     </plurals>
     <string name="download_complete">Загрузка завершена</string>
     <string name="download_cancelled">Загрузка отменена</string>
@@ -14,10 +13,9 @@
     <string name="unhandled_download_error">Необрабатываемая ошибка при чтении ссылок на изображения</string>
     <string name="downloading">Загружается</string>
     <plurals name="add_to_queue">
-        <item quantity="one">%d элемент из %d добавлен в очередь</item>
-        <item quantity="few">%d элемента из %d добавлены в очередь</item>
-        <item quantity="many">%d элементов из %d добавлено в очередь</item>
-        <item quantity="other">%d элементов из %d добавлено в очередь</item>
+        <item quantity="one">%1$d элемент из %2$d добавлен в очередь</item>
+        <item quantity="few">%1$d элемента из %2$d добавлены в очередь</item>
+        <item quantity="many">%1$d элементов из %2$d добавлено в очередь</item>
     </plurals>
     <string name="already_downloaded">Уже загружено</string>
     <string name="already_queued">Уже в очереди</string>

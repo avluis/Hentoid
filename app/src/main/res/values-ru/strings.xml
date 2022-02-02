@@ -16,19 +16,16 @@
         <item quantity="one" tools:ignore="ImpliedQuantity">книга</item>
         <item quantity="few">книги</item>
         <item quantity="many">книг</item>
-        <item quantity="other">книг</item>
     </plurals>
     <plurals name="page">
         <item quantity="one" tools:ignore="ImpliedQuantity">страница</item>
         <item quantity="few">страницы</item>
         <item quantity="many">страниц</item>
-        <item quantity="other">страниц</item>
     </plurals>
     <plurals name="file">
         <item quantity="one" tools:ignore="ImpliedQuantity">файл</item>
         <item quantity="few">файла</item>
         <item quantity="many">файлов</item>
-        <item quantity="other">файлов</item>
     </plurals>
     <string name="undo">Отменить</string>
     <string name="pause">Приостановить</string>
@@ -128,13 +125,11 @@
         <item quantity="one">Вы собираетесь отменить %d книгу с ошибками. Продолжить?</item>
         <item quantity="few">Вы собираетесь отменить %d книги с ошибками. Продолжить?</item>
         <item quantity="many">Вы собираетесь отменить %d книг с ошибками. Продолжить?</item>
-        <item quantity="other">Вы собираетесь отменить %d книг с ошибками. Продолжить?</item>
     </plurals>
     <plurals name="confirm_redownload_all">
         <item quantity="one">Вы собираетесь загрузить %d элемент снова. Продолжить?</item>
         <item quantity="few">Вы собираетесь загрузить %d элемента снова. Продолжить?</item>
         <item quantity="many">Вы собираетесь загрузить %d элементов снова. Продолжить?</item>
-        <item quantity="other">Вы собираетесь загрузить %d элементов снова. Продолжить?</item>
     </plurals>
     <string name="paused_no_internet">Загрузка невозможна — Нет сети</string>
     <string name="paused_no_wifi">Загрузка невозможна — Нет подключения к Wi-Fi</string>
@@ -156,7 +151,6 @@
         <item quantity="one">%d элемент из %d будет загружен снова</item>
         <item quantity="few">%d элемента из %d будут загружено снова</item>
         <item quantity="many">%d элементов из %d будует загружены снова</item>
-        <item quantity="other">%d элементов из %d будует загружены снова</item>
     </plurals>
     <string name="queue_add_top">Добавить в начало</string>
     <string name="queue_add_bottom">Добавить в конец</string>
@@ -171,7 +165,6 @@
         <item quantity="one">(%d ошибка)</item>
         <item quantity="few">(%d ошибки)</item>
         <item quantity="many">(%d ошибок)</item>
-        <item quantity="other">(%d ошибок)</item>
     </plurals>
     <string name="queue_bottom_bar_retry">[попытка %1$d из %2$d]</string>
     <string name="queue_bottom_bar_speed">%d Кб/с</string>
@@ -193,7 +186,6 @@
         <item quantity="one">%1$d страница / %2$.1f МБ</item>
         <item quantity="few">%1$d страницы / %2$.1f МБ</item>
         <item quantity="many">%1$d страниц / %2$.1f МБ</item>
-        <item quantity="other">%1$d страниц / %2$.1f МБ</item>
     </plurals>
     <string name="library_metrics_storage">%.0f МБ</string>
 
@@ -217,13 +209,11 @@
         <item quantity="one">%1$d книга из %2$d</item>
         <item quantity="few">%1$d книги из %2$d</item>
         <item quantity="many">%1$d книг из %2$d</item>
-        <item quantity="other">%1$d книг из %2$d</item>
     </plurals>
     <plurals name="group_progress">
         <item quantity="one">%1$d группа из %2$d</item>
         <item quantity="few">%1$d группы из %2$d</item>
         <item quantity="many">%1$d групп из %2$d</item>
-        <item quantity="other">%1$d групп из %2$d</item>
     </plurals>
 
     <!-- Import metadata -->
@@ -236,25 +226,21 @@
         <item quantity="one">Импорт библиотеки (%d книга)</item>
         <item quantity="few">Импорт библиотеки (%d книги)</item>
         <item quantity="many">Импорт библиотеки (%d книг)</item>
-        <item quantity="other">Импорт библиотеки (%d книг)</item>
     </plurals>
     <plurals name="import_file_queue">
         <item quantity="one">Импорт очереди (%d книга)</item>
         <item quantity="few">Импорт очереди (%d книги)</item>
         <item quantity="many">Импорт очереди (%d книг)</item>
-        <item quantity="other">Импорт очереди (%d книг)</item>
     </plurals>
     <plurals name="import_file_groups">
         <item quantity="one">Импорт пользовательских групп (%d группа)</item>
         <item quantity="few">Импорт пользовательских групп (%d группы)</item>
         <item quantity="many">Импорт пользовательских групп (%d групп)</item>
-        <item quantity="other">Импорт пользовательских групп (%d групп)</item>
     </plurals>
     <plurals name="import_file_bookmarks">
         <item quantity="one">Импорт закладок (%d элемент)</item>
         <item quantity="few">Импорт закладок (%d элемента)</item>
         <item quantity="many">Импорт закладок (%d элементов)</item>
-        <item quantity="other">Импорт закладок (%d элементов)</item>
     </plurals>
     <string name="import_warning">Если папок с изображениями не обнаружится, импортированные книги будут отображены как пустые загрузки.\nВам придётся загрузить их в Очередь > Ошибки.</string>
     <string name="import_run">ЗАПУСТИТЬ ИМПОРТ</string>
@@ -262,15 +248,13 @@
         <item quantity="one">%d книга успешно импортирована</item>
         <item quantity="few">%d книги успешно импортированы</item>
         <item quantity="many">%d книг успешно импортировано</item>
-        <item quantity="other">%d книг успешно импортировано</item>
     </plurals>
     <plurals name="import_result_bookmarks">
         <item quantity="one">%d закладка успешно импортирована</item>
         <item quantity="few">%d закладки успешно импортированы</item>
         <item quantity="many">%d закладок успешно импортировано</item>
-        <item quantity="other">%d закладок успешно импортировано</item>
     </plurals>
-    <string name="dialog_prompt">Выберите папку</string> <!-- TODO translate -->
+    <string name="dialog_prompt">Выберите папку</string>
 
     <!-- Export metadata -->
     <string name="export_title">Экспорт метаданных</string>
@@ -278,7 +262,6 @@
         <item quantity="one">Экспорт библиотеки (%d книга)</item>
         <item quantity="few">Экспорт библиотеки (%d книги)</item>
         <item quantity="many">Экспорт библиотеки (%d книг)</item>
-        <item quantity="other">Экспорт библиотеки (%d книг)</item>
     </plurals>
     <string name="export_favs_only">Экспортировать только избранное</string>
     <string name="export_groups">Экспортировать пользовательские группы</string>
@@ -286,13 +269,11 @@
         <item quantity="one">Экспорт очереди (%d книга)</item>
         <item quantity="few">Экспорт очереди (%d книги)</item>
         <item quantity="many">Экспорт очереди (%d книг)</item>
-        <item quantity="other">Экспорт очереди (%d книг)</item>
     </plurals>
     <plurals name="export_file_bookmarks">
         <item quantity="one">Экспорт закладок (%d элемент)</item>
         <item quantity="few">Экспорт закладок (%d элемента)</item>
         <item quantity="many">Экспорт закладок (%d элементов)</item>
-        <item quantity="other">Экспорт закладок (%d элементов)</item>
     </plurals>
     <string name="export_warning1">Экспорт метаданных создаст список ваших книг в формате JSON.\nЭто не способ перемещения вашей коллекции на компьютер или SD-карту.\nНажмите здесь, чтобы узнать, как это сделать.</string>
     <string name="export_warning2">Книги экспортируются без изображений.\nВам придётся загрузить их снова после восстановления, если папка изображений отсутствует.</string>
@@ -382,13 +363,11 @@
         <item quantity="one">Вы уверены, что хотите удалить %d выбранный элемент?</item>
         <item quantity="few">Вы уверены, что хотите удалить %d выбранных элемента?</item>
         <item quantity="many">Вы уверены, что хотите удалить %d выбранных элементов?</item>
-        <item quantity="other">Вы уверены, что хотите удалить %d выбранных элементов?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
         <item quantity="one">Вы уверены, что хотите заархивировать %d выбранный элемент?</item>
         <item quantity="few">Вы уверены, что хотите заархивировать %d выбранных элемента?</item>
         <item quantity="many">Вы уверены, что хотите заархивировать %d выбранных элементов?</item>
-        <item quantity="other">Вы уверены, что хотите заархивировать %d выбранных элементов?</item>
     </plurals>
     <string name="new_group_name">Название новой группы?</string>
     <string name="group_edit_name">Редактировать название группы</string>
@@ -400,13 +379,11 @@
         <item quantity="one">%d книга</item>
         <item quantity="few">%d книги</item>
         <item quantity="many">%d книг</item>
-        <item quantity="other">%d книг</item>
     </plurals>
     <plurals name="delete_success_groups">
         <item quantity="one">%d группа</item>
         <item quantity="few">%d группы</item>
         <item quantity="many">%d групп</item>
-        <item quantity="other">%d групп</item>
     </plurals>
     <string name="delete_success">успешно удалено</string>
     <string name="archive_progress">Архивирую книги</string>
@@ -416,7 +393,6 @@
         <item quantity="one">%d книга успешно заархивирована</item>
         <item quantity="few">%d книги успешно заархивировано</item>
         <item quantity="many">%d книг успешно заархивированы</item>
-        <item quantity="other">%d книг успешно заархивированы</item>
     </plurals>
     <string name="notif_archive_fail">Архивация не удалась</string>
     <string name="notif_archive_fail_details">Не удалось архивировать по крайней мере одну книгу</string>
@@ -424,7 +400,6 @@
         <item quantity="one">%d книга заархивирована в Загрузках</item>
         <item quantity="few">%d книги заархивировано в Загрузках</item>
         <item quantity="many">%d книг заархивировано в Загрузках</item>
-        <item quantity="other">%d книг заархивировано в Загрузках</item>
     </plurals>
     <string name="stream_canceled">Потоковая передача отменена — книга не доступна в сети</string>
     <string name="download_canceled">Загрузка отменена — книга не доступна в сети</string>
@@ -449,13 +424,11 @@
         <item quantity="one">%d элемент</item>
         <item quantity="few">%d элемента</item>
         <item quantity="many">%d элементов</item>
-        <item quantity="other">%d элементов</item>
     </plurals>
     <plurals name="number_of_book_search_results">
         <item quantity="one">%d результат из %d</item>
         <item quantity="few">%d результата из %d</item>
         <item quantity="many">%d результатов из %d</item>
-        <item quantity="other">%d результатов из %d</item>
     </plurals>
     <string name="reset">Разрешения были сброшены.\nПриложение перезапускается.</string>
     <string name="restart_needed">"Изменения будут применены после перезапуска Hentoid"</string>
@@ -463,7 +436,6 @@
         <item quantity="one">Загрузить эту %d книгу снова?</item>
         <item quantity="few">Загрузить эти %d книги снова?</item>
         <item quantity="many">Загрузить эти %d книг снова?</item>
-        <item quantity="other">Загрузить эти %d книг снова?</item>
     </plurals>
     <plurals name="download_confirm" tools:ignore="MissingQuantity">
         <item quantity="other">Загрузить выбранное?</item>
@@ -475,19 +447,16 @@
         <item quantity="one">%d книга находится во внешней библиотеке и не может быть загружена снова\nЭти книги будет пропущены.</item>
         <item quantity="few">%d книги находятся во внешней библиотеке и не могут быть загружены снова\nЭти книги будут пропущены.</item>
         <item quantity="many">%d книг находятся во внешней библиотеке и не могут быть загружены снова\nЭти книги будут пропущены.</item>
-        <item quantity="other">%d книг находятся во внешней библиотеке и не могут быть загружены снова\nЭти книги будут пропущены.</item>
     </plurals>
     <plurals name="download_non_streamed_content">
         <item quantity="one">%d книга уже загружена\nЭти книги будут пропущены.</item>
         <item quantity="few">%d книги уже загружены\nЭти книги будут пропущены.</item>
         <item quantity="many">%d книг уже загружено\nЭти книги будут пропущены.</item>
-        <item quantity="other">%d книг уже загружено\nЭти книги будут пропущены.</item>
     </plurals>
     <plurals name="stream_external_streamed_content">
         <item quantity="one">%d книга уже стримится или находится во внешней библиотеке\nЭти книги будут пропущены.</item>
         <item quantity="few">%d книги уже стримятся или находятся во внешней библиотеке\nЭти книги будут пропущены.</item>
         <item quantity="many">%d книг уже стримятся или находятся во внешней библиотеке\nЭти книги будут пропущены.</item>
-        <item quantity="other">%d книг уже стримятся или находятся во внешней библиотеке\nЭти книги будут пропущены.</item>
     </plurals>
     <string name="about_to_delete">Книга будет удалена…</string>
     <string name="help_search">Ищите по чему угодно: названию, автору, тэгам\nи даже коду запуска!</string>
@@ -496,7 +465,6 @@
         <item quantity="one">Выбран %d элемент</item>
         <item quantity="few">Выбрано %d элемента</item>
         <item quantity="many">Выбрано %d элементов</item>
-        <item quantity="other">Выбрано %d элементов</item>
     </plurals>
     <string name="folder_undefined">Ошибка — Родительская папка неизвестна</string>
     <string name="malformed_url">Ошибка — Неправильный URL</string>
@@ -505,7 +473,6 @@
         <item quantity="one">%d книга из внешней библиотеки не будет удалена</item>
         <item quantity="few">%d книги из внешней библиотеки не будут удалены</item>
         <item quantity="many">%d книг из внешней библиотеки не будут удалены</item>
-        <item quantity="other">%d книг из внешней библиотеки не будут удалены</item>
     </plurals>
     <string name="group_make_cover">Установить как обложку группы</string>
     <string name="group_make_cover_ask">Вы уверены, что хотите установить обложку этой книги как обложку группы?</string>
@@ -525,7 +492,6 @@
         <item quantity="one">Удалить %d книгу</item>
         <item quantity="few">Удалить %d книги</item>
         <item quantity="many">Удалить %d книг</item>
-        <item quantity="other">Удалить %d книг</item>
     </plurals>
     <plurals name="group_delete_selected_group_books" tools:ignore="MissingQuantity">
         <item quantity="other">Удалить группы и книги</item>
@@ -664,7 +630,6 @@
         <item quantity="one">Найден %s результат</item>
         <item quantity="few">Найдено %s результата</item>
         <item quantity="many">Найдено %s результатов</item>
-        <item quantity="other">Найдено %s результатов</item>
     </plurals>
     <string name="search_select_a_filter">Выберите фильтр</string>
 
@@ -777,7 +742,6 @@
         <item quantity="one">%d дубликат</item>
         <item quantity="few">%d дубликата</item>
         <item quantity="many">%d дубликатов</item>
-        <item quantity="other">%d дубликатов</item>
     </plurals>
     <string name="duplicate_title_score">Название: %.0f%%</string>
     <string name="duplicate_title_score_nodata">Название: нет данных</string>
@@ -794,7 +758,6 @@
         <item quantity="one">%d дубликат успешно определён</item>
         <item quantity="few">%d дубликата успешно определено</item>
         <item quantity="many">%d дубликатов успешно определено</item>
-        <item quantity="other">%d дубликатов успешно определено</item>
     </plurals>
     <string name="duplicate_empty_first_use">Нечего показывать, начните новый поиск</string>
     <string name="duplicate_processing">Идёт определение дубликатов</string>
@@ -802,7 +765,6 @@
         <item quantity="one">%d дубликат</item>
         <item quantity="few">%d дубликата</item>
         <item quantity="many">%d дубликатов</item>
-        <item quantity="other">%d дубликатов</item>
     </plurals>
     <string name="duplicate_empty_no_result">Дубликатов не обнаружено</string>
     <string name="duplicate_keep">Оставить</string>
@@ -824,7 +786,7 @@
     <!-- Generic delete & purge -->
     <string name="notif_delete_complete">Удаление завершено</string>
     <plurals name="notif_delete_complete_details" tools:ignore="MissingQuantity">
-        <item quantity="one">Удалено: %d</item>
+        <item quantity="other">Удалено: %d</item>
     </plurals>
     <string name="notif_delete_fail">Удаление не удалось</string>
     <string name="notif_delete_fail_details">Не удалось удалить по крайней мере одну книгу</string>
