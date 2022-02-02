@@ -5,14 +5,14 @@
 
     <string name="pref_cat_library">Библиотека</string>
     <string name="pref_drawer_sources_title">Управление источниками</string>
-    <string name="pref_drawer_sources_summary">Включайте, выключайте и\nреорганизовывайте источники,\n показываемые в левом\nменю.</string>
+    <string name="pref_drawer_sources_summary">Включайте, выключайте и реорганизовывайте источники, показываемые в левом меню</string>
     <string name="pref_library_display_title">Способ отображения</string>
     <string name="pref_library_display_summary">Вид отображения книг и групп.\nТекущий: %s</string>
     <string name="pref_endless_scroll_title">Бесконечная прокрутка</string>
-    <string name="pref_endless_scroll_summary_off">Включает бесконечную прокрутку в списке загрузок.\nОтключает разделение на страницы.</string>
+    <string name="pref_endless_scroll_summary_off">Включает бесконечную прокрутку в списке загрузок.\nОтключает разделение на страницы</string>
     <string name="pref_endless_scroll_summary_on">Прокручивайте, сколько вашей душе угодно.</string>
     <string name="pref_quantity_per_page_title">Кол-во элементов на странице</string>
-    <string name="pref_quantity_per_page_summary">Определяет, сколько элементов отображается на одной странице в списке загрузок.\nСейчас: %s.</string>
+    <string name="pref_quantity_per_page_summary">Определяет, сколько элементов отображается на одной странице в списке загрузок.\nСейчас: %s</string>
 
     <string name="pref_cat_search">Расширенный поиск</string>
     <string name="pref_attributes_list_order_title">Способ сортировки отображаемых метаданных</string>
@@ -40,7 +40,7 @@
     <string name="prefs_ask_detach_external_library">Вы уверены, что хотите отключить внешнюю библиотеку?</string>
     <string name="prefs_external_library_detached">Внешняя библиотека отключена</string>
     <string name="pref_folder_trunc_title">Cокращать названия папок</string>
-    <string name="pref_folder_trunc_summary">Урезание названий папок.\nСейчас: %s.</string>
+    <string name="pref_folder_trunc_summary">Урезание названий папок.\nСейчас: %s</string>
     <string name="pref_memory_usage_title">Использование памяти</string>
     <string name="pref_memory_usage_summary">Свободное место: %.2f%% (нажмите для подробностей)</string>
     <string name="pref_memory_alert_title">Предупреждать при почти полном заполнении памяти</string>
@@ -58,10 +58,11 @@
     <string name="pref_refresh_library_title">Обновить библиотеку</string>
     <string name="pref_refresh_library_summary">Вручную обновить содержимое библиотеки</string>
     <string name="pref_delete_all_except_favs_title">Удалить все книги, кроме избранных</string>
-    <string name="pref_delete_all_except_favs_summary">Очистить библиотеку и оставить лишь избранные книги\nNB: Не относится к внешней библиотеке</string>
+    <string name="pref_delete_all_except_favs_summary">Очистить библиотеку и оставить лишь избранные книги\nВнимание: не относится к внешней библиотеке</string>
     <plurals name="pref_ask_delete_all_except_favs">
 	<item quantity="one">Вы действительно хотите удалить %d книгу?</item>
 	<item quantity="few">Вы действительно хотите удалить %d книги?</item>
+    <item quantity="many">Вы действительно хотите удалить %d книг?</item>
 	<item quantity="other">Вы действительно хотите удалить %d книг?</item>
     </plurals>
 
@@ -89,14 +90,14 @@
     <string name="pref_browser_duplicate_try_pages_on">Искать дополнительные страницы на потенциальных дубликатах</string>
     <string name="pref_browser_mark_downloaded_title">Помечать загруженные книги</string>
     <string name="pref_browser_mark_downloaded_off">Уже загруженные книги никак не выделяются</string>
-    <string name="pref_browser_mark_downloaded_on">Уже загруженные книги выделяются\nNB: это работает не на всех сайтах</string>
+    <string name="pref_browser_mark_downloaded_on">Уже загруженные книги выделяются\nВнимание: работает не на всех сайтах</string>
     <string name="pref_browser_visuals">Внешний вид</string>
     <string name="pref_browser_augmented_title">Улучшение качества жизни</string>
     <string name="pref_browser_augmented_off">Используется стандартное поведение</string>
     <string name="pref_browser_augmented_on">Реклама удаляется, а обработка происходит быстрее</string>
     <string name="pref_browser_override_overview_title">Отключить обзор страницы</string>
-    <string name="pref_browser_override_overview_summary_off">Позволяет вам выставить внизу предпочитаемый уровень масштаба по умолчанию.</string>
-    <string name="pref_browser_override_overview_summary_on">Воспользуйтесь настройкой внизу для определения предпочитаемого уровня масштаба по умолчанию.\nПримечание: Работает только на Hitomi и e-hentai.</string>
+    <string name="pref_browser_override_overview_summary_off">Внизу вы можете выставить предпочитаемый уровень масштаба по умолчанию</string>
+    <string name="pref_browser_override_overview_summary_on">Воспользуйтесь настройкой внизу для определения предпочитаемого уровня масштаба по умолчанию.\nПримечание: Работает только на Hitomi и e-hentai</string>
     <string name="pref_browser_initial_zoom_title">Масштаб по умолчанию</string>
     <string name="pref_browser_initial_zoom_summary">Уровень масштаба при загрузке страницы.\nСейчас: %s%%</string>
     <string name="pref_browser_dns">Сторонний DNS</string>
@@ -138,18 +139,18 @@
     <string name="pref_dl_hitomi_webp_summary_off">Загружать изображения в других форматах (PNG, JPG)</string>
     <string name="pref_dl_hitomi_webp_summary_on">Загружать WEBP, когда возможно</string>
     <string name="pref_dl_threads_quantity_title">Кол-во параллельных загрузок</string>
-    <string name="pref_dl_threads_quantity_summary">Число изображений, загружающихся одновременно.\nСейчас: %s.</string>
+    <string name="pref_dl_threads_quantity_summary">Число изображений, загружающихся одновременно.\nСейчас: %s</string>
 
     <!-- Privacy -->
     <string name="pref_screen_privacy">Конфиденциальность</string>
     <string name="pref_app_preview_title">Предпросмотр в списке недавних приложений</string>
-    <string name="pref_app_preview_summary_off">В списке недавних приложений не отображается, что открыто в приложении.\nВключите, если хотите делать скриншоты приложения.</string>
-    <string name="pref_app_preview_summary_on">Содержимое экрана не скрывается в списке недавних приложений.</string>
+    <string name="pref_app_preview_summary_off">В списке недавних приложений не отображается, что открыто в приложении.\nВключите, если хотите делать скриншоты приложения</string>
+    <string name="pref_app_preview_summary_on">Содержимое экрана не скрывается в списке недавних приложений</string>
     <string name="pref_screenshot_title">Разрешить скриншоты</string>
-    <string name="pref_screenshot_summary_off">Предпросмотр в списке недавних приложений и скриншоты в приложении отключены.</string>
-    <string name="pref_screenshot_summary_on">Скриншоты разрешены.</string>
+    <string name="pref_screenshot_summary_off">Предпросмотр в списке недавних приложений и скриншоты в приложении отключены</string>
+    <string name="pref_screenshot_summary_on">Скриншоты разрешены</string>
     <string name="pref_analytics_preference_title">Аналитика Firebase</string>
-    <string name="pref_analytics_preference_summary_off">Сбор аналитики выключен.\nВключите его, чтобы мы могли улучшать приложение, отслеживая сбои и ошибки в нём.</string>
+    <string name="pref_analytics_preference_summary_off">Сбор аналитики выключен.\nВключите его, чтобы мы могли улучшать приложение, отслеживая сбои и ошибки в нём</string>
     <string name="pref_analytics_preference_summary_on">Сбор аналитики включён.\nСпасибо, что помогаете нам улучшить Hentoid!</string>
 
     <!-- Updates -->
@@ -160,7 +161,7 @@
     <string name="pref_check_updates_manual_no_new">Обновлений не найдено — Вы уже используете последнюю версию</string>
     <string name="pref_check_updates_manual_no_connection">Не удалось проверить обновления. Проверьте соединение или попытайтесь позднее.</string>
     <string name="pref_check_updates_title">Автоматические обновления</string>
-    <string name="pref_check_updates_summary_off">Включите автоматическую проверку обновлений по мобильной сети.</string>
+    <string name="pref_check_updates_summary_off">Вы также можете включить автоматическую проверку обновлений по мобильной сети</string>
     <string name="pref_check_updates_summary_on">Это не отключает возможность ручной проверки обновлений.</string>
 
     <!-- Viewer -->

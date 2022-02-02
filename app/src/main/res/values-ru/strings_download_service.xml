@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <plurals name="download_completed">
-	<item quantity="one">%d загрузка завершена</item>
+        <item quantity="one">%d загрузка завершена</item>
         <item quantity="few">%d загрузки завершены</item>
+        <item quantity="many">%d загрузок завершено</item>
         <item quantity="other">%d загрузок завершено</item>
     </plurals>
     <string name="download_complete">Загрузка завершена</string>
@@ -13,8 +14,9 @@
     <string name="unhandled_download_error">Необрабатываемая ошибка при чтении ссылок на изображения</string>
     <string name="downloading">Загружается</string>
     <plurals name="add_to_queue">
-	<item quantity="one">%d элемент из %d добавлен в очередь</item>
-	<item quantity="few">%d элемента из %d добавлены в очередь</item>
+        <item quantity="one">%d элемент из %d добавлен в очередь</item>
+        <item quantity="few">%d элемента из %d добавлены в очередь</item>
+        <item quantity="many">%d элементов из %d добавлено в очередь</item>
         <item quantity="other">%d элементов из %d добавлено в очередь</item>
     </plurals>
     <string name="already_downloaded">Уже загружено</string>

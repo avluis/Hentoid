@@ -18,9 +18,9 @@
 
     <string name="tools_screen_cache">Cache management</string>
     <string name="tools_cache_browser">Clear browser cache</string>
-    <string name="tools_cache_browser_success">Webview cache successfuly cleared</string>
+    <string name="tools_cache_browser_success">Webview cache successfully cleared</string>
     <string name="tools_cache_app">Clear app cache</string>
-    <string name="tools_cache_app_success">App cache successfuly cleared</string>
+    <string name="tools_cache_app_success">App cache successfully cleared</string>
 
     <string name="tools_latest_logs_title">App logs</string>
     <string name="tools_latest_logs_summary">View the app\'s latest logs</string>
