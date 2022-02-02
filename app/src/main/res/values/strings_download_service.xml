@@ -12,8 +12,8 @@
     <string name="unhandled_download_error">Unhandled error trying to read images urls</string>
     <string name="downloading">Downloading</string>
     <plurals name="add_to_queue">
-        <item quantity="one">%d/%d item added to queue</item>
-        <item quantity="other">%d/%d items added to queue</item>
+        <item quantity="one">%1$d/%2$d item added to queue</item>
+        <item quantity="other">%1$d/%2$d items added to queue</item>
     </plurals>
     <string name="already_downloaded">Already downloaded</string>
     <string name="already_queued">Already queued</string>

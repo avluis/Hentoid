@@ -377,7 +377,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
 
             // View details icon
             if (viewDetails != null)
-                viewDetails.setText(context.getResources().getString(R.string.duplicate_count, item.nbDuplicates + 1));
+                viewDetails.setText(context.getResources().getQuantityString(R.plurals.duplicate_count, item.nbDuplicates + 1, item.nbDuplicates + 1));
 
             if (item.canDelete) {
                 if (keepDeleteGroup != null) keepDeleteGroup.setVisibility(View.VISIBLE);

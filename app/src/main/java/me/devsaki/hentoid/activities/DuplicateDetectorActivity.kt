@@ -124,8 +124,9 @@ class DuplicateDetectorActivity : BaseActivity() {
     }
 
     fun updateTitle(count: Int) {
-        binding!!.toolbar.title = if (count > -1) resources.getString(
-            R.string.duplicate_detail_title,
+        binding!!.toolbar.title = if (count > -1) resources.getQuantityString(
+            R.plurals.duplicate_detail_title,
+            count,
             count
         ) else resources.getString(R.string.title_activity_duplicate_detector)
     }
