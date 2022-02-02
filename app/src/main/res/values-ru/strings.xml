@@ -118,7 +118,7 @@
     <string name="queue_preparing">Подготовка загрузки</string>
     <string name="queue_dl">Загружается: %s</string>
     <string name="err_stats_title">Статистика ошибок</string>
-    <string name="err_stats_help">Показать подробную статистику об ошибках текущих загрузок</string>
+    <string name="err_stats_help">Показать подробную статистику об ошибках</string>
     <string name="err_no_content">Книга ещё не существует</string>
     <string name="confirm_cancel_all">Вы собираетесь отменить всё в очереди. Продолжить?</string>
     <plurals name="confirm_cancel_all_errors">
