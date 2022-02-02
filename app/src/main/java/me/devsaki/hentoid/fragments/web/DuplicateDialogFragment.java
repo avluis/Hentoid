@@ -149,7 +149,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
         binding.tvArtist.setText(ContentHelper.formatArtistForDisplay(context, content));
 
         binding.tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
-        binding.tvPages.setText(getResources().getQuantityString(R.plurals.work_pages_queue, content.getQtyPages(),content.getQtyPages() + "", ""));
+        binding.tvPages.setText(getResources().getString(R.string.work_pages_queue, content.getQtyPages() + "", ""));
 
         // Buttons
         Site site = content.getSite();

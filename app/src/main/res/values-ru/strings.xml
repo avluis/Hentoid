@@ -166,18 +166,18 @@
     <string name="queue_json_saved">JSON очереди успешно сохранён</string>
     <string name="queue_json_failed">Не удалось сохранить JSON очереди</string>
     <string name="queue_content_size_estimate">примерно %.1f МБ</string>
-    <string name="queue_bottom_bar_processed">%s из %d обработано</string>
+    <string name="queue_bottom_bar_processed">%1$s из %2$d обработано</string>
     <plurals name="queue_bottom_bar_errors">
         <item quantity="one">(%d ошибка)</item>
         <item quantity="few">(%d ошибки)</item>
         <item quantity="many">(%d ошибок)</item>
         <item quantity="other">(%d ошибок)</item>
     </plurals>
-    <string name="queue_bottom_bar_retry">[попытка %d из %d]</string>
+    <string name="queue_bottom_bar_retry">[попытка %1$d из %2$d]</string>
     <string name="queue_bottom_bar_speed">%d Кб/с</string>
-    <string name="download_notif_speed">%d%s МБ, %d Кб/c</string>
+    <string name="download_notif_speed">%1$d%2$s МБ, %3$d Кб/c</string>
     <string name="download_notif_failed">Загрузка не удалась</string>
-    <string name="download_notif_failed_details">Невозможно загрузить %s: не удалось создать папку %s. Пожалуйста, проверьте папку Hentoid и повторите загрузку с помощью кнопки \'!\'.</string>
+    <string name="download_notif_failed_details">Невозможно загрузить %1$s: не удалось создать папку %2$s. Пожалуйста, проверьте папку Hentoid и повторите загрузку с помощью кнопки \'!\'.</string>
 
     <!-- TextViews -->
     <string name="work_series">Серия: %s</string>
@@ -348,7 +348,7 @@
     <string name="read_log">Читать логи</string>
     <string name="logs_share">Поделиться логами</string>
     <string name="no_error_detected">Ошибок нет</string>
-    <string name="error_log_header">Лог ошибок: %s [%s@%s] (ошибок: %d)</string>
+    <string name="error_log_header">Лог ошибок: %1$s [%2$s@%3$s] (ошибок: %4$d)</string>
     <string name="error_log_header_queue">Лог ошибок очереди</string>
     <string name="log_import_external">Обновление/импорт внешней библиотеки</string>
     <string name="log_import">Обновление/импорт основной библиотеки</string>
@@ -676,7 +676,7 @@
     <string name="loading_archive">Загрузка: %1$d из %2$d</string>
     <string name="loading_image">Загрузка изображения: %d%%</string>
     <string name="no_image">Изображение не найдено</string>
-    <string name="viewer_img_details">%d x %d (масштаб %.0f%%) - %s</string>
+    <string name="viewer_img_details">%1$d x %2$d (масштаб %3$.0f%%) - %4$s</string>
     <string name="viewer_choose_direction">Выберите направление чтения</string>
     <string name="viewer_direction_ltr">Слева направо</string>
     <string name="viewer_direction_rtl">Справа налево</string>
@@ -732,7 +732,7 @@
     <string name="gallery_edit_chapters_help">Чтобы создать или удалить главы, нажмите на её первую страницу</string>
     <string name="gallery_clear_chapters">Очистить все главы</string>
     <string name="gallery_add_remove_chapters">Добавить и удалить главы</string>
-    <string name="gallery_display_page">%sСтраница %d%s%s</string>
+    <string name="gallery_display_page">%1$sСтраница %2$d%3$s%4$s</string>
     <string name="gallery_display_chapter">Гл. %d</string>
     <string name="gallery_no_chapter">Нет глав</string>
     <string name="renaming_progress">Переименовываю файлы…</string>

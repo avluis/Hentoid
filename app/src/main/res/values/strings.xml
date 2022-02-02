@@ -153,16 +153,16 @@
     <string name="queue_json_saved">Queue JSON successfully saved</string>
     <string name="queue_json_failed">Queue JSON saving failed</string>
     <string name="queue_content_size_estimate">estimated %.1f MB</string>
-    <string name="queue_bottom_bar_processed">%s/%d processed</string>
+    <string name="queue_bottom_bar_processed">%1$s/%2$d processed</string>
     <plurals name="queue_bottom_bar_errors">
         <item quantity="one">(%d error)</item>
         <item quantity="other">(%d errors)</item>
     </plurals>
-    <string name="queue_bottom_bar_retry">[retry %d/%d]</string>
+    <string name="queue_bottom_bar_retry">[retry %1$d/%2$d]</string>
     <string name="queue_bottom_bar_speed">%d KBps</string>
-    <string name="download_notif_speed">%d%s MB @ %d KBps</string>
+    <string name="download_notif_speed">%1$d%2$s MB @ %3$d KBps</string>
     <string name="download_notif_failed">Warning : download failed</string>
-    <string name="download_notif_failed_details">Cannot download %s : unable to create folder %s. Please check your Hentoid folder and retry downloading using the (!) button.</string>
+    <string name="download_notif_failed_details">Cannot download %1$s : unable to create folder %2$s. Please check your Hentoid folder and retry downloading using the (!) button.</string>
 
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
@@ -313,7 +313,7 @@
     <string name="read_log">Read log</string>
     <string name="logs_share">Share log</string>
     <string name="no_error_detected">No error detected.</string>
-    <string name="error_log_header">Error log for %s [%s@%s] : %d errors</string>
+    <string name="error_log_header">Error log for %1$s [%2$s@%3$s] : %4$d errors</string>
     <string name="error_log_header_queue">Error log for queue</string>
     <string name="log_import_external">External library import/refresh</string>
     <string name="log_import">Primary library import/refresh</string>
@@ -616,7 +616,7 @@
     <string name="loading_archive">Loading : %1$d/%2$d</string>
     <string name="loading_image">Loading image : %d%%</string>
     <string name="no_image">Image not found</string>
-    <string name="viewer_img_details">%d x %d (scale %.0f%%) - %s</string>
+    <string name="viewer_img_details">%1$d x %2$d (scale %3$.0f%%) - %4$s</string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
@@ -672,7 +672,7 @@
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
-    <string name="gallery_display_page">%sPage %d%s%s</string>
+    <string name="gallery_display_page">%1$sPage %2$d%3$s%4$s</string>
     <string name="gallery_display_chapter">Chp %d</string>
     <string name="gallery_no_chapter">No chapter</string>
     <string name="renaming_progress">Renaming files…</string>
