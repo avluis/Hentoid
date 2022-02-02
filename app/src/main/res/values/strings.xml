@@ -357,14 +357,14 @@
     <string name="purge_progress">Purging books</string>
     <string name="cancel_queue_progress">Canceling queue items</string>
     <plurals name="delete_success_books">
-        <item quantity="one">1 book</item>
+        <item quantity="one">%d book</item>
         <item quantity="other">%d books</item>
     </plurals>
     <plurals name="delete_success_groups">
-        <item quantity="one">1 group</item>
+        <item quantity="one">%d group</item>
         <item quantity="other">%d groups</item>
     </plurals>
-    <string name="delete_success">successfuly deleted</string>
+    <string name="delete_success">successfully deleted</string>
     <string name="archive_progress">Archiving books</string>
     <string name="archive_progress_subtitle">Done : %s</string>
     <string name="notif_archive_complete">Archival complete</string>
@@ -479,8 +479,8 @@
     <string name="split_select_help">Hold and drag to select\nEach selected chapter creates one new book</string>
     <string name="split_no_chapters">No chapters created yet :-(</string>
     <string name="split_create_chapters">Create chapters</string>
-    <string name="merge_success">Content merged successfuly</string>
-    <string name="split_success">Content split successfuly</string>
+    <string name="merge_success">Content merged successfully</string>
+    <string name="split_success">Content split successfully</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
