@@ -44,38 +44,39 @@ public class Hentai2ReadContent extends BaseContentParser {
 
         AttributeMap attributes = new AttributeMap();
         String currentProperty = "";
-        for (Element e : properties) {
-            for (Element child : e.children()) {
-                if (child.nodeName().equals("b"))
-                    currentProperty = child.text().toLowerCase().trim();
-                else if (child.nodeName().equals("a")) {
-                    switch (currentProperty) {
-                        case "page":
-                            String qtyPages = child.text().substring(0, child.text().indexOf(" page")).replace(",", "");
-                            content.setQtyPages(Integer.parseInt(qtyPages));
-                            break;
-                        case "parody":
-                            ParseHelper.parseAttribute(attributes, AttributeType.SERIE, child, false, Site.HENTAI2READ);
-                            break;
-                        case "artist":
-                            ParseHelper.parseAttribute(attributes, AttributeType.ARTIST, child, false, Site.HENTAI2READ);
-                            break;
-                        case "language":
-                            ParseHelper.parseAttribute(attributes, AttributeType.LANGUAGE, child, false, Site.HENTAI2READ);
-                            break;
-                        case "character":
-                            ParseHelper.parseAttribute(attributes, AttributeType.CHARACTER, child, false, Site.HENTAI2READ);
-                            break;
-                        case "content":
-                        case "category":
-                            ParseHelper.parseAttribute(attributes, AttributeType.TAG, child, false, Site.HENTAI2READ);
-                            break;
-                        default:
-                            // Other cases aren't interesting
+        if (properties != null)
+            for (Element e : properties) {
+                for (Element child : e.children()) {
+                    if (child.nodeName().equals("b"))
+                        currentProperty = child.text().toLowerCase().trim();
+                    else if (child.nodeName().equals("a")) {
+                        switch (currentProperty) {
+                            case "page":
+                                String qtyPages = child.text().substring(0, child.text().indexOf(" page")).replace(",", "");
+                                content.setQtyPages(Integer.parseInt(qtyPages));
+                                break;
+                            case "parody":
+                                ParseHelper.parseAttribute(attributes, AttributeType.SERIE, child, false, Site.HENTAI2READ);
+                                break;
+                            case "artist":
+                                ParseHelper.parseAttribute(attributes, AttributeType.ARTIST, child, false, Site.HENTAI2READ);
+                                break;
+                            case "language":
+                                ParseHelper.parseAttribute(attributes, AttributeType.LANGUAGE, child, false, Site.HENTAI2READ);
+                                break;
+                            case "character":
+                                ParseHelper.parseAttribute(attributes, AttributeType.CHARACTER, child, false, Site.HENTAI2READ);
+                                break;
+                            case "content":
+                            case "category":
+                                ParseHelper.parseAttribute(attributes, AttributeType.TAG, child, false, Site.HENTAI2READ);
+                                break;
+                            default:
+                                // Other cases aren't interesting
+                        }
                     }
                 }
             }
-        }
         content.putAttributes(attributes);
 
         if (updateImages) content.setImageFiles(Collections.emptyList());
