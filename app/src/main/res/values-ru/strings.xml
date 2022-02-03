@@ -37,6 +37,7 @@
     <string name="service_running">Сервис уже запущен</string>
     <string name="open_folder">Открыть папку</string>
     <string name="error">Ошибка</string>
+    <string name="_default">по умолчанию</string>
     <string name="empty" />
 
     <!-- Activities -->
@@ -154,6 +155,7 @@
     </plurals>
     <string name="queue_add_top">Добавить в начало</string>
     <string name="queue_add_bottom">Добавить в конец</string>
+    <string name="notification_user_action_title">Пользовательские действия</string>
     <string name="notification_user_action_needed">Необходимо действие пользователя</string>
     <string name="notification_action_dl_revive">Нажмите, чтобы возобновить загрузку</string>
     <string name="revive_wait">Пожалуйста, не закрывайте это окно, пока ваша загрузка возобновляется</string>
@@ -616,15 +618,28 @@
 
     <!-- SearchActivity -->
     <string name="category_any">Любое</string>
-    <string name="category_tag">Тэг (%1$d)</string>
     <string name="exclude">Исключить</string>
-    <string name="category_character">Персонаж (%1$d)</string>
+    <string name="search_category">Ищем %s</string>
+    <string name="search_prompt">Искать %s</string>
+    <!-- Used as a category on the search screen -->
     <string name="category_artist">Художник (%1$d)</string>
+    <string name="category_tag">Тэг (%1$d)</string>
+    <string name="category_characher">Персонаж (%1$d)</string>
     <string name="category_series">Серия (%1$d)</string>
     <string name="category_language">Язык (%1$d)</string>
     <string name="category_source">Источник (%1$d)</string>
-    <string name="search_category">Ищем %s</string>
-    <string name="search_prompt">Поиск %s</string>
+    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
+    <string name="object_artist">художника</string>
+    <string name="object_tag">тэг</string>
+    <string name="object_character">персонажа</string>
+    <string name="object_series">серию</string>
+    <string name="object_language">язык</string>
+    <string name="object_source">источник</string>
+    <string name="object_uploader">загрузчика</string>
+    <string name="object_circle">круг</string>
+    <string name="object_category">категорию</string>
+    <string name="object_translator">переводчика</string>
+    <string name="object_publisher">издателя</string>
     <plurals name="search_button">
         <item quantity="one">Найден %s результат</item>
         <item quantity="few">Найдено %s результата</item>
@@ -692,6 +707,7 @@
     <string name="viewer_reload_page">Перезагрузить страницу</string>
     <string name="viewer_reparse_book">Передобавить книгу</string>
     <string name="menu_edit_chapters">Редактировать главы</string>
+    <string name="gallery_title">Галерея</string>
     <string name="gallery_chapter_prefix">Глава</string>
     <string name="gallery_edit_chapters_help">Чтобы создать или удалить главы, нажмите на её первую страницу</string>
     <string name="gallery_clear_chapters">Очистить все главы</string>
@@ -700,6 +716,7 @@
     <string name="gallery_display_chapter">Гл. %d</string>
     <string name="gallery_no_chapter">Нет глав</string>
     <string name="renaming_progress">Переименовываю файлы…</string>
+    <string name="content_removal_failed">Не удалось удалить контент</string>
     <string name="page_removal_failed">Не удалось удалить страницу</string>
     <string name="file_removal_failed">Не удалось удалить файл</string>
     <string name="storage_permission_denied">Отсутствует разрешение на запись — невозможно начать просмотр</string>
@@ -783,6 +800,7 @@
     <string name="duplicate_wait_index">Пожалуйста, подождите — идёт индексирование</string>
 
     <!-- Generic delete & purge -->
+    <string name="notif_delete_title">Удаление контента</string>
     <string name="notif_delete_complete">Удаление завершено</string>
     <plurals name="notif_delete_complete_details" tools:ignore="MissingQuantity">
         <item quantity="other">Удалено: %d</item>
