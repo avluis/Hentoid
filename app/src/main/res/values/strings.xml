@@ -35,6 +35,7 @@
     <string name="service_running">Service is already running</string>
     <string name="open_folder">Open folder</string>
     <string name="error">Error</string>
+    <string name="_default">default</string>
     <string name="empty" />
 
     <!-- Activities -->
@@ -147,7 +148,8 @@
     </plurals>
     <string name="queue_add_top">Add on top</string>
     <string name="queue_add_bottom">Add to bottom</string>
-    <string name="notification_action_title">User action needed</string>
+    <string name="notification_user_action_title">User actions</string>
+    <string name="notification_user_action_needed">User action needed</string>
     <string name="notification_action_dl_revive">Tap here to reactivate your download</string>
     <string name="revive_wait">Please stay on this screen while your download is revived</string>
     <string name="queue_json_saved">Queue JSON successfully saved</string>
@@ -593,15 +595,28 @@
 
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
-    <string name="category_tag">Tag (%1$d)</string>
     <string name="exclude">Exclude</string>
-    <string name="category_character">Character (%1$d)</string>
+    <string name="search_category">%s search</string>
+    <string name="search_prompt">Search %s</string>
+    <!-- Used as a category on the search screen -->
     <string name="category_artist">Artist (%1$d)</string>
+    <string name="category_tag">Tag (%1$d)</string>
+    <string name="category_character">Character (%1$d)</string>
     <string name="category_series">Series (%1$d)</string>
     <string name="category_language">Language (%1$d)</string>
     <string name="category_source">Source (%1$d)</string>
-    <string name="search_category">%s search</string>
-    <string name="search_prompt">Search %s</string>
+    <!-- Used near items or in prompts (e.g. "Search artist") -->
+    <string name="object_artist">Artist</string>
+    <string name="object_tag">Tag</string>
+    <string name="object_character">Character</string>
+    <string name="object_series">Series</string>
+    <string name="object_language">Language</string>
+    <string name="object_source">Source</string>
+    <string name="object_uploader">Uploader</string>
+    <string name="object_circle">Circle</string>
+    <string name="object_category">Category</string>
+    <string name="object_translator">Translator</string>
+    <string name="object_publisher">Publisher</string>
     <plurals name="search_button">
         <item quantity="one">%s Result found</item>
         <item quantity="other">%s Results found</item>
@@ -668,6 +683,7 @@
     <string name="viewer_reload_page">Reload page</string>
     <string name="viewer_reparse_book">Reparse book</string>
     <string name="menu_edit_chapters">Edit chapters</string>
+    <string name="gallery_title">Gallery</string>
     <string name="gallery_chapter_prefix">Chapter</string>
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
@@ -676,6 +692,7 @@
     <string name="gallery_display_chapter">Chp %d</string>
     <string name="gallery_no_chapter">No chapter</string>
     <string name="renaming_progress">Renaming files…</string>
+    <string name="content_removal_failed">Content removal failed</string>
     <string name="page_removal_failed">Page removal failed</string>
     <string name="file_removal_failed">File removal failed</string>
     <string name="storage_permission_denied">Storage permission denied - cannot open the viewer</string>
@@ -755,6 +772,7 @@
     <string name="duplicate_wait_index">Please wait while indexing</string>
 
     <!-- Generic delete & purge -->
+    <string name="notif_delete_title">Content deletion</string>
     <string name="notif_delete_complete">Delete complete</string>
     <plurals name="notif_delete_complete_details">
         <item quantity="one">%d deleted successfully</item>

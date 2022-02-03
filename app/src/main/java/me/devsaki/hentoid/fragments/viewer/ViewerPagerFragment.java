@@ -735,7 +735,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         Timber.e(t);
         if (t instanceof ContentNotProcessedException) {
             ContentNotProcessedException e = (ContentNotProcessedException) t;
-            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            String message = (null == e.getMessage()) ? getString(R.string.content_removal_failed) : e.getMessage();
             Snackbar.make(binding.recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
     }
