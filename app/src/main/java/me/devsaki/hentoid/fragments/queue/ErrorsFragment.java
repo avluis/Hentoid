@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.queue;
 import static androidx.core.view.ViewCompat.requireViewById;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -187,7 +188,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
         } else {
             callback.remove();
-            requireActivity().onBackPressed();
+            Activity activity = getActivity();
+            if (activity != null) activity.onBackPressed();
         }
     }
 
