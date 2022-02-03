@@ -175,7 +175,7 @@
     <string name="download_notif_failed_details">Невозможно загрузить %1$s: не удалось создать папку %2$s. Пожалуйста, проверьте папку Hentoid и повторите загрузку с помощью кнопки \'!\'.</string>
 
     <!-- TextViews -->
-    <string name="work_series">Серия: %s</string>
+    <string name="work_series">Сеттинг: %s</string>
     <string name="work_artist">Художник: %s</string>
     <plurals name="work_pages_missing">
         <item quantity="one">(%d пропущена)</item>
@@ -416,7 +416,7 @@
     <string name="search_bookid_label">Поиск \'%s\' в…</string>
     <string name="book_title">Это довольно длинный заголовок, но таким уж нам он нужен.</string>
     <string name="book_launchcode">Код запуска: %s</string>
-    <string name="book_series">Серия: Название</string>
+    <string name="book_series">Сеттинг: Название</string>
     <string name="book_artist">Художник: У этой книги так много художников, понапиханных в одном месте, что одна строчка на экране точно бы не уместила их всех</string>
     <string name="book_pages_queue">Страниц: 1234; примерно 125 МБ</string>
     <string name="book_pages_library">1234 страниц / 1125 МБ</string>
@@ -625,14 +625,14 @@
     <string name="category_artist">Художник (%1$d)</string>
     <string name="category_tag">Тэг (%1$d)</string>
     <string name="category_characher">Персонаж (%1$d)</string>
-    <string name="category_series">Серия (%1$d)</string>
+    <string name="category_series">Сеттинг (%1$d)</string>
     <string name="category_language">Язык (%1$d)</string>
     <string name="category_source">Источник (%1$d)</string>
     <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_artist">художника</string>
     <string name="object_tag">тэг</string>
     <string name="object_character">персонажа</string>
-    <string name="object_series">серию</string>
+    <string name="object_series">сеттинг</string>
     <string name="object_language">язык</string>
     <string name="object_source">источник</string>
     <string name="object_uploader">загрузчика</string>
