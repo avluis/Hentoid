@@ -154,7 +154,7 @@
     </plurals>
     <string name="queue_add_top">Добавить в начало</string>
     <string name="queue_add_bottom">Добавить в конец</string>
-    <string name="notification_action_title">Необходимо действие пользователя</string>
+    <string name="notification_user_action_needed">Необходимо действие пользователя</string>
     <string name="notification_action_dl_revive">Нажмите, чтобы возобновить загрузку</string>
     <string name="revive_wait">Пожалуйста, не закрывайте это окно, пока ваша загрузка возобновляется</string>
     <string name="queue_json_saved">JSON очереди успешно сохранён</string>
