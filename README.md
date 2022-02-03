@@ -12,7 +12,7 @@ ___
 
 ![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome.png)
 
-[![](https://github.com/avluis/Hentoid/blob/master/wiki-img/en-flag.svg) English](https://github.com/avluis/Hentoid/tree/master/README.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/ru-flag.svg) Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md)
+###### [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/en-flag.svg) English](https://github.com/avluis/Hentoid/tree/master/README.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/ru-flag.svg) Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md)
 
 
 ##### `Hentoid` is an ad-free Doujinshi & H-Manga archiving and viewing app.

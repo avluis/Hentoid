@@ -12,7 +12,7 @@ ___
 
 ![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome-ru.png)
 
-[![](https://github.com/avluis/Hentoid/blob/master/wiki-img/en-flag.svg) English](https://github.com/avluis/Hentoid/tree/master/README.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/ru-flag.svg) Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md)
+###### [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/en-flag.svg) English](https://github.com/avluis/Hentoid/tree/master/README.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/ru-flag.svg) Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md)
 
 ##### `Hentoid` — это приложение для скачивания додзинси и хентай-манги без рекламы.
 ###### `Hentoid` поддерживает следующие сайты:
