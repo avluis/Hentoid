@@ -433,7 +433,7 @@
     <string name="reset">Разрешения были сброшены.\nПриложение перезапускается.</string>
     <string name="restart_needed">"Изменения будут применены после перезапуска Hentoid"</string>
     <plurals name="redownload_confirm" tools:ignore="MissingQuantity">
-        <item quantity="one">Загрузить эту книгу снова?</item>
+        <item quantity="one" tools:ignore="ImpliedQuantity">Загрузить эту книгу снова?</item>
         <item quantity="other">Загрузить эти книги снова?</item>
     </plurals>
     <plurals name="download_confirm" tools:ignore="MissingQuantity">
@@ -707,7 +707,7 @@
     <string name="chapter_toggle_failed">Не удалось открыть главу на странице %d</string>
     <string name="chapters_remove_failed">Не удалось удалить главы</string>
     <string name="chapter_move_failed">Не удалось переместить главу</string>
-    <string name="slideshow_start">Слайдшоу начинается (задержка в %.1f с)</string>
+    <string name="slideshow_start">Начало слайдшоу (задержка в %.1f с)</string>
     <string name="slideshow_stop">Слайдшоу остановлено</string>
 
     <!-- Changelog -->

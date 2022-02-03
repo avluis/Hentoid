@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="tools_title">Tools</string>
+    <string name="tools_title">Инструменты</string>
     <string name="tools_screen_import_export">Импорт и экспорт</string>
 
     <string name="tools_export_library_title">Экспортировать метаданные</string>
