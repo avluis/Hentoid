@@ -4,15 +4,15 @@
 -->
 ___
 
-[![Загрузить](https://img.shields.io/badge/GET-the%20APK-brightgreen.svg)](https://github.com/avluis/Hentoid/releases/latest)
+[![Скачать](https://img.shields.io/badge/Скачать-APK-brightgreen.svg)](https://github.com/avluis/Hentoid/releases/latest)
 
 [![Контроль качества](https://sonarcloud.io/api/project_badges/measure?project=RobbWatershed_hentoid-sonar&metric=alert_status)](https://sonarcloud.io/dashboard?id=RobbWatershed_hentoid-sonar) [![Build status](https://app.bitrise.io/app/70539fbfc39cb9d8/status.svg?token=_kOMCvtscTfWpw7mdsqvJA&branch=dev)](https://app.bitrise.io/app/70539fbfc39cb9d8)
 
 [![](https://discordapp.com/api/guilds/173995475098271746/embed.png?style=banner2)](https://discord.gg/QEZ3qk9)
 
-![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome.png)
+![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome-ru.png)
 
-[English](https://github.com/avluis/Hentoid/tree/master/README.md) | [Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md)
+[![](https://github.com/avluis/Hentoid/blob/master/wiki-img/en-flag.svg) English](https://github.com/avluis/Hentoid/tree/master/README.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/ru-flag.svg) Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md)
 
 ##### `Hentoid` — это приложение для скачивания додзинси и хентай-манги без рекламы.
 ###### `Hentoid` поддерживает следующие сайты:
