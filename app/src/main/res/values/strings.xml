@@ -770,6 +770,11 @@
     <string name="group_year">Last year</string>
     <string name="group_long">A long time ago</string>
     <string name="group_no_group">Ungrouped</string>
+    <!-- Themes -->
+    <string name="theme_light">Light</string>
+    <string name="theme_deep_red">Deep Red</string>
+    <string name="theme_dark">Dark</string>
+
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>
