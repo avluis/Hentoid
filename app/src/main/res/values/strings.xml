@@ -1,10 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Generic usage -->
     <string name="app_name">Hentoid</string>
     <string name="app_id" translatable="false">me.devsaki.hentoid</string>
     <string name="app_intro">Welcome</string>
-    <string name="yes">Yes</string> <!-- because Android default "OK" value for "yes" key is nonsense -->
-    <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
+    <string name="yes">Yes</string>
+    <!-- because Android default "OK" value for "yes" key is nonsense -->
+    <string name="no">No</string>
+    <!-- because Android default "Cancel" value for "no" key is nonsense -->
     <string name="ok">OK</string>
     <string name="on">On</string>
     <string name="off">Off</string>
@@ -36,8 +39,7 @@
     <string name="open_folder">Open folder</string>
     <string name="error">Error</string>
     <string name="_default">default</string>
-    <string name="empty" translatable="false" />
-
+    <string name="empty" translatable="false"/>
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
     <string name="title_activity_downloads">Library</string>
@@ -46,7 +48,6 @@
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
-
     <!-- API29 migration / library refresh screen -->
     <string name="api29_migration_title">Hentoid v12\nFile management update</string>
     <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
@@ -61,7 +62,6 @@
     <string name="api29_migration_step4_init">Importing queue…</string>
     <string name="api29_migration_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
     <string name="api29_migration_allow_write">Please allow write permission</string>
-
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
     <string name="menu_fav">Toggle favourite filter</string>
@@ -96,7 +96,6 @@
     <string name="low_memory">Your device is low on memory !</string>
     <string name="fix_permissions">Fix</string>
     <string name="view_queue">View queue</string>
-
     <!-- Queue / Downloader -->
     <string name="downloader_title">Downloader</string>
     <string name="queue_queue_tab">In progress</string>
@@ -143,8 +142,8 @@
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <plurals name="redownloaded_scratch">
-        <item quantity="one">%d/%d item cleared for redownloading</item>
-        <item quantity="other">%d/%d items cleared for redownloading</item>
+        <item quantity="one">%$1d/%$2d item cleared for redownloading</item>
+        <item quantity="other">%$1d/%$2d items cleared for redownloading</item>
     </plurals>
     <string name="queue_add_top">Add on top</string>
     <string name="queue_add_bottom">Add to bottom</string>
@@ -165,7 +164,6 @@
     <string name="download_notif_speed">%1$d%2$s MB @ %3$d KBps</string>
     <string name="download_notif_failed">Warning : download failed</string>
     <string name="download_notif_failed_details">Cannot download %1$s : unable to create folder %2$s. Please check your Hentoid folder and retry downloading using the (!) button.</string>
-
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: %s</string>
@@ -179,7 +177,6 @@
         <item quantity="other">%1$d pages / "%2$.1f MB</item>
     </plurals>
     <string name="library_metrics_storage">%.0f MB</string>
-
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
     <string name="refresh_caption">Automatically refresh library data by rescanning files and folders.</string>
@@ -192,7 +189,6 @@
     <string name="refresh_options_remove_2">No image has been downloaded</string>
     <string name="refresh_options_remove_3">JSON file is unreadable (not recommended)</string>
     <string name="refresh_options_remove_or">or</string>
-
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
     <string name="generic_progress">%1$d / %2$d %3$s</string>
@@ -204,7 +200,6 @@
         <item quantity="one">%1$d / %2$d group</item>
         <item quantity="other">%1$d / %2$d groups</item>
     </plurals>
-
     <!-- Import metadata -->
     <string name="import_title">Import metadata</string>
     <string name="import_mode_add">Add imported items</string>
@@ -227,7 +222,7 @@
         <item quantity="one">Import bookmarks (%d item)</item>
         <item quantity="other">Import bookmarks (%d items)</item>
     </plurals>
-    <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue > Errors.</string>
+    <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue &gt; Errors.</string>
     <string name="import_run">RUN IMPORT</string>
     <plurals name="import_result_books">
         <item quantity="one">%d book imported successfully</item>
@@ -238,7 +233,6 @@
         <item quantity="other">%d bookmarks imported successfully</item>
     </plurals>
     <string name="dialog_prompt">Allow write permission</string>
-
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>
     <plurals name="export_file_library">
@@ -259,11 +253,8 @@
     <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
     <string name="export_faq_url" translatable="false">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
     <string name="export_run">RUN EXPORT</string>
-
     <string name="import_settings_title">Import settings</string>
     <string name="import_settings_success">Import successful</string>
-
-
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
     <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
@@ -293,10 +284,10 @@
         <item quantity="one">%s failed</item>
         <item quantity="other">%s failed</item>
     </plurals>
-
-    <string name="enabled" translatable="false">ENABLED</string> <!-- for logging only -->
-    <string name="disabled" translatable="false">DISABLED</string> <!-- for logging only -->
-
+    <string name="enabled" translatable="false">ENABLED</string>
+    <!-- for logging only -->
+    <string name="disabled" translatable="false">DISABLED</string>
+    <!-- for logging only -->
     <!-- Memory usage -->
     <string name="memory_title">Memory usage</string>
     <string name="memory_total">Total : %s</string>
@@ -308,7 +299,6 @@
     <string name="memory_details_source">Source</string>
     <string name="memory_details_books">Books</string>
     <string name="memory_details_size">Size</string>
-
     <!-- Logs -->
     <string name="logs_title">Latest logs</string>
     <string name="logs_open">Open log</string>
@@ -321,14 +311,12 @@
     <string name="log_import">Primary library import/refresh</string>
     <string name="log_cleanup">Primary library cleanup</string>
     <string name="log_api29_migration">Library migration from Hentoid v1.11-</string>
-
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
     <string name="error_open">Error opening file : no relevant application found</string>
     <string name="error_browser">Error opening link: no browser found</string>
     <string name="error_send">Error sending archive : no relevant application found</string>
-
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
     <string name="redownload_dialog_message">Total images in download: %1$d\nImages without error: %2$d\nImages with error: %3$d</string>
@@ -337,7 +325,6 @@
     <string name="redownload_open_log">Open error log</string>
     <string name="redownload_share_log">Share error log</string>
     <string name="redownload_generating_log_file">Generating log file…</string>
-
     <!-- Library fragment -->
     <string name="resume_closed">Resume reading where you left?</string>
     <string name="open_drawer">Open drawer</string>
@@ -405,8 +392,8 @@
         <item quantity="other">%d items</item>
     </plurals>
     <plurals name="number_of_book_search_results">
-        <item quantity="one">%d/%d result</item>
-        <item quantity="other">%d/%d results</item>
+        <item quantity="one">%$1d/%$2d result</item>
+        <item quantity="other">%$1d/%$2d results</item>
     </plurals>
     <string name="reset">Permissions have been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
@@ -514,7 +501,6 @@
     <string name="show_groups">Show groups</string>
     <string name="show_artists_and_groups">Show artists &amp; groups</string>
     <string name="launchcode_present">You already have this book. Search other sources ?</string>
-
     <!-- Updates -->
     <string name="updates_title">Updates</string>
     <string name="checking_updates">Checking for updates</string>
@@ -529,7 +515,6 @@
     <string name="error_network_summary">Network error, please try again later.</string>
     <string name="error_file">Cannot find update file on server.</string>
     <string name="update_check_no_update">Update Check: No new updates.</string>
-
     <!-- Alerts -->
     <string name="alert_orange">Be aware that downloads may fail on this site.\n%s</string>
     <string name="alert_red">The download button is currently broken for this site.\n%s</string>
@@ -537,7 +522,6 @@
     <string name="alert_black">This site is currently unavailable for real. The app has nothing to do about it. Please try again later.</string>
     <string name="alert_wip">The Hentoid dev team is working on a fix. You will be notified by the app when a new version is ready.</string>
     <string name="alert_fix_available">A fix is available on the latest version of the app. Please update.</string>
-
     <!-- App Lock -->
     <string name="app_lock_pin">Enter PIN</string>
     <string name="app_lock_pin_prefs">App Lock PIN</string>
@@ -551,7 +535,6 @@
     <string name="pin_new_confirm">Confirm New PIN</string>
     <string name="pin_explanation">App Lock prevents unauthorized use of this app by requiring a 4-digit PIN when launched</string>
     <string name="pin_lock_on_restore">Lock when restored\nfrom background</string>
-
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
     <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHentoid is a free and open-source software maintained by the Hentoid Community (join us on Discord - see link above)</string>
@@ -563,7 +546,6 @@
     <string name="about_licenses">Display Licenses</string>
     <string name="about_app_version">Hentoid ver: %1$s (%2$d)</string>
     <string name="about_chrome_version">Chrome v%1$d</string>
-
     <!-- Web browser -->
     <string name="web_gallery">Back to latest gallery page</string>
     <string name="web_home">Back to library</string>
@@ -592,7 +574,6 @@
     <string name="help_web_exh_account">Please use or create an ExHentai account</string>
     <string name="help_web_invalid_exh_credentials">Invalid credentials, please log in again</string>
     <string name="help_web_incomplete_exh_credentials">Incomplete credentials, please log in again. If the issue persists, consider accessing the site from another country or creating a new account.</string>
-
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
     <string name="exclude">Exclude</string>
@@ -622,10 +603,8 @@
         <item quantity="other">%s Results found</item>
     </plurals>
     <string name="search_select_a_filter">Select a filter</string>
-
     <!-- DB migration & Maintenance -->
     <string name="maintenance">Performing maintenance</string>
-
     <!-- Image viewer -->
     <string name="no_images">Could not load the book : No image found</string>
     <string name="loading_archive">Loading : %1$d/%2$d</string>
@@ -702,7 +681,6 @@
     <string name="chapter_move_failed">Couldn\'t move chapter</string>
     <string name="slideshow_start">Starting slideshow (delay %.1fs)</string>
     <string name="slideshow_stop">Slideshow stopped</string>
-
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>
     <string name="view_changelog_flagged">View changelog*</string>
@@ -710,10 +688,8 @@
     <string name="get_latest">Get the latest version (%1$s)</string>
     <string name="update_success">Update successful !</string>
     <string name="starting_download">Starting download</string>
-
     <!-- Edit drawer -->
     <string name="title_activity_drawer_edit">Edit menu</string>
-
     <!-- Duplicate detector -->
     <string name="title_activity_duplicate_detector">Duplicate detector</string>
     <string name="duplicate_use_title">Title</string>
@@ -731,7 +707,7 @@
     <string name="duplicate_index_covers">Indexing cover pictures</string>
     <string name="duplicate_find">Detecting duplicate books</string>
     <plurals name="duplicate_count">
-        <item quantity="other">%d duplicates ></item>
+        <item quantity="other">%d duplicates &gt;</item>
     </plurals>
     <string name="duplicate_title_score">Title : %.0f%%</string>
     <string name="duplicate_title_score_nodata">Title : no data</string>
@@ -757,7 +733,6 @@
     <string name="duplicate_empty_no_result">No duplicates found</string>
     <string name="duplicate_keep">Keep</string>
     <string name="duplicate_delete">Delete</string>
-
     <!-- Duplicate dialog -->
     <string name="duplicate_alert">Duplicate alert!</string>
     <string name="duplicate_alert_subtitle_book">The book you\'re about to download may be a duplicate of a book you already own.</string>
@@ -770,7 +745,6 @@
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
     <string name="duplicate_wait_index">Please wait while indexing</string>
-
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>
     <string name="notif_delete_title">Content deletion</string>
@@ -781,12 +755,10 @@
     </plurals>
     <string name="notif_delete_fail">Delete failed</string>
     <string name="notif_delete_fail_details">At least one book failed to be deleted</string>
-
     <!-- Startup -->
     <string name="title_startup">Startup</string>
     <string name="title_startup_progress">Startup in progress…</string>
     <string name="title_startup_complete">Startup complete</string>
-
     <!-- Group names -->
     <string name="group_today">Today</string>
     <string name="group_7">Last 7 days</string>
@@ -795,7 +767,6 @@
     <string name="group_year">Last year</string>
     <string name="group_long">A long time ago</string>
     <string name="group_no_group">Ungrouped</string>
-
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>
