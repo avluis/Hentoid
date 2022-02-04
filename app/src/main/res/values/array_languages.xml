@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="languages">
+    <string-array name="languages" translatable="false">
         <item>english-uk</item>
         <item>中文,chinese-cn</item>
         <item>日本語,japanese-jp</item>
