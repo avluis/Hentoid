@@ -36,7 +36,7 @@
     <string name="open_folder">Open folder</string>
     <string name="error">Error</string>
     <string name="_default">default</string>
-    <string name="empty" />
+    <string name="empty" translatable="false" />
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>

@@ -38,7 +38,6 @@
     <string name="open_folder">Открыть папку</string>
     <string name="error">Ошибка</string>
     <string name="_default">по умолчанию</string>
-    <string name="empty" />
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">Переход на API 29</string>
@@ -624,7 +623,7 @@
     <!-- Used as a category on the search screen -->
     <string name="category_artist">Художник (%1$d)</string>
     <string name="category_tag">Тэг (%1$d)</string>
-    <string name="category_characher">Персонаж (%1$d)</string>
+    <string name="category_character">Персонаж (%1$d)</string>
     <string name="category_series">Сеттинг (%1$d)</string>
     <string name="category_language">Язык (%1$d)</string>
     <string name="category_source">Источник (%1$d)</string>
