@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="pref_library_display_entries">
+    <string-array name="pref_library_display_entries" translatable="false">
         <item>@string/pref_library_display_entries_1</item>
         <item>@string/pref_library_display_entries_2</item>
     </string-array>
@@ -8,9 +8,9 @@
         <item>0</item>
         <item>1</item>
     </string-array>
-    <!-- Choice for "Display type" -->
+    <!-- Choice for "Display type" setting -->
     <string name="pref_library_display_entries_1">List (default)</string>
-    <!-- Choice for "Display type" -->
+    <!-- Choice for "Display type" setting -->
     <string name="pref_library_display_entries_2">Grid</string>
 
     <string-array name="pref_quantity_per_page_entries" translatable="false">
@@ -28,11 +28,11 @@
         <item>100</item>
     </string-array>
 
-    <string-array name="pref_memory_alert_entries">
-        <item>No alert</item>
-        <item>on 90% full</item>
-        <item>on 95% full</item>
-        <item>on 98% full</item>
+    <string-array name="pref_memory_alert_entries" translatable="false">
+        <item>@string/pref_memory_alert_entries_1</item>
+        <item>@string/pref_memory_alert_entries_2</item>
+        <item>@string/pref_memory_alert_entries_3</item>
+        <item>@string/pref_memory_alert_entries_4</item>
     </string-array>
     <string-array name="pref_memory_alert_values" translatable="false">
         <item>110</item>
@@ -40,6 +40,14 @@
         <item>95</item>
         <item>98</item>
     </string-array>
+    <!-- Choice for "Alert on low memory" setting -->
+    <string name="pref_memory_alert_entries_1">No alert</string>
+    <!-- Choice for "Alert on low memory" setting -->
+    <string name="pref_memory_alert_entries_2">on 90% full</string>
+    <!-- Choice for "Alert on low memory" setting -->
+    <string name="pref_memory_alert_entries_3">on 95% full</string>
+    <!-- Choice for "Alert on low memory" setting -->
+    <string name="pref_memory_alert_entries_4">on 98% full</string>
 
     <string-array name="pref_browser_quick_dl_threshold_entries">
         <item>500ms (default)</item>
