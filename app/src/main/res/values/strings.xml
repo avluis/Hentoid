@@ -772,6 +772,7 @@
     <string name="duplicate_wait_index">Please wait while indexing</string>
 
     <!-- Generic delete & purge -->
+    <string name="notif_archive_title">Content archival</string>
     <string name="notif_delete_title">Content deletion</string>
     <string name="notif_delete_complete">Delete complete</string>
     <plurals name="notif_delete_complete_details">
