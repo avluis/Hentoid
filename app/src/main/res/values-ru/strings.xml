@@ -792,6 +792,7 @@
     <string name="duplicate_wait_index">Пожалуйста, подождите — идёт индексирование</string>
 
     <!-- Generic delete & purge -->
+    <string name="notif_archive_title">Архивирование контента</string>
     <string name="notif_delete_title">Удаление контента</string>
     <string name="notif_delete_complete">Удаление завершено</string>
     <plurals name="notif_delete_complete_details" tools:ignore="MissingQuantity">
