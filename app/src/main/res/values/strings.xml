@@ -639,7 +639,7 @@
     <string name="page_copy_help">Copy page to the Android Downloads folder</string>
     <string name="page_share_help">Share page using another app</string>
     <string name="page_delete_help">Delete page</string>
-    <string-array name="page_delete_choices">
+    <string-array name="page_delete_choices" translatable="false">
         <item>@string/page_delete_choices_1</item>
         <item>@string/page_delete_choices_2</item>
         <item>@string/page_delete_choices_3</item>
