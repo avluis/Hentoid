@@ -312,24 +312,31 @@
     </string-array>
     <!-- Choice for "Blocking behaviour" setting -->
     <string name="pref_dl_blocked_tags_behaviour_entries_1">Don\'t queue</string>
+    <!-- Choice for "Blocking behaviour" setting -->
     <string name="pref_dl_blocked_tags_behaviour_entries_2">Queue as download error</string>
 
-    <string-array name="pref_viewer_browse_mode_entries">
-        <item>Left to Right</item>
-        <item>Right to Left</item>
-        <item>Top to Bottom</item>
+    <string-array name="pref_viewer_browse_mode_entries" translatable="false">
+        <item>@string/pref_viewer_browse_mode_entries_1</item>
+        <item>@string/pref_viewer_browse_mode_entries_2</item>
+        <item>@string/pref_viewer_browse_mode_entries_3</item>
     </string-array>
     <string-array name="pref_viewer_browse_mode_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
     </string-array>
+    <!-- Choice for "Browse mode" setting -->
+    <string name="pref_viewer_browse_mode_entries_1">Left to Right</string>
+    <!-- Choice for "Browse mode" setting -->
+    <string name="pref_viewer_browse_mode_entries_2">Right to Left</string>
+    <!-- Choice for "Browse mode" setting -->
+    <string name="pref_viewer_browse_mode_entries_3">Top to Bottom</string>
 
-    <string-array name="pref_viewer_separating_bars_entries">
-        <item>Off (default)</item>
-        <item>Small</item>
-        <item>Medium</item>
-        <item>Large</item>
+    <string-array name="pref_viewer_separating_bars_entries" translatable="false">
+        <item>@string/pref_viewer_separating_bars_entries_1</item>
+        <item>@string/pref_viewer_separating_bars_entries_2</item>
+        <item>@string/pref_viewer_separating_bars_entries_3</item>
+        <item>@string/pref_viewer_separating_bars_entries_4</item>
     </string-array>
     <string-array name="pref_viewer_separating_bars_values" translatable="false">
         <item>0</item>
@@ -337,6 +344,14 @@
         <item>2</item>
         <item>3</item>
     </string-array>
+    <!-- Choice for "Separating bars in vertical mode" setting -->
+    <string name="pref_viewer_separating_bars_entries_1">Off (default)</string>
+    <!-- Choice for "Separating bars in vertical mode" setting -->
+    <string name="pref_viewer_separating_bars_entries_2">Small</string>
+    <!-- Choice for "Separating bars in vertical mode" setting -->
+    <string name="pref_viewer_separating_bars_entries_3">Medium</string>
+    <!-- Choice for "Separating bars in vertical mode" setting -->
+    <string name="pref_viewer_separating_bars_entries_4">Large</string>
 
     <string-array name="pref_viewer_read_threshold_entries">
         <item>1 page (default)</item>
