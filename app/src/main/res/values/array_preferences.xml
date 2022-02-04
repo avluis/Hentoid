@@ -380,7 +380,7 @@
         <item>@string/pref_viewer_slideshow_delay_entries_3</item>
         <item>@string/pref_viewer_slideshow_delay_entries_4</item>
         <item>@string/pref_viewer_slideshow_delay_entries_5</item>
-        <item>@string/pref_viewer_slideshow_delay_entries_6/item>
+        <item>@string/pref_viewer_slideshow_delay_entries_6</item>
     </string-array>
     <string-array name="pref_viewer_slideshow_delay_values" translatable="false">
         <item>5</item>
