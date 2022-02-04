@@ -640,10 +640,13 @@
     <string name="page_share_help">Share page using another app</string>
     <string name="page_delete_help">Delete page</string>
     <string-array name="page_delete_choices">
-        <item>Ask me again next time</item>
-        <item>Don\'t ask me again for current book</item>
-        <item>Don\'t ask me again for current viewing session</item>
+        <item>@string/page_delete_choices_1</item>
+        <item>@string/page_delete_choices_2</item>
+        <item>@string/page_delete_choices_3</item>
     </string-array>
+    <string name="page_delete_choices_1">Ask me again next time</string>
+    <string name="page_delete_choices_2">Don\'t ask me again for current book</string>
+    <string name="page_delete_choices_3">Don\'t ask me again for current viewing session</string>
     <string name="viewer_ask_cover">Set this page as book cover?</string>
     <string name="image_not_found">Image not found</string>
     <string name="image_streaming">Streaming image…</string>
