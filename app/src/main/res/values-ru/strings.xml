@@ -787,6 +787,12 @@
     <string name="group_year">За последний год</string>
     <string name="group_long">Давно</string>
     <string name="group_no_group">Без группы</string>
+
+    <!-- Themes -->
+    <string name="theme_light">Светлая</string>
+    <string name="theme_deep_red">Тёмно-красная</string>
+    <string name="theme_dark">Тёмная</string>
+
     <!-- Misc -->
     <string name="select_file_manager">Выберите ваш файловый менеджер</string>
     <string name="default_permission">Стандартное разрешение</string>

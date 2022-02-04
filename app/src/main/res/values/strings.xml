@@ -4,10 +4,10 @@
     <string name="app_name">Hentoid</string>
     <string name="app_id" translatable="false">me.devsaki.hentoid</string>
     <string name="app_intro">Welcome</string>
-    <string name="yes">Yes</string>
     <!-- because Android default "OK" value for "yes" key is nonsense -->
-    <string name="no">No</string>
+    <string name="yes">Yes</string>
     <!-- because Android default "Cancel" value for "no" key is nonsense -->
+    <string name="no">No</string>
     <string name="ok">OK</string>
     <string name="on">On</string>
     <string name="off">Off</string>
@@ -639,7 +639,7 @@
     <string name="page_copy_help">Copy page to the Android Downloads folder</string>
     <string name="page_share_help">Share page using another app</string>
     <string name="page_delete_help">Delete page</string>
-    <string-array name="page_delete_choices">
+    <string-array name="page_delete_choices" translatable="false">
         <item>@string/page_delete_choices_1</item>
         <item>@string/page_delete_choices_2</item>
         <item>@string/page_delete_choices_3</item>
@@ -770,6 +770,12 @@
     <string name="group_year">Last year</string>
     <string name="group_long">A long time ago</string>
     <string name="group_no_group">Ungrouped</string>
+
+    <!-- Themes -->
+    <string name="theme_light">Light</string>
+    <string name="theme_deep_red">Deep Red</string>
+    <string name="theme_dark">Dark</string>
+
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>
