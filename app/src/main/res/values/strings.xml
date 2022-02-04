@@ -4,10 +4,10 @@
     <string name="app_name">Hentoid</string>
     <string name="app_id" translatable="false">me.devsaki.hentoid</string>
     <string name="app_intro">Welcome</string>
-    <string name="yes">Yes</string>
     <!-- because Android default "OK" value for "yes" key is nonsense -->
-    <string name="no">No</string>
+    <string name="yes">Yes</string>
     <!-- because Android default "Cancel" value for "no" key is nonsense -->
+    <string name="no">No</string>
     <string name="ok">OK</string>
     <string name="on">On</string>
     <string name="off">Off</string>
