@@ -4,39 +4,12 @@
         <item>Список (по умолчанию)</item>
         <item>Сетка</item>
     </string-array>
-    <string-array name="pref_library_display_values">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-
-    <string-array name="pref_quantity_per_page_entries">
-        <item>20</item>
-        <item>40</item>
-        <item>60</item>
-        <item>80</item>
-        <item>100</item>
-    </string-array>
-    <string-array name="pref_quantity_per_page_entry_values">
-        <item>20</item>
-        <item>40</item>
-        <item>60</item>
-        <item>80</item>
-        <item>100</item>
-    </string-array>
-
     <string-array name="pref_memory_alert_entries">
         <item>Не уведомлять</item>
         <item>когда заполнена на 90%</item>
         <item>когда заполнена на 95%</item>
         <item>когда заполнена на 98%</item>
     </string-array>
-    <string-array name="pref_memory_alert_values">
-        <item>110</item>
-        <item>90</item>
-        <item>95</item>
-        <item>98</item>
-    </string-array>
-
     <string-array name="pref_browser_quick_dl_threshold_entries">
         <item>500 мс (по умолчанию)</item>
         <item>1 с</item>
@@ -44,38 +17,17 @@
         <item>2 с</item>
         <item>3 с</item>
     </string-array>
-    <string-array name="pref_browser_quick_dl_threshold_values">
-        <item>500</item>
-        <item>1000</item>
-        <item>1500</item>
-        <item>2000</item>
-        <item>3000</item>
-    </string-array>
-
     <string-array name="pref_browser_dns_entries">
         <item>Нет</item>
         <item>Cloudflare</item>
         <item>Quad9</item>
         <item>AdGuard</item>
     </string-array>
-    <string-array name="pref_browser_dns_values">
-        <item>-1</item>
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
     <string-array name="pref_queue_new_position_entries">
         <item>Вверху</item>
         <item>Внизу</item>
         <item>Всегда спрашивать</item>
     </string-array>
-    <string-array name="pref_queue_new_position_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
     <string-array name="pref_dl_size_wifi_threshold_entries">
         <item>Без ограничения на размер</item>
         <item>20 МБ</item>
@@ -83,14 +35,6 @@
         <item>100 МБ</item>
         <item>200 МБ</item>
     </string-array>
-    <string-array name="pref_dl_size_wifi_threshold_values">
-        <item>999999</item>
-        <item>20</item>
-        <item>40</item>
-        <item>100</item>
-        <item>200</item>
-    </string-array>
-
     <string-array name="pref_dl_pages_wifi_threshold_entries">
         <item>Без ограничения на кол-во страниц</item>
         <item>60 страниц</item>
@@ -98,14 +42,6 @@
         <item>200 страниц</item>
         <item>500 страниц</item>
     </string-array>
-    <string-array name="pref_dl_pages_wifi_threshold_values">
-        <item>999999</item>
-        <item>60</item>
-        <item>120</item>
-        <item>200</item>
-        <item>500</item>
-    </string-array>
-
     <string-array name="pref_dl_threads_quantity_entries">
         <item>Автоматически (по умолчанию)</item>
         <item>2 (медленный интернет)</item>
@@ -114,28 +50,12 @@
         <item>8</item>
         <item>10 (быстрый интернет и производительное устройство)</item>
     </string-array>
-    <string-array name="pref_dl_threads_quantity_values">
-        <item>0</item>
-        <item>2</item>
-        <item>4</item>
-        <item>6</item>
-        <item>8</item>
-        <item>10</item>
-    </string-array>
-
     <string-array name="pref_folder_naming_content_entries">
         <item>ID</item>
         <item>Название - ID</item>
         <item>Автор - Название - ID</item>
         <item>Название - Автор - ID</item>
     </string-array>
-    <string-array name="pref_folder_naming_content_entry_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
     <string-array name="pref_folder_trunc_content_entries">
         <item>Не сокращать</item>
         <item>60 символов</item>
@@ -143,123 +63,46 @@
         <item>100 символов</item>
         <item>120 символов</item>
     </string-array>
-    <string-array name="pref_folder_trunc_content_entry_values">
-        <item>0</item>
-        <item>60</item>
-        <item>80</item>
-        <item>100</item>
-        <item>120</item>
-    </string-array>
-
-    <string-array name="pref_webview_initial_zoom_entries">
-        <item>0</item>
-        <item>20</item>
-        <item>50</item>
-        <item>100</item>
-    </string-array>
-    <string-array name="pref_webview_initial_zoom_values">
-        <item>0</item>
-        <item>20</item>
-        <item>50</item>
-        <item>100</item>
-    </string-array>
-
     <string-array name="pref_viewer_dl_action_entries">
         <item>Загружать все страницы</item>
         <item>Передавать страницы потоком (стримить)</item>
     </string-array>
-    <string-array name="pref_viewer_dl_action_values">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-
     <string-array name="pref_attribute_list_order_entries">
         <item>По алфавиту</item>
         <item>Сначала наиболее используемые</item>
     </string-array>
-    <string-array name="pref_attribute_list_order_values">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-
     <string-array name="pref_color_theme_entries">
         <item>Светлая</item>
         <item>Тёмно-красная</item>
         <item>Тёмная</item>
     </string-array>
-    <string-array name="pref_color_theme_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
-    <string-array name="pref_dl_retries_number_entries">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-    </string-array>
-
     <string-array name="pref_dl_retries_mem_limit_entries">
         <item>90%</item>
         <item>95%</item>
         <item>98%</item>
         <item>Нет</item>
     </string-array>
-    <string-array name="pref_dl_retries_mem_limit_values">
-        <item>90</item>
-        <item>95</item>
-        <item>98</item>
-        <item>100</item>
-    </string-array>
-
     <string-array name="pref_dl_blocked_tags_behaviour_entries">
         <item>Не добавлять в очередь</item>
         <item>Добавлять в очередь как неудачные загрузки</item>
     </string-array>
-    <string-array name="pref_dl_blocked_tags_behaviour_values">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-
     <string-array name="pref_viewer_browse_mode_entries">
         <item>Слева направо</item>
         <item>Справа налево</item>
         <item>Сверху вниз</item>
     </string-array>
-    <string-array name="pref_viewer_browse_mode_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
     <string-array name="pref_viewer_separating_bars_entries">
         <item>Выкл. (по умолчанию)</item>
         <item>Маленькие</item>
         <item>Обычные</item>
         <item>Большие</item>
     </string-array>
-    <string-array name="pref_viewer_separating_bars_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
     <string-array name="pref_viewer_read_threshold_entries">
         <item>1 страница (по умолчанию)</item>
         <item>2 страницы</item>
         <item>5 страниц</item>
         <item>Все страницы</item>
     </string-array>
-    <string-array name="pref_viewer_read_threshold_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
     <string-array name="pref_viewer_slideshow_delay_entries">
         <item>500 мс</item>
         <item>1 с</item>
@@ -268,55 +111,21 @@
         <item>8 с</item>
         <item>16 с</item>
     </string-array>
-    <string-array name="pref_viewer_slideshow_delay_values">
-        <item>5</item>
-        <item>4</item>
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
-
     <string-array name="pref_viewer_display_mode_entries">
         <item>По размеру экрана (по умолчанию)</item>
         <item>Заполнить экран</item>
         <item>Растянуть на весь экран</item>
     </string-array>
-    <string-array name="pref_viewer_display_mode_values">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-
     <string-array name="pref_viewer_rendering_entries">
         <item>Чёткая отрисовка (по умолчанию)</item>
         <item>Плавная отрисовка</item>
     </string-array>
-    <string-array name="pref_viewer_rendering_values">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
-
     <string-array name="pref_viewer_cap_tap_zoom_entries">
         <item>Не ограничивать</item>
         <item>2x</item>
         <item>4x</item>
         <item>6x</item>
     </string-array>
-    <string-array name="pref_viewer_cap_tap_zoom_values">
-        <item>0</item>
-        <item>2</item>
-        <item>4</item>
-        <item>6</item>
-    </string-array>
-
-    <string-array name="pref_viewer_gallery_columns_values">
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-    </string-array>
-
     <string-array name="pref_lock_timer_entries">
         <item>Сразу</item>
         <item>10 с</item>
