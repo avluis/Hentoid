@@ -770,6 +770,7 @@
     <string name="group_year">Last year</string>
     <string name="group_long">A long time ago</string>
     <string name="group_no_group">Ungrouped</string>
+
     <!-- Themes -->
     <string name="theme_light">Light</string>
     <string name="theme_deep_red">Deep Red</string>

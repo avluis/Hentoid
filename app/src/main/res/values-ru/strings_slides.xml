@@ -15,9 +15,6 @@
     <!-- Slide 05 -->
     <string name="slide_05_header">Тема</string>
     <string name="slide_05_text">Выберите тему.</string>
-    <string name="slide_05_light">Светлая</string>
-    <string name="slide_05_dark">Тёмно-красная</string>
-    <string name="slide_05_black">Тёмная</string>
     <!-- Slide 06 -->
     <string name="slide_06_header">Источники</string>
     <string name="slide_06_text">Выберите источники для загрузок.</string>
