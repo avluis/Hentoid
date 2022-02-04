@@ -413,14 +413,7 @@
     <string name="search_entry_not_found">Тут такого нет, иди, скачай это.</string>
     <string name="packaging_content">Упаковываю файлы.\nПожалуйста, подождите…</string>
     <string name="search_bookid_label">Поиск \'%s\' в…</string>
-    <string name="book_title">Это довольно длинный заголовок, но таким уж нам он нужен.</string>
     <string name="book_launchcode">Код запуска: %s</string>
-    <string name="book_series">Сеттинг: Название</string>
-    <string name="book_artist">Художник: У этой книги так много художников, понапиханных в одном месте, что одна строчка на экране точно бы не уместила их всех</string>
-    <string name="book_pages_queue">Страниц: 1234; примерно 125 МБ</string>
-    <string name="book_pages_library">1234 страниц / 1125 МБ</string>
-    <string name="book_pages_library2">1234 страниц / 30 глав / 1125 МБ [Совмещено]</string>
-    <string name="book_tags">тэг1, тэг2, тэг3 и т.д.</string>
     <plurals name="number_of_items">
         <item quantity="one">%d элемент</item>
         <item quantity="few">%d элемента</item>

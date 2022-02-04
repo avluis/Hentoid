@@ -4,19 +4,19 @@
         <item>List (default)</item>
         <item>Grid</item>
     </string-array>
-    <string-array name="pref_library_display_values">
+    <string-array name="pref_library_display_values" translatable="false">
         <item>0</item>
         <item>1</item>
     </string-array>
 
-    <string-array name="pref_quantity_per_page_entries">
+    <string-array name="pref_quantity_per_page_entries" translatable="false">
         <item>20</item>
         <item>40</item>
         <item>60</item>
         <item>80</item>
         <item>100</item>
     </string-array>
-    <string-array name="pref_quantity_per_page_entry_values">
+    <string-array name="pref_quantity_per_page_entry_values" translatable="false">
         <item>20</item>
         <item>40</item>
         <item>60</item>
@@ -30,7 +30,7 @@
         <item>on 95% full</item>
         <item>on 98% full</item>
     </string-array>
-    <string-array name="pref_memory_alert_values">
+    <string-array name="pref_memory_alert_values" translatable="false">
         <item>110</item>
         <item>90</item>
         <item>95</item>
@@ -44,7 +44,7 @@
         <item>2s</item>
         <item>3s</item>
     </string-array>
-    <string-array name="pref_browser_quick_dl_threshold_values">
+    <string-array name="pref_browser_quick_dl_threshold_values" translatable="false">
         <item>500</item>
         <item>1000</item>
         <item>1500</item>
@@ -58,7 +58,7 @@
         <item>Quad9</item>
         <item>AdGuard</item>
     </string-array>
-    <string-array name="pref_browser_dns_values">
+    <string-array name="pref_browser_dns_values" translatable="false">
         <item>-1</item>
         <item>0</item>
         <item>1</item>
@@ -70,7 +70,7 @@
         <item>Bottom</item>
         <item>Ask every time</item>
     </string-array>
-    <string-array name="pref_queue_new_position_values">
+    <string-array name="pref_queue_new_position_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -83,7 +83,7 @@
         <item>100 MB</item>
         <item>200 MB</item>
     </string-array>
-    <string-array name="pref_dl_size_wifi_threshold_values">
+    <string-array name="pref_dl_size_wifi_threshold_values" translatable="false">
         <item>999999</item>
         <item>20</item>
         <item>40</item>
@@ -98,7 +98,7 @@
         <item>200 pages</item>
         <item>500 pages</item>
     </string-array>
-    <string-array name="pref_dl_pages_wifi_threshold_values">
+    <string-array name="pref_dl_pages_wifi_threshold_values" translatable="false">
         <item>999999</item>
         <item>60</item>
         <item>120</item>
@@ -114,7 +114,7 @@
         <item>8</item>
         <item>10 (fast internet; high-end phone)</item>
     </string-array>
-    <string-array name="pref_dl_threads_quantity_values">
+    <string-array name="pref_dl_threads_quantity_values" translatable="false">
         <item>0</item>
         <item>2</item>
         <item>4</item>
@@ -129,7 +129,7 @@
         <item>Author - Title - ID</item>
         <item>Title - Author - ID</item>
     </string-array>
-    <string-array name="pref_folder_naming_content_entry_values">
+    <string-array name="pref_folder_naming_content_entry_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -143,7 +143,7 @@
         <item>100 characters</item>
         <item>120 characters</item>
     </string-array>
-    <string-array name="pref_folder_trunc_content_entry_values">
+    <string-array name="pref_folder_trunc_content_entry_values" translatable="false">
         <item>0</item>
         <item>60</item>
         <item>80</item>
@@ -151,13 +151,13 @@
         <item>120</item>
     </string-array>
 
-    <string-array name="pref_webview_initial_zoom_entries">
+    <string-array name="pref_webview_initial_zoom_entries" translatable="false">
         <item>0</item>
         <item>20</item>
         <item>50</item>
         <item>100</item>
     </string-array>
-    <string-array name="pref_webview_initial_zoom_values">
+    <string-array name="pref_webview_initial_zoom_values" translatable="false">
         <item>0</item>
         <item>20</item>
         <item>50</item>
@@ -168,7 +168,7 @@
         <item>Download all pages</item>
         <item>Stream the pages when reading</item>
     </string-array>
-    <string-array name="pref_viewer_dl_action_values">
+    <string-array name="pref_viewer_dl_action_values" translatable="false">
         <item>0</item>
         <item>1</item>
     </string-array>
@@ -177,7 +177,7 @@
         <item>Alphabetical</item>
         <item>Item count (most used first)</item>
     </string-array>
-    <string-array name="pref_attribute_list_order_values">
+    <string-array name="pref_attribute_list_order_values" translatable="false">
         <item>0</item>
         <item>1</item>
     </string-array>
@@ -187,13 +187,13 @@
         <item>Deep red</item>
         <item>Dark</item>
     </string-array>
-    <string-array name="pref_color_theme_values">
+    <string-array name="pref_color_theme_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
     </string-array>
 
-    <string-array name="pref_dl_retries_number_entries">
+    <string-array name="pref_dl_retries_number_entries" translatable="false">
         <item>1</item>
         <item>2</item>
         <item>3</item>
@@ -207,7 +207,7 @@
         <item>98%</item>
         <item>None</item>
     </string-array>
-    <string-array name="pref_dl_retries_mem_limit_values">
+    <string-array name="pref_dl_retries_mem_limit_values" translatable="false">
         <item>90</item>
         <item>95</item>
         <item>98</item>
@@ -218,7 +218,7 @@
         <item>Don\'t queue</item>
         <item>Queue as download error</item>
     </string-array>
-    <string-array name="pref_dl_blocked_tags_behaviour_values">
+    <string-array name="pref_dl_blocked_tags_behaviour_values" translatable="false">
         <item>0</item>
         <item>1</item>
     </string-array>
@@ -228,7 +228,7 @@
         <item>Right to Left</item>
         <item>Top to Bottom</item>
     </string-array>
-    <string-array name="pref_viewer_browse_mode_values">
+    <string-array name="pref_viewer_browse_mode_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -240,7 +240,7 @@
         <item>Medium</item>
         <item>Large</item>
     </string-array>
-    <string-array name="pref_viewer_separating_bars_values">
+    <string-array name="pref_viewer_separating_bars_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -253,7 +253,7 @@
         <item>5 pages</item>
         <item>All pages</item>
     </string-array>
-    <string-array name="pref_viewer_read_threshold_values">
+    <string-array name="pref_viewer_read_threshold_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -268,7 +268,7 @@
         <item>8s</item>
         <item>16s</item>
     </string-array>
-    <string-array name="pref_viewer_slideshow_delay_values">
+    <string-array name="pref_viewer_slideshow_delay_values" translatable="false">
         <item>5</item>
         <item>4</item>
         <item>0</item>
@@ -282,7 +282,7 @@
         <item>Fill screen (proportionate)</item>
         <item>Fill screen (stretch)</item>
     </string-array>
-    <string-array name="pref_viewer_display_mode_values">
+    <string-array name="pref_viewer_display_mode_values" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
@@ -292,7 +292,7 @@
         <item>Sharp rendering (default)</item>
         <item>Smooth rendering</item>
     </string-array>
-    <string-array name="pref_viewer_rendering_values">
+    <string-array name="pref_viewer_rendering_values" translatable="false">
         <item>0</item>
         <item>1</item>
     </string-array>
@@ -303,14 +303,14 @@
         <item>4x</item>
         <item>6x</item>
     </string-array>
-    <string-array name="pref_viewer_cap_tap_zoom_values">
+    <string-array name="pref_viewer_cap_tap_zoom_values" translatable="false">
         <item>0</item>
         <item>2</item>
         <item>4</item>
         <item>6</item>
     </string-array>
 
-    <string-array name="pref_viewer_gallery_columns_values">
+    <string-array name="pref_viewer_gallery_columns_values" translatable="false">
         <item>2</item>
         <item>3</item>
         <item>4</item>

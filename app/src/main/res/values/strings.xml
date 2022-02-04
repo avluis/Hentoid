@@ -392,14 +392,14 @@
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
-    <string name="book_title">This is a rather long title, just because we need it to be.</string>
+    <string name="book_title" translatable="false">This is a rather long title, just because we need it to be.</string>
     <string name="book_launchcode">Launch code : %s</string>
-    <string name="book_series">Series: Name</string>
-    <string name="book_artist">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
-    <string name="book_pages_queue">Pages: 1234; estimated 125 MB</string>
-    <string name="book_pages_library">1234 pages / 1125 MB</string>
-    <string name="book_pages_library2">1234 pages / 30 chapters / 1125 MB [Merged]</string>
-    <string name="book_tags">tag1, tag2, tag3, etc.</string>
+    <string name="book_series" translatable="false">Series: Name</string>
+    <string name="book_artist" translatable="false">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
+    <string name="book_pages_queue" translatable="false">Pages: 1234; estimated 125 MB</string>
+    <string name="book_pages_library" translatable="false">1234 pages / 1125 MB</string>
+    <string name="book_pages_library2" translatable="false">1234 pages / 30 chapters / 1125 MB [Merged]</string>
+    <string name="book_tags" translatable="false">tag1, tag2, tag3, etc.</string>
     <plurals name="number_of_items">
         <item quantity="one">%d item</item>
         <item quantity="other">%d items</item>
