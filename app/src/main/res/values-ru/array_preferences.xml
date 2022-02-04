@@ -133,4 +133,19 @@
         <item>1 мин.</item>
         <item>2 мин.</item>
     </string-array>
+    <string name="pref_library_display_entries_2">Сетка</string>
+    <string name="pref_memory_alert_entries_1">Не уведомлять</string>
+    <string name="pref_memory_alert_entries_3">когда заполнена на 95%</string>
+    <string name="pref_memory_alert_entries_4">когда заполнена на 98%</string>
+    <string name="pref_browser_quick_dl_threshold_entries_1">500 мс (по умолчанию)</string>
+    <string name="pref_browser_quick_dl_threshold_entries_2">1 с</string>
+    <string name="pref_browser_quick_dl_threshold_entries_5">3 с</string>
+    <string name="pref_browser_dns_entries_1">Нет</string>
+    <string name="pref_queue_new_position_entries_1">Вверху</string>
+    <string name="pref_queue_new_position_entries_2">Внизу</string>
+    <string name="pref_queue_new_position_entries_3">Всегда спрашивать</string>
+    <string name="pref_library_display_entries_1">Список (по умолчанию)</string>
+    <string name="pref_memory_alert_entries_2">когда заполнена на 90%</string>
+    <string name="pref_browser_quick_dl_threshold_entries_3">1.5 с</string>
+    <string name="pref_browser_quick_dl_threshold_entries_4">2 с</string>
 </resources>
