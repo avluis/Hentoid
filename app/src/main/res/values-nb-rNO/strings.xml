@@ -92,7 +92,7 @@
     <string name="notification_action_dl_revive">Trykk her for å reaktivere nedlastingen din</string>
     <plurals name="work_pages_missing">
         <item quantity="one">(%d mangler)</item>
-        <item quantity="other"></item>
+        <item quantity="other"/>
     </plurals>
     <string name="work_pages_queue">Sider: %1$s%2$s</string>
     <string name="library_metrics_storage">%.0f MB</string>
@@ -380,4 +380,37 @@
     </plurals>
     <string name="import_canceled">Import avbrutt</string>
     <string name="api29_migration_step3">Skann bibliotek (%1$d/%2$d)</string>
+    <string name="title_startup">Oppstart</string>
+    <string name="notif_delete_fail_details">Minst én bok kunne ikke slettes</string>
+    <string name="title_startup_progress">Starter opp …</string>
+    <string name="notif_delete_fail">Sletting mislyktes</string>
+    <string name="notif_delete_title">Innholdssletting</string>
+    <string name="notif_archive_title">Innholdsarkivering</string>
+    <string name="notif_delete_complete">Sletting fullført</string>
+    <string name="duplicate_alert_download_pages">Last ned ekstra sider</string>
+    <string name="duplicate_alert_download_book">Last ned bok</string>
+    <string name="duplicate_alert_never_extra_on_dupes">Aldri legg til sider fra potensielle duplikater igjen</string>
+    <string name="duplicate_alert_always_download">Alltid last ned og ikke spør meg igjen</string>
+    <string name="duplicate_alert_in_queue">I kø</string>
+    <string name="duplicate_alert_in_library">I bibliotek</string>
+    <string name="duplicate_delete">Slett</string>
+    <string name="duplicate_keep">Behold</string>
+    <string name="group_no_group">Ugruppert</string>
+    <string name="group_long">Lenge siden</string>
+    <string name="group_year">I fjor</string>
+    <string name="group_60">Siste 60 dager</string>
+    <string name="group_30">Siste 30 dager</string>
+    <string name="group_7">Siste 7 dager</string>
+    <string name="group_today">I dag</string>
+    <string name="title_startup_complete">Oppstart fullført</string>
+    <string name="theme_light">Lys</string>
+    <plurals name="duplicate_detail_title">
+        <item quantity="one">%d duplikat</item>
+        <item quantity="other">%d duplikater</item>
+    </plurals>
+    <string name="default_permission">Forvalgt tilgang</string>
+    <string name="select_file_manager">Velg din filbehandler</string>
+    <string name="theme_dark">Mørk</string>
+    <string name="theme_deep_red">Mørkerød</string>
+    <string name="duplicate_empty_no_result">Fant ingen duplikater</string>
 </resources>
