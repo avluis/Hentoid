@@ -1,2 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="api29_migration_title">Hentoid v12
+\nMise à jour de la gestion des fichiers</string>
+    <string name="app_intro">Bienvenue</string>
+    <string name="no">Non</string>
+    <string name="ok">OK</string>
+    <string name="on">Activé</string>
+    <string name="off">Désactivé</string>
+    <string name="select_all">Tout sélectionner</string>
+    <string name="select_none">Sélectionner aucun</string>
+    <string name="goto_page">Aller à la page…</string>
+    <string name="confirm">Confirmer</string>
+    <string name="please_wait">Veuillez patienter…</string>
+    <plurals name="page">
+        <item quantity="one">livre</item>
+        <item quantity="other">pages</item>
+    </plurals>
+    <plurals name="file">
+        <item quantity="one">fichier</item>
+        <item quantity="other">fichiers</item>
+    </plurals>
+    <string name="undo">Annuler</string>
+    <string name="pause">Pause</string>
+    <string name="stop">Arrêter</string>
+    <string name="resume">Reprendre</string>
+    <string name="menu_completed_single">Terminé</string>
+    <string name="service_running">Le service est déjà en exécution</string>
+    <string name="error">Erreur</string>
+    <string name="title_activity_api29_migration">Migration vers l\'API 29</string>
+    <string name="title_activity_queue">File d\'attente</string>
+    <string name="title_activity_preferences">Préférences</string>
+    <string name="title_activity_about">À propos</string>
+    <string name="title_activity_app_lock">Verrouillage de l\'appli</string>
+    <string name="title_activity_search">Recherche avancée</string>
+    <string name="api29_migration_subtitle">Hentoid est en train de mettre à jour votre collection.
+\nCeci peut prendre quelques minutes.</string>
+    <string name="api29_migration_location">Emplacement actuel du dossier Hentoid
+\n%s</string>
+    <string name="api29_migration_step1">Dossier Hentoid</string>
+    <string name="api29_migration_step1_external">Dossier externe</string>
+    <string name="app_name">Hentoid</string>
+    <string name="yes">Oui</string>
+    <plurals name="book">
+        <item quantity="one">livre</item>
+        <item quantity="other">livres</item>
+    </plurals>
+    <string name="cancel_all">Tout annuler</string>
+    <string name="_default">par défaut</string>
+    <string name="title_activity_downloads">Bibliothèque</string>
+    <string name="cancel">Annuler</string>
+    <string name="open_folder">Ouvrir le dossier</string>
+</resources>
