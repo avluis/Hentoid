@@ -126,6 +126,19 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         }
     }
 
+    // This will cancel any current download
+    public void setDownloadThreadCount(@NonNull Context ctx, int value) {
+        downloadThreadCap = value;
+        int dlThreadCount = value;
+        if (-1 == downloadThreadCap) dlThreadCount = getThreadCount(ctx);
+        forceRequestQueue(ctx, dlThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS);
+    }
+
+    public void resetRequestQueue(@NonNull Context ctx) {
+        setDownloadThreadCount(ctx, downloadThreadCap);
+        restartRequestQueue(); // TODO check if that works
+    }
+
     private void forceRequestQueue(Context ctx, int nbDlThreads, int connectTimeoutMs, int ioTimeoutMs) {
         if (mRequestQueue != null) {
             mRequestQueue.removeRequestEventListener(this);
@@ -145,10 +158,27 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
             mRequestQueue.cancelAll(request -> true);
             mRequestQueue.addRequestEventListener(this);
             synchronized (currentRequests) {
-                for (Request<T> request : currentRequests)
-                    executeRequest(request); // Requeue interrupted requests
+                // Requeue interrupted requests
+                for (Request<T> request : currentRequests) executeRequest(request);
             }
         }
+    }
+
+    /**
+     * Cancel the app's request queue : cancel all requests remaining in the queue
+     */
+    public void cancelQueue() {
+        mRequestQueue.cancelAll(request -> true);
+        synchronized (waitingRequestQueue) {
+            waitingRequestQueue.clear();
+        }
+        synchronized (currentRequests) {
+            currentRequests.clear();
+            nbActiveRequests.set(0);
+        }
+        isSimulateHumanReading = false;
+        waitDisposable.clear();
+        Timber.d("RequestQueue ::: canceled");
     }
 
     // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
@@ -306,34 +336,8 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         nbRequestsPerSecond = value;
     }
 
-    // This will cancel any current download
-    public void setDownloadThreadCount(@NonNull Context ctx, int value) {
-        downloadThreadCap = value;
-        int dlThreadCount = value;
-        if (-1 == downloadThreadCap) dlThreadCount = getThreadCount(ctx);
-        forceRequestQueue(ctx, dlThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS);
-    }
-
     public int getDownloadThreadCap() {
         return downloadThreadCap;
-    }
-
-    /**
-     * Cancel the app's request queue : cancel all requests remaining in the queue
-     */
-    public void cancelQueue() {
-        RequestQueue.RequestFilter filterForAll = request -> true;
-        mRequestQueue.cancelAll(filterForAll);
-        synchronized (waitingRequestQueue) {
-            waitingRequestQueue.clear();
-        }
-        synchronized (currentRequests) {
-            currentRequests.clear();
-            nbActiveRequests.set(0);
-        }
-        isSimulateHumanReading = false;
-        waitDisposable.clear();
-        Timber.d("RequestQueue ::: canceled");
     }
 
     @Override
