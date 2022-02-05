@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="pref_library_display_entries_2">Grille</string>
-    <string name="pref_memory_alert_entries_4">plein à 98 %</string>
+    <string name="pref_memory_alert_entries_4">plein à 98 %%</string>
     <string name="pref_browser_quick_dl_threshold_entries_5">3 s</string>
     <string name="pref_browser_dns_entries_1">Aucun</string>
     <string name="pref_queue_new_position_entries_1">Haut</string>
@@ -16,7 +16,7 @@
     <string name="pref_dl_pages_wifi_threshold_entries_4">200 pages</string>
     <string name="pref_dl_threads_quantity_entries_1">Automatique (par défaut)</string>
     <string name="pref_memory_alert_entries_1">Aucune alerte</string>
-    <string name="pref_memory_alert_entries_2">plein à 90 %</string>
+    <string name="pref_memory_alert_entries_2">plein à 90 %%</string>
     <string name="pref_folder_trunc_content_entries_5">120 caractères</string>
     <string name="pref_viewer_dl_action_entries_2">Diffuser les pages lors de la lecture</string>
     <string name="pref_viewer_separating_bars_entries_3">Moyenne</string>
@@ -41,7 +41,7 @@
     <string name="pref_viewer_cap_tap_zoom_entries_4">6x</string>
     <string name="pref_lock_timer_entries_1">Aucun retard</string>
     <string name="pref_library_display_entries_1">Liste (par défaut)</string>
-    <string name="pref_memory_alert_entries_3">plein à 95 %</string>
+    <string name="pref_memory_alert_entries_3">plein à 95 %%</string>
     <string name="pref_browser_quick_dl_threshold_entries_1">500 ms (par défaut)</string>
     <string name="pref_browser_quick_dl_threshold_entries_2">1 s</string>
     <string name="pref_browser_quick_dl_threshold_entries_4">2 s</string>

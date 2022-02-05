@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="api29_migration_title">Hentoid v12
 \nMise à jour de la gestion des fichiers</string>
     <string name="app_intro">Bienvenue</string>
@@ -12,12 +12,12 @@
     <string name="goto_page">Aller à la page…</string>
     <string name="confirm">Confirmer</string>
     <string name="please_wait">Veuillez patienter…</string>
-    <plurals name="page">
-        <item quantity="one">livre</item>
+    <plurals name="page" tools:ignore="MissingQuantity">
+        <item quantity="one" tools:ignore="ImpliedQuantity">livre</item>
         <item quantity="other">pages</item>
     </plurals>
-    <plurals name="file">
-        <item quantity="one">fichier</item>
+    <plurals name="file" tools:ignore="MissingQuantity">
+        <item quantity="one" tools:ignore="ImpliedQuantity">fichier</item>
         <item quantity="other">fichiers</item>
     </plurals>
     <string name="undo">Annuler</string>
@@ -41,8 +41,8 @@
     <string name="api29_migration_step1_external">Dossier externe</string>
     <string name="app_name">Hentoid</string>
     <string name="yes">Oui</string>
-    <plurals name="book">
-        <item quantity="one">livre</item>
+    <plurals name="book" tools:ignore="MissingQuantity">
+        <item quantity="one" tools:ignore="ImpliedQuantity">livre</item>
         <item quantity="other">livres</item>
     </plurals>
     <string name="cancel_all">Tout annuler</string>
@@ -77,8 +77,8 @@
     <string name="menu_archive_help">Archiver le livre dans un fichier ZIP</string>
     <string name="search_hint">Titre, auteur, étiquette ou identifiant du livre</string>
     <string name="send_to">Partager avec :</string>
-    <plurals name="ask_cancel_multiple">
-        <item quantity="one">Êtes-vous sûr·e de vouloir annuler l\'élément sélectionné \?</item>
+    <plurals name="ask_cancel_multiple" tools:ignore="MissingQuantity">
+        <item quantity="one" tools:ignore="ImpliedQuantity">Êtes-vous sûr·e de vouloir annuler l\'élément sélectionné \?</item>
         <item quantity="other">Êtes-vous sûr·e de vouloir annuler les élément sélectionnés \?</item>
     </plurals>
     <string name="invert_queue">Inverser la file d\'attente</string>
@@ -90,18 +90,18 @@
     <string name="move_down">Descendre</string>
     <string name="move_bottom">Déplacer vers le bas</string>
     <string name="queue_paused">File d\'attente en pause</string>
-    <plurals name="confirm_cancel_all_errors">
+    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
         <item quantity="one">Vous êtes sur le point d\'annuler tous les %d livres comportant des erreurs. Continuer \?</item>
         <item quantity="other"></item>
     </plurals>
-    <plurals name="confirm_redownload_all">
+    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
         <item quantity="one">Vous êtes sur le point de retélécharger %d éléments. Continuer \?</item>
         <item quantity="other"></item>
     </plurals>
     <string name="paused_no_wifi">Impossible de télécharger ; pas de Wi-Fi</string>
     <string name="download_notif_speed">%1$d%2$s Mo @ %3$d ko/s</string>
     <string name="download_notif_failed">Attention : échec du téléchargement</string>
-    <plurals name="work_pages_library">
+    <plurals name="work_pages_library" tools:ignore="MissingQuantity">
         <item quantity="one">%1$d page / %2$.1f Mo</item>
         <item quantity="other">%1$d pages / %2$.1f Mo</item>
     </plurals>
@@ -113,14 +113,14 @@
     <string name="book_edit_title">Modifier le titre du livre</string>
     <string name="new_group_name">Nom du nouveau groupe \?</string>
     <string name="search_bookid_label">Rechercher « %s » dans…</string>
-    <plurals name="number_of_items">
+    <plurals name="number_of_items" tools:ignore="MissingQuantity">
         <item quantity="one">%d élément</item>
         <item quantity="other">%d éléments</item>
     </plurals>
     <string name="help_search">Recherchez n\'importe quoi : titre, auteur, étiquette
 \net aussi le code de lancement !</string>
     <string name="group_name_empty">Le nom du groupe est vide !</string>
-    <plurals name="import_result_bookmarks">
+    <plurals name="import_result_bookmarks" tools:ignore="MissingQuantity">
         <item quantity="one">%d marque-page importé</item>
         <item quantity="other">%d marque-pages importés</item>
     </plurals>
@@ -145,7 +145,7 @@
     <string name="paused_no_internet">Impossible de télécharger ; pas d\'internet</string>
     <string name="library_metrics_storage">%.0f Mo</string>
     <string name="refresh_title">Actualiser la bibliothèque</string>
-    <plurals name="import_result_books">
+    <plurals name="import_result_books" tools:ignore="MissingQuantity">
         <item quantity="one">%d livre importé avec succès</item>
         <item quantity="other">%d livres importés avec succès</item>
     </plurals>

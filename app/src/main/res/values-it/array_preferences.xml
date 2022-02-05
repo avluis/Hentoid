@@ -2,8 +2,8 @@
 <resources>
     <string name="pref_library_display_entries_1">Elenco (predefinito)</string>
     <string name="pref_library_display_entries_2">Griglia</string>
-    <string name="pref_memory_alert_entries_3">su 95% pieno</string>
-    <string name="pref_memory_alert_entries_4">su 98% pieno</string>
+    <string name="pref_memory_alert_entries_3">su 95%% pieno</string>
+    <string name="pref_memory_alert_entries_4">su 98%% pieno</string>
     <string name="pref_browser_quick_dl_threshold_entries_4">2 sec</string>
     <string name="pref_browser_quick_dl_threshold_entries_5">3 sec</string>
     <string name="pref_browser_dns_entries_1">Nessuno</string>
@@ -61,7 +61,7 @@
     <string name="pref_dl_size_wifi_threshold_entries_4">100 MB</string>
     <string name="pref_browser_quick_dl_threshold_entries_2">1 sec</string>
     <string name="pref_memory_alert_entries_1">Nessun avviso</string>
-    <string name="pref_memory_alert_entries_2">su 90% pieno</string>
+    <string name="pref_memory_alert_entries_2">su 90%% pieno</string>
     <string name="pref_queue_new_position_entries_2">Al fondo</string>
     <string name="pref_dl_size_wifi_threshold_entries_1">Nessun limite di dimensioni</string>
     <string name="pref_dl_pages_wifi_threshold_entries_1">Nessun limite di pagine</string>
