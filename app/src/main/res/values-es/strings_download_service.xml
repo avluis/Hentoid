@@ -1,2 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <plurals name="download_completed">
+        <item quantity="one">Descarga completada</item>
+        <item quantity="other"><x:g id="number" example="2">%d</x:g> descargas completadas</item>
+    </plurals>
+    <string name="download_complete">Descarga completada</string>
+    <string name="download_cancelled">Descarga cancelada</string>
+    <string name="download_error">Descarga completada pero hay un error</string>
+    <string name="downloading">Descargando</string>
+    <string name="already_downloaded">Ya había sido descargado</string>
+    <string name="already_queued">Ya había sido agregado a la cola</string>
+    <string name="download_paused">Descarga pausada</string>
+    <string name="download_skipped">Descarga omitida</string>
+    <plurals name="add_to_queue">
+        <item quantity="one"><x:g id="processed" example="1">%1$d</x:g>/<x:g id="total" example="10">%2$d</x:g> artículo agregado a la cola</item>
+        <item quantity="other"><x:g id="processed" example="2">%1$d</x:g>/<x:g id="total" example="10">%2$d</x:g> artículos agregados a la cola</item>
+    </plurals>
+</resources>
