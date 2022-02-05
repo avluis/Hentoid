@@ -149,7 +149,7 @@
     <string name="redownloaded_error">Возникла проблема при повторной загрузке — отменено</string>
     <!-- TODO: Android doesn't understand which number it should imply quantity from -->
     <plurals name="redownloaded_scratch">
-        <item quantity="one"><x:g id="number" example="1">%$1d</x:g> элемент из <x:g id="total" example="42">%$2d</x:g> будет загружен снова</item>
+        <item quantity="one" tools:ignore="ImpliedQuantity"><x:g id="number" example="1">%$1d</x:g> элемент из <x:g id="total" example="42">%$2d</x:g> будет загружен снова</item>
         <item quantity="few"><x:g id="number" example="2">%$1d</x:g> элемента из <x:g id="total" example="42">%$2d</x:g> будут загружены снова</item>
         <item quantity="many"><x:g id="number" example="5">%$1d</x:g> элементов из <x:g id="total" example="42">%$2d</x:g> будут загружены снова</item>
     </plurals>
@@ -168,7 +168,7 @@
         <item quantity="few">(<x:g id="errors" example="2">%d</x:g> ошибки)</item>
         <item quantity="many">(<x:g id="errors" example="5">%d</x:g> ошибок)</item>
     </plurals>
-    <string name="queue_bottom_bar_retry">[попытка <x:g id="number" example="1">%$1d</x:g> из <x:g id="total" example="42">%$2d</x:g>]</string>
+    <string name="queue_bottom_bar_retry">[попытка <x:g id="number" example="1">%1$d</x:g> из <x:g id="total" example="42">%2$d</x:g>]</string>
     <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> Кб/с</string>
     <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> МБ, <x:g id="speed_kbps" example="102.4">%3$d</x:g> Кб/c</string>
     <string name="download_notif_failed">Загрузка не удалась</string>
@@ -414,7 +414,7 @@
     </plurals>
     <!-- TODO: Android doesn't understand which number it should imply quantity from -->
     <plurals name="number_of_book_search_results">
-        <item quantity="one"><x:g id="number" example="1">%$1d</x:g> результат из <x:g id="total" example="7">%$2d</x:g></item>
+        <item quantity="one" tools:ignore="ImpliedQuantity"><x:g id="number" example="1">%$1d</x:g> результат из <x:g id="total" example="7">%$2d</x:g></item>
         <item quantity="few"><x:g id="number" example="2">%$1d</x:g> результата из <x:g id="total" example="7">%$2d</x:g></item>
         <item quantity="many"><x:g id="number" example="5">%$1d</x:g> результатов из <x:g id="total" example="7">%$2d</x:g></item>
     </plurals>

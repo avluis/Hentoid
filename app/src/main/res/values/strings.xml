@@ -160,7 +160,7 @@
         <item quantity="one">(<x:g id="errors" example="1">%d</x:g> error)</item>
         <item quantity="other">(<x:g id="errors" example="2">%d</x:g> errors)</item>
     </plurals>
-    <string name="queue_bottom_bar_retry">[retry <x:g id="number" example="1">%$1d</x:g>/<x:g id="total" example="42">%$2d</x:g>]</string>
+    <string name="queue_bottom_bar_retry">retry <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
     <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> KBps</string>
     <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB @ <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Warning: download failed</string>

@@ -13,7 +13,7 @@
     <string name="confirm">Confirmer</string>
     <string name="please_wait">Veuillez patienter…</string>
     <plurals name="page" tools:ignore="MissingQuantity">
-        <item quantity="one" tools:ignore="ImpliedQuantity">livre</item>
+        <item quantity="one" tools:ignore="ImpliedQuantity">page</item>
         <item quantity="other">pages</item>
     </plurals>
     <plurals name="file" tools:ignore="MissingQuantity">
