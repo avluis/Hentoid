@@ -1,2 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="pref_cat_library">Librería</string>
+    <string name="pref_screen_interface">Interfaz y Navegación</string>
+</resources>
