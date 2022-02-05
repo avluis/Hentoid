@@ -1,21 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="audio_reactions">
-        <item>ямете~~♡</item>
-        <item>стой, это… не та дырка~</item>
-        <item>ах~</item>
-        <item>фууу ♡ ♡</item>
-        <item>не сюда~~♡</item>
-        <item>плохой, плохой мальчик~~</item>
-        <item>так… тесно…♡</item>
-    </string-array>
-    <string-array name="power_reactions">
-        <item>♡~</item>
-        <item>мне нравится там~~</item>
-        <item>глубже~~~♡</item>
-        <item>икуууу~~</item>
-        <item>а-ах ♡</item>
-        <item>ооох~</item>
-        <item>ещё ♡</item>
-    </string-array>
+    <!-- DO NOT modify the way these strings and comments are set up - it is required for Weblate to work -->
+    <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
+
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug1">ямете~~♡</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug2">стой, это… не та дырка~</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug3">ах~</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug4">фууу ♡ ♡</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug5">не сюда~~♡</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug6">плохой, плохой мальчик~~</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug7">так… тесно…♡</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug1">♡~</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug2">мне так приятно там~~</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug3">глубже~~~♡</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug4">икуууу~~</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug5">а-ах ♡</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug6">ооох~</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug7">ещё ♡</string>
 </resources>
