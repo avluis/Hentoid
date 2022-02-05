@@ -57,7 +57,7 @@
     <string name="api29_migration_step1_select">Select Hentoid folder</string>
     <string name="api29_migration_step1_select_external">Select external folder</string>
     <string name="api29_migration_step2">Scan site folders</string>
-    <string name="api29_migration_step3_init">Library scan starting…</string>
+    <string name="api29_migration_step3_init">Scanning library…</string>
     <string name="api29_migration_step3">Scan library (%1$d / %2$d)</string>
     <string name="api29_migration_step4_init">Importing queue…</string>
     <string name="api29_migration_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
@@ -70,7 +70,7 @@
     <string name="menu_group_new">New group</string>
     <string name="menu_edit_order">Edit order</string>
     <string name="menu_edit_name">Edit name</string>
-    <string name="menu_edit_cancel">Cancel edit</string>
+    <string name="menu_edit_cancel">Cancel editing</string>
     <string name="menu_edit_warning_custom">The new custom ordering you\'re about to create will overwrite the previous one.</string>
     <string name="menu_order">Order books</string>
     <string name="menu_delete_single">Delete</string>
@@ -93,7 +93,7 @@
     <string name="app_settings">App settings</string>
     <string name="book_settings">Book settings</string>
     <string name="permissions_lost">File permissions have been lost</string>
-    <string name="low_memory">Your device is low on memory !</string>
+    <string name="low_memory">Your device is low on memory!</string>
     <string name="fix_permissions">Fix</string>
     <string name="view_queue">View queue</string>
     <!-- Queue / Downloader -->
@@ -101,8 +101,8 @@
     <string name="queue_queue_tab">In progress</string>
     <string name="queue_errors_tab">Errors</string>
     <plurals name="ask_cancel_multiple">
-        <item quantity="one">Are you sure you wish to cancel the selected item ?</item>
-        <item quantity="other">Are you sure you wish to cancel the selected items ?</item>
+        <item quantity="one">Cancel the selected item\?</item>
+        <item quantity="other">Cancel the selected items\?</item>
     </plurals>
     <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
@@ -117,16 +117,16 @@
     <string name="queue_dl">Downloading %s</string>
     <string name="err_stats_title">Error stats</string>
     <string name="err_stats_help">Show detailed stats about current download errors</string>
-    <string name="err_no_content">Book does not exist yet</string>
-    <string name="confirm_cancel_all">You are about to cancel the whole queue. Continue ?</string>
+    <string name="err_no_content">The book does not exist yet</string>
+    <string name="confirm_cancel_all">Cancel the whole queue\?</string>
     <plurals name="confirm_cancel_all_errors">
         <item quantity="other">You are about to cancel all %d books with errors. Continue ?</item>
     </plurals>
     <plurals name="confirm_redownload_all">
         <item quantity="other">You are about to redownload %d items. Continue ?</item>
     </plurals>
-    <string name="paused_no_internet">Cannot download - No internet</string>
-    <string name="paused_no_wifi">Cannot download - No WiFi</string>
+    <string name="paused_no_internet">Cannot download - No Internet</string>
+    <string name="paused_no_wifi">Cannot download - No Wi-Fi</string>
     <string name="paused_no_storage">Cannot download - Low on storage (%s left). Free space or change download folder location</string>
     <string name="paused_no_dl_folder">Cannot download - No download folder. Use app settings to select one</string>
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
@@ -138,7 +138,7 @@
     <string name="step_prepare_folder">Preparing download folder</string>
     <string name="step_prepare_download">Preparing download chain</string>
     <string name="step_save_queue">Saving queue</string>
-    <string name="step_start_download">Download chain started !</string>
+    <string name="step_start_download">Download chain started!</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <plurals name="redownloaded_scratch">
@@ -151,8 +151,8 @@
     <string name="notification_user_action_needed">User action needed</string>
     <string name="notification_action_dl_revive">Tap here to reactivate your download</string>
     <string name="revive_wait">Please stay on this screen while your download is revived</string>
-    <string name="queue_json_saved">Queue JSON successfully saved</string>
-    <string name="queue_json_failed">Queue JSON saving failed</string>
+    <string name="queue_json_saved">JSON queue saved</string>
+    <string name="queue_json_failed">Could not save JSON queue</string>
     <string name="queue_content_size_estimate">estimated %.1f MB</string>
     <string name="queue_bottom_bar_processed">%1$s/%2$d processed</string>
     <plurals name="queue_bottom_bar_errors">
@@ -162,8 +162,8 @@
     <string name="queue_bottom_bar_retry">[retry %1$d/%2$d]</string>
     <string name="queue_bottom_bar_speed">%d KBps</string>
     <string name="download_notif_speed">%1$d%2$s MB @ %3$d KBps</string>
-    <string name="download_notif_failed">Warning : download failed</string>
-    <string name="download_notif_failed_details">Cannot download %1$s : unable to create folder %2$s. Please check your Hentoid folder and retry downloading using the (!) button.</string>
+    <string name="download_notif_failed">Warning: download failed</string>
+    <string name="download_notif_failed_details">Cannot download %1$s: unable to create the %2$s folder. Please check your Hentoid folder and retry downloading using the (!) button.</string>
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: %s</string>
@@ -225,12 +225,12 @@
     <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue &gt; Errors.</string>
     <string name="import_run">RUN IMPORT</string>
     <plurals name="import_result_books">
-        <item quantity="one">%d book imported successfully</item>
-        <item quantity="other">%d books imported successfully</item>
+        <item quantity="one">%d book imported</item>
+        <item quantity="other">%d books imported</item>
     </plurals>
     <plurals name="import_result_bookmarks">
-        <item quantity="one">%d bookmark imported successfully</item>
-        <item quantity="other">%d bookmarks imported successfully</item>
+        <item quantity="one">%d bookmark imported</item>
+        <item quantity="other">%d bookmarks imported</item>
     </plurals>
     <string name="dialog_prompt">Allow write permission</string>
     <!-- Export metadata -->
@@ -252,9 +252,9 @@
     <string name="export_warning1">Exporting metadata is meant to create a list of your books in JSON format.\nIt is not meant for moving your collection to your PC or your SD card.\nTap here to learn how to do that.</string>
     <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
     <string name="export_faq_url" translatable="false">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
-    <string name="export_run">RUN EXPORT</string>
+    <string name="export_run">Run export</string>
     <string name="import_settings_title">Import settings</string>
-    <string name="import_settings_success">Import successful</string>
+    <string name="import_settings_success">Imported</string>
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
     <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
@@ -277,8 +277,8 @@
     <string name="import_complete">Import complete</string>
     <string name="import_complete_details">Import complete</string>
     <plurals name="import_complete_details_success">
-        <item quantity="one">%s imported successfully</item>
-        <item quantity="other">%s imported successfully</item>
+        <item quantity="one">%s imported</item>
+        <item quantity="other">%s imported</item>
     </plurals>
     <plurals name="import_complete_details_failure">
         <item quantity="one">%s failed</item>
@@ -290,11 +290,11 @@
     <!-- for logging only -->
     <!-- Memory usage -->
     <string name="memory_title">Memory usage</string>
-    <string name="memory_total">Total : %s</string>
-    <string name="memory_free">Free : %s</string>
-    <string name="memory_hentoid_main">Hentoid (primary) : %s</string>
-    <string name="memory_hentoid_ext">Hentoid (external) : %s</string>
-    <string name="memory_database">Database : %1$s (%2$.1f%% full)</string>
+    <string name="memory_total">Total: %s</string>
+    <string name="memory_free">Free: %s</string>
+    <string name="memory_hentoid_main">Hentoid (primary): %s</string>
+    <string name="memory_hentoid_ext">Hentoid (external): %s</string>
+    <string name="memory_database">Database: %1$s (%2$.1f%% full)</string>
     <string name="memory_details">View details (primary)</string>
     <string name="memory_details_source">Source</string>
     <string name="memory_details_books">Books</string>
@@ -305,7 +305,7 @@
     <string name="read_log">Read log</string>
     <string name="logs_share">Share log</string>
     <string name="no_error_detected">No error detected.</string>
-    <string name="error_log_header">Error log for %1$s [%2$s@%3$s] : %4$d errors</string>
+    <string name="error_log_header">Error log for %1$s [%2$s@%3$s]: %4$d errors</string>
     <string name="error_log_header_queue">Error log for queue</string>
     <string name="log_import_external">External library import/refresh</string>
     <string name="log_import">Primary library import/refresh</string>
@@ -314,14 +314,14 @@
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
-    <string name="error_open">Error opening file : no relevant application found</string>
+    <string name="error_open">Error opening file: no relevant application found</string>
     <string name="error_browser">Error opening link: no browser found</string>
-    <string name="error_send">Error sending archive : no relevant application found</string>
+    <string name="error_send">Error sending archive: no relevant application found</string>
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
     <string name="redownload_dialog_message">Total images in download: %1$d\nImages without error: %2$d\nImages with error: %3$d</string>
-    <string name="redownload_first_error">First error : %s</string>
-    <string name="redownload_action">REDOWNLOAD</string>
+    <string name="redownload_first_error">First error: %s</string>
+    <string name="redownload_action">Redownload</string>
     <string name="redownload_open_log">Open error log</string>
     <string name="redownload_share_log">Share error log</string>
     <string name="redownload_generating_log_file">Generating log file…</string>
@@ -333,14 +333,14 @@
     <string name="filter_completed">Show completed only</string>
     <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
-        <item quantity="one">Are you sure you wish to delete the selected item ?</item>
-        <item quantity="other">Are you sure you wish to delete the selected %d items ?</item>
+        <item quantity="one">Delete the selected item\?</item>
+        <item quantity="other">Delete %d selected items\?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
-        <item quantity="one">Are you sure you wish to archive the selected item ?</item>
-        <item quantity="other">Are you sure you wish to archive the selected %d items ?</item>
+        <item quantity="one">Archive the selected item\?</item>
+        <item quantity="other">Archive the selected %d items\?</item>
     </plurals>
-    <string name="new_group_name">Name of the new group ?</string>
+    <string name="new_group_name">Name of the new group\?</string>
     <string name="group_edit_name">Edit group name</string>
     <string name="book_edit_title">Edit book title</string>
     <string name="delete_progress">Deleting books</string>
@@ -354,13 +354,13 @@
         <item quantity="one">%d group</item>
         <item quantity="other">%d groups</item>
     </plurals>
-    <string name="delete_success">successfully deleted</string>
+    <string name="delete_success">Deleted</string>
     <string name="archive_progress">Archiving books</string>
-    <string name="archive_progress_subtitle">Done : %s</string>
+    <string name="archive_progress_subtitle">Done: %s</string>
     <string name="notif_archive_complete">Archival complete</string>
     <plurals name="notif_archive_complete_details">
-        <item quantity="one">%d book archived successfully</item>
-        <item quantity="other">%d books archived successfully</item>
+        <item quantity="one">%d book archived</item>
+        <item quantity="other">%d books archived</item>
     </plurals>
     <string name="notif_archive_fail">Archival failed</string>
     <string name="notif_archive_fail_details">At least one book failed to be archived</string>
@@ -375,12 +375,12 @@
     <string name="errors_empty">No errors detected among downloads</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
     <string name="downloads_loading">Loading up~</string>
-    <string name="masterdata_no_result">No result found :(</string>
+    <string name="masterdata_no_result">No results :(</string>
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="book_title" translatable="false">This is a rather long title, just because we need it to be.</string>
-    <string name="book_launchcode">Launch code : %s</string>
+    <string name="book_launchcode">Launch code: %s</string>
     <string name="book_series" translatable="false">Series: Name</string>
     <string name="book_artist" translatable="false">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
     <string name="book_pages_queue" translatable="false">Pages: 1234; estimated 125 MB</string>
@@ -398,12 +398,12 @@
     <string name="reset">Permissions have been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
     <plurals name="redownload_confirm">
-        <item quantity="one">Redownload selected book from scratch ?</item>
-        <item quantity="other">Redownload selected books from scratch ?</item>
+        <item quantity="one">Redownload selected book from scratch\?</item>
+        <item quantity="other">Redownload selected books from scratch\?</item>
     </plurals>
     <plurals name="download_confirm">
-        <item quantity="one">Download selected book ?</item>
-        <item quantity="other">Download selected books ?</item>
+        <item quantity="one">Download selected book\?</item>
+        <item quantity="other">Download selected books\?</item>
     </plurals>
     <plurals name="stream_confirm">
         <item quantity="one">Switch selected book to streaming ?</item>
@@ -422,7 +422,8 @@
         <item quantity="other">%d selected books are already streamed or external\nThey will be ignored.</item>
     </plurals>
     <string name="about_to_delete">Book is about to be deleted…</string>
-    <string name="help_search">Search anything : title, author, tag\nand launch code too !</string>
+    <string name="help_search">Search anything: title, author, tag
+\nand launch code too.</string>
     <string name="help_page_slider">You can browse faster by sliding through page numbers</string>
     <plurals name="items_selected">
         <item quantity="one">%d item selected</item>
@@ -436,13 +437,13 @@
         <item quantity="other">%d books from the external library will not be removed</item>
     </plurals>
     <string name="group_make_cover">Set as group cover</string>
-    <string name="group_make_cover_ask">Are you sure to set this book\'s cover as the current group\'s cover ?</string>
+    <string name="group_make_cover_ask">Set this book cover as the current group cover\?</string>
     <string name="group_change">Move to custom group</string>
     <string name="group_existing">Existing group</string>
     <string name="group_new">Create new</string>
     <string name="group_new_name">New custom group name</string>
     <string name="group_remove">Detach from current group</string>
-    <string name="group_name_exists">Group with that name already exists!</string>
+    <string name="group_name_exists">A group with that name already exists.</string>
     <string name="group_rename_forbidden">Renaming that group is forbidden!</string>
     <string name="group_name_empty">Group name is empty!</string>
     <string name="group_not_selected">Group has not been selected!</string>
@@ -469,8 +470,8 @@
     <string name="split_select_help">Hold and drag to select\nEach selected chapter creates one new book</string>
     <string name="split_no_chapters">No chapters created yet :-(</string>
     <string name="split_create_chapters">Create chapters</string>
-    <string name="merge_success">Content merged successfully</string>
-    <string name="split_success">Content split successfully</string>
+    <string name="merge_success">Content merged</string>
+    <string name="split_success">Content split</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
@@ -485,7 +486,7 @@
     <string name="sort_read_date">Read date</string>
     <string name="sort_reads">Reads</string>
     <string name="sort_size">Size</string>
-    <string name="sort_reading_progress">Read progress</string>
+    <string name="sort_reading_progress">Reading progress</string>
     <string name="sort_random">Random</string>
     <string name="sort_custom">Custom</string>
     <string name="sort_invalid">-invalid-</string>
@@ -528,7 +529,7 @@
     <string name="app_lock_enable">App Lock Enabled</string>
     <string name="app_lock_disabled">App Lock Disabled</string>
     <string name="pin_reset">Reset PIN</string>
-    <string name="pin_reset_success">Pin has been reset</string>
+    <string name="pin_reset_success">PIN reset</string>
     <string name="pin_ok">PIN OK!</string>
     <string name="pin_current">Enter Current PIN</string>
     <string name="pin_new">Enter New PIN</string>
@@ -538,7 +539,9 @@
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
     <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHentoid is a free and open-source software maintained by the Hentoid Community (join us on Discord - see link above)</string>
-    <string name="personalDataStatement2">Hentoid collects the following personal data and sends them to Google for processing through the firebase library :\n  - Session ID\n  - IP address</string>
+    <string name="personalDataStatement2">Hentoid collects the following personal data and sends them to Google for processing through the firebase library:
+\n - Session ID
+\n - IP address</string>
     <string name="personalDataStatement3">The abovementioned data is removed from Firebase live and backup system within 180 days (see https://firebase.google.com/support/privacy/ for more details)\n\nNo other personal data is collected nor sent to any other party.</string>
     <string name="about_github" translatable="false"><u>GitHub</u></string>
     <string name="about_discord" translatable="false"><u>Discord</u></string>
@@ -566,7 +569,7 @@
     <string name="bookmark_toggle_welcome">Toggle bookmark URL as welcome page</string>
     <string name="alert_unwanted_tags">This book is tagged with %s</string>
     <string name="bookmark_homepage">Homepage</string>
-    <string name="torrent_dl_fail">Downloading torrent failed : %s</string>
+    <string name="torrent_dl_fail">Downloading torrent failed: %s</string>
     <string name="web_storage_permission_denied">Storage permission denied - cannot use the downloader</string>
     <!-- Web browser (site specifics) -->
     <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
@@ -606,12 +609,12 @@
     <!-- DB migration & Maintenance -->
     <string name="maintenance">Performing maintenance</string>
     <!-- Image viewer -->
-    <string name="no_images">Could not load the book : No image found</string>
-    <string name="loading_archive">Loading : %1$d/%2$d</string>
-    <string name="loading_image">Loading image : %d%%</string>
+    <string name="no_images">Could not load the book: No image found</string>
+    <string name="loading_archive">Loading: %1$d/%2$d</string>
+    <string name="loading_image">Loading image: %d%%</string>
     <string name="no_image">Image not found</string>
     <string name="viewer_img_details">%1$d x %2$d (scale %3$.0f%%) - %4$s</string>
-    <string name="viewer_choose_direction">Choose your reading direction</string>
+    <string name="viewer_choose_direction">Choose reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
     <string name="viewer_direction_ttb">Top to bottom</string>
@@ -629,8 +632,8 @@
     <string name="viewer_delete_book">Delete book</string>
     <string name="copy_download_folder_success">Copied to Downloads folder</string>
     <string name="copy_download_folder_fail">Could not write to Downloads folder</string>
-    <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
-    <string name="viewer_ask_delete_page">Are you sure you wish to delete this page?</string>
+    <string name="viewer_ask_delete_book">Delete this book\?</string>
+    <string name="viewer_ask_delete_page">Delete this page\?</string>
     <string name="information_help">Information</string>
     <string name="previous_book_help">Previous book</string>
     <string name="next_book_help">Next book</string>
@@ -689,7 +692,7 @@
     <string name="view_changelog_flagged">View changelog*</string>
     <string name="changelog">Changelog</string>
     <string name="get_latest">Get the latest version (%1$s)</string>
-    <string name="update_success">Update successful !</string>
+    <string name="update_success">Updated</string>
     <string name="starting_download">Starting download</string>
     <!-- Edit drawer -->
     <string name="title_activity_drawer_edit">Edit menu</string>
@@ -712,12 +715,12 @@
     <plurals name="duplicate_count">
         <item quantity="other">%d duplicates &gt;</item>
     </plurals>
-    <string name="duplicate_title_score">Title : %.0f%%</string>
-    <string name="duplicate_title_score_nodata">Title : no data</string>
-    <string name="duplicate_cover_score">Cover : %.0f%%</string>
-    <string name="duplicate_cover_score_nodata">Cover : no data</string>
-    <string name="duplicate_artist_score">Artist : %.0f%%</string>
-    <string name="duplicate_artist_score_nodata">Artist : no data</string>
+    <string name="duplicate_title_score">Title: %.0f%%</string>
+    <string name="duplicate_title_score_nodata">Title: no data</string>
+    <string name="duplicate_cover_score">Cover: %.0f%%</string>
+    <string name="duplicate_cover_score_nodata">Cover: no data</string>
+    <string name="duplicate_artist_score">Artist: %.0f%%</string>
+    <string name="duplicate_artist_score_nodata">Artist: no data</string>
     <string name="duplicate_total_score">%.0f%%</string>
     <string name="apply_processing">Apply (%d remaining choices)</string>
     <string name="apply_final">Apply choices</string>
@@ -744,7 +747,7 @@
     <string name="duplicate_alert_in_queue">In queue</string>
     <string name="duplicate_alert_always_download">Always download and don\'t ask me again</string>
     <string name="duplicate_alert_never_extra_on_dupes">Never add pages from potential duplicates again</string>
-    <string name="duplicate_alert_similarity">Similarity : %.0f%%</string>
+    <string name="duplicate_alert_similarity">Similarity: %.0f%%</string>
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
     <string name="duplicate_wait_index">Please wait while indexing</string>
@@ -770,12 +773,10 @@
     <string name="group_year">Last year</string>
     <string name="group_long">A long time ago</string>
     <string name="group_no_group">Ungrouped</string>
-
     <!-- Themes -->
     <string name="theme_light">Light</string>
     <string name="theme_deep_red">Deep Red</string>
     <string name="theme_dark">Dark</string>
-
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>
