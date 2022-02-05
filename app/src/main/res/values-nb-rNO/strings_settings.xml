@@ -124,4 +124,5 @@
     <string name="pref_queue_wifi_only_off">Nedlastingskøen vil starte hvis enheten er tilknyttet et nettverk</string>
     <string name="pref_dl_threads_quantity_title">Antall parallelle nedlastinger</string>
     <string name="pref_dl_hitomi_webp_summary_on">Last ned WebP-bilder når de er tilgjengelige</string>
+    <string name="pref_browser_duplicate_ask_title">Duplikatsjekking</string>
 </resources>
