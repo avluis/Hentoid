@@ -236,7 +236,7 @@
         <item quantity="one"><x:g id="number" example="1">%d</x:g> bookmark imported successfully</item>
         <item quantity="other"><x:g id="number" example="2">%d</x:g> bookmarks imported successfully</item>
     </plurals>
-    <string name="dialog_prompt">Allow write permission</string>
+    <string name="dialog_prompt">Choose a Folder</string>
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>
     <plurals name="export_file_library">
@@ -456,8 +456,8 @@
         <item quantity="other">Delete groups only</item>
     </plurals>
     <plurals name="group_delete_selected_book">
-	<item quantity="one">Delete <x:g id="count" example="1">%d</x:g> book</item>
-	<item quantity="other">Delete <x:g id="count" example="2">%d</x:g> books</item>
+        <item quantity="one">Delete <x:g id="count" example="1">%d</x:g> book</item>
+        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> books</item>
     </plurals>
     <plurals name="group_delete_selected_group_books">
         <item quantity="one">Delete group + books</item>
@@ -685,7 +685,7 @@
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
-    <string name="gallery_display_page"><x:g id="startMarker" example="&gt;">%1$s</x:g>Page <x:g id="number" example="2">%2$d</x:g><x:g id="isFavourite" example="&#9829;">%3$s</x:g><x:g id="endMarker" example="&lt;">%4$s</x:g></string>
+    <string name="gallery_display_page"><x:g id="startMarker" example="&gt;">%1$s</x:g>Page <x:g id="number" example="2">%2$d</x:g><x:g id="isFavourite" example="♥">%3$s</x:g><x:g id="endMarker" example="&lt;">%4$s</x:g></string>
     <string name="gallery_display_chapter">Chp <x:g id="number" example="2">%d</x:g></string>
     <string name="gallery_no_chapter">No chapter</string>
     <string name="renaming_progress">Renaming files…</string>
