@@ -15,7 +15,7 @@
     <string name="tools_duplicate_detector_summary">Identifica e rimuovi libri duplicati</string>
     <string name="tools_screen_cache">Gestione della cache</string>
     <string name="tools_cache_browser">Svuota la cache del browser</string>
-    <string name="tools_cache_browser_success">WebView cache cancellata</string>
+    <string name="tools_cache_browser_success">WebView cache cancellata correttamente</string>
     <string name="tools_cache_app">Cancella la cache dell\'app</string>
     <string name="tools_cache_app_success">Cache dell\'app cancellata con successo</string>
     <string name="tools_latest_logs_title">Logs dell\'app</string>
