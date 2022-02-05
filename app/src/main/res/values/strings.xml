@@ -727,11 +727,11 @@
     <string name="duplicate_notif_start">Starting duplicate detection</string>
     <string name="duplicate_notif_complete_title">Duplicate detection complete</string>
     <plurals name="duplicate_notif_complete_desc">
-        <item quantity="one">%d duplicate detected successfully</item>
-        <item quantity="other">%d duplicates detected successfully</item>
+        <item quantity="one">%d duplicate detected</item>
+        <item quantity="other">%d duplicates detected</item>
     </plurals>
     <string name="duplicate_empty_first_use">Nothing to display - Run a new duplicate search</string>
-    <string name="duplicate_processing">Duplicate detection in progress</string>
+    <string name="duplicate_processing">Detecting duplicates…</string>
     <plurals name="duplicate_detail_title">
         <item quantity="one">%d duplicate</item>
         <item quantity="other">%d duplicates</item>
@@ -750,20 +750,20 @@
     <string name="duplicate_alert_similarity">Similarity: %.0f%%</string>
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
-    <string name="duplicate_wait_index">Please wait while indexing</string>
+    <string name="duplicate_wait_index">Indexing…</string>
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>
     <string name="notif_delete_title">Content deletion</string>
-    <string name="notif_delete_complete">Delete complete</string>
+    <string name="notif_delete_complete">Deletion complete</string>
     <plurals name="notif_delete_complete_details">
-        <item quantity="one">%d deleted successfully</item>
-        <item quantity="other">%d deleted successfully</item>
+        <item quantity="one">%d deleted</item>
+        <item quantity="other">%d deleted</item>
     </plurals>
-    <string name="notif_delete_fail">Delete failed</string>
+    <string name="notif_delete_fail">Deletion failed</string>
     <string name="notif_delete_fail_details">At least one book failed to be deleted</string>
     <!-- Startup -->
     <string name="title_startup">Startup</string>
-    <string name="title_startup_progress">Startup in progress…</string>
+    <string name="title_startup_progress">Starting…</string>
     <string name="title_startup_complete">Startup complete</string>
     <!-- Group names -->
     <string name="group_today">Today</string>
