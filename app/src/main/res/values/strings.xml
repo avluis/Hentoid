@@ -21,7 +21,7 @@
         <item quantity="other">books</item>
     </plurals>
     <plurals name="page" tools:ignore="ImpliedQuantity">
-        <item quantity="one">book</item>
+        <item quantity="one">page</item>
         <item quantity="other">pages</item>
     </plurals>
     <plurals name="file" tools:ignore="ImpliedQuantity">
@@ -43,7 +43,6 @@
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
     <string name="title_activity_downloads">Library</string>
-    <!-- Title -->
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>

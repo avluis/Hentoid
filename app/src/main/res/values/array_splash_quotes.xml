@@ -96,6 +96,8 @@
     <string name="splash_quote40" tools:ignore="MissingTranslation">Wait Not Manga?</string>
     <!-- The Simpsons reference: google how the 'steamed hams' meme had been translated for your language -->
     <string name="splash_quote41" tools:ignore="MissingTranslation">Delightfully devilish</string>
+    <!-- The Simpsons reference: google how the 'steamed hams' meme had been translated for your language -->
     <string name="splash_quote42" tools:ignore="MissingTranslation">I thought we were having steamed clams</string>
+    <!-- The Simpsons reference: google how the 'steamed hams' meme had been translated for your language -->
     <string name="splash_quote43" tools:ignore="MissingTranslation">I hope you\'re prepared for an unforgettable luncheon</string>
 </resources>
