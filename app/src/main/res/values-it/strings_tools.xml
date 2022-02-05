@@ -1,2 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="tools_title">Strumenti</string>
+    <string name="tools_screen_import_export">Importa/Esporta</string>
+    <string name="tools_export_library_title">Esporta metadata</string>
+    <string name="tools_export_library_summary">Esporta i libri di Hentoid in un file JSON</string>
+    <string name="tools_import_library_title">Importa metadata</string>
+    <string name="tools_import_library_summary">Ripristina i libri esportati di Hentoid da un file JSON</string>
+    <string name="tools_screen_cat_settings">Impostazioni</string>
+    <string name="tools_export_settings_title">Esporta impostazioni</string>
+    <string name="tools_export_settings_summary">Esporta le impostazioni in un file JSON</string>
+    <string name="tools_import_settings_title">Importa impostazioni</string>
+    <string name="tools_import_settings_summary">Ripristina le impostazioni esportate da un file JSON</string>
+    <string name="tools_duplicate_detector_title">Rilevatore duplicati</string>
+    <string name="tools_duplicate_detector_summary">Identifica e rimuovi libri duplicati</string>
+    <string name="tools_screen_cache">Gestione della cache</string>
+    <string name="tools_cache_browser">Svuota la cache del browser</string>
+    <string name="tools_cache_browser_success">WebView cache cancellata</string>
+    <string name="tools_cache_app">Cancella la cache dell\'app</string>
+    <string name="tools_cache_app_success">Cache dell\'app cancellata con successo</string>
+    <string name="tools_latest_logs_title">Logs dell\'app</string>
+    <string name="tools_latest_logs_summary">Visualizza gli ultimi log dell\'app</string>
+</resources>
