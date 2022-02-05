@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string-array name="splash_quotes">
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string-array name="splash_quotes" tools:ignore="InconsistentArrays">
         <item>искусство в приложении</item>
         <item>опять _эти_ книги?</item>
         <item>приложение для тренировки руки</item>
@@ -43,7 +43,7 @@
         <item>книги мои книги</item>
         <item>Стоп, не манга?</item>
         <item>Дьявольски соблазнительно</item>
-	<item>Я думал, мы будем есть моллюсков на пару</item>
-	<item>Надеюсь, вы приготовились к незабываемому обеду</item>
+        <item>Я думал, мы будем есть моллюсков на пару</item>
+        <item>Надеюсь, вы приготовились к незабываемому обеду</item>
     </string-array>
 </resources>

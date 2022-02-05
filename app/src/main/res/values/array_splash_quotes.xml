@@ -1,54 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string-array name="splash_quotes">
-        <item>art in an app</item>
-        <item>the usual book ?</item>
-        <item>one hand training app</item>
-        <item>5 mins arm exercise</item>
-        <item>your hand\'s best friend</item>
-        <item>app on, pants off</item>
-        <item>pro tip : check your surroundings</item>
-        <item>please be gentle senpai~~</item>
-        <item>switch your partner</item>
-        <item>arm day</item>
-        <item>aim up</item>
-        <item>splash damage</item>
-        <item>sosig</item>
-        <item>extendo the third arm</item>
-        <item>bouncy :3</item>
-        <item>BEHIND YOU</item>
-        <item>BAKA DONT JACK ME</item>
-        <item>Loading Pervert</item>
-        <item>Daddyy....</item>
-        <item>Up And Down, Till it blow</item>
-        <item>ITS A MEAT</item>
-        <item>You seriously jacking alone?</item>
-        <item>Invite some friends ;3</item>
-        <item>Ask for a GF, Wait…</item>
-        <item>Fastest Loading time</item>
-        <item>THE BOOKS ARE OVER 90K</item>
-        <item>Nice Girl, Wait ITS A TRAP</item>
-        <item>Shoot long</item>
-        <item>Erectus</item>
-        <item>nice stick man</item>
-        <item>babe its time for your meat grinding</item>
-        <item>Meat go *BRRRRRRR*</item>
-        <item>Bouncy melons</item>
-        <item>Salty but tasty</item>
-        <item>If there is a hole there is a way</item>
-        <item>go all in?</item>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- DO NOT modify the way these arrays are set up - it is required for Weblate to work -->
+    <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
+
+    <string-array name="splash_quotes" tools:ignore="InconsistentArrays">
+        <item>@string/splash_quote1</item>
+        <item>@string/splash_quote2</item>
+        <item>@string/splash_quote3</item>
+        <item>@string/splash_quote4</item>
+        <item>@string/splash_quote5</item>
+        <item>@string/splash_quote6</item>
+        <item>@string/splash_quote7</item>
+        <item>@string/splash_quote8</item>
+        <item>@string/splash_quote9</item>
+        <item>@string/splash_quote10</item>
+        <item>@string/splash_quote11</item>
+        <item>@string/splash_quote12</item>
+        <item>@string/splash_quote13</item>
+        <item>@string/splash_quote14</item>
+        <item>@string/splash_quote15</item>
+        <item>@string/splash_quote16</item>
+        <item>@string/splash_quote17</item>
+        <item>@string/splash_quote18</item>
+        <item>@string/splash_quote19</item>
+        <item>@string/splash_quote20</item>
+        <item>@string/splash_quote21</item>
+        <item>@string/splash_quote22</item>
+        <item>@string/splash_quote23</item>
+        <item>@string/splash_quote24</item>
+        <item>@string/splash_quote25</item>
+        <item>@string/splash_quote26</item>
+        <item>@string/splash_quote27</item>
+        <item>@string/splash_quote28</item>
+        <item>@string/splash_quote29</item>
+        <item>@string/splash_quote30</item>
+        <item>@string/splash_quote31</item>
+        <item>@string/splash_quote32</item>
+        <item>@string/splash_quote33</item>
+        <item>@string/splash_quote34</item>
+        <item>@string/splash_quote35</item>
         <item>WARNING LEWD PP</item>
-        <item>huh? is that a penis?</item>
-        <item>Ewwww put that away</item>
-        <item>its one hell of an app</item>
-        <item>lube it up brother</item>
+        <item>@string/splash_quote36</item>
+        <item>@string/splash_quote37</item>
+        <item>@string/splash_quote38</item>
+        <item>@string/splash_quote39</item>
         <item>https://youtu.be/dQw4w9WgXcQ</item>
         <item>Get Thick Bug LOL</item>
         <item>muh books</item>
         <item>I suck at pushing</item>
-        <item>Wait Not Manga?</item>
-        <item>Delightfully devilish</item>
-        <item>I thought we were having steamed clams</item>
-        <item>I hope you\'re prepared for an unforgettable luncheon</item>
+        <item>@string/splash_quote40</item>
+        <item>@string/splash_quote41</item>
+        <item>@string/splash_quote42</item>
+        <item>@string/splash_quote43</item>
+        <item>THE BOOKS ARE OVER 90K</item>
     </string-array>
+    <string name="splash_quote1" tools:ignore="MissingTranslation">art in an app</string>
+    <string name="splash_quote2" tools:ignore="MissingTranslation">the usual book?</string>
+    <string name="splash_quote3" tools:ignore="MissingTranslation">one hand training app</string>
+    <string name="splash_quote4" tools:ignore="MissingTranslation">5 mins arm exercise</string>
+    <string name="splash_quote5" tools:ignore="MissingTranslation">your hand\'s best friend</string>
+    <string name="splash_quote6" tools:ignore="MissingTranslation">app on, pants off</string>
+    <string name="splash_quote7" tools:ignore="MissingTranslation">pro tip: check your surroundings</string>
+    <string name="splash_quote8" tools:ignore="MissingTranslation">please be gentle senpai~~</string>
+    <string name="splash_quote9" tools:ignore="MissingTranslation">switch your partner</string>
+    <string name="splash_quote10" tools:ignore="MissingTranslation">arm day</string>
+    <string name="splash_quote11" tools:ignore="MissingTranslation">aim up</string>
+    <string name="splash_quote12" tools:ignore="MissingTranslation">splash damage</string>
+    <string name="splash_quote13" tools:ignore="MissingTranslation">sosig</string>
+    <string name="splash_quote14" tools:ignore="MissingTranslation">extendo the third arm</string>
+    <string name="splash_quote15" tools:ignore="MissingTranslation">bouncy :3</string>
+    <string name="splash_quote16" tools:ignore="MissingTranslation">BEHIND YOU</string>
+    <string name="splash_quote17" tools:ignore="MissingTranslation">BAKA DONT JACK ME</string>
+    <string name="splash_quote18" tools:ignore="MissingTranslation">Loading Pervert</string>
+    <string name="splash_quote19" tools:ignore="MissingTranslation">Daddyy....</string>
+    <string name="splash_quote20" tools:ignore="MissingTranslation">Up And Down, Till it blow</string>
+    <string name="splash_quote21" tools:ignore="MissingTranslation">ITS A MEAT</string>
+    <string name="splash_quote22" tools:ignore="MissingTranslation">You seriously jacking alone?</string>
+    <string name="splash_quote23" tools:ignore="MissingTranslation">Invite some friends ;3</string>
+    <string name="splash_quote24" tools:ignore="MissingTranslation">Ask for a GF, Wait…</string>
+    <string name="splash_quote25" tools:ignore="MissingTranslation">Fastest Loading time</string>
+    <string name="splash_quote26" tools:ignore="MissingTranslation">Nice Girl, Wait ITS A TRAP</string>
+    <string name="splash_quote27" tools:ignore="MissingTranslation">Shoot long</string>
+    <string name="splash_quote28" tools:ignore="MissingTranslation">Erectus</string>
+    <string name="splash_quote29" tools:ignore="MissingTranslation">nice stick man</string>
+    <string name="splash_quote30" tools:ignore="MissingTranslation">babe its time for your meat grinding</string>
+    <string name="splash_quote31" tools:ignore="MissingTranslation">Meat go *BRRRRRRR*</string>
+    <string name="splash_quote32" tools:ignore="MissingTranslation">Bouncy melons</string>
+    <string name="splash_quote33" tools:ignore="MissingTranslation">Salty but tasty</string>
+    <string name="splash_quote34" tools:ignore="MissingTranslation">If there is a hole there is a way</string>
+    <string name="splash_quote35" tools:ignore="MissingTranslation">go all in?</string>
+    <string name="splash_quote36" tools:ignore="MissingTranslation">huh? is that a penis?</string>
+    <string name="splash_quote37" tools:ignore="MissingTranslation">Ewwww put that away</string>
+    <string name="splash_quote38" tools:ignore="MissingTranslation">its one hell of an app</string>
+    <string name="splash_quote39" tools:ignore="MissingTranslation">lube it up brother</string>
+    <string name="splash_quote40" tools:ignore="MissingTranslation">Wait Not Manga?</string>
+    <!-- The Simpsons reference: google how the 'steamed hams' meme had been translated for your language -->
+    <string name="splash_quote41" tools:ignore="MissingTranslation">Delightfully devilish</string>
+    <string name="splash_quote42" tools:ignore="MissingTranslation">I thought we were having steamed clams</string>
+    <string name="splash_quote43" tools:ignore="MissingTranslation">I hope you\'re prepared for an unforgettable luncheon</string>
 </resources>
