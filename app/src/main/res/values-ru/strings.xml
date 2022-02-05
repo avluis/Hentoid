@@ -24,6 +24,7 @@
         <item quantity="one">страница</item>
         <item quantity="few">страницы</item>
         <item quantity="many">страниц</item>
+        <item quantity="other">страниц</item>
     </plurals>
     <plurals name="file" tools:ignore="ImpliedQuantity">
         <item quantity="one">файл</item>
@@ -120,7 +121,7 @@
     <string name="err_stats_title">Статистика ошибок</string>
     <string name="err_stats_help">Показать подробную статистику об ошибках</string>
     <string name="err_no_content">Книга ещё не существует</string>
-    <string name="confirm_cancel_all">Вы собираетесь отменить всё в очереди. Продолжить?</string>
+    <string name="confirm_cancel_all">Вы собираетесь отменить всё в очереди. Продолжить\?</string>
     <plurals name="confirm_cancel_all_errors">
         <item quantity="one">Вы собираетесь отменить <x:g id="count" example="1">%d</x:g> книгу с ошибками. Продолжить?</item>
         <item quantity="few">Вы собираетесь отменить <x:g id="count" example="2">%d</x:g> книги с ошибками. Продолжить?</item>
@@ -363,7 +364,7 @@
         <item quantity="few">Вы уверены, что хотите заархивировать <x:g id="count" example="2">%d</x:g> выбранных элемента?</item>
         <item quantity="many">Вы уверены, что хотите заархивировать <x:g id="count" example="5">%d</x:g> выбранных элементов?</item>
     </plurals>
-    <string name="new_group_name">Название новой группы?</string>
+    <string name="new_group_name">Название новой группы\?</string>
     <string name="group_edit_name">Редактировать название группы</string>
     <string name="book_edit_title">Редактировать название книги</string>
     <string name="delete_progress">Удаляю книги</string>
@@ -402,7 +403,7 @@
     <string name="errors_empty">Ошибок при загрузке не обнаружено</string>
     <string name="downloads_empty_library">Ну давай, скачай что-нибудь.</string>
     <string name="downloads_loading">Загружаю~</string>
-    <string name="masterdata_no_result">Результатов не обнаружено :(</string>
+    <string name="masterdata_no_result">Нет результатов :(</string>
     <string name="search_entry_not_found">Тут такого нет, иди, скачай это.</string>
     <string name="packaging_content">Упаковываю файлы.\nПожалуйста, подождите…</string>
     <string name="search_bookid_label">Поиск <x:g id="launchcode" example="4567">\'%s\'</x:g> в…</string>
@@ -451,7 +452,8 @@
         <item quantity="many"><x:g id="count" example="5">%d</x:g> книг уже стримятся или находятся во внешней библиотеке\nЭти книги будут пропущены.</item>
     </plurals>
     <string name="about_to_delete">Книга будет удалена…</string>
-    <string name="help_search">Ищите по чему угодно: названию, автору, тэгам\nи даже коду запуска!</string>
+    <string name="help_search">Ищите по чему угодно: названию, автору, тэгам
+\nи даже коду запуска!</string>
     <string name="help_page_slider">Вы можете проводить пальцем по номерам страниц</string>
     <plurals name="items_selected">
         <item quantity="one">Выбран <x:g id="count" example="1">%d</x:g> элемент</item>
@@ -467,13 +469,13 @@
         <item quantity="many"><x:g id="count" example="5">%d</x:g> книг из внешней библиотеки не будут удалены</item>
     </plurals>
     <string name="group_make_cover">Установить как обложку группы</string>
-    <string name="group_make_cover_ask">Вы уверены, что хотите установить обложку этой книги как обложку группы?</string>
+    <string name="group_make_cover_ask">Вы уверены, что хотите установить обложку этой книги как обложку группы\?</string>
     <string name="group_change">Переместить в пользовательскую группу</string>
     <string name="group_existing">Существующая группа</string>
     <string name="group_new">Создать новую</string>
     <string name="group_new_name">Название новой пользовательской группы</string>
     <string name="group_remove">Отсоединить от этой группы</string>
-    <string name="group_name_exists">Группа с таким названием уже существует!</string>
+    <string name="group_name_exists">Группа с таким названием уже существует.</string>
     <string name="group_rename_forbidden">Запрещено переименовывать эту группу!</string>
     <string name="group_name_empty">Название группы не может быть пустым!</string>
     <string name="group_not_selected">Не выбрана группа!</string>
@@ -534,7 +536,7 @@
     <string name="show_artists">Художники</string>
     <string name="show_groups">Группы</string>
     <string name="show_artists_and_groups">Художники и группы</string>
-    <string name="launchcode_present">У вас уже есть эта книга. Искать в других источниках?</string>
+    <string name="launchcode_present">У вас уже есть эта книга. Искать в других источниках\?</string>
     <!-- Updates -->
     <string name="updates_title">Обновления</string>
     <string name="checking_updates">Проверка обновлений</string>
@@ -562,7 +564,7 @@
     <string name="app_lock_enable">Блокировка включена</string>
     <string name="app_lock_disabled">Блокировка выключена</string>
     <string name="pin_reset">Изменить код-пароль</string>
-    <string name="pin_reset_success">Код-пароль был изменён</string>
+    <string name="pin_reset_success">Код-пароль изменён</string>
     <string name="pin_ok">Код-пароль верный!</string>
     <string name="pin_current">Введите текущий код-пароль</string>
     <string name="pin_new">Введите новый код-пароль</string>
@@ -572,7 +574,9 @@
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> — это приложение для скачивания додзинси и хентай-манги. Hentoid изначально был создан <b>Сесаром Арасаки</b>.</string>
     <string name="personalDataStatement1"><b>ЗАЯВЛЕНИЕ О КОНФИДЕНЦИАЛЬНОСТИ ПЕРСОНАЛЬНЫХ ДАННЫХ</b>\n\nHentoid — это бесплатное програмное обеспечение с открытым исходным кодом, разрабатываемое сообществом Hentoid (присоединяйтесь к нам в Discord по ссылке ниже)</string>
-    <string name="personalDataStatement2">Hentoid собирает следующие персональные данные и делится ими с Google для обработки с помощью библиотеки Firebase:\n  - Идентификатор сессии\n  - IP-адрес</string>
+    <string name="personalDataStatement2">Hentoid собирает следующие персональные данные и делится ими с Google для обработки с помощью библиотеки Firebase:
+\n - Идентификатор сессии
+\n - IP-адрес</string>
     <string name="personalDataStatement3">Вышеупомянутые данные удаляются как из действующей, так и из запасной систем Firebase в течение 180 дней (подробности доступны на https://firebase.google.com/support/privacy/)\n\nНикакие другие персональные данные не собираются и не передаются третьим лицам.</string>
     <string name="about_licenses">Показать лицензии</string>
     <string name="about_app_version">Версия Hentoid: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
@@ -671,8 +675,8 @@
     <string name="viewer_delete_book">Удалить книгу</string>
     <string name="copy_download_folder_success">Скопировано в Загрузки</string>
     <string name="copy_download_folder_fail">Не удалось скопировать в Загрузки</string>
-    <string name="viewer_ask_delete_book">Вы уверены, что хотите удалить эту книгу?</string>
-    <string name="viewer_ask_delete_page">Вы уверены, что хотите удалить эту страницу?</string>
+    <string name="viewer_ask_delete_book">Вы уверены, что хотите удалить эту книгу\?</string>
+    <string name="viewer_ask_delete_page">Вы уверены, что хотите удалить эту страницу\?</string>
     <string name="information_help">Информация</string>
     <string name="previous_book_help">Предыдущая книга</string>
     <string name="next_book_help">Следующая книга</string>
@@ -712,7 +716,7 @@
     <string name="gallery_edit_chapters_help">Чтобы создать или удалить главы, нажмите на её первую страницу</string>
     <string name="gallery_clear_chapters">Очистить все главы</string>
     <string name="gallery_add_remove_chapters">Добавить и удалить главы</string>
-    <string name="gallery_display_page"><x:g id="startMarker" example="&gt;">%1$s</x:g>Страница <x:g id="number" example="2">%2$d</x:g><x:g id="isFavourite" example="&#9829;">%3$s</x:g><x:g id="endMarker" example="&lt;">%4$s</x:g></string>
+    <string name="gallery_display_page"><x:g id="startMarker" example="&gt;">%1$s</x:g>Страница <x:g id="number" example="2">%2$d</x:g><x:g id="isFavourite" example="♥">%3$s</x:g><x:g id="endMarker" example="&lt;">%4$s</x:g></string>
     <string name="gallery_display_chapter">Гл. <x:g id="number" example="2">%d</x:g></string>
     <string name="gallery_no_chapter">Нет глав</string>
     <string name="renaming_progress">Переименовываю файлы…</string>
@@ -819,12 +823,10 @@
     <string name="group_year">За последний год</string>
     <string name="group_long">Давно</string>
     <string name="group_no_group">Без группы</string>
-
     <!-- Themes -->
     <string name="theme_light">Светлая</string>
     <string name="theme_deep_red">Тёмно-красная</string>
     <string name="theme_dark">Тёмная</string>
-
     <!-- Misc -->
     <string name="select_file_manager">Выберите ваш файловый менеджер</string>
     <string name="default_permission">Стандартное разрешение</string>
