@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <plurals name="download_completed">
-        <item quantity="one">Téléchargement terminé</item>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <plurals name="download_completed" tools:ignore="MissingQuantity">
+        <item quantity="one" tools:ignore="ImpliedQuantity">Téléchargement terminé</item>
         <item quantity="other">%d téléchargements terminés</item>
     </plurals>
     <string name="download_complete">Téléchargement terminé</string>
@@ -13,7 +13,7 @@
     <string name="download_paused">Téléchargement en pause</string>
     <string name="download_error">Le téléchargement est terminé, mais une erreur s\'est produite</string>
     <string name="downloading">Téléchargement</string>
-    <plurals name="add_to_queue">
+    <plurals name="add_to_queue" tools:ignore="MissingQuantity">
         <item quantity="one">%1$d/%2$d élément ajouté à la file d\'attente</item>
         <item quantity="other">%1$d/%2$d éléments ajoutés à la file d\'attente</item>
     </plurals>

@@ -147,7 +147,7 @@
     <string name="help_swipe_cancel">Вы можете отменять загрузки свайпом влево</string>
     <string name="redownloaded_error">Возникла проблема при повторной загрузке — отменено</string>
     <plurals name="redownloaded_scratch">
-        <item quantity="one">%$1d элемент из %$2d будет загружен снова</item>
+        <item quantity="one" tools:ignore="ImpliedQuantity">%$1d элемент из %$2d будет загружен снова</item>
         <item quantity="few">%$1d элемента из %$2d будут загружены снова</item>
         <item quantity="many">%$1d элементов из %$2d будут загружены снова</item>
         <item quantity="other">%$1d элементов из %$2d будут загружены снова</item>
@@ -407,7 +407,7 @@
         <item quantity="many">%d элементов</item>
     </plurals>
     <plurals name="number_of_book_search_results">
-        <item quantity="one">%$1d результат из %$2d</item>
+        <item quantity="one" tools:ignore="ImpliedQuantity">%$1d результат из %$2d</item>
         <item quantity="few">%$1d результата из %$2d</item>
         <item quantity="many">%$1d результатов из %$2d</item>
         <item quantity="other">%$1d результатов из %$2d</item>

@@ -3,9 +3,9 @@
     <string name="pref_library_display_entries_1">Liste (forvalg)</string>
     <string name="pref_library_display_entries_2">Rutnett</string>
     <string name="pref_memory_alert_entries_1">Ikke varsle</string>
-    <string name="pref_memory_alert_entries_2">ved 90% bruk</string>
-    <string name="pref_memory_alert_entries_3">ved 95% bruk</string>
-    <string name="pref_memory_alert_entries_4">ved 98% bruk</string>
+    <string name="pref_memory_alert_entries_2">ved 90%% bruk</string>
+    <string name="pref_memory_alert_entries_3">ved 95%% bruk</string>
+    <string name="pref_memory_alert_entries_4">ved 98%% bruk</string>
     <string name="pref_browser_dns_entries_1">Ingen</string>
     <string name="pref_queue_new_position_entries_1">Topp</string>
     <string name="pref_queue_new_position_entries_2">Bunn</string>
