@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2"></resources>
     <plurals name="download_completed">
         <item quantity="one">Nedlasting fullført</item>
         <item quantity="other">%d nedlastinger fullført</item>

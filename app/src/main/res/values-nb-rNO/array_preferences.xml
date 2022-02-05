@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2"></resources>
     <string name="pref_library_display_entries_1">Liste (forvalg)</string>
     <string name="pref_library_display_entries_2">Rutnett</string>
     <string name="pref_memory_alert_entries_1">Ikke varsle</string>
