@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="download_completed">
+        <item quantity="one">Download completato</item>
+        <item quantity="other">%d Download completati</item>
+    </plurals>
+    <string name="download_complete">Download completato</string>
+    <string name="download_cancelled">Download cancellato</string>
+    <string name="download_skipped">Download saltato</string>
+    <string name="download_paused">Download in pausa</string>
+    <string name="download_error">Download completato, ma si è verificato un errore</string>
+    <string name="unhandled_download_error">Errore non gestito cercando di leggere gli URLs delle immagini</string>
+    <string name="downloading">Scaricando</string>
+    <plurals name="add_to_queue">
+        <item quantity="one">%1$d/%2$d elemento aggiunto alla coda</item>
+        <item quantity="other">%1$d/%2$d elementi aggiunti alla coda</item>
+    </plurals>
+    <string name="already_downloaded">Già scaricato</string>
+    <string name="already_queued">Già in coda</string>
+</resources>
