@@ -2,7 +2,6 @@
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
     <!-- Interface -->
     <string name="pref_screen_interface">Интерфейс и навигация</string>
-
     <string name="pref_cat_library">Библиотека</string>
     <string name="pref_drawer_sources_title">Управление источниками</string>
     <string name="pref_drawer_sources_summary">Включайте, выключайте и реорганизовывайте источники, показываемые в левом меню</string>
@@ -19,14 +18,12 @@
     <string name="pref_attributes_list_count_title">Отображать число доступных книг</string>
     <string name="pref_attributes_list_count_on">Число доступных книг отображается рядом с каждой характеристикой</string>
     <string name="pref_attributes_list_count_off">Число доступных книг не отображается</string>
-
     <string name="pref_cat_theme">Тема приложения</string>
     <string name="pref_color_theme_title">Цветовая схема</string>
     <string name="pref_color_theme_summary">Текущая тема: <x:g id="theme_name" example="Тёмно-красная">%s</x:g></string>
 
     <!-- Storage -->
     <string name="pref_screen_storage">Хранилище</string>
-
     <string name="pref_cat_downloads_folder">Библиотека Hentoid</string>
     <string name="pref_select_folder_title">Выбор папки загрузок</string>
     <string name="pref_select_folder_summary">Выберите, где Hentoid будет хранить ваши загрузки.</string>
@@ -43,7 +40,6 @@
     <string name="pref_memory_usage_title">Использование памяти</string>
     <string name="pref_memory_usage_summary">Свободное место: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (нажмите для подробностей)</string>
     <string name="pref_memory_alert_title">Предупреждать при почти полном заполнении памяти</string>
-
     <string name="pref_cat_external">Внешняя библиотека</string>
     <string name="pref_external_library_title">Внешняя библиотека</string>
     <string name="pref_external_library_summary_empty">Внешние библиотеки не установлены</string>
@@ -52,7 +48,6 @@
     <string name="pref_external_library_delete_off">Hentoid не может удалять книги и страницы во внешней библиотеке</string>
     <string name="pref_external_library_detach_title">Отключить внешнюю библиотеку</string>
     <string name="pref_external_library_detach_summary">Не использовать внешнюю библиотеку в Hentoid</string>
-
     <string name="pref_cat_advanced">Дополнительно</string>
     <string name="pref_refresh_library_title">Обновить библиотеку</string>
     <string name="pref_refresh_library_summary">Вручную обновить содержимое библиотеки</string>
@@ -63,11 +58,8 @@
         <item quantity="few">Вы действительно хотите удалить <x:g id="count" example="2">%d</x:g> книги?</item>
         <item quantity="many">Вы действительно хотите удалить <x:g id="count" example="5">%d</x:g> книг?</item>
     </plurals>
-
-
     <!-- Browser -->
     <string name="pref_screen_browser">Браузер</string>
-
     <string name="pref_browser_behaviour">Поведение</string>
     <string name="pref_browser_resume_last_title">Восстанавливать последнюю страницу</string>
     <string name="pref_browser_resume_last_off">Сайты будут открываться со своих главных страниц</string>
@@ -100,20 +92,15 @@
     <string name="pref_browser_initial_zoom_summary">Уровень масштаба при загрузке страницы.\nСейчас: <x:g id="percentage" example="20%">%s%%</x:g></string>
     <string name="pref_browser_dns">Сторонний DNS</string>
     <string name="pref_browser_dns_title">DNS через HTTPS</string>
-
-
     <!-- Downloader -->
     <string name="pref_screen_downloader">Загрузчик</string>
-
     <string name="pref_queue_autostart_title">Автоматически начинать очередь загрузки</string>
     <string name="pref_queue_autostart_on">Очередь загрузки начнётся как только загрузка завершится</string>
     <string name="pref_queue_autostart_off">Очередь загрузки запустится только вручную</string>
     <string name="pref_queue_wifi_only_title">Загружать только по Wi-Fi</string>
     <string name="pref_queue_wifi_only_on">Очередь загрузки начнётся только если есть подключение к Wi-Fi</string>
     <string name="pref_queue_wifi_only_off">Очередь загрузки начнётся вне зависимости от типа сети</string>
-
     <string name="pref_queue_new_position_title">Расположение новых загрузок</string>
-
     <string name="download_size_wifi_title">Пропускать большие загрузки на мобильной сети</string>
     <string name="pref_dl_size_wifi_on">Большие загрузки будут пропущены, если отсутствует подключение к Wi-Fi</string>
     <string name="pref_dl_size_wifi_off">Все загрузки будут обработаны</string>
@@ -147,7 +134,6 @@
     <string name="pref_analytics_preference_title">Аналитика Firebase</string>
     <string name="pref_analytics_preference_summary_off">Сбор аналитики выключен.\nВключите его, чтобы мы могли улучшать приложение, отслеживая сбои и ошибки в нём</string>
     <string name="pref_analytics_preference_summary_on">Сбор аналитики включён.\nСпасибо, что помогаете нам улучшить Hentoid!</string>
-
     <!-- Updates -->
     <string name="pref_screen_updates">Обновления</string>
     <string name="pref_check_updates_manual_title">Проверить обновления вручную</string>
@@ -158,27 +144,21 @@
     <string name="pref_check_updates_title">Автоматические обновления</string>
     <string name="pref_check_updates_summary_off">Вы также можете включить автоматическую проверку обновлений по мобильной сети</string>
     <string name="pref_check_updates_summary_on">Это не отключает возможность ручной проверки обновлений</string>
-
     <!-- Viewer -->
     <string name="pref_screen_viewer">Просмотр изображений</string>
-
     <string name="pref_viewer_controls">Управление</string>
     <string name="pref_viewer_browse_mode">Режим обзора</string>
     <string name="pref_viewer_page_turn">Режим перелистывания страниц</string>
-
     <string name="pref_viewer_page_turn_swipe">Свайп</string>
     <string name="pref_viewer_page_turn_tap">Нажатие на край</string>
     <string name="pref_viewer_page_turn_tap_2x">Двойное увеличение зоны нажатия</string>
     <string name="pref_viewer_page_turn_volume">Кнопки громкости</string>
     <string name="pref_viewer_page_turn_keyboard">Стрелки влево/вправо на клавиатуре</string>
-
     <string name="pref_viewer_swipe_to_fling">Перелистывать несколько страниц одним свайпом</string>
     <string name="pref_viewer_invert_volume">Инвертировать кнопки громкости</string>
-
     <string name="pref_viewer_zoom">Увеличение</string>
     <string name="pref_viewer_zoom_holding">Временно увеличивать при удержании пальца</string>
     <string name="pref_viewer_cap_tap_zoom">Ограничить зум по двойному или долгому нажатию</string>
-
     <string name="pref_viewer_visuals">Внешний вид</string>
     <string name="pref_viewer_keep_screen_on">Не выключать экран</string>
     <string name="pref_viewer_display_pagenum">Всегда показывать номер страницы</string>
@@ -192,7 +172,6 @@
     <string name="pref_viewer_auto_rotate_summary_off">Изображения не поворачиваются</string>
     <string name="pref_viewer_auto_rotate_summary_on">Изображения поворачиваются так, чтобы занять как можно больше места на экране</string>
     <string name="pref_viewer_gallery_columns">Число столбцов в галерее</string>
-
     <string name="pref_viewer_navigation">Навигация и поведение</string>
     <string name="pref_viewer_resume_last_left_title">Возобновлять чтение при повторном открытии книг</string>
     <string name="pref_viewer_resume_last_left_summary_off">Книги всегда будут открываться с первой страницы</string>
@@ -203,6 +182,5 @@
     <string name="pref_viewer_continuous_summary_on">С последней страницы книги можно уйти на следующую книгу</string>
     <string name="pref_viewer_read_threshold">Считать книгу прочитанной после N страниц</string>
     <string name="pref_viewer_slideshow_delay">Слайдшоу / Время показа каждой страницы</string>
-
     <string name="doh_warning">Некоторые сайты плохо работают с DNS через HTTPS. Воспользуйтесь сторонним приложением для DNS, если вы испытываете проблемы при навигации (напрмер: пустые страницы или ошибки при авторизации).</string>
 </resources>

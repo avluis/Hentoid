@@ -34,7 +34,7 @@
     <!-- Button -->
     <string name="tools_cache_browser">Clear browser cache</string>
     <!-- Toast notification -->
-    <string name="tools_cache_browser_success">Webview cache successfully cleared</string>
+    <string name="tools_cache_browser_success">WebView cache successfully cleared</string>
     <!-- Button -->
     <string name="tools_cache_app">Clear app cache</string>
     <!-- Toast notification -->

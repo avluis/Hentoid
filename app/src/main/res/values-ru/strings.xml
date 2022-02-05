@@ -712,7 +712,7 @@
     <string name="gallery_edit_chapters_help">Чтобы создать или удалить главы, нажмите на её первую страницу</string>
     <string name="gallery_clear_chapters">Очистить все главы</string>
     <string name="gallery_add_remove_chapters">Добавить и удалить главы</string>
-    <string name="gallery_display_page"><x:g id="startMarker" example="&gt;">%1$s</x:g>Страница <x:g id="number" example="2">%2$d</x:g><x:g id="isFavourite" example="&#9829;">%3$s</x:g><x:g id="endMarker" example="&lt;">%4$s</x:g></string> <!--currentBegin, item.image.getOrder(), isFavourite, currentEnd-->
+    <string name="gallery_display_page"><x:g id="startMarker" example="&gt;">%1$s</x:g>Страница <x:g id="number" example="2">%2$d</x:g><x:g id="isFavourite" example="&#9829;">%3$s</x:g><x:g id="endMarker" example="&lt;">%4$s</x:g></string>
     <string name="gallery_display_chapter">Гл. <x:g id="number" example="2">%d</x:g></string>
     <string name="gallery_no_chapter">Нет глав</string>
     <string name="renaming_progress">Переименовываю файлы…</string>

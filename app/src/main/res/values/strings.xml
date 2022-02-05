@@ -57,7 +57,7 @@
     <string name="api29_migration_step1_select">Select Hentoid folder</string>
     <string name="api29_migration_step1_select_external">Select external folder</string>
     <string name="api29_migration_step2">Scan site folders</string>
-    <string name="api29_migration_step3_init">Library scan starting…</string>
+    <string name="api29_migration_step3_init">Scanning library…</string>
     <string name="api29_migration_step3">Scan library (<x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="7">%2$d</x:g>)</string>
     <string name="api29_migration_step4_init">Importing queue…</string>
     <string name="api29_migration_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
@@ -70,7 +70,7 @@
     <string name="menu_group_new">New group</string>
     <string name="menu_edit_order">Edit order</string>
     <string name="menu_edit_name">Edit name</string>
-    <string name="menu_edit_cancel">Cancel edit</string>
+    <string name="menu_edit_cancel">Cancel editing</string>
     <string name="menu_edit_warning_custom">The new custom ordering you\'re about to create will overwrite the previous one.</string>
     <string name="menu_order">Order books</string>
     <string name="menu_delete_single">Delete</string>
@@ -101,8 +101,8 @@
     <string name="queue_queue_tab">In progress</string>
     <string name="queue_errors_tab">Errors</string>
     <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
-        <item quantity="one">Are you sure you wish to cancel the selected item?</item>
-        <item quantity="other">Are you sure you wish to cancel the selected items?</item>
+        <item quantity="one">Cancel the selected item?</item>
+        <item quantity="other">Cancel the selected items?</item>
     </plurals>
     <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
@@ -117,16 +117,16 @@
     <string name="queue_dl">Downloading <x:g id="book_name" example="Cool H-Manga">%s</x:g></string>
     <string name="err_stats_title">Error stats</string>
     <string name="err_stats_help">Show detailed stats about current download errors</string>
-    <string name="err_no_content">Book does not exist yet</string>
-    <string name="confirm_cancel_all">You are about to cancel the whole queue. Continue?</string>
+    <string name="err_no_content">The book does not exist yet</string>
+    <string name="confirm_cancel_all">Cancel the whole queue?</string>
     <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
         <item quantity="other">You are about to cancel all <x:g id="count" example="42">%d</x:g> books with errors. Continue?</item>
     </plurals>
     <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
         <item quantity="other">You are about to redownload <x:g id="count" example="42">%d</x:g> items. Continue?</item>
     </plurals>
-    <string name="paused_no_internet">Cannot download - No internet</string>
-    <string name="paused_no_wifi">Cannot download - No WiFi</string>
+    <string name="paused_no_internet">Cannot download - No Internet</string>
+    <string name="paused_no_wifi">Cannot download - No Wi-Fi</string>
     <string name="paused_no_storage">Cannot download - Low on storage (<x:g id="size_left_bytes" example="0 bytes">%s</x:g> left). Free space or change download folder location</string>
     <string name="paused_no_dl_folder">Cannot download - No download folder. Use app settings to select one</string>
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
@@ -138,7 +138,7 @@
     <string name="step_prepare_folder">Preparing download folder</string>
     <string name="step_prepare_download">Preparing download chain</string>
     <string name="step_save_queue">Saving queue</string>
-    <string name="step_start_download">Download chain started !</string>
+    <string name="step_start_download">Download chain started!</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <!-- TODO: Android doesn't understand which number it should imply quantity from -->
@@ -152,8 +152,8 @@
     <string name="notification_user_action_needed">User action needed</string>
     <string name="notification_action_dl_revive">Tap here to reactivate your download</string>
     <string name="revive_wait">Please stay on this screen while your download is revived</string>
-    <string name="queue_json_saved">Queue JSON successfully saved</string>
-    <string name="queue_json_failed">Queue JSON saving failed</string>
+    <string name="queue_json_saved">JSON queue saved</string>
+    <string name="queue_json_failed">Could not save JSON queue</string>
     <string name="queue_content_size_estimate">estimated <x:g id="size_mbytes" example="13.37">%.1f</x:g> MB</string>
     <string name="queue_bottom_bar_processed"><x:g id="processed" example="3">%1$s</x:g>/<x:g id="total" example="7">%2$d</x:g> processed</string>
     <plurals name="queue_bottom_bar_errors">
@@ -256,9 +256,9 @@
     <string name="export_warning1">Exporting metadata is meant to create a list of your books in JSON format.\nIt is not meant for moving your collection to your PC or your SD card.\nTap here to learn how to do that.</string>
     <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
     <string name="export_faq_url" translatable="false">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
-    <string name="export_run">RUN EXPORT</string>
+    <string name="export_run">Run export</string>
     <string name="import_settings_title">Import settings</string>
-    <string name="import_settings_success">Import successful</string>
+    <string name="import_settings_success">Imported</string>
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
     <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
@@ -337,12 +337,12 @@
     <string name="filter_completed">Show completed only</string>
     <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
-        <item quantity="one">Are you sure you wish to delete the selected item?</item>
-        <item quantity="other">Are you sure you wish to delete the selected <x:g id="count" example="2">%d</x:g> items?</item>
+        <item quantity="one">Delete the selected item?</item>
+        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> selected items?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
-        <item quantity="one">Are you sure you wish to archive the selected item?</item>
-        <item quantity="other">Are you sure you wish to archive the selected <x:g id="count" example="2">%d</x:g> items?</item>
+        <item quantity="one">Archive the selected item?</item>
+        <item quantity="other">Archive <x:g id="count" example="2">%d</x:g> selected items?</item>
     </plurals>
     <string name="new_group_name">Name of the new group?</string>
     <string name="group_edit_name">Edit group name</string>
@@ -358,7 +358,7 @@
         <item quantity="one"><x:g id="count" example="1">%d</x:g> group</item>
         <item quantity="other"><x:g id="count" example="2">%d</x:g> groups</item>
     </plurals>
-    <string name="delete_success">successfully deleted</string>
+    <string name="delete_success">Deleted</string>
     <string name="archive_progress">Archiving books</string>
     <string name="archive_progress_subtitle">Done: <x:g id="count" example="42">%s</x:g></string>
     <string name="notif_archive_complete">Archival complete</string>
@@ -379,12 +379,12 @@
     <string name="errors_empty">No errors detected among downloads</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
     <string name="downloads_loading">Loading up~</string>
-    <string name="masterdata_no_result">No result found :(</string>
+    <string name="masterdata_no_result">No results :(</string>
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="search_bookid_label">Search <x:g id="launchcode" example="4567">\'%s\'</x:g> in…</string>
     <string name="book_title" translatable="false">This is a rather long title, just because we need it to be.</string>
-    <string name="book_launchcode">Launch code: <x:g id="launchcode" example="4567">\'%s\'</x:g></string>
+    <string name="book_launchcode">Launch code: <x:g id="launchcode" example="4567">%s</x:g></string>
     <string name="book_series" translatable="false">Series: Name</string>
     <string name="book_artist" translatable="false">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
     <string name="book_pages_queue" translatable="false">Pages: 1234; estimated 125 MB</string>
@@ -441,13 +441,13 @@
         <item quantity="other"><x:g id="count" example="2">%d</x:g> books from the external library will not be removed</item>
     </plurals>
     <string name="group_make_cover">Set as group cover</string>
-    <string name="group_make_cover_ask">Are you sure to set this book\'s cover as the current group\'s cover?</string>
+    <string name="group_make_cover_ask">Set this book\'s cover as the current group cover?</string>
     <string name="group_change">Move to custom group</string>
     <string name="group_existing">Existing group</string>
     <string name="group_new">Create new</string>
     <string name="group_new_name">New custom group name</string>
     <string name="group_remove">Detach from current group</string>
-    <string name="group_name_exists">Group with that name already exists!</string>
+    <string name="group_name_exists">A group with that name already exists.</string>
     <string name="group_rename_forbidden">Renaming that group is forbidden!</string>
     <string name="group_name_empty">Group name is empty!</string>
     <string name="group_not_selected">Group has not been selected!</string>
@@ -456,8 +456,8 @@
         <item quantity="other">Delete groups only</item>
     </plurals>
     <plurals name="group_delete_selected_book">
-        <item quantity="one">Delete %d book</item>
-        <item quantity="other">Delete %d books</item>
+	<item quantity="one">Delete <x:g id="count" example="1">%d</x:g> book</item>
+	<item quantity="other">Delete <x:g id="count" example="2">%d</x:g> books</item>
     </plurals>
     <plurals name="group_delete_selected_group_books">
         <item quantity="one">Delete group + books</item>
@@ -474,8 +474,8 @@
     <string name="split_select_help">Hold and drag to select\nEach selected chapter creates one new book</string>
     <string name="split_no_chapters">No chapters created yet :-(</string>
     <string name="split_create_chapters">Create chapters</string>
-    <string name="merge_success">Content merged successfully</string>
-    <string name="split_success">Content split successfully</string>
+    <string name="merge_success">Content merged</string>
+    <string name="split_success">Content split</string>
     <!-- Groups -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
@@ -490,7 +490,7 @@
     <string name="sort_read_date">Read date</string>
     <string name="sort_reads">Reads</string>
     <string name="sort_size">Size</string>
-    <string name="sort_reading_progress">Read progress</string>
+    <string name="sort_reading_progress">Reading progress</string>
     <string name="sort_random">Random</string>
     <string name="sort_custom">Custom</string>
     <string name="sort_invalid">-invalid-</string>
@@ -533,7 +533,7 @@
     <string name="app_lock_enable">App Lock Enabled</string>
     <string name="app_lock_disabled">App Lock Disabled</string>
     <string name="pin_reset">Reset PIN</string>
-    <string name="pin_reset_success">Pin has been reset</string>
+    <string name="pin_reset_success">PIN reset</string>
     <string name="pin_ok">PIN OK!</string>
     <string name="pin_current">Enter Current PIN</string>
     <string name="pin_new">Enter New PIN</string>
@@ -644,8 +644,8 @@
     <string name="viewer_delete_book">Delete book</string>
     <string name="copy_download_folder_success">Copied to Downloads folder</string>
     <string name="copy_download_folder_fail">Could not write to Downloads folder</string>
-    <string name="viewer_ask_delete_book">Are you sure you wish to delete this book?</string>
-    <string name="viewer_ask_delete_page">Are you sure you wish to delete this page?</string>
+    <string name="viewer_ask_delete_book">Delete this book\?</string>
+    <string name="viewer_ask_delete_page">Delete this page\?</string>
     <string name="information_help">Information</string>
     <string name="previous_book_help">Previous book</string>
     <string name="next_book_help">Next book</string>
@@ -743,11 +743,11 @@
     <string name="duplicate_notif_start">Starting duplicate detection</string>
     <string name="duplicate_notif_complete_title">Duplicate detection complete</string>
     <plurals name="duplicate_notif_complete_desc">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplicate detected successfully</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplicates detected successfully</item>
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplicate detected</item>
+        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplicates detected</item>
     </plurals>
     <string name="duplicate_empty_first_use">Nothing to display - Run a new duplicate search</string>
-    <string name="duplicate_processing">Duplicate detection in progress</string>
+    <string name="duplicate_processing">Detecting duplicates…</string>
     <plurals name="duplicate_detail_title">
         <item quantity="one"><x:g id="number" example="1">%d</x:g> duplicate</item>
         <item quantity="other"><x:g id="number" example="2">%d</x:g> duplicates</item>
@@ -766,20 +766,20 @@
     <string name="duplicate_alert_similarity">Similarity: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
-    <string name="duplicate_wait_index">Please wait while indexing</string>
+    <string name="duplicate_wait_index">Indexing…</string>
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>
     <string name="notif_delete_title">Content deletion</string>
-    <string name="notif_delete_complete">Delete complete</string>
+    <string name="notif_delete_complete">Deletion complete</string>
     <plurals name="notif_delete_complete_details">
         <item quantity="one"><x:g id="number" example="1">%d</x:g> deleted successfully</item>
         <item quantity="other"><x:g id="number" example="1">%d</x:g> deleted successfully</item>
     </plurals>
-    <string name="notif_delete_fail">Delete failed</string>
+    <string name="notif_delete_fail">Deletion failed</string>
     <string name="notif_delete_fail_details">At least one book failed to be deleted</string>
     <!-- Startup -->
     <string name="title_startup">Startup</string>
-    <string name="title_startup_progress">Startup in progress…</string>
+    <string name="title_startup_progress">Starting…</string>
     <string name="title_startup_complete">Startup complete</string>
     <!-- Group names -->
     <string name="group_today">Today</string>
@@ -789,12 +789,10 @@
     <string name="group_year">Last year</string>
     <string name="group_long">A long time ago</string>
     <string name="group_no_group">Ungrouped</string>
-
     <!-- Themes -->
     <string name="theme_light">Light</string>
     <string name="theme_deep_red">Deep Red</string>
     <string name="theme_dark">Dark</string>
-
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>

@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
     <string name="pref_generic_summary" translatable="false">%s</string>
-
     <!-- Interface -->
     <string name="pref_screen_interface">Interface &amp; Navigation</string>
-
     <string name="pref_cat_library">Library</string>
     <string name="pref_drawer_sources_title">Manage sources</string>
     <string name="pref_drawer_sources_summary">Enable, disable and reorganize sources\nappearing on the left navigation drawer.</string>
@@ -18,24 +16,20 @@
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
     <string name="pref_quantity_per_page_summary">Number of items per page in download list.\nCurrently: <x:g id="count" exmample="10">%s</x:g> items.</string>
     <string name="pref_quantity_per_page_default" translatable="false">20</string>
-
     <string name="pref_cat_search">Advanced search</string>
-    <string name="pref_attributes_list_order_title">Sort order of displayed metadata</string>
+    <string name="pref_attributes_list_order_title">Sorting order of displayed metadata</string>
     <string name="pref_attributes_list_order_default" translatable="false">1</string>
     <string name="pref_attributes_list_order_summary" translatable="false">%s</string>
     <string name="pref_attributes_list_count_title">Count available books</string>
     <string name="pref_attributes_list_count_on">The number of available books is displayed next to every attribute</string>
     <string name="pref_attributes_list_count_off">The number of available books is not displayed</string>
     <string name="pref_attributes_list_count_default" translatable="false">true</string>
-
     <string name="pref_cat_theme">App theme</string>
     <string name="pref_color_theme_title">Color theme</string>
     <string name="pref_color_theme_summary">Current theme: <x:g id="theme_name" example="Deep Red">%s</x:g></string>
     <string name="pref_color_theme_default" translatable="false">0</string>
-
     <!-- Storage -->
     <string name="pref_screen_storage">Storage</string>
-
     <string name="pref_cat_downloads_folder">Hentoid library</string>
     <string name="pref_select_folder_title">Select Downloads Folder</string>
     <string name="pref_select_folder_summary">Select where Hentoid will store your downloads.</string>
@@ -56,7 +50,6 @@
     <string name="pref_memory_usage_summary">Current free space: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (tap for details)</string>
     <string name="pref_memory_alert_title">Alert on low memory</string>
     <string name="pref_memory_alert_default" translatable="false">110</string>
-
     <string name="pref_cat_external">External library</string>
     <string name="pref_external_library_title">External library</string>
     <string name="pref_external_library_summary_empty">No external library is set</string>
@@ -66,21 +59,17 @@
     <string name="pref_external_library_delete_default" translatable="false">false</string>
     <string name="pref_external_library_detach_title">Detach external library</string>
     <string name="pref_external_library_detach_summary">Don\'t include the external library into Hentoid anymore</string>
-
     <string name="pref_cat_advanced">Advanced</string>
     <string name="pref_refresh_library_title">Refresh library</string>
     <string name="pref_refresh_library_summary">Manually refresh library contents</string>
     <string name="pref_delete_all_except_favs_title">Delete all books except favourites</string>
     <string name="pref_delete_all_except_favs_summary">Purge the library; keep favourite books only\nNB: Does not apply to the external library</string>
     <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Are you sure you wish to delete <x:g id="count" example="1">%d</x:g> book?</item>
-        <item quantity="other">Are you sure you wish to delete <x:g id="count" example="2">%d</x:g> books?</item>
+        <item quantity="one">Delete <x:g id="count" example="1">%d</x:g> book?</item>
+        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> books?</item>
     </plurals>
-
-
     <!-- Browser -->
     <string name="pref_screen_browser">Browser</string>
-
     <string name="pref_browser_behaviour">Behaviour</string>
     <string name="pref_browser_resume_last_title">Resume at last viewed page</string>
     <string name="pref_browser_resume_last_off">Any site always opens on its homepage</string>
@@ -91,9 +80,9 @@
     <string name="pref_browser_quick_dl_title">Quick download</string>
     <string name="pref_browser_quick_dl_summary">On the books list page, hold tap to download any book</string>
     <string name="pref_browser_quick_dl_default" translatable="false">true</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_title">Display Nhentai blacklisted books</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_off">NHentai blacklisted book are blurred</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_on">NHentai blacklisted book are invisible</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_title">Display NHentai blacklisted books</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_off">NHentai blacklisted books are blurred</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_on">NHentai blacklisted books are invisible</string>
     <string name="pref_browser_nhentai_invisible_blacklist_default" translatable="false">false</string>
     <string name="pref_browser_quick_dl_threshold_title">Quick download long press threshold</string>
     <string name="pref_browser_quick_dl_threshold_summary">Hold down for this duration to start quick downloading.\nCurrent: <x:g id="time" example="1 s">%s</x:g></string>
@@ -125,28 +114,23 @@
     <string name="pref_browser_dns">Custom DNS</string>
     <string name="pref_browser_dns_title">DNS over HTTPS</string>
     <string name="pref_browser_dns_default" translatable="false">-1</string>
-
-
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>
-
     <string name="pref_queue_autostart_title">Auto-start download queue</string>
     <string name="pref_queue_autostart_default" translatable="false">true</string>
     <string name="pref_queue_autostart_on">Download queue will start as soon as a download is done</string>
     <string name="pref_queue_autostart_off">Download queue must be started manually</string>
-    <string name="pref_queue_wifi_only_title">Only download on WiFi</string>
+    <string name="pref_queue_wifi_only_title">Only download on Wi-Fi</string>
     <string name="pref_queue_wifi_only_default" translatable="false">false</string>
-    <string name="pref_queue_wifi_only_on">Download queue will only start if connected to WiFi</string>
+    <string name="pref_queue_wifi_only_on">Download queue will only start if connected to Wi-Fi</string>
     <string name="pref_queue_wifi_only_off">Download queue will start if the device is connected to any network</string>
-
     <string name="pref_queue_new_position_title">New downloads position</string>
     <string name="pref_queue_new_position_default" translatable="false">1</string>
-
     <string name="download_size_wifi_title">Skip large downloads on mobile data</string>
     <string name="pref_dl_size_wifi_default" translatable="false">false</string>
     <string name="pref_dl_size_wifi_on">Large downloads will be skipped if not connected to WiFi</string>
     <string name="pref_dl_size_wifi_off">All downloads will be processed</string>
-    <string name="pref_dl_size_wifi_threshold_title">Large downloads size threshold</string>
+    <string name="pref_dl_size_wifi_threshold_title">Size threshold for large downloads</string>
     <string name="pref_dl_size_wifi_threshold_default" translatable="false">40</string>
     <string name="pref_dl_pages_wifi_threshold_title">Large downloads pages threshold</string>
     <string name="pref_dl_pages_wifi_threshold_default" translatable="false">999999</string>
@@ -168,14 +152,13 @@
     <string name="pref_dl_blocked_tags_behaviour_default" translatable="false">0</string>
 
     <string name="pref_dl_hitomi" translatable="false">Hitomi.la</string>
-    <string name="pref_dl_hitomi_webp_title">Prefer downloading WEBP</string>
+    <string name="pref_dl_hitomi_webp_title">Prefer downloading WebP</string>
     <string name="pref_dl_hitomi_webp_summary_off">Download other type of pictures (PNG, JPG)</string>
-    <string name="pref_dl_hitomi_webp_summary_on">Download WEBP pictures whenever they are available</string>
+    <string name="pref_dl_hitomi_webp_summary_on">Download WebP pictures whenever they are available</string>
     <string name="pref_dl_hitomi_webp_default" translatable="false">true</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously.\nCurrently: <x:g id="number" example="5">%s</x:g>.</string>
     <string name="pref_dl_threads_quantity_default" translatable="false">0</string>
-
     <!-- Privacy -->
     <string name="pref_screen_privacy">Privacy</string>
     <string name="pref_app_preview_title">App preview on Recent Apps</string>
@@ -187,9 +170,9 @@
     <string name="pref_app_preview_default" translatable="false">false</string>
     <string name="pref_analytics_preference_title">Firebase Analytics</string>
     <string name="pref_analytics_preference_summary_off">Analytics Tracking is currently disabled.\nEnabling it will help us improve the app by tracking crashes &amp; exceptions.</string>
-    <string name="pref_analytics_preference_summary_on">Analytics Tracking is currently enabled.\nThanks for helping us improve Hentoid!</string>
+    <string name="pref_analytics_preference_summary_on">Analytics tracking is on.
+\nThanks for helping improve Hentoid!</string>
     <string name="pref_analytics_preference_default" translatable="false">true</string>
-
     <!-- Updates -->
     <string name="pref_screen_updates">Updates</string>
     <string name="pref_check_updates_manual_title">Manual Update Check</string>
@@ -201,15 +184,12 @@
     <string name="pref_check_updates_summary_off">Enable automatic update checks over mobile data.</string>
     <string name="pref_check_updates_summary_on">Note: Does not override manual update checks.</string>
     <string name="pref_check_updates_default" translatable="false">true</string>
-
     <!-- Viewer -->
     <string name="pref_screen_viewer">Image viewer</string>
-
     <string name="pref_viewer_controls">Controls</string>
     <string name="pref_viewer_browse_mode">Browse mode</string>
     <string name="pref_viewer_browse_mode_default" translatable="false">0</string>
     <string name="pref_viewer_page_turn">Page turn control</string>
-
     <string name="pref_viewer_page_turn_swipe">Swipe</string>
     <bool name="pref_viewer_page_turn_swipe_default" translatable="false">true</bool>
     <string name="pref_viewer_page_turn_tap">Border tap</string>
@@ -220,18 +200,15 @@
     <bool name="pref_viewer_page_turn_volume_default" translatable="false">true</bool>
     <string name="pref_viewer_page_turn_keyboard">Keyboard left/right</string>
     <bool name="pref_viewer_page_turn_keyboard_default" translatable="false">true</bool>
-
     <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
     <bool name="pref_viewer_swipe_to_fling_default" translatable="false">false</bool>
     <string name="pref_viewer_invert_volume">Invert volume buttons</string>
     <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
-
     <string name="pref_viewer_zoom">Zoom</string>
     <string name="pref_viewer_zoom_holding">Temp zoom while holding</string>
     <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
     <string name="pref_viewer_cap_tap_zoom">Cap double &amp; long tap zoom</string>
     <string name="pref_viewer_cap_tap_zoom_default" translatable="false">0</string>
-
     <string name="pref_viewer_visuals">Visuals</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
     <bool name="pref_viewer_keep_screen_on_default" translatable="false">true</bool>
@@ -254,7 +231,6 @@
     <string name="pref_viewer_auto_rotate_summary_on">Pictures are rotated to best occupy the screen</string>
     <string name="pref_viewer_gallery_columns">Number of columns for gallery</string>
     <string name="pref_viewer_gallery_columns_default" translatable="false">4</string>
-
     <string name="pref_viewer_navigation">Navigation &amp; behaviour</string>
     <string name="pref_viewer_resume_last_left_title">Resume reading when reopening books</string>
     <string name="pref_viewer_resume_last_left_summary_off">Reopening a book always starts at page 1</string>
@@ -270,6 +246,5 @@
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
-
     <string name="doh_warning">Some websites won\'t work well with DNS over HTTPS. Use an external DNS app if you experience issues during navigation (e.g. blank pages, unresponsive login forms).</string>
 </resources>
