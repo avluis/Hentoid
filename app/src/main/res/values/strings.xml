@@ -395,10 +395,9 @@
         <item quantity="one"><x:g id="count" example="1">%d</x:g> item</item>
         <item quantity="other"><x:g id="count" example="2">%d</x:g> items</item>
     </plurals>
-    <!-- TODO: Android doesn't understand which number it should imply quantity from -->
     <plurals name="number_of_book_search_results">
-        <item quantity="one"><x:g id="number" example="1">%$1d</x:g>/<x:g id="total" example="7">%$2d</x:g> result</item>
-        <item quantity="other"><x:g id="number" example="2">%$1d</x:g>/<x:g id="total" example="7">%$2d</x:g> results</item>
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> result</item>
+        <item quantity="other"><x:g id="number" example="2">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> results</item>
     </plurals>
     <string name="reset">Permissions have been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
