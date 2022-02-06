@@ -20,7 +20,7 @@ public class ManhwaActivity extends BaseWebActivity {
         CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
-        client.adBlocker.addJsUrlWhitelist(DOMAIN_FILTER);
+        client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER);
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         client.addRemovableElements(DIRTY_ELEMENTS);
         return client;

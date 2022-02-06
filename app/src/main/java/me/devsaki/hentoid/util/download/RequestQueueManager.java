@@ -16,14 +16,17 @@ import com.android.volley.toolbox.Volley;
 import org.threeten.bp.Instant;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -35,17 +38,28 @@ import timber.log.Timber;
  */
 public class RequestQueueManager<T> implements RequestQueue.RequestEventListener {
     private static RequestQueueManager mInstance;           // Instance of the singleton
-    private static final int TIMEOUT_MS = 15000;
+    private static final int CONNECT_TIMEOUT_MS = 4000;
+    private static final int IO_TIMEOUT_MS = 15000;
 
-    private RequestQueue mRequestQueue;                     // Volley download request queue
-    private int nbActiveRequests = 0;                             // Number of requests currently in the queue (for debug display)
-    private int manualDlThreadCount = -1;
-
-    private boolean isSimulateHumanReading = false;
-    private final LinkedList<Request<T>> waitingRequestQueue = new LinkedList<>();
-    private Disposable waitDisposable = null;
-
+    // Volley download request queue
+    private RequestQueue mRequestQueue;
+    // Number of requests currently in the queue (for debug display)
+    private final AtomicInteger nbActiveRequests = new AtomicInteger(0);
+    // Maximum number of allowed parallel download threads (-1 = not capped)
+    private int downloadThreadCap = -1;
+    // TODO doc
+    private int downloadThreadCount = -1;
+    // Maximum number of allowed requests per second (-1 = not capped)
     private int nbRequestsPerSecond = -1;
+    // True to mark pauses between pages to simulate human reading
+    private boolean isSimulateHumanReading = false;
+    // Used when waiting between requests
+    private final CompositeDisposable waitDisposable = new CompositeDisposable();
+
+    private final LinkedList<Request<T>> waitingRequestQueue = new LinkedList<>(); // Requests waiting to be executed
+    private final Set<Request<T>> currentRequests = new HashSet<>(); // Requests being currently executed
+
+    // Measurement of the number of requests per second
     private final Queue<Long> previousRequestsTimestamps = new LinkedList<>();
 
 
@@ -54,7 +68,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         //Crashlytics.setInt("Download thread count", dlThreadCount);
         //crashlytics.setCustomKey("Download thread count", dlThreadCount);
 
-        initRequestQueue(context, dlThreadCount, TIMEOUT_MS);
+        initRequestQueue(context, dlThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS);
     }
 
     private static int getThreadCount(Context context) {
@@ -97,32 +111,49 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      *
      * @param ctx App context
      */
-    private void initRequestQueue(Context ctx, int timeoutMs) { // This is the safest code, as it relies on standard Volley interface
+    private void initRequestQueue(Context ctx, int connectTimeoutMs, int ioTimeoutMs) { // This is the safest code, as it relies on standard Volley interface
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext(), new VolleyOkHttp3Stack(timeoutMs));
+            mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext(), new VolleyOkHttp3Stack(connectTimeoutMs, ioTimeoutMs));
             mRequestQueue.addRequestEventListener(this);
         }
     }
 
-    private void initRequestQueue(Context ctx, int nbDlThreads, int timeoutMs) {
+    private void initRequestQueue(Context ctx, int nbDlThreads, int connectTimeoutMs, int ioTimeoutMs) {
         if (mRequestQueue == null) {
-            mRequestQueue = createRequestQueue(ctx, nbDlThreads, timeoutMs);
+            mRequestQueue = createRequestQueue(ctx, nbDlThreads, connectTimeoutMs, ioTimeoutMs);
             mRequestQueue.addRequestEventListener(this);
             mRequestQueue.start();
         }
     }
 
-    private void forceRequestQueue(Context ctx, int nbDlThreads, int timeoutMs) {
+    private void forceRequestQueue(Context ctx, int nbDlThreads, int connectTimeoutMs, int ioTimeoutMs) {
         if (mRequestQueue != null) {
             mRequestQueue.removeRequestEventListener(this);
             mRequestQueue.stop();
             mRequestQueue = null;
         }
-        initRequestQueue(ctx, nbDlThreads, timeoutMs);
+        synchronized (currentRequests) {
+            currentRequests.clear();
+            nbActiveRequests.set(0);
+        }
+        initRequestQueue(ctx, nbDlThreads, connectTimeoutMs, ioTimeoutMs);
     }
 
-    private RequestQueue createRequestQueue(Context ctx, int nbDlThreads, int timeoutMs) { // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
-        BasicNetwork network = new BasicNetwork(new VolleyOkHttp3Stack(timeoutMs));
+    public void restartRequestQueue() {
+        if (mRequestQueue != null) {
+            mRequestQueue.removeRequestEventListener(this); // Prevent interrupted requests from messing with downloads
+            mRequestQueue.cancelAll(request -> true);
+            mRequestQueue.addRequestEventListener(this);
+            synchronized (currentRequests) {
+                for (Request<T> request : currentRequests)
+                    executeRequest(request); // Requeue interrupted requests
+            }
+        }
+    }
+
+    // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
+    private RequestQueue createRequestQueue(Context ctx, int nbDlThreads, int connectTimeoutMs, int ioTimeoutMs) {
+        BasicNetwork network = new BasicNetwork(new VolleyOkHttp3Stack(connectTimeoutMs, ioTimeoutMs));
         DiskBasedCache.FileSupplier cacheSupplier =
                 new DiskBasedCache.FileSupplier() {
                     private File cacheDir = null;
@@ -135,6 +166,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
                         return cacheDir;
                     }
                 };
+        downloadThreadCount = nbDlThreads;
         return new RequestQueue(new DiskBasedCache(cacheSupplier), network, nbDlThreads);
     }
 
@@ -144,41 +176,45 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      * @param request Request to addAll to the queue
      */
     public void queueRequest(Request<T> request) {
-        if ((isSimulateHumanReading && nbActiveRequests > 0) || nbRequestsPerSecond > -1 && nbActiveRequests == nbRequestsPerSecond) {
+        if ((isSimulateHumanReading && nbActiveRequests.get() > 0) || nbRequestsPerSecond > -1 && nbActiveRequests.get() == nbRequestsPerSecond) {
             Timber.d("Waiting requests queue ::: request stored for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
-            waitingRequestQueue.add(request);
+            synchronized (waitingRequestQueue) {
+                waitingRequestQueue.add(request);
+            }
         } else {
-            addToRequestQueue(request);
+            executeRequest(request);
         }
     }
 
     private int getAllowedNewRequests(long now) {
         if (nbRequestsPerSecond > -1) {
-            boolean polled;
+            synchronized (previousRequestsTimestamps) {
+                boolean polled;
+                do {
+                    polled = false;
+                    Long earliestRequestTimestamp = previousRequestsTimestamps.peek();
+                    if (null == earliestRequestTimestamp) break; // Empty collection
+                    if (now - earliestRequestTimestamp > 1000) {
+                        previousRequestsTimestamps.poll();
+                        polled = true;
+                    }
+                } while (polled);
 
-            do {
-                polled = false;
-                Long earliestRequestTimestamp = previousRequestsTimestamps.peek();
-                if (null != earliestRequestTimestamp && now - earliestRequestTimestamp > 1000) {
-                    previousRequestsTimestamps.poll();
-                    polled = true;
-                }
-            } while (polled);
-
-            int nbRequestsLastSecond = previousRequestsTimestamps.size();
-            return nbRequestsPerSecond - nbRequestsLastSecond;
+                int nbRequestsLastSecond = previousRequestsTimestamps.size();
+                return nbRequestsPerSecond - nbRequestsLastSecond;
+            }
         } else return Integer.MAX_VALUE;
     }
 
-    private void addToRequestQueue(Request<T> request) {
+    private void executeRequest(Request<T> request) {
         long now = Instant.now().toEpochMilli();
-        if (getAllowedNewRequests(now) > 0) addToRequestQueue(request, now);
+        if (getAllowedNewRequests(now) > 0) executeRequest(request, now);
     }
 
     private void refillRequestQueue() {
         long now = Instant.now().toEpochMilli();
         int allowedNewRequests = getAllowedNewRequests(now);
-        while (0 == allowedNewRequests && 0 == nbActiveRequests) { // Dry queue
+        while (0 == allowedNewRequests && 0 == nbActiveRequests.get()) { // Dry queue
             Helper.pause(250);
             now = Instant.now().toEpochMilli();
             allowedNewRequests = getAllowedNewRequests(now);
@@ -186,23 +222,27 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
         if (allowedNewRequests > 0) {
             for (int i = 0; i < allowedNewRequests; i++) {
-                if (waitingRequestQueue.isEmpty()) break;
-                Request<T> r = waitingRequestQueue.removeFirst();
-                if (r != null) addToRequestQueue(r, now);
+                synchronized (waitingRequestQueue) {
+                    if (waitingRequestQueue.isEmpty()) break;
+                    Request<T> r = waitingRequestQueue.removeFirst();
+                    if (r != null) executeRequest(r, now);
+                }
             }
         }
     }
 
-    private void addToRequestQueue(@NonNull Request<T> request, long now) {
+    private void executeRequest(@NonNull Request<T> request, long now) {
+        synchronized (currentRequests) {
+            currentRequests.add(request);
+            nbActiveRequests.incrementAndGet();
+        }
         mRequestQueue.add(request);
-        nbActiveRequests++;
-        if (nbRequestsPerSecond > -1) previousRequestsTimestamps.add(now);
+        if (nbRequestsPerSecond > -1) {
+            synchronized (previousRequestsTimestamps) {
+                previousRequestsTimestamps.add(now);
+            }
+        }
         Timber.v("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbActiveRequests);
-    }
-
-    public void restartRequestQueue() {
-        mRequestQueue.stop();
-        mRequestQueue.start();
     }
 
     /**
@@ -212,40 +252,45 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      * @param request Completed request
      */
     public void onRequestFinished(Request<T> request) {
-        nbActiveRequests--;
+        if (request.hasHadResponseDelivered()) {
+            synchronized (currentRequests) {
+                currentRequests.remove(request); // NB : equals and hashCode are InputStreamVolleyRequest's
+                nbActiveRequests.decrementAndGet();
+            }
+        }
+
         Timber.v("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbActiveRequests);
 
         if (!waitingRequestQueue.isEmpty()) {
-            if (isSimulateHumanReading && 0 == nbActiveRequests) {
+            if (isSimulateHumanReading && 0 == nbActiveRequests.get()) {
                 // Wait on a separate thread as we're currently on the app's main thread
                 int delayMs = 500 + new Random().nextInt(1500);
                 Timber.d("Waiting requests queue ::: waiting %d ms", delayMs);
-                waitDisposable = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
+                waitDisposable.add(Observable.timer(delayMs, TimeUnit.MILLISECONDS)
                         .subscribeOn(Schedulers.computation())
                         .observeOn(Schedulers.computation())
                         .map(v -> {
                             // Add the next request to the queue
                             Timber.d("Waiting requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
-                            Request<T> req = waitingRequestQueue.removeFirst();
-                            addToRequestQueue(req);
+                            synchronized (waitingRequestQueue) {
+                                Request<T> req = waitingRequestQueue.removeFirst();
+                                executeRequest(req);
+                            }
                             return true;
                         })
                         .observeOn(Schedulers.computation())
-                        .subscribe(
-                                v -> waitDisposable.dispose(),
-                                Timber::e
-                        );
+                        .subscribe(Helper.EMPTY_CONSUMER, Timber::e)
+                );
             }
             if (nbRequestsPerSecond > -1) {
-                waitDisposable = Completable.fromRunnable(this::refillRequestQueue)
+                waitDisposable.add(Completable.fromRunnable(this::refillRequestQueue)
                         .subscribeOn(Schedulers.computation())
                         .observeOn(Schedulers.computation())
-                        .subscribe(
-                                () -> waitDisposable.dispose(),
-                                Timber::e
-                        );
-
+                        .subscribe(Helper.EMPTY_ACTION, Timber::e)
+                );
             }
+        } else { // No more requests to add
+            waitDisposable.clear();
         }
     }
 
@@ -263,14 +308,14 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
 
     // This will cancel any current download
     public void setDownloadThreadCount(@NonNull Context ctx, int value) {
-        manualDlThreadCount = value;
+        downloadThreadCap = value;
         int dlThreadCount = value;
-        if (-1 == manualDlThreadCount) dlThreadCount = getThreadCount(ctx);
-        forceRequestQueue(ctx, dlThreadCount, TIMEOUT_MS);
+        if (-1 == downloadThreadCap) dlThreadCount = getThreadCount(ctx);
+        forceRequestQueue(ctx, dlThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS);
     }
 
-    public int getDownloadThreadCount() {
-        return manualDlThreadCount;
+    public int getDownloadThreadCap() {
+        return downloadThreadCap;
     }
 
     /**
@@ -279,9 +324,15 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     public void cancelQueue() {
         RequestQueue.RequestFilter filterForAll = request -> true;
         mRequestQueue.cancelAll(filterForAll);
-        waitingRequestQueue.clear();
+        synchronized (waitingRequestQueue) {
+            waitingRequestQueue.clear();
+        }
+        synchronized (currentRequests) {
+            currentRequests.clear();
+            nbActiveRequests.set(0);
+        }
         isSimulateHumanReading = false;
-        if (waitDisposable != null) waitDisposable.dispose();
+        waitDisposable.clear();
         Timber.d("RequestQueue ::: canceled");
     }
 

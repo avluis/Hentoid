@@ -582,7 +582,7 @@ public class LibraryViewModel extends AndroidViewModel {
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
-        // TODO update isCustomGroupingAvailable when the whole delete job is complete
+        // TODO update isCustomGroupingAvailable when the whole delete chain is complete
     }
 
     public void purgeItem(@NonNull final Content content) {
@@ -649,9 +649,9 @@ public class LibraryViewModel extends AndroidViewModel {
         return null;
     }
 
-    public void setGroupCover(long groupId, ImageFile cover) {
+    public void setGroupCoverContent(long groupId, @NonNull Content coverContent) {
         Group localGroup = dao.selectGroup(groupId);
-        if (localGroup != null) localGroup.picture.setAndPutTarget(cover);
+        if (localGroup != null) localGroup.coverContent.setAndPutTarget(coverContent);
     }
 
     public void saveContentPositions(@NonNull final List<Content> orderedContent,
@@ -859,10 +859,14 @@ public class LibraryViewModel extends AndroidViewModel {
         dao.shuffleContent();
     }
 
-    public void editContentTitle(@NonNull Content content, @NonNull String title) {
+    public void renameContent(@NonNull Content content, @NonNull String title) {
         Content dbContent = dao.selectContent(content.getId()); // Instanciate a new Content from DB to avoid updating the UI reference
         if (dbContent != null) {
             dbContent.setTitle(title);
+            // Persist in JSON
+            if (!dbContent.getJsonUri().isEmpty())
+                ContentHelper.updateContentJson(getApplication(), dbContent);
+            else ContentHelper.createContentJson(getApplication(), dbContent);
             dao.insertContent(dbContent);
         }
     }

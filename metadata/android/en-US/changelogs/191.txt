@@ -1,0 +1,24 @@
+Changed
+
+    Duplicate detector now runs book removal as a background task
+
+
+Fixed
+
+    Hitomi : Align with new site policy
+    Manhwa Hentai, Manhwa18 : Fix chapters with empty names
+    Manhwa Hentai, Manhwa18, Toonily : Fix new chapters not being saved when updating books
+    Manhwa18 : Fix wrong cover on downloaded books
+    Nhentai : In-site book code search works again
+    E-hentai, Exhentai : Groups are now dispatched to the "groups" metadata (the one often mixed alongside with "artist" by Hentoid), and not to generic tags anymore
+    Opening Hentoid from a browser link now doesn't require two taps on the back button anymore to be closed
+    Queue screen : Fix 1st element progress animation being shown while the queue is inactive
+    Merging : "Delete after merging" isn't available anymore when merging external books and "Allow deleting external content" is off
+    Merging : Prevent merging external archives (which the app can't handle yet)
+    Groups : The app doesn't lose group covers anymore when reading books
+    NB : Please note that if you manually set group covers, those will be reset upon updating the app
+    A few crashes fixed here and there
+    Hitomi : Align with new site layout - use "redownload from scratch" to fix your error queue
+    Hitomi : Search result pages, tag pages and artist pages are no longer blank when augmented browser is on (this time for good)
+    Library screen : Updating the title of a book now updates the book's Contentv2.json file
+    A few crashes fixed here and there

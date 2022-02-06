@@ -17,7 +17,7 @@ public class Manhwa18Activity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        client.adBlocker.addJsUrlWhitelist(JS_WHITELIST);
+        client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
 //        client.addDirtyElements(DIRTY_ELEMENTS);
         return client;
     }

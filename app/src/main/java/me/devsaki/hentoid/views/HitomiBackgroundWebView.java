@@ -100,9 +100,11 @@ public class HitomiBackgroundWebView extends WebView {
                     Response response = HttpHelper.getOnlineResource(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
                     ResponseBody body = response.body();
                     if (null == body) throw new IOException("Empty body");
-                    String jsFile = body.source().readString(StandardCharsets.UTF_8);
-                    jsFile = jsFile.replaceAll("\\{[\\s]*return[\\s]+[0-9]+;[\\s]*\\}", "{return o;}");
-                    return HttpHelper.okHttpResponseToWebkitResponse(response, new ByteArrayInputStream(jsFile.getBytes(StandardCharsets.UTF_8)));
+                    if (response.code() < 300) {
+                        String jsFile = body.source().readString(StandardCharsets.UTF_8);
+                        jsFile = jsFile.replaceAll("\\{[\\s]*return[\\s]+[0-9]+;[\\s]*\\}", "{return o;}");
+                        return HttpHelper.okHttpResponseToWebkitResponse(response, new ByteArrayInputStream(jsFile.getBytes(StandardCharsets.UTF_8)));
+                    }
                 } catch (IOException e) {
                     Timber.w(e);
                 }

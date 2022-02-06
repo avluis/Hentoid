@@ -1481,11 +1481,23 @@ public class ObjectBoxDB {
      */
 
     List<Content> selectContentWithOldPururinHost() {
-        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
+        return store.boxFor(Content.class).query().equal(Content_.site, Site.PURURIN.getCode()).contains(Content_.coverImageUrl, "://api.pururin.io/images/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
     }
 
     List<Content> selectContentWithOldTsuminoCovers() {
-        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
+        return store.boxFor(Content.class).query().equal(Content_.site, Site.TSUMINO.getCode()).contains(Content_.coverImageUrl, "://www.tsumino.com/Image/Thumb/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
+    }
+
+    List<Content> selectContentWithOldHitomiCovers() {
+        return store.boxFor(Content.class).query().equal(Content_.site, Site.HITOMI.getCode()).contains(Content_.coverImageUrl, "/smallbigtn/", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
+    }
+
+    List<Content> selectDownloadedM18Books() {
+        return store.boxFor(Content.class).query().equal(Content_.site, Site.MANHWA18.getCode()).in(Content_.status, libraryStatus).build().find();
+    }
+
+    List<Chapter> selecChaptersEmptyName() {
+        return store.boxFor(Chapter.class).query().equal(Chapter_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).build().find();
     }
 
     List<Content> selectDownloadedContentWithNoSize() {
@@ -1494,6 +1506,10 @@ public class ObjectBoxDB {
 
     List<Content> selectDownloadedContentWithNoReadProgress() {
         return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.readProgress).build().find();
+    }
+
+    List<Group> selecGroupsWithNoCoverContent() {
+        return store.boxFor(Group.class).query().isNull(Group_.coverContentId).build().find();
     }
 
     List<Content> selectContentWithNullCompleteField() {

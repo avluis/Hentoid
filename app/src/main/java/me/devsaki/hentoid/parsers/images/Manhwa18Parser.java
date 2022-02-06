@@ -45,7 +45,6 @@ public class Manhwa18Parser extends BaseImageListParser {
 
         List<Element> chapterLinks = doc.select("div ul a[href*=chap]");
         if (chapterLinks.isEmpty()) chapterLinks = doc.select("div ul a[href*=ch-]");
-        Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
         chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
 
         // If the stored content has chapters already, save them for comparison
@@ -73,7 +72,7 @@ public class Manhwa18Parser extends BaseImageListParser {
                 List<Element> images = doc.select("#chapter-content img");
                 List<String> imageUrls = Stream.of(images).map(ParseHelper::getImgSrc).toList();
                 if (!imageUrls.isEmpty())
-                    result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                    result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, 1000, chp));
                 else
                     Timber.i("Chapter parsing failed for %s : no pictures found", chp.getUrl());
             } else {
@@ -82,6 +81,10 @@ public class Manhwa18Parser extends BaseImageListParser {
             progressPlus();
         }
         progressComplete();
+
+        // Add cover if it's a first download
+        if (storedChapters.isEmpty())
+            result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();

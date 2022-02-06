@@ -29,7 +29,9 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.databinding.DialogLibraryMergeBinding;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.TextItem;
 
@@ -110,6 +112,7 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
 
         List<Content> contentList = loadContentList();
         if (contentList.isEmpty()) return;
+        boolean isExternal = contentList.get(0).getStatus().equals(StatusContent.EXTERNAL);
 
         itemAdapter.set(Stream.of(contentList).map(s -> new TextItem<>(s.getTitle(), s, true, false, false, touchHelper)).toList());
 
@@ -133,7 +136,13 @@ public final class MergeDialogFragment extends DialogFragment implements ItemTou
         newTitleTxt = binding.titleNew.getEditText();
         if (newTitleTxt != null) newTitleTxt.setText(initialTitle);
 
-        binding.mergeDeleteSwitch.setChecked(deleteDefault);
+        if (isExternal) {
+            binding.mergeDeleteSwitch.setEnabled(Preferences.isDeleteExternalLibrary());
+            binding.mergeDeleteSwitch.setChecked(Preferences.isDeleteExternalLibrary() && deleteDefault);
+        } else {
+            binding.mergeDeleteSwitch.setEnabled(true);
+            binding.mergeDeleteSwitch.setChecked(deleteDefault);
+        }
 
         binding.actionButton.setOnClickListener(v -> onActionClick());
     }

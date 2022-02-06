@@ -55,7 +55,8 @@ public class LusciousBookMetadata {
         content.setSite(Site.LUSCIOUS);
 
         AlbumInfo info = data.album.get;
-        if (null == info.url || null == info.title) return content.setStatus(StatusContent.IGNORED);
+        if (null == info || null == info.url || null == info.title)
+            return content.setStatus(StatusContent.IGNORED);
 
         content.setUrl(info.url);
 

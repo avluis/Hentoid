@@ -42,6 +42,8 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 import io.whitfin.siphash.SipHasher;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
@@ -60,6 +62,10 @@ public final class Helper {
     }
 
     private static final byte[] SIP_KEY = "0123456789ABCDEF".getBytes();
+    public static final Action EMPTY_ACTION = () -> {
+    };
+    public static final Consumer<? super Object> EMPTY_CONSUMER = c -> {
+    };
 
 
     /**
@@ -386,7 +392,7 @@ public final class Helper {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
-            Timber.w(e);
+            Timber.d(e);
             Thread.currentThread().interrupt();
         }
     }

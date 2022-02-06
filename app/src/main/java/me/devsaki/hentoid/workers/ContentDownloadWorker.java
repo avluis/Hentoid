@@ -423,13 +423,13 @@ public class ContentDownloadWorker extends BaseWorker {
         }
 
         if (content.getSite().getParallelDownloadCap() > 0 &&
-                (requestQueueManager.getDownloadThreadCount() > content.getSite().getParallelDownloadCap()
-                        || -1 == requestQueueManager.getDownloadThreadCount())
+                (requestQueueManager.getDownloadThreadCap() > content.getSite().getParallelDownloadCap()
+                        || -1 == requestQueueManager.getDownloadThreadCap())
         ) {
             Timber.d("Setting parallel downloads count to %s", content.getSite().getParallelDownloadCap());
             requestQueueManager.setDownloadThreadCount(getApplicationContext(), content.getSite().getParallelDownloadCap());
         }
-        if (0 == content.getSite().getParallelDownloadCap() && requestQueueManager.getDownloadThreadCount() > -1) {
+        if (0 == content.getSite().getParallelDownloadCap() && requestQueueManager.getDownloadThreadCap() > -1) {
             Timber.d("Resetting parallel downloads count to default");
             requestQueueManager.setDownloadThreadCount(getApplicationContext(), -1);
         }
@@ -540,6 +540,8 @@ public class ContentDownloadWorker extends BaseWorker {
         do {
             Map<StatusContent, ImmutablePair<Integer, Long>> statuses = dao.countProcessedImagesById(content.getId());
             ImmutablePair<Integer, Long> status = statuses.get(StatusContent.DOWNLOADED);
+
+            // Measure idle time since last iteration
             if (status != null) {
                 deltaPages = status.left - pagesOK;
                 if (deltaPages == 0) nbDeltaZeroPages++;
@@ -572,10 +574,11 @@ public class ContentDownloadWorker extends BaseWorker {
             Timber.d("deltaPages: %d / deltaNetworkBytes: %s", deltaPages, FileHelper.formatHumanReadableSize(deltaNetworkBytes));
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
 
-            if (nbDeltaLowNetwork > 10 && nbDeltaZeroPages > 10) {
+            // Restart request queue when the queue has idled for too long
+            if (nbDeltaLowNetwork > 10 || nbDeltaZeroPages > 10) {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
-                Timber.d("Inactivity detected - restarting request queue");
+                Timber.d("Inactivity detected ====> restarting request queue");
                 requestQueueManager.restartRequestQueue();
             }
 
@@ -997,10 +1000,12 @@ public class ContentDownloadWorker extends BaseWorker {
                 List<Pair<String, Integer>> ugoiraFrames = JsonHelper.jsonToObject(ugoiraFramesStr, PixivIllustMetadata.UGOIRA_FRAMES_TYPE);
 
                 // Map frame name to the downloaded file
-                for (Pair<String, Integer> frame : ugoiraFrames) {
-                    File[] files = ugoiraCacheFolder.listFiles(pathname -> pathname.getName().endsWith(frame.first));
-                    if (files != null && files.length > 0) {
-                        frames.add(new ImmutablePair<>(Uri.fromFile(files[0]), frame.second));
+                if (ugoiraFrames != null) {
+                    for (Pair<String, Integer> frame : ugoiraFrames) {
+                        File[] files = ugoiraCacheFolder.listFiles(pathname -> pathname.getName().endsWith(frame.first));
+                        if (files != null && files.length > 0) {
+                            frames.add(new ImmutablePair<>(Uri.fromFile(files[0]), frame.second));
+                        }
                     }
                 }
 

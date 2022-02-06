@@ -1,35 +1,22 @@
 package me.devsaki.hentoid.activities.sources;
 
 import android.net.Uri;
-import android.util.Pair;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
-import com.annimon.stream.function.Consumer;
-
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.parsers.images.HitomiParser;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -38,12 +25,13 @@ import timber.log.Timber;
 public class HitomiActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "hitomi.la";
-    private static final String[] GALLERY_FILTER = {"//hitomi.la/[\\w%\\-]+/[^/]+-[0-9]{2,}.html(#[0-9]{1,2}){0,1}$"};
+    private static final String[] GALLERY_FILTER = {"//hitomi.la/[manga|doujinshi|gamecg|cg]+/[^/]+-[0-9]{2,}.html(#[0-9]{1,2}){0,1}$"};
     private static final String[] RESULTS_FILTER = {"//hitomi.la[/]{0,1}$", "//hitomi.la[/]{0,1}\\?", "//hitomi.la/search.html", "//hitomi.la/index-[\\w%\\-\\.\\?]+", "//hitomi.la/(series|artist|tag|character)/[\\w%\\-\\.\\?]+"};
     private static final String[] BLOCKED_CONTENT = {"hitomi-horizontal.js", "hitomi-vertical.js", "invoke.js", "ion.sound"};
-    private static final String[] JS_WHITELIST = {"//hitomi.la[/]{0,1}$", "galleries/[\\w%\\-]+.js$", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap", "gg.js", "languagesindex", "tagindex", "paging", "language_support"};
+    private static final String[] JS_URL_PATTERN_WHITELIST = {"//hitomi.la[/]{0,1}$", "galleries/[\\w%\\-]+.js$"};
+    private static final String[] JS_URL_WHITELIST = {"nozomiurlindex", "languagesindex", "tagindex", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap", "gg.js", "paging", "language_support"};
     private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "da_etirw"};
-    private static final String[] HIDEABLE_ELEMENTS = {".content div[class^=hitomi-]", ".container div[class^=hitomi-]", ".top-content > div:not(.list-title)"};
+    private static final String[] REMOVABLE_ELEMENTS = {".content div[class^=hitomi-]", ".container div[class^=hitomi-]", ".top-content > div:not(.list-title)"};
 
     Site getStartSite() {
         return Site.HITOMI;
@@ -53,11 +41,13 @@ public class HitomiActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         HitomiWebClient client = new HitomiWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        client.addHideableElements(HIDEABLE_ELEMENTS);
+        //client.addHideableElements(HIDEABLE_ELEMENTS);
+        client.addRemovableElements(REMOVABLE_ELEMENTS);
         client.setResultsUrlPatterns(RESULTS_FILTER);
         client.setResultUrlRewriter(this::rewriteResultsUrl);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
-        for (String s : JS_WHITELIST) client.adBlocker.addJsUrlPatternWhitelist(s);
+        client.adBlocker.addToJsUrlWhitelist(JS_URL_WHITELIST);
+        for (String s : JS_URL_PATTERN_WHITELIST) client.adBlocker.addJsUrlPatternWhitelist(s);
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         return client;
     }
@@ -79,7 +69,10 @@ public class HitomiActivity extends BaseWebActivity {
         return builder.toString();
     }
 
-    private void getImagesUrl(@NonNull Content onlineContent, @NonNull Consumer<String> listCallback, boolean fetchGalleryJs) {
+    /*
+    private void getContentInfo(@NonNull Content onlineContent, @NonNull Consumer<String> listCallback, boolean fetchGalleryJs) {
+        if (null == webView) return;
+
         // Get the gallery info file
         if (!fetchGalleryJs) {
             runOnUiThread(() -> webView.evaluateJavascript(getJsPagesScript(""), listCallback::accept));
@@ -116,6 +109,7 @@ public class HitomiActivity extends BaseWebActivity {
         FileHelper.getAssetAsString(getAssets(), "hitomi_pages.js", sb);
         return sb.toString().replace("$galleryInfo", galleryInfo).replace("$webp", Preferences.isDlHitomiWebp() ? "true" : "false");
     }
+     */
 
     private class HitomiWebClient extends CustomWebViewClient {
 
@@ -146,9 +140,19 @@ public class HitomiActivity extends BaseWebActivity {
                 while (isLoading()) Helper.pause(100);
                 Timber.i(">> done");
             }
+            HitomiParser parser = new HitomiParser();
+            try {
+                List<ImageFile> images = parser.parseImageListWithWebview(content, webView);
+                content.setImageFiles(images);
+                content.setStatus(StatusContent.SAVED);
+            } catch (Exception e) {
+                Timber.w(e);
+                content.setStatus(StatusContent.IGNORED);
+            }
+/*
             final AtomicReference<String> imagesStr = new AtomicReference<>();
             final Object _lock = new Object();
-            getImagesUrl(content, s -> {
+            getContentInfo(content, s -> {
                 Timber.v(">> Reader JS OK");
                 imagesStr.set(s);
                 synchronized (_lock) {
@@ -165,13 +169,13 @@ public class HitomiActivity extends BaseWebActivity {
             }
             Timber.w(">> Lock freed");
             List<ImageFile> result = new ArrayList<>();
-            result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
 
             String jsResult = imagesStr.get().replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
             Timber.v(">> JSResult OK");
             try {
                 List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
-                if (imageUrls != null) {
+                if (imageUrls != null && !imageUrls.isEmpty()) {
+                    result.add(ImageFile.newCover(imageUrls.get(0), StatusContent.SAVED));
                     int order = 1;
                     for (String s : imageUrls)
                         result.add(ParseHelper.urlToImageFile(s, order++, imageUrls.size(), StatusContent.SAVED));
@@ -179,8 +183,9 @@ public class HitomiActivity extends BaseWebActivity {
             } catch (IOException e) {
                 Timber.w(e);
             }
-
             content.setImageFiles(result);
+ */
+
             return super.processContent(content, url, quickDownload);
         }
     }

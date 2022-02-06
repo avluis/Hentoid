@@ -2,47 +2,84 @@ package me.devsaki.hentoid.json.sources;
 
 import androidx.annotation.NonNull;
 
-import com.annimon.stream.Stream;
-
-import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator;
-
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+
+import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.AttributeMap;
+import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.StringHelper;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class HitomiGalleryInfo {
 
-    private List<HitomiGalleryPage> files;
+    private List<HitomiParody> parodys;
+    private List<HitomiTag> tags;
+    private String title;
+    private List<HitomiCharacter> characters;
+    private List<HitomiGroup> groups;
+    //    private Date date; TODO
+    private String language;
+    private String language_localname;
+    private String language_url;
+    private List<HitomiArtist> artists;
+    private String type;
 
-    public List<HitomiGalleryPage> getFiles() {
-        if (null == files) return Collections.emptyList();
-            // Sort files by anything that resembles a number inside their names (Hitomi may order the pages wrongly)
-        else return Stream.of(files).sorted(new HitomiPageNameComparator()).toList();
+    private static class HitomiParody {
+        private String parody;
+        private String url;
     }
 
-    public static class HitomiGalleryPage {
-        private String hash;
-        private Integer haswebp;
-        private String name;
-
-        public String getHash() {
-            return hash;
-        }
-
-        public Integer getHaswebp() {
-            return haswebp;
-        }
-
-        public String getName() {
-            return (null == name) ? "" : name;
-        }
+    private static class HitomiTag {
+        private String url;
+        private String tag;
     }
 
-    private static class HitomiPageNameComparator implements Comparator<HitomiGalleryPage> {
-        @Override
-        public int compare(@NonNull HitomiGalleryPage o1, @NonNull HitomiGalleryPage o2) {
-            return CaseInsensitiveSimpleNaturalComparator.getInstance().compare(o1.getName(), o2.getName());
-        }
+    private static class HitomiCharacter {
+        private String url;
+        private String character;
+    }
+
+    private static class HitomiGroup {
+        private String url;
+        private String group;
+    }
+
+    private static class HitomiArtist {
+        private String url;
+        private String artist;
+    }
+
+    private void addAttribute(@NonNull AttributeType attributeType, @NonNull String name, @NonNull String url, @NonNull AttributeMap map) {
+        Attribute attribute = new Attribute(attributeType, name, url, Site.HITOMI);
+        map.add(attribute);
+    }
+
+    public void updateContent(@NonNull Content content) {
+        content.setTitle(StringHelper.removeNonPrintableChars(title));
+//        content.setUploadDate(date.getTime()); TODO
+
+        AttributeMap attributes = new AttributeMap();
+        if (parodys != null)
+            for (HitomiParody parody : parodys)
+                addAttribute(AttributeType.SERIE, parody.parody, parody.url, attributes);
+        if (tags != null)
+            for (HitomiTag tag : tags)
+                addAttribute(AttributeType.TAG, tag.tag, tag.url, attributes);
+        if (characters != null)
+            for (HitomiCharacter chara : characters)
+                addAttribute(AttributeType.CHARACTER, chara.character, chara.url, attributes);
+        if (groups != null)
+            for (HitomiGroup group : groups)
+                addAttribute(AttributeType.CIRCLE, group.group, group.url, attributes);
+        if (artists != null)
+            for (HitomiArtist artist : artists)
+                addAttribute(AttributeType.ARTIST, artist.artist, artist.url, attributes);
+        if (language != null)
+            addAttribute(AttributeType.LANGUAGE, language, language_url, attributes);
+        if (type != null)
+            addAttribute(AttributeType.CATEGORY, type, "", attributes);
+        content.putAttributes(attributes);
     }
 }

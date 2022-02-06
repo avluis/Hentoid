@@ -27,6 +27,7 @@ import io.objectbox.BoxStore;
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
 import io.objectbox.query.Query;
+import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -469,7 +470,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     private Group enrichGroupWithItemsByDlDate(@NonNull final Group g, int minDays, int maxDays) {
         List<GroupItem> items = selectGroupItemsByDlDate(g, minDays, maxDays);
         g.setItems(items);
-        if (!items.isEmpty()) g.picture.setTarget(items.get(0).content.getTarget().getCover());
+        if (!items.isEmpty()) g.coverContent.setTarget(items.get(0).content.getTarget());
 
         return g;
     }
@@ -545,9 +546,9 @@ public class ObjectBoxDAO implements CollectionDAO {
             item.order = db.getMaxGroupItemOrderFor(item.getGroupId()) + 1;
 
         // If target group doesn't have a cover, get the corresponding Content's
-        ToOne<ImageFile> groupCover = item.group.getTarget().picture;
-        if (!groupCover.isResolvedAndNotNull())
-            groupCover.setAndPutTarget(item.content.getTarget().getCover());
+        ToOne<Content> groupCoverContent = item.group.getTarget().coverContent;
+        if (!groupCoverContent.isResolvedAndNotNull())
+            groupCoverContent.setAndPutTarget(item.content.getTarget());
 
         return db.insertGroupItem(item);
     }
@@ -565,10 +566,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         // Check if one of the GroupItems to delete is linked to the content that contains the group's cover picture
         List<GroupItem> groupItems = db.selectGroupItems(Helper.getPrimitiveArrayFromList(groupItemIds));
         for (GroupItem gi : groupItems) {
-            ToOne<ImageFile> groupPicture = gi.group.getTarget().picture;
+            ToOne<Content> groupCoverContent = gi.group.getTarget().coverContent;
             // If so, remove the cover picture
-            if (groupPicture.isResolvedAndNotNull() && groupPicture.getTarget().getContent().getTargetId() == gi.content.getTargetId())
-                gi.group.getTarget().picture.setAndPutTarget(null);
+            if (groupCoverContent.isResolvedAndNotNull() && groupCoverContent.getTargetId() == gi.content.getTargetId())
+                gi.group.getTarget().coverContent.setAndPutTarget(null);
         }
 
         db.deleteGroupItems(Helper.getPrimitiveArrayFromList(groupItemIds));

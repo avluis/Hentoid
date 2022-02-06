@@ -29,7 +29,10 @@ public class Group {
     public String name;
     @Backlink(to = "group")
     public ToMany<GroupItem> items;
-    public ToOne<ImageFile> picture;
+    // Targetting the content instead of the picture itself because
+    // 1- That's the logic of the UI
+    // 2- Pictures within a given Content are sometimes entirely replaced, breaking that link
+    public ToOne<Content> coverContent;
     // in Grouping.ARTIST : 0 = Artist; 1 = Group
     // in Grouping.CUSTOM : 0 = Custom; 1 = Ungrouped
     public int subtype;

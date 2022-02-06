@@ -129,9 +129,8 @@ public final class GroupHelper {
             // Update the cover of the old groups if they used a picture from the book that is being moved
             for (GroupItem gi : groupItems) {
                 Group g = gi.group.getTarget();
-                if (g != null && !g.picture.isNull()) {
-                    ImageFile groupCover = g.picture.getTarget();
-                    if (groupCover.getContent().getTargetId() == content.getId()) {
+                if (g != null && !g.coverContent.isNull()) {
+                    if (g.coverContent.getTargetId() == content.getId()) {
                         updateGroupCover(g, content.getId(), dao);
                     }
                 }
@@ -150,8 +149,8 @@ public final class GroupHelper {
             content.groupItems.applyChangesToDb();
 
             // Add a picture to the target group if it didn't have one
-            if (group.picture.isNull())
-                group.picture.setAndPutTarget(content.getCover());
+            if (group.coverContent.isNull())
+                group.coverContent.setAndPutTarget(content);
         }
 
         return content;
@@ -170,7 +169,7 @@ public final class GroupHelper {
 
         // Empty group cover if there's just one content inside
         if (1 == groupsContents.size() && groupsContents.get(0).getId() == contentIdToRemove) {
-            g.picture.setAndPutTarget(null);
+            g.coverContent.setAndPutTarget(null);
             return;
         }
 
@@ -179,7 +178,7 @@ public final class GroupHelper {
             if (c.getId() != contentIdToRemove) {
                 ImageFile cover = c.getCover();
                 if (cover.getId() > -1) {
-                    g.picture.setAndPutTarget(cover);
+                    g.coverContent.setAndPutTarget(c);
                     return;
                 }
             }

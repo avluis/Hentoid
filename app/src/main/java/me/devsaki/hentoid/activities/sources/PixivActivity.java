@@ -48,7 +48,7 @@ public class PixivActivity extends BaseWebActivity {
     protected CustomWebViewClient getWebClient() {
         PixivWebClient client = new PixivWebClient(getStartSite(), GALLERY_FILTER, this);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
-        client.adBlocker.addJsUrlWhitelist(JS_WHITELIST);
+        client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
 
         return client;
     }

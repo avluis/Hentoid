@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -99,6 +100,9 @@ public class ParseHelper {
         return s;
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static void parseAttributes(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
@@ -109,6 +113,9 @@ public class ParseHelper {
             for (Element a : elements) parseAttribute(map, type, a, removeTrailingNumbers, site);
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static void parseAttributes(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
@@ -121,15 +128,21 @@ public class ParseHelper {
                 parseAttribute(map, type, a, removeTrailingNumbers, childElementClass, site);
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static void parseAttribute(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
             @NonNull Element element,
             boolean removeTrailingNumbers,
             @NonNull Site site) {
-        parseAttribute(map, type, element, removeTrailingNumbers, null, site, "");
+        parseAttribute(element, map, type, site, "", removeTrailingNumbers, null);
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static void parseAttribute(
             @NonNull AttributeMap map,
             @NonNull AttributeType type,
@@ -137,17 +150,26 @@ public class ParseHelper {
             boolean removeTrailingNumbers,
             @NonNull String childElementClass,
             @NonNull Site site) {
-        parseAttribute(map, type, element, removeTrailingNumbers, childElementClass, site, "");
+        parseAttribute(element, map, type, site, "", removeTrailingNumbers, childElementClass);
     }
 
+    /**
+     * Extract Attributes from the given Element and put them into the given AttributeMap,
+     * using the given properties
+     *
+     * @param element               Element to parse Attributes from
+     * @param map                   Output map where the detected attributes will be put
+     * @param type                  AttributeType to give to the detected Attributes
+     * @param site                  Site to give to the detected Attributes
+     * @param prefix                If set, detected attributes will have this prefix added to their name
+     * @param removeTrailingNumbers If true trailing numbers will be removed from the attribute name
+     * @param childElementClass     If set, the parser will look for sub-elements of the given class
+     */
     public static void parseAttribute(
-            @NonNull AttributeMap map,
+            @NonNull Element element, @NonNull AttributeMap map,
             @NonNull AttributeType type,
-            @NonNull Element element,
-            boolean removeTrailingNumbers,
-            @Nullable String childElementClass,
-            @NonNull Site site,
-            @NonNull final String prefix) {
+            @NonNull Site site, @NonNull final String prefix, boolean removeTrailingNumbers,
+            @Nullable String childElementClass) {
         String name;
         if (null == childElementClass) {
             name = element.ownText();
@@ -167,29 +189,9 @@ public class ParseHelper {
         map.add(attribute);
     }
 
-    public static ImageFile urlToImageFile(
-            @Nonnull String imgUrl,
-            int order,
-            int nbPages,
-            @NonNull final StatusContent status) {
-        return urlToImageFile(imgUrl, order, nbPages, status, null);
-    }
-
-    public static ImageFile urlToImageFile(
-            @Nonnull String imgUrl,
-            int order,
-            int maxPages,
-            @NonNull final StatusContent status,
-            final Chapter chapter) {
-        ImageFile result = new ImageFile();
-
-        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
-        result.setOrder(order).setUrl(imgUrl).setStatus(status).computeName(nbMaxDigits);
-        if (chapter != null) result.setChapter(chapter);
-
-        return result;
-    }
-
+    /**
+     * See definition of the main method below
+     */
     public static List<ImageFile> urlsToImageFiles(
             @Nonnull List<String> imgUrls,
             @NonNull String coverUrl,
@@ -198,6 +200,9 @@ public class ParseHelper {
         return urlsToImageFiles(imgUrls, coverUrl, status, null);
     }
 
+    /**
+     * See definition of the main method below
+     */
     public static List<ImageFile> urlsToImageFiles(
             @Nonnull List<String> imgUrls,
             @NonNull String coverUrl,
@@ -207,17 +212,26 @@ public class ParseHelper {
         List<ImageFile> result = new ArrayList<>();
 
         result.add(ImageFile.newCover(coverUrl, status));
-        result.addAll(urlsToImageFiles(imgUrls, 1, status, chapter, imgUrls.size()));
+        result.addAll(urlsToImageFiles(imgUrls, 1, status, imgUrls.size(), chapter));
 
         return result;
     }
 
+    /**
+     * Build a list of ImageFiles using the given properties
+     *
+     * @param imgUrls        URLs of the images
+     * @param initialOrder   Order of the 1st image to be generated
+     * @param status         Status of the resulting ImageFiles
+     * @param totalBookPages Total number of pages of the corresponding book
+     * @param chapter        Chapter to link to the resulting ImageFiles (optional)
+     * @return List of ImageFiles built using all given arguments
+     */
     public static List<ImageFile> urlsToImageFiles(
             @Nonnull List<String> imgUrls,
             int initialOrder,
             @NonNull final StatusContent status,
-            final Chapter chapter,
-            int maxPages
+            int totalBookPages, final Chapter chapter
     ) {
         List<ImageFile> result = new ArrayList<>();
 
@@ -225,16 +239,71 @@ public class ParseHelper {
         // Remove duplicates before creationg the ImageFiles
         List<String> imgUrlsUnique = Stream.of(imgUrls).distinct().toList();
         for (String s : imgUrlsUnique)
-            result.add(urlToImageFile(s.trim(), order++, maxPages, status, chapter));
+            result.add(urlToImageFile(s.trim(), order++, totalBookPages, status, chapter));
 
         return result;
     }
 
-
-    public static void signalProgress(long contentId, long storedId, int current, int max) {
-        EventBus.getDefault().post(new DownloadPreparationEvent(contentId, storedId, current, max));
+    /**
+     * Build an ImageFile using the given properties
+     *
+     * @param imgUrl         URL of the image
+     * @param order          Order of the image
+     * @param totalBookPages Total number of pages of the corresponding book
+     * @param status         Status of the resulting ImageFile
+     * @return ImageFile built using all given arguments
+     */
+    public static ImageFile urlToImageFile(
+            @Nonnull String imgUrl,
+            int order,
+            int totalBookPages,
+            @NonNull final StatusContent status) {
+        return urlToImageFile(imgUrl, order, totalBookPages, status, null);
     }
 
+    /**
+     * Build an ImageFile using the given given properties
+     *
+     * @param imgUrl         URL of the image
+     * @param order          Order of the image
+     * @param totalBookPages Total number of pages of the corresponding book
+     * @param status         Status of the resulting ImageFile
+     * @param chapter        Chapter to link to the resulting ImageFile (optional)
+     * @return ImageFile built using all given arguments
+     */
+    public static ImageFile urlToImageFile(
+            @Nonnull String imgUrl,
+            int order,
+            int totalBookPages,
+            @NonNull final StatusContent status,
+            final Chapter chapter) {
+        ImageFile result = new ImageFile();
+
+        int nbMaxDigits = (int) (Math.floor(Math.log10(totalBookPages)) + 1);
+        result.setOrder(order).setUrl(imgUrl).setStatus(status).computeName(nbMaxDigits);
+        if (chapter != null) result.setChapter(chapter);
+
+        return result;
+    }
+
+    /**
+     * Signal download preparation event for the given processed elements
+     *
+     * @param contentId   Online content ID being processed
+     * @param storedId    Stored content ID being processed
+     * @param currentStep Current processing step
+     * @param maxSteps    Maximum processing step
+     */
+    public static void signalProgress(long contentId, long storedId, int currentStep, int maxSteps) {
+        EventBus.getDefault().post(new DownloadPreparationEvent(contentId, storedId, currentStep, maxSteps));
+    }
+
+    /**
+     * Extract the cookie string, if it exists, from the given download parameters
+     *
+     * @param downloadParams Download parameters to extract the cookie string from
+     * @return Cookie string, if any in the given download parameters; empty string if none
+     */
     public static String getSavedCookieStr(String downloadParams) {
         Map<String, String> downloadParamsMap = ContentHelper.parseDownloadParams(downloadParams);
         if (downloadParamsMap.containsKey(HttpHelper.HEADER_COOKIE_KEY))
@@ -243,13 +312,25 @@ public class ParseHelper {
         return "";
     }
 
+    /**
+     * Copy the cookie string, if it exists, from the given download parameters to the given HTTP headers
+     *
+     * @param downloadParams Download parameters to extract the cookie string from
+     * @param headers        HTTP headers to copy the cookie string to, if it exists
+     */
     public static void addSavedCookiesToHeader(String downloadParams, @NonNull List<Pair<String, String>> headers) {
         String cookieStr = getSavedCookieStr(downloadParams);
         if (!cookieStr.isEmpty())
             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
     }
 
-    // Save download params for future use during download
+    /**
+     * Save the given referrer and the relevant cookie string as download parameters
+     * to each image of the given list for future use during download
+     *
+     * @param imgs     List of images to save download params to
+     * @param referrer Referrer to set
+     */
     public static void setDownloadParams(@NonNull final List<ImageFile> imgs, @NonNull final String referrer) {
         Map<String, String> params = new HashMap<>();
         for (ImageFile img : imgs) {
@@ -261,8 +342,14 @@ public class ParseHelper {
         }
     }
 
-    // TODO doc
-    public static String getExtensionFromFormat(Map<String, String> imgFormat, int i) {
+    /**
+     * Get the image extension from the given ImHentai / Hentaifox format code
+     *
+     * @param imgFormat Format map provided by the site
+     * @param i         index to look up
+     * @return Image extension (without the dot), if found; empty string if not
+     */
+    public static String getExtensionFromFormat(@NonNull Map<String, String> imgFormat, int i) {
         String format = imgFormat.get((i + 1) + "");
         if (format != null) {
             switch (format.charAt(0)) {
@@ -278,31 +365,56 @@ public class ParseHelper {
         } else return "";
     }
 
+    /**
+     * Extract a list of Chapters from the given list of links, for the given Content ID
+     *
+     * @param chapterLinks List of HTML links to extract Chapters from
+     * @param contentId    Content ID to associate with all extracted Chapters
+     * @return Chapters detected from the given list of links, associated with the given Content ID
+     */
     public static List<Chapter> getChaptersFromLinks(@NonNull List<Element> chapterLinks, long contentId) {
         List<Chapter> result = new ArrayList<>();
         Set<String> urls = new HashSet<>();
 
-        int order = 0;
+        // First extract data and filter URL duplicates
+        List<Pair<String, String>> chapterData = new ArrayList<>();
         for (Element e : chapterLinks) {
-            String url = e.attr("href");
-            String name = StringHelper.removeNonPrintableChars(e.ownText());
+            String url = e.attr("href").trim();
+            String name = e.attr("title").trim();
+            if (name.isEmpty())
+                name = StringHelper.removeNonPrintableChars(e.ownText()).trim();
             // Make sure we're not adding duplicates
             if (!urls.contains(url)) {
                 urls.add(url);
-                Chapter chp = new Chapter(order++, url, name);
-                chp.setContentId(contentId);
-                result.add(chp);
+                chapterData.add(new Pair<>(url, name));
             }
+        }
+        Collections.reverse(chapterData); // Put unique results in their chronological order
+
+        int order = 0;
+        // Build the final list
+        for (Pair<String, String> chapter : chapterData) {
+            Chapter chp = new Chapter(order++, chapter.first, chapter.second);
+            chp.setContentId(contentId);
+            result.add(chp);
         }
 
         return result;
     }
 
+    /**
+     * Extract the last useful part of the path of the given URL
+     * e.g. if the url is "http://aa.com/look/at/me" or "http://aa.com/look/at/me/", the result will be "me"
+     *
+     * @param url URL to extract from
+     * @return Last useful part of the path of the given URL
+     */
     private static String getLastPathPart(@NonNull final String url) {
         String[] parts = url.split("/");
         return (parts[parts.length - 1].isEmpty()) ? parts[parts.length - 2] : parts[parts.length - 1];
     }
 
+    // TODO doc
     public static List<Chapter> getExtraChaptersbyUrl(
             @NonNull List<Chapter> storedChapters,
             @NonNull List<Chapter> detectedChapters
@@ -323,6 +435,7 @@ public class ParseHelper {
         return Stream.of(result).sortBy(Chapter::getOrder).toList();
     }
 
+    // TODO doc
     public static List<String> getExtraChaptersbyId(
             @NonNull List<Chapter> storedChapters,
             @NonNull List<String> detectedIds
@@ -339,6 +452,7 @@ public class ParseHelper {
         return result;
     }
 
+    // TODO doc
     public static int getMaxImageOrder(@NonNull List<Chapter> storedChapters) {
         if (!storedChapters.isEmpty()) {
             Optional<Integer> optOrder = Stream.of(storedChapters)
@@ -352,6 +466,7 @@ public class ParseHelper {
         return 0;
     }
 
+    // TODO doc
     public static int getMaxChapterOrder(@NonNull List<Chapter> storedChapters) {
         if (!storedChapters.isEmpty()) {
             Optional<Integer> optOrder = Stream.of(storedChapters)
@@ -363,6 +478,12 @@ public class ParseHelper {
         return 0;
     }
 
+    /**
+     * Extract the image URL from the given HTML element
+     *
+     * @param e HTML element to extract the URL from
+     * @return Image URL contained in the given HTML element
+     */
     public static String getImgSrc(Element e) {
         String result = e.attr("data-src").trim();
         if (result.isEmpty()) result = e.attr("data-lazy-src").trim();

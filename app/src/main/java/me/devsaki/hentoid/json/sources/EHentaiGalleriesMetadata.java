@@ -14,7 +14,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 
-@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection","squid:S1172","squid:S1068"})
+@SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
 public class EHentaiGalleriesMetadata {
     private List<EHentaiGalleryMetadata> gmetadata;
 
@@ -42,7 +42,7 @@ public class EHentaiGalleriesMetadata {
                     .setStatus(StatusContent.SAVED);
 
             if (updatePages) {
-                content.setQtyPages(Integer.parseInt(filecount));
+                if (filecount != null) content.setQtyPages(Integer.parseInt(filecount));
                 content.setImageFiles(Collections.emptyList());
             }
 
@@ -70,6 +70,9 @@ public class EHentaiGalleriesMetadata {
                             break;
                         case "artist":
                             type = AttributeType.ARTIST;
+                            break;
+                        case "group":
+                            type = AttributeType.CIRCLE;
                             break;
                         default:
                             type = AttributeType.TAG;

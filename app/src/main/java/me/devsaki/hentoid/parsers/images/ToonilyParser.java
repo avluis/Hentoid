@@ -25,6 +25,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.download.DownloadHelper;
+import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
@@ -65,6 +66,7 @@ public class ToonilyParser extends BaseImageListParser {
 
         // 1- Detect chapters on gallery page
         List<Chapter> chapters = new ArrayList<>();
+        String reason = "";
         Document doc = getOnlineDocument(onlineContent.getGalleryUrl(), headers, Site.TOONILY.useHentoidAgent(), Site.TOONILY.useWebviewAgent());
         if (doc != null) {
             String canonicalUrl = DownloadHelper.getCanonicalUrl(doc);
@@ -76,11 +78,17 @@ public class ToonilyParser extends BaseImageListParser {
                     "",
                     HttpHelper.POST_MIME_TYPE
             );
-            if (null == doc) return result;
-            List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
-            Collections.reverse(chapterLinks); // Put the chapters in the correct reading order
-            chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
+            if (doc != null) {
+                List<Element> chapterLinks = doc.select("[class^=wp-manga-chapter] a");
+                chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
+            } else {
+                reason = "Chapters page couldn't be downloaded @ " + canonicalUrl;
+            }
+        } else {
+            reason = "Index page couldn't be downloaded @ " + onlineContent.getGalleryUrl();
         }
+        if (chapters.isEmpty())
+            throw new EmptyResultException("Unable to detect chapters : " + reason);
 
         // If the stored content has chapters already, save them for comparison
         List<Chapter> storedChapters = null;
@@ -111,7 +119,7 @@ public class ToonilyParser extends BaseImageListParser {
                     if (!url.isEmpty()) imageUrls.add(url);
                 }
                 if (!imageUrls.isEmpty())
-                    result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, chp, 1000));
+                    result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, 1000, chp));
                 else
                     Timber.i("Chapter parsing failed for %s : no pictures found", chp.getUrl());
             } else {
@@ -121,8 +129,9 @@ public class ToonilyParser extends BaseImageListParser {
         }
         progressComplete();
 
-        // Add cover
-        result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
+        // Add cover if it's a first download
+        if (storedChapters.isEmpty())
+            result.add(ImageFile.newCover(onlineContent.getCoverImageUrl(), StatusContent.SAVED));
 
         // If the process has been halted manually, the result is incomplete and should not be returned as is
         if (processHalted.get()) throw new PreparationInterruptedException();

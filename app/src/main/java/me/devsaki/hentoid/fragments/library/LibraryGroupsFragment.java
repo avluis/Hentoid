@@ -69,7 +69,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.GroupItemBundle;
-import me.devsaki.hentoid.activities.bundles.PrefsActivityBundle;
+import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.Site;
@@ -143,7 +143,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         @Override
         public boolean areContentsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
-            return oldItem.getGroup().picture.getTargetId() == newItem.getGroup().picture.getTargetId()
+            return oldItem.getGroup().coverContent.getTargetId() == newItem.getGroup().coverContent.getTargetId()
                     && oldItem.getGroup().isFavourite() == newItem.getGroup().isFavourite()
                     && oldItem.getGroup().items.size() == newItem.getGroup().items.size();
         }
@@ -152,8 +152,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         public @org.jetbrains.annotations.Nullable Object getChangePayload(GroupDisplayItem oldItem, int oldPos, GroupDisplayItem newItem, int newPos) {
             GroupItemBundle.Builder diffBundleBuilder = new GroupItemBundle.Builder();
 
-            if (!newItem.getGroup().picture.isNull() && oldItem.getGroup().picture.getTargetId() != newItem.getGroup().picture.getTargetId()) {
-                diffBundleBuilder.setCoverUri(newItem.getGroup().picture.getTarget().getUsableUri());
+            if (!newItem.getGroup().coverContent.isNull() && oldItem.getGroup().coverContent.getTargetId() != newItem.getGroup().coverContent.getTargetId()) {
+                diffBundleBuilder.setCoverUri(newItem.getGroup().coverContent.getTarget().getCover().getUsableUri());
             }
             if (oldItem.getGroup().isFavourite() != newItem.getGroup().isFavourite()) {
                 diffBundleBuilder.setFavourite(newItem.getGroup().isFavourite());
@@ -486,9 +486,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                     // Open prefs on the "storage" category
                     Intent intent = new Intent(requireActivity(), PrefsActivity.class);
 
-                    PrefsActivityBundle.Builder builder = new PrefsActivityBundle.Builder();
-                    builder.setIsStoragePrefs(true);
-                    intent.putExtras(builder.getBundle());
+                    PrefsBundle prefsBundle = new PrefsBundle();
+                    prefsBundle.setStoragePrefs(true);
+                    intent.putExtras(prefsBundle.toBundle());
 
                     requireContext().startActivity(intent);
                 });
@@ -797,7 +797,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             selectExtension.setSelectOnLongClick(true);
         } else {
             long selectedLocalCount = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, 0);
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, 0, 0);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }

@@ -35,8 +35,8 @@ android {
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
-        versionCode 190
-        versionName '1.15.18'
+        versionCode 191
+        versionName '1.15.20'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -76,7 +76,9 @@ android {
         }
     }
     packagingOptions {
-        exclude 'META-INF/rxjava.properties'
+        resources {
+            excludes += ['META-INF/rxjava.properties']
+        }
     }
     testOptions {
         unitTests.includeAndroidResources = true
@@ -95,11 +97,11 @@ dependencies {
      * TESTING
      */
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:4.1.0'
+    testImplementation 'org.mockito:mockito-core:4.2.0'
     testImplementation 'androidx.test:core:1.4.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation "androidx.arch.core:core-testing:2.1.0"
-    testImplementation 'org.robolectric:robolectric:4.7.1'
+    testImplementation 'org.robolectric:robolectric:4.7.3'
     // Auto Timber trees that redirect logs to the JUnit output
     testImplementation 'net.lachlanmckee:timber-junit-rule:1.0.1'
     androidTestImplementation 'androidx.test:runner:1.4.0'
@@ -111,8 +113,8 @@ dependencies {
      */
     // Support libraries
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-    implementation 'androidx.appcompat:appcompat:1.4.0'
-    implementation 'com.google.android.material:material:1.5.0-beta01'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.google.android.material:material:1.6.0-alpha02'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
     implementation 'androidx.paging:paging-runtime:2.1.2'
@@ -144,7 +146,7 @@ dependencies {
     }
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.17.0'
+    implementation 'com.github.penfeizhou.android.animation:apng:2.17.2'
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     // implementation 'com.waynejo:androidndkgif:0.3.3'
@@ -155,7 +157,7 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
     // https://github.com/mikepenz/FastAdapter
-    def fastadapter_version = '5.5.1'
+    def fastadapter_version = '5.6.0'
     implementation "com.mikepenz:fastadapter:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-diff:$fastadapter_version"
     implementation "com.mikepenz:fastadapter-extensions-swipe:$fastadapter_version"
@@ -170,7 +172,7 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
     // Tooltips
-    implementation 'com.github.skydoves:balloon:1.4.0'
+    implementation 'com.github.skydoves:balloon:1.4.1'
 
     // Dropdown lists
     implementation 'com.github.skydoves:powerspinner:1.1.9'
@@ -233,7 +235,7 @@ dependencies {
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").
-    def objectbox_version = "3.0.1"
+    def objectbox_version = "3.1.1"
     if (includeObjectBoxBrowser.toBoolean()) {
         debugImplementation "io.objectbox:objectbox-android-objectbrowser:$objectbox_version"
         releaseImplementation "io.objectbox:objectbox-android:$objectbox_version"
@@ -243,7 +245,7 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
     // EventBus: github.com/greenrobot/EventBus
-    implementation 'org.greenrobot:eventbus:3.2.0'
+    implementation 'org.greenrobot:eventbus:3.3.1'
 
     // Lightweight Stream : github.com/aNNiMON/Lightweight-Stream-API
     implementation 'com.annimon:stream:1.2.2'

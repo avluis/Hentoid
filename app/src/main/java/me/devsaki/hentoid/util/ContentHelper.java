@@ -162,9 +162,9 @@ public final class ContentHelper {
         if (content.getSite().equals(Site.NONE)) return;
 
         Intent intent = new Intent(context, Content.getWebActivityClass(content.getSite()));
-        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-        builder.setUrl(content.getGalleryUrl());
-        intent.putExtras(builder.getBundle());
+        BaseWebActivityBundle bundle = new BaseWebActivityBundle();
+        bundle.setUrl(content.getGalleryUrl());
+        intent.putExtras(bundle.toBundle());
         if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
@@ -205,7 +205,9 @@ public final class ContentHelper {
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return null;
         try {
-            return JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            content.setJsonUri(newJson.getUri().toString());
+            return newJson;
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getStorageUri());
         }
@@ -433,7 +435,7 @@ public final class ContentHelper {
                                     group = new Group(Grouping.ARTIST, a.getName(), ++nbGroups);
                                     group.setSubtype(a.getType().equals(AttributeType.ARTIST) ? Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS : Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS);
                                     if (!a.contents.isEmpty())
-                                        group.picture.setTarget(a.contents.get(0).getCover());
+                                        group.coverContent.setTarget(a.contents.get(0));
                                 }
                                 GroupHelper.addContentToAttributeGroup(dao, group, a, content);
                             }
@@ -923,9 +925,9 @@ public final class ContentHelper {
 
         Intent intent = new Intent(context, Content.getWebActivityClass(targetSite));
 
-        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
-        builder.setUrl(targetUrl);
-        intent.putExtras(builder.getBundle());
+        BaseWebActivityBundle bundle = new BaseWebActivityBundle();
+        bundle.setUrl(targetUrl);
+        intent.putExtras(bundle.toBundle());
 
         context.startActivity(intent);
     }
