@@ -2,7 +2,6 @@
 <resources>
     <!-- DO NOT modify the way these strings and comments are set up - it is required for Weblate to work -->
     <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
-
     <!-- Выбор способа отображения библиотеки -->
     <string name="pref_library_display_entries_1">Список (по умолчанию)</string>
     <!-- Выбор способа отображения библиотеки -->

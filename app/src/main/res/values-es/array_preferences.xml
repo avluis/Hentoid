@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pref_library_display_entries_1">Lista (Predeterminado)</string>
+    <string name="pref_library_display_entries_2">Cuadrícula</string>
+    <string name="pref_memory_alert_entries_1">Sin alerta</string>
+    <string name="pref_browser_quick_dl_threshold_entries_1">500 ms (predeterminado)</string>
+    <string name="pref_browser_quick_dl_threshold_entries_2">1 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_3">1.5 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_4">2 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_5">3 s</string>
+</resources>
