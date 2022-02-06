@@ -14,7 +14,8 @@
     <string name="pref_endless_scroll_summary_on">Scroll away to your heart\'s content.</string>
     <string name="pref_endless_scroll_default" translatable="false">true</string>
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
-    <string name="pref_quantity_per_page_summary">Number of items per page in download list.\nCurrently: <x:g id="count" exmample="10">%s</x:g> items.</string>
+    <string name="pref_quantity_per_page_summary">Number of items per page in download list.
+\nCurrently: <x:g id="count" example="10">%s</x:g> items.</string>
     <string name="pref_quantity_per_page_default" translatable="false">20</string>
     <string name="pref_cat_search">Advanced search</string>
     <string name="pref_attributes_list_order_title">Sorting order of displayed metadata</string>
@@ -150,7 +151,6 @@
     <string name="pref_dl_blocked_tags_summary">Block the download of books with specific tags\nTip: separate tags with commas</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Blocking behaviour</string>
     <string name="pref_dl_blocked_tags_behaviour_default" translatable="false">0</string>
-
     <string name="pref_dl_hitomi" translatable="false">Hitomi.la</string>
     <string name="pref_dl_hitomi_webp_title">Prefer downloading WebP</string>
     <string name="pref_dl_hitomi_webp_summary_off">Download other type of pictures (PNG, JPG)</string>
