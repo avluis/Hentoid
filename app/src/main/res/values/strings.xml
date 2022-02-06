@@ -141,10 +141,9 @@
     <string name="step_start_download">Download chain started!</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
-    <!-- TODO: Android doesn't understand which number it should imply quantity from -->
     <plurals name="redownloaded_scratch">
-        <item quantity="one"><x:g id="number" example="1">%$1d</x:g>/<x:g id="total" example="42">%$2d</x:g> item cleared for redownloading</item>
-        <item quantity="other"><x:g id="number" example="2">%$1d</x:g>/<x:g id="total" example="42">%$2d</x:g> items cleared for redownloading</item>
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> item cleared for redownloading</item>
+        <item quantity="other"><x:g id="number" example="2">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> items cleared for redownloading</item>
     </plurals>
     <string name="queue_add_top">Add on top</string>
     <string name="queue_add_bottom">Add to bottom</string>

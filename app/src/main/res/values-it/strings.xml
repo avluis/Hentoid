@@ -129,8 +129,8 @@
     <string name="help_swipe_cancel">Puoi annullare i download scorrendoli verso sinistra</string>
     <string name="redownloaded_error">Si è verificato un problema durante il nuovo download - annullato</string>
     <plurals name="redownloaded_scratch">
-        <item quantity="one"><x:g id="number" example="1">%$1d</x:g>/<x:g id="total" example="42">%$2d</x:g> elemento cancellato per riscaricarlo</item>
-        <item quantity="other"><x:g id="number" example="1">%$1d</x:g>/<x:g id="total" example="42">%$2d</x:g> elementi cancellati per riscaricarli</item>
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> elemento cancellato per riscaricarlo</item>
+        <item quantity="other"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> elementi cancellati per riscaricarli</item>
     </plurals>
     <string name="queue_add_top">Aggiungi in cima</string>
     <string name="queue_add_bottom">Aggiungi al fondo</string>
