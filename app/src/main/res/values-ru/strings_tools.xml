@@ -4,7 +4,6 @@
     <string name="tools_title">Инструменты</string>
     <!-- Пункт меню -->
     <string name="tools_screen_import_export">Импорт и экспорт</string>
-
     <!-- Кнопка -->
     <string name="tools_export_library_title">Экспортировать метаданные</string>
     <!-- Описание кнопки -->
@@ -23,12 +22,10 @@
     <string name="tools_import_settings_title">Импортировать настройки</string>
     <!-- Описание кнопки -->
     <string name="tools_import_settings_summary">Восстановить настройки из JSON</string>
-
     <!-- Пункт меню -->
     <string name="tools_duplicate_detector_title">Поиск дубликатов</string>
     <!-- Описание пункта меню -->
     <string name="tools_duplicate_detector_summary">Поиск и удаление идентичных копий книг</string>
-
     <!-- Пункт меню -->
     <string name="tools_screen_cache">Управление кэшем</string>
     <!-- Кнопка -->
@@ -39,7 +36,6 @@
     <string name="tools_cache_app">Очистить кэш приложения</string>
     <!-- Уведомление (Toast) -->
     <string name="tools_cache_app_success">Кэш приложения успешно очищен</string>
-
     <!-- Пункт меню -->
     <string name="tools_latest_logs_title">Логи приложения</string>
     <!-- Описание пункта меню -->
