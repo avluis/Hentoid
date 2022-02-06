@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_intro">Benvenuto</string>
     <string name="no">No</string>
     <string name="ok">Ok</string>
@@ -38,14 +38,14 @@
     <string name="api29_migration_subtitle">Hentoid sta aggiornando la tua raccolta.
 \nPotrebbero essere necessari alcuni minuti.</string>
     <string name="api29_migration_location">Posizione attuale della cartella Hentoid
-\n%s</string>
+\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
     <string name="api29_migration_step1">Cartella Hentoid</string>
     <string name="api29_migration_step1_external">Cartella esterna</string>
     <string name="api29_migration_step1_select">Seleziona la cartella Hentoid</string>
     <string name="api29_migration_step1_select_external">Seleziona cartella esterna</string>
     <string name="api29_migration_step2">Analizza le cartelle del sito</string>
-    <string name="api29_migration_step3_init">Inizio della scansione della libreria…</string>
-    <string name="api29_migration_step3">Scansiona libreria (%1$d / %2$d)</string>
+    <string name="api29_migration_step3_init">Scansionando la libreria…</string>
+    <string name="api29_migration_step3">Scansiona libreria (<x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="7">%2$d</x:g>)</string>
     <string name="api29_migration_step4_init">Importazione coda…</string>
     <string name="api29_migration_select_folder">Seleziona una cartella Hentoid esistente. La sua posizione è visualizzata sullo schermo.</string>
     <string name="api29_migration_allow_write">Si prega di consentire il permesso di scrittura</string>
@@ -86,8 +86,8 @@
     <string name="queue_queue_tab">In corso</string>
     <string name="queue_errors_tab">Errori</string>
     <plurals name="ask_cancel_multiple">
-        <item quantity="one">Sei sicuro di voler cancellare l\'elemento selezionato\?</item>
-        <item quantity="other">Sei sicuro di voler cancellare gli elementi selezionati\?</item>
+        <item quantity="one">Cancellare l\'elemento selezionato\?</item>
+        <item quantity="other">Cancellare gli elementi selezionati\?</item>
     </plurals>
     <string name="invert_queue">Inverti coda</string>
     <string name="redownload_all">Scarica di nuovo tutto</string>
@@ -99,22 +99,22 @@
     <string name="move_bottom">Scendi alla fine</string>
     <string name="queue_paused">Coda in pausa</string>
     <string name="queue_preparing">Preparazione del download</string>
-    <string name="queue_dl">Scaricando %s</string>
+    <string name="queue_dl">Scaricando <x:g id="book_name" example="Cool H-Manga">%s</x:g></string>
     <string name="err_stats_help">Mostra informazioni dettagliate riguardo gli attuali errori dei download</string>
     <string name="err_stats_title">Informazioni degli errori</string>
     <string name="err_no_content">Il libro non esiste ancora</string>
-    <string name="confirm_cancel_all">Stai per cancellare l\'intera coda. Continuare\?</string>
+    <string name="confirm_cancel_all">Cancellare l\'intera coda\?</string>
     <plurals name="confirm_cancel_all_errors">
-        <item quantity="one">Stai per cancellare tutti i %d libri con errori. Continuare\?</item>
-        <item quantity="other"></item>
+        <item quantity="one"></item>
+        <item quantity="other">Stai per cancellare <x:g id="count" example="42">%d</x:g> libri con errori. Continuare\?</item>
     </plurals>
     <plurals name="confirm_redownload_all">
-        <item quantity="one">Stai per riscaricare %d elementi. Continuare\?</item>
-        <item quantity="other"></item>
+        <item quantity="one"></item>
+        <item quantity="other">Stai per riscaricare <x:g id="count" example="42">%d</x:g> elementi. Continuare\?</item>
     </plurals>
     <string name="paused_no_internet">Impossibile scaricare - Nessuna connessione Internet</string>
     <string name="paused_no_wifi">Impossibile scaricare - Nessun Wi-Fi</string>
-    <string name="paused_no_storage">Impossibile scaricare - Memoria insufficiente (%s rimanente). Libera spazio o cambia la posizione della cartella di download</string>
+    <string name="paused_no_storage">Impossibile scaricare - Memoria insufficiente (<x:g id="size_left_bytes" example="0 bytes">%s</x:g> rimanente). Libera spazio o cambia la posizione della cartella di download</string>
     <string name="paused_no_dl_folder">Impossibile scaricare - Nessuna cartella di download. Utilizza le impostazioni dell\'app per selezionarne una</string>
     <string name="paused_dl_folder_not_found">Impossibile scaricare - Cartella di download non trovata. Usa le impostazioni dell\'app per selezionarne una</string>
     <string name="paused_dl_folder_credentials">Impossibile scaricare - Credenziali insufficienti nella cartella di download. Usa le impostazioni dell\'app per riselezionarla</string>
@@ -129,8 +129,8 @@
     <string name="help_swipe_cancel">Puoi annullare i download scorrendoli verso sinistra</string>
     <string name="redownloaded_error">Si è verificato un problema durante il nuovo download - annullato</string>
     <plurals name="redownloaded_scratch">
-        <item quantity="one">%$1d/%$2d elemento cancellato per riscaricarlo</item>
-        <item quantity="other">%$1d/%$2d elementi cancellati per riscaricarli</item>
+        <item quantity="one"><x:g id="number" example="1">%$1d</x:g>/<x:g id="total" example="42">%$2d</x:g> elemento cancellato per riscaricarlo</item>
+        <item quantity="other"><x:g id="number" example="1">%$1d</x:g>/<x:g id="total" example="42">%$2d</x:g> elementi cancellati per riscaricarli</item>
     </plurals>
     <string name="queue_add_top">Aggiungi in cima</string>
     <string name="queue_add_bottom">Aggiungi al fondo</string>
@@ -138,31 +138,31 @@
     <string name="notification_user_action_needed">Azione dell\'utente necessaria</string>
     <string name="notification_action_dl_revive">Tocca qui per riattivare il download</string>
     <string name="revive_wait">Rimani su questa schermata mentre il download viene riattivato</string>
-    <string name="queue_json_saved">Coda JSON salvata con successo</string>
+    <string name="queue_json_saved">Coda JSON salvata</string>
     <string name="queue_json_failed">Salvataggio JSON della coda non riuscito</string>
-    <string name="queue_content_size_estimate">circa %.1f MB</string>
-    <string name="queue_bottom_bar_processed">%1$s/%2$d elaborato</string>
+    <string name="queue_content_size_estimate">circa <x:g id="size_mbytes" example="13.37">%.1f</x:g> MB</string>
+    <string name="queue_bottom_bar_processed"><x:g id="processed" example="3">%1$s</x:g>/<x:g id="total" example="7">%2$d</x:g> elaborato</string>
     <plurals name="queue_bottom_bar_errors">
-        <item quantity="one">(%d errore)</item>
-        <item quantity="other">(%d errori)</item>
+        <item quantity="one">(<x:g id="errors" example="1">%d</x:g> errore)</item>
+        <item quantity="other">(<x:g id="errors" example="1">%d</x:g> errori)</item>
     </plurals>
-    <string name="queue_bottom_bar_retry">[riprova %1$d/%2$d]</string>
-    <string name="queue_bottom_bar_speed">%d KBps</string>
-    <string name="download_notif_speed">%1$d%2$s MB a %3$d KBps</string>
+    <string name="queue_bottom_bar_retry">riprova <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
+    <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> KBps</string>
+    <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB a <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Attenzione: download fallito</string>
-    <string name="download_notif_failed_details">Impossibile scaricare %1$s : impossibile creare la cartella %2$s. Perfavore controlla la tua cartella Hentoid e riprova a scaricarlo usando il pulsante (!).</string>
-    <string name="work_series">Serie: %s</string>
-    <string name="work_artist">Artista: %s</string>
+    <string name="download_notif_failed_details">Impossibile scaricare <x:g id="book_name" example="Cool H-Manga">%1$s</x:g>: impossibile creare la cartella <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Perfavore controlla la tua cartella Hentoid e riprova a scaricarlo usando il pulsante (!).</string>
+    <string name="work_series">Serie: <x:g id="series" example="original">%s</x:g></string>
+    <string name="work_artist">Artista: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
     <plurals name="work_pages_missing">
-        <item quantity="one">(%d mancante)</item>
-        <item quantity="other"></item>
+        <item quantity="one">(<x:g id="number" example="1">%d</x:g> mancante)</item>
+        <item quantity="other">(<x:g id="number" example="1">%d</x:g> mancanti)</item>
     </plurals>
     <string name="work_pages_queue">Pagine: %1$s%2$s</string>
     <plurals name="work_pages_library">
-        <item quantity="one">%1$d pagina / %2$.1f MB</item>
-        <item quantity="other">%1$d pagine / %2$.1f MB</item>
+        <item quantity="one"><x:g id="pages_count" example="1">%1$d</x:g> pagina / <x:g id="size_mb" example="3.88">%2$.1f</x:g> MB</item>
+        <item quantity="other"><x:g id="pages_count" example="1">%1$d</x:g> pagine / <x:g id="size_mb" example="3.88">%2$.1f</x:g> MB</item>
     </plurals>
-    <string name="library_metrics_storage">%.0f MB</string>
+    <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> MB</string>
     <string name="refresh_title">Aggiorna libreria</string>
     <string name="refresh_caption">Aggiorna automaticamente i dati della libreria con una nuova scansione di file e cartelle.</string>
     <string name="refresh_options">Opzioni di pulizia</string>
@@ -176,4 +176,139 @@
     <string name="off">Spento</string>
     <string name="confirm">Conferma</string>
     <string name="resume">Riprendi</string>
+    <plurals name="page" tools:ignore="ImpliedQuantity">
+        <item quantity="one">pagina</item>
+        <item quantity="other">pagine</item>
+    </plurals>
+    <string name="refresh_options_remove_2">Nessuna immagine è stata scaricata</string>
+    <string name="refresh_options_remove_3">Il file JSON è illeggibile (non consigliato)</string>
+    <string name="refresh_options_remove_or">o</string>
+    <string name="delete_title">Elimina tutti tranne i preferiti</string>
+    <string name="generic_progress"><x:g id="number" example="7">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="books">%3$s</x:g></string>
+    <plurals name="book_progress">
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> libro</item>
+        <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> libri</item>
+    </plurals>
+    <string name="import_title">Importa metadata</string>
+    <string name="import_mode_add">Aggiungi elementi importati</string>
+    <string name="import_mode_replace">Sostituisci con elementi importati</string>
+    <string name="import_select_file">Seleziona il file da importare</string>
+    <string name="import_file_invalid">Il file <x:g id="filename" example="metadata.json">%s</x:g> è invalido</string>
+    <string name="import_warning">Se nessuna immagine è rilevata, i libri importati apprariranno come download vuoti.
+\nDovrai scaricarli usando Coda &gt; Errori.</string>
+    <string name="import_run">ESEGUI IMPORTAZIONE</string>
+    <string name="dialog_prompt">Scegli una cartella</string>
+    <string name="export_warning1">L\'esportazione del metadata ha lo scopo di creare una lista dei tuoi libri in formato JSON.
+\nNon è pensata per muovere la tua collezione sul tuo Pc o sulla tua scheda SD.
+\nClicca qui per scoprire come farlo.</string>
+    <string name="export_warning2">I libri vengono esportati senza immagini.
+\nDovrai scaricarli di nuovo al ripristino se la cartella delle immagini non è presente.</string>
+    <string name="export_run">Esegui esportazione</string>
+    <string name="export_title">Esporta metadata</string>
+    <string name="export_favs_only">Esporta solo i preferiti</string>
+    <string name="export_groups">Esporta gruppi personalizzati</string>
+    <string name="import_settings_title">Importa impostazioni</string>
+    <string name="open_app_settings">Aprire le impostazioni dell\'app</string>
+    <string name="permissioncomplaint_snackbar">È necessario concedere i permessi prima di poter continuare</string>
+    <string name="permissioncomplaint_snackbar_manual">È necessario concedere manualmente i permessi prima di poter continuare</string>
+    <string name="import_canceled">Importazione annullata</string>
+    <string name="import_invalid">Cartella selezionata non valida: selezionane un\'altra</string>
+    <string name="import_app_folder">Non è possibile selezionare la cartella dell\'app come cartella esterna: selezionarne un\'altra</string>
+    <string name="import_download_folder">Non dovresti selezionare la cartella di download del tuo dispositivo: crea o selezionane un\'altra</string>
+    <string name="import_create_fail">Creazione della cartella Hentoid fallita - seleziona un\'altra posizione</string>
+    <string name="import_other">L\'importazione è stata interrotta</string>
+    <string name="task_done">Attività completata: vedi i dettagli nel registro</string>
+    <string name="library_imports_title">Importazione delle librerie</string>
+    <string name="starting_import">Inizio importazione…</string>
+    <string name="importing_library">Importando la libreria</string>
+    <string name="importing_please_wait">Importazione in corso, attendere…</string>
+    <string name="updating_please_wait">Aggiornamento in corso, attendere…</string>
+    <string name="import_complete">Importazione completata</string>
+    <string name="memory_title">Utilizzo della memoria</string>
+    <string name="memory_database">Database: <x:g id="size_mb" example="1.52 MB">%1$s</x:g> (<x:g id="percentage" example="40%">%2$.1f%%</x:g> pieno)</string>
+    <string name="memory_details">Visualizza dettagli (principale)</string>
+    <string name="memory_details_source">Fonte</string>
+    <string name="memory_details_books">Libri</string>
+    <string name="memory_details_size">Dimensione</string>
+    <string name="logs_title">Ultimi registri</string>
+    <string name="logs_open">Apri registro</string>
+    <string name="read_log">Leggi registro</string>
+    <string name="logs_share">Condividi registro</string>
+    <string name="no_error_detected">Nessun errore rilevato.</string>
+    <string name="error_log_header">Registro errore per <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>\@<x:g id="site_name">%3$s</x:g>]: <x:g id="error_count" example="2">%4$d</x:g> errori</string>
+    <string name="error_log_header_queue">Registro errori per la coda</string>
+    <string name="log_import_external">Importazione/aggiornamento della libreria esterna</string>
+    <string name="log_import">Importazione/aggiornamento della libreria principale</string>
+    <string name="log_cleanup">Pulizia della libreria principale</string>
+    <string name="log_api29_migration">Migrazione della libreria da Hentoid v1.11</string>
+    <string name="error_write_permission">Non hai il permesso di scrivere in quella cartella, prova un\'altra cartella.</string>
+    <string name="error_creating_folder">La cartella non è valida.</string>
+    <string name="error_open">Errore nell\'apertura del file: nessuna applicazione rilevante trovata</string>
+    <string name="error_browser">Errore nell\'apertura del link: nessun browser trovato</string>
+    <string name="error_send">Errore nell\'invio dell\'archivio: nessuna applicazione pertinente trovata</string>
+    <string name="redownload_dialog_title">Provare a scaricare di nuovo\?</string>
+    <string name="redownload_open_log">Apri registro errori</string>
+    <string name="redownload_share_log">Condividi il registro degli errori</string>
+    <string name="redownload_generating_log_file">Generazione del file di registro…</string>
+    <string name="resume_closed">Riprendere a leggere da dove l\'hai lasciato\?</string>
+    <string name="open_drawer">Apri il cassetto</string>
+    <string name="close_drawer">Chiudi il cassetto</string>
+    <string name="ask_filter_completed">Come vorresti filtrare i libri completati\?</string>
+    <string name="filter_completed">Mostra solo completati</string>
+    <string name="filter_not_completed">Mostra solo i non completati</string>
+    <string name="group_edit_name">Modifica il nome del gruppo</string>
+    <string name="delete_success">Eliminato</string>
+    <string name="archive_progress">Archiviando i libri</string>
+    <string name="archive_progress_subtitle">Fatto: <x:g id="count" example="42">%s</x:g></string>
+    <string name="notif_archive_complete">Archiviazione completata</string>
+    <string name="book_edit_title">Modifica il titolo del libro</string>
+    <string name="delete_progress">Cancellando i libri</string>
+    <string name="purge_progress">Eliminando i libri</string>
+    <string name="cancel_queue_progress">Annullamento degli elementi in coda</string>
+    <string name="notif_archive_fail">Archiviazione fallita</string>
+    <string name="notif_archive_fail_details">Almeno un libro non è riuscito ad essere archiviato</string>
+    <string name="stream_canceled">Streaming annullato - libro non disponibile online</string>
+    <string name="download_canceled">Download annullato - libro non disponibile online</string>
+    <string name="press_back_again">Premi indietro due volte (rapidamente) per uscire.</string>
+    <string name="queue_empty">Perché sono vuoto\?</string>
+    <string name="errors_empty">Nessun errore rilevato tra i download</string>
+    <string name="downloads_empty_library">Su, scarica qualcosa.</string>
+    <string name="downloads_loading">Caricamento in corso~</string>
+    <string name="masterdata_no_result">Nessun risultato :(</string>
+    <string name="search_entry_not_found">Non è qui, vai a scaricarlo.</string>
+    <string name="packaging_content">Confezionando i files.
+\nAttendere prego…</string>
+    <string name="reset">I permessi sono stati reimpostati.
+\nRipristino dell\'app.</string>
+    <string name="search_bookid_label">Cerca <x:g id="launchcode" example="4567">\'%s\'</x:g> in…</string>
+    <string name="book_launchcode">Codici di lancio: <x:g id="launchcode" example="4567">%s</x:g></string>
+    <plurals name="download_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Scaricare il libro selezionato\?</item>
+        <item quantity="other">Scaricare i libri selezionati\?</item>
+    </plurals>
+    <plurals name="stream_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Passare il libro selezionato allo streaming\?</item>
+        <item quantity="other">Passare i libri selezionati allo streaming\?</item>
+    </plurals>
+    <string name="restart_needed">Le modifiche verranno applicate dopo il riavvio di Hentoid</string>
+    <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Riscaricare il libro selezionato da zero\?</item>
+        <item quantity="other">Riscaricare i libri selezionati da zero\?</item>
+    </plurals>
+    <string name="import_settings_success">Importati</string>
+    <string name="new_group_name">Nome del nuovo gruppo\?</string>
+    <string name="memory_total">Totale: <x:g id="total" example="100 MB">%s</x:g></string>
+    <string name="memory_free">Libero: <x:g id="total" example="50 MB">%s</x:g></string>
+    <string name="memory_hentoid_main">Hentoid (principale): <x:g id="total" example="2 MB">%s</x:g></string>
+    <string name="memory_hentoid_ext">Hentoid (esterna): <x:g id="total" example="3 MB">%s</x:g></string>
+    <string name="redownload_first_error">Primo errore: <x:g id="errortype">%s</x:g></string>
+    <string name="redownload_action">SCARICA DI NUOVO</string>
+    <string name="import_unexpected">L\'importazione si è fermata inaspettatamente</string>
+    <string name="import_complete_details">Importazione completata</string>
+    <string name="redownload_dialog_message">Immagini totali in download: <x:g id="total_imgs" example="10">%1$d</x:g>
+\nImmagini senza errori: <x:g id="fine_imgs" example="8">%2$d</x:g>
+\nImmagini con errori: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
+    <string name="content_not_found">Errore - contenuto non trovato</string>
+    <string name="contents_detected">Hentoid ha riconosciuto una libreria esistente in questa posizione.
+\nVuoi importare questa libreria\?</string>
 </resources>
