@@ -148,11 +148,10 @@
     <string name="step_start_download">Начата цепочка загрузок!</string>
     <string name="help_swipe_cancel">Вы можете отменять загрузки свайпом влево</string>
     <string name="redownloaded_error">Возникла проблема при повторной загрузке — отменено</string>
-    <!-- TODO: Android doesn't understand which number it should imply quantity from -->
     <plurals name="redownloaded_scratch">
-        <item quantity="one" tools:ignore="ImpliedQuantity"><x:g id="number" example="1">%$1d</x:g> элемент из <x:g id="total" example="42">%$2d</x:g> будет загружен снова</item>
-        <item quantity="few"><x:g id="number" example="2">%$1d</x:g> элемента из <x:g id="total" example="42">%$2d</x:g> будут загружены снова</item>
-        <item quantity="many"><x:g id="number" example="5">%$1d</x:g> элементов из <x:g id="total" example="42">%$2d</x:g> будут загружены снова</item>
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> элемент из <x:g id="total" example="42">%2$d</x:g> будет загружен снова</item>
+        <item quantity="few"><x:g id="number" example="2">%1$d</x:g> элемента из <x:g id="total" example="42">%2$d</x:g> будут загружены снова</item>
+        <item quantity="many"><x:g id="number" example="5">%1$d</x:g> элементов из <x:g id="total" example="42">%2$d</x:g> будут загружены снова</item>
     </plurals>
     <string name="queue_add_top">Добавить в начало</string>
     <string name="queue_add_bottom">Добавить в конец</string>
@@ -413,11 +412,10 @@
         <item quantity="few"><x:g id="count" example="2">%d</x:g> элемента</item>
         <item quantity="many"><x:g id="count" example="5">%d</x:g> элементов</item>
     </plurals>
-    <!-- TODO: Android doesn't understand which number it should imply quantity from -->
     <plurals name="number_of_book_search_results">
-        <item quantity="one" tools:ignore="ImpliedQuantity"><x:g id="number" example="1">%$1d</x:g> результат из <x:g id="total" example="7">%$2d</x:g></item>
-        <item quantity="few"><x:g id="number" example="2">%$1d</x:g> результата из <x:g id="total" example="7">%$2d</x:g></item>
-        <item quantity="many"><x:g id="number" example="5">%$1d</x:g> результатов из <x:g id="total" example="7">%$2d</x:g></item>
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> результат из <x:g id="total" example="7">%2$d</x:g></item>
+        <item quantity="few"><x:g id="number" example="2">%1$d</x:g> результата из <x:g id="total" example="7">%2$d</x:g></item>
+        <item quantity="many"><x:g id="number" example="5">%1$d</x:g> результатов из <x:g id="total" example="7">%2$d</x:g></item>
     </plurals>
     <string name="reset">Разрешения были сброшены.\nПриложение перезапускается.</string>
     <string name="restart_needed">"Изменения будут применены после перезапуска Hentoid"</string>
