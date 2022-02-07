@@ -572,9 +572,9 @@
     <string name="torrent_dl_fail">Downloading torrent failed: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Storage permission denied - cannot use the downloader</string>
     <!-- Web browser (site specifics) -->
-    <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without it.</string>
-    <string name="help_web_fakku_premium">That book can\'t be viewed with your current Fakku access.</string>
-    <string name="help_web_exh_account">Please use or create an ExHentai account</string>
+    <string name="help_web_fakku_account">Please use or create a legit FAKKU account.\nHentoid won\'t work without it.</string>
+    <string name="help_web_fakku_premium">That book can\'t be viewed with your current FAKKU access.</string>
+    <string name="help_web_exh_account">Please use or create an exHentai account</string>
     <string name="help_web_invalid_exh_credentials">Invalid credentials, please log in again</string>
     <string name="help_web_incomplete_exh_credentials">Incomplete credentials, please log in again. If the issue persists, consider accessing the site from another country or creating a new account.</string>
     <!-- SearchActivity -->

@@ -103,9 +103,9 @@
     <string name="queue_queue_tab">В процессе</string>
     <string name="queue_errors_tab">Ошибки</string>
     <plurals name="ask_cancel_multiple" tools:ignore="ImpliedQuantity">
-        <item quantity="one">Вы уверены, что хотите отменить выбранный элемент\?</item>
-        <item quantity="few">Вы уверены, что хотите отменить выбранные элементы\?</item>
-        <item quantity="many">Вы уверены, что хотите отменить выбранные элементы\?</item>
+        <item quantity="one">Отменить выбранный элемент\?</item>
+        <item quantity="few">Отменить выбранные элементы\?</item>
+        <item quantity="many">Отменить выбранные элементы\?</item>
     </plurals>
     <string name="invert_queue">Инвертировать порядок</string>
     <string name="redownload_all">Загрузить всё снова</string>
@@ -121,16 +121,16 @@
     <string name="err_stats_title">Статистика ошибок</string>
     <string name="err_stats_help">Показать подробную статистику об ошибках</string>
     <string name="err_no_content">Книга ещё не существует</string>
-    <string name="confirm_cancel_all">Вы собираетесь отменить всё в очереди. Продолжить\?</string>
+    <string name="confirm_cancel_all">Отменить всё в очереди\?</string>
     <plurals name="confirm_cancel_all_errors">
-        <item quantity="one">Вы собираетесь отменить <x:g id="count" example="1">%d</x:g> книгу с ошибками. Продолжить\?</item>
-        <item quantity="few">Вы собираетесь отменить <x:g id="count" example="2">%d</x:g> книги с ошибками. Продолжить\?</item>
-        <item quantity="many">Вы собираетесь отменить <x:g id="count" example="5">%d</x:g> книг с ошибками. Продолжить\?</item>
+        <item quantity="one">Отменить <x:g id="count" example="1">%d</x:g> книгу с ошибками\?</item>
+        <item quantity="few">Отменить <x:g id="count" example="2">%d</x:g> книги с ошибками\?</item>
+        <item quantity="many">Отменить <x:g id="count" example="5">%d</x:g> книг с ошибками\?</item>
     </plurals>
     <plurals name="confirm_redownload_all">
-        <item quantity="one">Вы собираетесь загрузить <x:g id="count" example="1">%d</x:g> элемент снова. Продолжить\?</item>
-        <item quantity="few">Вы собираетесь загрузить <x:g id="count" example="2">%d</x:g> элемента снова. Продолжить\?</item>
-        <item quantity="many">Вы собираетесь загрузить <x:g id="count" example="5">%d</x:g> элементов снова. Продолжить\?</item>
+        <item quantity="one">Загрузить <x:g id="count" example="1">%d</x:g> элемент снова\?</item>
+        <item quantity="few">Загрузить <x:g id="count" example="2">%d</x:g> элемента снова\?</item>
+        <item quantity="many">Загрузить <x:g id="count" example="5">%d</x:g> элементов снова\?</item>
     </plurals>
     <string name="paused_no_internet">Загрузка невозможна — Нет сети</string>
     <string name="paused_no_wifi">Загрузка невозможна — Нет подключения к Wi-Fi</string>
@@ -354,14 +354,14 @@
     <string name="filter_completed">Показывать только дочитанные</string>
     <string name="filter_not_completed">Показывать только недочитанные</string>
     <plurals name="ask_delete_multiple">
-        <item quantity="one">Вы уверены, что хотите удалить <x:g id="count" example="1">%d</x:g> выбранный элемент\?</item>
-        <item quantity="few">Вы уверены, что хотите удалить <x:g id="count" example="2">%d</x:g> выбранных элемента\?</item>
-        <item quantity="many">Вы уверены, что хотите удалить <x:g id="count" example="5">%d</x:g> выбранных элементов\?</item>
+        <item quantity="one">Удалить <x:g id="count" example="1">%d</x:g> выбранный элемент\?</item>
+        <item quantity="few">Удалить <x:g id="count" example="2">%d</x:g> выбранных элемента\?</item>
+        <item quantity="many">Удалить <x:g id="count" example="5">%d</x:g> выбранных элементов\?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
-        <item quantity="one">Вы уверены, что хотите заархивировать <x:g id="count" example="1">%d</x:g> выбранный элемент\?</item>
-        <item quantity="few">Вы уверены, что хотите заархивировать <x:g id="count" example="2">%d</x:g> выбранных элемента\?</item>
-        <item quantity="many">Вы уверены, что хотите заархивировать <x:g id="count" example="5">%d</x:g> выбранных элементов\?</item>
+        <item quantity="one">Заархивировать <x:g id="count" example="1">%d</x:g> выбранный элемент\?</item>
+        <item quantity="few">Заархивировать <x:g id="count" example="2">%d</x:g> выбранных элемента\?</item>
+        <item quantity="many">Заархивировать <x:g id="count" example="5">%d</x:g> выбранных элементов\?</item>
     </plurals>
     <string name="new_group_name">Название новой группы\?</string>
     <string name="group_edit_name">Редактировать название группы</string>
@@ -466,7 +466,7 @@
         <item quantity="many"><x:g id="count" example="5">%d</x:g> книг из внешней библиотеки не будут удалены</item>
     </plurals>
     <string name="group_make_cover">Установить как обложку группы</string>
-    <string name="group_make_cover_ask">Вы уверены, что хотите установить обложку этой книги как обложку группы\?</string>
+    <string name="group_make_cover_ask">Установить обложку этой книги как обложку группы\?</string>
     <string name="group_change">Переместить в пользовательскую группу</string>
     <string name="group_existing">Существующая группа</string>
     <string name="group_new">Создать новую</string>
@@ -599,9 +599,9 @@
     <string name="torrent_dl_fail">Не удалось начать стриминг: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Отсутствует разрешение на запись — невозможно использовать загрузчик</string>
     <!-- Web browser (site specifics) -->
-    <string name="help_web_fakku_account">Hentoid не может работать с Fakku без их аккаунта. Пожалуйста, создайте его или используйте существующий.</string>
-    <string name="help_web_fakku_premium">Эта книга не может быть просмотрена с вашим аккаунтом Fakku.</string>
-    <string name="help_web_exh_account">Пожалуйста, создайте или используйте существующий аккаунт ExHentai.</string>
+    <string name="help_web_fakku_account">Hentoid не может работать с FAKKU без их аккаунта. Пожалуйста, создайте его или используйте существующий.</string>
+    <string name="help_web_fakku_premium">Эта книга не может быть просмотрена с вашим аккаунтом FAKKU.</string>
+    <string name="help_web_exh_account">Пожалуйста, создайте или используйте существующий аккаунт exHentai.</string>
     <string name="help_web_invalid_exh_credentials">Неверные данные, пожалуйста, повторите попытку входа</string>
     <string name="help_web_incomplete_exh_credentials">Авторизация не завершена, пожалуйста, повторите попытку входа. Если проблема сохраняется, попробуйте посетить сайт из другой страны или создайте новый аккаунт.</string>
     <!-- SearchActivity -->
@@ -670,8 +670,8 @@
     <string name="viewer_delete_book">Удалить книгу</string>
     <string name="copy_download_folder_success">Скопировано в Загрузки</string>
     <string name="copy_download_folder_fail">Не удалось скопировать в Загрузки</string>
-    <string name="viewer_ask_delete_book">Вы уверены, что хотите удалить эту книгу\?</string>
-    <string name="viewer_ask_delete_page">Вы уверены, что хотите удалить эту страницу\?</string>
+    <string name="viewer_ask_delete_book">Удалить эту книгу\?</string>
+    <string name="viewer_ask_delete_page">Удалить эту страницу\?</string>
     <string name="information_help">Информация</string>
     <string name="previous_book_help">Предыдущая книга</string>
     <string name="next_book_help">Следующая книга</string>

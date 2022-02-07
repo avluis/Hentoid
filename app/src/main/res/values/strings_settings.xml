@@ -41,7 +41,7 @@
     <string name="pref_folder_naming_content_summary">Book folder naming convention:\n<x:g id="convention" example="Name - ID">%s</x:g></string>
     <string name="pref_folder_naming_content_default" translatable="false">2</string>
     <string name="pref_import_running">Import is already running</string>
-    <string name="prefs_ask_detach_external_library">Are you sure you want to detach the external library\?</string>
+    <string name="prefs_ask_detach_external_library">Detach the external library\?</string>
     <string name="prefs_external_library_detached">External library detached</string>
     <string name="pref_folder_trunc_title">Truncate folder name</string>
     <string name="pref_folder_trunc_summary">Book folder name truncation\nCurrently: <x:g id="chars" example="80 characters">%s</x:g></string>
@@ -80,9 +80,9 @@
     <string name="pref_browser_quick_dl_title">Quick download</string>
     <string name="pref_browser_quick_dl_summary">On the books list page, hold tap to download any book</string>
     <string name="pref_browser_quick_dl_default" translatable="false">true</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_title">Display NHentai blacklisted books</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_off">NHentai blacklisted books are blurred</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_on">NHentai blacklisted books are invisible</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_title">Display nhentai-blacklisted books</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_off">Nhentai-blacklisted books are blurred</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_on">Nhentai-blacklisted books are invisible</string>
     <string name="pref_browser_nhentai_invisible_blacklist_default" translatable="false">false</string>
     <string name="pref_browser_quick_dl_threshold_title">Quick download long press threshold</string>
     <string name="pref_browser_quick_dl_threshold_summary">Hold down for this duration to start quick downloading\nCurrent: <x:g id="time" example="1 s">%s</x:g></string>
