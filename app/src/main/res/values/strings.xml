@@ -71,7 +71,7 @@
     <string name="menu_edit_order">Edit order</string>
     <string name="menu_edit_name">Edit name</string>
     <string name="menu_edit_cancel">Cancel editing</string>
-    <string name="menu_edit_warning_custom">The new custom ordering you\'re about to create will overwrite the previous one.</string>
+    <string name="menu_edit_warning_custom">New custom ordering will overwrite the previous one.</string>
     <string name="menu_order">Order books</string>
     <string name="menu_delete_single">Delete</string>
     <string name="menu_delete_multi">Delete Items</string>
@@ -86,8 +86,8 @@
     <string name="menu_share_help">Share book URL and title using another app</string>
     <string name="menu_share_title">Book URL</string>
     <string name="menu_archive">Archive</string>
-    <string name="menu_archive_help">Archive the book in a ZIP file</string>
-    <string name="search_hint">Title, author, tag or book ID</string>
+    <string name="menu_archive_help">Archive the book to a ZIP file</string>
+    <string name="search_hint">Title, artist, tag or book ID</string>
     <string name="send_to">Share with:</string>
     <string name="open_settings">Open settings</string>
     <string name="app_settings">App settings</string>
@@ -101,8 +101,8 @@
     <string name="queue_queue_tab">In progress</string>
     <string name="queue_errors_tab">Errors</string>
     <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
-        <item quantity="one">Cancel the selected item?</item>
-        <item quantity="other">Cancel the selected items?</item>
+        <item quantity="one">Cancel the selected item\?</item>
+        <item quantity="other">Cancel the selected items\?</item>
     </plurals>
     <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
@@ -117,13 +117,13 @@
     <string name="queue_dl">Downloading <x:g id="book_name" example="Cool H-Manga">%s</x:g></string>
     <string name="err_stats_title">Error stats</string>
     <string name="err_stats_help">Show detailed stats about current download errors</string>
-    <string name="err_no_content">The book does not exist yet</string>
-    <string name="confirm_cancel_all">Cancel the whole queue?</string>
+    <string name="err_no_content">Book does not exist yet</string>
+    <string name="confirm_cancel_all">Cancel the whole queue\?</string>
     <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
-        <item quantity="other">You are about to cancel all <x:g id="count" example="42">%d</x:g> books with errors. Continue?</item>
+        <item quantity="other">Cancel all <x:g id="count" example="42">%d</x:g> books with errors\?</item>
     </plurals>
     <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
-        <item quantity="other">You are about to redownload <x:g id="count" example="42">%d</x:g> items. Continue?</item>
+        <item quantity="other">Redownload <x:g id="count" example="42">%d</x:g> items\?</item>
     </plurals>
     <string name="paused_no_internet">Cannot download - No Internet</string>
     <string name="paused_no_wifi">Cannot download - No Wi-Fi</string>
@@ -150,9 +150,9 @@
     <string name="notification_user_action_title">User actions</string>
     <string name="notification_user_action_needed">User action needed</string>
     <string name="notification_action_dl_revive">Tap here to reactivate your download</string>
-    <string name="revive_wait">Please stay on this screen while your download is revived</string>
-    <string name="queue_json_saved">JSON queue saved</string>
-    <string name="queue_json_failed">Could not save JSON queue</string>
+    <string name="revive_wait">Please stay on this screen while your download is being revived</string>
+    <string name="queue_json_saved">JSON of the queue saved</string>
+    <string name="queue_json_failed">Could not save JSON of the queue</string>
     <string name="queue_content_size_estimate">estimated <x:g id="size_mbytes" example="13.37">%.1f</x:g> MB</string>
     <string name="queue_bottom_bar_processed"><x:g id="processed" example="3">%1$s</x:g>/<x:g id="total" example="7">%2$d</x:g> processed</string>
     <plurals name="queue_bottom_bar_errors">
@@ -162,15 +162,15 @@
     <string name="queue_bottom_bar_retry">retry <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
     <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> KBps</string>
     <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB @ <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
-    <string name="download_notif_failed">Warning: download failed</string>
-    <string name="download_notif_failed_details">Cannot download <x:g id="book_name" example="Cool H-Manga">%1$s</x:g>: unable to create folder <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Please check your Hentoid folder and retry downloading using the (!) button.</string>
+    <string name="download_notif_failed">Download failed</string>
+    <string name="download_notif_failed_details">Cannot download <x:g id="book_name" example="Cool H-Manga">%1$s</x:g>: unable to create folder <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Please check your Hentoid folder and retry downloading using the \'!\' button.</string>
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series">Series: <x:g id="series" example="original">%s</x:g></string>
     <string name="work_artist">Artist: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
     <plurals name="work_pages_missing">
         <item quantity="one">(<x:g id="number" example="1">%d</x:g> missing)</item>
-        <item quantity="other">(<x:g id="number" example="1">%d</x:g> missing)</item>
+        <item quantity="other">(<x:g id="number" example="2">%d</x:g> missing)</item>
     </plurals>
     <string name="work_pages_queue">Pages: %1$s%2$s</string>
     <plurals name="work_pages_library">
@@ -218,11 +218,11 @@
         <item quantity="other">Import queue (<x:g id="number" example="2">%d</x:g> books)</item>
     </plurals>
     <plurals name="import_file_groups">
-        <item quantity="one">Import custom groups (<x:g id="number" example="1">%d</x:g> group)</item>
+        <item quantity="one">Import custom group (<x:g id="number" example="1">%d</x:g> group)</item>
         <item quantity="other">Import custom groups (<x:g id="number" example="2">%d</x:g> groups)</item>
     </plurals>
     <plurals name="import_file_bookmarks">
-        <item quantity="one">Import bookmarks (<x:g id="number" example="1">%d</x:g> item)</item>
+        <item quantity="one">Import bookmark (<x:g id="number" example="1">%d</x:g> item)</item>
         <item quantity="other">Import bookmarks (<x:g id="number" example="2">%d</x:g> items)</item>
     </plurals>
     <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue &gt; Errors.</string>
@@ -255,7 +255,7 @@
     <string name="export_warning1">Exporting metadata is meant to create a list of your books in JSON format.\nIt is not meant for moving your collection to your PC or your SD card.\nTap here to learn how to do that.</string>
     <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
     <string name="export_faq_url" translatable="false">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
-    <string name="export_run">Run export</string>
+    <string name="export_run">RUN EXPORT</string>
     <string name="import_settings_title">Import settings</string>
     <string name="import_settings_success">Imported</string>
     <!-- Import Activity -->
@@ -271,7 +271,7 @@
     <string name="import_unexpected">Import has stopped unexpectedly</string>
     <string name="task_done">Task complete - see details in the log</string>
     <string name="content_not_found">Error - content not found</string>
-    <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
+    <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library\?</string>
     <string name="library_imports_title">Library imports</string>
     <string name="starting_import">Starting import…</string>
     <string name="importing_library">Importing Library</string>
@@ -307,7 +307,7 @@
     <string name="logs_open">Open log</string>
     <string name="read_log">Read log</string>
     <string name="logs_share">Share log</string>
-    <string name="no_error_detected">No error detected.</string>
+    <string name="no_error_detected">No errors detected.</string>
     <string name="error_log_header">Error log for <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>@<x:g id="site_name">%3$s</x:g>]: <x:g id="error_count" example="2">%4$d</x:g> errors</string>
     <string name="error_log_header_queue">Error log for queue</string>
     <string name="log_import_external">External library import/refresh</string>
@@ -321,7 +321,7 @@
     <string name="error_browser">Error opening link: no browser found</string>
     <string name="error_send">Error sending archive: no relevant application found</string>
     <!-- Error log -->
-    <string name="redownload_dialog_title">Try downloading again?</string>
+    <string name="redownload_dialog_title">Try downloading again\?</string>
     <string name="redownload_dialog_message">Total images in download: <x:g id="total_imgs" example="10">%1$d</x:g>\nImages without errors: <x:g id="fine_imgs" example="8">%2$d</x:g>\nImages with errors: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
     <string name="redownload_first_error">First error: <x:g id="errortype">%s</x:g></string>
     <string name="redownload_action">REDOWNLOAD</string>
@@ -329,21 +329,21 @@
     <string name="redownload_share_log">Share error log</string>
     <string name="redownload_generating_log_file">Generating log file…</string>
     <!-- Library fragment -->
-    <string name="resume_closed">Resume reading where you left?</string>
+    <string name="resume_closed">Resume reading from where you left\?</string>
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
-    <string name="ask_filter_completed">How would you like to filter completed books?</string>
+    <string name="ask_filter_completed">How would you like to filter completed books\?</string>
     <string name="filter_completed">Show completed only</string>
     <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
-        <item quantity="one">Delete the selected item?</item>
-        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> selected items?</item>
+        <item quantity="one">Delete the selected item\?</item>
+        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> selected items\?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
-        <item quantity="one">Archive the selected item?</item>
-        <item quantity="other">Archive <x:g id="count" example="2">%d</x:g> selected items?</item>
+        <item quantity="one">Archive the selected item\?</item>
+        <item quantity="other">Archive <x:g id="count" example="2">%d</x:g> selected items\?</item>
     </plurals>
-    <string name="new_group_name">Name of the new group?</string>
+    <string name="new_group_name">Name of the new group\?</string>
     <string name="group_edit_name">Edit group name</string>
     <string name="book_edit_title">Edit book title</string>
     <string name="delete_progress">Deleting books</string>
@@ -374,7 +374,7 @@
     <string name="stream_canceled">Streaming canceled - book unavailable online</string>
     <string name="download_canceled">Download canceled - book unavailable online</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
-    <string name="queue_empty">Why am I empty?</string>
+    <string name="queue_empty">Why am I empty\?</string>
     <string name="errors_empty">No errors detected among downloads</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
     <string name="downloads_loading">Loading up~</string>
@@ -401,16 +401,16 @@
     <string name="reset">Permissions have been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
     <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">Redownload selected book from scratch?</item>
-        <item quantity="other">Redownload selected books from scratch?</item>
+        <item quantity="one">Redownload selected book from scratch\?</item>
+        <item quantity="other">Redownload selected books from scratch\?</item>
     </plurals>
     <plurals name="download_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">Download selected book?</item>
-        <item quantity="other">Download selected books?</item>
+        <item quantity="one">Download selected book\?</item>
+        <item quantity="other">Download selected books\?</item>
     </plurals>
     <plurals name="stream_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">Switch selected book to streaming?</item>
-        <item quantity="other">Switch selected books to streaming?</item>
+        <item quantity="one">Switch selected book to streaming\?</item>
+        <item quantity="other">Switch selected books to streaming\?</item>
     </plurals>
     <plurals name="redownload_external_content">
         <item quantity="one">One of the selected books is stored in the external library and cannot be redownloaded\nThis book will be ignored.</item>
@@ -422,10 +422,10 @@
     </plurals>
     <plurals name="stream_external_streamed_content">
         <item quantity="one">One of the selected books is already streamed or external\nThis book will be ignored.</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> selected books are already streamed or external\nThey will be ignored.</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> selected books are already set to be streamed or they\'re in an external library\nThey will be ignored.</item>
     </plurals>
     <string name="about_to_delete">Book is about to be deleted…</string>
-    <string name="help_search">Search anything: title, author, tag\nand launch code too!</string>
+    <string name="help_search">Search anything: title, artist, tag\nand launch code too!</string>
     <string name="help_page_slider">You can browse faster by sliding through page numbers</string>
     <plurals name="items_selected">
         <item quantity="one"><x:g id="count" example="1">%d</x:g> item selected</item>
@@ -439,7 +439,7 @@
         <item quantity="other"><x:g id="count" example="2">%d</x:g> books from the external library will not be removed</item>
     </plurals>
     <string name="group_make_cover">Set as group cover</string>
-    <string name="group_make_cover_ask">Set this book\'s cover as the current group cover?</string>
+    <string name="group_make_cover_ask">Set this book\'s cover as the current group cover\?</string>
     <string name="group_change">Move to custom group</string>
     <string name="group_existing">Existing group</string>
     <string name="group_new">Create new</string>
@@ -449,7 +449,7 @@
     <string name="group_rename_forbidden">Renaming that group is forbidden!</string>
     <string name="group_name_empty">Group name is empty!</string>
     <string name="group_not_selected">Group has not been selected!</string>
-    <plurals name="group_delete_selected_group">
+    <plurals name="group_delete_selected_group" tools:ignore="ImpliedQuantity">
         <item quantity="one">Delete group only</item>
         <item quantity="other">Delete groups only</item>
     </plurals>
@@ -457,7 +457,7 @@
         <item quantity="one">Delete <x:g id="count" example="1">%d</x:g> book</item>
         <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> books</item>
     </plurals>
-    <plurals name="group_delete_selected_group_books">
+    <plurals name="group_delete_selected_group_books" tools:ignore="ImpliedQuantity">
         <item quantity="one">Delete group + books</item>
         <item quantity="other">Delete groups + books</item>
     </plurals>
@@ -503,7 +503,7 @@
     <string name="show_artists">Show artists</string>
     <string name="show_groups">Show groups</string>
     <string name="show_artists_and_groups">Show artists &amp; groups</string>
-    <string name="launchcode_present">You already have this book. Search other sources?</string>
+    <string name="launchcode_present">You already have this book. Search other sources\?</string>
     <!-- Updates -->
     <string name="updates_title">Updates</string>
     <string name="checking_updates">Checking for updates</string>
@@ -519,8 +519,8 @@
     <string name="error_file">Cannot find update file on server.</string>
     <string name="update_check_no_update">Update Check: No new updates.</string>
     <!-- Alerts -->
-    <string name="alert_orange">Be aware that downloads may fail on this site.\n</string>
-    <string name="alert_red">The download button is currently broken for this site.\n</string>
+    <string name="alert_orange">Be aware that downloads may fail on this site.</string>
+    <string name="alert_red">The download button is currently broken for this site.</string>
     <string name="alert_grey">This site currently has serious stability issues. The app has nothing to do about it. Please try again later.</string>
     <string name="alert_black">This site is currently unavailable for real. The app has nothing to do about it. Please try again later.</string>
     <string name="alert_wip">The Hentoid dev team is working on a fix. You will be notified by the app when a new version is ready.</string>
@@ -547,7 +547,7 @@
     <string name="about_discord" translatable="false"><u>Discord</u></string>
     <string name="about_reddit" translatable="false"><u>Reddit</u></string>
     <string name="about_licenses">Display Licenses</string>
-    <string name="about_app_version">Hentoid ver: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
+    <string name="about_app_version">Hentoid v<x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
     <string name="about_chrome_version">Chrome v<x:g id="chrome_ver" example="98">%1$d</x:g></string>
     <!-- Web browser -->
     <string name="web_gallery">Back to latest gallery page</string>
@@ -572,9 +572,9 @@
     <string name="torrent_dl_fail">Downloading torrent failed: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Storage permission denied - cannot use the downloader</string>
     <!-- Web browser (site specifics) -->
-    <string name="help_web_fakku_account">Please use or create a legit Fakku account.\nHentoid won\'t work without.</string>
-    <string name="help_web_fakku_premium">That book can\'t be viewed with your current Fakku access.</string>
-    <string name="help_web_exh_account">Please use or create an ExHentai account</string>
+    <string name="help_web_fakku_account">Please use or create a legit FAKKU account.\nHentoid won\'t work without it.</string>
+    <string name="help_web_fakku_premium">That book can\'t be viewed with your current FAKKU access.</string>
+    <string name="help_web_exh_account">Please use or create an exHentai account</string>
     <string name="help_web_invalid_exh_credentials">Invalid credentials, please log in again</string>
     <string name="help_web_incomplete_exh_credentials">Incomplete credentials, please log in again. If the issue persists, consider accessing the site from another country or creating a new account.</string>
     <!-- SearchActivity -->

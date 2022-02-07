@@ -6,13 +6,12 @@
     <string name="pref_drawer_sources_title">Управление источниками</string>
     <string name="pref_drawer_sources_summary">Включайте, выключайте и реорганизовывайте источники, показываемые в левом меню</string>
     <string name="pref_library_display_title">Способ отображения</string>
-    <string name="pref_library_display_summary">Вид отображения книг и групп.\nТекущий: <x:g id="display_type" example="Список">%s</x:g></string>
+    <string name="pref_library_display_summary">Вид отображения книг и групп\nТекущий: <x:g id="display_type" example="Список">%s</x:g></string>
     <string name="pref_endless_scroll_title">Бесконечная прокрутка</string>
-    <string name="pref_endless_scroll_summary_off">Включает бесконечную прокрутку в списке загрузок.\nОтключает разделение на страницы</string>
-    <string name="pref_endless_scroll_summary_on">Прокручивайте, сколько вашей душе угодно.</string>
+    <string name="pref_endless_scroll_summary_off">Включает бесконечную прокрутку в списке загрузок\nОтключает разделение на страницы</string>
+    <string name="pref_endless_scroll_summary_on">Прокручивайте, сколько вашей душе угодно</string>
     <string name="pref_quantity_per_page_title">Кол-во элементов на странице</string>
-    <string name="pref_quantity_per_page_summary">Определяет, сколько элементов отображается на одной странице в списке загрузок.
-\nСейчас: <x:g id="count" example="10">%s</x:g></string>
+    <string name="pref_quantity_per_page_summary">Определяет, сколько элементов отображается на одной странице в списке загрузок\nСейчас: <x:g id="count" example="10">%s</x:g> элементов</string>
     <string name="pref_cat_search">Расширенный поиск</string>
     <string name="pref_attributes_list_order_title">Способ сортировки отображаемых метаданных</string>
     <string name="pref_attributes_list_count_title">Отображать число доступных книг</string>
@@ -25,17 +24,17 @@
     <string name="pref_screen_storage">Хранилище</string>
     <string name="pref_cat_downloads_folder">Библиотека Hentoid</string>
     <string name="pref_select_folder_title">Выбор папки загрузок</string>
-    <string name="pref_select_folder_summary">Выберите, где Hentoid будет хранить ваши загрузки.</string>
+    <string name="pref_select_folder_summary">Выберите, где Hentoid будет хранить ваши загрузки</string>
     <string name="pref_import_queue_empty_title">Добавлять пустые книги в очередь как неудачные загрузки</string>
     <string name="pref_import_queue_empty_on">Пустые книги будут добавлены в очередь как ошибки загрузки</string>
     <string name="pref_import_queue_empty_off">Пустые книги будут добавлены в библиотеку</string>
     <string name="pref_folder_naming_content_title">Названия папок</string>
-    <string name="pref_folder_naming_content_summary">Способ наименования папок:\n<x:g id="convention" example="Название - ID">%s</x:g>s</string>
+    <string name="pref_folder_naming_content_summary">Способ наименования папок:\n<x:g id="convention" example="Название - ID">%s</x:g></string>
     <string name="pref_import_running">Импортирование уже запущено</string>
-    <string name="prefs_ask_detach_external_library">Вы уверены, что хотите отключить внешнюю библиотеку\?</string>
+    <string name="prefs_ask_detach_external_library">Отключить внешнюю библиотеку\?</string>
     <string name="prefs_external_library_detached">Внешняя библиотека отключена</string>
     <string name="pref_folder_trunc_title">Cокращать названия папок</string>
-    <string name="pref_folder_trunc_summary">Урезание названий папок.\nСейчас: <x:g id="chars" example="80 символов">%s</x:g></string>
+    <string name="pref_folder_trunc_summary">Урезание названий папок\nСейчас: <x:g id="chars" example="80 символов">%s</x:g></string>
     <string name="pref_memory_usage_title">Использование памяти</string>
     <string name="pref_memory_usage_summary">Свободное место: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (нажмите для подробностей)</string>
     <string name="pref_memory_alert_title">Предупреждать при почти полном заполнении памяти</string>
@@ -51,12 +50,11 @@
     <string name="pref_refresh_library_title">Обновить библиотеку</string>
     <string name="pref_refresh_library_summary">Вручную обновить содержимое библиотеки</string>
     <string name="pref_delete_all_except_favs_title">Удалить все книги, кроме избранных</string>
-    <string name="pref_delete_all_except_favs_summary">Очистить библиотеку и оставить лишь избранные книги
-\nВнимание: не относится к внешней библиотеке</string>
+    <string name="pref_delete_all_except_favs_summary">Очистить библиотеку и оставить лишь избранные книги\nВнимание: не относится к внешней библиотеке</string>
     <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Вы действительно хотите удалить <x:g id="count" example="1">%d</x:g> книгу?</item>
-        <item quantity="few">Вы действительно хотите удалить <x:g id="count" example="2">%d</x:g> книги?</item>
-        <item quantity="many">Вы действительно хотите удалить <x:g id="count" example="5">%d</x:g> книг?</item>
+        <item quantity="one">Удалить <x:g id="count" example="1">%d</x:g> книгу\?</item>
+        <item quantity="few">Удалить <x:g id="count" example="2">%d</x:g> книги\?</item>
+        <item quantity="many">Удалить <x:g id="count" example="5">%d</x:g> книг\?</item>
     </plurals>
     <!-- Browser -->
     <string name="pref_screen_browser">Браузер</string>
@@ -67,11 +65,11 @@
     <string name="pref_browser_dl_action_title">Загрузка</string>
     <string name="pref_browser_quick_dl_title">Быстрая загрузка</string>
     <string name="pref_browser_quick_dl_summary">Не открывая книгу, нажмите на неё для загрузки</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_title">Заблокированные на NHentai книги</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_title">Заблокированные на nhentai книги</string>
     <string name="pref_browser_nhentai_invisible_blacklist_off">Отображаются с размытием</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">Не отображаются</string>
     <string name="pref_browser_quick_dl_threshold_title">Порог долгого нажатия для быстрой загрузки</string>
-    <string name="pref_browser_quick_dl_threshold_summary">Не отпускайте палец в течение этого времени после нажатия, чтобы начать быструю загрузку.\nСейчас: <x:g id="time" example="1 с">%s</x:g></string>
+    <string name="pref_browser_quick_dl_threshold_summary">Не отпускайте палец в течение этого времени после нажатия, чтобы начать быструю загрузку\nСейчас: <x:g id="time" example="1 с">%s</x:g></string>
     <string name="pref_browser_duplicate_ask_title">Проверка на дубликаты</string>
     <string name="pref_browser_duplicate_ask_off">Нет: всегда загружать</string>
     <string name="pref_browser_duplicate_ask_on">Да: спрашивать перед загрузкой</string>
@@ -80,17 +78,16 @@
     <string name="pref_browser_duplicate_try_pages_on">Искать дополнительные страницы на потенциальных дубликатах</string>
     <string name="pref_browser_mark_downloaded_title">Помечать загруженные книги</string>
     <string name="pref_browser_mark_downloaded_off">Уже загруженные книги никак не выделяются</string>
-    <string name="pref_browser_mark_downloaded_on">Уже загруженные книги выделяются
-\nВнимание: работает не на всех сайтах</string>
+    <string name="pref_browser_mark_downloaded_on">Уже загруженные книги выделяются\nВнимание: работает не на всех сайтах</string>
     <string name="pref_browser_visuals">Внешний вид</string>
     <string name="pref_browser_augmented_title">Улучшение качества жизни</string>
     <string name="pref_browser_augmented_off">Используется стандартное поведение</string>
     <string name="pref_browser_augmented_on">Реклама удаляется, а обработка происходит быстрее</string>
     <string name="pref_browser_override_overview_title">Отключить обзор страницы</string>
     <string name="pref_browser_override_overview_summary_off">Внизу вы можете выставить предпочитаемый уровень масштаба по умолчанию</string>
-    <string name="pref_browser_override_overview_summary_on">Воспользуйтесь настройкой внизу для определения предпочитаемого уровня масштаба по умолчанию.\nПримечание: Работает только на Hitomi и e-hentai</string>
+    <string name="pref_browser_override_overview_summary_on">Воспользуйтесь настройкой внизу для определения предпочитаемого уровня масштаба по умолчанию\nПримечание: Работает только на hitomi и e-hentai</string>
     <string name="pref_browser_initial_zoom_title">Масштаб по умолчанию</string>
-    <string name="pref_browser_initial_zoom_summary">Уровень масштаба при загрузке страницы.\nСейчас: <x:g id="percentage" example="20%">%s%%</x:g></string>
+    <string name="pref_browser_initial_zoom_summary">Уровень масштаба при загрузке страницы\nСейчас: <x:g id="percentage" example="20%">%s%%</x:g></string>
     <string name="pref_browser_dns">Сторонний DNS</string>
     <string name="pref_browser_dns_title">DNS через HTTPS</string>
     <!-- Downloader -->
@@ -115,33 +112,31 @@
     <string name="pref_dl_retries_mem_limit_title">Ограничение на использование памяти</string>
     <string name="tag_blocking_screen_title">Блокировка тэгов</string>
     <string name="pref_dl_blocked_tags_title">Заблокированные тэги</string>
-    <string name="pref_dl_blocked_tags_summary">Книги с определёнными тэгами не будут загружаться
-\nПодсказка: тэги разделяются запятыми</string>
+    <string name="pref_dl_blocked_tags_summary">Книги с определёнными тэгами не будут загружаться\nПодсказка: тэги разделяются запятыми</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Плохие тэги нужно…</string>
-    <string name="pref_dl_hitomi_webp_title">Предпочитать загрузку WEBP</string>
+    <string name="pref_dl_hitomi_webp_title">Предпочитать загрузку WebP</string>
     <string name="pref_dl_hitomi_webp_summary_off">Загружать изображения в других форматах (PNG, JPG)</string>
     <string name="pref_dl_hitomi_webp_summary_on">Загружать WebP, когда возможно</string>
     <string name="pref_dl_threads_quantity_title">Кол-во параллельных загрузок</string>
-    <string name="pref_dl_threads_quantity_summary">Число изображений, загружающихся одновременно.\nСейчас: <x:g id="number" example="5">%s</x:g></string>
+    <string name="pref_dl_threads_quantity_summary">Число изображений, загружающихся одновременно\nСейчас: <x:g id="number" example="5">%s</x:g></string>
     <!-- Privacy -->
     <string name="pref_screen_privacy">Конфиденциальность</string>
     <string name="pref_app_preview_title">Предпросмотр в списке недавних приложений</string>
-    <string name="pref_app_preview_summary_off">В списке недавних приложений не отображается, что открыто в приложении.\nВключите, если хотите делать скриншоты приложения</string>
+    <string name="pref_app_preview_summary_off">В списке недавних приложений не отображается, что открыто в приложении\nВключите, если хотите делать скриншоты приложения</string>
     <string name="pref_app_preview_summary_on">Содержимое экрана не скрывается в списке недавних приложений</string>
     <string name="pref_screenshot_title">Разрешить скриншоты</string>
     <string name="pref_screenshot_summary_off">Предпросмотр в списке недавних приложений и скриншоты в приложении отключены</string>
     <string name="pref_screenshot_summary_on">Скриншоты разрешены</string>
     <string name="pref_analytics_preference_title">Аналитика Firebase</string>
     <string name="pref_analytics_preference_summary_off">Сбор аналитики выключен.\nВключите его, чтобы мы могли улучшать приложение, отслеживая сбои и ошибки в нём</string>
-    <string name="pref_analytics_preference_summary_on">Сбор аналитики включён.
-\nСпасибо, что помогаете нам улучшить Hentoid!</string>
+    <string name="pref_analytics_preference_summary_on">Сбор аналитики включён.\nСпасибо, что помогаете нам улучшить Hentoid!</string>
     <!-- Updates -->
     <string name="pref_screen_updates">Обновления</string>
     <string name="pref_check_updates_manual_title">Проверить обновления вручную</string>
     <string name="pref_check_updates_manual_summary">Сделать проверку прямо сейчас</string>
     <string name="pref_check_updates_manual_checking">Проверяю обновления…</string>
     <string name="pref_check_updates_manual_no_new">Обновлений не найдено — Вы уже используете последнюю версию</string>
-    <string name="pref_check_updates_manual_no_connection">Не удалось проверить обновления. Проверьте соединение или попытайтесь позднее.</string>
+    <string name="pref_check_updates_manual_no_connection">Не удалось проверить обновления. Проверьте соединение или попытайтесь позднее</string>
     <string name="pref_check_updates_title">Автоматические обновления</string>
     <string name="pref_check_updates_summary_off">Вы также можете включить автоматическую проверку обновлений по мобильной сети</string>
     <string name="pref_check_updates_summary_on">Это не отключает возможность ручной проверки обновлений</string>
@@ -183,5 +178,5 @@
     <string name="pref_viewer_continuous_summary_on">С последней страницы книги можно уйти на следующую книгу</string>
     <string name="pref_viewer_read_threshold">Считать книгу прочитанной после N страниц</string>
     <string name="pref_viewer_slideshow_delay">Слайдшоу / Время показа каждой страницы</string>
-    <string name="doh_warning">Некоторые сайты плохо работают с DNS через HTTPS. Воспользуйтесь сторонним приложением для DNS, если вы испытываете проблемы при навигации (напрмер: пустые страницы или ошибки при авторизации).</string>
+    <string name="doh_warning">Некоторые сайты плохо работают с DNS через HTTPS. Воспользуйтесь сторонним приложением для DNS, если вы испытываете проблемы при навигации (напрмер: пустые страницы или ошибки при авторизации)</string>
 </resources>

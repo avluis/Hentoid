@@ -12,7 +12,7 @@
     <!-- Кнопка -->
     <string name="slide_04_skip">Пропустить</string>
     <!-- Заголовок диалога -->
-    <string name="slide_04_skip_title">Пропустить?</string>
+    <string name="slide_04_skip_title">Пропустить\?</string>
     <string name="slide_04_skip_msg">Вы не сможете ничего загрузить, если пропустите этот шаг.\nДля загрузки вам понадобится выбрать папку загрузок в настройках приложения.</string>
     <!-- Слайд 5 -->
     <string name="slide_05_header">Тема</string>
