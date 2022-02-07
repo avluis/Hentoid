@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- DO NOT modify the way these arrays are set up - it is required for Weblate to work -->
     <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
     <string-array name="pref_library_display_entries" translatable="false">
@@ -43,11 +43,11 @@
     <!-- Choice for "Alert on low memory" setting -->
     <string name="pref_memory_alert_entries_1">No alert</string>
     <!-- Choice for "Alert on low memory" setting -->
-    <string name="pref_memory_alert_entries_2">on 90%% full</string>
+    <string name="pref_memory_alert_entries_2">on 90% full</string>
     <!-- Choice for "Alert on low memory" setting -->
-    <string name="pref_memory_alert_entries_3">on 95%% full</string>
+    <string name="pref_memory_alert_entries_3">on 95% full</string>
     <!-- Choice for "Alert on low memory" setting -->
-    <string name="pref_memory_alert_entries_4">on 98%% full</string>
+    <string name="pref_memory_alert_entries_4">on 98% full</string>
     <string-array name="pref_browser_quick_dl_threshold_entries" translatable="false">
         <item>@string/pref_browser_quick_dl_threshold_entries_1</item>
         <item>@string/pref_browser_quick_dl_threshold_entries_2</item>
@@ -65,13 +65,13 @@
     <!-- Choice for "Quick download long press threshold" setting -->
     <string name="pref_browser_quick_dl_threshold_entries_1">500 ms (default)</string>
     <!-- Choice for "Quick download long press threshold" setting -->
-    <string name="pref_browser_quick_dl_threshold_entries_2">1 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 s</string>
     <!-- Choice for "Quick download long press threshold" setting -->
-    <string name="pref_browser_quick_dl_threshold_entries_3">1.5 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_3" tools:ignore="MissingTranslation">1.5 s</string>
     <!-- Choice for "Quick download long press threshold" setting -->
-    <string name="pref_browser_quick_dl_threshold_entries_4">2 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_4" tools:ignore="MissingTranslation">2 s</string>
     <!-- Choice for "Quick download long press threshold" setting -->
-    <string name="pref_browser_quick_dl_threshold_entries_5">3 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_5" tools:ignore="MissingTranslation">3 s</string>
     <string-array name="pref_browser_dns_entries" translatable="false">
         <item>@string/pref_browser_dns_entries_1</item>
         <item>Cloudflare</item>
@@ -119,13 +119,13 @@
     <!-- Choice for "Large downloads size threshold" setting -->
     <string name="pref_dl_size_wifi_threshold_entries_1">No size limit</string>
     <!-- Choice for "Large downloads size threshold" setting -->
-    <string name="pref_dl_size_wifi_threshold_entries_2">20 MB</string>
+    <string name="pref_dl_size_wifi_threshold_entries_2" tools:ignore="MissingTranslation">20 MB</string>
     <!-- Choice for "Large downloads size threshold" setting -->
-    <string name="pref_dl_size_wifi_threshold_entries_3">40 MB</string>
+    <string name="pref_dl_size_wifi_threshold_entries_3" tools:ignore="MissingTranslation">40 MB</string>
     <!-- Choice for "Large downloads size threshold" setting -->
-    <string name="pref_dl_size_wifi_threshold_entries_4">100 MB</string>
+    <string name="pref_dl_size_wifi_threshold_entries_4" tools:ignore="MissingTranslation">100 MB</string>
     <!-- Choice for "Large downloads size threshold" setting -->
-    <string name="pref_dl_size_wifi_threshold_entries_5">200 MB</string>
+    <string name="pref_dl_size_wifi_threshold_entries_5" tools:ignore="MissingTranslation">200 MB</string>
     <string-array name="pref_dl_pages_wifi_threshold_entries" translatable="false">
         <item>@string/pref_dl_pages_wifi_threshold_entries_1</item>
         <item>@string/pref_dl_pages_wifi_threshold_entries_2</item>
@@ -185,7 +185,7 @@
         <item>3</item>
     </string-array>
     <!-- Choice for "Book folder naming convention" setting -->
-    <string name="pref_folder_naming_content_entries_1">ID</string>
+    <string name="pref_folder_naming_content_entries_1" tools:ignore="MissingTranslation">ID</string>
     <!-- Choice for "Book folder naming convention" setting -->
     <string name="pref_folder_naming_content_entries_2">Title - ID</string>
     <!-- Choice for "Book folder naming convention" setting -->
@@ -270,9 +270,9 @@
         <item>5</item>
     </string-array>
     <string-array name="pref_dl_retries_mem_limit_entries" translatable="false">
-        <item>90%%</item>
-        <item>95%%</item>
-        <item>98%%</item>
+        <item>90%</item>
+        <item>95%</item>
+        <item>98%</item>
         <item>@string/pref_dl_retries_mem_limit_entries_4</item>
     </string-array>
     <string-array name="pref_dl_retries_mem_limit_values" translatable="false">
@@ -368,17 +368,17 @@
         <item>3</item>
     </string-array>
     <!-- Choice for "Slideshow delay" setting -->
-    <string name="pref_viewer_slideshow_delay_entries_1">500 ms</string>
+    <string name="pref_viewer_slideshow_delay_entries_1" tools:ignore="MissingTranslation">500 ms</string>
     <!-- Choice for "Slideshow delay" setting -->
-    <string name="pref_viewer_slideshow_delay_entries_2">1 s</string>
+    <string name="pref_viewer_slideshow_delay_entries_2" tools:ignore="MissingTranslation">1 s</string>
     <!-- Choice for "Slideshow delay" setting -->
     <string name="pref_viewer_slideshow_delay_entries_3">2 s (default)</string>
     <!-- Choice for "Slideshow delay" setting -->
-    <string name="pref_viewer_slideshow_delay_entries_4">4 s</string>
+    <string name="pref_viewer_slideshow_delay_entries_4" tools:ignore="MissingTranslation">4 s</string>
     <!-- Choice for "Slideshow delay" setting -->
-    <string name="pref_viewer_slideshow_delay_entries_5">8 s</string>
+    <string name="pref_viewer_slideshow_delay_entries_5" tools:ignore="MissingTranslation">8 s</string>
     <!-- Choice for "Slideshow delay" setting -->
-    <string name="pref_viewer_slideshow_delay_entries_6">16 s</string>
+    <string name="pref_viewer_slideshow_delay_entries_6" tools:ignore="MissingTranslation">16 s</string>
     <string-array name="pref_viewer_display_mode_entries" translatable="false">
         <item>@string/pref_viewer_display_mode_entries_1</item>
         <item>@string/pref_viewer_display_mode_entries_2</item>
@@ -422,11 +422,11 @@
     <!-- Choice for "Cap double & long tap zoom" setting -->
     <string name="pref_viewer_cap_tap_zoom_entries_1">No capping</string>
     <!-- Choice for "Cap double & long tap zoom" setting -->
-    <string name="pref_viewer_cap_tap_zoom_entries_2">2x</string>
+    <string name="pref_viewer_cap_tap_zoom_entries_2" tools:ignore="MissingTranslation">2x</string>
     <!-- Choice for "Cap double & long tap zoom" setting -->
-    <string name="pref_viewer_cap_tap_zoom_entries_3">4x</string>
+    <string name="pref_viewer_cap_tap_zoom_entries_3" tools:ignore="MissingTranslation">4x</string>
     <!-- Choice for "Cap double & long tap zoom" setting -->
-    <string name="pref_viewer_cap_tap_zoom_entries_4">6x</string>
+    <string name="pref_viewer_cap_tap_zoom_entries_4" tools:ignore="MissingTranslation">6x</string>
     <string-array name="pref_viewer_gallery_columns_values" translatable="false">
         <item>2</item>
         <item>3</item>
@@ -443,11 +443,11 @@
     <!-- Choice for "Lock timer" setting -->
     <string name="pref_lock_timer_entries_1">No delay</string>
     <!-- Choice for "Lock timer" setting -->
-    <string name="pref_lock_timer_entries_2">10 s</string>
+    <string name="pref_lock_timer_entries_2" tools:ignore="MissingTranslation">10 s</string>
     <!-- Choice for "Lock timer" setting -->
     <string name="pref_lock_timer_entries_3">30 s (default)</string>
     <!-- Choice for "Lock timer" setting -->
-    <string name="pref_lock_timer_entries_4">1 min</string>
+    <string name="pref_lock_timer_entries_4" tools:ignore="MissingTranslation">1 min</string>
     <!-- Choice for "Lock timer" setting -->
     <string name="pref_lock_timer_entries_5">2 mins</string>
 </resources>
