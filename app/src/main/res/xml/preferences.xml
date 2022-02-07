@@ -368,17 +368,6 @@
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
-            android:title="@string/pref_dl_hitomi"
-            app:iconSpaceReserved="false">
-            <CheckBoxPreference
-                android:defaultValue="@string/pref_dl_hitomi_webp_default"
-                android:key="pref_dl_hitomi_webp"
-                android:summaryOff="@string/pref_dl_hitomi_webp_summary_off"
-                android:summaryOn="@string/pref_dl_hitomi_webp_summary_on"
-                android:title="@string/pref_dl_hitomi_webp_title"
-                app:iconSpaceReserved="false" />
-        </PreferenceCategory>
-        <PreferenceCategory
             android:title="@string/pref_cat_advanced"
             app:iconSpaceReserved="false">
             <ListPreference

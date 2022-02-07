@@ -588,10 +588,6 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.DL_BLOCKED_TAG_BEHAVIOUR, Integer.toString(Default.DL_BLOCKED_TAGS_BEHAVIOUR)) + "");
     }
 
-    public static boolean isDlHitomiWebp() {
-        return sharedPreferences.getBoolean(Key.DL_HITOMI_WEBP, Default.DL_HITOMI_WEBP);
-    }
-
     public static List<Site> getActiveSites() {
         String siteCodesStr = sharedPreferences.getString(Key.ACTIVE_SITES, Default.ACTIVE_SITES) + "";
         if (siteCodesStr.isEmpty()) return Collections.emptyList();
@@ -877,7 +873,6 @@ public final class Preferences {
         static final String DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
         static final String DL_BLOCKED_TAGS = "pref_dl_blocked_tags";
         static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
-        static final String DL_HITOMI_WEBP = "pref_dl_hitomi_webp";
         public static final String DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
         static final String LOCK_ON_APP_RESTORE = "pref_lock_on_app_restore";
@@ -976,7 +971,6 @@ public final class Preferences {
         static final int DL_RETRIES_NUMBER = 3;
         static final int DL_RETRIES_MEM_LIMIT = 100;
         static final int DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
-        static final boolean DL_HITOMI_WEBP = true;
         static final boolean CHECK_UPDATES = true;
         // Default menu in v1.9.x
         static final Site[] DEFAULT_SITES = new Site[]{Site.NHENTAI, Site.HITOMI, Site.ASMHENTAI, Site.TSUMINO, Site.PURURIN, Site.EHENTAI, Site.FAKKU2, Site.NEXUS, Site.MUSES, Site.DOUJINS};
