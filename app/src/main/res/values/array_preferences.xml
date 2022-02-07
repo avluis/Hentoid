@@ -189,9 +189,9 @@
     <!-- Choice for "Book folder naming convention" setting -->
     <string name="pref_folder_naming_content_entries_2">Title - ID</string>
     <!-- Choice for "Book folder naming convention" setting -->
-    <string name="pref_folder_naming_content_entries_3">Author - Title - ID</string>
+    <string name="pref_folder_naming_content_entries_3">Artist - Title - ID</string>
     <!-- Choice for "Book folder naming convention" setting -->
-    <string name="pref_folder_naming_content_entries_4">Title - Author - ID</string>
+    <string name="pref_folder_naming_content_entries_4">Title - Artist - ID</string>
     <string-array name="pref_folder_trunc_content_entries" translatable="false">
         <item>@string/pref_folder_trunc_content_entries_1</item>
         <item>@string/pref_folder_trunc_content_entries_2</item>
@@ -270,9 +270,9 @@
         <item>5</item>
     </string-array>
     <string-array name="pref_dl_retries_mem_limit_entries" translatable="false">
-        <item>90%</item>
-        <item>95%</item>
-        <item>98%</item>
+        <item>90%%</item>
+        <item>95%%</item>
+        <item>98%%</item>
         <item>@string/pref_dl_retries_mem_limit_entries_4</item>
     </string-array>
     <string-array name="pref_dl_retries_mem_limit_values" translatable="false">

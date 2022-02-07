@@ -5,17 +5,16 @@
     <string name="pref_screen_interface">Interface &amp; Navigation</string>
     <string name="pref_cat_library">Library</string>
     <string name="pref_drawer_sources_title">Manage sources</string>
-    <string name="pref_drawer_sources_summary">Enable, disable and reorganize sources\nappearing on the left navigation drawer.</string>
+    <string name="pref_drawer_sources_summary">Enable, disable and reorganize sources appearing on the left navigation drawer</string>
     <string name="pref_library_display_title">Display type</string>
-    <string name="pref_library_display_summary">Type of display for books and groups.\nCurrent: <x:g id="display_type" example="List">%s</x:g></string>
+    <string name="pref_library_display_summary">Type of display for books and groups\nCurrent: <x:g id="display_type" example="List">%s</x:g></string>
     <string name="pref_library_display_default" translatable="false">0</string>
     <string name="pref_endless_scroll_title">Endless Scroll</string>
-    <string name="pref_endless_scroll_summary_off">Enable endless scrolling in download list.\nDisables paging.</string>
-    <string name="pref_endless_scroll_summary_on">Scroll away to your heart\'s content.</string>
+    <string name="pref_endless_scroll_summary_off">Enable endless scrolling in download list\nDisables paging</string>
+    <string name="pref_endless_scroll_summary_on">Scroll away to your heart\'s content</string>
     <string name="pref_endless_scroll_default" translatable="false">true</string>
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
-    <string name="pref_quantity_per_page_summary">Number of items per page in download list.
-\nCurrently: <x:g id="count" example="10">%s</x:g> items.</string>
+    <string name="pref_quantity_per_page_summary">Number of items per page in download list\nCurrently: <x:g id="count" example="10">%s</x:g> items</string>
     <string name="pref_quantity_per_page_default" translatable="false">20</string>
     <string name="pref_cat_search">Advanced search</string>
     <string name="pref_attributes_list_order_title">Sorting order of displayed metadata</string>
@@ -33,7 +32,7 @@
     <string name="pref_screen_storage">Storage</string>
     <string name="pref_cat_downloads_folder">Hentoid library</string>
     <string name="pref_select_folder_title">Select Downloads Folder</string>
-    <string name="pref_select_folder_summary">Select where Hentoid will store your downloads.</string>
+    <string name="pref_select_folder_summary">Select where Hentoid will store your downloads</string>
     <string name="pref_import_queue_empty_title">Queue empty books as errors</string>
     <string name="pref_import_queue_empty_on">Empty books will be added to the queue as errors</string>
     <string name="pref_import_queue_empty_off">Empty books will be added to the library</string>
@@ -42,10 +41,10 @@
     <string name="pref_folder_naming_content_summary">Book folder naming convention:\n<x:g id="convention" example="Name - ID">%s</x:g></string>
     <string name="pref_folder_naming_content_default" translatable="false">2</string>
     <string name="pref_import_running">Import is already running</string>
-    <string name="prefs_ask_detach_external_library">Are you sure you want to detach the external library?</string>
+    <string name="prefs_ask_detach_external_library">Are you sure you want to detach the external library\?</string>
     <string name="prefs_external_library_detached">External library detached</string>
     <string name="pref_folder_trunc_title">Truncate folder name</string>
-    <string name="pref_folder_trunc_summary">Book folder name truncation.\nCurrently: <x:g id="chars" example="80 characters">%s</x:g>.</string>
+    <string name="pref_folder_trunc_summary">Book folder name truncation\nCurrently: <x:g id="chars" example="80 characters">%s</x:g></string>
     <string name="pref_folder_trunc_default" translatable="false">100</string>
     <string name="pref_memory_usage_title">Memory usage</string>
     <string name="pref_memory_usage_summary">Current free space: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (tap for details)</string>
@@ -66,8 +65,8 @@
     <string name="pref_delete_all_except_favs_title">Delete all books except favourites</string>
     <string name="pref_delete_all_except_favs_summary">Purge the library; keep favourite books only\nNB: Does not apply to the external library</string>
     <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Delete <x:g id="count" example="1">%d</x:g> book?</item>
-        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> books?</item>
+        <item quantity="one">Delete <x:g id="count" example="1">%d</x:g> book\?</item>
+        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> books\?</item>
     </plurals>
     <!-- Browser -->
     <string name="pref_screen_browser">Browser</string>
@@ -86,14 +85,14 @@
     <string name="pref_browser_nhentai_invisible_blacklist_on">NHentai blacklisted books are invisible</string>
     <string name="pref_browser_nhentai_invisible_blacklist_default" translatable="false">false</string>
     <string name="pref_browser_quick_dl_threshold_title">Quick download long press threshold</string>
-    <string name="pref_browser_quick_dl_threshold_summary">Hold down for this duration to start quick downloading.\nCurrent: <x:g id="time" example="1 s">%s</x:g></string>
+    <string name="pref_browser_quick_dl_threshold_summary">Hold down for this duration to start quick downloading\nCurrent: <x:g id="time" example="1 s">%s</x:g></string>
     <string name="pref_browser_quick_dl_threshold_default" translatable="false">500</string>
     <string name="pref_browser_augmented_default" translatable="false">true</string>
     <string name="pref_browser_duplicate_ask_title">Duplicates checking</string>
     <string name="pref_browser_duplicate_ask_off">No: always download</string>
     <string name="pref_browser_duplicate_ask_on">Yes: ask before downloading</string>
     <string name="pref_browser_duplicate_ask_default" translatable="false">true</string>
-    <string name="pref_browser_duplicate_try_pages_title">Try finding extra pages on potential duplicates?</string>
+    <string name="pref_browser_duplicate_try_pages_title">Try finding extra pages on potential duplicates\?</string>
     <string name="pref_browser_duplicate_try_pages_off">Only try finding extra pages on the original book</string>
     <string name="pref_browser_duplicate_try_pages_on">Try finding extra pages on potential duplicates</string>
     <string name="pref_browser_duplicate_try_pages_default" translatable="false">true</string>
@@ -106,11 +105,11 @@
     <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
     <string name="pref_browser_augmented_on">Using ad space removal and fast parsing</string>
     <string name="pref_browser_override_overview_title">Disable Page Overview</string>
-    <string name="pref_browser_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below.</string>
-    <string name="pref_browser_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi and e-hentai.</string>
+    <string name="pref_browser_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below</string>
+    <string name="pref_browser_override_overview_summary_on">Tweak the setting below to set your initial zoom level\nNote: Only affects hitomi and e-hentai</string>
     <string name="pref_browser_override_overview_default" translatable="false">false</string>
     <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
-    <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: <x:g id="percentage" example="20%">%s%%</x:g></string>
+    <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load\nCurrently: <x:g id="percentage" example="20%">%s%%</x:g></string>
     <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
     <string name="pref_browser_dns">Custom DNS</string>
     <string name="pref_browser_dns_title">DNS over HTTPS</string>
@@ -129,7 +128,7 @@
     <string name="pref_queue_new_position_default" translatable="false">1</string>
     <string name="download_size_wifi_title">Skip large downloads on mobile data</string>
     <string name="pref_dl_size_wifi_default" translatable="false">false</string>
-    <string name="pref_dl_size_wifi_on">Large downloads will be skipped if not connected to WiFi</string>
+    <string name="pref_dl_size_wifi_on">Large downloads will be skipped if not connected to Wi-Fi</string>
     <string name="pref_dl_size_wifi_off">All downloads will be processed</string>
     <string name="pref_dl_size_wifi_threshold_title">Size threshold for large downloads</string>
     <string name="pref_dl_size_wifi_threshold_default" translatable="false">40</string>
@@ -157,32 +156,31 @@
     <string name="pref_dl_hitomi_webp_summary_on">Download WebP pictures whenever they are available</string>
     <string name="pref_dl_hitomi_webp_default" translatable="false">true</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
-    <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously.\nCurrently: <x:g id="number" example="5">%s</x:g>.</string>
+    <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g id="number" example="5">%s</x:g></string>
     <string name="pref_dl_threads_quantity_default" translatable="false">0</string>
     <!-- Privacy -->
     <string name="pref_screen_privacy">Privacy</string>
     <string name="pref_app_preview_title">App preview on Recent Apps</string>
-    <string name="pref_app_preview_summary_off">App preview in Recent Apps disabled.\nEnable if you need to take a screen shot.</string>
-    <string name="pref_app_preview_summary_on">App preview in Recent Apps enabled.</string>
+    <string name="pref_app_preview_summary_off">App preview in Recent Apps disabled\nEnable if you need to take a screenshot</string>
+    <string name="pref_app_preview_summary_on">App preview in Recent Apps enabled</string>
     <string name="pref_screenshot_title">Enable screenshots</string>
-    <string name="pref_screenshot_summary_off">App preview in Recent Apps + screenshots disabled.</string>
-    <string name="pref_screenshot_summary_on">Screenshots enabled.</string>
+    <string name="pref_screenshot_summary_off">App preview in Recent Apps + screenshots disabled</string>
+    <string name="pref_screenshot_summary_on">Screenshots enabled</string>
     <string name="pref_app_preview_default" translatable="false">false</string>
     <string name="pref_analytics_preference_title">Firebase Analytics</string>
     <string name="pref_analytics_preference_summary_off">Analytics Tracking is currently disabled.\nEnabling it will help us improve the app by tracking crashes &amp; exceptions.</string>
-    <string name="pref_analytics_preference_summary_on">Analytics tracking is on.
-\nThanks for helping improve Hentoid!</string>
+    <string name="pref_analytics_preference_summary_on">Analytics Tracking is on.\nThanks for helping improve Hentoid!</string>
     <string name="pref_analytics_preference_default" translatable="false">true</string>
     <!-- Updates -->
     <string name="pref_screen_updates">Updates</string>
     <string name="pref_check_updates_manual_title">Manual Update Check</string>
-    <string name="pref_check_updates_manual_summary">Manually check for updates now.</string>
+    <string name="pref_check_updates_manual_summary">Manually check for updates right now</string>
     <string name="pref_check_updates_manual_checking">Checking for updates…</string>
     <string name="pref_check_updates_manual_no_new">No update found - Already using the latest version</string>
-    <string name="pref_check_updates_manual_no_connection">Could not check for updates. Check your connection or try again later.</string>
+    <string name="pref_check_updates_manual_no_connection">Could not check for updates. Check your connection or try again later</string>
     <string name="pref_check_updates_title">Automatic Updates</string>
-    <string name="pref_check_updates_summary_off">Enable automatic update checks over mobile data.</string>
-    <string name="pref_check_updates_summary_on">Note: Does not override manual update checks.</string>
+    <string name="pref_check_updates_summary_off">Enable automatic update checks over mobile data</string>
+    <string name="pref_check_updates_summary_on">Note: Does not override manual update checks</string>
     <string name="pref_check_updates_default" translatable="false">true</string>
     <!-- Viewer -->
     <string name="pref_screen_viewer">Image viewer</string>
@@ -246,5 +244,5 @@
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay">Slideshow / Delay between each page</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
-    <string name="doh_warning">Some websites won\'t work well with DNS over HTTPS. Use an external DNS app if you experience issues during navigation (e.g. blank pages, unresponsive login forms).</string>
+    <string name="doh_warning">Some websites won\'t work well with DNS over HTTPS. Use an external DNS app if you experience issues during navigation (e.g. blank pages, unresponsive login forms)</string>
 </resources>

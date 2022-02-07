@@ -55,7 +55,7 @@
         <item>THE BOOKS ARE OVER 90K</item>
     </string-array>
     <string name="splash_quote1" tools:ignore="MissingTranslation">art in an app</string>
-    <string name="splash_quote2" tools:ignore="MissingTranslation">the usual book?</string>
+    <string name="splash_quote2" tools:ignore="MissingTranslation">the usual book\?</string>
     <string name="splash_quote3" tools:ignore="MissingTranslation">one hand training app</string>
     <string name="splash_quote4" tools:ignore="MissingTranslation">5 mins arm exercise</string>
     <string name="splash_quote5" tools:ignore="MissingTranslation">your hand\'s best friend</string>
@@ -75,7 +75,7 @@
     <string name="splash_quote19" tools:ignore="MissingTranslation">Daddyy....</string>
     <string name="splash_quote20" tools:ignore="MissingTranslation">Up And Down, Till it blow</string>
     <string name="splash_quote21" tools:ignore="MissingTranslation">ITS A MEAT</string>
-    <string name="splash_quote22" tools:ignore="MissingTranslation">You seriously jacking alone?</string>
+    <string name="splash_quote22" tools:ignore="MissingTranslation">You seriously jacking alone\?</string>
     <string name="splash_quote23" tools:ignore="MissingTranslation">Invite some friends ;3</string>
     <string name="splash_quote24" tools:ignore="MissingTranslation">Ask for a GF, Wait…</string>
     <string name="splash_quote25" tools:ignore="MissingTranslation">Fastest Loading time</string>
@@ -88,12 +88,12 @@
     <string name="splash_quote32" tools:ignore="MissingTranslation">Bouncy melons</string>
     <string name="splash_quote33" tools:ignore="MissingTranslation">Salty but tasty</string>
     <string name="splash_quote34" tools:ignore="MissingTranslation">If there is a hole there is a way</string>
-    <string name="splash_quote35" tools:ignore="MissingTranslation">go all in?</string>
-    <string name="splash_quote36" tools:ignore="MissingTranslation">huh? is that a penis?</string>
+    <string name="splash_quote35" tools:ignore="MissingTranslation">go all in\?</string>
+    <string name="splash_quote36" tools:ignore="MissingTranslation">huh\? is that a penis\?</string>
     <string name="splash_quote37" tools:ignore="MissingTranslation">Ewwww put that away</string>
     <string name="splash_quote38" tools:ignore="MissingTranslation">its one hell of an app</string>
     <string name="splash_quote39" tools:ignore="MissingTranslation">lube it up brother</string>
-    <string name="splash_quote40" tools:ignore="MissingTranslation">Wait Not Manga?</string>
+    <string name="splash_quote40" tools:ignore="MissingTranslation">Wait Not Manga\?</string>
     <!-- The Simpsons reference: google how the 'steamed hams' meme had been translated for your language -->
     <string name="splash_quote41" tools:ignore="MissingTranslation">Delightfully devilish</string>
     <!-- The Simpsons reference: google how the 'steamed hams' meme had been translated for your language -->

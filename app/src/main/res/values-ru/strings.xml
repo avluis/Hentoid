@@ -89,7 +89,7 @@
     <string name="menu_archive">В архив</string>
     <string name="menu_archive_help">Заархивировать книгу в ZIP</string>
     <string name="menu_share_title">Ссылка на книгу</string>
-    <string name="search_hint">Название, автор, тэг или ID книги</string>
+    <string name="search_hint">Название, художник, тэг или ID книги</string>
     <string name="send_to">Поделиться через:</string>
     <string name="open_settings">Настройки</string>
     <string name="app_settings">Настройки приложения</string>
@@ -103,9 +103,9 @@
     <string name="queue_queue_tab">В процессе</string>
     <string name="queue_errors_tab">Ошибки</string>
     <plurals name="ask_cancel_multiple" tools:ignore="ImpliedQuantity">
-        <item quantity="one">Вы уверены, что хотите отменить выбранный элемент?</item>
-        <item quantity="few">Вы уверены, что хотите отменить выбранные элементы?</item>
-        <item quantity="many">Вы уверены, что хотите отменить выбранные элементы?</item>
+        <item quantity="one">Вы уверены, что хотите отменить выбранный элемент\?</item>
+        <item quantity="few">Вы уверены, что хотите отменить выбранные элементы\?</item>
+        <item quantity="many">Вы уверены, что хотите отменить выбранные элементы\?</item>
     </plurals>
     <string name="invert_queue">Инвертировать порядок</string>
     <string name="redownload_all">Загрузить всё снова</string>
@@ -123,14 +123,14 @@
     <string name="err_no_content">Книга ещё не существует</string>
     <string name="confirm_cancel_all">Вы собираетесь отменить всё в очереди. Продолжить\?</string>
     <plurals name="confirm_cancel_all_errors">
-        <item quantity="one">Вы собираетесь отменить <x:g id="count" example="1">%d</x:g> книгу с ошибками. Продолжить?</item>
-        <item quantity="few">Вы собираетесь отменить <x:g id="count" example="2">%d</x:g> книги с ошибками. Продолжить?</item>
-        <item quantity="many">Вы собираетесь отменить <x:g id="count" example="5">%d</x:g> книг с ошибками. Продолжить?</item>
+        <item quantity="one">Вы собираетесь отменить <x:g id="count" example="1">%d</x:g> книгу с ошибками. Продолжить\?</item>
+        <item quantity="few">Вы собираетесь отменить <x:g id="count" example="2">%d</x:g> книги с ошибками. Продолжить\?</item>
+        <item quantity="many">Вы собираетесь отменить <x:g id="count" example="5">%d</x:g> книг с ошибками. Продолжить\?</item>
     </plurals>
     <plurals name="confirm_redownload_all">
-        <item quantity="one">Вы собираетесь загрузить <x:g id="count" example="1">%d</x:g> элемент снова. Продолжить?</item>
-        <item quantity="few">Вы собираетесь загрузить <x:g id="count" example="2">%d</x:g> элемента снова. Продолжить?</item>
-        <item quantity="many">Вы собираетесь загрузить <x:g id="count" example="5">%d</x:g> элементов снова. Продолжить?</item>
+        <item quantity="one">Вы собираетесь загрузить <x:g id="count" example="1">%d</x:g> элемент снова. Продолжить\?</item>
+        <item quantity="few">Вы собираетесь загрузить <x:g id="count" example="2">%d</x:g> элемента снова. Продолжить\?</item>
+        <item quantity="many">Вы собираетесь загрузить <x:g id="count" example="5">%d</x:g> элементов снова. Продолжить\?</item>
     </plurals>
     <string name="paused_no_internet">Загрузка невозможна — Нет сети</string>
     <string name="paused_no_wifi">Загрузка невозможна — Нет подключения к Wi-Fi</string>
@@ -291,7 +291,7 @@
     <string name="import_unexpected">Импорт был неожиданно остановлен</string>
     <string name="task_done">Задание завершено — смотрите логи для подробностей</string>
     <string name="content_not_found">Ошибка — контент не обнаружен</string>
-    <string name="contents_detected">Hentoid обнаружил существующую библиотеку.\nХотите ли вы импортировать её?</string>
+    <string name="contents_detected">Hentoid обнаружил существующую библиотеку.\nХотите ли вы импортировать её\?</string>
     <string name="library_imports_title">Импорт библиотеки</string>
     <string name="starting_import">Импорт начинается…</string>
     <string name="importing_library">Импорт библиотеки</string>
@@ -306,8 +306,8 @@
     </plurals>
     <plurals name="import_complete_details_failure">
         <item quantity="one">Не удалось импортировать: <x:g id="number" example="1">%s</x:g></item>
-        <item quantity="few">Не удалось импортировать: <x:g id="number" example="1">%s</x:g></item>
-        <item quantity="many">Не удалось импортировать: <x:g id="number" example="1">%s</x:g></item>
+        <item quantity="few">Не удалось импортировать: <x:g id="number" example="2">%s</x:g></item>
+        <item quantity="many">Не удалось импортировать: <x:g id="number" example="5">%s</x:g></item>
     </plurals>
     <!-- Memory usage -->
     <string name="memory_title">Использование памяти</string>
@@ -339,7 +339,7 @@
     <string name="error_browser">Ошибка открытия ссылки: не обнаружен браузер</string>
     <string name="error_send">Ошибка отправки архива: не найдено подходящего приложения</string>
     <!-- Error log -->
-    <string name="redownload_dialog_title">Попытаться загрузить снова?</string>
+    <string name="redownload_dialog_title">Попытаться загрузить снова\?</string>
     <string name="redownload_dialog_message">Всего изображений в загрузке: <x:g id="total_imgs" example="10">%1$d</x:g>\nИзображений без ошибок: <x:g id="fine_imgs" example="8">%2$d</x:g>\nИзображений с ошибками: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
     <string name="redownload_first_error">Первая ошибка: <x:g id="errortype">%s</x:g></string>
     <string name="redownload_action">ЗАГРУЗИТЬ СНОВА</string>
@@ -347,21 +347,21 @@
     <string name="redownload_share_log">Поделиться логами ошибок</string>
     <string name="redownload_generating_log_file">Генерирую файл логов…</string>
     <!-- Library fragment -->
-    <string name="resume_closed">Возобновить чтение?</string>
+    <string name="resume_closed">Возобновить чтение\?</string>
     <string name="open_drawer">Открыть меню</string>
     <string name="close_drawer">Закрыть меню</string>
     <string name="ask_filter_completed">Как бы вы хотели обращаться с дочитанными книгами?</string>
     <string name="filter_completed">Показывать только дочитанные</string>
     <string name="filter_not_completed">Показывать только недочитанные</string>
     <plurals name="ask_delete_multiple">
-        <item quantity="one">Вы уверены, что хотите удалить <x:g id="count" example="1">%d</x:g> выбранный элемент?</item>
-        <item quantity="few">Вы уверены, что хотите удалить <x:g id="count" example="2">%d</x:g> выбранных элемента?</item>
-        <item quantity="many">Вы уверены, что хотите удалить <x:g id="count" example="5">%d</x:g> выбранных элементов?</item>
+        <item quantity="one">Вы уверены, что хотите удалить <x:g id="count" example="1">%d</x:g> выбранный элемент\?</item>
+        <item quantity="few">Вы уверены, что хотите удалить <x:g id="count" example="2">%d</x:g> выбранных элемента\?</item>
+        <item quantity="many">Вы уверены, что хотите удалить <x:g id="count" example="5">%d</x:g> выбранных элементов\?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
-        <item quantity="one">Вы уверены, что хотите заархивировать <x:g id="count" example="1">%d</x:g> выбранный элемент?</item>
-        <item quantity="few">Вы уверены, что хотите заархивировать <x:g id="count" example="2">%d</x:g> выбранных элемента?</item>
-        <item quantity="many">Вы уверены, что хотите заархивировать <x:g id="count" example="5">%d</x:g> выбранных элементов?</item>
+        <item quantity="one">Вы уверены, что хотите заархивировать <x:g id="count" example="1">%d</x:g> выбранный элемент\?</item>
+        <item quantity="few">Вы уверены, что хотите заархивировать <x:g id="count" example="2">%d</x:g> выбранных элемента\?</item>
+        <item quantity="many">Вы уверены, что хотите заархивировать <x:g id="count" example="5">%d</x:g> выбранных элементов\?</item>
     </plurals>
     <string name="new_group_name">Название новой группы\?</string>
     <string name="group_edit_name">Редактировать название группы</string>
@@ -398,7 +398,7 @@
     <string name="stream_canceled">Потоковая передача отменена — книга не доступна в сети</string>
     <string name="download_canceled">Загрузка отменена — книга не доступна в сети</string>
     <string name="press_back_again">Нажмите \'Назад\' два раза, чтобы выйти.</string>
-    <string name="queue_empty">Почему во мне пусто?</string>
+    <string name="queue_empty">Почему во мне пусто\?</string>
     <string name="errors_empty">Ошибок при загрузке не обнаружено</string>
     <string name="downloads_empty_library">Ну давай, скачай что-нибудь.</string>
     <string name="downloads_loading">Загружаю~</string>
@@ -406,7 +406,7 @@
     <string name="search_entry_not_found">Тут такого нет, иди, скачай это.</string>
     <string name="packaging_content">Упаковываю файлы.\nПожалуйста, подождите…</string>
     <string name="search_bookid_label">Поиск <x:g id="launchcode" example="4567">\'%s\'</x:g> в…</string>
-    <string name="book_launchcode">Код запуска: <x:g id="launchcode" example="4567">\'%s\'</x:g></string>
+    <string name="book_launchcode">ID: <x:g id="launchcode" example="4567">\'%s\'</x:g></string>
     <plurals name="number_of_items">
         <item quantity="one"><x:g id="count" example="1">%d</x:g> элемент</item>
         <item quantity="few"><x:g id="count" example="2">%d</x:g> элемента</item>
@@ -420,19 +420,19 @@
     <string name="reset">Разрешения были сброшены.\nПриложение перезапускается.</string>
     <string name="restart_needed">"Изменения будут применены после перезапуска Hentoid"</string>
     <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">Загрузить эту книгу снова?</item>
-        <item quantity="few">Загрузить эту книгу снова?</item>
-        <item quantity="many">Загрузить эти книги снова?</item>
+        <item quantity="one">Загрузить эту книгу снова\?</item>
+        <item quantity="few">Загрузить эту книгу снова\?</item>
+        <item quantity="many">Загрузить эти книги снова\?</item>
     </plurals>
     <plurals name="download_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">Загрузить выбранное?</item>
-        <item quantity="few">Загрузить выбранное?</item>
-        <item quantity="many">Загрузить выбранное?</item>
+        <item quantity="one">Загрузить выбранное\?</item>
+        <item quantity="few">Загрузить выбранное\?</item>
+        <item quantity="many">Загрузить выбранное\?</item>
     </plurals>
     <plurals name="stream_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">Стримить выбранное?</item>
-        <item quantity="few">Стримить выбранное?</item>
-        <item quantity="many">Стримить выбранное?</item>
+        <item quantity="one">Стримить выбранное\?</item>
+        <item quantity="few">Стримить выбранное\?</item>
+        <item quantity="many">Стримить выбранное\?</item>
     </plurals>
     <plurals name="redownload_external_content">
         <item quantity="one"><x:g id="count" example="1">%d</x:g> книга находится во внешней библиотеке и не может быть загружена снова\nЭти книги будет пропущены.</item>
@@ -450,15 +450,14 @@
         <item quantity="many"><x:g id="count" example="5">%d</x:g> книг уже стримятся или находятся во внешней библиотеке\nЭти книги будут пропущены.</item>
     </plurals>
     <string name="about_to_delete">Книга будет удалена…</string>
-    <string name="help_search">Ищите по чему угодно: названию, автору, тэгам
-\nи даже коду запуска!</string>
+    <string name="help_search">Ищите по чему угодно: названию, художнику, тэгам\nи даже ID книги!</string>
     <string name="help_page_slider">Вы можете проводить пальцем по номерам страниц</string>
     <plurals name="items_selected">
         <item quantity="one">Выбран <x:g id="count" example="1">%d</x:g> элемент</item>
         <item quantity="few">Выбрано <x:g id="count" example="2">%d</x:g> элемента</item>
         <item quantity="many">Выбрано <x:g id="count" example="5">%d</x:g> элементов</item>
     </plurals>
-    <string name="folder_undefined">Ошибка — Родительская папка неизвестна</string>
+    <string name="folder_undefined">Ошибка — Родительская папка недоступна</string>
     <string name="malformed_url">Ошибка — Неправильный URL</string>
     <string name="unsupported_site">Ошибка — Сайт не поддерживается</string>
     <plurals name="external_not_removed">
@@ -550,8 +549,8 @@
     <string name="error_file">Не удалось найти файл обновления на сервере.</string>
     <string name="update_check_no_update">Проверка обновлений: Нет новых версий.</string>
     <!-- Alerts -->
-    <string name="alert_orange">Учтите, что загрузки могут не работать на этом сайте.\n</string>
-    <string name="alert_red">Кнопка загрузки пока что не работает на этом сайте.\n</string>
+    <string name="alert_orange">Учтите, что загрузки могут не работать на этом сайте.</string>
+    <string name="alert_red">Кнопка загрузки пока что не работает на этом сайте.</string>
     <string name="alert_grey">Этот сайт сейчас работает нестабильно. Приложение не может ничего с этим сделать. Пожалуйста, попробуйте позднее.</string>
     <string name="alert_black">Этот сайт сейчас недоступен. Приложение не может ничего с этим сделать. Пожалуйста, попробуйте позднее.</string>
     <string name="alert_wip">Команда разработчиков Hentoid работает над исправлением. Мы уведомим вас, когда новая версия приложения будет доступна.</string>
@@ -572,9 +571,7 @@
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> — это приложение для скачивания додзинси и хентай-манги. Hentoid изначально был создан <b>Сесаром Арасаки</b>.</string>
     <string name="personalDataStatement1"><b>ЗАЯВЛЕНИЕ О КОНФИДЕНЦИАЛЬНОСТИ ПЕРСОНАЛЬНЫХ ДАННЫХ</b>\n\nHentoid — это бесплатное програмное обеспечение с открытым исходным кодом, разрабатываемое сообществом Hentoid (присоединяйтесь к нам в Discord по ссылке ниже)</string>
-    <string name="personalDataStatement2">Hentoid собирает следующие персональные данные и делится ими с Google для обработки с помощью библиотеки Firebase:
-\n - Идентификатор сессии
-\n - IP-адрес</string>
+    <string name="personalDataStatement2">Hentoid собирает следующие персональные данные и делится ими с Google для обработки с помощью библиотеки Firebase:\n - Идентификатор сессии\n - IP-адрес</string>
     <string name="personalDataStatement3">Вышеупомянутые данные удаляются как из действующей, так и из запасной систем Firebase в течение 180 дней (подробности доступны на https://firebase.google.com/support/privacy/)\n\nНикакие другие персональные данные не собираются и не передаются третьим лицам.</string>
     <string name="about_licenses">Показать лицензии</string>
     <string name="about_app_version">Версия Hentoid: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
@@ -599,7 +596,7 @@
     <string name="bookmark_toggle_welcome">Сделать адрес закладки домашней страницей</string>
     <string name="alert_unwanted_tags">У этой книги есть следующие заблокированные тэги: <x:g id="tag" example="bad">%s</x:g></string>
     <string name="bookmark_homepage">Домашняя страница</string>
-    <string name="torrent_dl_fail">Не удалось загрузить торрент: <x:g id="torrent">%s</x:g></string>
+    <string name="torrent_dl_fail">Не удалось начать стриминг: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Отсутствует разрешение на запись — невозможно использовать загрузчик</string>
     <!-- Web browser (site specifics) -->
     <string name="help_web_fakku_account">Hentoid не может работать с Fakku без их аккаунта. Пожалуйста, создайте его или используйте существующий.</string>
@@ -691,7 +688,7 @@
     <string name="page_delete_choices_1">Спросить меня снова в следующий раз</string>
     <string name="page_delete_choices_2">Больше не спрашивать для этой книги</string>
     <string name="page_delete_choices_3">Больше не спрашивать на время этой сессии</string>
-    <string name="viewer_ask_cover">Установить эту страницу как обложку книги?</string>
+    <string name="viewer_ask_cover">Установить эту страницу как обложку книги\?</string>
     <string name="image_not_found">Изображение не найдено</string>
     <string name="image_streaming">Стримлю изображение…</string>
     <string name="book_prefs">Настройки книги</string>
@@ -729,9 +726,9 @@
     <string name="slideshow_start">Начало слайдшоу (задержка в <x:g id="time" example="0.5">%.1f</x:g> с)</string>
     <string name="slideshow_stop">Слайдшоу остановлено</string>
     <!-- Changelog -->
-    <string name="view_changelog">Что нового?</string>
-    <string name="view_changelog_flagged">Что нового?*</string>
-    <string name="changelog">Что нового?</string>
+    <string name="view_changelog">Что нового\?</string>
+    <string name="view_changelog_flagged">Что нового\?*</string>
+    <string name="changelog">Что нового\?</string>
     <string name="get_latest">Доступна новая версия (<x:g id="version" example="1.18.1">%1$s</x:g>)</string>
     <string name="update_success">Обновление завершено!</string>
     <string name="starting_download">Загрузка начата</string>
