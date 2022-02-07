@@ -105,11 +105,11 @@
     <string name="err_no_content">Il libro non esiste ancora</string>
     <string name="confirm_cancel_all">Cancellare l\'intera coda\?</string>
     <plurals name="confirm_cancel_all_errors">
-        <item quantity="one"></item>
+        <item quantity="one">Stai per cancellare <x:g id="count" example="42">%d</x:g> libro con errori. Continuare\?</item>
         <item quantity="other">Stai per cancellare <x:g id="count" example="42">%d</x:g> libri con errori. Continuare\?</item>
     </plurals>
     <plurals name="confirm_redownload_all">
-        <item quantity="one"></item>
+        <item quantity="one">Stai per riscaricare <x:g id="count" example="42">%d</x:g> elemento. Continuare\?</item>
         <item quantity="other">Stai per riscaricare <x:g id="count" example="42">%d</x:g> elementi. Continuare\?</item>
     </plurals>
     <string name="paused_no_internet">Impossibile scaricare - Nessuna connessione Internet</string>
@@ -311,4 +311,221 @@
     <string name="content_not_found">Errore - contenuto non trovato</string>
     <string name="contents_detected">Hentoid ha riconosciuto una libreria esistente in questa posizione.
 \nVuoi importare questa libreria\?</string>
+    <plurals name="group_delete_selected_group_books">
+        <item quantity="one">Elimina gruppo + libri</item>
+        <item quantity="other">Elimina gruppi + libri</item>
+    </plurals>
+    <plurals name="ask_delete_multiple">
+        <item quantity="one">Cancellare l\'elemento selezionato\?</item>
+        <item quantity="other">Cancellare <x:g id="count" example="2">%d</x:g> elementi selezionati\?</item>
+    </plurals>
+    <string name="groups_custom">Personalizzato</string>
+    <string name="sort_read_date">Leggi data</string>
+    <string name="group_name_empty">Il nome del gruppo è vuoto!</string>
+    <string name="sort_dl_date">Data di download</string>
+    <plurals name="group_delete_selected_book">
+        <item quantity="one">Elimina <x:g id="count" example="1">%d</x:g> libro</item>
+        <item quantity="other">Elimina <x:g id="count" example="2">%d</x:g> libri</item>
+    </plurals>
+    <string name="split_select_help">Tieni premuto e trascina per selezionare
+\nOgni capitolo selezionato crea un nuovo libro</string>
+    <string name="merge_success">Contenuto unito</string>
+    <string name="no_artist_group_name">[nessun artista]</string>
+    <string name="sort_title">Titolo</string>
+    <string name="pin_current">Inserisci il PIN attuale</string>
+    <string name="personalDataStatement1"><b>INFORMATIVA SULLA PRIVACY DEI DATI PERSONALI</b>
+\n
+\nHentoid è un software gratuito e open-source gestito dalla community di Hentoid (Unisciti a noi su Discord - vedi il link sopra)</string>
+    <string name="personalDataStatement3">I suddetti dati vengono rimossi da Firebase live e dal sistema di backup entro 180 giorni (vedi https://firebase.google.com/support/privacy/ per maggiori dettagli)
+\n
+\nNessun altro dato personale viene raccolto o mandato a terze parti.</string>
+    <plurals name="import_file_queue">
+        <item quantity="one">Importa la coda (<x:g id="number" example="1">%d</x:g> libro)</item>
+        <item quantity="other">Importa la coda (<x:g id="number" example="2">%d</x:g> libri)</item>
+    </plurals>
+    <plurals name="group_progress">
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> gruppo</item>
+        <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> gruppi</item>
+    </plurals>
+    <plurals name="import_file_library">
+        <item quantity="one">Importa la libreria (<x:g id="number" example="1">%d</x:g> libro)</item>
+        <item quantity="other">Importa la libreria (<x:g id="number" example="2">%d</x:g> libri)</item>
+    </plurals>
+    <plurals name="export_file_library">
+        <item quantity="one">Esporta libreria (<x:g id="number" example="1">%d</x:g> libro)</item>
+        <item quantity="other">Esporta libreria (<x:g id="number" example="2">%d</x:g> libri)</item>
+    </plurals>
+    <plurals name="export_file_queue">
+        <item quantity="one">Esporta coda (<x:g id="number" example="1">%d</x:g> libro)</item>
+        <item quantity="other">Esporta coda (<x:g id="number" example="2">%d</x:g> libri)</item>
+    </plurals>
+    <plurals name="export_file_bookmarks">
+        <item quantity="one">Esporta segnalibri (<x:g id="number" example="1">%d</x:g> elemento)</item>
+        <item quantity="other">Esporta segnalibri (<x:g id="number" example="2">%d</x:g> elementi)</item>
+    </plurals>
+    <plurals name="import_complete_details_success">
+        <item quantity="one"><x:g id="number" example="1">%s</x:g> importato correttamente</item>
+        <item quantity="other"><x:g id="number" example="2">%s</x:g> importati correttamente</item>
+    </plurals>
+    <plurals name="archive_success">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> libro archiviato nella tua cartella Download</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri archiviati nella tua cartella Download</item>
+    </plurals>
+    <plurals name="delete_success_books">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> libro</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri</item>
+    </plurals>
+    <plurals name="delete_success_groups">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> gruppo</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> gruppi</item>
+    </plurals>
+    <plurals name="notif_archive_complete_details">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> libro archiviato correttamente</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri archiviati correttamente</item>
+    </plurals>
+    <plurals name="number_of_items">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> elemento</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> elementi</item>
+    </plurals>
+    <plurals name="number_of_book_search_results">
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> risultato</item>
+        <item quantity="other"><x:g id="number" example="2">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> risultati</item>
+    </plurals>
+    <plurals name="redownload_external_content">
+        <item quantity="one">Uno dei libri selezionati è memorizzato nella libreria esterna e non può essere riscaricato
+\nQuesto libro sarà ignorato.</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri selezionati sono memorizzati nella libreria esterna e non possono essere riscaricati
+\nQuesti libri saranno ignorati.</item>
+    </plurals>
+    <string name="folder_undefined">Errore - cartella contenente non definita</string>
+    <string name="group_make_cover">Imposta come copertina del gruppo</string>
+    <string name="group_change">Passa al gruppo personalizzato</string>
+    <plurals name="download_non_streamed_content">
+        <item quantity="one">Uno dei libri selezionati è già scaricato
+\nQuesto libro sarà ingnorato.</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri selezionati sono già scaricati
+\nQuesti libri saranno ingnorati.</item>
+    </plurals>
+    <string name="about_to_delete">Il libro sta per essere cancellato…</string>
+    <string name="help_search">Cerca qualsiasi cosa: titolo, autore, tag
+\ne anche codici di lancio!</string>
+    <string name="help_page_slider">Puoi navigare più velocemente scorrendo tra i numeri delle pagine</string>
+    <plurals name="items_selected">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> elemento selezionato</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> elementi selezionati</item>
+    </plurals>
+    <string name="malformed_url">Errore - URL non valido</string>
+    <string name="unsupported_site">Errore - Il sito non è supportato</string>
+    <plurals name="external_not_removed">
+        <item quantity="one">Un libro dalla libreria esterna non verrà rimosso</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri dalla libreria esterna non verranno rimossi</item>
+    </plurals>
+    <string name="group_make_cover_ask">Impostare la copertina di questo libro come copertina di questo gruppo\?</string>
+    <string name="group_delete_nothing">Niente da eliminare - seleziona Consenti l\'eleminazione di contenuti esterni per cambiarlo</string>
+    <string name="group_existing">Gruppo esistente</string>
+    <string name="group_new">Crea nuovo</string>
+    <string name="group_new_name">Nuovo nome del gruppo personalizzato</string>
+    <string name="group_remove">Stacca dal gruppo attuale</string>
+    <string name="group_name_exists">Esiste già un gruppo con quel nome.</string>
+    <string name="group_rename_forbidden">È vietato rinominare quel gruppo!</string>
+    <string name="group_not_selected">Il gruppo non è stato selezionato!</string>
+    <plurals name="group_delete_selected_group">
+        <item quantity="one">Elimina solo il gruppo</item>
+        <item quantity="other">Elimina solo i gruppi</item>
+    </plurals>
+    <string name="merge_merge">Unisci</string>
+    <string name="merge_progress">Unendo i libri…</string>
+    <string name="split_progress">Dividendo il libro…</string>
+    <string name="merge_split">Diviso</string>
+    <string name="new_title">Nuovo titolo</string>
+    <string name="merge_delete_after_merging">Elimina questi libri dopo l\'unione</string>
+    <string name="split_no_chapters">Nessun capitolo ancora creato :-(</string>
+    <string name="split_create_chapters">Crea capitoli</string>
+    <string name="split_success">Contenuto diviso</string>
+    <string name="groups_flat">Tutti i libri</string>
+    <string name="groups_by_artist">Per artista</string>
+    <string name="groups_by_dl_date">Per data di download</string>
+    <string name="sort_artist">Artista</string>
+    <string name="sort_pages">Pagine</string>
+    <string name="sort_reads">Legge</string>
+    <string name="sort_size">Dimensione</string>
+    <string name="sort_reading_progress">Progresso lettura</string>
+    <string name="sort_random">casuale</string>
+    <string name="sort_custom">Personalizzato</string>
+    <string name="sort_invalid">-invalido-</string>
+    <string name="sort_books">Libri</string>
+    <string name="drag_help">Trascina elemento</string>
+    <string name="external_help">Appartiene alla libreria esterna</string>
+    <string name="streamed_help">Libro in streaming</string>
+    <string name="view_source_help">Visualizza sorgente nel browser</string>
+    <string name="fav_help">Segna/deseleziona come preferito</string>
+    <string name="show_artists">Mostra artisti</string>
+    <string name="show_groups">Mostra gruppi</string>
+    <string name="show_artists_and_groups">Mostra artisti e gruppi</string>
+    <string name="launchcode_present">Hai già questo libro. Cercare altre fonti\?</string>
+    <string name="updates_title">Aggiornamenti</string>
+    <string name="checking_updates">Verifica aggiornamenti</string>
+    <string name="update_available">È disponibile un aggiornamento!</string>
+    <string name="tap_to_download">Tocca per scaricare</string>
+    <string name="update_download_failed">Download dell\'aggiornamento fallito</string>
+    <string name="tap_to_retry">Toccare per riprovare</string>
+    <string name="downloading_update">Download dell\'aggiornamento</string>
+    <string name="update_ready">L\'aggiornamento è pronto!</string>
+    <string name="tap_to_install">Tocca per installare</string>
+    <string name="error_dependency">Errore nell\'analisi dell\'aggiornamento.
+\nRiprova più tardi.</string>
+    <string name="error_network_summary">Errore di rete, riprova più tardi.</string>
+    <string name="error_file">Impossibile trovare il file di aggiornamento sul server.</string>
+    <string name="update_check_no_update">Verifica aggiornamenti: nessun nuovo aggiornamento.</string>
+    <string name="alert_orange">Tieni presente che i download potrebbero non riuscire su questo sito.
+\n</string>
+    <string name="alert_red">Il pulsante di download è attualmente rotto per questo sito.
+\n</string>
+    <string name="alert_grey">Questo sito ha attualmente seri problemi di stabilità. L\'app non c\'entra nulla. Per favore riprova più tardi.</string>
+    <string name="alert_black">Questo sito non è attualmente disponibile per davvero. L\'app non c\'entra nulla. Per favore riprova più tardi.</string>
+    <string name="alert_wip">Il team di sviluppo di Hentoid sta lavorando a una soluzione. Riceverai una notifica dall\'app quando una nuova versione sarà pronta.</string>
+    <string name="alert_fix_available">Una correzione è disponibile nell\'ultima versione dell\'app. Si prega di aggiornare.</string>
+    <string name="app_lock_pin">Inserisci il PIN</string>
+    <string name="app_lock_pin_prefs">PIN blocco app</string>
+    <string name="app_lock_enable">Blocco app abilitato</string>
+    <string name="app_lock_disabled">Blocco app disabilitato</string>
+    <string name="pin_reset">Reimposta PIN</string>
+    <string name="pin_reset_success">Reset del PIN</string>
+    <string name="pin_ok">PIN OK!</string>
+    <string name="pin_new">Inserisci il nuovo PIN</string>
+    <string name="pin_new_confirm">Conferma il nuovo PIN</string>
+    <string name="pin_explanation">Il blocco app impedisce l\'uso non autorizzato di questa app richiedendo un PIN di 4 cifre all\'avvio</string>
+    <string name="pin_lock_on_restore">Blocca quando aperto
+\ndallo schermo principale</string>
+    <string name="about1"><b>Hentoid</b> è un\'app per archiviare Doujinshi e H-manga. Hentoid è stato originariamente creato da <b>Cesar Arasaki</b>.</string>
+    <string name="personalDataStatement2">Hentoid raccogli i seguenti dati personali e li manda a Google per l\'elaborazione tramite la libreria Firebase:
+\n - ID Sessione
+\n - Indirizzo IP</string>
+    <string name="about_licenses">Visualizza licenze</string>
+    <string name="about_app_version">Hentoid versione: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
+    <string name="about_chrome_version">Chrome versione <x:g id="chrome_ver" example="98">%1$d</x:g></string>
+    <plurals name="ask_archive_multiple">
+        <item quantity="one">Archiviare l\'elemento selezionato\?</item>
+        <item quantity="other">Archiviare <x:g id="count" example="2">%d</x:g> elementi selezionati\?</item>
+    </plurals>
+    <plurals name="import_complete_details_failure">
+        <item quantity="one"><x:g id="number" example="1">%s</x:g> fallito</item>
+        <item quantity="other"><x:g id="number" example="2">%s</x:g> falliti</item>
+    </plurals>
+    <plurals name="import_file_groups">
+        <item quantity="one">Importa gruppi personalizzati (<x:g id="number" example="1">%d</x:g> gruppo)</item>
+        <item quantity="other">Importa gruppi personalizzati (<x:g id="number" example="2">%d</x:g> gruppi)</item>
+    </plurals>
+    <plurals name="import_file_bookmarks">
+        <item quantity="one">Importa segnalibri (<x:g id="number" example="1">%d</x:g> elemento)</item>
+        <item quantity="other">Importa segnalibri (<x:g id="number" example="2">%d</x:g> elementi)</item>
+    </plurals>
+    <plurals name="import_result_books">
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> libro importato correttamente</item>
+        <item quantity="other"><x:g id="number" example="2">%d</x:g> libri importati correttamente</item>
+    </plurals>
+    <plurals name="import_result_bookmarks">
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> segnalibro importato correttamente</item>
+        <item quantity="other"><x:g id="number" example="2">%d</x:g> segnalibri importati correttamente</item>
+    </plurals>
 </resources>
