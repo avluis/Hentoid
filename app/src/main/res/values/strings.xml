@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
     <!-- Generic usage -->
-    <string name="app_name">Hentoid</string>
+    <string name="app_name" translatable="false">Hentoid</string>
     <string name="app_id" translatable="false">me.devsaki.hentoid</string>
     <string name="app_intro">Welcome</string>
     <!-- because Android default "OK" value for "yes" key is nonsense -->
     <string name="yes">Yes</string>
     <!-- because Android default "Cancel" value for "no" key is nonsense -->
     <string name="no">No</string>
-    <string name="ok">OK</string>
+    <string name="ok" tools:ignore="MissingTranslation">OK</string>
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="select_all">Select all</string>
@@ -160,8 +160,8 @@
         <item quantity="other">(<x:g id="errors" example="2">%d</x:g> errors)</item>
     </plurals>
     <string name="queue_bottom_bar_retry">retry <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
-    <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> KBps</string>
-    <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB @ <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
+    <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> KBps</string>
+    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB @ <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Download failed</string>
     <string name="download_notif_failed_details">Cannot download <x:g id="book_name" example="Cool H-Manga">%1$s</x:g>: unable to create folder <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Please check your Hentoid folder and retry downloading using the \'!\' button.</string>
     <!-- TextViews -->
@@ -194,7 +194,7 @@
     <string name="refresh_options_remove_or">or</string>
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
-    <string name="generic_progress"><x:g id="number" example="7">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="books">%3$s</x:g></string>
+    <string name="generic_progress" tools:ignore="MissingTranslation"><x:g id="number" example="7">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="books">%3$s</x:g></string>
     <plurals name="book_progress">
         <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> book</item>
         <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> books</item>
@@ -287,10 +287,10 @@
         <item quantity="one"><x:g id="number" example="1">%s</x:g> failed</item>
         <item quantity="other"><x:g id="number" example="2">%s</x:g> failed</item>
     </plurals>
+    <!-- for logging only -->
     <string name="enabled" translatable="false">ENABLED</string>
     <!-- for logging only -->
     <string name="disabled" translatable="false">DISABLED</string>
-    <!-- for logging only -->
     <!-- Memory usage -->
     <string name="memory_title">Memory usage</string>
     <string name="memory_total">Total: <x:g id="total" example="100 MB">%s</x:g></string>
@@ -547,8 +547,8 @@
     <string name="about_discord" translatable="false"><u>Discord</u></string>
     <string name="about_reddit" translatable="false"><u>Reddit</u></string>
     <string name="about_licenses">Display Licenses</string>
-    <string name="about_app_version">Hentoid v<x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
-    <string name="about_chrome_version">Chrome v<x:g id="chrome_ver" example="98">%1$d</x:g></string>
+    <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
+    <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g id="chrome_ver" example="98">%1$d</x:g></string>
     <!-- Web browser -->
     <string name="web_gallery">Back to latest gallery page</string>
     <string name="web_home">Back to library</string>
@@ -794,11 +794,11 @@
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>
-    <string name="u_byte">bytes</string>
-    <string name="u_kilobyte">KB</string>
-    <string name="u_megabyte">MB</string>
-    <string name="u_gigabyte">GB</string>
-    <string name="u_terabyte">TB</string>
-    <string name="u_petabyte">PB</string>
-    <string name="u_exabyte">EB</string>
+    <string name="u_byte" tools:ignore="MissingTranslation">bytes</string>
+    <string name="u_kilobyte" tools:ignore="MissingTranslation">KB</string>
+    <string name="u_megabyte" tools:ignore="MissingTranslation">MB</string>
+    <string name="u_gigabyte" tools:ignore="MissingTranslation">GB</string>
+    <string name="u_terabyte" tools:ignore="MissingTranslation">TB</string>
+    <string name="u_petabyte" tools:ignore="MissingTranslation">PB</string>
+    <string name="u_exabyte" tools:ignore="MissingTranslation">EB</string>
 </resources>
