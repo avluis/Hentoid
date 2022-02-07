@@ -9,11 +9,11 @@
     <!-- Выбор порога для уведомления о заполненной памяти -->
     <string name="pref_memory_alert_entries_1">Не уведомлять</string>
     <!-- Выбор порога для уведомления о заполненной памяти -->
-    <string name="pref_memory_alert_entries_2">когда заполнена на 90%</string>
+    <string name="pref_memory_alert_entries_2">когда заполнена на 90%%</string>
     <!-- Выбор порога для уведомления о заполненной памяти -->
-    <string name="pref_memory_alert_entries_3">когда заполнена на 95%</string>
+    <string name="pref_memory_alert_entries_3">когда заполнена на 95%%</string>
     <!-- Выбор порога для уведомления о заполненной памяти -->
-    <string name="pref_memory_alert_entries_4">когда заполнена на 98%</string>
+    <string name="pref_memory_alert_entries_4">когда заполнена на 98%%</string>
     <!-- Выбор значения порога для активации долгого нажатия -->
     <string name="pref_browser_quick_dl_threshold_entries_1">500 мс (по умолчанию)</string>
     <!-- Выбор значения порога для активации долгого нажатия -->
@@ -63,9 +63,9 @@
     <!-- Выбор способа наименования папок с книгами -->
     <string name="pref_folder_naming_content_entries_2">Название - ID</string>
     <!-- Выбор способа наименования папок с книгами -->
-    <string name="pref_folder_naming_content_entries_3">Автор - Название - ID</string>
+    <string name="pref_folder_naming_content_entries_3">Художник - Название - ID</string>
     <!-- Выбор способа наименования папок с книгами -->
-    <string name="pref_folder_naming_content_entries_4">Название - Автор - ID</string>
+    <string name="pref_folder_naming_content_entries_4">Название - Художник - ID</string>
     <!-- Выбор сокращения названий папок -->
     <string name="pref_folder_trunc_content_entries_1">Не сокращать</string>
     <!-- Выбор сокращения названий папок -->
