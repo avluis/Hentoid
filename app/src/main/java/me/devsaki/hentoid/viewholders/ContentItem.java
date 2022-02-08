@@ -577,7 +577,15 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivRedownload.setVisibility(View.VISIBLE);
                 ivError.setVisibility(View.VISIBLE);
             } else if (ViewType.LIBRARY == item.viewType || ViewType.LIBRARY_GRID == item.viewType) {
-                ivExternal.setVisibility(content.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
+                if (content.getStatus().equals(StatusContent.EXTERNAL)) {
+                    if (content.isArchive())
+                        ivExternal.setImageResource(R.drawable.ic_archive);
+                    else
+                        ivExternal.setImageResource(R.drawable.ic_folder_full);
+                    ivExternal.setVisibility(View.VISIBLE);
+                } else
+                    ivExternal.setVisibility(View.GONE);
+
                 if (content.isFavourite()) {
                     ivFavourite.setImageResource(R.drawable.ic_fav_full);
                 } else {
