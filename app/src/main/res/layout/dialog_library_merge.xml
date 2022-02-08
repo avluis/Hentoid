@@ -19,7 +19,7 @@
         android:scrollbars="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toTopOf="parent"
-        app:maxHeight="@dimen/dialog_max_height"
+        app:maxHeight="350dp"
         tools:listitem="@layout/item_drawer_edit" />
 
     <com.google.android.material.textfield.TextInputLayout
