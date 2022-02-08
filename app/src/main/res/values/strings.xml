@@ -235,7 +235,7 @@
         <item quantity="one"><x:g id="number" example="1">%d</x:g> bookmark imported successfully</item>
         <item quantity="other"><x:g id="number" example="2">%d</x:g> bookmarks imported successfully</item>
     </plurals>
-    <string name="dialog_prompt">Choose a Folder</string>
+    <string name="dialog_prompt">Grant write permission</string>
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>
     <plurals name="export_file_library">
@@ -249,7 +249,7 @@
         <item quantity="other">Export queue (<x:g id="number" example="2">%d</x:g> books)</item>
     </plurals>
     <plurals name="export_file_bookmarks">
-        <item quantity="one">Export bookmarks (<x:g id="number" example="1">%d</x:g> item)</item>
+        <item quantity="one">Export bookmark (<x:g id="number" example="1">%d</x:g> item)</item>
         <item quantity="other">Export bookmarks (<x:g id="number" example="2">%d</x:g> items)</item>
     </plurals>
     <string name="export_warning1">Exporting metadata is meant to create a list of your books in JSON format.\nIt is not meant for moving your collection to your PC or your SD card.\nTap here to learn how to do that.</string>
