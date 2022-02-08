@@ -13,10 +13,14 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
+import me.devsaki.hentoid.customssiv.Helper;
+import me.devsaki.hentoid.customssiv.ImageHelper;
 
 /**
  * Default implementation of {@link ImageDecoder}
@@ -55,7 +59,7 @@ public class SkiaImageDecoder implements ImageDecoder {
     public Bitmap decode(@NonNull final Context context, @NonNull final Uri uri) throws IOException, PackageManager.NameNotFoundException {
         String uriString = uri.toString();
         BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap bitmap;
+        Bitmap bitmap = null;
         options.inPreferredConfig = bitmapConfig;
         // If that is not set, some PNGs are read with a ColorSpace of code "Unknown" (-1),
         // which makes resizing buggy (generates a black picture)
@@ -68,13 +72,35 @@ public class SkiaImageDecoder implements ImageDecoder {
         } else if (uriString.startsWith(ASSET_PREFIX)) {
             String assetName = uriString.substring(ASSET_PREFIX.length());
             bitmap = BitmapFactory.decodeStream(context.getAssets().open(assetName), null, options);
-        } else if (uriString.startsWith(FILE_PREFIX)) {
+        }/* else if (uriString.startsWith(FILE_PREFIX)) {
             bitmap = BitmapFactory.decodeFile(uriString.substring(FILE_PREFIX.length()), options);
-        } else {
+        } */ else {
+            InputStream headerStream;
+            InputStream fileStream;
             try (InputStream input = context.getContentResolver().openInputStream(uri)) {
                 if (input == null)
                     throw new RuntimeException("Content resolver returned null stream. Unable to initialise with uri.");
-                bitmap = BitmapFactory.decodeStream(input, null, options);
+
+                try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                    Helper.copy(input, baos);
+
+                    headerStream = new ByteArrayInputStream(baos.toByteArray(), 0, 400);
+                    fileStream = new ByteArrayInputStream(baos.toByteArray());
+                }
+            }
+
+            try {
+                byte[] header = new byte[400];
+                if (headerStream.read(header) > 0 && ImageHelper.isImageAnimated(header))
+                    throw new RuntimeException("SSIV doesn't handle animated pictures");
+            } finally {
+                headerStream.close();
+            }
+
+            try {
+                bitmap = BitmapFactory.decodeStream(fileStream, null, options);
+            } finally {
+                fileStream.close();
             }
         }
         if (bitmap == null) {

@@ -40,6 +40,8 @@ public final class ImageHelper {
     public static final String MIME_IMAGE_WEBP = "image/webp";
     public static final String MIME_IMAGE_JPEG = "image/jpeg";
     public static final String MIME_IMAGE_GIF = "image/gif";
+    public static final String MIME_IMAGE_PNG = "image/png";
+    public static final String MIME_IMAGE_APNG = "image/apng";
 
 
     private static FileHelper.NameFilter imageNamesFilter;
@@ -97,9 +99,9 @@ public final class ImageHelper {
             int acTlPos = FileHelper.findSequencePosition(binary, 0, "acTL".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.2));
             if (acTlPos > -1) {
                 long idatPos = FileHelper.findSequencePosition(binary, acTlPos, "IDAT".getBytes(CHARSET_LATIN_1), (int) (binary.length * 0.1));
-                if (idatPos > -1) return "image/apng";
+                if (idatPos > -1) return MIME_IMAGE_APNG;
             }
-            return "image/png";
+            return MIME_IMAGE_PNG;
         } else if ((byte) 0x47 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2])
             return MIME_IMAGE_GIF;
         else if ((byte) 0x52 == binary[0] && (byte) 0x49 == binary[1] && (byte) 0x46 == binary[2] && (byte) 0x46 == binary[3]
@@ -107,6 +109,23 @@ public final class ImageHelper {
             return MIME_IMAGE_WEBP;
         else if ((byte) 0x42 == binary[0] && (byte) 0x4D == binary[1]) return "image/bmp";
         else return MIME_IMAGE_GENERIC;
+    }
+
+    // If format is supported by Android, true if animated (animated GIF, APNG, animated WEBP); false if not
+    // TODO complete doc
+    boolean isImageAnimated(byte[] binary) {
+        if (binary.length < 400) return false;
+
+        switch (getMimeTypeFromPictureBinary(binary)) {
+            case MIME_IMAGE_APNG:
+                return true;
+            case MIME_IMAGE_GIF:
+                return FileHelper.findSequencePosition(binary, 0, "NETSCAPE".getBytes(CHARSET_LATIN_1), 400) > -1;
+            case MIME_IMAGE_WEBP:
+                return FileHelper.findSequencePosition(binary, 0, "ANIM".getBytes(CHARSET_LATIN_1), 400) > -1;
+            default:
+                return false;
+        }
     }
 
     /**

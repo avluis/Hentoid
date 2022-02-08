@@ -26,8 +26,12 @@ import androidx.constraintlayout.widget.Group;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
+import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.mikepenz.fastadapter.FastAdapter;
@@ -88,8 +92,10 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
 
+        final Transformation<Bitmap> centerInside = new CenterInside();
         glideRequestOptions = new RequestOptions()
-                .centerInside()
+                .optionalTransform(centerInside)
+                .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
                 .error(d);
     }
 

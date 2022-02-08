@@ -2,6 +2,7 @@ package me.devsaki.hentoid.viewholders;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +13,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
+import com.bumptech.glide.load.Transformation;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.signature.ObjectKey;
 import com.mikepenz.fastadapter.FastAdapter;
@@ -40,7 +45,14 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
     private boolean isCurrent;
     private boolean expanded = false;
 
-    private static final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
+    private static final RequestOptions glideRequestOptions;
+
+    static {
+        final Transformation<Bitmap> centerInside = new CenterInside();
+        glideRequestOptions = new RequestOptions()
+                .optionalTransform(centerInside)
+                .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside));
+    }
 
     public ImageFileItem(@NonNull ImageFile image, boolean showChapter) {
         this.image = image;

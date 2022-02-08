@@ -163,11 +163,12 @@ public final class Helper {
     public static List<InputStream> duplicateInputStream(@Nonnull InputStream stream, int numberDuplicates) throws IOException {
         List<InputStream> result = new ArrayList<>();
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        copy(stream, baos);
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            copy(stream, baos);
 
-        for (int i = 0; i < numberDuplicates; i++)
-            result.add(new ByteArrayInputStream(baos.toByteArray()));
+            for (int i = 0; i < numberDuplicates; i++)
+                result.add(new ByteArrayInputStream(baos.toByteArray()));
+        }
 
         return result;
     }

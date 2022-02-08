@@ -41,6 +41,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
+import com.bumptech.glide.load.Transformation;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -100,7 +104,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
     private static final String KEY_SLIDESHOW_ON = "slideshow_on";
 
-    private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
+    private final Transformation<Bitmap> centerInside = new CenterInside();
+    private final RequestOptions glideRequestOptions = new RequestOptions()
+            .optionalTransform(centerInside)
+            .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside));
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;

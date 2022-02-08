@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -21,11 +22,13 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
 import com.github.penfeizhou.animation.apng.APNGDrawable;
 import com.github.penfeizhou.animation.io.FilterReader;
@@ -41,6 +44,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.core.GlideApp;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.customssiv.ImageSource;
@@ -53,7 +57,7 @@ import timber.log.Timber;
 
 public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAdapter.ImageViewHolder> {
 
-    private static final int IMG_TYPE_OTHER = 0;    // PNGs and JPEGs -> use CustomSubsamplingScaleImageView
+    private static final int IMG_TYPE_OTHER = 0;    // PNGs, JPEGs and WEBPs -> use CustomSubsamplingScaleImageView; will fallback to Glide if animation detected
     private static final int IMG_TYPE_GIF = 1;      // Static and animated GIFs -> use native Glide
     private static final int IMG_TYPE_APNG = 2;     // Animated PNGs -> use APNG4Android library
 
@@ -70,9 +74,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     static final int SCREEN_HEIGHT = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
 
     private static final int PAGE_MIN_HEIGHT = (int) HentoidApp.getInstance().getResources().getDimension(R.dimen.page_min_height);
-
-
-    private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private View.OnTouchListener itemTouchListener;
     private RecyclerView recyclerView;
@@ -154,7 +155,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     int getItemViewType(int position) {
         int imageType = getImageType(getImageAt(position));
 
-        if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType) return ViewType.DEFAULT;
+        if (IMG_TYPE_GIF == imageType || IMG_TYPE_APNG == imageType)
+            return ViewType.DEFAULT;
         if (Preferences.Constant.VIEWER_DISPLAY_STRETCH == displayMode)
             return ViewType.IMAGEVIEW_STRETCH;
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
@@ -331,6 +333,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             Timber.d("Picture %d : binding viewholder %s %s", getAbsoluteAdapterPosition(), imgType, uri);
 
             if (!isImageView) { // SubsamplingScaleImageView
+                Timber.d("Using SSIV");
                 ssiv.recycle();
                 ssiv.setMinimumScaleType(getScaleType());
                 ssiv.setOnImageEventListener(this);
@@ -349,13 +352,18 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             } else { // ImageView
                 ImageView view = (ImageView) imgView;
                 if (IMG_TYPE_APNG == imgType) {
+                    Timber.d("Using APNGDrawable");
                     APNGDrawable apngDrawable = new APNGDrawable(new ImgLoader(uri));
                     apngDrawable.registerAnimationCallback(animationCallback);
                     view.setImageDrawable(apngDrawable);
                 } else {
-                    Glide.with(view)
+                    Timber.d("Using Glide");
+                    Transformation<Bitmap> centerInside = new CenterInside();
+                    GlideApp.with(view)
                             .load(uri)
-                            .apply(glideRequestOptions)
+                            .optionalTransform(centerInside)
+                            .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
+//                            .set(WebpFrameLoader.FRAME_CACHE_STRATEGY, WebpFrameCacheStrategy.ALL)
                             .listener(this)
                             .into(view);
                 }
