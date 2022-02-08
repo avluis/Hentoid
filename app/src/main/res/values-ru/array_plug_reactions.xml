@@ -18,17 +18,15 @@
     <!-- Реакция на подключение аудио-устройства -->
     <string name="audio_plug7">так… тесно…♡</string>
     <!-- Реакция на подключение зарядного устройства -->
-    <string name="power_plug1">♡~</string>
+    <string name="power_plug1">мне так приятно там~~</string>
     <!-- Реакция на подключение зарядного устройства -->
-    <string name="power_plug2">мне так приятно там~~</string>
+    <string name="power_plug2">глубже~~~♡</string>
     <!-- Реакция на подключение зарядного устройства -->
-    <string name="power_plug3">глубже~~~♡</string>
+    <string name="power_plug3">икуууу~~</string>
     <!-- Реакция на подключение зарядного устройства -->
-    <string name="power_plug4">икуууу~~</string>
+    <string name="power_plug4">а-ах ♡</string>
     <!-- Реакция на подключение зарядного устройства -->
-    <string name="power_plug5">а-ах ♡</string>
+    <string name="power_plug5">ооох~</string>
     <!-- Реакция на подключение зарядного устройства -->
-    <string name="power_plug6">ооох~</string>
-    <!-- Реакция на подключение зарядного устройства -->
-    <string name="power_plug7">ещё ♡</string>
+    <string name="power_plug6">ещё ♡</string>
 </resources>
