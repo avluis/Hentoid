@@ -6,7 +6,7 @@ ___
 
 [![Download](https://img.shields.io/badge/GET-the%20APK-brightgreen.svg)](https://github.com/avluis/Hentoid/releases/latest)
 
-[![Translation status](https://hosted.weblate.org/widgets/hentoid/-/88x31-grey.png)](https://hosted.weblate.org/engage/hentoid/) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=RobbWatershed_hentoid-sonar&metric=alert_status)](https://sonarcloud.io/dashboard?id=RobbWatershed_hentoid-sonar) [![Build status](https://app.bitrise.io/app/70539fbfc39cb9d8/status.svg?token=_kOMCvtscTfWpw7mdsqvJA&branch=dev)](https://app.bitrise.io/app/70539fbfc39cb9d8) 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=RobbWatershed_hentoid-sonar&metric=alert_status)](https://sonarcloud.io/dashboard?id=RobbWatershed_hentoid-sonar) [![Build status](https://app.bitrise.io/app/70539fbfc39cb9d8/status.svg?token=_kOMCvtscTfWpw7mdsqvJA&branch=dev)](https://app.bitrise.io/app/70539fbfc39cb9d8) 
 
 [![](https://discordapp.com/api/guilds/173995475098271746/embed.png?style=banner2)](https://discord.gg/QEZ3qk9)
 
