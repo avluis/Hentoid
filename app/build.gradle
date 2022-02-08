@@ -30,7 +30,7 @@ android {
         jvmTarget = JavaVersion.VERSION_1_8
     }
     lintOptions {
-        warning 'MissingTranslation' // Handled by Weblate
+        informational 'MissingTranslation' // Handled by Weblate
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
