@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
     <!-- Interface -->
     <string name="pref_screen_interface">Grensesnitt og navigasjon</string>
     <string name="pref_cat_library">Bibliotek</string>
@@ -11,7 +11,7 @@
     <string name="pref_endless_scroll_summary_off">Skru på uendelig rulling i nedlastingslisten.\nDette skrur av sideinndeling.</string>
     <string name="pref_endless_scroll_summary_on">Rull så mye du vil</string>
     <string name="pref_quantity_per_page_title">Mengde per side</string>
-    <string name="pref_quantity_per_page_summary">Antall elementer per side i nedlastingslisten.\nNå: %s elementer</string>
+    <string name="pref_quantity_per_page_summary">Antall elementer per side i nedlastingslisten.\nNå: <x:g id="count" example="10">%s</x:g> elementer</string>
     <string name="pref_cat_search">Avansert søk</string>
     <string name="pref_attributes_list_order_title">Sorteringsrekkefølge for vist metadata</string>
     <string name="pref_attributes_list_count_title">Tell tilgjengelige bøker</string>
@@ -19,7 +19,7 @@
     <string name="pref_attributes_list_count_off">Antall tilgjengelige bøker vises ikke</string>
     <string name="pref_cat_theme">Programdrakt</string>
     <string name="pref_color_theme_title">Fargedrakt</string>
-    <string name="pref_color_theme_summary">Nåværende drakt: %s</string>
+    <string name="pref_color_theme_summary">Nåværende drakt: <x:g id="theme_name" example="Deep Red">%s</x:g></string>
     <!-- Storage -->
     <string name="pref_screen_storage">Lagring</string>
     <string name="pref_cat_downloads_folder">Hentoid-bibliotek</string>
@@ -29,14 +29,14 @@
     <string name="pref_import_queue_empty_on">Tomme bøker vil bli lagt til i køen som feil</string>
     <string name="pref_import_queue_empty_off">Tomme bøker vil bli lagt til i biblioteket</string>
     <string name="pref_folder_naming_content_title">Mappenavn</string>
-    <string name="pref_folder_naming_content_summary">Navngivningssystem for bøker:\n%s</string>
+    <string name="pref_folder_naming_content_summary">Navngivningssystem for bøker:\n<x:g id="convention" example="Name - ID">%s</x:g></string>
     <string name="pref_import_running">Import kjører allerede</string>
     <string name="prefs_ask_detach_external_library">Koble fra det eksterne biblioteket\?</string>
     <string name="prefs_external_library_detached">Eksternt bibliotek frakoblet</string>
     <string name="pref_folder_trunc_title">Forkort mappenavn</string>
-    <string name="pref_folder_trunc_summary">Forkortelse av bokmappenavn.\nNå: %s.</string>
+    <string name="pref_folder_trunc_summary">Forkortelse av bokmappenavn.\nNå: <x:g id="chars" example="80 characters">%s</x:g>.</string>
     <string name="pref_memory_usage_title">Minnebruk</string>
-    <string name="pref_memory_usage_summary">Nåværende ledig plass: %.2f%% (trykk for detaljer)</string>
+    <string name="pref_memory_usage_summary">Nåværende ledig plass: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (trykk for detaljer)</string>
     <string name="pref_memory_alert_title">Varsel ved lavt minne</string>
     <string name="pref_cat_external">Eksternt bibliotek</string>
     <string name="pref_external_library_title">Eksternt bibliotek</string>
@@ -52,8 +52,8 @@
     <string name="pref_delete_all_except_favs_title">Slett alle bøker unntatt favoritter</string>
     <!-- pref_delete_all_except_favs_summary -->
     <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Slett %d bok\?</item>
-        <item quantity="other">Slett %d bøker\?</item>
+        <item quantity="one">Slett <x:g id="count" example="1">%d</x:g> bok\?</item>
+        <item quantity="other">Slett <x:g id="count" example="2">%d</x:g> bøker\?</item>
     </plurals>
     <!-- Browser -->
     <string name="pref_screen_browser">Nettleser</string>
