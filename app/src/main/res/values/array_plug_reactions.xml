@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <!-- DO NOT modify the way these arrays are set up - it is required for Weblate to work -->
     <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
 
-    <string-array name="audio_reactions">
+    <string-array name="audio_reactions" translatable="false">
         <item>@string/audio_plug1</item>
         <item>@string/audio_plug2</item>
         <item>@string/audio_plug3</item>
@@ -27,27 +27,25 @@
     <!-- Plugging in audio device reaction -->
     <string name="audio_plug7">too… tight…♡</string>
     <!-- Plugging in audio device reaction -->
-    <string-array name="power_reactions">
+    <string-array name="power_reactions" translatable="false">
+        <item>♡~</item>
         <item>@string/power_plug1</item>
         <item>@string/power_plug2</item>
         <item>@string/power_plug3</item>
         <item>@string/power_plug4</item>
         <item>@string/power_plug5</item>
         <item>@string/power_plug6</item>
-        <item>@string/power_plug7</item>
     </string-array>
     <!-- Plugging in power cord reaction -->
-    <string name="power_plug1">♡~</string>
+    <string name="power_plug1">I like it there~~</string>
     <!-- Plugging in power cord reaction -->
-    <string name="power_plug2">I like it there~~</string>
+    <string name="power_plug2">push it further~~~♡</string>
     <!-- Plugging in power cord reaction -->
-    <string name="power_plug3">push it further~~~♡</string>
+    <string name="power_plug3">ikuuuu~~</string>
     <!-- Plugging in power cord reaction -->
-    <string name="power_plug4">ikuuuu~~</string>
+    <string name="power_plug4">ahh ♡</string>
     <!-- Plugging in power cord reaction -->
-    <string name="power_plug5">ahh ♡</string>
+    <string name="power_plug5">ohhh~</string>
     <!-- Plugging in power cord reaction -->
-    <string name="power_plug6">ohhh~</string>
-    <!-- Plugging in power cord reaction -->
-    <string name="power_plug7">give me more ♡</string>
+    <string name="power_plug6">give me more ♡</string>
 </resources>

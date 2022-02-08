@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="slide_01_header">Velkommen til Hentoid.</string>
+    <string name="slide_01_text">Hentoid is a Doujinshi\nog H-Manga-arkiveringsprogram</string>
     <string name="slide_02_header">Tilganger</string>
     <string name="slide_02_text">Lagringstilgang er nødvendig for å lagre filer på enheten din.</string>
     <string name="slide_04_header">Bibliotek</string>
+    <string name="slide_04_text">Hentoid krever at du har en egen mappe til lagring av media.</string>
     <string name="slide_04_skip">Hopp over</string>
     <string name="slide_04_skip_title">Hopp over\?</string>
+    <string name="slide_04_skip_msg">Du vil ikke kunne laste ned hvis du hopper over dette steget\nDet er mulig å sette opp en nedlastingsmappe i programinnstillingene</string>
     <string name="slide_05_header">Drakt</string>
     <string name="slide_05_text">Velg en visningsdrakt.</string>
-    <string name="slide_01_text">Hentoid is a Doujinshi
-\nog H-Manga-arkiveringsprogram</string>
-    <string name="slide_04_text">Hentoid krever at du har en egen mappe til lagring av media.</string>
-    <string name="slide_04_skip_msg">Du vil ikke kunne laste ned hvis du hopper over dette steget
-\nDet er mulig å sette opp en nedlastingsmappe i programinnstillingene</string>
     <string name="slide_06_header">Kilder</string>
     <string name="slide_06_text">Velg kilder å laste ned fra.</string>
-    <string name="slide_end_header">Alt er satt opp.</string>
-    <string name="slide_end_text">Alt klart.
-\nNyt programmet.</string>
     <string name="slide_06_subtext">Du kan endre dette senere ved å bruke redigeringsknappen i menyen til venstre.</string>
+    <string name="slide_end_header">Alt er satt opp.</string>
+    <string name="slide_end_text">Alt klart.\nNyt programmet.</string>
 </resources>

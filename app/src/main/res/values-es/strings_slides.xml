@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="slide_01_header">¡Bienvenido a Hentoid!</string>
+    <string name="slide_01_text">Hentoid es una aplicación para archivar\nDoujinshi y Hentai manga.</string>
     <string name="slide_02_header">Permisos</string>
-    <string name="slide_01_text">Hentoid es una aplicación para archivar
-\nDoujinshi y Hentai manga.</string>
 </resources>

@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tools_title">Outils</string>
-    <string name="tools_import_library_summary">Restaurer les livres Hentoid exportés à partir d\'un fichier JSON</string>
-    <string name="tools_duplicate_detector_title">Détecteur de doublons</string>
-    <string name="tools_duplicate_detector_summary">Identifier et supprimer les livres en double</string>
-    <string name="tools_cache_app">Effacer le cache de l\'application</string>
-    <string name="tools_cache_app_success">Le cache de l\'application a bien été effacé</string>
-    <string name="tools_latest_logs_title">Journaux d\'application</string>
-    <string name="tools_latest_logs_summary">Afficher les derniers journaux de l\'appli</string>
-    <string name="tools_cache_browser_success">Cache WebView effacé</string>
-    <string name="tools_export_library_summary">Exporter les livres Hentoid vers un fichier JSON</string>
     <string name="tools_screen_import_export">Importer / Exporter</string>
     <string name="tools_export_library_title">Exporter les métadonnées</string>
+    <string name="tools_export_library_summary">Exporter les livres Hentoid vers un fichier JSON</string>
     <string name="tools_import_library_title">Importer les métadonnées</string>
+    <string name="tools_import_library_summary">Restaurer les livres Hentoid exportés à partir d\'un fichier JSON</string>
     <string name="tools_screen_cat_settings">Paramètres</string>
     <string name="tools_export_settings_title">Paramètres d\'exportation</string>
     <string name="tools_export_settings_summary">Exporter les paramètres vers un fichier JSON</string>
     <string name="tools_import_settings_title">Paramètres d\'importation</string>
     <string name="tools_import_settings_summary">Restaurer les paramètres exportés à partir d\'un fichier JSON</string>
+    <string name="tools_duplicate_detector_title">Détecteur de doublons</string>
+    <string name="tools_duplicate_detector_summary">Identifier et supprimer les livres en double</string>
     <string name="tools_screen_cache">Gestion des caches</string>
     <string name="tools_cache_browser">Effacer le cache du navigateur</string>
+    <string name="tools_cache_browser_success">Cache WebView effacé</string>
+    <string name="tools_cache_app">Effacer le cache de l\'application</string>
+    <string name="tools_cache_app_success">Le cache de l\'application a bien été effacé</string>
+    <string name="tools_latest_logs_title">Journaux d\'application</string>
+    <string name="tools_latest_logs_summary">Afficher les derniers journaux de l\'appli</string>
 </resources>
