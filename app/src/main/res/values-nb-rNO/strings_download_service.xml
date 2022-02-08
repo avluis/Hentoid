@@ -2,7 +2,7 @@
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="download_completed">
         <item quantity="one">Nedlasting fullført</item>
-        <item quantity="other">%d nedlastinger fullført</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> nedlastinger fullført</item>
     </plurals>
     <string name="download_complete">Nedlasting fullført</string>
     <string name="download_cancelled">Nedlasting avbrutt</string>
@@ -11,8 +11,8 @@
     <string name="download_error">Nedlasting fullført, men med feil</string>
     <string name="unhandled_download_error">Uhåndtert feil ved forsøk på å lese bildenettadresser</string>
     <plurals name="add_to_queue">
-        <item quantity="one">%1$d/%2$d element lagt til i kø</item>
-        <item quantity="other">%1$d/%2$d elementer lagt til i kø</item>
+        <item quantity="one"><x:g example="1" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> element lagt til i kø</item>
+        <item quantity="other"><x:g example="2" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> elementer lagt til i kø</item>
     </plurals>
     <string name="already_downloaded">Allerede nedlastet</string>
     <string name="already_queued">Allerede i kø</string>
