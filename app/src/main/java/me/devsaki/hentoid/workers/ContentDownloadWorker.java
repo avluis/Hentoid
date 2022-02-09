@@ -78,6 +78,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.download.DownloadHelper;
+import me.devsaki.hentoid.util.download.RequestOrder;
 import me.devsaki.hentoid.util.download.RequestQueueManager;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.exception.CaptchaException;
@@ -87,7 +88,6 @@ import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import me.devsaki.hentoid.util.network.InputStreamVolleyRequest;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.notification.NotificationManager;
@@ -111,7 +111,7 @@ public class ContentDownloadWorker extends BaseWorker {
     private boolean isCloudFlareBlocked;
 
     private final NotificationManager userActionNotificationManager;
-    private final RequestQueueManager<Object> requestQueueManager;
+    private final RequestQueueManager requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Download speed calculator
@@ -804,7 +804,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
     }
 
-    private Request<Object> buildImageDownloadRequest(
+    private RequestOrder buildImageDownloadRequest(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
             @NonNull final Content content) {
@@ -817,7 +817,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         final String backupUrlFinal = HttpHelper.fixUrl(img.getBackupUrl(), site.getUrl());
 
-        return new InputStreamVolleyRequest(
+        return new RequestOrder(
                 Request.Method.GET,
                 imageUrl,
                 requestHeaders,

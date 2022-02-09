@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util.network;
+package me.devsaki.hentoid.util.download;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Header;
@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.util.network.OkHttpClientSingleton;
 import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.MediaType;

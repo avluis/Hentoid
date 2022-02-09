@@ -30,13 +30,12 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.network.VolleyOkHttp3Stack;
 import timber.log.Timber;
 
 /**
  * Manager class for image download queue (Volley)
  */
-public class RequestQueueManager<T> implements RequestQueue.RequestEventListener {
+public class RequestQueueManager implements RequestQueue.RequestEventListener {
     private static RequestQueueManager mInstance;           // Instance of the singleton
     private static final int CONNECT_TIMEOUT_MS = 4000;
     private static final int IO_TIMEOUT_MS = 15000;
@@ -56,8 +55,8 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     // Used when waiting between requests
     private final CompositeDisposable waitDisposable = new CompositeDisposable();
 
-    private final LinkedList<Request<T>> waitingRequestQueue = new LinkedList<>(); // Requests waiting to be executed
-    private final Set<Request<T>> currentRequests = new HashSet<>(); // Requests being currently executed
+    private final LinkedList<RequestOrder> waitingRequestQueue = new LinkedList<>(); // Requests waiting to be executed
+    private final Set<RequestOrder> currentRequests = new HashSet<>(); // Requests being currently executed
 
     // Measurement of the number of requests per second
     private final Queue<Long> previousRequestsTimestamps = new LinkedList<>();
@@ -98,10 +97,9 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         return activityManager.getMemoryClass();
     }
 
-    @SuppressWarnings("unchecked")
-    public static synchronized <T> RequestQueueManager<T> getInstance(Context context) {
+    public static synchronized RequestQueueManager getInstance(Context context) {
         if (context != null && mInstance == null) {
-            mInstance = new RequestQueueManager<T>(context);
+            mInstance = new RequestQueueManager(context);
         }
         return mInstance;
     }
@@ -159,7 +157,8 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
             mRequestQueue.addRequestEventListener(this);
             synchronized (currentRequests) {
                 // Requeue interrupted requests
-                for (Request<T> request : currentRequests) executeRequest(request);
+                for (RequestOrder order : currentRequests)
+                    executeRequest(order);
             }
         }
     }
@@ -203,16 +202,16 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     /**
      * Add a request to the app's queue
      *
-     * @param request Request to addAll to the queue
+     * @param order Request to addAll to the queue
      */
-    public void queueRequest(Request<T> request) {
+    public void queueRequest(RequestOrder order) {
         if ((isSimulateHumanReading && nbActiveRequests.get() > 0) || nbRequestsPerSecond > -1 && nbActiveRequests.get() == nbRequestsPerSecond) {
-            Timber.d("Waiting requests queue ::: request stored for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
+            Timber.d("Waiting requests queue ::: request stored for host %s - current total %s", Uri.parse(order.getUrl()).getHost(), waitingRequestQueue.size());
             synchronized (waitingRequestQueue) {
-                waitingRequestQueue.add(request);
+                waitingRequestQueue.add(order);
             }
         } else {
-            executeRequest(request);
+            executeRequest(order);
         }
     }
 
@@ -236,9 +235,9 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
         } else return Integer.MAX_VALUE;
     }
 
-    private void executeRequest(Request<T> request) {
+    private void executeRequest(RequestOrder order) {
         long now = Instant.now().toEpochMilli();
-        if (getAllowedNewRequests(now) > 0) executeRequest(request, now);
+        if (getAllowedNewRequests(now) > 0) executeRequest(order, now);
     }
 
     private void refillRequestQueue() {
@@ -254,25 +253,25 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
             for (int i = 0; i < allowedNewRequests; i++) {
                 synchronized (waitingRequestQueue) {
                     if (waitingRequestQueue.isEmpty()) break;
-                    Request<T> r = waitingRequestQueue.removeFirst();
-                    if (r != null) executeRequest(r, now);
+                    RequestOrder o = waitingRequestQueue.removeFirst();
+                    if (o != null) executeRequest(o, now);
                 }
             }
         }
     }
 
-    private void executeRequest(@NonNull Request<T> request, long now) {
+    private void executeRequest(@NonNull RequestOrder order, long now) {
         synchronized (currentRequests) {
-            currentRequests.add(request);
+            currentRequests.add(order);
             nbActiveRequests.incrementAndGet();
         }
-        mRequestQueue.add(request);
+        mRequestQueue.add(new InputStreamVolleyRequest<>(order));
         if (nbRequestsPerSecond > -1) {
             synchronized (previousRequestsTimestamps) {
                 previousRequestsTimestamps.add(now);
             }
         }
-        Timber.v("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbActiveRequests);
+        Timber.v("Global requests queue ::: request added for host %s - current total %s", Uri.parse(order.getUrl()).getHost(), nbActiveRequests);
     }
 
     /**
@@ -281,10 +280,11 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
      *
      * @param request Completed request
      */
-    public void onRequestFinished(Request<T> request) {
+    public void onRequestFinished(Request<?> request) {
         if (request.hasHadResponseDelivered()) {
             synchronized (currentRequests) {
-                currentRequests.remove(request); // NB : equals and hashCode are InputStreamVolleyRequest's
+                //noinspection SuspiciousMethodCalls
+                currentRequests.remove(request.getTag()); // tag _is_ the original RequestOrder
                 nbActiveRequests.decrementAndGet();
             }
         }
@@ -303,8 +303,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
                             // Add the next request to the queue
                             Timber.d("Waiting requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), waitingRequestQueue.size());
                             synchronized (waitingRequestQueue) {
-                                Request<T> req = waitingRequestQueue.removeFirst();
-                                executeRequest(req);
+                                executeRequest(waitingRequestQueue.removeFirst());
                             }
                             return true;
                         })
@@ -343,7 +342,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestEventListener
     @Override
     public void onRequestEvent(Request<?> request, int event) {
         if (event == RequestQueue.RequestEvent.REQUEST_FINISHED) {
-            onRequestFinished((Request<T>) request); // https://github.com/google/volley/issues/403
+            onRequestFinished(request); // https://github.com/google/volley/issues/403
         }
     }
 }
