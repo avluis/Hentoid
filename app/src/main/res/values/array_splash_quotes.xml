@@ -3,7 +3,7 @@
     <!-- DO NOT modify the way these arrays are set up - it is required for Weblate to work -->
     <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
 
-    <string-array name="splash_quotes" tools:ignore="InconsistentArrays" translatable="false">
+    <string-array name="splash_quotes" translatable="false" tools:ignore="InconsistentArrays">
         <item>@string/splash_quote1</item>
         <item>@string/splash_quote2</item>
         <item>@string/splash_quote3</item>
@@ -39,20 +39,18 @@
         <item>@string/splash_quote33</item>
         <item>@string/splash_quote34</item>
         <item>@string/splash_quote35</item>
-        <item>WARNING LEWD PP</item>
+        <item>@string/splash_quote44</item>
         <item>@string/splash_quote36</item>
         <item>@string/splash_quote37</item>
         <item>@string/splash_quote38</item>
         <item>@string/splash_quote39</item>
         <item>https://youtu.be/dQw4w9WgXcQ</item>
-        <item>Get Thick Bug LOL</item>
-        <item>muh books</item>
-        <item>I suck at pushing</item>
+        <item>@string/splash_quote45</item>
         <item>@string/splash_quote40</item>
         <item>@string/splash_quote41</item>
         <item>@string/splash_quote42</item>
         <item>@string/splash_quote43</item>
-        <item>THE BOOKS ARE OVER 90K</item>
+        <item>@string/splash_quote46</item>
     </string-array>
     <string name="splash_quote1">art in an app</string>
     <string name="splash_quote2">the usual book\?</string>
@@ -100,4 +98,7 @@
     <string name="splash_quote42">I thought we were having steamed clams</string>
     <!-- The Simpsons reference: google how the 'steamed hams' meme had been translated for your language -->
     <string name="splash_quote43">I hope you\'re prepared for an unforgettable luncheon</string>
+    <string name="splash_quote44">WARNING LEWD PP</string>
+    <string name="splash_quote45">muh books</string>
+    <string name="splash_quote46">THE BOOKS ARE OVER 90K</string>
 </resources>
