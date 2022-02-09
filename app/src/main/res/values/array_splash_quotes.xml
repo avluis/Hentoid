@@ -3,7 +3,7 @@
     <!-- DO NOT modify the way these arrays are set up - it is required for Weblate to work -->
     <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
 
-    <string-array name="splash_quotes" tools:ignore="InconsistentArrays">
+    <string-array name="splash_quotes" tools:ignore="InconsistentArrays" translatable="false">
         <item>@string/splash_quote1</item>
         <item>@string/splash_quote2</item>
         <item>@string/splash_quote3</item>
