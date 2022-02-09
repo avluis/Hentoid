@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string-array name="splash_quotes" tools:ignore="InconsistentArrays" translatable="false">
+    <string-array name="splash_quotes" tools:ignore="InconsistentArrays">
         <item>art in an app</item>
         <item>the usual book ?</item>
         <item>one hand training app</item>
