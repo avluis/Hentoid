@@ -40,17 +40,6 @@ public class InputStreamVolleyRequest<T> extends Request<T> {
         mParseListener = response -> order.getParseListener().accept(response);
     }
 
-    /*
-    public static InputStreamVolleyRequest fromOrder(@NonNull RequestOrder order) {
-        return new InputStreamVolleyRequest(
-                order.getMethod(), order.getUrl(),
-                order.getHeaders(), order.isUseHentoidAgent(), order.isUseWebviewAgent(),
-                response -> order.getParseListener().accept(response),
-                error -> order.getErrorListener().accept(error)
-        );
-    }
-     */
-
     @Override
     protected void deliverResponse(T response) {
         // Nothing; all the work is done in Volley's worker thread, since it is time consuming (picture saving + DB operations)

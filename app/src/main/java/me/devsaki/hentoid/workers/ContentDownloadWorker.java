@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
@@ -416,24 +415,17 @@ public class ContentDownloadWorker extends BaseWorker {
 
         EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_DOWNLOAD));
 
-        // Wait a delay corresponding to book browsing if we're between two sources with "simulate human reading"
-        if (content.getSite().isSimulateHumanReading() && requestQueueManager.isSimulateHumanReading()) {
-            int delayMs = 3000 + new Random().nextInt(2000);
-            Helper.pause(delayMs);
-        }
-
         if (content.getSite().getParallelDownloadCap() > 0 &&
                 (requestQueueManager.getDownloadThreadCap() > content.getSite().getParallelDownloadCap()
                         || -1 == requestQueueManager.getDownloadThreadCap())
         ) {
             Timber.d("Setting parallel downloads count to %s", content.getSite().getParallelDownloadCap());
-            requestQueueManager.setDownloadThreadCount(getApplicationContext(), content.getSite().getParallelDownloadCap());
+            requestQueueManager.initUsingDownloadThreadCount(getApplicationContext(), content.getSite().getParallelDownloadCap(), true);
         }
         if (0 == content.getSite().getParallelDownloadCap() && requestQueueManager.getDownloadThreadCap() > -1) {
             Timber.d("Resetting parallel downloads count to default");
-            requestQueueManager.setDownloadThreadCount(getApplicationContext(), -1);
+            requestQueueManager.initUsingDownloadThreadCount(getApplicationContext(), -1, true);
         }
-        requestQueueManager.setSimulateHumanReading(content.getSite().isSimulateHumanReading());
         requestQueueManager.setNbRequestsPerSecond(content.getSite().getRequestsCapPerSecond());
 
         // In case the download has been canceled while in preparation phase
@@ -579,7 +571,8 @@ public class ContentDownloadWorker extends BaseWorker {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
                 Timber.d("Inactivity detected ====> restarting request queue");
-                requestQueueManager.restartRequestQueue();
+                //requestQueueManager.restartRequestQueue();
+                requestQueueManager.resetRequestQueue(getApplicationContext(), false);
             }
 
             double estimateBookSizeMB = -1;
@@ -868,6 +861,10 @@ public class ContentDownloadWorker extends BaseWorker {
             @NonNull DocumentFile dir,
             @NonNull String backupUrl,
             @NonNull Map<String, String> requestHeaders) {
+
+        // If the queue is being reset, ignore the error
+        if (requestQueueManager.isInit()) return;
+
         // Try with the backup URL, if it exists and if the current image isn't a backup itself
         if (!img.isBackup() && !backupUrl.isEmpty()) {
             tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);

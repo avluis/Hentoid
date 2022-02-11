@@ -35,7 +35,7 @@ import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
-import me.devsaki.hentoid.util.network.OkHttpClientSingleton
+import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ExternalImportWorker
@@ -250,7 +250,9 @@ class PreferencesFragment : PreferenceFragmentCompat(),
         }
         runBlocking {
             launch(Dispatchers.Default) {
-                OkHttpClientSingleton.reset()
+                // Reset connection pool used by the downloader (includes an OkHttp instance reset)
+                RequestQueueManager.getInstance(requireContext())
+                    .resetRequestQueue(requireContext(), true)
             }
         }
     }
