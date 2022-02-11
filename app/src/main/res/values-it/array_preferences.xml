@@ -25,8 +25,8 @@
     <string name="pref_dl_threads_quantity_entries_2">2 (Internet lento)</string>
     <string name="pref_dl_threads_quantity_entries_6">10 (Internet veloce; telefono high-end)</string>
     <string name="pref_folder_naming_content_entries_2">Titolo - ID</string>
-    <string name="pref_folder_naming_content_entries_3">Autore - Titolo - ID</string>
-    <string name="pref_folder_naming_content_entries_4">Titolo - Autore - ID</string>
+    <string name="pref_folder_naming_content_entries_3">Artista - Titolo - ID</string>
+    <string name="pref_folder_naming_content_entries_4">Titolo - Artista - ID</string>
     <string name="pref_folder_trunc_content_entries_1">Nessuno</string>
     <string name="pref_folder_trunc_content_entries_2">60 caratteri</string>
     <string name="pref_folder_trunc_content_entries_3">80 caratteri</string>
@@ -66,4 +66,13 @@
     <string name="pref_lock_timer_entries_3">30 sec (predefinito)</string>
     <string name="pref_lock_timer_entries_5">2 min</string>
     <string name="pref_lock_timer_entries_4">1 min</string>
+    <string name="pref_dl_size_wifi_threshold_entries_5" tools:ignore="MissingTranslation">200 MB</string>
+    <string name="pref_dl_size_wifi_threshold_entries_3" tools:ignore="MissingTranslation">40 MB</string>
+    <string name="pref_folder_naming_content_entries_1" tools:ignore="MissingTranslation">ID</string>
+    <string name="pref_viewer_cap_tap_zoom_entries_2" tools:ignore="MissingTranslation">2x</string>
+    <string name="pref_viewer_cap_tap_zoom_entries_3" tools:ignore="MissingTranslation">4x</string>
+    <string name="pref_viewer_cap_tap_zoom_entries_4" tools:ignore="MissingTranslation">6x</string>
+    <string name="pref_viewer_slideshow_delay_entries_1" tools:ignore="MissingTranslation">500 ms</string>
+    <string name="pref_dl_size_wifi_threshold_entries_2" tools:ignore="MissingTranslation">20 MB</string>
+    <string name="pref_dl_size_wifi_threshold_entries_4" tools:ignore="MissingTranslation">100 MB</string>
 </resources>
