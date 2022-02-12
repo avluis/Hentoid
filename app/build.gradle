@@ -144,19 +144,18 @@ dependencies {
      * MEDIA
      */
     // Image loader: github.com/bumptech/glide
-    def glide_version = "4.12.0"
+    def glide_version = '4.13.0'
     implementation "com.github.bumptech.glide:glide:$glide_version"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glide_version") {
         exclude group: 'glide-parent'
     }
 
     // Animated WEBP support -> https://github.com/zjupure/GlideWebpDecoder
+    def webp_glide_version = '4.12.0'
     // webpdecoder
-    implementation "com.github.zjupure:webpdecoder:2.0.$glide_version"
-    // glide 4.10.0+
-    implementation "com.github.bumptech.glide:glide:$glide_version"
-    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
+    implementation "com.github.zjupure:webpdecoder:2.0.$webp_glide_version"
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
     implementation 'com.github.penfeizhou.android.animation:apng:2.17.2'
