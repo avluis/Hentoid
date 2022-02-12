@@ -182,7 +182,7 @@
     </plurals>
     <string name="refresh_options_remove_2">Nessuna immagine è stata scaricata</string>
     <string name="refresh_options_remove_3">Il file JSON è illeggibile (non consigliato)</string>
-    <string name="refresh_options_remove_or">o</string>
+    <string name="refresh_options_remove_or">oppure</string>
     <string name="delete_title">Elimina tutti tranne i preferiti</string>
     <string name="generic_progress"><x:g id="number" example="7">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="books">%3$s</x:g></string>
     <plurals name="book_progress">
@@ -450,7 +450,7 @@
     <string name="sort_reads">Legge</string>
     <string name="sort_size">Dimensione</string>
     <string name="sort_reading_progress">Progresso lettura</string>
-    <string name="sort_random">casuale</string>
+    <string name="sort_random">Casuale</string>
     <string name="sort_custom">Personalizzato</string>
     <string name="sort_invalid">-invalido-</string>
     <string name="sort_books">Libri</string>
