@@ -153,6 +153,7 @@ dependencies {
     }
 
     // Animated WEBP support -> https://github.com/zjupure/GlideWebpDecoder
+    // NB : v4.12 happens to be still compatible with Glide v4.13
     def webp_glide_version = '4.12.0'
     // webpdecoder
     implementation "com.github.zjupure:webpdecoder:2.0.$webp_glide_version"
@@ -210,7 +211,7 @@ dependencies {
      * NETWORKING
      */
     // JSON serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
-    def moshi_version = '1.12.0'
+    def moshi_version = '1.13.0'
     implementation "com.squareup.moshi:moshi:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
 
