@@ -519,7 +519,7 @@ public class ContentDownloadWorker extends BaseWorker {
         long downloadedBytes = 0;
 
         boolean firstPageDownloaded = false;
-        long deltaPages = 0;
+        int deltaPages = 0;
         int nbDeltaZeroPages = 0;
         long networkBytes = 0;
         long deltaNetworkBytes;

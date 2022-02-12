@@ -33,6 +33,8 @@ import timber.log.Timber;
 /**
  * Manager class for image download queue (Volley)
  */
+@SuppressWarnings("squid:S3077")
+// https://stackoverflow.com/questions/11639746/what-is-the-point-of-making-the-singleton-instance-volatile-while-using-double-l
 public class RequestQueueManager implements RequestQueue.RequestEventListener {
     private static volatile RequestQueueManager mInstance;
     private static final int CONNECT_TIMEOUT_MS = 4000;
