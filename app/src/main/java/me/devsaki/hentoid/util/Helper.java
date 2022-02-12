@@ -61,7 +61,7 @@ public final class Helper {
         throw new IllegalStateException("Utility class");
     }
 
-    private final static Random rand = new Random();
+    private static final Random rand = new Random();
 
     private static final byte[] SIP_KEY = "0123456789ABCDEF".getBytes();
     public static final Action EMPTY_ACTION = () -> {
@@ -400,14 +400,16 @@ public final class Helper {
         }
     }
 
-    // TODO doc
+    /**
+     * Generates a random positive integer bound to the given argument (excluded)
+     * NB : This method uses a Random class instanciated once, which is better than
+     * calling `new Random().nextInt`
+     *
+     * @param maxExclude Upper bound (excluded)
+     * @return random positive integer bound to the given argument (excluded)
+     */
     public static int getRandomInt(int maxExclude) {
         return rand.nextInt(maxExclude);
-    }
-
-    // TODO doc
-    public static long getRandomLong() {
-        return rand.nextLong();
     }
 
     /**
