@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Random;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -193,7 +192,7 @@ public class MetaExportDialogFragment extends DialogFragment {
         exportDisposable.dispose();
 
         // Use a random number to avoid erasing older exports by mistake
-        String targetFileName = new Random().nextInt(9999) + ".json";
+        String targetFileName = Helper.getRandomInt(9999) + ".json";
         if (exportBookmarks) targetFileName = "bkmks-" + targetFileName;
         if (exportQueue) targetFileName = "queue-" + targetFileName;
         if (exportLibrary && !exportFavsOnly) targetFileName = "library-" + targetFileName;
