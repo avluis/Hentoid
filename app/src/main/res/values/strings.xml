@@ -235,7 +235,7 @@
         <item quantity="one"><x:g id="number" example="1">%d</x:g> bookmark imported successfully</item>
         <item quantity="other"><x:g id="number" example="2">%d</x:g> bookmarks imported successfully</item>
     </plurals>
-    <string name="dialog_prompt">Grant write permission</string>
+    <string name="dialog_prompt">Choose a Folder</string>
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>
     <plurals name="export_file_library">
