@@ -25,7 +25,6 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 
 @Suppress("PrivatePropertyName")
@@ -146,7 +145,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
         exportDisposable.dispose()
 
         // Use a random number to avoid erasing older exports by mistake
-        var targetFileName = Random().nextInt(9999).toString() + ".json"
+        var targetFileName = Helper.getRandomInt(9999).toString() + ".json"
         targetFileName = "settings-$targetFileName"
 
         rootView?.let {

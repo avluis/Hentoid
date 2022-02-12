@@ -68,7 +68,6 @@ public enum Site {
     private boolean hasBackupURLs = false;
     private boolean hasCoverBasedPageUpdates = false;
     private boolean useCloudflare = false;
-    private boolean simulateHumanReading = false;
     private int requestsCapPerSecond = -1;
     private int parallelDownloadCap = 0;
 
@@ -156,10 +155,6 @@ public enum Site {
         return useCloudflare;
     }
 
-    public boolean isSimulateHumanReading() {
-        return simulateHumanReading;
-    }
-
     public int getRequestsCapPerSecond() {
         return requestsCapPerSecond;
     }
@@ -197,8 +192,6 @@ public enum Site {
             hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates;
         if (jsonSite.useCloudflare != null)
             useCloudflare = jsonSite.useCloudflare;
-        if (jsonSite.simulateHumanReading != null)
-            simulateHumanReading = jsonSite.simulateHumanReading;
         if (jsonSite.parallelDownloadCap != null)
             parallelDownloadCap = jsonSite.parallelDownloadCap;
         if (jsonSite.requestsCapPerSecond != null)

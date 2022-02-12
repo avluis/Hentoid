@@ -3,7 +3,6 @@ package me.devsaki.hentoid.views;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.webkit.WebView;
 
 import androidx.core.view.NestedScrollingChildHelper;
 import androidx.core.view.ViewCompat;
@@ -25,20 +24,20 @@ public class NestedScrollWebView extends VariableLongClickWebView {
 
     public NestedScrollWebView(final Context context) {
         super(context);
-        init();
+        localInit();
     }
 
     public NestedScrollWebView(final Context context, final AttributeSet attrs) {
         super(context, attrs);
-        init();
+        localInit();
     }
 
     public NestedScrollWebView(final Context context, final AttributeSet attrs, final int defStyle) {
         super(context, attrs, defStyle);
-        init();
+        localInit();
     }
 
-    private void init() {
+    private void localInit() {
         mChildHelper = new NestedScrollingChildHelper(this);
         setNestedScrollingEnabled(true);
     }

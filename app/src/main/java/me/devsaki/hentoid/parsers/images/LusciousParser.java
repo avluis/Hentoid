@@ -8,13 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.LusciousGalleryMetadata;
 import me.devsaki.hentoid.retrofit.sources.LusciousServer;
+import me.devsaki.hentoid.util.Helper;
 import retrofit2.Response;
 import timber.log.Timber;
 
@@ -33,7 +33,7 @@ public class LusciousParser extends BaseImageListParser {
 
     private void getPages(@NonNull Content content, @NonNull String bookId, int pageNumber, @NonNull List<ImageFile> imageFiles) {
         Map<String, String> query = new HashMap<>();
-        query.put("id", new Random().nextInt(10) + "");
+        query.put("id", Helper.getRandomInt(10) + "");
         query.put("operationName", "AlbumListOwnPictures");
         query.put("query", " query AlbumListOwnPictures($input: PictureListInput!) { picture { list(input: $input) { info { ...FacetCollectionInfo } items { ...PictureStandardWithoutAlbum } } } } fragment FacetCollectionInfo on FacetCollectionInfo { page has_next_page has_previous_page total_items total_pages items_per_page url_complete url_filters_only } fragment PictureStandardWithoutAlbum on Picture { __typename id title created like_status number_of_comments number_of_favorites status width height resolution aspect_ratio url_to_original url_to_video is_animated position tags { id category text url } permissions url thumbnails { width height size url } } "); // Yeah...
         query.put("variables", "{\"input\":{\"filters\":[{\"name\":\"album_id\",\"value\":\"" + bookId + "\"}],\"display\":\"position\",\"page\":" + pageNumber + "}}");

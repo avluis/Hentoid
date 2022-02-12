@@ -745,7 +745,7 @@ public class LibraryActivity extends BaseActivity {
             case Preferences.Key.COLOR_THEME:
             case Preferences.Key.LIBRARY_DISPLAY:
                 // Restart the app with the library activity on top
-                Intent intent = getIntent();
+                Intent intent = new Intent(this, LibraryActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 finish();

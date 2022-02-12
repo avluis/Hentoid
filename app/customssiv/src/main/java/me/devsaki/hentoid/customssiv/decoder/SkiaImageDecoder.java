@@ -72,35 +72,35 @@ public class SkiaImageDecoder implements ImageDecoder {
         } else if (uriString.startsWith(ASSET_PREFIX)) {
             String assetName = uriString.substring(ASSET_PREFIX.length());
             bitmap = BitmapFactory.decodeStream(context.getAssets().open(assetName), null, options);
-        }/* else if (uriString.startsWith(FILE_PREFIX)) {
-            bitmap = BitmapFactory.decodeFile(uriString.substring(FILE_PREFIX.length()), options);
-        } */ else {
-            InputStream headerStream;
-            InputStream fileStream;
+        } else {
+            InputStream fileStream = null;
             try (InputStream input = context.getContentResolver().openInputStream(uri)) {
                 if (input == null)
                     throw new RuntimeException("Content resolver returned null stream. Unable to initialise with uri.");
 
-                try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-                    Helper.copy(input, baos);
+                // First examine header
+                byte[] header = new byte[400];
+                if (input.read(header) > 0) {
+                    if (ImageHelper.isImageAnimated(header))
+                        throw new RuntimeException("SSIV doesn't handle animated pictures");
 
-                    headerStream = new ByteArrayInputStream(baos.toByteArray(), 0, 400);
-                    fileStream = new ByteArrayInputStream(baos.toByteArray());
+                    // If it passes, load the whole picture
+                    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                        baos.write(header, 0, 400);
+
+                        Helper.copy(input, baos);
+
+                        fileStream = new ByteArrayInputStream(baos.toByteArray());
+                    }
                 }
             }
 
-            try {
-                byte[] header = new byte[400];
-                if (headerStream.read(header) > 0 && ImageHelper.isImageAnimated(header))
-                    throw new RuntimeException("SSIV doesn't handle animated pictures");
-            } finally {
-                headerStream.close();
-            }
-
-            try {
-                bitmap = BitmapFactory.decodeStream(fileStream, null, options);
-            } finally {
-                fileStream.close();
+            if (fileStream != null) {
+                try {
+                    bitmap = BitmapFactory.decodeStream(fileStream, null, options);
+                } finally {
+                    fileStream.close();
+                }
             }
         }
         if (bitmap == null) {

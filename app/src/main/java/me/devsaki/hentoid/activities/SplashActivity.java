@@ -6,12 +6,11 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.util.Random;
-
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.AppStartup;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -36,7 +35,7 @@ public class SplashActivity extends BaseActivity {
         TextView quote = findViewById(R.id.quote);
 
         String[] quotes = getResources().getStringArray(R.array.splash_quotes);
-        int random = new Random().nextInt(quotes.length);
+        int random = Helper.getRandomInt(quotes.length);
         quote.setText(quotes[random]);
 
         Timber.d("Splash / Init");

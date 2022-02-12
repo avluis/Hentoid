@@ -61,6 +61,8 @@ public final class Helper {
         throw new IllegalStateException("Utility class");
     }
 
+    private static final Random rand = new Random();
+
     private static final byte[] SIP_KEY = "0123456789ABCDEF".getBytes();
     public static final Action EMPTY_ACTION = () -> {
     };
@@ -351,9 +353,9 @@ public final class Helper {
      * @return Generated ID
      */
     public static long generateIdForPlaceholder() {
-        long result = new Random().nextLong();
+        long result = rand.nextLong();
         // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
-        while (result < 1e6) result = new Random().nextLong();
+        while (result < 1e6) result = rand.nextLong();
         return result;
     }
 
@@ -396,6 +398,18 @@ public final class Helper {
             Timber.d(e);
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * Generates a random positive integer bound to the given argument (excluded)
+     * NB : This method uses a Random class instanciated once, which is better than
+     * calling `new Random().nextInt`
+     *
+     * @param maxExclude Upper bound (excluded)
+     * @return random positive integer bound to the given argument (excluded)
+     */
+    public static int getRandomInt(int maxExclude) {
+        return rand.nextInt(maxExclude);
     }
 
     /**
