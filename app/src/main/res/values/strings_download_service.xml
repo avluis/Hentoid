@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="download_completed">
-        <item quantity="one">Download completed</item>
-        <item quantity="other">%d downloads completed</item>
+        <item quantity="one" tools:ignore="ImpliedQuantity">Download completed</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> downloads completed</item>
     </plurals>
-    <string name="download_complete">Download complete</string>
+    <string name="download_complete">Download completed</string>
     <string name="download_cancelled">Download cancelled</string>
     <string name="download_skipped">Download skipped</string>
     <string name="download_paused">Download paused</string>
     <string name="download_error">Download completed, but had an error</string>
-    <string name="unhandled_download_error">Unhandled error trying to read images urls</string>
+    <string name="unhandled_download_error">Unhandled error trying to read images URLs</string>
     <string name="downloading">Downloading</string>
     <plurals name="add_to_queue">
-        <item quantity="one">%d/%d item added to queue</item>
-        <item quantity="other">%d/%d items added to queue</item>
+        <item quantity="one"><x:g example="1" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> item added to queue</item>
+        <item quantity="other"><x:g example="2" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> items added to queue</item>
     </plurals>
     <string name="already_downloaded">Already downloaded</string>
     <string name="already_queued">Already queued</string>

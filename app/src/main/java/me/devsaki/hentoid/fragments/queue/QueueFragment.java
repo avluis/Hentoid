@@ -658,7 +658,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 String processedPagesFmt = StringHelper.formatIntAsStr(pagesOKDisplay, String.valueOf(totalPagesDisplay).length());
                 message.append(getResources().getString(R.string.queue_bottom_bar_processed, processedPagesFmt, totalPagesDisplay));
                 if (pagesKO > 0)
-                    message.append(" ").append(getResources().getString(R.string.queue_bottom_bar_errors, pagesKO));
+                    message.append(" ").append(getResources().getQuantityString(R.plurals.queue_bottom_bar_errors, pagesKO, pagesKO));
                 if (numberRetries > 0)
                     message.append(" ").append(getResources().getString(R.string.queue_bottom_bar_retry, numberRetries, Preferences.getDlRetriesNumber()));
                 int avgSpeedKbps = (int) downloadSpeedCalculator.getAvgSpeedKbps();

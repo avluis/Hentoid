@@ -29,8 +29,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
+import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.drag.IExtendedDraggable;
@@ -109,8 +113,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
 
+        final Transformation<Bitmap> centerInside = new CenterInside();
         glideRequestOptions = new RequestOptions()
-                .centerInside()
+                .optionalTransform(centerInside)
+                .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
                 .error(d);
     }
 
@@ -495,12 +501,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (viewType == ViewType.ERRORS) {
                     long nbMissingPages = content.getQtyPages() - content.getNbDownloadedPages();
                     if (nbMissingPages > 0) {
-                        String missingStr = " " + context.getResources().getString(R.string.work_pages_missing, nbMissingPages);
-                        template = context.getResources().getQuantityString(R.plurals.work_pages_queue, content.getQtyPages(), nbPages, missingStr);
+                        String missingStr = " " + context.getResources().getQuantityString(R.plurals.work_pages_missing, (int) nbMissingPages, nbMissingPages);
+                        template = context.getResources().getString(R.string.work_pages_queue, nbPages, missingStr);
                     } else
-                        template = context.getResources().getQuantityString(R.plurals.work_pages_queue, content.getQtyPages(), nbPages, "");
+                        template = context.getResources().getString(R.string.work_pages_queue, nbPages, "");
                 } else
-                    template = context.getResources().getQuantityString(R.plurals.work_pages_queue, content.getQtyPages(), nbPages, "");
+                    template = context.getResources().getString(R.string.work_pages_queue, nbPages, "");
                 tvPages.setText(template);
             } else { // Library
                 tvPages.setText(String.format(Locale.ENGLISH, "%d", content.getNbDownloadedPages()));
@@ -571,7 +577,15 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivRedownload.setVisibility(View.VISIBLE);
                 ivError.setVisibility(View.VISIBLE);
             } else if (ViewType.LIBRARY == item.viewType || ViewType.LIBRARY_GRID == item.viewType) {
-                ivExternal.setVisibility(content.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
+                if (content.getStatus().equals(StatusContent.EXTERNAL)) {
+                    if (content.isArchive())
+                        ivExternal.setImageResource(R.drawable.ic_archive);
+                    else
+                        ivExternal.setImageResource(R.drawable.ic_folder_full);
+                    ivExternal.setVisibility(View.VISIBLE);
+                } else
+                    ivExternal.setVisibility(View.GONE);
+
                 if (content.isFavourite()) {
                     ivFavourite.setImageResource(R.drawable.ic_fav_full);
                 } else {

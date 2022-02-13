@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments.queue;
 import static androidx.core.view.ViewCompat.requireViewById;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -187,7 +188,8 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
             activity.get().getSelectionToolbar().setVisibility(View.GONE);
         } else {
             callback.remove();
-            requireActivity().onBackPressed();
+            Activity activity = getActivity();
+            if (activity != null) activity.onBackPressed();
         }
     }
 
@@ -459,7 +461,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
             new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_warning)
                     .setTitle(R.string.app_name)
-                    .setMessage(getString(R.string.confirm_redownload_all, fastAdapter.getItemCount()))
+                    .setMessage(getResources().getQuantityString(R.plurals.confirm_redownload_all, fastAdapter.getItemCount(), fastAdapter.getItemCount()))
                     .setPositiveButton(R.string.yes,
                             (dialog1, which) -> {
                                 dialog1.dismiss();
@@ -481,7 +483,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
             new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_warning)
                     .setTitle(R.string.app_name)
-                    .setMessage(getString(R.string.confirm_cancel_all_errors, fastAdapter.getItemCount()))
+                    .setMessage(getResources().getQuantityString(R.plurals.confirm_cancel_all_errors, fastAdapter.getItemCount(), fastAdapter.getItemCount()))
                     .setPositiveButton(R.string.yes,
                             (dialog1, which) -> {
                                 dialog1.dismiss();

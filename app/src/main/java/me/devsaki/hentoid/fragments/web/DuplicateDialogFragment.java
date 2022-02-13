@@ -20,6 +20,10 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
+import com.bumptech.glide.load.Transformation;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 
 import org.greenrobot.eventbus.EventBus;
@@ -53,8 +57,10 @@ public final class DuplicateDialogFragment extends DialogFragment {
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
 
+        final Transformation<Bitmap> centerInside = new CenterInside();
         glideRequestOptions = new RequestOptions()
-                .centerInside()
+                .optionalTransform(centerInside)
+                .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
                 .error(d);
     }
 
@@ -149,7 +155,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
         binding.tvArtist.setText(ContentHelper.formatArtistForDisplay(context, content));
 
         binding.tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
-        binding.tvPages.setText(getResources().getQuantityString(R.plurals.work_pages_queue, content.getQtyPages(),content.getQtyPages() + "", ""));
+        binding.tvPages.setText(getResources().getString(R.string.work_pages_queue, content.getQtyPages() + "", ""));
 
         // Buttons
         Site site = content.getSite();

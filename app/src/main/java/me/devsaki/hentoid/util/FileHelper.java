@@ -490,15 +490,14 @@ public class FileHelper {
     }
 
     /**
-     * List all elements inside the given parent folder (non recursive) that match the given criteria
-     * TODO udpate doc
+     * List the first element inside the given parent folder (non recursive) that matches the given criteria
      *
      * @param context     Context to use
-     * @param parent      Parent folder to list elements from
-     * @param nameFilter  Name filter to use to filter the elements to list
-     * @param listFolders True if the listed elements have to include folders
-     * @param listFiles   True if the listed elements have to include files (non-folders)
-     * @return Elements of the given parent folder matching the given criteria
+     * @param parent      Parent folder to search into
+     * @param nameFilter  Name filter to use to filter the element to find
+     * @param listFolders True if the element to find can be a folder
+     * @param listFiles   True if the element to find can be a file (i.e. non folder)
+     * @return First element of the given parent folder matching the given criteria
      */
     @Nullable
     private static DocumentFile findDocumentFile(@NonNull final Context context,

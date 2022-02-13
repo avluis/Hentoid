@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <plurals name="download_completed" tools:ignore="MissingQuantity">
+        <item quantity="one" tools:ignore="ImpliedQuantity">Téléchargement terminé</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> téléchargements terminés</item>
+    </plurals>
+    <string name="download_complete">Téléchargement terminé</string>
+    <string name="download_cancelled">Téléchargement annulé</string>
+    <string name="download_skipped">Téléchargement ignoré</string>
+    <string name="download_paused">Téléchargement en pause</string>
+    <string name="download_error">Le téléchargement est terminé, mais une erreur s\'est produite</string>
+    <string name="unhandled_download_error">Erreur non gérée lors de la lecture d\'URL d\'images</string>
+    <string name="downloading">Téléchargement</string>
+    <plurals name="add_to_queue" tools:ignore="MissingQuantity">
+        <item quantity="one"><x:g example="1" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> élément ajouté à la file d\'attente</item>
+        <item quantity="other"><x:g example="2" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> éléments ajoutés à la file d\'attente</item>
+    </plurals>
+    <string name="already_downloaded">Déjà téléchargé</string>
+    <string name="already_queued">Déjà en file d\'attente</string>
+</resources>

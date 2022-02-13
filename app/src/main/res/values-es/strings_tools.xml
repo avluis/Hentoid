@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tools_title">Herramientas</string>
+    <string name="tools_screen_import_export">Importar / Exportar</string>
+    <string name="tools_export_library_title">Exportar metadatos</string>
+</resources>

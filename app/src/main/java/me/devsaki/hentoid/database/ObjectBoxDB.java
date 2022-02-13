@@ -1396,9 +1396,16 @@ public class ObjectBoxDB {
         if (query != null)
             qb.contains(Group_.name, query, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
-        if (subType != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
-                && (grouping == Grouping.ARTIST.getId() || grouping == Grouping.CUSTOM.getId())
-        ) qb.equal(Group_.subtype, subType);
+        // Subtype filtering for artists groups
+        if (subType > -1) {
+            if (grouping == Grouping.ARTIST.getId() && subType != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS) {
+                qb.equal(Group_.subtype, subType);
+            }
+            // Subtype filtering for custom groups
+            if (grouping == Grouping.CUSTOM.getId()) {
+                qb.equal(Group_.subtype, subType);
+            }
+        }
 
         if (groupFavouritesOnly) qb.equal(Group_.favourite, true);
 
