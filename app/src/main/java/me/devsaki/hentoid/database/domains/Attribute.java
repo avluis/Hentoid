@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import android.content.res.Resources;
+
 import androidx.annotation.NonNull;
 
 import java.io.DataInputStream;
@@ -163,8 +165,8 @@ public class Attribute {
         return getName();
     }
 
-    public String formatLabel(boolean useNamespace) {
-        return String.format("%s%s %s", useNamespace ? type.getDisplayName().toLowerCase() + ":" : "", getName(), getCount() > 0 ? "(" + getCount() + ")" : "");
+    public String formatLabel(@NonNull Resources res, boolean useNamespace) {
+        return String.format("%s%s %s", useNamespace ? res.getString(type.getDisplayName()).toLowerCase() + ":" : "", getName(), getCount() > 0 ? "(" + getCount() + ")" : "");
     }
 
     // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI

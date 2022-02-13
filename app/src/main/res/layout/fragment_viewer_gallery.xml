@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/viewer_gallery_menu"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="Gallery" />
+        app:title="@string/gallery_title" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/viewer_gallery_selection_toolbar"

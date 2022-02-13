@@ -161,7 +161,7 @@ public class API29MigrationService extends IntentService {
                         },
                         throwable -> {
                             Timber.w(throwable);
-                            ToastHelper.toast("Book list loading failed");
+                            ToastHelper.toast(R.string.book_list_loading_failed);
                         }
                 );
 

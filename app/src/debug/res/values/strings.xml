@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Hendroid-beta</string>
-    <string name="app_id">org.nonononoki.hendroid</string>
+    <string name="app_id">org.nonononoki.hendroid.debug</string>
     <string name="pref_app_preview_default" translatable="false">true</string> <!-- Debug apps always visible to facilitate video capture -->
 </resources>

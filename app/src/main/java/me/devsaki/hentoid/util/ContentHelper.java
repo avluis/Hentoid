@@ -42,7 +42,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.annotation.Nonnull;
 
@@ -1253,7 +1252,7 @@ public final class ContentHelper {
         if (null == images) return false;
 
         // Pick a random picture
-        ImageFile img = images.get(new Random().nextInt(images.size()));
+        ImageFile img = images.get(Helper.getRandomInt(images.size()));
 
         // Peek it to see if downloads work
         List<Pair<String, String>> headers = new ArrayList<>();

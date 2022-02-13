@@ -7,6 +7,8 @@ import static org.apache.commons.io.FileUtils.ONE_MB_BI;
 import static org.apache.commons.io.FileUtils.ONE_PB_BI;
 import static org.apache.commons.io.FileUtils.ONE_TB_BI;
 
+import android.content.res.Resources;
+
 import androidx.annotation.NonNull;
 
 import java.io.File;
@@ -17,6 +19,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
 /**
@@ -142,7 +145,7 @@ class FileUtil {
      * @see <a href="https://issues.apache.org/jira/browse/IO-226">IO-226 - should the rounding be changed?</a>
      */
     // Directly copied from https://github.com/apache/commons-io/pull/74
-    public static String byteCountToDisplayRoundedSize(final BigInteger size, final int places, final Locale locale) {
+    public static String byteCountToDisplayRoundedSize(final BigInteger size, final int places, final Resources res, final Locale locale) {
         if (size == null) return null;
 
         final long sizeInLong = size.longValue();
@@ -150,19 +153,19 @@ class FileUtil {
 
         String displaySize;
         if (size.divide(ONE_EB_BI).compareTo(BigInteger.ZERO) > 0) {
-            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_EB_BI.doubleValue()) + " EB";
+            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_EB_BI.doubleValue()) + " " + res.getString(R.string.u_exabyte);
         } else if (size.divide(ONE_PB_BI).compareTo(BigInteger.ZERO) > 0) {
-            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_PB_BI.doubleValue()) + " PB";
+            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_PB_BI.doubleValue()) + " " + res.getString(R.string.u_petabyte);
         } else if (size.divide(ONE_TB_BI).compareTo(BigInteger.ZERO) > 0) {
-            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_TB_BI.doubleValue()) + " TB";
+            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_TB_BI.doubleValue()) + " " + res.getString(R.string.u_terabyte);
         } else if (size.divide(ONE_GB_BI).compareTo(BigInteger.ZERO) > 0) {
-            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_GB_BI.doubleValue()) + " GB";
+            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_GB_BI.doubleValue()) + " " + res.getString(R.string.u_gigabyte);
         } else if (size.divide(ONE_MB_BI).compareTo(BigInteger.ZERO) > 0) {
-            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_MB_BI.doubleValue()) + " MB";
+            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_MB_BI.doubleValue()) + " " + res.getString(R.string.u_megabyte);
         } else if (size.divide(ONE_KB_BI).compareTo(BigInteger.ZERO) > 0) {
-            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_KB_BI.doubleValue()) + " KB";
+            displaySize = String.format(locale, formatPattern, sizeInLong / ONE_KB_BI.doubleValue()) + " " + res.getString(R.string.u_kilobyte);
         } else {
-            displaySize = size + " bytes";
+            displaySize = size + " " + res.getString(R.string.u_byte);
         }
 
         final DecimalFormat decimalFormat = (DecimalFormat) NumberFormat.getInstance(locale);
@@ -176,35 +179,13 @@ class FileUtil {
 
     /**
      * Returns a human-readable version of the file size, where the input represents a specific number of bytes.
-     * <p>
-     * If the size is over 1GB, the size is rounded by places.
-     * </p>
-     * <p>
-     * Similarly for the 1MB and 1KB boundaries.
-     * </p>
-     *
-     * @param size   the number of bytes
-     * @param places rounded decimal places
-     * @param locale decimal separator locale
-     * @return a human-readable display value (includes units - EB, PB, TB, GB, MB, KB or bytes)
-     * @see <a href="https://issues.apache.org/jira/browse/IO-226">IO-226 - should the rounding be changed?</a>
-     */
-    public static String byteCountToDisplayRoundedSize(final Long size, final int places, final Locale locale) {
-        return byteCountToDisplayRoundedSize(BigInteger.valueOf(size), places, locale);
-    }
-
-    /**
-     * Returns a human-readable version of the file size, where the input represents a specific number of bytes.
-     * <p>
-     * Same as {@link #byteCountToDisplayRoundedSize(BigInteger, int, Locale)}, but locale is {@link Locale#getDefault()}.
-     * </p>
      *
      * @param size   the number of bytes
      * @param places rounded decimal places
      * @return a human-readable display value (includes units - EB, PB, TB, GB, MB, KB or bytes)
      * @see <a href="https://issues.apache.org/jira/browse/IO-226">IO-226 - should the rounding be changed?</a>
      */
-    public static String byteCountToDisplayRoundedSize(final Long size, final int places) {
-        return byteCountToDisplayRoundedSize(size, places, Locale.getDefault());
+    public static String byteCountToDisplayRoundedSize(final Long size, final int places, final Resources res) {
+        return byteCountToDisplayRoundedSize(BigInteger.valueOf(size), places, res, Locale.getDefault());
     }
 }

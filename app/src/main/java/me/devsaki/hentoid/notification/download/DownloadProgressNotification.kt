@@ -25,7 +25,8 @@ class DownloadProgressNotification(
 
     override fun onCreateNotification(context: Context): android.app.Notification {
         val total = if (estimateBookSizeMB > -1) "/$estimateBookSizeMB" else ""
-        val message = String.format("%d%s MB  @ %d KBps", sizeDownloadedMB, total, avgSpeedKbps)
+        val message =
+            context.getString(R.string.download_notif_speed, sizeDownloadedMB, total, avgSpeedKbps)
 
         return NotificationCompat.Builder(context, DownloadNotificationChannel.ID)
             .setSmallIcon(R.drawable.ic_hentoid_shape)

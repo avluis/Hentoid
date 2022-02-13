@@ -9,11 +9,10 @@ import androidx.annotation.ArrayRes;
 
 import org.greenrobot.eventbus.EventBus;
 
-import java.util.Random;
-
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.CommunicationEvent;
+import me.devsaki.hentoid.util.Helper;
 
 public class PlugEventsReceiver extends BroadcastReceiver {
 
@@ -36,6 +35,6 @@ public class PlugEventsReceiver extends BroadcastReceiver {
 
     private String getRandomQuoteFrom(Context context, @ArrayRes int res) {
         String[] quotes = context.getResources().getStringArray(res);
-        return quotes[new Random().nextInt(quotes.length)];
+        return quotes[Helper.getRandomInt(quotes.length)];
     }
 }

@@ -27,7 +27,6 @@ import io.objectbox.BoxStore;
 import io.objectbox.android.ObjectBoxDataSource;
 import io.objectbox.android.ObjectBoxLiveData;
 import io.objectbox.query.Query;
-import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -400,7 +399,7 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public List<Group> selectGroups(int grouping) {
-        return db.selectGroupsQ(grouping, null, 0, false, Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS, false).find();
+        return db.selectGroupsQ(grouping, null, 0, false, -1, false).find();
     }
 
     @Override
@@ -416,7 +415,10 @@ public class ObjectBoxDAO implements CollectionDAO {
             boolean orderDesc,
             int artistGroupVisibility,
             boolean groupFavouritesOnly) {
-        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly));
+        // Artist / group visibility filter is only relevant when the selected grouping is "By Artist"
+        int subType = (grouping == Grouping.ARTIST.getId()) ? artistGroupVisibility : -1;
+
+        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc, subType, groupFavouritesOnly));
         LiveData<List<Group>> workingData = livedata;
 
         // Download date grouping : groups are empty as they are dynamically populated

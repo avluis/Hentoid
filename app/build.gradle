@@ -30,13 +30,16 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
+    lintOptions {
+        informational 'MissingTranslation' // Handled by Weblate
+    }
     defaultConfig {
         applicationId "org.nonononoki.hendroid"
         minSdkVersion 21
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
-        versionCode 191
-        versionName '1.15.20'
+        versionCode 192
+        versionName '1.15.21'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -45,6 +48,10 @@ android {
         buildConfigField "boolean", "INCLUDE_LEAK_CANARY", includeLeakCanary
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+        // Only include complete translations
+        //resConfigs "en", "ru", "it"
+        resConfigs "en", "ru"
 
         renderscriptTargetApi 21
         renderscriptSupportModeEnabled false
@@ -77,6 +84,7 @@ android {
     }
     packagingOptions {
         resources {
+            // Fix issue with RxJava 2.x (https://github.com/ReactiveX/RxJava/issues/4445)
             excludes += ['META-INF/rxjava.properties']
         }
     }
@@ -97,7 +105,7 @@ dependencies {
      * TESTING
      */
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:4.2.0'
+    testImplementation 'org.mockito:mockito-core:4.3.1'
     testImplementation 'androidx.test:core:1.4.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation "androidx.arch.core:core-testing:2.1.0"
@@ -116,9 +124,9 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.6.0-alpha02'
     implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     implementation 'androidx.paging:paging-runtime:2.1.2'
-    implementation 'androidx.fragment:fragment-ktx:1.4.0'
+    implementation 'androidx.fragment:fragment-ktx:1.4.1'
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
@@ -127,7 +135,7 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
     // For ViewModel to work
-    def android_lifecycle_version = '2.4.0'
+    def android_lifecycle_version = '2.4.1'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
@@ -138,12 +146,19 @@ dependencies {
      * MEDIA
      */
     // Image loader: github.com/bumptech/glide
-    def glide_version = "4.12.0"
+    def glide_version = '4.13.0'
     implementation "com.github.bumptech.glide:glide:$glide_version"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
-    implementation ("com.github.bumptech.glide:okhttp3-integration:$glide_version"){
+    implementation("com.github.bumptech.glide:okhttp3-integration:$glide_version") {
         exclude group: 'glide-parent'
     }
+
+    // Animated WEBP support -> https://github.com/zjupure/GlideWebpDecoder
+    // NB : v4.12 happens to be still compatible with Glide v4.13
+    def webp_glide_version = '4.12.0'
+    // webpdecoder
+    implementation "com.github.zjupure:webpdecoder:2.0.$webp_glide_version"
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
     implementation 'com.github.penfeizhou.android.animation:apng:2.17.2'
@@ -198,7 +213,7 @@ dependencies {
      * NETWORKING
      */
     // JSON serialization/deserialization (Java Objects into JSON and back): https://github.com/square/moshi
-    def moshi_version = '1.12.0'
+    def moshi_version = '1.13.0'
     implementation "com.squareup.moshi:moshi:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
 

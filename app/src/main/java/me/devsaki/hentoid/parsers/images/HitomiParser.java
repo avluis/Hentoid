@@ -27,7 +27,6 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.network.HttpHelper;
@@ -125,7 +124,7 @@ public class HitomiParser extends BaseImageListParser {
     private String getJsPagesScript(@NonNull String galleryInfo) {
         StringBuilder sb = new StringBuilder();
         FileHelper.getAssetAsString(HentoidApp.getInstance().getAssets(), "hitomi_pages.js", sb);
-        return sb.toString().replace("$galleryInfo", galleryInfo).replace("$webp", Preferences.isDlHitomiWebp() ? "true" : "false");
+        return sb.toString().replace("$galleryInfo", galleryInfo);
     }
 
     // TODO doc

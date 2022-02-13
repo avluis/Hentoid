@@ -2,6 +2,8 @@ package me.devsaki.hentoid.util.network;
 
 import android.util.SparseArray;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +47,7 @@ public class OkHttpClientSingleton {
     }
 
     public static void reset() {
-        Helper.assertNonUiThread(); // Closing network operations shouldn't happen on the UI thread either
+        Helper.assertNonUiThread(); // Closing network operations shouldn't happen on the UI thread
         synchronized (OkHttpClientSingleton.class) {
             int size = instance.size();
             for (int i = 0; i < size; i++) {
@@ -102,6 +104,7 @@ public class OkHttpClientSingleton {
         return result.build();
     }
 
+    @NonNull
     private static okhttp3.Response rewriteUserAgentInterceptor(Interceptor.Chain chain) throws IOException {
         Request.Builder builder = chain.request().newBuilder();
         // If not specified, all requests are done with the device's mobile user-agent, without the Hentoid string

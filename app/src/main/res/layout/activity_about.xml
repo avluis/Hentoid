@@ -15,7 +15,7 @@
         android:minHeight="?android:attr/actionBarSize"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="About"
+        app:title="@string/title_activity_about"
         tools:ignore="UnusedAttribute" />
 
     <ScrollView
@@ -41,6 +41,7 @@
                 tools:ignore="ContentDescription" />
 
                 android:layout_marginStart="5dp"
+                android:layout_width="0dp"
             <TextView
                 android:id="@+id/tv_version_name"
                 android:layout_width="0dp"

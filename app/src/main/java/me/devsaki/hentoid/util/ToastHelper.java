@@ -19,28 +19,32 @@ public class ToastHelper {
         throw new IllegalStateException("Utility class");
     }
 
+    @Deprecated
+    public static void toast(String message) {
+        toast(HentoidApp.getInstance(), message, Toast.LENGTH_SHORT);
+    }
 
     public static void toast(@StringRes int resource) {
         toast(HentoidApp.getInstance(), resource);
     }
 
-    public static void toast(@NonNull String message) {
-        toast(HentoidApp.getInstance(), message);
+    public static void toast(@StringRes int resource, Object... args) {
+        toast(HentoidApp.getInstance(), resource, args);
     }
 
-    public static void toast(@NonNull Context context, @StringRes int resource) {
-        toast(context, resource, Toast.LENGTH_SHORT);
+    public static void toast(@NonNull Context context, @StringRes int resource, Object... args) {
+        toast(context, resource, Toast.LENGTH_SHORT, args);
     }
 
-    public static void toast(@NonNull Context context, @NonNull String message) {
-        toast(context, message, Toast.LENGTH_SHORT);
+    public static void toastLong(@NonNull Context context, @StringRes int resource, Object... args) {
+        toast(context, resource, Toast.LENGTH_LONG, args);
     }
 
-    public static void toast(@NonNull Context context, @StringRes int resource, @Duration int duration) {
-        toast(context, context.getString(resource), duration);
+    private static void toast(@NonNull Context context, @StringRes int resource, @Duration int duration, Object... args) {
+        toast(context, context.getString(resource, args), duration);
     }
 
-    public static void toast(@NonNull Context context, @NonNull String message, @Duration int duration) {
+    private static void toast(@NonNull Context context, @NonNull String message, @Duration int duration) {
         if (message.isEmpty()) {
             Timber.e("You must provide a String or Resource ID!");
             return;

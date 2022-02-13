@@ -109,7 +109,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
     private void selectHentoidFolder() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
+            intent.putExtra(DocumentsContract.EXTRA_PROMPT, getResources().getString(R.string.api29_migration_allow_write));
         }
         // http://stackoverflow.com/a/31334967/1615876
         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
@@ -143,7 +143,7 @@ public class Api29MigrationActivity extends AppCompatActivity {
 
         // If no existing hentoid folder is detected, tell the user to select it again
         if (null == selectedFolder || null == selectedFolder.getName() || !ImportHelper.isHentoidFolderName(selectedFolder.getName())) {
-            ToastHelper.toast("Please select an existing Hendroid folder. Its location is displayed on screen.");
+            ToastHelper.toast(R.string.api29_migration_select_folder);
             return;
         }
         scanLibrary(selectedFolder);

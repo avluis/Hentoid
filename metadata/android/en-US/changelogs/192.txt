@@ -1,0 +1,19 @@
+New
+
+    The app is now available in Russian on devices where default language is Russian
+    New DNS over HTTPS provider : AdGuard
+    Support for animated WEBP pictures
+
+Changed
+
+    External books icon has been updated : folder or archive, depending on the nature of the external source
+
+Fixed
+
+    Hitomi : The app now downloads WEBP pictures only. JPGs and PNGs are not available anymore
+    NB : Please use "redownload from scratch" on your Hitomi queued downloads if they still generate errors.
+    Changing the DNS over HTTPS provider doesn't disrupt the download queue anymore
+    Changing the DNS over HTTPS provider doesn't disrupt e-hentai, exhentai, Luscious and Pixiv ability to download anymore
+    Downloader has been partially rewritten and now does its best to avoid getting stuck ;-)
+    Restoring groups from a clean install now remembers favourites
+    "Ungrouped" custom group is now visible at all times

@@ -98,12 +98,12 @@ public final class ViewerPrefsDialogFragment extends DialogFragment {
         String[] renderingModes = getResources().getStringArray(R.array.pref_viewer_rendering_entries);
         List<String> renderingItems = new ArrayList<>();
         // App pref
-        renderingItems.add(res.getString(R.string.use_app_prefs, renderingModes[Preferences.isViewerSmoothRendering() ? 1 : 0].replace(" (default)", "")));
+        renderingItems.add(res.getString(R.string.use_app_prefs, renderingModes[Preferences.isViewerSmoothRendering() ? 1 : 0].replace(" (" + getString(R.string._default) + ")", "")));
         // Available prefs
         for (int i = 0; i < renderingModes.length; i++) {
             // No smooth mode for Androidfindview 5
             if (1 == i && Build.VERSION.SDK_INT < Build.VERSION_CODES.M) continue;
-            renderingItems.add(renderingModes[i].replace(" (default)", ""));
+            renderingItems.add(renderingModes[i].replace(" (" + getString(R.string._default) + ")", ""));
         }
 
         PowerSpinnerView renderSpin = rootView.findViewById(R.id.book_prefs_rendering_spin);

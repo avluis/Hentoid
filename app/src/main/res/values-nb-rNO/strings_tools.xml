@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tools_title">Verktøy</string>
+    <string name="tools_screen_import_export">Import og eksport</string>
+    <string name="tools_export_library_title">Eksporter metadata</string>
+    <string name="tools_export_library_summary">Eksporter Hentoid-bøker til en JSON-fil</string>
+    <string name="tools_import_library_title">Importer metadata</string>
+    <string name="tools_import_library_summary">Gjenopprett eksporterte Hentoid-bøker fra en JSON-fil</string>
+    <string name="tools_screen_cat_settings">Innstillinger</string>
+    <string name="tools_export_settings_title">Eksporter innstillinger</string>
+    <string name="tools_export_settings_summary">Eksporter innstillinger til en JSON-fil</string>
+    <string name="tools_import_settings_title">Importer innstillinger</string>
+    <string name="tools_import_settings_summary">Gjenopprett eksporterte innstillinger fra en JSON-fil</string>
+    <string name="tools_duplicate_detector_title">Oppdagelse av duplikater</string>
+    <string name="tools_duplicate_detector_summary">Identifiser og fjern dupliserte bøker</string>
+    <string name="tools_screen_cache">Hurtiglagringshåndtering</string>
+    <string name="tools_cache_browser">Tøm nettleserhurtiglager</string>
+    <string name="tools_cache_browser_success">WebView-hurtiglager tømt</string>
+    <string name="tools_cache_app">Tøm programhurtiglager</string>
+    <string name="tools_cache_app_success">Programhurtiglager tømt</string>
+    <string name="tools_latest_logs_title">Program-logger</string>
+    <string name="tools_latest_logs_summary">Vis programmets seneste loggføring</string>
+</resources>

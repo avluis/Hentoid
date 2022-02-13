@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.library;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,8 +23,6 @@ import me.devsaki.hentoid.json.GithubRelease;
 import me.devsaki.hentoid.retrofit.GithubServer;
 import me.devsaki.hentoid.viewholders.GitHubReleaseItem;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Launcher dialog for the library refresh feature
@@ -64,7 +64,7 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     }
 
     private void getReleases() {
-        compositeDisposable.add(GithubServer.API.getLatestRelease() // No need to run on BG thread; retrofit already makes async calls
+        compositeDisposable.add(GithubServer.api.getLatestRelease() // No need to run on BG thread; retrofit already makes async calls
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(this::onCheckSuccess, this::onCheckError)
         );

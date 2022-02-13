@@ -96,18 +96,22 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         donut.setProgress3(1 - deviceFreeBytes * 1f / deviceTotalBytes); // Total size taken on the device
 
 
-        ((TextView) requireViewById(rootView, R.id.memory_total)).setText(getResources().getString(R.string.memory_total, FileHelper.formatHumanReadableSize(deviceTotalBytes)));
-        ((TextView) requireViewById(rootView, R.id.memory_free)).setText(getResources().getString(R.string.memory_free, FileHelper.formatHumanReadableSize(deviceFreeBytes)));
-        ((TextView) requireViewById(rootView, R.id.memory_hentoid_main)).setText(getResources().getString(R.string.memory_hentoid_main, FileHelper.formatHumanReadableSize(hentoidPrimaryUsageBytes)));
-        ((TextView) requireViewById(rootView, R.id.memory_hentoid_ext)).setText(getResources().getString(R.string.memory_hentoid_ext, FileHelper.formatHumanReadableSize(hentoidExternalUsageBytes)));
+        ((TextView) requireViewById(rootView, R.id.memory_total)).setText(getResources().getString(R.string.memory_total, FileHelper.formatHumanReadableSize(deviceTotalBytes, getResources())));
+        ((TextView) requireViewById(rootView, R.id.memory_free)).setText(getResources().getString(R.string.memory_free, FileHelper.formatHumanReadableSize(deviceFreeBytes, getResources())));
+        ((TextView) requireViewById(rootView, R.id.memory_hentoid_main)).setText(getResources().getString(R.string.memory_hentoid_main, FileHelper.formatHumanReadableSize(hentoidPrimaryUsageBytes, getResources())));
+        ((TextView) requireViewById(rootView, R.id.memory_hentoid_ext)).setText(getResources().getString(R.string.memory_hentoid_ext, FileHelper.formatHumanReadableSize(hentoidExternalUsageBytes, getResources())));
 
         table = requireViewById(rootView, R.id.memory_details_table);
-        addRow(table, "Source", "Books", "Size");
+        addRow(table,
+                getResources().getString(R.string.memory_details_source),
+                getResources().getString(R.string.memory_details_books),
+                getResources().getString(R.string.memory_details_size)
+        );
 
         // Sort sources by largest size
         List<Map.Entry<Site, ImmutablePair<Integer, Long>>> sitesBySize = Stream.of(primaryMemUsage).sortBy(entry -> -entry.getValue().right).toList();
         for (Map.Entry<Site, ImmutablePair<Integer, Long>> entry : sitesBySize) {
-            addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", FileHelper.formatHumanReadableSize(entry.getValue().right));
+            addRow(table, entry.getKey().getDescription(), entry.getValue().left + "", FileHelper.formatHumanReadableSize(entry.getValue().right, getResources()));
         }
 
         // Make details fold/unfold
@@ -115,7 +119,7 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         requireViewById(rootView, R.id.memory_details).setOnClickListener(v -> onDetailsClick());
 
         long dbMaxSizeKb = Preferences.getMaxDbSizeKb();
-        ((TextView) requireViewById(rootView, R.id.memory_db)).setText(getResources().getString(R.string.memory_database, FileHelper.formatHumanReadableSize(dao.getDbSizeBytes()), dao.getDbSizeBytes() * 100 / 1024f / dbMaxSizeKb));
+        ((TextView) requireViewById(rootView, R.id.memory_db)).setText(getResources().getString(R.string.memory_database, FileHelper.formatHumanReadableSize(dao.getDbSizeBytes(), getResources()), dao.getDbSizeBytes() * 100 / 1024f / dbMaxSizeKb));
     }
 
     private void onDetailsClick() {

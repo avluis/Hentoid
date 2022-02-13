@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.UriPermission;
 import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -489,15 +490,14 @@ public class FileHelper {
     }
 
     /**
-     * List all elements inside the given parent folder (non recursive) that match the given criteria
-     * TODO udpate doc
+     * List the first element inside the given parent folder (non recursive) that matches the given criteria
      *
      * @param context     Context to use
-     * @param parent      Parent folder to list elements from
-     * @param nameFilter  Name filter to use to filter the elements to list
-     * @param listFolders True if the listed elements have to include folders
-     * @param listFiles   True if the listed elements have to include files (non-folders)
-     * @return Elements of the given parent folder matching the given criteria
+     * @param parent      Parent folder to search into
+     * @param nameFilter  Name filter to use to filter the element to find
+     * @param listFolders True if the element to find can be a folder
+     * @param listFiles   True if the element to find can be a file (i.e. non folder)
+     * @return First element of the given parent folder matching the given criteria
      */
     @Nullable
     private static DocumentFile findDocumentFile(@NonNull final Context context,
@@ -573,7 +573,7 @@ public class FileHelper {
                 openFileWithIntent(context, uri, MimeTypeMap.getSingleton().getMimeTypeFromExtension(getExtension(fileName)));
         } catch (ActivityNotFoundException e) {
             Timber.e(e, "No activity found to open %s", uri.toString());
-            ToastHelper.toast(context, R.string.error_open, Toast.LENGTH_LONG);
+            ToastHelper.toastLong(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
 
@@ -851,8 +851,8 @@ public class FileHelper {
      * @param bytes Size to format, in bytes
      * @return Given file size using human-readable units, two decimals precision
      */
-    public static String formatHumanReadableSize(long bytes) {
-        return FileUtil.byteCountToDisplayRoundedSize(bytes, 2);
+    public static String formatHumanReadableSize(long bytes, final Resources res) {
+        return FileUtil.byteCountToDisplayRoundedSize(bytes, 2, res);
     }
 
     /**

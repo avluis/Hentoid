@@ -25,7 +25,6 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 
 @Suppress("PrivatePropertyName")
@@ -92,12 +91,12 @@ class ToolsFragment : PreferenceFragmentCompat() {
             }
             CLEAR_BROWSER_CACHE -> {
                 context?.clearWebviewCache()
-                ToastHelper.toast("Webview cache successfuly cleared")
+                ToastHelper.toast(R.string.tools_cache_browser_success)
                 true
             }
             CLEAR_APP_CACHE -> {
                 context?.clearAppCache()
-                ToastHelper.toast("App cache successfuly cleared")
+                ToastHelper.toast(R.string.tools_cache_app_success)
                 true
             }
             ACCESS_LATEST_LOGS -> {
@@ -146,7 +145,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
         exportDisposable.dispose()
 
         // Use a random number to avoid erasing older exports by mistake
-        var targetFileName = Random().nextInt(9999).toString() + ".json"
+        var targetFileName = Helper.getRandomInt(9999).toString() + ".json"
         targetFileName = "settings-$targetFileName"
 
         rootView?.let {
@@ -169,7 +168,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
                     R.string.copy_download_folder_success,
                     BaseTransientBottomBar.LENGTH_LONG
                 )
-                    .setAction("OPEN FOLDER") {
+                    .setAction(R.string.open_folder) {
                         FileHelper.openFile(
                             requireContext(),
                             FileHelper.getDownloadsFolder()

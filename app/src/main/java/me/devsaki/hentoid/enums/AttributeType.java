@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.enums;
 
+import androidx.annotation.StringRes;
+
 import com.squareup.moshi.FromJson;
 import com.squareup.moshi.ToJson;
 
@@ -14,24 +16,25 @@ import me.devsaki.hentoid.R;
 public enum AttributeType {
 
     // Attributes stored in Attributes table of the DB
-    ARTIST(0, "Artist", R.drawable.ic_attribute_artist),
-    PUBLISHER(1, "Publisher", R.drawable.ic_site_fakku),
-    LANGUAGE(2, "Language", R.drawable.ic_attribute_language),
-    TAG(3, "Tag", R.drawable.ic_attribute_tag),
-    TRANSLATOR(4, "Translator", R.drawable.ic_site_fakku),
-    SERIE(5, "Series", R.drawable.ic_attribute_serie),
-    UPLOADER(6, "Uploader", R.drawable.ic_site_fakku),
-    CIRCLE(7, "Circle", R.drawable.ic_site_fakku),
-    CHARACTER(8, "Character", R.drawable.ic_attribute_character),
-    CATEGORY(9, "Category", R.drawable.ic_site_fakku),
+    ARTIST(0, R.string.object_artist, R.drawable.ic_attribute_artist),
+    PUBLISHER(1, R.string.object_publisher, R.drawable.ic_site_fakku),
+    LANGUAGE(2, R.string.object_language, R.drawable.ic_attribute_language),
+    TAG(3, R.string.object_tag, R.drawable.ic_attribute_tag),
+    TRANSLATOR(4, R.string.object_translator, R.drawable.ic_site_fakku),
+    SERIE(5, R.string.object_series, R.drawable.ic_attribute_serie),
+    UPLOADER(6, R.string.object_uploader, R.drawable.ic_site_fakku),
+    CIRCLE(7, R.string.object_circle, R.drawable.ic_site_fakku),
+    CHARACTER(8, R.string.object_character, R.drawable.ic_attribute_character),
+    CATEGORY(9, R.string.object_category, R.drawable.ic_site_fakku),
     // Attributes displayed on screen and stored elsewhere
-    SOURCE(10, "Source", R.drawable.ic_attribute_source);
+    SOURCE(10, R.string.object_source, R.drawable.ic_attribute_source);
 
     private final int code;
-    private final String displayName;
+    private final @StringRes
+    int displayName;
     private final int icon;
 
-    AttributeType(int code, String displayName, int icon) {
+    AttributeType(int code, @StringRes int displayName, int icon) {
         this.code = code;
         this.displayName = displayName;
         this.icon = icon;
@@ -67,7 +70,8 @@ public enum AttributeType {
         return icon;
     }
 
-    public String getDisplayName() {
+    public @StringRes
+    int getDisplayName() {
         return displayName;
     }
 

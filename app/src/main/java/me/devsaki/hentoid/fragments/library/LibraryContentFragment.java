@@ -1427,7 +1427,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 nbSuccess -> {
                     String message = getResources().getQuantityString(R.plurals.add_to_queue, contentList.size(), nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
-                    snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+                    snackbar.setAction(R.string.view_queue, v -> viewQueue());
                     snackbar.show();
                 },
                 t -> {
@@ -1451,7 +1451,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 nbSuccess -> {
                     String message = getResources().getQuantityString(R.plurals.add_to_queue, nbSuccess, nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG);
-                    snackbar.setAction("VIEW QUEUE", v -> viewQueue());
+                    snackbar.setAction(R.string.view_queue, v -> viewQueue());
                     snackbar.show();
                 },
                 onError);
@@ -1500,13 +1500,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle, boolean deleteAfterMerging) {
         leaveSelectionMode();
         viewModel.mergeContents(contentList, newTitle, deleteAfterMerging, () -> ToastHelper.toast(R.string.merge_success));
-        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), getResources().getString(R.string.pages));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), R.plurals.page);
     }
 
     public void splitContent(@NonNull Content content, @NonNull List<Chapter> chapters) {
         leaveSelectionMode();
         viewModel.splitContent(content, chapters, () -> ToastHelper.toast(R.string.split_success));
-        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.split_progress), getResources().getString(R.string.pages));
+        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.split_progress), R.plurals.page);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
