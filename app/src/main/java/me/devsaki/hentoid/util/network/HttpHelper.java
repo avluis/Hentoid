@@ -582,6 +582,12 @@ public class HttpHelper {
         return result;
     }
 
+    /**
+     * Remove all references to webview in the given user agent
+     *
+     * @param agent User agent to clean from webview references
+     * @return User agent cleaned from webview references
+     */
     public static String cleanWebViewAgent(@NonNull final String agent) {
         String result = agent;
         int buildIndex = result.indexOf(" Build/");

@@ -59,6 +59,7 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
     // Measurement of the number of requests per second
     private final Queue<Long> previousRequestsTimestamps = new LinkedList<>();
 
+    // True if the queue is being initialized
     private final AtomicBoolean isInit = new AtomicBoolean(false);
 
 
@@ -70,33 +71,12 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         init(context, downloadThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, true, false);
     }
 
-    private static int getPreferredThreadCount(Context context) {
-        int result = Preferences.getDownloadThreadCount();
-        if (result == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
-            result = getSuggestedThreadCount(context);
-        }
-        return result;
-    }
-
-    private static int getSuggestedThreadCount(Context context) {
-        final int threshold = 64;
-        final int maxThreads = 4;
-
-        int memoryClass = getMemoryClass(context);
-        FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
-        crashlytics.setCustomKey("Memory class", memoryClass);
-
-        if (memoryClass == 0) return maxThreads;
-        int threadCount = (int) Math.ceil((double) memoryClass / (double) threshold);
-        return Math.min(threadCount, maxThreads);
-    }
-
-    private static int getMemoryClass(Context context) {
-        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        if (activityManager == null) return 0;
-        return activityManager.getMemoryClass();
-    }
-
+    /**
+     * Get the instance of the RequestQueueManager singleton
+     *
+     * @param context Context to use
+     * @return Instance of the RequestQueueManager singleton
+     */
     public static synchronized RequestQueueManager getInstance(Context context) {
         if (context != null && mInstance == null) {
             synchronized (RequestQueueManager.class) {
@@ -107,9 +87,11 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
     }
 
     /**
-     * Start the app's Volley request queue
+     * Initialize the Volley request queue
      *
-     * @param ctx App context
+     * @param ctx              Context to use
+     * @param connectTimeoutMs Connect timeout to use (ms)
+     * @param ioTimeoutMs      I/O timeout to use (ms)
      */
     private void init(Context ctx, int connectTimeoutMs, int ioTimeoutMs) { // This is the safest code, as it relies on standard Volley interface
         if (mRequestQueue == null) {
@@ -118,28 +100,16 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         }
     }
 
-    // Reset the entire queue, including the connexion pool
-    // TODO doc
-    public void resetRequestQueue(@NonNull Context ctx, boolean resetOkHttp) {
-        init(ctx, downloadThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, false, resetOkHttp);
-        // Requeue interrupted requests
-        synchronized (currentRequests) {
-            Timber.d("resetRequestQueue :: Requeuing %d requests", currentRequests.size());
-            for (RequestOrder order : currentRequests) executeRequest(order);
-        }
-        refill();
-    }
-
-    // This will cancel any current download
-    // TODO doc
-    public void initUsingDownloadThreadCount(@NonNull Context ctx, int value, boolean cancelQueue) {
-        downloadThreadCap = value;
-        downloadThreadCount = value;
-        if (-1 == downloadThreadCap) downloadThreadCount = getPreferredThreadCount(ctx);
-        init(ctx, downloadThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, cancelQueue, false);
-    }
-
-    // TODO doc
+    /**
+     * Initialize the Volley request queue using the given number of parallel downloads
+     *
+     * @param ctx              Context to use
+     * @param nbDlThreads      Number of parallel downloads to use; -1 to use automated recommendation
+     * @param connectTimeoutMs Connect timeout to use (ms)
+     * @param ioTimeoutMs      I/O timeout to use (ms)
+     * @param cancelQueue      True if queued requests should be canceled; false if it should be kept intact
+     * @param resetOkHttp      If true, also reset the underlying OkHttp connections
+     */
     private void init(Context ctx, int nbDlThreads, int connectTimeoutMs, int ioTimeoutMs, boolean cancelQueue, boolean resetOkHttp) {
         isInit.set(true);
         try {
@@ -160,6 +130,84 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         }
     }
 
+    /**
+     * Initialize the Volley request queue using the given number of parallel downloads
+     *
+     * @param ctx         Context to use
+     * @param nbDlThreads Number of parallel downloads to use; -1 to use automated recommendation
+     * @param cancelQueue True if queued requests should be canceled; false if it should be kept intact
+     */
+    public void initUsingDownloadThreadCount(@NonNull Context ctx, int nbDlThreads, boolean cancelQueue) {
+        downloadThreadCap = nbDlThreads;
+        downloadThreadCount = nbDlThreads;
+        if (-1 == downloadThreadCap) downloadThreadCount = getPreferredThreadCount(ctx);
+        init(ctx, downloadThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, cancelQueue, false);
+    }
+
+    /**
+     * Return the number of parallel downloads (download thread count) chosen by the user
+     *
+     * @param context Context to use
+     * @return Number of parallel downloads (download thread count) chosen by the user
+     */
+    private static int getPreferredThreadCount(Context context) {
+        int result = Preferences.getDownloadThreadCount();
+        if (result == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
+            result = getSuggestedThreadCount(context);
+        }
+        return result;
+    }
+
+    /**
+     * Return the automatic download thread count calculated from the device's memory capacity
+     *
+     * @param context Context to use
+     * @return automatic download thread count calculated from the device's memory capacity
+     */
+    private static int getSuggestedThreadCount(Context context) {
+        final int threshold = 64;
+        final int maxThreads = 4;
+
+        int memoryClass = getMemoryClass(context);
+        FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+        crashlytics.setCustomKey("Memory class", memoryClass);
+
+        if (memoryClass == 0) return maxThreads;
+        int threadCount = (int) Math.ceil((double) memoryClass / (double) threshold);
+        return Math.min(threadCount, maxThreads);
+    }
+
+    /**
+     * Return the device's per-app memory capacity
+     *
+     * @param context Context to use
+     * @return Device's per-app memory capacity
+     */
+    private static int getMemoryClass(Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager == null) return 0;
+        return activityManager.getMemoryClass();
+    }
+
+    /**
+     * Reset the entire queue
+     *
+     * @param ctx         Context to use
+     * @param resetOkHttp If true, also reset the underlying OkHttp connections
+     */
+    public void resetRequestQueue(@NonNull Context ctx, boolean resetOkHttp) {
+        init(ctx, downloadThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, false, resetOkHttp);
+        // Requeue interrupted requests
+        synchronized (currentRequests) {
+            Timber.d("resetRequestQueue :: Requeuing %d requests", currentRequests.size());
+            for (RequestOrder order : currentRequests) executeRequest(order);
+        }
+        refill();
+    }
+
+    /**
+     * Restart the current request queue (cancel, then re-execute all pending requests)
+     */
     public void restartRequestQueue() {
         if (mRequestQueue != null) {
             mRequestQueue.removeRequestEventListener(this); // Prevent interrupted requests from messing with downloads
@@ -210,7 +258,7 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
     /**
      * Add a request to the app's queue
      *
-     * @param order Request to addAll to the queue
+     * @param order Request to add to the queue
      */
     public void queueRequest(RequestOrder order) {
         long now = Instant.now().toEpochMilli();
@@ -222,6 +270,14 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         }
     }
 
+    /**
+     * Get the number of new requests that can be executed at the given timestamp
+     * This method is where the number of parallel downloads and the download rate limitations
+     * are actually used
+     *
+     * @param now Timestamp to consider
+     * @return Number of new requests that can be executed at the given timestamp
+     */
     private int getAllowedNewRequests(long now) {
         int remainingSlots = downloadThreadCount - getNbActiveRequests();
         if (0 == remainingSlots) return 0;
@@ -245,6 +301,9 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         } else return remainingSlots;
     }
 
+    /**
+     * Refill the queue with the allowed number of requests
+     */
     private void refill() {
         if (getNbActiveRequests() < downloadThreadCount) {
             waitDisposable.add(Completable.fromRunnable(this::doRefill)
@@ -255,6 +314,9 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         }
     }
 
+    /**
+     * Refill the queue with the allowed number of requests
+     */
     private void doRefill() {
         long now = Instant.now().toEpochMilli();
         int allowedNewRequests = getAllowedNewRequests(now);
@@ -275,10 +337,21 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         }
     }
 
+    /**
+     * Execute the given request order now
+     *
+     * @param order Request order to execute
+     */
     private void executeRequest(@NonNull RequestOrder order) {
         executeRequest(order, Instant.now().toEpochMilli());
     }
 
+    /**
+     * Execute the given request order at the given timestamp
+     *
+     * @param order Request order to execute
+     * @param now   Tiemstamp to record the execution for
+     */
     private void executeRequest(@NonNull RequestOrder order, long now) {
         Timber.d("Waiting requests queue ::: request executed for host %s - current total %s", Uri.parse(order.getUrl()).getHost(), waitingRequestQueue.size());
         synchronized (currentRequests) {
