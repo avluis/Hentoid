@@ -88,11 +88,14 @@ public class LogsDialogFragment extends DialogFragment {
             fileName = (null == fileName) ? "" : fileName.toLowerCase();
 
             String label;
-            if (fileName.startsWith("import_external")) label = "External library import/refresh";
-            else if (fileName.startsWith("import")) label = "Primary library import/refresh";
-            else if (fileName.startsWith("cleanup")) label = "Primary library cleanup";
+            if (fileName.startsWith("import_external"))
+                label = getResources().getString(R.string.log_import_external);
+            else if (fileName.startsWith("import"))
+                label = getResources().getString(R.string.log_import);
+            else if (fileName.startsWith("cleanup"))
+                label = getResources().getString(R.string.log_cleanup);
             else if (fileName.startsWith("api29_migration"))
-                label = "Library migration from Hentoid v1.11-";
+                label = getResources().getString(R.string.log_api29_migration);
             else label = "[" + fileName + "]";
 
             Instant lastModified = Instant.ofEpochMilli(file.lastModified());

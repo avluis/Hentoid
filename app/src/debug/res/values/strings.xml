@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Hentoid-beta</string>
-    <string name="app_id">me.devsaki.hentoid.debug</string>
+    <string name="app_id" translatable="false">me.devsaki.hentoid.debug</string>
     <string name="pref_app_preview_default" translatable="false">true</string> <!-- Debug apps always visible to facilitate video capture -->
 </resources>

@@ -1,25 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Activity Title -->
     <string name="tools_title">Tools</string>
+    <!-- Menu item -->
     <string name="tools_screen_import_export">Import / Export</string>
 
+    <!-- Button -->
     <string name="tools_export_library_title">Export metadata</string>
+    <!-- Button description -->
     <string name="tools_export_library_summary">Export Hentoid books to a JSON file</string>
+    <!-- Button -->
     <string name="tools_import_library_title">Import metadata</string>
+    <!-- Button description -->
     <string name="tools_import_library_summary">Restore exported Hentoid books from a JSON file</string>
+    <!-- Subheading -->
     <string name="tools_screen_cat_settings">Settings</string>
+    <!-- Button -->
     <string name="tools_export_settings_title">Export settings</string>
+    <!-- Button description -->
     <string name="tools_export_settings_summary">Export settings to a JSON file</string>
+    <!-- Button -->
     <string name="tools_import_settings_title">Import settings</string>
+    <!-- Button description -->
     <string name="tools_import_settings_summary">Restore exported settings from a JSON file</string>
 
+    <!-- Menu item -->
     <string name="tools_duplicate_detector_title">Duplicate detector</string>
+    <!-- Menu item description -->
     <string name="tools_duplicate_detector_summary">Identify and remove duplicate books</string>
 
+    <!-- Menu item -->
     <string name="tools_screen_cache">Cache management</string>
+    <!-- Button -->
     <string name="tools_cache_browser">Clear browser cache</string>
+    <!-- Toast notification -->
+    <string name="tools_cache_browser_success">WebView cache successfully cleared</string>
+    <!-- Button -->
     <string name="tools_cache_app">Clear app cache</string>
+    <!-- Toast notification -->
+    <string name="tools_cache_app_success">App cache successfully cleared</string>
 
+    <!-- Menu item -->
     <string name="tools_latest_logs_title">App logs</string>
+    <!-- Menu item description -->
     <string name="tools_latest_logs_summary">View the app\'s latest logs</string>
 </resources>

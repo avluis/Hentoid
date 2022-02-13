@@ -41,6 +41,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
+import com.bumptech.glide.load.Transformation;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -57,7 +61,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -101,7 +104,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
     private static final String KEY_SLIDESHOW_ON = "slideshow_on";
 
-    private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
+    private final Transformation<Bitmap> centerInside = new CenterInside();
+    private final RequestOptions glideRequestOptions = new RequestOptions()
+            .optionalTransform(centerInside)
+            .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside));
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
@@ -736,7 +742,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         Timber.e(t);
         if (t instanceof ContentNotProcessedException) {
             ContentNotProcessedException e = (ContentNotProcessedException) t;
-            String message = (null == e.getMessage()) ? "Content removal failed" : e.getMessage();
+            String message = (null == e.getMessage()) ? getString(R.string.content_removal_failed) : e.getMessage();
             Snackbar.make(binding.recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
     }
@@ -1320,7 +1326,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         }
 
         if (showToast)
-            ToastHelper.toast(String.format(Locale.ENGLISH, "Starting slideshow (delay %.1fs)", delayMs / 1000f));
+            ToastHelper.toast(R.string.slideshow_start, delayMs / 1000f);
         scrollListener.disableScroll();
 
         slideshowTimer = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
@@ -1335,7 +1341,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             slideshowTimer.dispose();
             slideshowTimer = null;
             scrollListener.enableScroll();
-            ToastHelper.toast("Slideshow stopped");
+            ToastHelper.toast(R.string.slideshow_stop);
         }
     }
 }

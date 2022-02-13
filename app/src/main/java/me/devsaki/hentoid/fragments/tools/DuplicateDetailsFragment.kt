@@ -280,7 +280,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
         ProgressDialogFragment.invoke(
             parentFragmentManager,
             resources.getString(R.string.merge_progress),
-            resources.getString(R.string.pages)
+            R.plurals.page
         )
     }
 

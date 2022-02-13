@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.queue;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,8 +36,6 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.ToastHelper;
-
-import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Info dialog for download errors details
@@ -160,14 +160,14 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         List<LogHelper.LogEntry> log = new ArrayList<>();
 
         LogHelper.LogInfo errorLogInfo = new LogHelper.LogInfo();
-        errorLogInfo.setHeaderName("Error");
+        errorLogInfo.setHeaderName(getResources().getString(R.string.error));
         errorLogInfo.setFileName("error_log" + content.getId());
-        errorLogInfo.setNoDataMessage("No error detected.");
+        errorLogInfo.setNoDataMessage(getResources().getString(R.string.no_error_detected));
         errorLogInfo.setEntries(log);
 
         List<ErrorRecord> errorLog = content.getErrorLog();
         if (errorLog != null) {
-            errorLogInfo.setHeader("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
+            errorLogInfo.setHeader(getResources().getString(R.string.error_log_header, content.getTitle(), content.getUniqueSiteId(), content.getSite().getDescription(), errorLog.size()));
             for (ErrorRecord e : errorLog)
                 log.add(new LogHelper.LogEntry(e.getTimestamp(), e.toString()));
         }
@@ -187,7 +187,7 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         LogHelper.LogInfo logInfo = createLog();
         DocumentFile logFile = LogHelper.writeLog(requireContext(), logInfo);
         if (logFile != null)
-            FileHelper.shareFile(requireContext(), logFile.getUri(), "Error log for queue");
+            FileHelper.shareFile(requireContext(), logFile.getUri(), getResources().getString(R.string.error_log_header_queue));
     }
 
     @Override

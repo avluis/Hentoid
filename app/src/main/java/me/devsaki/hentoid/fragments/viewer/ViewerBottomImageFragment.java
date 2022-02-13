@@ -1,5 +1,9 @@
 package me.devsaki.hentoid.fragments.viewer;
 
+import static androidx.core.view.ViewCompat.requireViewById;
+import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
+import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -21,6 +25,10 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
+import com.bumptech.glide.load.Transformation;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -31,7 +39,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
-import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
@@ -44,10 +51,6 @@ import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
-
-import static androidx.core.view.ViewCompat.requireViewById;
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
-import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
 public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
@@ -78,8 +81,10 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
         Bitmap bmp = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_hentoid_trans);
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
 
+        final Transformation<Bitmap> centerInside = new CenterInside();
         glideRequestOptions = new RequestOptions()
-                .centerInside()
+                .optionalTransform(centerInside)
+                .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
                 .error(d);
     }
 
@@ -170,12 +175,12 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
             Point dimensions = getImageDimensions(requireContext(), image.getFileUri());
             String sizeStr;
             if (image.getSize() > 0) {
-                sizeStr = FileHelper.formatHumanReadableSize(image.getSize());
+                sizeStr = FileHelper.formatHumanReadableSize(image.getSize(), getResources());
             } else {
                 long size = FileHelper.fileSizeFromUri(requireContext(), Uri.parse(image.getFileUri()));
-                sizeStr = FileHelper.formatHumanReadableSize(size);
+                sizeStr = FileHelper.formatHumanReadableSize(size, getResources());
             }
-            imgStats.setText(String.format(Locale.ENGLISH, "%s x %s (scale %.0f%%) - %s", dimensions.x, dimensions.y, scale * 100, sizeStr));
+            imgStats.setText(getResources().getString(R.string.viewer_img_details, dimensions.x, dimensions.y, scale * 100, sizeStr));
             Glide.with(imgThumb)
                     .load(Uri.parse(image.getFileUri()))
                     .apply(glideRequestOptions)
@@ -245,7 +250,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
             }
 
             Snackbar.make(rootView, R.string.copy_download_folder_success, LENGTH_LONG)
-                    .setAction("OPEN FOLDER", v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
+                    .setAction(R.string.open_folder, v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                     .show();
         } catch (IOException | IllegalArgumentException e) {
             Snackbar.make(rootView, R.string.copy_download_folder_fail, LENGTH_LONG).show();
@@ -310,7 +315,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
         Timber.e(t);
         if (t instanceof ContentNotProcessedException) {
             ContentNotProcessedException e = (ContentNotProcessedException) t;
-            String message = (null == e.getMessage()) ? "File removal failed" : e.getMessage();
+            String message = (null == e.getMessage()) ? getResources().getString(R.string.file_removal_failed) : e.getMessage();
             Snackbar.make(rootView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
     }

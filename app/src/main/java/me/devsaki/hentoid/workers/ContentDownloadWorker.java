@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.Nullable;
@@ -78,6 +77,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.download.DownloadHelper;
+import me.devsaki.hentoid.util.download.RequestOrder;
 import me.devsaki.hentoid.util.download.RequestQueueManager;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.exception.CaptchaException;
@@ -87,7 +87,6 @@ import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import me.devsaki.hentoid.util.network.InputStreamVolleyRequest;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.notification.NotificationManager;
@@ -111,7 +110,7 @@ public class ContentDownloadWorker extends BaseWorker {
     private boolean isCloudFlareBlocked;
 
     private final NotificationManager userActionNotificationManager;
-    private final RequestQueueManager<Object> requestQueueManager;
+    private final RequestQueueManager requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Download speed calculator
@@ -416,24 +415,17 @@ public class ContentDownloadWorker extends BaseWorker {
 
         EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_DOWNLOAD));
 
-        // Wait a delay corresponding to book browsing if we're between two sources with "simulate human reading"
-        if (content.getSite().isSimulateHumanReading() && requestQueueManager.isSimulateHumanReading()) {
-            int delayMs = 3000 + new Random().nextInt(2000);
-            Helper.pause(delayMs);
-        }
-
         if (content.getSite().getParallelDownloadCap() > 0 &&
                 (requestQueueManager.getDownloadThreadCap() > content.getSite().getParallelDownloadCap()
                         || -1 == requestQueueManager.getDownloadThreadCap())
         ) {
             Timber.d("Setting parallel downloads count to %s", content.getSite().getParallelDownloadCap());
-            requestQueueManager.setDownloadThreadCount(getApplicationContext(), content.getSite().getParallelDownloadCap());
+            requestQueueManager.initUsingDownloadThreadCount(getApplicationContext(), content.getSite().getParallelDownloadCap(), true);
         }
         if (0 == content.getSite().getParallelDownloadCap() && requestQueueManager.getDownloadThreadCap() > -1) {
             Timber.d("Resetting parallel downloads count to default");
-            requestQueueManager.setDownloadThreadCount(getApplicationContext(), -1);
+            requestQueueManager.initUsingDownloadThreadCount(getApplicationContext(), -1, true);
         }
-        requestQueueManager.setSimulateHumanReading(content.getSite().isSimulateHumanReading());
         requestQueueManager.setNbRequestsPerSecond(content.getSite().getRequestsCapPerSecond());
 
         // In case the download has been canceled while in preparation phase
@@ -527,7 +519,7 @@ public class ContentDownloadWorker extends BaseWorker {
         long downloadedBytes = 0;
 
         boolean firstPageDownloaded = false;
-        long deltaPages = 0;
+        int deltaPages = 0;
         int nbDeltaZeroPages = 0;
         long networkBytes = 0;
         long deltaNetworkBytes;
@@ -571,7 +563,7 @@ public class ContentDownloadWorker extends BaseWorker {
             downloadSpeedCalculator.addSampleNow(networkBytes);
             int avgSpeedKbps = (int) downloadSpeedCalculator.getAvgSpeedKbps();
 
-            Timber.d("deltaPages: %d / deltaNetworkBytes: %s", deltaPages, FileHelper.formatHumanReadableSize(deltaNetworkBytes));
+            Timber.d("deltaPages: %d / deltaNetworkBytes: %s", deltaPages, FileHelper.formatHumanReadableSize(deltaNetworkBytes, getApplicationContext().getResources()));
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
 
             // Restart request queue when the queue has idled for too long
@@ -579,7 +571,8 @@ public class ContentDownloadWorker extends BaseWorker {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
                 Timber.d("Inactivity detected ====> restarting request queue");
-                requestQueueManager.restartRequestQueue();
+                //requestQueueManager.restartRequestQueue();
+                requestQueueManager.resetRequestQueue(getApplicationContext(), false);
             }
 
             double estimateBookSizeMB = -1;
@@ -804,7 +797,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
     }
 
-    private Request<Object> buildImageDownloadRequest(
+    private RequestOrder buildImageDownloadRequest(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
             @NonNull final Content content) {
@@ -817,7 +810,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         final String backupUrlFinal = HttpHelper.fixUrl(img.getBackupUrl(), site.getUrl());
 
-        return new InputStreamVolleyRequest(
+        return new RequestOrder(
                 Request.Method.GET,
                 imageUrl,
                 requestHeaders,
@@ -868,6 +861,10 @@ public class ContentDownloadWorker extends BaseWorker {
             @NonNull DocumentFile dir,
             @NonNull String backupUrl,
             @NonNull Map<String, String> requestHeaders) {
+
+        // If the queue is being reset, ignore the error
+        if (requestQueueManager.isInit()) return;
+
         // Try with the backup URL, if it exists and if the current image isn't a backup itself
         if (!img.isBackup() && !backupUrl.isEmpty()) {
             tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);

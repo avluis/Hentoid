@@ -12,10 +12,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import timber.log.Timber;
@@ -63,7 +63,7 @@ public class HentaifoxParser extends BaseImageListParser {
 
             // Forge all page URLs
             for (int i = 0; i < content.getQtyPages(); i++) {
-                String imgUrl = "https://" + HOSTS[new Random().nextInt(HOSTS.length)] + "/" +
+                String imgUrl = "https://" + HOSTS[Helper.getRandomInt(HOSTS.length)] + "/" +
                         thumbPath +
                         (i + 1) + "." + getExtensionFromFormat(imageFormats, i);
                 result.add(imgUrl);

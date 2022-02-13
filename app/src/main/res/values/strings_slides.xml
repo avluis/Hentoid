@@ -9,17 +9,17 @@
     <!-- Slide 04 -->
     <string name="slide_04_header">Library</string>
     <string name="slide_04_text">Hentoid requires a dedicated folder for storing your media.</string>
+    <!-- Button -->
     <string name="slide_04_skip">Skip</string>
-    <string name="slide_04_skip_title">Skip?</string>
+    <!-- Dialog title -->
+    <string name="slide_04_skip_title">Skip\?</string>
     <string name="slide_04_skip_msg">You won\'t be able to download if you skip this step.\nIn order to download, you\'ll have to set the download folder through the app settings.</string>
     <!-- Slide 05 -->
     <string name="slide_05_header">Theme</string>
     <string name="slide_05_text">Choose a display theme.</string>
-    <string name="slide_05_light">Light</string>
-    <string name="slide_05_dark">Dark</string>
-    <string name="slide_05_black">Black</string>
     <!-- Slide 06 -->
     <string name="slide_06_header">Sources</string>
+    <!-- Description text -->
     <string name="slide_06_text">Select sources to download from.</string>
     <string name="slide_06_subtext">You can change this selection later at any time using the edit button on the left menu.</string>
     <!-- Last slide -->

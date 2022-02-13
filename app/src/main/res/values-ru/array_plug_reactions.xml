@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DO NOT modify the way these strings and comments are set up - it is required for Weblate to work -->
+    <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
+
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug1">ямете~~♡</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug2">стой, это… не та дырка~</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug3">ах~</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug4">фууу ♡ ♡</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug5">не сюда~~♡</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug6">плохой, плохой мальчик~~</string>
+    <!-- Реакция на подключение аудио-устройства -->
+    <string name="audio_plug7">так… тесно…♡</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug1">мне так приятно там~~</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug2">глубже~~~♡</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug3">икуууу~~</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug4">а-ах ♡</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug5">ооох~</string>
+    <!-- Реакция на подключение зарядного устройства -->
+    <string name="power_plug6">ещё ♡</string>
+</resources>

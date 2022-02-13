@@ -30,12 +30,16 @@ import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.fragments.ProgressDialogFragment
+import me.devsaki.hentoid.retrofit.GithubServer
+import me.devsaki.hentoid.retrofit.sources.EHentaiServer
+import me.devsaki.hentoid.retrofit.sources.LusciousServer
+import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
-import me.devsaki.hentoid.util.network.OkHttpClientSingleton
+import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ExternalImportWorker
@@ -245,12 +249,19 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             )
             snack.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text).maxLines =
                 5
-            snack.setAction("OK") { snack.dismiss() }
+            snack.setAction(R.string.ok) { snack.dismiss() }
             snack.show()
         }
         runBlocking {
             launch(Dispatchers.Default) {
-                OkHttpClientSingleton.reset()
+                // Reset connection pool used by the downloader (includes an OkHttp instance reset)
+                RequestQueueManager.getInstance(requireContext())
+                    .resetRequestQueue(requireContext(), true)
+                // Reset all retrofit clients
+                GithubServer.init()
+                EHentaiServer.init()
+                LusciousServer.init()
+                PixivServer.init()
             }
         }
     }
@@ -286,7 +297,13 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                         .setIcon(R.drawable.ic_warning)
                         .setCancelable(false)
                         .setTitle(R.string.app_name)
-                        .setMessage(getString(R.string.pref_ask_delete_all_except_favs, list.size))
+                        .setMessage(
+                            requireContext().resources.getQuantityString(
+                                R.plurals.pref_ask_delete_all_except_favs,
+                                list.size,
+                                list.size
+                            )
+                        )
                         .setPositiveButton(
                             R.string.yes
                         ) { dialog1: DialogInterface, _: Int ->
@@ -296,7 +313,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                             ProgressDialogFragment.invoke(
                                 parentFragmentManager,
                                 resources.getString(R.string.delete_title),
-                                resources.getString(R.string.books)
+                                R.plurals.book
                             )
                             viewModel.deleteAllItemsExceptFavourites()
                         }

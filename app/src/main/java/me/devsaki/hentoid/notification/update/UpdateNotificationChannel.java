@@ -9,6 +9,8 @@ import androidx.annotation.NonNull;
 
 import java.util.Objects;
 
+import me.devsaki.hentoid.R;
+
 public class UpdateNotificationChannel {
 
     private UpdateNotificationChannel() {
@@ -22,7 +24,7 @@ public class UpdateNotificationChannel {
     // IMPORTANT : ALWAYS INIT THE CHANNEL BEFORE FIRING NOTIFICATIONS !
     public static void init(@NonNull Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String name = "Updates";
+            String name = context.getString(R.string.updates_title);
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(ID, name, importance);
             channel.setSound(null, null);

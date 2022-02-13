@@ -57,18 +57,18 @@ public class PixivContent extends BaseContentParser {
                 switch (entity) {
                     case "artworks":
                     case "illust":
-                        PixivIllustMetadata metadata = PixivServer.API.getIllustMetadata(id, cookieStr).execute().body();
+                        PixivIllustMetadata metadata = PixivServer.api.getIllustMetadata(id, cookieStr).execute().body();
                         if (metadata != null) return metadata.update(content, url, updateImages);
                         break;
                     case "series_content":
                     case "series":
-                        PixivSeriesMetadata seriesData = PixivServer.API.getSeriesMetadata(id, cookieStr).execute().body();
+                        PixivSeriesMetadata seriesData = PixivServer.api.getSeriesMetadata(id, cookieStr).execute().body();
                         if (seriesData != null)
                             return seriesData.update(content, url, updateImages);
                         break;
                     case "user":
                     case "users":
-                        PixivUserMetadata userData = PixivServer.API.getUserMetadata(id, cookieStr).execute().body();
+                        PixivUserMetadata userData = PixivServer.api.getUserMetadata(id, cookieStr).execute().body();
                         if (userData != null) return userData.update(content, url, updateImages);
                         break;
                     default:

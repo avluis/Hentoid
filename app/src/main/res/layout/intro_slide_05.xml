@@ -47,7 +47,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="30dp"
-            android:text="@string/slide_05_light" />
+            android:text="@string/theme_light" />
 
         <TextView
             android:id="@+id/intro_5_dark"
@@ -58,7 +58,7 @@
             android:focusable="true"
             android:gravity="center_vertical"
             android:padding="30dp"
-            android:text="@string/slide_05_dark" />
+            android:text="@string/theme_deep_red" />
 
         <TextView
             android:id="@+id/intro_5_black"
@@ -69,6 +69,6 @@
             android:focusable="true"
             android:gravity="center_vertical"
             android:padding="30dp"
-            android:text="@string/slide_05_black" />
+            android:text="@string/theme_dark" />
     </LinearLayout>
 </LinearLayout>

@@ -26,8 +26,12 @@ import androidx.constraintlayout.widget.Group;
 import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
+import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
+import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
+import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.mikepenz.fastadapter.FastAdapter;
@@ -88,8 +92,10 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         int tintColor = ThemeHelper.getColor(context, R.color.light_gray);
         Drawable d = new BitmapDrawable(context.getResources(), tintBitmap(bmp, tintColor));
 
+        final Transformation<Bitmap> centerInside = new CenterInside();
         glideRequestOptions = new RequestOptions()
-                .centerInside()
+                .optionalTransform(centerInside)
+                .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
                 .error(d);
     }
 
@@ -317,7 +323,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
             Context context = tvPages.getContext();
 
-            String template = context.getResources().getString(R.string.work_pages_library, content.getNbDownloadedPages(), content.getSize() * 1.0 / (1024 * 1024));
+            String template = context.getResources().getQuantityString(R.plurals.work_pages_library, (int) content.getNbDownloadedPages(), content.getNbDownloadedPages(), content.getSize() * 1.0 / (1024 * 1024));
 
             tvPages.setText(template);
         }
@@ -377,7 +383,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
 
             // View details icon
             if (viewDetails != null)
-                viewDetails.setText(context.getResources().getString(R.string.duplicate_count, item.nbDuplicates + 1));
+                viewDetails.setText(context.getResources().getQuantityString(R.plurals.duplicate_count, item.nbDuplicates + 1, item.nbDuplicates + 1));
 
             if (item.canDelete) {
                 if (keepDeleteGroup != null) keepDeleteGroup.setVisibility(View.VISIBLE);

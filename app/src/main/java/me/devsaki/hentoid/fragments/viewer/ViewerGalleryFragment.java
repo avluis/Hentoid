@@ -422,7 +422,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     .toList();
 
             if (!chapterlessImages.isEmpty()) {
-                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName("No chapter").withDraggable(!isArchive);
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName(getResources().getString(R.string.gallery_no_chapter)).withDraggable(!isArchive);
                 expandableItem.setIdentifier(Long.MAX_VALUE);
 
                 List<ImageFileItem> imgs = new ArrayList<>();
@@ -526,7 +526,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
                 }
             } else { // Create/remove chapter
-                viewModel.createRemoveChapter(img, t -> ToastHelper.toast("Couldn't toggle chapter at page " + img.getOrder()));
+                viewModel.createRemoveChapter(img, t -> ToastHelper.toast(R.string.chapter_toggle_failed, img.getOrder()));
             }
             return true;
         }
@@ -605,7 +605,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         Timber.e(t);
         if (t instanceof ContentNotProcessedException) {
             ContentNotProcessedException e = (ContentNotProcessedException) t;
-            String message = (null == e.getMessage()) ? "Page removal failed" : e.getMessage();
+            String message = (null == e.getMessage()) ? getResources().getString(R.string.page_removal_failed) : e.getMessage();
             Snackbar.make(recyclerView, message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
     }
@@ -671,7 +671,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
      * Strip all chapters from the current content
      */
     private void stripChapters() {
-        viewModel.stripChapters(t -> ToastHelper.toast("Couldn't remove chapters"));
+        viewModel.stripChapters(t -> ToastHelper.toast(R.string.chapters_remove_failed));
     }
 
     @Override
@@ -684,12 +684,14 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
         // Save final position of item in DB
         viewModel.moveChapter(oldPosition, newPosition, this::onChapterMoveError);
-        ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.renaming_progress), getResources().getString(R.string.files));
+        ProgressDialogFragment.invoke(
+                getParentFragmentManager(),
+                getResources().getString(R.string.renaming_progress), R.plurals.file);
     }
 
     private void onChapterMoveError(Throwable t) {
         Timber.e(t);
-        Snackbar.make(recyclerView, "Failed moving chapter", BaseTransientBottomBar.LENGTH_LONG).show();
+        Snackbar.make(recyclerView, R.string.chapter_move_failed, BaseTransientBottomBar.LENGTH_LONG).show();
     }
 
 

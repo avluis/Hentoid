@@ -112,8 +112,14 @@ public class Group {
         return favourite;
     }
 
-    public void setFavourite(boolean favourite) {
+    public Group setFavourite(boolean favourite) {
         this.favourite = favourite;
+        return this;
+    }
+
+    public Group setHasCustomBookOrder(boolean hasCustomBookOrder) {
+        this.hasCustomBookOrder = hasCustomBookOrder;
+        return this;
     }
 
     public String getName() {
