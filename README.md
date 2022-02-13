@@ -12,6 +12,9 @@ ___
 
 ![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome.png)
 
+###### [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/en-flag.svg) English](https://github.com/avluis/Hentoid/tree/master/README.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/ru-flag.svg) Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md)
+
+
 ##### `Hentoid` is an ad-free Doujinshi & H-Manga archiving and viewing app.
 ###### `Hentoid` currently supports:
 ###### [nhentai](https://nhentai.net/), [hitomi](https://hitomi.la/), [asmhentai](http://asmhentai.com/), [tsumino](http://www.tsumino.com/), [pururin](https://pururin.io/), [e-hentai](https://e-hentai.org/), [exHentai/sadpanda](https://exhentai.org), [8muses](https://www.8muses.com), [Doujins.com](https://doujins.com), [Luscious.net](https://www.luscious.net), [Porncomixonline](https://www.porncomixonline.net/), [HBrowse](https://www.hbrowse.com/), [Hentai2Read](https://hentai2read.com/), [HentaiFox](https://hentaifox.com), [Myreadingmanga](https://myreadingmanga.info/), [Manwha Hentai](https://manhwahentai.me/), [Imhentai](https://imhentai.com), [Toonily](https://toonily.com/), [Allporncomic](https://allporncomic.com/) and [Pixiv](https://www.pixiv.net/).
