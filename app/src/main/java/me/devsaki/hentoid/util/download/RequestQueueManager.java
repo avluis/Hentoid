@@ -112,6 +112,7 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
      */
     private void init(Context ctx, int nbDlThreads, int connectTimeoutMs, int ioTimeoutMs, boolean cancelQueue, boolean resetOkHttp) {
         isInit.set(true);
+        Timber.d("Init using %d Dl threads", nbDlThreads);
         try {
             if (mRequestQueue != null) {
                 mRequestQueue.removeRequestEventListener(this);
@@ -317,7 +318,7 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
     /**
      * Refill the queue with the allowed number of requests
      */
-    private void doRefill() {
+    private synchronized void doRefill() {
         long now = Instant.now().toEpochMilli();
         int allowedNewRequests = getAllowedNewRequests(now);
         while (0 == allowedNewRequests && 0 == getNbActiveRequests()) { // Dry queue
