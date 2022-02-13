@@ -59,7 +59,7 @@ public class LusciousContent extends BaseContentParser {
         query.put("variables", "{\"id\":\"" + bookId + "\"}");
 
         try {
-            LusciousBookMetadata metadata = LusciousServer.API.getBookMetadata(query).execute().body();
+            LusciousBookMetadata metadata = LusciousServer.api.getBookMetadata(query).execute().body();
             if (metadata != null) return metadata.update(content, updateImages);
         } catch (IOException e) {
             Timber.e(e, "Error parsing content.");

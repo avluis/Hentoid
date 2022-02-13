@@ -29,7 +29,7 @@ public class ExhentaiContent extends BaseContentParser {
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
 
             try {
-                EHentaiGalleriesMetadata metadata = EHentaiServer.EXHENTAI_API.getGalleryMetadata(query, cookiesStr).execute().body();
+                EHentaiGalleriesMetadata metadata = EHentaiServer.exentaiApi.getGalleryMetadata(query, cookiesStr).execute().body();
                 if (metadata != null)
                     return metadata.update(content, url, Site.EXHENTAI, updateImages);
             } catch (IOException e) {
