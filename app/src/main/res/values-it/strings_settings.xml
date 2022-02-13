@@ -23,9 +23,9 @@
     <string name="pref_color_theme_title">Colore del tema</string>
     <string name="pref_color_theme_summary">Tema attuale: <x:g xmlns:x="urn:oasis:names:tc:xliff:document:1.2" id="theme_name" example="Deep Red">%s</x:g></string>
     <string name="pref_screen_storage">Memoria</string>
-    <string name="pref_cat_downloads_folder">Libreria di Hentoid</string>
+    <string name="pref_cat_downloads_folder">Libreria di Hendroid</string>
     <string name="pref_select_folder_title">Seleziona la cartella Downloads</string>
-    <string name="pref_select_folder_summary">Seleziona dove Hentoid salverà i tuoi downloads</string>
+    <string name="pref_select_folder_summary">Seleziona dove Hendroid salverà i tuoi downloads</string>
     <string name="pref_import_queue_empty_title">Metti in coda i libri vuoti come errori</string>
     <string name="pref_import_queue_empty_on">I libri vuoti saranno aggiunti alla coda come errori</string>
     <string name="pref_import_queue_empty_off">I libri vuoti verranno aggiunti alla libreria</string>
@@ -42,9 +42,9 @@
     <string name="pref_memory_alert_title">Avvisa con memoria bassa</string>
     <string name="pref_external_library_title">Libreria esterna</string>
     <string name="pref_external_library_summary_empty">Nessuna libreria esterna impostata</string>
-    <string name="pref_external_library_delete_on">Hentoid può eliminare libri e pagine nella libreria esterna</string>
+    <string name="pref_external_library_delete_on">Hendroid può eliminare libri e pagine nella libreria esterna</string>
     <string name="pref_external_library_detach_title">Stacca la libreria esterna</string>
-    <string name="pref_external_library_detach_summary">Non includere più la libreria esterna in Hentoid</string>
+    <string name="pref_external_library_detach_summary">Non includere più la libreria esterna in Hendroid</string>
     <string name="pref_refresh_library_title">Aggiorna libreria</string>
     <string name="pref_refresh_library_summary">Aggiornare manualmente i contenuti della libreria</string>
     <string name="pref_delete_all_except_favs_title">Elimina tutti i libri tranne i preferiti</string>
@@ -114,20 +114,9 @@
     <string name="pref_screenshot_title">Abilita screenshot</string>
     <string name="pref_screenshot_summary_off">Anteprima dell\'app in app recenti + screenshot disabilitati</string>
     <string name="pref_screenshot_summary_on">Screenshot abilitati</string>
-    <string name="pref_analytics_preference_title">Analisi Firebase</string>
-    <string name="pref_analytics_preference_summary_off">Il monitoraggio delle analisi è attualmente disabilitato.
-\nAbilitarlo ci aiuterà a migliorare l\'app monitorando arresti anomali ed eccezioni.</string>
-    <string name="pref_analytics_preference_summary_on">Il monitoraggio delle analisi è attivo.
-\nGrazie per aver contribuito a migliorare Hentoid!</string>
-    <string name="pref_screen_updates">Aggiornamenti</string>
-    <string name="pref_check_updates_manual_title">Controllo manuale degli aggiornamenti</string>
-    <string name="pref_check_updates_manual_summary">Controlla manualmente gli aggiornamenti ora</string>
     <string name="pref_check_updates_manual_checking">Verifica aggiornamenti…</string>
     <string name="pref_check_updates_manual_no_new">Nessun aggiornamento trovato - Stai già utilizzando l\'ultima versione</string>
     <string name="pref_check_updates_manual_no_connection">Impossibile controllare gli aggiornamenti. Controlla la tua connessione o riprova più tardi</string>
-    <string name="pref_check_updates_title">Aggiornamenti automatici</string>
-    <string name="pref_check_updates_summary_off">Abilita i controlli automatici degli aggiornamenti sui dati mobili</string>
-    <string name="pref_check_updates_summary_on">Nota: non sovrascrive i controlli di aggiornamento manuali</string>
     <string name="pref_screen_viewer">Visualizzatore delle immagini</string>
     <string name="pref_viewer_controls">Controlli</string>
     <string name="pref_viewer_browse_mode">Modalità di scorrimento</string>
@@ -166,7 +155,7 @@
     <string name="pref_viewer_zoom_holding">Zoom temporaneo mentre si tiene premuto</string>
     <string name="pref_cat_external">Libreria esterna</string>
     <string name="pref_external_library_delete_title">Consenti l\'eliminazione di contenuti esterni</string>
-    <string name="pref_external_library_delete_off">Hentoid non può eliminare libri o pagine nella libreria esterna</string>
+    <string name="pref_external_library_delete_off">Hendroid non può eliminare libri o pagine nella libreria esterna</string>
     <string name="pref_screen_browser">Browser</string>
     <string name="pref_browser_behaviour">Comportamento</string>
     <string name="pref_browser_quick_dl_summary">Nella pagina dell\'elenco dei libri, tieni premuto per scaricare qualsiasi libro</string>

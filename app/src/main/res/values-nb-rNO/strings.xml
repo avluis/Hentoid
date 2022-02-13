@@ -208,9 +208,6 @@
     <string name="show_artists">Vis artister</string>
     <string name="show_groups">Vis grupper</string>
     <string name="updates_title">Oppdateringer</string>
-    <string name="checking_updates">Se etter oppdateringer</string>
-    <string name="update_available">En oppdatering er tilgjengelig.</string>
-    <string name="tap_to_download">Trykk for å laste ned</string>
     <string name="tap_to_retry">Trykk for å prøve igjen</string>
     <string name="tap_to_install">Trykk for å installere</string>
     <string name="pin_reset">Tilbakestill PIN</string>

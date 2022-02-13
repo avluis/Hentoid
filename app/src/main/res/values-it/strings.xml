@@ -33,21 +33,21 @@
     <string name="title_activity_about">Informazioni</string>
     <string name="title_activity_app_lock">Blocco app</string>
     <string name="title_activity_search">Ricerca avanzata</string>
-    <string name="api29_migration_title">Hentoid v12
+    <string name="api29_migration_title">Hendroid v12
 \nAggiornamento gestione file</string>
-    <string name="api29_migration_subtitle">Hentoid sta aggiornando la tua raccolta.
+    <string name="api29_migration_subtitle">Hendroid sta aggiornando la tua raccolta.
 \nPotrebbero essere necessari alcuni minuti.</string>
-    <string name="api29_migration_location">Posizione attuale della cartella Hentoid
-\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
-    <string name="api29_migration_step1">Cartella Hentoid</string>
+    <string name="api29_migration_location">Posizione attuale della cartella Hendroid
+\n<x:g id="path" example="/storage/emulated/0/Hendroid">%s</x:g></string>
+    <string name="api29_migration_step1">Cartella Hendroid</string>
     <string name="api29_migration_step1_external">Cartella esterna</string>
-    <string name="api29_migration_step1_select">Seleziona la cartella Hentoid</string>
+    <string name="api29_migration_step1_select">Seleziona la cartella Hendroid</string>
     <string name="api29_migration_step1_select_external">Seleziona cartella esterna</string>
     <string name="api29_migration_step2">Analizza le cartelle del sito</string>
     <string name="api29_migration_step3_init">Scansionando la libreria…</string>
     <string name="api29_migration_step3">Scansiona libreria (<x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="7">%2$d</x:g>)</string>
     <string name="api29_migration_step4_init">Importazione coda…</string>
-    <string name="api29_migration_select_folder">Seleziona una cartella Hentoid esistente. La sua posizione è visualizzata sullo schermo.</string>
+    <string name="api29_migration_select_folder">Seleziona una cartella Hendroid esistente. La sua posizione è visualizzata sullo schermo.</string>
     <string name="api29_migration_allow_write">Si prega di consentire il permesso di scrittura</string>
     <string name="menu_search">Cerca</string>
     <string name="menu_fav">Attiva/disattiva filtro preferito</string>
@@ -150,7 +150,7 @@
     <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> KBps</string>
     <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB a <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Download fallito</string>
-    <string name="download_notif_failed_details">Impossibile scaricare <x:g id="book_name" example="Cool H-Manga">%1$s</x:g>: impossibile creare la cartella <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Perfavore controlla la tua cartella Hentoid e riprova a scaricarlo usando il pulsante \'!\'.</string>
+    <string name="download_notif_failed_details">Impossibile scaricare <x:g id="book_name" example="Cool H-Manga">%1$s</x:g>: impossibile creare la cartella <x:g id="path" example="/storage/emulated/0/Hendroid/nhentai/coolhmanga">%2$s</x:g>. Perfavore controlla la tua cartella Hendroid e riprova a scaricarlo usando il pulsante \'!\'.</string>
     <string name="work_series">Serie: <x:g id="series" example="original">%s</x:g></string>
     <string name="work_artist">Artista: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
     <plurals name="work_pages_missing">
@@ -166,13 +166,13 @@
     <string name="refresh_title">Aggiorna libreria</string>
     <string name="refresh_caption">Aggiorna automaticamente i dati della libreria con una nuova scansione di file e cartelle.</string>
     <string name="refresh_options">Opzioni di pulizia</string>
-    <string name="refresh_location_internal">Libreria Hentoid</string>
+    <string name="refresh_location_internal">Libreria Hendroid</string>
     <string name="refresh_location_external">Libreria esterna</string>
     <string name="refresh_options_rename">Rinomina tutte le cartelle in base alla denominazione corrente e alla preferenza di lunghezza massima</string>
     <string name="refresh_options_remove">Rimuovi le cartelle in cui…</string>
     <string name="refresh_options_remove_1">Il file JSON è assente (raccomandato)</string>
     <string name="yes">Si</string>
-    <string name="app_name">Hentoid</string>
+    <string name="app_name">Hendroid</string>
     <string name="off">Spento</string>
     <string name="confirm">Conferma</string>
     <string name="resume">Riprendi</string>
@@ -215,7 +215,7 @@
     <string name="import_invalid">Cartella selezionata non valida: selezionane un\'altra</string>
     <string name="import_app_folder">Non è possibile selezionare la cartella dell\'app come cartella esterna: selezionarne un\'altra</string>
     <string name="import_download_folder">Non dovresti selezionare la cartella di download del tuo dispositivo: crea o selezionane un\'altra</string>
-    <string name="import_create_fail">Creazione della cartella Hentoid fallita - seleziona un\'altra posizione</string>
+    <string name="import_create_fail">Creazione della cartella Hendroid fallita - seleziona un\'altra posizione</string>
     <string name="import_other">L\'importazione è stata interrotta</string>
     <string name="task_done">Attività completata: vedi i dettagli nel registro</string>
     <string name="library_imports_title">Importazione delle librerie</string>
@@ -240,7 +240,7 @@
     <string name="log_import_external">Importazione/aggiornamento della libreria esterna</string>
     <string name="log_import">Importazione/aggiornamento della libreria principale</string>
     <string name="log_cleanup">Pulizia della libreria principale</string>
-    <string name="log_api29_migration">Migrazione della libreria da Hentoid v1.11</string>
+    <string name="log_api29_migration">Migrazione della libreria da Hendroid v1.11</string>
     <string name="error_write_permission">Non hai il permesso di scrivere in quella cartella, prova un\'altra cartella.</string>
     <string name="error_creating_folder">La cartella non è valida.</string>
     <string name="error_open">Errore nell\'apertura del file: nessuna applicazione rilevante trovata</string>
@@ -290,7 +290,7 @@
         <item quantity="one">Passare il libro selezionato allo streaming\?</item>
         <item quantity="other">Passare i libri selezionati allo streaming\?</item>
     </plurals>
-    <string name="restart_needed">Le modifiche verranno applicate dopo il riavvio di Hentoid</string>
+    <string name="restart_needed">Le modifiche verranno applicate dopo il riavvio di Hendroid</string>
     <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
         <item quantity="one">Riscaricare il libro selezionato da zero\?</item>
         <item quantity="other">Riscaricare i libri selezionati da zero\?</item>
@@ -299,8 +299,8 @@
     <string name="new_group_name">Nome del nuovo gruppo\?</string>
     <string name="memory_total">Totale: <x:g id="total" example="100 MB">%s</x:g></string>
     <string name="memory_free">Libero: <x:g id="total" example="50 MB">%s</x:g></string>
-    <string name="memory_hentoid_main">Hentoid (principale): <x:g id="total" example="2 MB">%s</x:g></string>
-    <string name="memory_hentoid_ext">Hentoid (esterna): <x:g id="total" example="3 MB">%s</x:g></string>
+    <string name="memory_hentoid_main">Hendroid (principale): <x:g id="total" example="2 MB">%s</x:g></string>
+    <string name="memory_hentoid_ext">Hendroid (esterna): <x:g id="total" example="3 MB">%s</x:g></string>
     <string name="redownload_first_error">Primo errore: <x:g id="errortype">%s</x:g></string>
     <string name="redownload_action">SCARICA DI NUOVO</string>
     <string name="import_unexpected">L\'importazione si è fermata inaspettatamente</string>
@@ -309,7 +309,7 @@
 \nImmagini senza errori: <x:g id="fine_imgs" example="8">%2$d</x:g>
 \nImmagini con errori: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
     <string name="content_not_found">Errore - contenuto non trovato</string>
-    <string name="contents_detected">Hentoid ha riconosciuto una libreria esistente in questa posizione.
+    <string name="contents_detected">Hendroid ha riconosciuto una libreria esistente in questa posizione.
 \nVuoi importare questa libreria\?</string>
     <plurals name="group_delete_selected_group_books">
         <item quantity="one">Elimina gruppo + libri</item>
@@ -335,10 +335,7 @@
     <string name="pin_current">Inserisci il PIN attuale</string>
     <string name="personalDataStatement1"><b>INFORMATIVA SULLA PRIVACY DEI DATI PERSONALI</b>
 \n
-\nHentoid è un software gratuito e open-source gestito dalla community di Hentoid (Unisciti a noi su Discord - vedi il link sopra)</string>
-    <string name="personalDataStatement3">I suddetti dati vengono rimossi da Firebase live e dal sistema di backup entro 180 giorni (vedi https://firebase.google.com/support/privacy/ per maggiori dettagli)
-\n
-\nNessun altro dato personale viene raccolto o mandato a terze parti.</string>
+\nHendroid è un software gratuito e open-source gestito dalla community di Hendroid (Unisciti a noi su Discord - vedi il link sopra)</string>
     <plurals name="import_file_queue">
         <item quantity="one">Importa la coda (<x:g id="number" example="1">%d</x:g> libro)</item>
         <item quantity="other">Importa la coda (<x:g id="number" example="2">%d</x:g> libri)</item>
@@ -464,24 +461,15 @@
     <string name="show_artists_and_groups">Mostra artisti e gruppi</string>
     <string name="launchcode_present">Hai già questo libro. Cercare altre fonti\?</string>
     <string name="updates_title">Aggiornamenti</string>
-    <string name="checking_updates">Verifica aggiornamenti</string>
-    <string name="update_available">È disponibile un aggiornamento!</string>
-    <string name="tap_to_download">Tocca per scaricare</string>
-    <string name="update_download_failed">Download dell\'aggiornamento fallito</string>
     <string name="tap_to_retry">Toccare per riprovare</string>
     <string name="downloading_update">Download dell\'aggiornamento</string>
     <string name="update_ready">L\'aggiornamento è pronto!</string>
     <string name="tap_to_install">Tocca per installare</string>
-    <string name="error_dependency">Errore nell\'analisi dell\'aggiornamento.
-\nRiprova più tardi.</string>
-    <string name="error_network_summary">Errore di rete, riprova più tardi.</string>
-    <string name="error_file">Impossibile trovare il file di aggiornamento sul server.</string>
-    <string name="update_check_no_update">Verifica aggiornamenti: nessun nuovo aggiornamento.</string>
     <string name="alert_orange">Tieni presente che i download potrebbero non riuscire su questo sito.</string>
     <string name="alert_red">Il pulsante di download è attualmente rotto per questo sito.</string>
     <string name="alert_grey">Questo sito ha attualmente seri problemi di stabilità. L\'app non c\'entra nulla. Per favore riprova più tardi.</string>
     <string name="alert_black">Questo sito non è attualmente disponibile per davvero. L\'app non c\'entra nulla. Per favore riprova più tardi.</string>
-    <string name="alert_wip">Il team di sviluppo di Hentoid sta lavorando a una soluzione. Riceverai una notifica dall\'app quando una nuova versione sarà pronta.</string>
+    <string name="alert_wip">Il team di sviluppo di Hendroid sta lavorando a una soluzione. Riceverai una notifica dall\'app quando una nuova versione sarà pronta.</string>
     <string name="alert_fix_available">Una correzione è disponibile nell\'ultima versione dell\'app. Si prega di aggiornare.</string>
     <string name="app_lock_pin">Inserisci il PIN</string>
     <string name="app_lock_pin_prefs">PIN blocco app</string>
@@ -495,12 +483,12 @@
     <string name="pin_explanation">Il blocco app impedisce l\'uso non autorizzato di questa app richiedendo un PIN di 4 cifre all\'avvio</string>
     <string name="pin_lock_on_restore">Blocca quando aperto
 \ndallo schermo principale</string>
-    <string name="about1"><b>Hentoid</b> è un\'app per archiviare Doujinshi e H-manga. Hentoid è stato originariamente creato da <b>Cesar Arasaki</b>.</string>
-    <string name="personalDataStatement2">Hentoid raccogli i seguenti dati personali e li manda a Google per l\'elaborazione tramite la libreria Firebase:
+    <string name="about1"><b>Hendroid</b> è un\'app per archiviare Doujinshi e H-manga. Hendroid è stato originariamente creato da <b>Cesar Arasaki</b>.</string>
+    <string name="personalDataStatement2">Hendroid raccogli i seguenti dati personali e li manda a Google per l\'elaborazione tramite la libreria Firebase:
 \n - ID Sessione
 \n - Indirizzo IP</string>
     <string name="about_licenses">Visualizza licenze</string>
-    <string name="about_app_version">Hentoid versione: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
+    <string name="about_app_version">Hendroid versione: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
     <string name="about_chrome_version">Chrome versione <x:g id="chrome_ver" example="98">%1$d</x:g></string>
     <plurals name="ask_archive_multiple">
         <item quantity="one">Archiviare l\'elemento selezionato\?</item>
@@ -583,7 +571,6 @@
     <string name="web_forward">Avanti</string>
     <string name="web_bookmarks">Segnalibri</string>
     <string name="web_refresh_stop">Aggiorna/ferma</string>
-    <string name="web_copy_url">Copia l\'URL corrente negli appunti</string>
     <string name="web_download">Scarica</string>
     <string name="web_unparsable">Questo contenuto non può essere scaricato. Scusa~</string>
     <string name="web_url_clipboard">URL copiato negli appunti</string>
@@ -602,7 +589,7 @@
     <string name="torrent_dl_fail">Download del torrent fallito: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Autorizzazione di archiviazione negata - impossibile utilizzare il downloader</string>
     <string name="help_web_fakku_account">Si prega di utilizzare o creare un account FAKKU legittimo.
-\nHentoid non funzionerà senza di esso.</string>
+\nHendroid non funzionerà senza di esso.</string>
     <string name="web_gallery">Torna all\'ultima pagina della galleria</string>
     <string name="help_web_fakku_premium">Quel libro non può essere visualizzato con il tuo attuale accesso a FAKKU.</string>
     <string name="help_web_exh_account">Si prega di utilizzare o creare un account exHentai</string>

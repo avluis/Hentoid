@@ -127,19 +127,10 @@
     <string name="pref_screenshot_title">Разрешить скриншоты</string>
     <string name="pref_screenshot_summary_off">Предпросмотр в списке недавних приложений и скриншоты в приложении отключены</string>
     <string name="pref_screenshot_summary_on">Скриншоты разрешены</string>
-    <string name="pref_analytics_preference_title">Аналитика Firebase</string>
-    <string name="pref_analytics_preference_summary_off">Сбор аналитики выключен.\nВключите его, чтобы мы могли улучшать приложение, отслеживая сбои и ошибки в нём</string>
-    <string name="pref_analytics_preference_summary_on">Сбор аналитики включён.\nСпасибо, что помогаете нам улучшить Hentoid!</string>
     <!-- Updates -->
-    <string name="pref_screen_updates">Обновления</string>
-    <string name="pref_check_updates_manual_title">Проверить обновления вручную</string>
-    <string name="pref_check_updates_manual_summary">Сделать проверку прямо сейчас</string>
     <string name="pref_check_updates_manual_checking">Проверяю обновления…</string>
     <string name="pref_check_updates_manual_no_new">Обновлений не найдено — Вы уже используете последнюю версию</string>
     <string name="pref_check_updates_manual_no_connection">Не удалось проверить обновления. Проверьте соединение или попытайтесь позднее</string>
-    <string name="pref_check_updates_title">Автоматические обновления</string>
-    <string name="pref_check_updates_summary_off">Вы также можете включить автоматическую проверку обновлений по мобильной сети</string>
-    <string name="pref_check_updates_summary_on">Это не отключает возможность ручной проверки обновлений</string>
     <!-- Viewer -->
     <string name="pref_screen_viewer">Просмотр изображений</string>
     <string name="pref_viewer_controls">Управление</string>

@@ -126,17 +126,10 @@
     <string name="pref_screenshot_title">Skru på skjermavbildninger</string>
     <!-- pref_screenshot_summary_off -->
     <!-- pref_screenshot_summary_on -->
-    <string name="pref_analytics_preference_title">Firebase Analytics</string>
     <!-- pref_analytics_preference_summary_off -->
     <!-- pref_analytics_preference_summary_on -->
     <!-- Updates -->
-    <string name="pref_screen_updates">Oppdateringer</string>
-    <string name="pref_check_updates_manual_title">Manuell oppdateringssjekk</string>
-    <string name="pref_check_updates_manual_summary">Se etter oppdateringer manuelt nå.</string>
-    <string name="pref_check_updates_manual_checking">Ser etter oppdateringer…</string>
-    <string name="pref_check_updates_manual_no_new">Fant ingen oppdateringer. Bruker allerede siste versjon.</string>
     <!-- pref_check_updates_manual_no_connection -->
-    <string name="pref_check_updates_title">Automatiske oppdateringer</string>
     <!-- pref_check_updates_summary_off -->
     <!-- pref_check_updates_summary_on -->
     <!-- Viewer -->

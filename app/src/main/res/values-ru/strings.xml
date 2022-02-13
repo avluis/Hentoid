@@ -46,22 +46,22 @@
     <string name="title_activity_downloads">Библиотека</string>
     <string name="title_activity_queue">Очередь</string>
     <string name="title_activity_preferences">Настройки</string>
-    <string name="title_activity_about">О Hentoid</string>
+    <string name="title_activity_about">О Hendroid</string>
     <string name="title_activity_app_lock">Код-пароль</string>
     <string name="title_activity_search">Расширенный поиск</string>
     <!-- API29 migration / library refresh screen -->
-    <string name="api29_migration_title">Hentoid v12\nОбновление управления файлами</string>
-    <string name="api29_migration_subtitle">Hentoid обновляет вашу коллекцию.\nЭто может занять несколько минут.</string>
-    <string name="api29_migration_location">Расположение папки Hentoid\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
-    <string name="api29_migration_step1">Папка Hentoid</string>
+    <string name="api29_migration_title">Hendroid v12\nОбновление управления файлами</string>
+    <string name="api29_migration_subtitle">Hendroid обновляет вашу коллекцию.\nЭто может занять несколько минут.</string>
+    <string name="api29_migration_location">Расположение папки Hendroid\n<x:g id="path" example="/storage/emulated/0/Hendroid">%s</x:g></string>
+    <string name="api29_migration_step1">Папка Hendroid</string>
     <string name="api29_migration_step1_external">Внешняя папка</string>
-    <string name="api29_migration_step1_select">Выбрать папку Hentoid</string>
+    <string name="api29_migration_step1_select">Выбрать папку Hendroid</string>
     <string name="api29_migration_step1_select_external">Выбрать внешнюю папку</string>
     <string name="api29_migration_step2">Сканирую папки сайтов</string>
     <string name="api29_migration_step3_init">Сканирую библиотеку…</string>
     <string name="api29_migration_step3">Сканирование библиотеки (<x:g id="number" example="1">%1$d</x:g> из <x:g id="total" example="7">%2$d</x:g>)</string>
     <string name="api29_migration_step4_init">Импорт очереди…</string>
-    <string name="api29_migration_select_folder">Пожалуйста, выберите существующую папку Hentoid. Её расположение показано на экране.</string>
+    <string name="api29_migration_select_folder">Пожалуйста, выберите существующую папку Hendroid. Её расположение показано на экране.</string>
     <string name="api29_migration_allow_write">Пожалуйста, подтвердите разрешение на запись</string>
     <!-- Library screen toolbar -->
     <string name="menu_search">Поиск</string>
@@ -171,7 +171,7 @@
     <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> Кб/с</string>
     <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> МБ, <x:g id="speed_kbps" example="102.4">%3$d</x:g> Кб/c</string>
     <string name="download_notif_failed">Загрузка не удалась</string>
-    <string name="download_notif_failed_details">Невозможно загрузить <x:g id="book_name" example="Крутая хентай-манга">%1$s</x:g>: не удалось создать папку <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Пожалуйста, проверьте папку Hentoid и повторите загрузку с помощью кнопки \'!\'.</string>
+    <string name="download_notif_failed_details">Невозможно загрузить <x:g id="book_name" example="Крутая хентай-манга">%1$s</x:g>: не удалось создать папку <x:g id="path" example="/storage/emulated/0/Hendroid/nhentai/coolhmanga">%2$s</x:g>. Пожалуйста, проверьте папку Hendroid и повторите загрузку с помощью кнопки \'!\'.</string>
     <!-- TextViews -->
     <string name="work_series">Сеттинг: <x:g id="series" example="original">%s</x:g></string>
     <string name="work_artist">Художник: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
@@ -193,7 +193,7 @@
     <!-- Описание опции меню -->
     <string name="refresh_caption">Автоматически обновить библиотеку, сканируя файлы и папки снова.</string>
     <string name="refresh_options">Опции очистки</string>
-    <string name="refresh_location_internal">Библиотека Hentoid</string>
+    <string name="refresh_location_internal">Библиотека Hendroid</string>
     <string name="refresh_location_external">Внешняя библиотека</string>
     <string name="refresh_options_rename">Переименовать все папки согласно текущим настройкам названий и максимальной длины</string>
     <string name="refresh_options_remove">Удалить папки, в которых…</string>
@@ -285,12 +285,12 @@
     <string name="import_invalid">Невозможно использовать эту папку — пожалуйста, выберите другую</string>
     <string name="import_app_folder">Вы не можете выбрать папку приложения как внешнюю — пожалуйста, выберите другую</string>
     <string name="import_download_folder">Вы не должны выбирать папку со всеми загрузками этого устройства — пожалуйста, создайте или выберите другую</string>
-    <string name="import_create_fail">Не удалось создать папку Hentoid — пожалуйста, выберите другое расположение</string>
+    <string name="import_create_fail">Не удалось создать папку Hendroid — пожалуйста, выберите другое расположение</string>
     <string name="import_other">Импорт остановлен</string>
     <string name="import_unexpected">Импорт был неожиданно остановлен</string>
     <string name="task_done">Задание завершено — смотрите логи для подробностей</string>
     <string name="content_not_found">Ошибка — контент не обнаружен</string>
-    <string name="contents_detected">Hentoid обнаружил существующую библиотеку.\nХотите ли вы импортировать её\?</string>
+    <string name="contents_detected">Hendroid обнаружил существующую библиотеку.\nХотите ли вы импортировать её\?</string>
     <string name="library_imports_title">Импорт библиотеки</string>
     <string name="starting_import">Импорт начинается…</string>
     <string name="importing_library">Импорт библиотеки</string>
@@ -312,8 +312,8 @@
     <string name="memory_title">Использование памяти</string>
     <string name="memory_total">Всего: <x:g id="total" example="100 МБ">%s</x:g></string>
     <string name="memory_free">Свободно: <x:g id="total" example="50 МБ">%s</x:g></string>
-    <string name="memory_hentoid_main">Hentoid (основное хранилище): <x:g id="total" example="2 МБ">%s</x:g></string>
-    <string name="memory_hentoid_ext">Hentoid (внешнее хранилище): <x:g id="total" example="3 МБ">%s</x:g></string>
+    <string name="memory_hentoid_main">Hendroid (основное хранилище): <x:g id="total" example="2 МБ">%s</x:g></string>
+    <string name="memory_hentoid_ext">Hendroid (внешнее хранилище): <x:g id="total" example="3 МБ">%s</x:g></string>
     <string name="memory_database">База данных: <x:g id="size_mb" example="1.52 МБ">%1$s</x:g> (заполнено на <x:g id="percentage" example="40%">%2$.1f%%</x:g>)</string>
     <string name="memory_details">Подробности (основное хранилище)</string>
     <string name="memory_details_source">Источник</string>
@@ -330,7 +330,7 @@
     <string name="log_import_external">Обновление/импорт внешней библиотеки</string>
     <string name="log_import">Обновление/импорт основной библиотеки</string>
     <string name="log_cleanup">Очистка основной библиотеки</string>
-    <string name="log_api29_migration">Миграция библиотеки с Hentoid 1.11</string>
+    <string name="log_api29_migration">Миграция библиотеки с Hendroid 1.11</string>
     <!-- Errors -->
     <string name="error_write_permission">У вас нет прав на запись в этой папке, попробуйте другую.</string>
     <string name="error_creating_folder">Ошибка создания папки.</string>
@@ -417,7 +417,7 @@
         <item quantity="many"><x:g id="number" example="5">%1$d</x:g> результатов из <x:g id="total" example="7">%2$d</x:g></item>
     </plurals>
     <string name="reset">Разрешения были сброшены.\nПриложение перезапускается.</string>
-    <string name="restart_needed">"Изменения будут применены после перезапуска Hentoid"</string>
+    <string name="restart_needed">"Изменения будут применены после перезапуска Hendroid"</string>
     <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
         <item quantity="one">Загрузить эту книгу снова\?</item>
         <item quantity="few">Загрузить эту книгу снова\?</item>
@@ -535,24 +535,16 @@
     <string name="launchcode_present">У вас уже есть эта книга. Искать в других источниках\?</string>
     <!-- Updates -->
     <string name="updates_title">Обновления</string>
-    <string name="checking_updates">Проверка обновлений</string>
-    <string name="update_available">Доступно обновление!</string>
-    <string name="tap_to_download">Нажмите для загрузки</string>
-    <string name="update_download_failed">Не удалось загрузить обновление</string>
     <string name="tap_to_retry">Нажмите, чтобы повторить попытку</string>
     <string name="downloading_update">Загружается обновление</string>
     <string name="update_ready">Обновление готово!</string>
     <string name="tap_to_install">Нажмите для установки</string>
-    <string name="error_dependency">Произошла ошибка при сравнении зависимостей обновления.\nПожалуйста, попробуйте позднее.</string>
-    <string name="error_network_summary">Ошибка сети, пожалуйста, попробуйте позднее.</string>
-    <string name="error_file">Не удалось найти файл обновления на сервере.</string>
-    <string name="update_check_no_update">Проверка обновлений: Нет новых версий.</string>
     <!-- Alerts -->
     <string name="alert_orange">Учтите, что загрузки могут не работать на этом сайте.</string>
     <string name="alert_red">Кнопка загрузки пока что не работает на этом сайте.</string>
     <string name="alert_grey">Этот сайт сейчас работает нестабильно. Приложение не может ничего с этим сделать. Пожалуйста, попробуйте позднее.</string>
     <string name="alert_black">Этот сайт сейчас недоступен. Приложение не может ничего с этим сделать. Пожалуйста, попробуйте позднее.</string>
-    <string name="alert_wip">Команда разработчиков Hentoid работает над исправлением. Мы уведомим вас, когда новая версия приложения будет доступна.</string>
+    <string name="alert_wip">Команда разработчиков Hendroid работает над исправлением. Мы уведомим вас, когда новая версия приложения будет доступна.</string>
     <string name="alert_fix_available">Исправление доступно в последней версии приложения. Пожалуйста, установите обновление.</string>
     <!-- App Lock -->
     <string name="app_lock_pin">Введите код-пароль</string>
@@ -568,12 +560,11 @@
     <string name="pin_explanation">Блокировка кодом-паролем предотвращает использование этого приложения без предварительной авторизации с помощью 4-значного PIN-кода</string>
     <string name="pin_lock_on_restore">Блокировать при\nповторном открытии</string>
     <!-- About Activity -->
-    <string name="about1"><b>Hentoid</b> — это приложение для скачивания додзинси и хентай-манги. Hentoid изначально был создан <b>Сесаром Арасаки</b>.</string>
-    <string name="personalDataStatement1"><b>ЗАЯВЛЕНИЕ О КОНФИДЕНЦИАЛЬНОСТИ ПЕРСОНАЛЬНЫХ ДАННЫХ</b>\n\nHentoid — это бесплатное програмное обеспечение с открытым исходным кодом, разрабатываемое сообществом Hentoid (присоединяйтесь к нам в Discord по ссылке ниже)</string>
-    <string name="personalDataStatement2">Hentoid собирает следующие персональные данные и делится ими с Google для обработки с помощью библиотеки Firebase:\n - Идентификатор сессии\n - IP-адрес</string>
-    <string name="personalDataStatement3">Вышеупомянутые данные удаляются как из действующей, так и из запасной систем Firebase в течение 180 дней (подробности доступны на https://firebase.google.com/support/privacy/)\n\nНикакие другие персональные данные не собираются и не передаются третьим лицам.</string>
+    <string name="about1"><b>Hendroid</b> — это приложение для скачивания додзинси и хентай-манги. Hendroid изначально был создан <b>Сесаром Арасаки</b>.</string>
+    <string name="personalDataStatement1"><b>ЗАЯВЛЕНИЕ О КОНФИДЕНЦИАЛЬНОСТИ ПЕРСОНАЛЬНЫХ ДАННЫХ</b>\n\nHendroid — это бесплатное програмное обеспечение с открытым исходным кодом, разрабатываемое сообществом Hendroid (присоединяйтесь к нам в Discord по ссылке ниже)</string>
+    <string name="personalDataStatement2">Hendroid собирает следующие персональные данные и делится ими с Google для обработки с помощью библиотеки Firebase:\n - Идентификатор сессии\n - IP-адрес</string>
     <string name="about_licenses">Показать лицензии</string>
-    <string name="about_app_version">Версия Hentoid: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
+    <string name="about_app_version">Версия Hendroid: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
     <string name="about_chrome_version">Версия Chrome: <x:g id="chrome_ver" example="98">%1$d</x:g></string>
     <!-- Web browser -->
     <string name="web_gallery">Назад к последней странице галереи</string>
@@ -582,7 +573,6 @@
     <string name="web_forward">Вперёд</string>
     <string name="web_bookmarks">Закладки</string>
     <string name="web_refresh_stop">Обновить/остановить</string>
-    <string name="web_copy_url">Скопировать адрес</string>
     <string name="web_download">Загрузить</string>
     <string name="web_unparsable">Этот контент не может быть загружен. Сорри~</string>
     <string name="web_url_clipboard">URL скопирован в буфер обмена</string>
@@ -598,7 +588,7 @@
     <string name="torrent_dl_fail">Не удалось начать стриминг: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Отсутствует разрешение на запись — невозможно использовать загрузчик</string>
     <!-- Web browser (site specifics) -->
-    <string name="help_web_fakku_account">Hentoid не может работать с FAKKU без их аккаунта. Пожалуйста, создайте его или используйте существующий.</string>
+    <string name="help_web_fakku_account">Hendroid не может работать с FAKKU без их аккаунта. Пожалуйста, создайте его или используйте существующий.</string>
     <string name="help_web_fakku_premium">Эта книга не может быть просмотрена с вашим аккаунтом FAKKU.</string>
     <string name="help_web_exh_account">Пожалуйста, создайте или используйте существующий аккаунт exHentai.</string>
     <string name="help_web_invalid_exh_credentials">Неверные данные, пожалуйста, повторите попытку входа</string>
