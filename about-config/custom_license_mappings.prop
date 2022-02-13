@@ -8,3 +8,4 @@ commons_io__commons_io:Apache_2_0
 org_apache_commons__commons_text:Apache_2_0
 com_google_auto_value__auto_value_annotations:Apache_2_0
 net.jcip:jcip-annotations
+com_waynejo__androidndkgif:MIT
