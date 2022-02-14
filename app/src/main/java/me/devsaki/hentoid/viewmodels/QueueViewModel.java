@@ -31,6 +31,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
@@ -317,16 +318,17 @@ public class QueueViewModel extends AndroidViewModel {
                                 errorCount.incrementAndGet();
                                 onError.accept(new EmptyResultException("Content unreachable"));
                             }
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, contentList.size() - errorCount.get(), errorCount.get(), contentList.size()));
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
                                 ContentQueueManager.getInstance().resumeQueue(getApplication());
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, contentList.size() - errorCount.get(), errorCount.get(), contentList.size()));
                             onSuccess.accept(contentList.size() - errorCount.get());
                         })
                         .subscribe(
-                                v -> { // Nothing; feedback is done through LiveData
-                                },
+                                v -> EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, contentList.size() - errorCount.get(), errorCount.get(), contentList.size())),
                                 onError::accept
                         )
         );

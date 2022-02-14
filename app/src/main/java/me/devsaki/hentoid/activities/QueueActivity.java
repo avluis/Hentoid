@@ -49,6 +49,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadReviveEvent;
+import me.devsaki.hentoid.fragments.ProgressDialogFragment;
 import me.devsaki.hentoid.fragments.queue.ErrorsFragment;
 import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Helper;
@@ -289,6 +290,8 @@ public class QueueActivity extends BaseActivity {
      * @param position       Position of the new item to redownload, either QUEUE_NEW_DOWNLOADS_POSITION_TOP or QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
      */
     private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, int position) {
+        if (reparseContent || reparseImages)
+            ProgressDialogFragment.invoke(getSupportFragmentManager(), getResources().getString(R.string.redownload_queue_progress), R.plurals.book);
         viewModel.redownloadContent(contentList, reparseContent, reparseImages, position,
                 nbSuccess -> {
                     String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, nbSuccess, nbSuccess, contentList.size());
