@@ -278,6 +278,17 @@ public class QueueViewModel extends AndroidViewModel {
         workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
     }
 
+    /**
+     * Redownload the given list of Content according to the given parameters
+     * NB : Used by both the regular redownload and redownload from scratch
+     *
+     * @param contentList    List of content to be redownloaded
+     * @param reparseContent True if the content (general metadata) has to be re-parsed from the site; false to keep
+     * @param reparseImages  True if the images have to be re-detected and redownloaded from the site; false to keep
+     * @param position       Position of the new item to redownload, either QUEUE_NEW_DOWNLOADS_POSITION_TOP or QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+     * @param onSuccess      Handler for process success; consumes the number of books successfuly redownloaded
+     * @param onError        Handler for process error; consumes the exception
+     */
     public void redownloadContent(
             @NonNull final List<Content> contentList,
             boolean reparseContent,

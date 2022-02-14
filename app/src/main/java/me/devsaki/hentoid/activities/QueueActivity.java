@@ -262,6 +262,14 @@ public class QueueActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Redownload the given list of Content according to the given parameters
+     * NB : Used by both the regular redownload and redownload from scratch
+     *
+     * @param contentList    List of content to be redownloaded
+     * @param reparseContent True if the content (general metadata) has to be re-parsed from the site; false to keep
+     * @param reparseImages  True if the images have to be re-detected and redownloaded from the site; false to keep
+     */
     public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages) {
         if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             AddQueueMenu.show(this, tabLayout, this, (position, item) ->
@@ -271,8 +279,17 @@ public class QueueActivity extends BaseActivity {
             redownloadContent(contentList, reparseContent, reparseImages, Preferences.getQueueNewDownloadPosition());
     }
 
-    private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, int addMode) {
-        viewModel.redownloadContent(contentList, reparseContent, reparseImages, addMode,
+    /**
+     * Redownload the given list of Content according to the given parameters
+     * NB : Used by both the regular redownload and redownload from scratch
+     *
+     * @param contentList    List of content to be redownloaded
+     * @param reparseContent True if the content (general metadata) has to be re-parsed from the site; false to keep
+     * @param reparseImages  True if the images have to be re-detected and redownloaded from the site; false to keep
+     * @param position       Position of the new item to redownload, either QUEUE_NEW_DOWNLOADS_POSITION_TOP or QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+     */
+    private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, int position) {
+        viewModel.redownloadContent(contentList, reparseContent, reparseImages, position,
                 nbSuccess -> {
                     String message = getResources().getQuantityString(R.plurals.redownloaded_scratch, nbSuccess, nbSuccess, contentList.size());
                     Snackbar snackbar = Snackbar.make(tabLayout, message, BaseTransientBottomBar.LENGTH_LONG);
