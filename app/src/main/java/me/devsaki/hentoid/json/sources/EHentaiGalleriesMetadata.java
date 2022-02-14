@@ -43,6 +43,7 @@ public class EHentaiGalleriesMetadata {
 
             if (updatePages) {
                 if (filecount != null) content.setQtyPages(Integer.parseInt(filecount));
+                else content.setQtyPages(0);
                 content.setImageFiles(Collections.emptyList());
             }
 

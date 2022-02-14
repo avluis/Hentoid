@@ -87,7 +87,10 @@ public class LusciousBookMetadata {
         }
         content.putAttributes(attributes);
 
-        if (updateImages) content.setImageFiles(Collections.emptyList());
+        if (updateImages) {
+            content.setImageFiles(Collections.emptyList());
+            content.setQtyPages(0);
+        }
 
         return content;
     }

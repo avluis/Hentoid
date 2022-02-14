@@ -44,6 +44,7 @@ public class Hentai2ReadContent extends BaseContentParser {
 
         AttributeMap attributes = new AttributeMap();
         String currentProperty = "";
+        int qtyPages = 0;
         if (properties != null)
             for (Element e : properties) {
                 for (Element child : e.children()) {
@@ -52,8 +53,8 @@ public class Hentai2ReadContent extends BaseContentParser {
                     else if (child.nodeName().equals("a")) {
                         switch (currentProperty) {
                             case "page":
-                                String qtyPages = child.text().substring(0, child.text().indexOf(" page")).replace(",", "");
-                                content.setQtyPages(Integer.parseInt(qtyPages));
+                                String qtyPagesStr = child.text().substring(0, child.text().indexOf(" page")).replace(",", "");
+                                qtyPages = Integer.parseInt(qtyPagesStr);
                                 break;
                             case "parody":
                                 ParseHelper.parseAttribute(attributes, AttributeType.SERIE, child, false, Site.HENTAI2READ);
@@ -79,7 +80,10 @@ public class Hentai2ReadContent extends BaseContentParser {
             }
         content.putAttributes(attributes);
 
-        if (updateImages) content.setImageFiles(Collections.emptyList());
+        if (updateImages) {
+            content.setImageFiles(Collections.emptyList());
+            content.setQtyPages(qtyPages);
+        }
 
         return content;
     }

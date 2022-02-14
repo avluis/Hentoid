@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.jsoup.nodes.Element;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -50,6 +51,9 @@ public class DoujinsContent extends BaseContentParser {
                 content.setQtyPages(imageUrls.size() - 1); // Don't count the cover
                 content.setImageFiles(ParseHelper.urlsToImageFiles(imageUrls, content.getCoverImageUrl(), StatusContent.SAVED));
             }
+        } else if (updateImages) {
+            content.setQtyPages(0);
+            content.setImageFiles(Collections.emptyList());
         }
 
         // Deduplicate tags
