@@ -24,7 +24,7 @@ public class EhentaiContent extends BaseContentParser {
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
 
             try {
-                EHentaiGalleriesMetadata metadata = EHentaiServer.EHENTAI_API.getGalleryMetadata(query, null).execute().body();
+                EHentaiGalleriesMetadata metadata = EHentaiServer.ehentaiApi.getGalleryMetadata(query, null).execute().body();
                 if (metadata != null)
                     return metadata.update(content, url, Site.EHENTAI, updateImages);
             } catch (IOException e) {

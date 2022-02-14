@@ -12,9 +12,9 @@ class ChangelogViewModel : ViewModel() {
 
     val errorValueLive = MutableLiveData<Throwable>()
 
-    private val disposable = GithubServer.API.releases
-            .observeOn(mainThread())
-            .subscribe(successValueLive::setValue, errorValueLive::setValue)
+    private val disposable = GithubServer.api.releases
+        .observeOn(mainThread())
+        .subscribe(successValueLive::setValue, errorValueLive::setValue)
 
     override fun onCleared() = disposable.dispose()
 }

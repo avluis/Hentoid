@@ -39,7 +39,7 @@ public class LusciousParser extends BaseImageListParser {
         query.put("variables", "{\"input\":{\"filters\":[{\"name\":\"album_id\",\"value\":\"" + bookId + "\"}],\"display\":\"position\",\"page\":" + pageNumber + "}}");
 
         try {
-            Response<LusciousGalleryMetadata> response = LusciousServer.API.getGalleryMetadata(query).execute();
+            Response<LusciousGalleryMetadata> response = LusciousServer.api.getGalleryMetadata(query).execute();
             if (response.isSuccessful()) {
                 LusciousGalleryMetadata metadata = response.body();
                 if (null == metadata) {

@@ -38,7 +38,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 31
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.15.21-dev'
+        versionName '1.15.22-dev'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -49,7 +49,7 @@ android {
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
         // Only include complete translations
-        resConfigs "en", "ru"
+        resConfigs "en", "ru", "it"
 
         renderscriptTargetApi 21
         renderscriptSupportModeEnabled false

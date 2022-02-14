@@ -88,7 +88,7 @@
     <string name="pref_browser_initial_zoom_summary">Livello di zoom della pagina del browser al caricamento iniziale della pagina
 \nAttualmente: <x:g xmlns:x="urn:oasis:names:tc:xliff:document:1.2" id="percentage" example="20%">%s%%</x:g></string>
     <string name="pref_browser_dns">DNS personalizzato</string>
-    <string name="pref_browser_dns_title">DNS al posto di HTTPS</string>
+    <string name="pref_browser_dns_title">DNS su HTTPS</string>
     <string name="pref_screen_downloader">Downloader</string>
     <string name="pref_queue_autostart_on">La coda di download inizierà non appena un download è stato fatto</string>
     <string name="pref_queue_wifi_only_off">La coda di download si avvierà se il dispositivo è connesso a qualsiasi rete</string>
