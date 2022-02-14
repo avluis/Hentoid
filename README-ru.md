@@ -16,8 +16,8 @@ ___
 
 ##### `Hentoid` — это приложение для скачивания додзинси и хентай-манги без рекламы.
 ###### `Hentoid` поддерживает следующие сайты:
-###### [nhentai](https://nhentai.net/), [hitomi](https://hitomi.la/), [asmhentai](http://asmhentai.com/), [tsumino](http://www.tsumino.com/), [pururin](https://pururin.io/), [e-hentai](https://e-hentai.org/), [exHentai/sadpanda](https://exhentai.org), [8muses](https://www.8muses.com), [Doujins.com](https://doujins.com), [Luscious.net](https://www.luscious.net), [Porncomixonline](https://www.porncomixonline.net/), [HBrowse](https://www.hbrowse.com/), [Hentai2Read](https://hentai2read.com/), [HentaiFox](https://hentaifox.com), [Myreadingmanga](https://myreadingmanga.info/), [Manwha Hentai](https://manhwahentai.me/), [Imhentai](https://imhentai.com), [Toonily](https://toonily.com/), [Allporncomic](https://allporncomic.com/) and [Pixiv](https://www.pixiv.net/).
-###### Внимание: В `Hentoid` всё ещё можно импортировать загрузки с [FAKKU](https://www.fakku.net/) [Pururin](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/pururin.jpg)'а.
+###### [nhentai](https://nhentai.net/), [hitomi](https://hitomi.la/), [asmhentai](http://asmhentai.com/), [tsumino](http://www.tsumino.com/), [pururin](https://pururin.io/), [e-hentai](https://e-hentai.org/), [exHentai/sadpanda](https://exhentai.org), [8muses](https://www.8muses.com), [Doujins.com](https://doujins.com), [Luscious.net](https://www.luscious.net), [Porncomixonline](https://www.porncomixonline.net/), [HBrowse](https://www.hbrowse.com/), [Hentai2Read](https://hentai2read.com/), [HentaiFox](https://hentaifox.com), [Myreadingmanga](https://myreadingmanga.info/), [Manwha Hentai](https://manhwahentai.me/), [Imhentai](https://imhentai.com), [Toonily](https://toonily.com/), [Allporncomic](https://allporncomic.com/) и [Pixiv](https://www.pixiv.net/).
+###### Внимание: В `Hentoid` всё ещё можно импортировать загрузки с [FAKKU](https://www.fakku.net/) и [Pururin](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/pururin.jpg)'а.
 ##### Посетите [вики Hentoid](https://github.com/AVnetWS/Hentoid/wiki), если вам нужна помощь с установкой `Hentoid` на ваше устройство.
 ##### Последнюю версию можно найти [здесь](https://github.com/AVnetWS/Hentoid/releases/latest).
 
@@ -25,7 +25,7 @@ ___
 ##### На нашем [сервере в Discord](https://discord.gg/QEZ3qk9) вы можете пообщаться с другими пользователями, узнать про последние объявления, найти бета-версии или просто пообщаться с командой разработчиков.
 ### Учтите: язык сервера — английский. Пожалуйста, не пишите на нём по-русски.
 ___
-###### [Помогите нам](https://github.com/AVnetWS/Hentoid/wiki/Contributing) сделать `Hentoid` лучшим приложением для хентай-манги для вас.
+###### [Помогите нам](https://github.com/AVnetWS/Hentoid/wiki/Contributing) сделать для вас `Hentoid` лучшим приложением для хентай-манги.
 
 [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/CherryBanner.png)](https://github.com/RobbWatershed/GalleryCherry)
 ___
