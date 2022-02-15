@@ -85,6 +85,7 @@ public class ErrorRecord {
             DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME; // e.g. 2011-12-03T10:15:30
             timeStr = timestamp.atZone(ZoneId.systemDefault()).format(formatter) + " ";
         }
-        return String.format("%s%s - [%s] : %s @ %s", timeStr, contentPart, type.getName(), description, url);
+
+        return String.format("%s%s - [%s]: %s @ %s", timeStr, contentPart, type.getEngName(), description, url);
     }
 }

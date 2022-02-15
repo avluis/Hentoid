@@ -26,7 +26,7 @@
     <string name="resume">Reprendre</string>
     <string name="menu_completed_single">Terminé</string>
     <string name="service_running">Le service est déjà en exécution</string>
-    <string name="error">Erreur</string>
+    <!-- <string name="error">Erreur</string> -->
     <string name="title_activity_api29_migration">Migration vers l\'API 29</string>
     <string name="title_activity_queue">File d\'attente</string>
     <string name="title_activity_preferences">Préférences</string>
