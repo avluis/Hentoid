@@ -38,6 +38,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Debouncer;
+import me.devsaki.hentoid.util.LanguageHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
@@ -249,6 +250,12 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         // Remove selected attributes from the result set
         results.attributes.removeAll(selectedAttributes);
+
+        // Translate language names if present
+        if (!results.attributes.isEmpty() && results.attributes.get(0).getType().equals(AttributeType.LANGUAGE)) {
+            for (Attribute a : results.attributes)
+                a.setName(LanguageHelper.getLocalNameFromLanguage(requireContext(), a.getName()));
+        }
 
         mTotalSelectedCount = results.totalSelectedAttributes/* - selectedAttributes.size()*/;
         if (clearOnSuccess) attributeAdapter.clear();

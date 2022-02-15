@@ -787,6 +787,24 @@
     <string name="theme_light">Light</string>
     <string name="theme_deep_red">Deep Red</string>
     <string name="theme_dark">Dark</string>
+    <!-- Book languages detected by the app -->
+    <string name="lang_en">english</string>
+    <string name="lang_zh">chinese</string>
+    <string name="lang_ja">japanese</string>
+    <string name="lang_ko">korean</string>
+    <string name="lang_es">spanish</string>
+    <string name="lang_ru">russian</string>
+    <string name="lang_pt">portuguese</string>
+    <string name="lang_th">thai</string>
+    <string name="lang_fr">french</string>
+    <string name="lang_vi">vietnamese</string>
+    <string name="lang_it">italian</string>
+    <string name="lang_de">german</string>
+    <string name="lang_pl">polish</string>
+    <string name="lang_id">indonesian</string>
+    <string name="lang_hu">hungarian</string>
+    <string name="lang_tr">turkish</string>
+    <string name="lang_cs">czech</string>
     <!-- Misc -->
     <string name="select_file_manager">Select your file manager</string>
     <string name="default_permission">Default permission</string>

@@ -38,7 +38,7 @@ import me.devsaki.hentoid.activities.ToolsActivity;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
-import me.devsaki.hentoid.json.UpdateInfo;
+import me.devsaki.hentoid.json.core.UpdateInfo;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewholders.DrawerItem;
 

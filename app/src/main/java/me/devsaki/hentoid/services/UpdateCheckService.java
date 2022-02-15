@@ -18,7 +18,7 @@ import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.UpdateEvent;
-import me.devsaki.hentoid.json.UpdateInfo;
+import me.devsaki.hentoid.json.core.UpdateInfo;
 import me.devsaki.hentoid.notification.update.UpdateAvailableNotification;
 import me.devsaki.hentoid.notification.update.UpdateCheckNotification;
 import me.devsaki.hentoid.retrofit.UpdateServer;

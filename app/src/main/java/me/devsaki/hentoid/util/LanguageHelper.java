@@ -4,12 +4,17 @@ import android.content.Context;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
+import me.devsaki.hentoid.json.core.JsonLangSettings;
+import timber.log.Timber;
 
 public class LanguageHelper {
 
@@ -17,29 +22,58 @@ public class LanguageHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    static Map<String, String> languageCodes = new HashMap<>();
+    // label -> (language code, flag country code)
+    static Map<String, Pair<String, String>> languageCodes = new HashMap<>();
 
     static {
-        String[] languages = HentoidApp.getInstance().getResources().getStringArray(R.array.languages);
-        for (String line : languages) {
-            String[] parts1 = line.split("-");
-            String code = parts1[1];
-            String[] labels = parts1[0].split(",");
-            for (String label : labels) languageCodes.put(label, code);
+        Context context = HentoidApp.getInstance();
+        try (InputStream is = context.getResources().openRawResource(R.raw.languages)) {
+            String siteSettingsStr = FileHelper.readStreamAsString(is);
+            JsonLangSettings langSettings = JsonHelper.jsonToObject(siteSettingsStr, JsonLangSettings.class);
+            for (JsonLangSettings.JsonLanguage entry : langSettings.languages) {
+                Pair<String, String> properties = new Pair<>(entry.lang_code, entry.flag_country_code);
+                // Create one entry for the local name
+                languageCodes.put(entry.local_name, properties);
+                // Create one entry for the english name (as most sites refer to the language in english)
+                languageCodes.put(entry.english_name, properties);
+                // Create one entry for the translated name in the current locale
+                int stringId = context.getResources().getIdentifier("lang_" + entry.lang_code, "string", context.getPackageName());
+                languageCodes.put(context.getString(stringId), properties);
+            }
+        } catch (IOException e) {
+            Timber.e(e);
         }
     }
 
     /**
+     * Returns the localized name of the given language
+     *
+     * @param language Language name
+     * @return Language name localized in the device's language, if supported by Hentoid
+     */
+    public static String getLocalNameFromLanguage(@NonNull final Context context, @NonNull final String language) {
+        if (language.isEmpty()) return "";
+        String languageClean = language.toLowerCase().split("/")[0].split("\\(")[0].trim();
+        Pair<String, String> languageProps = languageCodes.get(languageClean);
+        if (null == languageProps) return language;
+        else
+            return context.getString(
+                    context.getResources().getIdentifier("lang_" + languageProps.first, "string", context.getPackageName())
+            );
+    }
+
+    /**
      * Returns the country code of the given language
+     *
      * @param language Language name, either in english or in its native spelling
      * @return Country code of the given language, or empty string if not found
      */
     public static String getCountryCodeFromLanguage(@NonNull final String language) {
         if (language.isEmpty()) return "";
         String languageClean = language.toLowerCase().split("/")[0].split("\\(")[0].trim();
-        String countryCode = languageCodes.get(languageClean);
-        if (null == countryCode) return "";
-        else return countryCode;
+        Pair<String, String> languageProps = languageCodes.get(languageClean);
+        if (null == languageProps) return "";
+        else return languageProps.second;
     }
 
     /**

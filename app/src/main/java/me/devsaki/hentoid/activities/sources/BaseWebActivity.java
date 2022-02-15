@@ -97,7 +97,7 @@ import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.fragments.web.BookmarksDialogFragment;
 import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment;
-import me.devsaki.hentoid.json.UpdateInfo;
+import me.devsaki.hentoid.json.core.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.ui.InputDialog;

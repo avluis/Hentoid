@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.json.JsonSiteSettings;
+import me.devsaki.hentoid.json.core.JsonSiteSettings;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import timber.log.Timber;
 
