@@ -39,7 +39,7 @@
     <string name="menu_completed_single">Завершено</string>
     <string name="service_running">Сервис уже запущен</string>
     <string name="open_folder">Открыть папку</string>
-    <string name="error">Ошибка</string>
+    <!-- <string name="error">Ошибка</string> -->
     <string name="_default">по умолчанию</string>
     <!-- Activities -->
     <string name="title_activity_api29_migration">Переход на API 29</string>
@@ -188,6 +188,17 @@
     </plurals>
     <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> МБ</string>
     <string name="redownload_queue_progress">Выбранные книги загружаются снова</string>
+    <string name="errortype_parsing">Обработка</string>
+    <string name="errortype_networking">Сеть</string>
+    <string name="errortype_io">Обмен данными</string>
+    <string name="errortype_captcha">Капча</string>
+    <string name="errortype_img_processing">Обработка изображения</string>
+    <string name="errortype_site_limit">Достигнут лимит загрузок или пропускной способности</string>
+    <string name="errortype_account">Нет аккаунта или недостаточно разрешений</string>
+    <string name="errortype_import">Не обнаружено локального файла после импорта</string>
+    <string name="errortype_wifi">Книга пропущена из-за ограничений на размер загрузок по Wi-Fi</string>
+    <string name="errortype_blocked">Книга помечена заблокированным тэгом</string>
+    <string name="errortype_undefined">Неизвестно</string>
     <!-- Refresh library -->
     <!-- Опция меню -->
     <string name="refresh_title">Обновить библиотеку</string>
@@ -326,8 +337,8 @@
     <string name="read_log">Читать лог</string>
     <string name="logs_share">Поделиться логом</string>
     <string name="no_error_detected">Ошибок нет</string>
-    <string name="error_log_header">Лог ошибок: <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>@<x:g id="site_name">%3$s</x:g>] (ошибок: <x:g id="error_count" example="2">%4$d</x:g>)</string>
-    <string name="error_log_header_queue">Лог ошибок очереди</string>
+    <!-- <string name="error_log_header">Лог ошибок: <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>@<x:g id="site_name">%3$s</x:g>] (ошибок: <x:g id="error_count" example="2">%4$d</x:g>)</string> -->
+    <!-- <string name="error_log_header_queue">Лог ошибок очереди</string> -->
     <string name="log_import_external">Обновление/импорт внешней библиотеки</string>
     <string name="log_import">Обновление/импорт основной библиотеки</string>
     <string name="log_cleanup">Очистка основной библиотеки</string>

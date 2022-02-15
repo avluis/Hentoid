@@ -33,7 +33,7 @@
     <string name="menu_completed_single">Completato</string>
     <string name="service_running">Il servizio è già in esecuzione</string>
     <string name="open_folder">Apri cartella</string>
-    <string name="error">Errore</string>
+    <!-- <string name="error">Errore</string> -->
     <string name="_default">predefinito</string>
     <!-- Activities -->
     <string name="title_activity_api29_migration">Migrazione API 29</string>
@@ -298,8 +298,8 @@
     <string name="read_log">Leggi registro</string>
     <string name="logs_share">Condividi registro</string>
     <string name="no_error_detected">Nessun errore rilevato.</string>
-    <string name="error_log_header">Registro errore per <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>\@<x:g id="site_name">%3$s</x:g>]: <x:g id="error_count" example="2">%4$d</x:g> errori</string>
-    <string name="error_log_header_queue">Registro errori per la coda</string>
+    <!-- <string name="error_log_header">Registro errore per <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>\@<x:g id="site_name">%3$s</x:g>]: <x:g id="error_count" example="2">%4$d</x:g> errori</string> -->
+    <!-- <string name="error_log_header_queue">Registro errori per la coda</string> -->
     <string name="log_import_external">Importazione/aggiornamento della libreria esterna</string>
     <string name="log_import">Importazione/aggiornamento della libreria principale</string>
     <string name="log_cleanup">Pulizia della libreria principale</string>

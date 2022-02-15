@@ -152,7 +152,7 @@
     <string name="import_other">Importen har stoppet</string>
     <string name="logs_share">Del logg</string>
     <string name="no_error_detected">Ingen feil oppdaget.</string>
-    <string name="error_log_header">Feillogg for %1$s [%2$s@%3$s]: %4$d feil</string>
+    <!-- <string name="error_log_header">Feillogg for %1$s [%2$s@%3$s]: %4$d feil</string> -->
     <string name="error_creating_folder">Mappen er ikke gyldig.</string>
     <string name="redownload_dialog_title">Prøv å laste ned igjen\?</string>
     <string name="redownload_first_error">Første feil: %s</string>
@@ -365,7 +365,7 @@
     <string name="menu_edit_name">Rediger navn</string>
     <string name="menu_edit_cancel">Avbryt redigering</string>
     <string name="merge_split">Del</string>
-    <string name="error">Feil</string>
+    <!-- <string name="error">Feil</string> -->
     <string name="cancel_all">Avbryt alle</string>
     <string name="new_title">Ny tittel</string>
     <string name="object_character">Figur</string>
