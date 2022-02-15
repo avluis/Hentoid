@@ -80,7 +80,7 @@
     <string name="menu_open_folder">Открыть родительскую папку</string>
     <string name="menu_redownload">Загрузить снова</string>
     <string name="menu_redownload_scratch">Загрузить с нуля</string>
-    <string name="menu_stream">Переключиться на потоковую передачу</string>
+    <string name="menu_stream">Передавать потоком</string>
     <string name="menu_download_streamed">Загрузить</string>
     <string name="menu_select_all">Выбрать всё</string>
     <string name="menu_share">Поделиться</string>
@@ -187,6 +187,7 @@
         <item quantity="many"><x:g id="pages_count" example="45">%1$d</x:g> страниц / <x:g id="size_mb" example="3.88">%2$.1f</x:g> МБ</item>
     </plurals>
     <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> МБ</string>
+    <string name="redownload_queue_progress">Выбранные книги загружаются снова</string>
     <!-- Refresh library -->
     <!-- Опция меню -->
     <string name="refresh_title">Обновить библиотеку</string>
@@ -679,14 +680,11 @@
     <string name="page_copy_help">Скопировать страницу в Загрузки</string>
     <string name="page_share_help">Поделиться страницей со сторонним приложением</string>
     <string name="page_delete_help">Удалить страницу</string>
-    <string-array name="page_delete_choices" translatable="false">
-        <item>@string/page_delete_choices_1</item>
-        <item>@string/page_delete_choices_2</item>
-        <item>@string/page_delete_choices_3</item>
+    <string-array name="page_delete_choices">
+        <item>Спросить меня снова в следующий раз</item>
+        <item>Больше не спрашивать для этой книги</item>
+        <item>Больше не спрашивать на время этой сессии</item>
     </string-array>
-    <string name="page_delete_choices_1">Спросить меня снова в следующий раз</string>
-    <string name="page_delete_choices_2">Больше не спрашивать для этой книги</string>
-    <string name="page_delete_choices_3">Больше не спрашивать на время этой сессии</string>
     <string name="viewer_ask_cover">Установить эту страницу как обложку книги\?</string>
     <string name="image_not_found">Изображение не найдено</string>
     <string name="image_streaming">Стримлю изображение…</string>
@@ -742,13 +740,10 @@
     <string name="duplicate_ignore_chapters">Игнорировать главы и сиквелы</string>
     <string name="duplicate_use_sensitivity">Чувствительность</string>
     <string-array name="duplicate_use_sensitivities">
-        <item>@string/duplicate_sensitivity_permissive</item>
-        <item>@string/duplicate_sensitivity_standard</item>
-        <item>@string/duplicate_sensitivity_strict</item>
+        <item>Слабая</item>
+        <item>Обычная</item>
+        <item>Сильная</item>
     </string-array>
-    <string name="duplicate_sensitivity_permissive">Слабая</string>
-    <string name="duplicate_sensitivity_standard">Обычная</string>
-    <string name="duplicate_sensitivity_strict">Сильная</string>
     <string name="duplicate_find_action">Начать поиск</string>
     <string name="duplicate_index_covers">Индексирую обложки</string>
     <string name="duplicate_find">Определяю дубликаты</string>
