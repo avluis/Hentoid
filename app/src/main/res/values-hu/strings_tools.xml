@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="tools_title">Eszközök</string>
+<string name="tools_screen_import_export">Importálás / Exportálás</string>
+<string name="tools_export_library_title">Metaadat exportálása</string>
+<string name="tools_export_library_summary">Hentoid könyvek exportálása JSON fájlba</string>
+<string name="tools_import_library_title">Metaadat importálása</string>
+<string name="tools_import_library_summary">Hentoid könyvek importálása JSON fájlból</string>
+<string name="tools_screen_cat_settings">Beállítások</string>
+<string name="tools_export_settings_title">Beállítások exportálása</string>
+<string name="tools_export_settings_summary">Beállítások exportálása JSON fájlba</string>
+<string name="tools_import_settings_title">Beállítások importálása</string>
+<string name="tools_import_settings_summary">Beállítások importálása JSON fájlból</string>
+<string name="tools_duplicate_detector_title">Duplikátum detektor</string>
+<string name="tools_duplicate_detector_summary">Duplikált könyvek keresése és törlése</string>
+<string name="tools_screen_cache">Gyorsítótár menedzsment</string>
+<string name="tools_cache_browser">Böngésző gyorsítótárának törlése</string>
+<string name="tools_cache_browser_success">Webview gyorsítótára sikeresen törölve</string>
+<string name="tools_cache_app">Alkalmazás gyorsítótárának törlése</string>
+<string name="tools_cache_app_success">Alkalmazás gyorsítótára sikeresen törölve</string>
+<string name="tools_latest_logs_title">Alkalmazás naplók</string>
+<string name="tools_latest_logs_summary">Alkalmazás legfrissebb naplóinak megtekintése</string>
+</resources>
