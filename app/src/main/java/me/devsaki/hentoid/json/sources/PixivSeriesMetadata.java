@@ -82,7 +82,10 @@ public class PixivSeriesMetadata {
         downloadParams.put(KEY_DL_PARAMS_NB_CHAPTERS, data.getNbIllust());
         content.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
 
-        if (updateImages) content.setImageFiles(Collections.emptyList());
+        if (updateImages) {
+            content.setImageFiles(Collections.emptyList());
+            content.setQtyPages(0);
+        }
 
         return content;
     }

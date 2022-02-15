@@ -178,6 +178,8 @@
         <item quantity="other"><x:g id="pages_count" example="2">%1$d</x:g> pages / <x:g id="size_mb" example="3.88">%2$.1f</x:g> MB</item>
     </plurals>
     <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> MB</string>
+    <string name="redownload_queue_progress">Redownloading selected books</string>
+
     <!-- Refresh library -->
     <!-- Menu item -->
     <string name="refresh_title">Refresh library</string>

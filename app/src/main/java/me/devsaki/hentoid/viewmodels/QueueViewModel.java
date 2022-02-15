@@ -31,6 +31,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
@@ -278,6 +279,17 @@ public class QueueViewModel extends AndroidViewModel {
         workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
     }
 
+    /**
+     * Redownload the given list of Content according to the given parameters
+     * NB : Used by both the regular redownload and redownload from scratch
+     *
+     * @param contentList    List of content to be redownloaded
+     * @param reparseContent True if the content (general metadata) has to be re-parsed from the site; false to keep
+     * @param reparseImages  True if the images have to be re-detected and redownloaded from the site; false to keep
+     * @param position       Position of the new item to redownload, either QUEUE_NEW_DOWNLOADS_POSITION_TOP or QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+     * @param onSuccess      Handler for process success; consumes the number of books successfuly redownloaded
+     * @param onError        Handler for process error; consumes the exception
+     */
     public void redownloadContent(
             @NonNull final List<Content> contentList,
             boolean reparseContent,
@@ -306,16 +318,17 @@ public class QueueViewModel extends AndroidViewModel {
                                 errorCount.incrementAndGet();
                                 onError.accept(new EmptyResultException("Content unreachable"));
                             }
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, contentList.size() - errorCount.get(), errorCount.get(), contentList.size()));
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
                                 ContentQueueManager.getInstance().resumeQueue(getApplication());
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, contentList.size() - errorCount.get(), errorCount.get(), contentList.size()));
                             onSuccess.accept(contentList.size() - errorCount.get());
                         })
                         .subscribe(
-                                v -> { // Nothing; feedback is done through LiveData
-                                },
+                                v -> EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, contentList.size() - errorCount.get(), errorCount.get(), contentList.size())),
                                 onError::accept
                         )
         );
