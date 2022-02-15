@@ -20,8 +20,8 @@ public enum ErrorType {
     UNDEFINED(99, R.string.errortype_undefined, "Undefined");
 
     private final int code;
-    private final int name;
-    private final String engName;
+    private final int name; // For UI display
+    private final String engName; // For logging
 
     ErrorType(int code, int name, String engName) {
         this.code = code;
