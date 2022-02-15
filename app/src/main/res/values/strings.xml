@@ -237,7 +237,7 @@
         <item quantity="one"><x:g id="number" example="1">%d</x:g> bookmark imported successfully</item>
         <item quantity="other"><x:g id="number" example="2">%d</x:g> bookmarks imported successfully</item>
     </plurals>
-    <string name="dialog_prompt">Grant write permission</string>
+    <string name="dialog_prompt">Choose a Folder</string>
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>
     <plurals name="export_file_library">
@@ -654,14 +654,11 @@
     <string name="page_copy_help">Copy page to the Android Downloads folder</string>
     <string name="page_share_help">Share page using another app</string>
     <string name="page_delete_help">Delete page</string>
-    <string-array name="page_delete_choices" translatable="false">
-        <item>@string/page_delete_choices_1</item>
-        <item>@string/page_delete_choices_2</item>
-        <item>@string/page_delete_choices_3</item>
+    <string-array name="page_delete_choices">
+        <item>Ask me again next time</item>
+        <item>Don\'t ask me again for current book</item>
+        <item>Don\'t ask me again for current viewing session</item>
     </string-array>
-    <string name="page_delete_choices_1">Ask me again next time</string>
-    <string name="page_delete_choices_2">Don\'t ask me again for current book</string>
-    <string name="page_delete_choices_3">Don\'t ask me again for current viewing session</string>
     <string name="viewer_ask_cover">Set this page as book cover?</string>
     <string name="image_not_found">Image not found</string>
     <string name="image_streaming">Streaming image…</string>
@@ -717,13 +714,10 @@
     <string name="duplicate_ignore_chapters">Ignore chapters and sequels</string>
     <string name="duplicate_use_sensitivity">Sensitivity</string>
     <string-array name="duplicate_use_sensitivities">
-        <item>@string/duplicate_sensitivity_permissive</item>
-        <item>@string/duplicate_sensitivity_standard</item>
-        <item>@string/duplicate_sensitivity_strict</item>
+        <item>Permissive</item>
+        <item>Standard</item>
+        <item>Strict</item>
     </string-array>
-    <string name="duplicate_sensitivity_permissive">Permissive</string>
-    <string name="duplicate_sensitivity_standard">Standard</string>
-    <string name="duplicate_sensitivity_strict">Strict</string>
     <string name="duplicate_find_action">Find duplicates</string>
     <string name="duplicate_index_covers">Indexing cover pictures</string>
     <string name="duplicate_find">Detecting duplicate books</string>

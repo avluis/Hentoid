@@ -106,7 +106,7 @@
         <item quantity="other">%1$d pages / %2$.1f Mo</item>
     </plurals>
     <string name="import_run">EXÉCUTER L\'IMPORTATION</string>
-    <string name="dialog_prompt">Autoriser l\'écriture</string>
+    <string name="dialog_prompt">Choisissez un dossier</string>
     <string name="export_title">Exporter les métadonnées</string>
     <string name="memory_details_source">Source</string>
     <string name="group_edit_name">Modifier le nom du groupe</string>
