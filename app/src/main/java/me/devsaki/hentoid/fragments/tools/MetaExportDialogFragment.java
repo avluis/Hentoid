@@ -118,7 +118,7 @@ public class MetaExportDialogFragment extends DialogFragment {
 
         runBtn = requireViewById(rootView, R.id.export_run_btn);
         runBtn.setEnabled(false);
-        if (0 == nbLibraryBooks + nbLibraryBooks) runBtn.setVisibility(View.GONE);
+        if (0 == nbLibraryBooks + nbQueueBooks + nbBookmarks) runBtn.setVisibility(View.GONE);
         else
             runBtn.setOnClickListener(v -> runExport(libraryChk.isChecked(), favsChk.isChecked(), groupsChk.isChecked(), queueChk.isChecked(), bookmarksChk.isChecked()));
     }
