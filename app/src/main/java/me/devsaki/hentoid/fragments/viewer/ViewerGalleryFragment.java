@@ -296,6 +296,9 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     )
             );
 
+            // Item click listener
+            fastAdapter2.setOnClickListener((v, a, i, p) -> onNestedItemClick(i));
+
             // Select on swipe
             if (mDragSelectTouchListener != null) {
                 recyclerView.removeOnItemTouchListener(mDragSelectTouchListener);
@@ -397,6 +400,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     .withoutNulls()
                     .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
 
+            int displayOrder = 0;
             for (Chapter c : chapters) {
                 SubExpandableItem expandableItem = new SubExpandableItem(touchHelper, c.getName()).withDraggable(!isArchive);
                 expandableItem.setIdentifier(c.getId());
@@ -405,6 +409,8 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 List<ImageFile> chpImgs = c.getImageFiles();
                 if (chpImgs != null) {
                     for (ImageFile img : chpImgs) {
+                        // Reconstitute display order that has been lost because of @Transient property
+                        img.setDisplayOrder(displayOrder++);
                         if (img.isReadable()) {
                             ImageFileItem holder = new ImageFileItem(img, false);
                             imgs.add(holder);
@@ -526,6 +532,24 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 }
             } else { // Create/remove chapter
                 viewModel.createRemoveChapter(img, t -> ToastHelper.toast(R.string.chapter_toggle_failed, img.getOrder()));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean onNestedItemClick(INestedItem<?> item) {
+        if (item.getLevel() > 0) {
+            ImageFile img = ((ImageFileItem) item).getImage();
+            viewModel.setReaderStartingIndex(img.getDisplayOrder());
+            if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .replace(android.R.id.content, new ViewerPagerFragment())
+                        .addToBackStack(null)
+                        .commit();
+            } else { // Pager mode (Library -> pager -> gallery -> pager)
+                getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
             }
             return true;
         }
