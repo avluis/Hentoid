@@ -74,9 +74,9 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
     @IntDef({EditMode.NONE, EditMode.EDIT_CHAPTERS, EditMode.ADD_CHAPTER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface EditMode {
-        int NONE = 0;
-        int EDIT_CHAPTERS = 1;
-        int ADD_CHAPTER = 2;
+        int NONE = 0; // Plain gallery
+        int EDIT_CHAPTERS = 1; // Screen with foldable and draggable chapters
+        int ADD_CHAPTER = 2; // Screen with tappable images to add and remove chapters
     }
 
     // ======== COMMUNICATION
@@ -156,7 +156,6 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             else return diffBundleBuilder.getBundle();
         }
     };
-
 
     static ViewerGalleryFragment newInstance() {
         return new ViewerGalleryFragment();
@@ -399,7 +398,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
 
             for (Chapter c : chapters) {
-                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName(c.getName()).withDraggable(!isArchive);
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper, c.getName()).withDraggable(!isArchive);
                 expandableItem.setIdentifier(c.getId());
 
                 List<ImageFileItem> imgs = new ArrayList<>();
@@ -422,7 +421,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     .toList();
 
             if (!chapterlessImages.isEmpty()) {
-                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName(getResources().getString(R.string.gallery_no_chapter)).withDraggable(!isArchive);
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper, getResources().getString(R.string.gallery_no_chapter)).withDraggable(!isArchive);
                 expandableItem.setIdentifier(Long.MAX_VALUE);
 
                 List<ImageFileItem> imgs = new ArrayList<>();

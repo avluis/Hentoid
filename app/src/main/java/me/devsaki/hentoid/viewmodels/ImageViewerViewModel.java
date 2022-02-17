@@ -490,11 +490,22 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
 
-        synchronized (viewerImagesInternal) {
-            viewerImagesInternal.clear();
-            viewerImagesInternal.addAll(imgs);
+        // Only update if there's any noticeable difference
+        boolean hasDiff = (imgs.size() != viewerImagesInternal.size());
+        if (!hasDiff) {
+            for (int i = 0; i < imgs.size(); i++) {
+                hasDiff = !imgs.get(i).equals(viewerImagesInternal.get(i));
+                if (hasDiff) break;
+            }
         }
-        viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
+
+        if (hasDiff) {
+            synchronized (viewerImagesInternal) {
+                viewerImagesInternal.clear();
+                viewerImagesInternal.addAll(imgs);
+            }
+            viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
+        }
     }
 
     public void onLeaveBook(int readerIndex) {
