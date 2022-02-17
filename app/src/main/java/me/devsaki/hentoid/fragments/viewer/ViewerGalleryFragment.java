@@ -66,6 +66,7 @@ import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.DragSelectTouchListener;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
+import me.devsaki.hentoid.widget.ViewerKeyListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
@@ -183,15 +184,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
         // Toolbar
         toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
-        toolbar.setNavigationOnClickListener(v -> {
-            // TODO exit chapter edit mode on back button press
-            if (editMode == EditMode.EDIT_CHAPTERS)
-                setChapterEditMode(EditMode.NONE);
-            if (editMode == EditMode.ADD_CHAPTER)
-                setChapterEditMode(EditMode.EDIT_CHAPTERS);
-            else
-                requireActivity().onBackPressed();
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackClick());
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
@@ -251,6 +244,29 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         }
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        ((ImageViewerActivity) requireActivity()).registerKeyListener(
+                new ViewerKeyListener().setOnBackListener(this::onBackClick)
+        );
+    }
+
+    private void onBackClick() {
+        if (editMode == EditMode.EDIT_CHAPTERS)
+            setChapterEditMode(EditMode.NONE);
+        else if (editMode == EditMode.ADD_CHAPTER)
+            setChapterEditMode(EditMode.EDIT_CHAPTERS);
+        else
+            requireActivity().onBackPressed();
+    }
+
+    @Override
+    public void onStop() {
+        ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
+        super.onStop();
     }
 
     private void updateListAdapter(boolean isChapterEditMode) {
