@@ -194,7 +194,15 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             } else if (clickedMenuItem.getItemId() == R.id.action_add_remove_chapters) {
                 setChapterEditMode(EditMode.ADD_CHAPTER);
             } else if (clickedMenuItem.getItemId() == R.id.action_remove_chapters) {
-                stripChapters();
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity());
+                String title = requireActivity().getString(R.string.ask_clear_chapters);
+                builder.setMessage(title)
+                        .setPositiveButton(R.string.yes,
+                                (dialog, which) -> stripChapters())
+                        .setNegativeButton(R.string.no,
+                                (dialog, which) -> {
+                                })
+                        .create().show();
             }
             return true;
         });
