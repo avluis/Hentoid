@@ -1436,7 +1436,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
         dao.insertChapters(chapters);
 
-        // Renumber all images and update the DB
+        // Renumber all readable images and update the DB
         List<ImageFile> images = Stream.of(chapters).map(Chapter::getImageFiles).withoutNulls().flatMap(Stream::of).toList();
         if (images.isEmpty())
             throw new IllegalArgumentException("No images found");
@@ -1445,9 +1445,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         int nbMaxDigits = images.get(images.size() - 1).getName().length(); // Keep existing formatting
         Map<String, ImageFile> fileNames = new HashMap<>();
         for (ImageFile img : images) {
-            img.setOrder(index++);
-            img.computeName(nbMaxDigits);
-            fileNames.put(img.getFileUri(), img);
+            if (img.isReadable()) {
+                img.setOrder(index++);
+                img.computeName(nbMaxDigits);
+                fileNames.put(img.getFileUri(), img);
+            }
         }
 
         // = Rename all files that need to be renamed
