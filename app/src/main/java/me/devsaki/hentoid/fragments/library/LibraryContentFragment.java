@@ -1148,6 +1148,40 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             }
         });
 
+        // "To top" button click listener (groups view only)
+        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
+            @Override
+            public void onClick(@NotNull View view, int position, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                itemTouchOnMove(position, 0);
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof ContentItem.ContentViewHolder) {
+                    return ((ContentItem.ContentViewHolder) viewHolder).getTopButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
+        // "To bottom" button click listener (groups view only)
+        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
+            @Override
+            public void onClick(@NotNull View view, int position, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                itemTouchOnMove(position, fastAdapter.getItemCount() - 1);
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof ContentItem.ContentViewHolder) {
+                    return ((ContentItem.ContentViewHolder) viewHolder).getBottomButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
         if (selectExtension != null) {
