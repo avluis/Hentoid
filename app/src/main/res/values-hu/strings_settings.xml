@@ -6,28 +6,16 @@
     <string name="pref_drawer_sources_summary">A bal oldali navigációs fülön megjelenő források engedélyezése, letiltása és átszervezése</string>
     <string name="pref_library_display_title">Megjelenítés típusa</string>
     <string name="pref_library_display_summary">A könyvek és csoportok megjelenítésének típusa\nJelenleg:<x:g id="display_type" example="List">%s</x:g></string>
-    
-
     <string name="pref_endless_scroll_title">Végtelen görgetés</string>
     <string name="pref_endless_scroll_summary_off">Végtelen görgetés engedélyezése a letöltési listában\nKikapcsolja a lapozást</string>
     <string name="pref_endless_scroll_summary_on">Görgess tovább, ameddig a szíved bírja</string>
-    
-
     <string name="pref_quantity_per_page_title">Mennyiség oldalanként</string>
     <string name="pref_quantity_per_page_summary">A letöltési lista oldalankénti elemeinek száma\Jelenleg: <x:g id="count" example="10">%s</x:g> elem</string>
-    
-
     <string name="pref_cat_search">Haladó keresés</string>
     <string name="pref_attributes_list_order_title">A megjelenített metaadatok rendezése</string>
-    
-
-    
-
     <string name="pref_attributes_list_count_title">A rendelkezésre álló könyvek megszámolása</string>
     <string name="pref_attributes_list_count_on">A rendelkezésre álló könyvek száma minden attribútum mellett megjelenik.</string>
     <string name="pref_attributes_list_count_off">A rendelkezésre álló könyvek száma nem jelenik meg</string>
-    
-
     <string name="pref_cat_theme">Alkalmazás téma</string>
     <string name="pref_color_theme_title">Színtéma</string>
     <string name="pref_color_theme_summary">Jelenlegi téma: <x:g id="theme_name" example="Deep Red">%s</x:g></string>
@@ -38,32 +26,22 @@
     <string name="pref_import_queue_empty_title">Üres könyvek sorba állítása hibaként</string>
     <string name="pref_import_queue_empty_on">Az üres könyvek hibaként kerülnek a várólistára.</string>
     <string name="pref_import_queue_empty_off">Az üres könyvek hozzáadásra kerülnek a könyvtárhoz</string>
-    
-
     <string name="pref_folder_naming_content_title">Mappa nevek</string>
     <string name="pref_folder_naming_content_summary">A könyvmappa elnevezési konvenciója:\n<x:g id="convention" example="Name - ID">%s</x:g></string>
-    
-
     <string name="pref_import_running">Az importálás már folyamatban van</string>
     <string name="prefs_ask_detach_external_library">A külső könyvtár lecsatolása\?</string>
     <string name="prefs_external_library_detached">A külső könyvtár lecsatolva</string>
     <string name="pref_folder_trunc_title">Mappa nevének csonkítása</string>
     <string name="pref_folder_trunc_summary">Könyvmappa nevének csonkítása\nJelenleg: <x:g id="chars" example="80 characters">%s</x:g></string>
-    
-
     <string name="pref_memory_usage_title">Memória használat</string>
     <string name="pref_memory_usage_summary">Jelenlegi szabad hely: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (koppintson a részletekért)</string>
     <string name="pref_memory_alert_title">Figyelmeztetés alacsony memória esetén</string>
-    
-
     <string name="pref_cat_external">Külső könyvtár</string>
     <string name="pref_external_library_title">Külső könyvtár</string>
     <string name="pref_external_library_summary_empty">Nincs külső könyvtár beállítva</string>
     <string name="pref_external_library_delete_title">Külső tartalom törlésének engedélyezése</string>
     <string name="pref_external_library_delete_on">Hentoid törölheti a könyveket és oldalakat a külső könyvtárból</string>
     <string name="pref_external_library_delete_off">Hentoid nem törölheti a könyveket és az oldalakat a külső könyvtárból</string>
-    
-
     <string name="pref_external_library_detach_title">Külső könyvtár lecsatolása</string>
     <string name="pref_external_library_detach_summary">Ne tartalmazza a külső könyvtárat többé a Hentoid alkalmazásban</string>
     <string name="pref_cat_advanced">Speciális</string>
@@ -80,41 +58,23 @@
     <string name="pref_browser_resume_last_title">Folytatás a legutóbb megtekintett oldalon</string>
     <string name="pref_browser_resume_last_off">Bármely webhely mindig a kezdőlapon nyílik meg</string>
     <string name="pref_browser_resume_last_on">Bármely webhely az utoljára megtekintett oldalon nyílik meg</string>
-    
-
     <string name="pref_browser_dl_action_title">Letöltési akció</string>
-    
-
     <string name="pref_browser_quick_dl_title">Gyors letöltés</string>
     <string name="pref_browser_quick_dl_summary">A könyvek listájának oldalán, koppintson hosszan a letölteni kívánt könyvre</string>
-    
-
     <string name="pref_browser_nhentai_invisible_blacklist_title">A nhentai feketelistán szereplő könyvek elrejtése</string>
     <string name="pref_browser_nhentai_invisible_blacklist_off">Nhentai-feketelistára került könyvek elmosódnak</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">A Nhentai-feketelistán szereplő könyvek láthatatlanok</string>
-    
-
     <string name="pref_browser_quick_dl_threshold_title">Gyors letöltés, hosszú küszöbű lenyomás esetén*</string>
     <string name="pref_browser_quick_dl_threshold_summary">Tartsa nyomva ennyi ideig a gyors letöltés elindításához\Jelenleg:<x:g id="time" example="1 s">%s</x:g></string>
-    
-
-    
-
     <string name="pref_browser_duplicate_ask_title">Duplikátumok ellenőrzése</string>
     <string name="pref_browser_duplicate_ask_off">Nem: mindig töltse le</string>
     <string name="pref_browser_duplicate_ask_on">Ige: kérdezze meg letöltés előtt</string>
-    
-
     <string name="pref_browser_duplicate_try_pages_title">Próbáljon meg plusz oldalakat találni a potenciális duplikátumokon\?</string>
     <string name="pref_browser_duplicate_try_pages_off">Csak próbáljon meg plusz oldalakat találni az eredeti könyvben</string>
     <string name="pref_browser_duplicate_try_pages_on">Próbáljon meg plusz oldalakat találni a potenciális duplikátumokon</string>
-    
-
     <string name="pref_browser_mark_downloaded_title">Letöltött könyvek jelölése</string>
     <string name="pref_browser_mark_downloaded_off">A letöltött könyvek nem rendelkeznek különleges megjelenítéssel</string>
     <string name="pref_browser_mark_downloaded_on">A letöltött könyvek megjelölve\nNB: nem működik minden webhelyen</string>
-    
-
     <string name="pref_browser_visuals">Vizuális</string>
     <string name="pref_browser_augmented_title">Augmentált böngésző</string>
     <string name="pref_browser_augmented_off">Vanilla viselkedés használata</string>
@@ -122,68 +82,36 @@
     <string name="pref_browser_override_overview_title">Oldalnézet letiltása</string>
     <string name="pref_browser_override_overview_summary_off">Letiltja az oldalnézetet, és lehetővé teszi, hogy beállítsa a kívánt kezdeti nagyítási szintet az alábbiakban.</string>
     <string name="pref_browser_override_overview_summary_on">Állítsa be az alábbi beállítást a kezdeti nagyítási szint beállításához\nMegjegyzés: Csak a hitomi és az e-hentai beállításokra van hatással.</string>
-    
-
     <string name="pref_browser_initial_zoom_title">Kezdeti nagyítási szint</string>
     <string name="pref_browser_initial_zoom_summary">A böngészőoldal nagyítási szintje az oldal kezdeti betöltésekor\nJelenleg: <x:g id="percentage" example="20%">%s%%</x:g></string>
-    
-
     <string name="pref_browser_dns">Egyedi DNS</string>
     <string name="pref_browser_dns_title">DNS-iver-HTTPS</string>
 <string name="pref_screen_downloader">Letöltő</string>
     <string name="pref_queue_autostart_title">Letöltési sor automatikus indítása</string>
-    
-
     <string name="pref_queue_autostart_on">A letöltési sor elindul, amint a letöltés befejeződött.</string>
     <string name="pref_queue_autostart_off">A letöltési várólistát manuálisan kell elindítani</string>
     <string name="pref_queue_wifi_only_title">Letöltés csak Wi-Fi-n</string>
-    
-
     <string name="pref_queue_wifi_only_on">A letöltési sor csak akkor indul el, ha Wi-Fi-hez csatlakozik.</string>
     <string name="pref_queue_wifi_only_off">A letöltési sor akkor indul el, ha a készülék bármilyen hálózathoz csatlakozik.</string>
     <string name="pref_queue_new_position_title">Új letöltési pozíció</string>
-    
-
     <string name="download_size_wifi_title">Nagy letöltések kihagyása a mobil adatforgalmon</string>
-    
-
     <string name="pref_dl_size_wifi_on">A nagy letöltések kihagyásra kerülnek, ha nem csatlakozik Wi-Fi-hez</string>
     <string name="pref_dl_size_wifi_off">Minden letöltés feldolgozásra kerül</string>
     <string name="pref_dl_size_wifi_threshold_title">Méretkorlát a nagy letöltésekhez</string>
-    
-
     <string name="pref_dl_pages_wifi_threshold_title">Nagy letöltési oldalak küszöbértéke</string>
-    
-
     <string name="download_retries_screen_title">Automatizált letöltési újrapróbálkozások</string>
     <string name="download_retries_active_title">Újrapróbálkozások aktiválva</string>
-    
-
     <string name="pref_dl_retries_on">A sikertelen letöltések automatikusan újra próbálkoznak</string>
     <string name="pref_dl_retries_off">A sikertelen letöltések hibaállapotban maradnak</string>
     <string name="pref_dl_retries_number_title">A megszakítás előtti újbóli próbálkozások száma</string>
-    
-
-    
-
     <string name="pref_dl_retries_mem_limit_title">Mem-használati küszöbérték a megszakítás előtt</string>
-    
-
-    
-
     <string name="tag_blocking_screen_title">Címkék blokkolása</string>
     <string name="pref_dl_blocked_tags_title">Blokkolt címkék</string>
     <string name="pref_dl_blocked_tags_summary">Bizonyos címkékkel ellátott könyvek letöltésének blokkolása\nTipp: a címkéket vesszővel válassza el egymástól</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Blokkoló viselkedés</string>
-    
-
-    
-
     <string name="pref_dl_hitomi_webp_title">WEBP formátum letöltés preferálása, amikor lehet</string>
     <string name="pref_dl_hitomi_webp_summary_off">Más típusú képek letöltése (PNG, JPG)</string>
     <string name="pref_dl_hitomi_webp_summary_on">WebP képek letöltése, amikor azok elérhetők</string>
-    
-
     <string name="pref_dl_threads_quantity_title">Párhuzamos letöltések száma</string>
     <string name="pref_dl_threads_quantity_summary">A letöltött képek száma egyidejűleg\nJelenleg: <x:g id="number" example="5">%s</x:g></string>
 <string name="pref_screen_privacy">Adatvédelem</string>
@@ -193,8 +121,6 @@
     <string name="pref_screenshot_title">Képernyőképek engedélyezése</string>
     <string name="pref_screenshot_summary_off">Alkalmazás előnézet a Legutóbbi alkalmazásokban + képernyőképek letiltva</string>
     <string name="pref_screenshot_summary_on">Képernyőképek engedélyezve</string>
-    
-
     <string name="pref_analytics_preference_title">Firebase analitika</string>
     <string name="pref_analytics_preference_summary_off">Az analitikai nyomkövetés jelenleg le van tiltva.\nAz engedélyezés segít nekünk javítani az alkalmazást az összeomlások és kivételek nyomon követésével.</string>
     <string name="pref_analytics_preference_summary_on">Az analitikai nyomkövetés be van kapcsolva.\nKöszönjük, hogy segítesz a Hentoid fejlesztésében!</string>
@@ -210,8 +136,6 @@
 <string name="pref_screen_viewer">Képnézegető</string>
     <string name="pref_viewer_controls">Vezérlés</string>
     <string name="pref_viewer_browse_mode">Böngészés mód</string>
-    
-
     <string name="pref_viewer_page_turn">Lapozásvezérlés</string>
     <string name="pref_viewer_page_turn_swipe">Lapozás</string>
     <string name="pref_viewer_page_turn_tap">Határ menti tapadás*</string>
@@ -223,29 +147,19 @@
     <string name="pref_viewer_zoom">Nagyítás</string>
     <string name="pref_viewer_zoom_holding">Pillanatnyi nagyítás fogás közben</string>
     <string name="pref_viewer_cap_tap_zoom">Sapka dupla &amp; hosszú koppintás zoom*</string>
-    
-
     <string name="pref_viewer_visuals">Vizuális</string>
     <string name="pref_viewer_keep_screen_on">Képernyő bekapcsolva tartása</string>
     <string name="pref_viewer_display_pagenum">Az oldalszám folyamatos megjelenítése</string>
     <string name="pref_viewer_tap_transitions">Lapozás animáció engedélyezése</string>
     <string name="pref_viewer_zoom_transitions">Nagyítási animáció engedélyezése</string>
     <string name="pref_viewer_separating_bars">Elválasztó sávok függőleges módban</string>
-    
-
     <string name="pref_viewer_display_mode">Megjelenítési mód vízszintes nézethez</string>
-    
-
     <string name="pref_viewer_rendering">Renderelési mód</string>
-    
-
     <string name="pref_viewer_rendering_no_android5">A sima renderelés nem érhető el az Android 5 rendszeren</string>
     <string name="pref_viewer_auto_rotate">Képek automatikus forgatása</string>
     <string name="pref_viewer_auto_rotate_summary_off">A képek nem lesznek elforgatva</string>
     <string name="pref_viewer_auto_rotate_summary_on">A képek el lesznek forgatva, hogy a lehető legjobban elfoglalják a képernyőt.</string>
     <string name="pref_viewer_gallery_columns">A galéria oszlopainak száma</string>
-    
-
     <string name="pref_viewer_navigation">Navigáció &amp; viselkedés</string>
     <string name="pref_viewer_resume_last_left_title">Folytassa az olvasást amikor újra megnyitja a könyveket</string>
     <string name="pref_viewer_resume_last_left_summary_off">A könyv újbóli megnyitása mindig az 1. oldalról indul.</string>
@@ -255,10 +169,6 @@
     <string name="pref_viewer_continuous_summary_off">A következő oldal használata az utolsó oldalra nincs hatással</string>
     <string name="pref_viewer_continuous_summary_on">A következő oldal használata az utolsó oldalon betölti a következő könyvet</string>
     <string name="pref_viewer_read_threshold">Jelölje a könyvet olvasottnak N oldal után</string>
-    
-
     <string name="pref_viewer_slideshow_delay">Diavetítés / Késleltetés az egyes oldalak között</string>
-    
-
     <string name="doh_warning">Egyes webhelyek nem működnek jól a HTTPS-en keresztüli DNS-sel. Használjon külső DNS-alkalmazást, ha a navigáció során problémákat tapasztal (pl. üres oldalak, nem reagáló bejelentkezési űrlapok).</string>
 </resources>
