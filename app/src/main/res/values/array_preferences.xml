@@ -1,453 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- DO NOT modify the way these arrays are set up - it is required for Weblate to work -->
-    <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
-    <string-array name="pref_library_display_entries" translatable="false">
-        <item>@string/pref_library_display_entries_1</item>
-        <item>@string/pref_library_display_entries_2</item>
-    </string-array>
-    <string-array name="pref_library_display_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
     <!-- Choice for "Display type" setting -->
     <string name="pref_library_display_entries_1">List (default)</string>
-    <!-- Choice for "Display type" setting -->
     <string name="pref_library_display_entries_2">Grid</string>
-    <string-array name="pref_quantity_per_page_entries" translatable="false">
-        <item>20</item>
-        <item>40</item>
-        <item>60</item>
-        <item>80</item>
-        <item>100</item>
-    </string-array>
-    <string-array name="pref_quantity_per_page_entry_values" translatable="false">
-        <item>20</item>
-        <item>40</item>
-        <item>60</item>
-        <item>80</item>
-        <item>100</item>
-    </string-array>
-    <string-array name="pref_memory_alert_entries" translatable="false">
-        <item>@string/pref_memory_alert_entries_1</item>
-        <item>@string/pref_memory_alert_entries_2</item>
-        <item>@string/pref_memory_alert_entries_3</item>
-        <item>@string/pref_memory_alert_entries_4</item>
-    </string-array>
-    <string-array name="pref_memory_alert_values" translatable="false">
-        <item>110</item>
-        <item>90</item>
-        <item>95</item>
-        <item>98</item>
-    </string-array>
     <!-- Choice for "Alert on low memory" setting -->
     <string name="pref_memory_alert_entries_1">No alert</string>
-    <!-- Choice for "Alert on low memory" setting -->
     <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">on 90% full</string>
-    <!-- Choice for "Alert on low memory" setting -->
     <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">on 95% full</string>
-    <!-- Choice for "Alert on low memory" setting -->
     <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">on 98% full</string>
-    <string-array name="pref_browser_quick_dl_threshold_entries" translatable="false">
-        <item>@string/pref_browser_quick_dl_threshold_entries_1</item>
-        <item>@string/pref_browser_quick_dl_threshold_entries_2</item>
-        <item>@string/pref_browser_quick_dl_threshold_entries_3</item>
-        <item>@string/pref_browser_quick_dl_threshold_entries_4</item>
-        <item>@string/pref_browser_quick_dl_threshold_entries_5</item>
-    </string-array>
-    <string-array name="pref_browser_quick_dl_threshold_values" translatable="false">
-        <item>500</item>
-        <item>1000</item>
-        <item>1500</item>
-        <item>2000</item>
-        <item>3000</item>
-    </string-array>
     <!-- Choice for "Quick download long press threshold" setting -->
     <string name="pref_browser_quick_dl_threshold_entries_1">500 ms (default)</string>
-    <!-- Choice for "Quick download long press threshold" setting -->
     <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 s</string>
-    <!-- Choice for "Quick download long press threshold" setting -->
     <string name="pref_browser_quick_dl_threshold_entries_3" tools:ignore="MissingTranslation">1.5 s</string>
-    <!-- Choice for "Quick download long press threshold" setting -->
     <string name="pref_browser_quick_dl_threshold_entries_4" tools:ignore="MissingTranslation">2 s</string>
-    <!-- Choice for "Quick download long press threshold" setting -->
     <string name="pref_browser_quick_dl_threshold_entries_5" tools:ignore="MissingTranslation">3 s</string>
-    <string-array name="pref_browser_dns_entries" translatable="false">
-        <item>@string/pref_browser_dns_entries_1</item>
-        <item>Cloudflare</item>
-        <item>Quad9</item>
-        <item>AdGuard</item>
-    </string-array>
-    <string-array name="pref_browser_dns_values" translatable="false">
-        <item>-1</item>
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
     <!-- Choice for "DNS over HTTPS entries" setting -->
     <string name="pref_browser_dns_entries_1">None</string>
-    <string-array name="pref_queue_new_position_entries" translatable="false">
-        <item>@string/pref_queue_new_position_entries_1</item>
-        <item>@string/pref_queue_new_position_entries_2</item>
-        <item>@string/pref_queue_new_position_entries_3</item>
-    </string-array>
-    <string-array name="pref_queue_new_position_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
     <!-- Choice for "New downloads position" setting -->
     <string name="pref_queue_new_position_entries_1">Top</string>
-    <!-- Choice for "New downloads position" setting -->
     <string name="pref_queue_new_position_entries_2">Bottom</string>
-    <!-- Choice for "New downloads position" setting -->
     <string name="pref_queue_new_position_entries_3">Ask every time</string>
-    <string-array name="pref_dl_size_wifi_threshold_entries" translatable="false">
-        <item>@string/pref_dl_size_wifi_threshold_entries_1</item>
-        <item>@string/pref_dl_size_wifi_threshold_entries_2</item>
-        <item>@string/pref_dl_size_wifi_threshold_entries_3</item>
-        <item>@string/pref_dl_size_wifi_threshold_entries_4</item>
-        <item>@string/pref_dl_size_wifi_threshold_entries_5</item>
-    </string-array>
-    <string-array name="pref_dl_size_wifi_threshold_values" translatable="false">
-        <item>999999</item>
-        <item>20</item>
-        <item>40</item>
-        <item>100</item>
-        <item>200</item>
-    </string-array>
     <!-- Choice for "Large downloads size threshold" setting -->
     <string name="pref_dl_size_wifi_threshold_entries_1">No size limit</string>
-    <!-- Choice for "Large downloads size threshold" setting -->
     <string name="pref_dl_size_wifi_threshold_entries_2" tools:ignore="MissingTranslation">20 MB</string>
-    <!-- Choice for "Large downloads size threshold" setting -->
     <string name="pref_dl_size_wifi_threshold_entries_3" tools:ignore="MissingTranslation">40 MB</string>
-    <!-- Choice for "Large downloads size threshold" setting -->
     <string name="pref_dl_size_wifi_threshold_entries_4" tools:ignore="MissingTranslation">100 MB</string>
-    <!-- Choice for "Large downloads size threshold" setting -->
     <string name="pref_dl_size_wifi_threshold_entries_5" tools:ignore="MissingTranslation">200 MB</string>
-    <string-array name="pref_dl_pages_wifi_threshold_entries" translatable="false">
-        <item>@string/pref_dl_pages_wifi_threshold_entries_1</item>
-        <item>@string/pref_dl_pages_wifi_threshold_entries_2</item>
-        <item>@string/pref_dl_pages_wifi_threshold_entries_3</item>
-        <item>@string/pref_dl_pages_wifi_threshold_entries_4</item>
-        <item>@string/pref_dl_pages_wifi_threshold_entries_5</item>
-    </string-array>
-    <string-array name="pref_dl_pages_wifi_threshold_values" translatable="false">
-        <item>999999</item>
-        <item>60</item>
-        <item>120</item>
-        <item>200</item>
-        <item>500</item>
-    </string-array>
     <!-- Choice for "Large downloads pages threshold" setting -->
     <string name="pref_dl_pages_wifi_threshold_entries_1">No page limit</string>
-    <!-- Choice for "Large downloads pages threshold" setting -->
     <string name="pref_dl_pages_wifi_threshold_entries_2">60 pages</string>
-    <!-- Choice for "Large downloads pages threshold" setting -->
     <string name="pref_dl_pages_wifi_threshold_entries_3">120 pages</string>
-    <!-- Choice for "Large downloads pages threshold" setting -->
     <string name="pref_dl_pages_wifi_threshold_entries_4">200 pages</string>
-    <!-- Choice for "Large downloads pages threshold" setting -->
     <string name="pref_dl_pages_wifi_threshold_entries_5">500 pages</string>
-    <string-array name="pref_dl_threads_quantity_entries" translatable="false">
-        <item>@string/pref_dl_threads_quantity_entries_1</item>
-        <item>@string/pref_dl_threads_quantity_entries_2</item>
-        <item>4</item>
-        <item>6</item>
-        <item>8</item>
-        <item>@string/pref_dl_threads_quantity_entries_6</item>
-    </string-array>
-    <string-array name="pref_dl_threads_quantity_values" translatable="false">
-        <item>0</item>
-        <item>2</item>
-        <item>4</item>
-        <item>6</item>
-        <item>8</item>
-        <item>10</item>
-    </string-array>
     <!-- Choice for "Number of parallel downloads" setting -->
     <string name="pref_dl_threads_quantity_entries_1">Auto (default)</string>
-    <!-- Choice for "Number of parallel downloads" setting -->
     <string name="pref_dl_threads_quantity_entries_2">2 (slow Internet)</string>
-    <!-- Choice for "Number of parallel downloads" setting -->
     <string name="pref_dl_threads_quantity_entries_6">10 (fast Internet; high-end phone)</string>
-    <string-array name="pref_folder_naming_content_entries" translatable="false">
-        <item>@string/pref_folder_naming_content_entries_1</item>
-        <item>@string/pref_folder_naming_content_entries_2</item>
-        <item>@string/pref_folder_naming_content_entries_3</item>
-        <item>@string/pref_folder_naming_content_entries_4</item>
-    </string-array>
-    <string-array name="pref_folder_naming_content_entry_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
     <!-- Choice for "Book folder naming convention" setting -->
     <string name="pref_folder_naming_content_entries_1" tools:ignore="MissingTranslation">ID</string>
-    <!-- Choice for "Book folder naming convention" setting -->
     <string name="pref_folder_naming_content_entries_2">Title - ID</string>
-    <!-- Choice for "Book folder naming convention" setting -->
     <string name="pref_folder_naming_content_entries_3">Artist - Title - ID</string>
-    <!-- Choice for "Book folder naming convention" setting -->
     <string name="pref_folder_naming_content_entries_4">Title - Artist - ID</string>
-    <string-array name="pref_folder_trunc_content_entries" translatable="false">
-        <item>@string/pref_folder_trunc_content_entries_1</item>
-        <item>@string/pref_folder_trunc_content_entries_2</item>
-        <item>@string/pref_folder_trunc_content_entries_3</item>
-        <item>@string/pref_folder_trunc_content_entries_4</item>
-        <item>@string/pref_folder_trunc_content_entries_5</item>
-    </string-array>
-    <string-array name="pref_folder_trunc_content_entry_values" translatable="false">
-        <item>0</item>
-        <item>60</item>
-        <item>80</item>
-        <item>100</item>
-        <item>120</item>
-    </string-array>
     <!-- Choice for "Truncate folder name" setting -->
     <string name="pref_folder_trunc_content_entries_1">None</string>
-    <!-- Choice for "Truncate folder name" setting -->
     <string name="pref_folder_trunc_content_entries_2">60 characters</string>
-    <!-- Choice for "Truncate folder name" setting -->
     <string name="pref_folder_trunc_content_entries_3">80 characters</string>
-    <!-- Choice for "Truncate folder name" setting -->
     <string name="pref_folder_trunc_content_entries_4">100 characters</string>
-    <!-- Choice for "Truncate folder name" setting -->
     <string name="pref_folder_trunc_content_entries_5">120 characters</string>
-    <string-array name="pref_webview_initial_zoom_entries" translatable="false">
-        <item>0</item>
-        <item>20</item>
-        <item>50</item>
-        <item>100</item>
-    </string-array>
-    <string-array name="pref_webview_initial_zoom_values" translatable="false">
-        <item>0</item>
-        <item>20</item>
-        <item>50</item>
-        <item>100</item>
-    </string-array>
-    <string-array name="pref_viewer_dl_action_entries" translatable="false">
-        <item>@string/pref_viewer_dl_action_entries_1</item>
-        <item>@string/pref_viewer_dl_action_entries_2</item>
-    </string-array>
-    <string-array name="pref_viewer_dl_action_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
     <!-- Choice for "Download action" setting -->
     <string name="pref_viewer_dl_action_entries_1">Download all pages</string>
-    <!-- Choice for "Download action" setting -->
     <string name="pref_viewer_dl_action_entries_2">Stream the pages when reading</string>
-    <string-array name="pref_attribute_list_order_entries" translatable="false">
-        <item>@string/pref_attribute_list_order_entries_1</item>
-        <item>@string/pref_attribute_list_order_entries_2</item>
-    </string-array>
-    <string-array name="pref_attribute_list_order_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
     <!-- Choice for "Sort order of displayed metadata" setting -->
     <string name="pref_attribute_list_order_entries_1">Alphabetical</string>
-    <!-- Choice for "Sort order of displayed metadata" setting -->
     <string name="pref_attribute_list_order_entries_2">Item count (most used first)</string>
-    <string-array name="pref_color_theme_entries" translatable="false">
-        <item>@string/theme_light</item>
-        <item>@string/theme_deep_red</item>
-        <item>@string/theme_dark</item>
-    </string-array>
-    <string-array name="pref_color_theme_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
-    <string-array name="pref_dl_retries_number_entries" translatable="false">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-    </string-array>
-    <string-array name="pref_dl_retries_mem_limit_entries" translatable="false">
-        <item>90%</item>
-        <item>95%</item>
-        <item>98%</item>
-        <item>@string/pref_dl_retries_mem_limit_entries_4</item>
-    </string-array>
-    <string-array name="pref_dl_retries_mem_limit_values" translatable="false">
-        <item>90</item>
-        <item>95</item>
-        <item>98</item>
-        <item>100</item>
-    </string-array>
     <!-- Choice for "Mem usage threshold before aborting" setting -->
     <string name="pref_dl_retries_mem_limit_entries_4">None</string>
-    <string-array name="pref_dl_blocked_tags_behaviour_entries" translatable="false">
-        <item>@string/pref_dl_blocked_tags_behaviour_entries_1</item>
-        <item>@string/pref_dl_blocked_tags_behaviour_entries_2</item>
-    </string-array>
-    <string-array name="pref_dl_blocked_tags_behaviour_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
     <!-- Choice for "Blocking behaviour" setting -->
     <string name="pref_dl_blocked_tags_behaviour_entries_1">Don\'t queue</string>
-    <!-- Choice for "Blocking behaviour" setting -->
     <string name="pref_dl_blocked_tags_behaviour_entries_2">Queue as download error</string>
-    <string-array name="pref_viewer_browse_mode_entries" translatable="false">
-        <item>@string/pref_viewer_browse_mode_entries_1</item>
-        <item>@string/pref_viewer_browse_mode_entries_2</item>
-        <item>@string/pref_viewer_browse_mode_entries_3</item>
-    </string-array>
-    <string-array name="pref_viewer_browse_mode_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
     <!-- Choice for "Browse mode" setting -->
     <string name="pref_viewer_browse_mode_entries_1">Left to Right</string>
-    <!-- Choice for "Browse mode" setting -->
     <string name="pref_viewer_browse_mode_entries_2">Right to Left</string>
-    <!-- Choice for "Browse mode" setting -->
     <string name="pref_viewer_browse_mode_entries_3">Top to Bottom</string>
-    <string-array name="pref_viewer_separating_bars_entries" translatable="false">
-        <item>@string/pref_viewer_separating_bars_entries_1</item>
-        <item>@string/pref_viewer_separating_bars_entries_2</item>
-        <item>@string/pref_viewer_separating_bars_entries_3</item>
-        <item>@string/pref_viewer_separating_bars_entries_4</item>
-    </string-array>
-    <string-array name="pref_viewer_separating_bars_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
     <!-- Choice for "Separating bars in vertical mode" setting -->
     <string name="pref_viewer_separating_bars_entries_1">Off (default)</string>
-    <!-- Choice for "Separating bars in vertical mode" setting -->
     <string name="pref_viewer_separating_bars_entries_2">Small</string>
-    <!-- Choice for "Separating bars in vertical mode" setting -->
     <string name="pref_viewer_separating_bars_entries_3">Medium</string>
-    <!-- Choice for "Separating bars in vertical mode" setting -->
     <string name="pref_viewer_separating_bars_entries_4">Large</string>
-    <string-array name="pref_viewer_read_threshold_entries" translatable="false">
-        <item>@string/pref_viewer_read_threshold_entries_1</item>
-        <item>@string/pref_viewer_read_threshold_entries_2</item>
-        <item>@string/pref_viewer_read_threshold_entries_3</item>
-        <item>@string/pref_viewer_read_threshold_entries_4</item>
-    </string-array>
-    <string-array name="pref_viewer_read_threshold_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
     <!-- Choice for "Mark book as read after N pages" setting -->
     <string name="pref_viewer_read_threshold_entries_1">1 page (default)</string>
-    <!-- Choice for "Mark book as read after N pages" setting -->
     <string name="pref_viewer_read_threshold_entries_2">2 pages</string>
-    <!-- Choice for "Mark book as read after N pages" setting -->
     <string name="pref_viewer_read_threshold_entries_3">5 pages</string>
-    <!-- Choice for "Mark book as read after N pages" setting -->
     <string name="pref_viewer_read_threshold_entries_4">All pages</string>
-    <string-array name="pref_viewer_slideshow_delay_entries" translatable="false">
-        <item>@string/pref_viewer_slideshow_delay_entries_1</item>
-        <item>@string/pref_viewer_slideshow_delay_entries_2</item>
-        <item>@string/pref_viewer_slideshow_delay_entries_3</item>
-        <item>@string/pref_viewer_slideshow_delay_entries_4</item>
-        <item>@string/pref_viewer_slideshow_delay_entries_5</item>
-        <item>@string/pref_viewer_slideshow_delay_entries_6</item>
-    </string-array>
-    <string-array name="pref_viewer_slideshow_delay_values" translatable="false">
-        <item>5</item>
-        <item>4</item>
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
-    </string-array>
     <!-- Choice for "Slideshow delay" setting -->
     <string name="pref_viewer_slideshow_delay_entries_1" tools:ignore="MissingTranslation">500 ms</string>
-    <!-- Choice for "Slideshow delay" setting -->
     <string name="pref_viewer_slideshow_delay_entries_2" tools:ignore="MissingTranslation">1 s</string>
-    <!-- Choice for "Slideshow delay" setting -->
     <string name="pref_viewer_slideshow_delay_entries_3">2 s (default)</string>
-    <!-- Choice for "Slideshow delay" setting -->
     <string name="pref_viewer_slideshow_delay_entries_4" tools:ignore="MissingTranslation">4 s</string>
-    <!-- Choice for "Slideshow delay" setting -->
     <string name="pref_viewer_slideshow_delay_entries_5" tools:ignore="MissingTranslation">8 s</string>
-    <!-- Choice for "Slideshow delay" setting -->
     <string name="pref_viewer_slideshow_delay_entries_6" tools:ignore="MissingTranslation">16 s</string>
-    <string-array name="pref_viewer_display_mode_entries" translatable="false">
-        <item>@string/pref_viewer_display_mode_entries_1</item>
-        <item>@string/pref_viewer_display_mode_entries_2</item>
-        <item>@string/pref_viewer_display_mode_entries_3</item>
-    </string-array>
-    <string-array name="pref_viewer_display_mode_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-        <item>2</item>
-    </string-array>
     <!-- Choice for "Display mode" setting -->
     <string name="pref_viewer_display_mode_entries_1">Fit to screen (default)</string>
-    <!-- Choice for "Display mode" setting -->
     <string name="pref_viewer_display_mode_entries_2">Fill screen (proportionate)</string>
-    <!-- Choice for "Display mode" setting -->
     <string name="pref_viewer_display_mode_entries_3">Fill screen (stretch)</string>
-    <string-array name="pref_viewer_rendering_entries" translatable="false">
-        <item>@string/pref_viewer_rendering_entries_1</item>
-        <item>@string/pref_viewer_rendering_entries_2</item>
-    </string-array>
-    <string-array name="pref_viewer_rendering_values" translatable="false">
-        <item>0</item>
-        <item>1</item>
-    </string-array>
     <!-- Choice for "Rendering mode" setting -->
     <string name="pref_viewer_rendering_entries_1">Sharp rendering (default)</string>
-    <!-- Choice for "Rendering mode" setting -->
     <string name="pref_viewer_rendering_entries_2">Smooth rendering</string>
-    <string-array name="pref_viewer_cap_tap_zoom_entries" translatable="false">
-        <item>@string/pref_viewer_cap_tap_zoom_entries_1</item>
-        <item>@string/pref_viewer_cap_tap_zoom_entries_2</item>
-        <item>@string/pref_viewer_cap_tap_zoom_entries_3</item>
-        <item>@string/pref_viewer_cap_tap_zoom_entries_4</item>
-    </string-array>
-    <string-array name="pref_viewer_cap_tap_zoom_values" translatable="false">
-        <item>0</item>
-        <item>2</item>
-        <item>4</item>
-        <item>6</item>
-    </string-array>
     <!-- Choice for "Cap double & long tap zoom" setting -->
     <string name="pref_viewer_cap_tap_zoom_entries_1">No capping</string>
-    <!-- Choice for "Cap double & long tap zoom" setting -->
     <string name="pref_viewer_cap_tap_zoom_entries_2" tools:ignore="MissingTranslation">2x</string>
-    <!-- Choice for "Cap double & long tap zoom" setting -->
     <string name="pref_viewer_cap_tap_zoom_entries_3" tools:ignore="MissingTranslation">4x</string>
-    <!-- Choice for "Cap double & long tap zoom" setting -->
     <string name="pref_viewer_cap_tap_zoom_entries_4" tools:ignore="MissingTranslation">6x</string>
-    <string-array name="pref_viewer_gallery_columns_values" translatable="false">
-        <item>2</item>
-        <item>3</item>
-        <item>4</item>
-        <item>5</item>
-    </string-array>
-    <string-array name="pref_lock_timer_entries" translatable="false">
-        <item>@string/pref_lock_timer_entries_1</item>
-        <item>@string/pref_lock_timer_entries_2</item>
-        <item>@string/pref_lock_timer_entries_3</item>
-        <item>@string/pref_lock_timer_entries_4</item>
-        <item>@string/pref_lock_timer_entries_5</item>
-    </string-array>
     <!-- Choice for "Lock timer" setting -->
     <string name="pref_lock_timer_entries_1">No delay</string>
-    <!-- Choice for "Lock timer" setting -->
     <string name="pref_lock_timer_entries_2" tools:ignore="MissingTranslation">10 s</string>
-    <!-- Choice for "Lock timer" setting -->
     <string name="pref_lock_timer_entries_3">30 s (default)</string>
-    <!-- Choice for "Lock timer" setting -->
     <string name="pref_lock_timer_entries_4" tools:ignore="MissingTranslation">1 min</string>
-    <!-- Choice for "Lock timer" setting -->
     <string name="pref_lock_timer_entries_5">2 mins</string>
 </resources>
