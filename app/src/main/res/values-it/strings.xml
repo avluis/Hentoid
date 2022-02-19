@@ -35,6 +35,7 @@
     <string name="open_folder">Apri cartella</string>
     <!-- <string name="error">Errore</string> -->
     <string name="_default">predefinito</string>
+
     <!-- Activities -->
     <string name="title_activity_api29_migration">Migrazione API 29</string>
     <string name="title_activity_downloads">Libreria</string>
@@ -43,6 +44,7 @@
     <string name="title_activity_about">Informazioni</string>
     <string name="title_activity_app_lock">Blocco app</string>
     <string name="title_activity_search">Ricerca avanzata</string>
+
     <!-- API29 migration / library refresh screen -->
     <string name="api29_migration_title">Hentoid v12\nAggiornamento gestione file</string>
     <string name="api29_migration_subtitle">Hentoid sta aggiornando la tua raccolta.\nPotrebbero essere necessari alcuni minuti.</string>
@@ -57,6 +59,7 @@
     <string name="api29_migration_step4_init">Importazione coda…</string>
     <string name="api29_migration_select_folder">Seleziona una cartella Hentoid esistente. La sua posizione è visualizzata sullo schermo.</string>
     <string name="api29_migration_allow_write">Si prega di consentire il permesso di scrittura</string>
+
     <!-- Library screen toolbar -->
     <string name="menu_search">Cerca</string>
     <string name="menu_fav">Attiva/disattiva filtro preferito</string>
@@ -91,6 +94,7 @@
     <string name="low_memory">Il tuo dispositivo ha poca memoria!</string>
     <string name="fix_permissions">Aggiusta</string>
     <string name="view_queue">Visualizza coda</string>
+
     <!-- Queue / Downloader -->
     <string name="downloader_title">Downloader</string>
     <string name="queue_queue_tab">In corso</string>
@@ -161,6 +165,7 @@
     <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB a <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Download fallito</string>
     <string name="download_notif_failed_details">Impossibile scaricare <x:g id="book_name" example="Cool H-Manga">%1$s</x:g>: impossibile creare la cartella <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Perfavore controlla la tua cartella Hentoid e riprova a scaricarlo usando il pulsante \'!\'.</string>
+
     <!-- TextViews -->
     <string name="work_series">Serie: <x:g id="series" example="original">%s</x:g></string>
     <string name="work_artist">Artista: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
@@ -175,6 +180,7 @@
     </plurals>
     <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> MB</string>
     <string name="redownload_queue_progress"></string>
+
     <!-- Refresh library -->
     <string name="refresh_title">Aggiorna libreria</string>
     <string name="refresh_caption">Aggiorna automaticamente i dati della libreria con una nuova scansione di file e cartelle.</string>
@@ -187,6 +193,7 @@
     <string name="refresh_options_remove_2">Nessuna immagine è stata scaricata</string>
     <string name="refresh_options_remove_3">Il file JSON è illeggibile (non consigliato)</string>
     <string name="refresh_options_remove_or">oppure</string>
+
     <!-- Delete all except favs -->
     <string name="delete_title">Elimina tutti tranne i preferiti</string>
     <string name="generic_progress"><x:g id="number" example="7">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="books">%3$s</x:g></string>
@@ -198,6 +205,7 @@
         <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> gruppo</item>
         <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> gruppi</item>
     </plurals>
+
     <!-- Import metadata -->
     <string name="import_title">Importa metadata</string>
     <string name="import_mode_add">Aggiungi elementi importati</string>
@@ -231,6 +239,7 @@
         <item quantity="other"><x:g id="number" example="2">%d</x:g> segnalibri importati correttamente</item>
     </plurals>
     <string name="dialog_prompt">Scegli una cartella</string>
+
     <!-- Export metadata -->
     <string name="export_title">Esporta metadata</string>
     <plurals name="export_file_library">
@@ -252,6 +261,7 @@
     <string name="export_run">ESEGUI ESPORTAZIONE</string>
     <string name="import_settings_title">Importa impostazioni</string>
     <string name="import_settings_success">Importati</string>
+
     <!-- Import Activity -->
     <string name="open_app_settings">Aprire le impostazioni dell\'app</string>
     <string name="permissioncomplaint_snackbar">È necessario concedere i permessi prima di poter continuare</string>
@@ -281,6 +291,7 @@
         <item quantity="one"><x:g id="number" example="1">%s</x:g> fallito</item>
         <item quantity="other"><x:g id="number" example="2">%s</x:g> falliti</item>
     </plurals>
+
     <!-- Memory usage -->
     <string name="memory_title">Utilizzo della memoria</string>
     <string name="memory_total">Totale: <x:g id="total" example="100 MB">%s</x:g></string>
@@ -292,6 +303,7 @@
     <string name="memory_details_source">Fonte</string>
     <string name="memory_details_books">Libri</string>
     <string name="memory_details_size">Dimensione</string>
+
     <!-- Logs -->
     <string name="logs_title">Ultimi registri</string>
     <string name="logs_open">Apri registro</string>
@@ -304,12 +316,14 @@
     <string name="log_import">Importazione/aggiornamento della libreria principale</string>
     <string name="log_cleanup">Pulizia della libreria principale</string>
     <string name="log_api29_migration">Migrazione della libreria da Hentoid v1.11</string>
+
     <!-- Errors -->
     <string name="error_write_permission">Non hai il permesso di scrivere in quella cartella, prova un\'altra cartella.</string>
     <string name="error_creating_folder">La cartella non è valida.</string>
     <string name="error_open">Errore nell\'apertura del file: nessuna applicazione rilevante trovata</string>
     <string name="error_browser">Errore nell\'apertura del link: nessun browser trovato</string>
     <string name="error_send">Errore nell\'invio dell\'archivio: nessuna applicazione pertinente trovata</string>
+
     <!-- Error log -->
     <string name="redownload_dialog_title">Provare a scaricare di nuovo\?</string>
     <string name="redownload_dialog_message">Immagini totali in download: <x:g id="total_imgs" example="10">%1$d</x:g>\nImmagini senza errori: <x:g id="fine_imgs" example="8">%2$d</x:g>\nImmagini con errori: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
@@ -318,6 +332,7 @@
     <string name="redownload_open_log">Apri registro errori</string>
     <string name="redownload_share_log">Condividi il registro degli errori</string>
     <string name="redownload_generating_log_file">Generazione del file di registro…</string>
+
     <!-- Library fragment -->
     <string name="resume_closed">Riprendere a leggere da dove l\'hai lasciato\?</string>
     <string name="open_drawer">Apri il cassetto</string>
@@ -445,6 +460,7 @@
         <item quantity="other">Elimina gruppi + libri</item>
     </plurals>
     <string name="group_delete_nothing">Niente da eliminare - seleziona Consenti l\'eleminazione di contenuti esterni per cambiarlo</string>
+
     <!-- Merge & split -->
     <string name="merge_merge">Unisci</string>
     <string name="merge_progress">Unendo i libri…</string>
@@ -457,12 +473,14 @@
     <string name="split_create_chapters">Crea capitoli</string>
     <string name="merge_success">Contenuto unito</string>
     <string name="split_success">Contenuto diviso</string>
+
     <!-- Groups -->
     <string name="groups_flat">Tutti i libri</string>
     <string name="groups_by_artist">Per artista</string>
     <string name="groups_by_dl_date">Per data di download</string>
     <string name="groups_custom">Personalizzato</string>
     <string name="no_artist_group_name">[nessun artista]</string>
+
     <!-- Sorting fields -->
     <string name="sort_title">Titolo</string>
     <string name="sort_artist">Artista</string>
@@ -476,17 +494,20 @@
     <string name="sort_custom">Personalizzato</string>
     <string name="sort_invalid">-invalido-</string>
     <string name="sort_books">Libri</string>
+
     <!-- Item card tooltips -->
     <string name="drag_help">Trascina elemento</string>
     <string name="external_help">Appartiene alla libreria esterna</string>
     <string name="streamed_help">Libro in streaming</string>
     <string name="view_source_help">Visualizza sorgente nel browser</string>
     <string name="fav_help">Segna/deseleziona come preferito</string>
+
     <!-- Visibility fields -->
     <string name="show_artists">Mostra artisti</string>
     <string name="show_groups">Mostra gruppi</string>
     <string name="show_artists_and_groups">Mostra artisti e gruppi</string>
     <string name="launchcode_present">Hai già questo libro. Cercare altre fonti\?</string>
+
     <!-- Updates -->
     <string name="updates_title">Aggiornamenti</string>
     <string name="checking_updates">Verifica aggiornamenti</string>
@@ -501,6 +522,7 @@
     <string name="error_network_summary">Errore di rete, riprova più tardi.</string>
     <string name="error_file">Impossibile trovare il file di aggiornamento sul server.</string>
     <string name="update_check_no_update">Verifica aggiornamenti: nessun nuovo aggiornamento.</string>
+
     <!-- Alerts -->
     <string name="alert_orange">Tieni presente che i download potrebbero non riuscire su questo sito.</string>
     <string name="alert_red">Il pulsante di download è attualmente rotto per questo sito.</string>
@@ -508,6 +530,7 @@
     <string name="alert_black">Questo sito non è attualmente disponibile per davvero. L\'app non c\'entra nulla. Per favore riprova più tardi.</string>
     <string name="alert_wip">Il team di sviluppo di Hentoid sta lavorando a una soluzione. Riceverai una notifica dall\'app quando una nuova versione sarà pronta.</string>
     <string name="alert_fix_available">Una correzione è disponibile nell\'ultima versione dell\'app. Si prega di aggiornare.</string>
+
     <!-- App Lock -->
     <string name="app_lock_pin">Inserisci il PIN</string>
     <string name="app_lock_pin_prefs">PIN blocco app</string>
@@ -521,6 +544,7 @@
     <string name="pin_new_confirm">Conferma il nuovo PIN</string>
     <string name="pin_explanation">Il blocco app impedisce l\'uso non autorizzato di questa app richiedendo un PIN di 4 cifre all\'avvio</string>
     <string name="pin_lock_on_restore">Blocca quando aperto\ndallo schermo principale</string>
+
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> è un\'app per archiviare Doujinshi e H-manga. Hentoid è stato originariamente creato da <b>Cesar Arasaki</b>.</string>
     <string name="personalDataStatement1"><b>INFORMATIVA SULLA PRIVACY DEI DATI PERSONALI</b>\n\nHentoid è un software gratuito e open-source gestito dalla community di Hentoid (Unisciti a noi su Discord - vedi il link sopra)</string>
@@ -529,6 +553,7 @@
     <string name="about_licenses">Visualizza licenze</string>
     <string name="about_app_version">Hentoid versione: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
     <string name="about_chrome_version">Chrome versione <x:g id="chrome_ver" example="98">%1$d</x:g></string>
+
     <!-- Web browser -->
     <string name="web_gallery">Torna all\'ultima pagina della galleria</string>
     <string name="web_home">Torna alla libreria</string>
@@ -551,12 +576,14 @@
     <string name="bookmark_homepage">Pagina iniziale</string>
     <string name="torrent_dl_fail">Download del torrent fallito: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Autorizzazione di archiviazione negata - impossibile utilizzare il downloader</string>
+
     <!-- Web browser (site specifics -->
     <string name="help_web_fakku_account">Si prega di utilizzare o creare un account FAKKU legittimo.\nHentoid non funzionerà senza di esso.</string>
     <string name="help_web_fakku_premium">Quel libro non può essere visualizzato con il tuo attuale accesso a FAKKU.</string>
     <string name="help_web_exh_account">Si prega di utilizzare o creare un account exHentai</string>
     <string name="help_web_invalid_exh_credentials">Credenziali non valide, perfavore accedi di nuovo</string>
     <string name="help_web_incomplete_exh_credentials">Credenziali incomplete, accedi di nuovo. Se il problema persiste, considera di accedere al sito da un altro paese o di creare un nuovo account.</string>
+
     <!-- Search Activity -->
     <string name="category_any">Qualsiasi</string>
     <string name="exclude">Escludi</string>
@@ -585,8 +612,10 @@
         <item quantity="other"><x:g id="count" example="2">%s</x:g> Risultati trovati</item>
     </plurals>
     <string name="search_select_a_filter">Seleziona un filtro</string>
+
     <!-- DB migration & Maintenance -->
     <string name="maintenance">Manutenzione in corso</string>
+
     <!-- Image viewer -->
     <string name="no_images">Impossibile caricare il libro: nessuna immagine trovata</string>
     <string name="loading_archive">Caricamento: <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
@@ -663,6 +692,8 @@
     <string name="chapter_move_failed">Impossibile spostare il capitolo</string>
     <string name="slideshow_start">Avvio presentazione (ritardo <x:g id="time" example="0.5">%.1f</x:g> sec)</string>
     <string name="slideshow_stop">Presentazione interrotta</string>
+    <string name="ask_clear_chapters"></string>
+
     <!-- Changelog -->
     <string name="view_changelog">Visualizza il registro modifiche</string>
     <string name="view_changelog_flagged">Visualizza il registro modifiche*</string>
@@ -670,8 +701,10 @@
     <string name="get_latest">Scarica l\'ultima versione (<x:g id="version" example="1.18.1">%1$s</x:g>)</string>
     <string name="update_success">Aggiornamento riuscito!</string>
     <string name="starting_download">Avvio download</string>
+
     <!-- Edit drawer -->
     <string name="title_activity_drawer_edit">Menu Modifica</string>
+
     <!-- Duplicate detector -->
     <string name="title_activity_duplicate_detector">Rivelatore duplicati</string>
     <string name="duplicate_use_title">Titolo</string>
@@ -715,6 +748,7 @@
     <string name="duplicate_empty_no_result">Nessun duplicato trovato</string>
     <string name="duplicate_keep">Tieni</string>
     <string name="duplicate_delete">Elimina</string>
+
     <!-- Duplicate dialog -->
     <string name="duplicate_alert">Allarme duplicato!</string>
     <string name="duplicate_alert_subtitle_book">Il libro che stai per scaricare potrebbe essere un duplicato di un libro che già possiedi.</string>
@@ -727,6 +761,7 @@
     <string name="duplicate_alert_download_book">Scarica libro</string>
     <string name="duplicate_alert_download_pages">Scarica pagine extra</string>
     <string name="duplicate_wait_index">Indicizzazione…</string>
+
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Archiviazione dei contenuti</string>
     <string name="notif_delete_title">Eliminazione del contenuto</string>
@@ -737,10 +772,12 @@
     </plurals>
     <string name="notif_delete_fail">Cancellazione fallita</string>
     <string name="notif_delete_fail_details">Almeno un libro non è stato cancellato</string>
+
     <!-- Startup -->
     <string name="title_startup">Avvio</string>
     <string name="title_startup_progress">Avviando…</string>
     <string name="title_startup_complete">Avvio completato</string>
+
     <!-- Group names -->
     <string name="group_today">Oggi</string>
     <string name="group_7">Ultimi 7 giorni</string>
@@ -749,10 +786,31 @@
     <string name="group_year">Anno scorso</string>
     <string name="group_long">Molto tempo fa</string>
     <string name="group_no_group">Non raggruppato</string>
+
     <!-- Themes -->
     <string name="theme_light">Bianco</string>
     <string name="theme_deep_red">Rosso scuro</string>
     <string name="theme_dark">Nero</string>
+
+    <!-- Book languages detected by the app -->
+    <string name="lang_en"></string>
+    <string name="lang_zh"></string>
+    <string name="lang_ja"></string>
+    <string name="lang_ko"></string>
+    <string name="lang_es"></string>
+    <string name="lang_ru"></string>
+    <string name="lang_pt"></string>
+    <string name="lang_th"></string>
+    <string name="lang_fr"></string>
+    <string name="lang_vi"></string>
+    <string name="lang_it"></string>
+    <string name="lang_de"></string>
+    <string name="lang_pl"></string>
+    <string name="lang_id"></string>
+    <string name="lang_hu"></string>
+    <string name="lang_tr"></string>
+    <string name="lang_cs"></string>
+
     <!-- Misc -->
     <string name="select_file_manager">Seleziona il tuo file manager</string>
     <string name="default_permission">Autorizzazione predefinita</string>

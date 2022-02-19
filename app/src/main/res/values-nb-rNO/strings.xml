@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_name">%s nedlastinger fullført</string>
     <string name="app_intro">Velkommen</string>
     <string name="yes">Ja</string>
     <string name="no">Nei</string>
@@ -274,7 +273,6 @@
     <string name="duplicate_find_action">Finn duplikater</string>
     <string name="duplicate_artist_score">Artist: %.0f%%</string>
     <string name="duplicate_artist_score_nodata">Artist: ingen data</string>
-    <string name="duplicate_total_score">%.0f%%</string>
     <string name="ok">OK</string>
     <plurals name="page">
         <item quantity="one">bok</item>
