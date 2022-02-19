@@ -64,4 +64,5 @@
     <string name="pref_lock_timer_entries_1">Nessun ritardo</string>
     <string name="pref_lock_timer_entries_2">10 sec</string>
     <string name="pref_lock_timer_entries_3">30 sec (predefinito)</string>
+    <string name="pref_lock_timer_entries_5">2 min</string>
 </resources>

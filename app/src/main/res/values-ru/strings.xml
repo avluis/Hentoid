@@ -827,6 +827,24 @@
     <string name="theme_light">Светлая</string>
     <string name="theme_deep_red">Тёмно-красная</string>
     <string name="theme_dark">Тёмная</string>
+    <!-- Book languages detected by the app -->
+    <string name="lang_en">английский</string>
+    <string name="lang_zh">китайский</string>
+    <string name="lang_ja">японский</string>
+    <string name="lang_ko">корейский</string>
+    <string name="lang_es">испанский</string>
+    <string name="lang_ru">русский</string>
+    <string name="lang_pt">португальский</string>
+    <string name="lang_th">тайский</string>
+    <string name="lang_fr">французский</string>
+    <string name="lang_vi">вьетнамский</string>
+    <string name="lang_it">итальянский</string>
+    <string name="lang_de">немецкий</string>
+    <string name="lang_pl">польский</string>
+    <string name="lang_id">индонезийский</string>
+    <string name="lang_hu">венгерский</string>
+    <string name="lang_tr">турецкий</string>
+    <string name="lang_cs">чешский</string>
     <!-- Misc -->
     <string name="select_file_manager">Выберите ваш файловый менеджер</string>
     <string name="default_permission">Стандартное разрешение</string>
