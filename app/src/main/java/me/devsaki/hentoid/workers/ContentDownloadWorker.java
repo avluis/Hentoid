@@ -557,7 +557,7 @@ public class ContentDownloadWorker extends BaseWorker {
             long networkBytesNow = NetworkHelper.getIncomingNetworkUsage(getApplicationContext());
             deltaNetworkBytes = networkBytesNow - networkBytes;
             if (deltaNetworkBytes < 1024 * 10 && firstPageDownloaded)
-                nbDeltaLowNetwork++; // 10 Kbps threshold once download has started
+                nbDeltaLowNetwork++; // 10 KBps threshold once download has started
             else nbDeltaLowNetwork = 0;
             networkBytes = networkBytesNow;
             downloadSpeedCalculator.addSampleNow(networkBytes);
