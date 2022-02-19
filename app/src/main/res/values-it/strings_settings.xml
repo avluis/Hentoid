@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Interface -->
-    <string name="pref_screen_interface">Interfaccia e navigazione</string>
+<string name="pref_screen_interface">Interfaccia e navigazione</string>
     <string name="pref_cat_library">Libreria</string>
     <string name="pref_drawer_sources_title">Gestisci le fonti</string>
-    <string name="pref_drawer_sources_summary">Abilita, disabilita e riorganizza le fonti che appaiono nel riquadro di navigazione a sinistra</string>
+    <string name="pref_drawer_sources_summary">Abilita, disabilita e riorganizza le fonti \nche appaiono nel riquadro di navigazione a sinistra.</string>
     <string name="pref_library_display_title">Tipo di visualizzazione</string>
-    <string name="pref_library_display_summary">Tipo di esposizione per libri e gruppi\nAl momento: <x:g id="display_type" example="List">%s</x:g></string>
+    <string name="pref_library_display_summary">Tipo di esposizione per libri e gruppi. \nAl momento: <x:g id="display_type" example="List">%s</x:g></string>
     <string name="pref_endless_scroll_title">Scorrimento infinito</string>
-    <string name="pref_endless_scroll_summary_off">Abilita lo scorrimento infinito nella lista dei download\nDisabilita la paginazione</string>
-    <string name="pref_endless_scroll_summary_on">Scorri fino al contenuto del tuo cuore</string>
+    <string name="pref_endless_scroll_summary_off">Abilita lo scorrimento infinito nella lista dei download. \nDisabilita la paginazione</string>
+    <string name="pref_endless_scroll_summary_on">Scorri fino al contenuto del tuo cuore.</string>
     <string name="pref_quantity_per_page_title">Quantità per pagina</string>
-    <string name="pref_quantity_per_page_summary">Numero di elementi per pagina nell\'elenco dei download\nAttualmente: <x:g id="count" example="10">%s</x:g> elementi</string>
+    <string name="pref_quantity_per_page_summary">Numero di elementi per pagina nell\'elenco dei download. \nAttualmente: <x:g id="count" example="10">%s</x:g> elementi</string>
     <string name="pref_cat_search">Ricerca avanzata</string>
     <string name="pref_attributes_list_order_title">Ordine di selezione del metadata visualizzato</string>
     <string name="pref_attributes_list_count_title">Conta i libri disponibili</string>
@@ -20,22 +19,20 @@
     <string name="pref_cat_theme">Tema dell\'app</string>
     <string name="pref_color_theme_title">Colore del tema</string>
     <string name="pref_color_theme_summary">Tema attuale: <x:g id="theme_name" example="Deep Red">%s</x:g></string>
-
-    <!-- Storage -->
-    <string name="pref_screen_storage">Memoria</string>
+<string name="pref_screen_storage">Memoria</string>
     <string name="pref_cat_downloads_folder">Libreria di Hentoid</string>
     <string name="pref_select_folder_title">Seleziona la cartella Downloads</string>
-    <string name="pref_select_folder_summary">Seleziona dove Hentoid salverà i tuoi downloads</string>
+    <string name="pref_select_folder_summary">Seleziona dove Hentoid salverà i tuoi downloads.</string>
     <string name="pref_import_queue_empty_title">Metti in coda i libri vuoti come errori</string>
     <string name="pref_import_queue_empty_on">I libri vuoti saranno aggiunti alla coda come errori</string>
     <string name="pref_import_queue_empty_off">I libri vuoti verranno aggiunti alla libreria</string>
     <string name="pref_folder_naming_content_title">Nomi delle cartelle</string>
-    <string name="pref_folder_naming_content_summary">Convenzione di denominazione delle cartelle dei libri:\n<x:g id="convention" example="Name - ID">%s</x:g></string>
+    <string name="pref_folder_naming_content_summary">Convenzione di denominazione delle cartelle dei libri: \n<x:g id="convention" example="Name - ID">%s</x:g></string>
     <string name="pref_import_running">L\'importazione è già in corso</string>
-    <string name="prefs_ask_detach_external_library">Staccare la libreria esterna\?</string>
+    <string name="prefs_ask_detach_external_library">Sei sicuro di voler staccare la libreria esterna\?</string>
     <string name="prefs_external_library_detached">Libreria esterna staccata</string>
     <string name="pref_folder_trunc_title">Riduci il nome della cartella</string>
-    <string name="pref_folder_trunc_summary">Riduci il nome della cartella\nAttualmente: <x:g id="chars" example="80 characters">%s</x:g></string>
+    <string name="pref_folder_trunc_summary">Riduci il nome della cartella \nAttualmente: <x:g id="chars" example="80 characters">%s</x:g></string>
     <string name="pref_memory_usage_title">Utilizzo della memoria</string>
     <string name="pref_memory_usage_summary">Spazio libero attuale: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (tocca per i dettagli)</string>
     <string name="pref_memory_alert_title">Avvisa con memoria bassa</string>
@@ -51,14 +48,12 @@
     <string name="pref_refresh_library_title">Aggiorna libreria</string>
     <string name="pref_refresh_library_summary">Aggiornare manualmente i contenuti della libreria</string>
     <string name="pref_delete_all_except_favs_title">Elimina tutti i libri tranne i preferiti</string>
-    <string name="pref_delete_all_except_favs_summary">Eliminare la libreria; mantieni solo i libri preferiti\nNB: Non si applica alla libreria esterna</string>
+    <string name="pref_delete_all_except_favs_summary">Eliminare la libreria; mantieni solo i libri preferiti \nNB: Non si applica alla libreria esterna</string>
     <plurals name="pref_ask_delete_all_except_favs">
         <item quantity="one">Eliminare <x:g id="count" example="1">%d</x:g> libro\?</item>
         <item quantity="other">Eliminare <x:g id="count" example="2">%d</x:g> libri\?</item>
     </plurals>
-
-    <!-- Browser -->
-    <string name="pref_screen_browser">Browser</string>
+<string name="pref_screen_browser">Browser</string>
     <string name="pref_browser_behaviour">Comportamento</string>
     <string name="pref_browser_resume_last_title">Riprendi dall\'ultima pagina visualizzata</string>
     <string name="pref_browser_resume_last_off">Qualsiasi sito si apre sempre sulla sua pagina iniziale</string>
@@ -66,11 +61,11 @@
     <string name="pref_browser_dl_action_title">Comportamento download</string>
     <string name="pref_browser_quick_dl_title">Download veloce</string>
     <string name="pref_browser_quick_dl_summary">Nella pagina dell\'elenco dei libri, tieni premuto per scaricare qualsiasi libro</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_title">Nascondi i libri della lista nera di nhentai</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_off">I libri della lista nera di nhentai sono sfocati</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_on">I libri della lista nera di nhentai sono invisibili</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_title">Nascondi i libri della lista nera di NHentai</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_off">I libri nella lista nera di NHentai sono sfocati</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_on">I libri della lista nera di NHentai sono invisibili</string>
     <string name="pref_browser_quick_dl_threshold_title">Soglia di pressione lunga per il download rapido</string>
-    <string name="pref_browser_quick_dl_threshold_summary">Tieni premuto per questa durata per avviare il download rapido\nAl momento: <x:g id="time" example="1 s">%s</x:g></string>
+    <string name="pref_browser_quick_dl_threshold_summary">Tieni premuto per questa durata per avviare il download rapido. \nAl momento: <x:g id="time" example="1 s">%s</x:g></string>
     <string name="pref_browser_duplicate_ask_title">Controllo dei duplicati</string>
     <string name="pref_browser_duplicate_ask_off">No: scarica sempre</string>
     <string name="pref_browser_duplicate_ask_on">Sì: chiedi prima di scaricare</string>
@@ -79,21 +74,19 @@
     <string name="pref_browser_duplicate_try_pages_on">Prova a trovare pagine extra su potenziali duplicati</string>
     <string name="pref_browser_mark_downloaded_title">Segna i libri scaricati</string>
     <string name="pref_browser_mark_downloaded_off">I libri scaricati non hanno una visualizzazione speciale</string>
-    <string name="pref_browser_mark_downloaded_on">I libri scaricati sono contrassegnati\nNB: non funziona su tutti i siti</string>
+    <string name="pref_browser_mark_downloaded_on">I libri scaricati sono contrassegnati \nNB: non funziona su tutti i siti</string>
     <string name="pref_browser_visuals">Visualizzazione</string>
     <string name="pref_browser_augmented_title">Browser avanzato</string>
     <string name="pref_browser_augmented_off">Usando il comportamento predefinito</string>
     <string name="pref_browser_augmented_on">Usando la rimozione di ads e analisi veloce</string>
     <string name="pref_browser_override_overview_title">Disabilita panoramica della pagina</string>
-    <string name="pref_browser_override_overview_summary_off">Disabilita la panoramica delle pagine e permetti di impostare il livello di zoom iniziale preferito qui sotto</string>
-    <string name="pref_browser_override_overview_summary_on">Modifica l\'impostazione qui sotto per impostare il tuo livello di zoom iniziale.\nNota: riguarda solo Hitomi e e-hentai</string>
+    <string name="pref_browser_override_overview_summary_off">Disabilita la panoramica delle pagine e permetti di impostare il livello di zoom iniziale preferito qui sotto.</string>
+    <string name="pref_browser_override_overview_summary_on">Modifica l\'impostazione qui sotto per impostare il tuo livello di zoom iniziale. \nNota: riguarda solo Hitomi e e-hentai.</string>
     <string name="pref_browser_initial_zoom_title">Livello di zoom iniziale</string>
-    <string name="pref_browser_initial_zoom_summary">Livello di zoom della pagina del browser al caricamento iniziale della pagina\nAttualmente: <x:g id="percentage" example="20%">%s%%</x:g></string>
+    <string name="pref_browser_initial_zoom_summary">Livello di zoom della pagina del browser al caricamento iniziale della pagina. \nAttualmente: <x:g id="percentage" example="20%">%s%%</x:g></string>
     <string name="pref_browser_dns">DNS personalizzato</string>
-    <string name="pref_browser_dns_title">DNS su HTTPS</string>
-
-    <!-- Downloader -->
-    <string name="pref_screen_downloader">Downloader</string>
+    <string name="pref_browser_dns_title">DNS al posto di HTTPS</string>
+<string name="pref_screen_downloader">Downloader</string>
     <string name="pref_queue_autostart_title">Coda di download ad avvio automatico</string>
     <string name="pref_queue_autostart_on">La coda di download inizierà non appena un download è stato fatto</string>
     <string name="pref_queue_autostart_off">La coda di download deve essere avviata manualmente</string>
@@ -102,7 +95,7 @@
     <string name="pref_queue_wifi_only_off">La coda di download si avvierà se il dispositivo è connesso a qualsiasi rete</string>
     <string name="pref_queue_new_position_title">Nuova posizione di download</string>
     <string name="download_size_wifi_title">Salta download di grandi dimensioni su dati mobili</string>
-    <string name="pref_dl_size_wifi_on">I download di grandi dimensioni verranno saltati se non connessi al Wi-Fi</string>
+    <string name="pref_dl_size_wifi_on">I download di grandi dimensioni verranno saltati se non connessi al WiFi</string>
     <string name="pref_dl_size_wifi_off">Tutti i download saranno processati</string>
     <string name="pref_dl_size_wifi_threshold_title">Limite di dimensione per download di grandi dimensioni</string>
     <string name="pref_dl_pages_wifi_threshold_title">Limite di pagine di download di grandi dimensioni</string>
@@ -114,39 +107,33 @@
     <string name="pref_dl_retries_mem_limit_title">Limite di utilizzo della memoria prima di abortire</string>
     <string name="tag_blocking_screen_title">Blocco dei tag</string>
     <string name="pref_dl_blocked_tags_title">Tag bloccati</string>
-    <string name="pref_dl_blocked_tags_summary">Bloccare il download di libri con tag specifici\nSuggerimento: separare i tag con le virgole</string>
+    <string name="pref_dl_blocked_tags_summary">Bloccare il download di libri con tag specifici \nSuggerimento: separare i tag con le virgole</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Comportamento blocco</string>
     <string name="pref_dl_hitomi_webp_title">Preferire il download di WebP</string>
     <string name="pref_dl_hitomi_webp_summary_off">Scarica altri tipi di immagini (PNG, JPG)</string>
     <string name="pref_dl_hitomi_webp_summary_on">Scarica le immagini WebP ogni volta che sono disponibili</string>
     <string name="pref_dl_threads_quantity_title">Numero di download paralleli</string>
-    <string name="pref_dl_threads_quantity_summary">Numero di immagini scaricate contemporaneamente\nAttualmente: <x:g id="number" example="5">%s</x:g></string>
-
-    <!-- Privacy -->
-    <string name="pref_screen_privacy">Privacy</string>
+    <string name="pref_dl_threads_quantity_summary">Numero di immagini scaricate contemporaneamente. \nAttualmente: <x:g id="number" example="5">%s</x:g></string>
+<string name="pref_screen_privacy">Privacy</string>
     <string name="pref_app_preview_title">Anteprima dell\'app nelle app recenti</string>
-    <string name="pref_app_preview_summary_off">Anteprima dell\'app in app recenti disabilitata\nAbilita se hai bisogno di fare uno screenshot</string>
-    <string name="pref_app_preview_summary_on">Anteprima dell\'app in app recenti abilitata</string>
+    <string name="pref_app_preview_summary_off">Anteprima dell\'app in app recenti disabilitata. \nAbilita se hai bisogno di fare uno screenshot.</string>
+    <string name="pref_app_preview_summary_on">Anteprima dell\'app in app recenti abilitata.</string>
     <string name="pref_screenshot_title">Abilita screenshot</string>
-    <string name="pref_screenshot_summary_off">Anteprima dell\'app in app recenti + screenshot disabilitati</string>
-    <string name="pref_screenshot_summary_on">Screenshot abilitati</string>
+    <string name="pref_screenshot_summary_off">Anteprima dell\'app in app recenti + screenshot disabilitati.</string>
+    <string name="pref_screenshot_summary_on">Screenshot abilitati.</string>
     <string name="pref_analytics_preference_title">Analisi Firebase</string>
-    <string name="pref_analytics_preference_summary_off">Il monitoraggio delle analisi è attualmente disabilitato.\nAbilitarlo ci aiuterà a migliorare l\'app monitorando arresti anomali ed eccezioni.</string>
-    <string name="pref_analytics_preference_summary_on">Il monitoraggio delle analisi è attivo.\nGrazie per aver contribuito a migliorare Hentoid!</string>
-
-    <!-- Updates -->
-    <string name="pref_screen_updates">Aggiornamenti</string>
+    <string name="pref_analytics_preference_summary_off">Il monitoraggio delle analisi è attualmente disabilitato. \nAbilitarlo ci aiuterà a migliorare l\'app monitorando arresti anomali ed eccezioni.</string>
+    <string name="pref_analytics_preference_summary_on">Il monitoraggio delle analisi è attivo. \nGrazie per aver contribuito a migliorare Hentoid!</string>
+<string name="pref_screen_updates">Aggiornamenti</string>
     <string name="pref_check_updates_manual_title">Controllo manuale degli aggiornamenti</string>
-    <string name="pref_check_updates_manual_summary">Controlla manualmente gli aggiornamenti ora</string>
+    <string name="pref_check_updates_manual_summary">Controlla manualmente gli aggiornamenti ora.</string>
     <string name="pref_check_updates_manual_checking">Verifica aggiornamenti…</string>
     <string name="pref_check_updates_manual_no_new">Nessun aggiornamento trovato - Stai già utilizzando l\'ultima versione</string>
-    <string name="pref_check_updates_manual_no_connection">Impossibile controllare gli aggiornamenti. Controlla la tua connessione o riprova più tardi</string>
+    <string name="pref_check_updates_manual_no_connection">Impossibile controllare gli aggiornamenti. Controlla la tua connessione o riprova più tardi.</string>
     <string name="pref_check_updates_title">Aggiornamenti automatici</string>
-    <string name="pref_check_updates_summary_off">Abilita i controlli automatici degli aggiornamenti sui dati mobili</string>
-    <string name="pref_check_updates_summary_on">Nota: non sovrascrive i controlli di aggiornamento manuali</string>
-
-    <!-- Viewer -->
-    <string name="pref_screen_viewer">Visualizzatore delle immagini</string>
+    <string name="pref_check_updates_summary_off">Abilita i controlli automatici degli aggiornamenti sui dati mobili.</string>
+    <string name="pref_check_updates_summary_on">Nota: non sovrascrive i controlli di aggiornamento manuali.</string>
+<string name="pref_screen_viewer">Visualizzatore delle immagini</string>
     <string name="pref_viewer_controls">Controlli</string>
     <string name="pref_viewer_browse_mode">Modalità di scorrimento</string>
     <string name="pref_viewer_page_turn">Controllo sfoglia pagina</string>
@@ -183,5 +170,5 @@
     <string name="pref_viewer_continuous_summary_on">L\'utilizzo della pagina successiva nell\'ultima pagina carica il libro successivo</string>
     <string name="pref_viewer_read_threshold">Segna il libro come letto dopo N pagine</string>
     <string name="pref_viewer_slideshow_delay">Presentazione / Ritardo tra ogni pagina</string>
-    <string name="doh_warning">Alcuni siti web non funzionano bene con DNS su HTTPS. Utilizzate un\'applicazione DNS esterna se riscontrate problemi durante la navigazione (ad esempio pagine bianche, moduli di login che non rispondono)</string>
+    <string name="doh_warning">Alcuni siti web non funzionano bene con DNS su HTTPS. Utilizzate un\'applicazione DNS esterna se riscontrate problemi durante la navigazione (ad esempio pagine bianche, moduli di login che non rispondono).</string>
 </resources>

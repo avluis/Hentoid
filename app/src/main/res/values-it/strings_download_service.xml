@@ -2,7 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="download_completed">
         <item quantity="one" tools:ignore="ImpliedQuantity">Download completato</item>
-        <item quantity="other"><xliff:g xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" example="2" id="number">%d</xliff:g> Download completati</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g>download completati</item>
     </plurals>
     <string name="download_complete">Download completato</string>
     <string name="download_cancelled">Download cancellato</string>
@@ -12,8 +12,8 @@
     <string name="unhandled_download_error">Errore non gestito cercando di leggere gli URLs delle immagini</string>
     <string name="downloading">Scaricando</string>
     <plurals name="add_to_queue">
-        <item quantity="one"><xliff:g xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" example="1" id="processed">%1$d</xliff:g>/<xliff:g xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" example="10" id="total">%2$d</xliff:g> elemento aggiunto alla coda</item>
-        <item quantity="other"><xliff:g xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" example="2" id="processed">%1$d</xliff:g>/<xliff:g xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2" example="10" id="total">%2$d</xliff:g> elementi aggiunti alla coda</item>
+        <item quantity="one"><x:g example="1" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> elemento aggiunto alla coda</item>
+        <item quantity="other"><x:g example="2" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> elementi aggiunti alla coda</item>
     </plurals>
     <string name="already_downloaded">Già scaricato</string>
     <string name="already_queued">Già in coda</string>
