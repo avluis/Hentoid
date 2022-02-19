@@ -3,6 +3,7 @@
     <plurals name="download_completed">
         <item quantity="one" tools:ignore="ImpliedQuantity">Téléchargement terminé</item>
         <item quantity="other">%d téléchargements terminés</item>
+        <item quantity="many">%d téléchargements terminés</item>
     </plurals>
     <string name="download_complete">Téléchargement terminé</string>
     <string name="download_cancelled">Téléchargement annulé</string>
@@ -14,6 +15,7 @@
     <plurals name="add_to_queue">
         <item quantity="one">%1$d/%2$d élément ajouté à la file d\'attente</item>
         <item quantity="other">%1$d/%2$d éléments ajoutés à la file d\'attente</item>
+        <item quantity="many">%1$d/%2$d éléments ajoutés à la file d\'attente</item>
     </plurals>
     <string name="already_downloaded">Déjà téléchargé</string>
     <string name="already_queued">Déjà en file d\'attente</string>
