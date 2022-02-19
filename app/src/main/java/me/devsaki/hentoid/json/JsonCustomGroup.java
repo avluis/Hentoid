@@ -27,6 +27,9 @@ class JsonCustomGroup {
     }
 
     Group toEntity(@NonNull final Grouping grouping) {
-        return new Group(grouping, name, order).setSubtype(subtype).setFavourite(favourite).setHasCustomBookOrder(hasCustomBookOrder);
+        return new Group(grouping, name, order)
+                .setSubtype((null == subtype) ? 0 : subtype)
+                .setFavourite(null != favourite && favourite)
+                .setHasCustomBookOrder(null != hasCustomBookOrder && hasCustomBookOrder);
     }
 }
