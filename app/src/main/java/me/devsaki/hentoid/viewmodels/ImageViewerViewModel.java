@@ -737,7 +737,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doDeleteBook(@NonNull Content targetContent) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
-        ContentHelper.removeQueuedContent(getApplication(), dao, targetContent);
+        ContentHelper.removeQueuedContent(getApplication(), dao, targetContent, true);
     }
 
     public void deletePage(int pageViewerIndex, Consumer<Throwable> onError) {
@@ -1129,9 +1129,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .observeOn(Schedulers.io())
                         .map(ContentHelper::reparseFromScratch)
                         .doOnNext(c -> {
-                            if (c.isEmpty()) throw new EmptyResultException();
+                            if (c.right.isEmpty()) throw new EmptyResultException();
                             dao.addContentToQueue(
-                                    c.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP,
+                                    c.right.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP,
                                     ContentQueueManager.getInstance().isQueueActive(getApplication()));
                         })
                         .observeOn(AndroidSchedulers.mainThread())

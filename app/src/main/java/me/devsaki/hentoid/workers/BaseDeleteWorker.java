@@ -225,7 +225,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     private void removeQueuedContent(@NonNull final Content content) {
         try {
             progressItem(content, false);
-            ContentHelper.removeQueuedContent(getApplicationContext(), dao, content);
+            ContentHelper.removeQueuedContent(getApplicationContext(), dao, content, true);
         } catch (ContentNotProcessedException e) {
             // Don't throw the exception if we can't remove something that isn't there
             if (!(e instanceof FileNotProcessedException && content.getStorageUri().isEmpty())) {

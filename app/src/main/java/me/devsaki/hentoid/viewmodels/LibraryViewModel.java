@@ -23,6 +23,7 @@ import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
@@ -413,7 +414,7 @@ public class LibraryViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
-                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : Optional.of(c))
+                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c).right : Optional.of(c))
                         .doOnNext(c -> {
                             if (c.isPresent()) {
                                 Content content = c.get();
@@ -459,9 +460,9 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (!ContentHelper.isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
-                                Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
-                                if (newContent.isEmpty()) flagContentDelete(c, false);
-                                return newContent;
+                                Pair<Content, Optional<Content>> newContent = ContentHelper.reparseFromScratch(c);
+                                if (newContent.getRight().isEmpty()) flagContentDelete(c, false);
+                                return newContent.getRight();
                             }
                             return Optional.of(c);
                         })
@@ -506,12 +507,12 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (!ContentHelper.isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
-                                Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
-                                if (newContent.isEmpty()) {
+                                Pair<Content, Optional<Content>> newContent = ContentHelper.reparseFromScratch(c);
+                                if (newContent.getRight().isEmpty()) {
                                     flagContentDelete(c, false);
-                                    return newContent;
+                                    return newContent.getRight();
                                 } else {
-                                    Content reparsedContent = newContent.get();
+                                    Content reparsedContent = newContent.getRight().get();
                                     // Reparse pages
                                     List<ImageFile> newImages = ContentHelper.fetchImageURLs(reparsedContent, StatusContent.ONLINE);
                                     dao.replaceImageList(reparsedContent.getId(), newImages);
