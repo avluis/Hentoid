@@ -554,7 +554,6 @@
     <string name="about_app_version">Hentoid versione: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
     <string name="about_chrome_version">Chrome versione <x:g id="chrome_ver" example="98">%1$d</x:g></string>
 
-    <!-- Web browser -->
     <string name="web_gallery">Torna all\'ultima pagina della galleria</string>
     <string name="web_home">Torna alla libreria</string>
     <string name="web_back">Indietro</string>
@@ -577,7 +576,6 @@
     <string name="torrent_dl_fail">Download del torrent fallito: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Autorizzazione di archiviazione negata - impossibile utilizzare il downloader</string>
 
-    <!-- Web browser (site specifics -->
     <string name="help_web_fakku_account">Si prega di utilizzare o creare un account FAKKU legittimo.\nHentoid non funzionerà senza di esso.</string>
     <string name="help_web_fakku_premium">Quel libro non può essere visualizzato con il tuo attuale accesso a FAKKU.</string>
     <string name="help_web_exh_account">Si prega di utilizzare o creare un account exHentai</string>
