@@ -1032,7 +1032,7 @@ public class LibraryActivity extends BaseActivity {
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect(selectExtension.getSelections());
-                            viewModel.deleteItems(contents, groups, false);
+                            viewModel.deleteItems(contents, groups, false, onSuccess);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))

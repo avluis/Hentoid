@@ -1378,7 +1378,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         }
 
         // Go back to groups view if there are no books to display (use case : remove the last books from the currently viewed group)
-        if (result.isEmpty() && Grouping.CUSTOM.equals(Preferences.getGroupingDisplay())) activity.get().goBackToGroups();
+        if (result.isEmpty() && Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()))
+            activity.get().goBackToGroups();
 
         newSearch = false;
         library = result;
@@ -1554,8 +1555,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     /**
-     * Force a new search when the sort order is custom
-     * (in that case, LiveData can't do its job because of https://github.com/objectbox/objectbox-java/issues/141)
+     * Force a new search :
+     * - when the book sort order is custom (in that case, LiveData can't do its job because of https://github.com/objectbox/objectbox-java/issues/141)
+     * - when the current grouping is custom (because the app needs to refresh the display when moving books out of the currently displayed group)
      */
     private void refreshIfNeeded() {
         if (Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()) || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
@@ -1650,6 +1652,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         }
         Content content = item.getContent();
         if (content != null)
-            viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false);
+            viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false, null);
     }
 }

@@ -13,10 +13,13 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.paging.PagedList;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
@@ -30,9 +33,11 @@ import org.threeten.bp.Instant;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
@@ -81,6 +86,8 @@ public class LibraryViewModel extends AndroidViewModel {
     private final ContentSearchManager searchManager;
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    // Cleanup for all work observers
+    private final List<Pair<UUID, Observer<WorkInfo>>> workObservers = new ArrayList<>();
 
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
@@ -119,6 +126,11 @@ public class LibraryViewModel extends AndroidViewModel {
         super.onCleared();
         dao.cleanup();
         compositeDisposable.clear();
+        if (workObservers.isEmpty()) {
+            WorkManager workManager = WorkManager.getInstance(getApplication());
+            for (Pair<UUID, Observer<WorkInfo>> info : workObservers)
+                workManager.getWorkInfoByIdLiveData(info.getLeft()).removeObserver(info.getRight());
+        }
     }
 
     @NonNull
@@ -573,7 +585,8 @@ public class LibraryViewModel extends AndroidViewModel {
     public void deleteItems(
             @NonNull final List<Content> contents,
             @NonNull final List<Group> groups,
-            boolean deleteGroupsOnly) {
+            boolean deleteGroupsOnly,
+            Runnable onSuccess) {
         DeleteData.Builder builder = new DeleteData.Builder();
         if (!contents.isEmpty())
             builder.setContentIds(Stream.of(contents).map(Content::getId).toList());
@@ -582,8 +595,18 @@ public class LibraryViewModel extends AndroidViewModel {
         builder.setDeleteGroupsOnly(deleteGroupsOnly);
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
-        workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
-        // TODO update isCustomGroupingAvailable when the whole delete chain is complete
+        WorkRequest request = new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build();
+        workManager.enqueue(request);
+
+        Observer<WorkInfo> workInfoObserver = workInfo -> {
+            if (workInfo.getState().isFinished()) {
+                if (onSuccess != null) onSuccess.run();
+                refreshCustomGroupingAvailable();
+            }
+        };
+
+        workObservers.add(new ImmutablePair<>(request.getId(), workInfoObserver));
+        workManager.getWorkInfoByIdLiveData(request.getId()).observeForever(workInfoObserver);
     }
 
     public void purgeItem(@NonNull final Content content) {
@@ -903,7 +926,7 @@ public class LibraryViewModel extends AndroidViewModel {
                     try {
                         ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
                         if (deleteAfterMerging)
-                            deleteItems(contentList, Collections.emptyList(), false);
+                            deleteItems(contentList, Collections.emptyList(), false, null);
                         result = true;
                     } catch (ContentNotProcessedException e) {
                         Timber.e(e);
