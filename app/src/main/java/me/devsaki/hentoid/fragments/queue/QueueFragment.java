@@ -582,7 +582,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 return R.string.step_start_download;
             case DownloadEvent.Step.NONE:
             default: // NONE
-                return R.string.empty;
+                return R.string.empty_string;
         }
     }
 

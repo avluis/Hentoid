@@ -324,7 +324,7 @@
     <string name="app_name" translatable="false">Hentoid</string>
     <string name="app_id" translatable="false">me.devsaki.hentoid</string>
     <string name="error" translatable="false">Error</string>
-    <string name="empty" translatable="false"/>
+    <string name="empty_string" translatable="false"/>
     <!-- Strings: Main: TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <!-- Strings: Main: Export metadata -->
