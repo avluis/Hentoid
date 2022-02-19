@@ -70,6 +70,11 @@ public class IntroActivity extends AppIntro2 {
         setSwipeLock(!canProgress);
         if (!canProgress) setButtonsEnabled(false);
 
+        // Reset folder selection when coming back to that screen
+        if (newFragment instanceof ImportIntroFragment) {
+            ((ImportIntroFragment) newFragment).reset();
+        }
+
         // Auto-validate the last screen after 2 seconds of inactivity
         if (newFragment instanceof EndIntroFragment) {
             autoEndHandler = new Handler(Looper.getMainLooper());
