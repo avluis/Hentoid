@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string-array name="blocked_domains" translatable="false">
+<resources translatable="false">
+    <string-array name="blocked_domains">
         <item>exoclick.com</item>
         <item>juicyadultads.com</item>
         <item>juicyads.com</item>

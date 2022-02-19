@@ -214,34 +214,22 @@
 
     <string name="pref_viewer_page_turn">Lapozásvezérlés</string>
     <string name="pref_viewer_page_turn_swipe">Lapozás</string>
-    <bool name="pref_viewer_page_turn_swipe_default" translatable="false">true</bool>
     <string name="pref_viewer_page_turn_tap">Határ menti tapadás*</string>
-    <bool name="pref_viewer_page_turn_tap_default" translatable="false">true</bool>
     <string name="pref_viewer_page_turn_tap_2x">Érintési zóna szélessége x2</string>
-    <bool name="pref_viewer_page_turn_tap_2x_default" translatable="false">false</bool>
     <string name="pref_viewer_page_turn_volume">Hangerő gomb</string>
-    <bool name="pref_viewer_page_turn_volume_default" translatable="false">true</bool>
     <string name="pref_viewer_page_turn_keyboard">Billentyűzet balra/jobbra</string>
-    <bool name="pref_viewer_page_turn_keyboard_default" translatable="false">true</bool>
     <string name="pref_viewer_swipe_to_fling">Húzás a flinghez</string>
-    <bool name="pref_viewer_swipe_to_fling_default" translatable="false">false</bool>
     <string name="pref_viewer_invert_volume">Hangerőgombok invertálása</string>
-    <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
     <string name="pref_viewer_zoom">Nagyítás</string>
     <string name="pref_viewer_zoom_holding">Pillanatnyi nagyítás fogás közben</string>
-    <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
     <string name="pref_viewer_cap_tap_zoom">Sapka dupla &amp; hosszú koppintás zoom*</string>
     
 
     <string name="pref_viewer_visuals">Vizuális</string>
     <string name="pref_viewer_keep_screen_on">Képernyő bekapcsolva tartása</string>
-    <bool name="pref_viewer_keep_screen_on_default" translatable="false">true</bool>
     <string name="pref_viewer_display_pagenum">Az oldalszám folyamatos megjelenítése</string>
-    <bool name="pref_viewer_display_pagenum_default" translatable="false">false</bool>
     <string name="pref_viewer_tap_transitions">Lapozás animáció engedélyezése</string>
-    <bool name="pref_viewer_tap_transitions_default" translatable="false">true</bool>
     <string name="pref_viewer_zoom_transitions">Nagyítási animáció engedélyezése</string>
-    <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
     <string name="pref_viewer_separating_bars">Elválasztó sávok függőleges módban</string>
     
 
@@ -253,7 +241,6 @@
 
     <string name="pref_viewer_rendering_no_android5">A sima renderelés nem érhető el az Android 5 rendszeren</string>
     <string name="pref_viewer_auto_rotate">Képek automatikus forgatása</string>
-    <bool name="pref_viewer_auto_rotate_default" translatable="false">false</bool>
     <string name="pref_viewer_auto_rotate_summary_off">A képek nem lesznek elforgatva</string>
     <string name="pref_viewer_auto_rotate_summary_on">A képek el lesznek forgatva, hogy a lehető legjobban elfoglalják a képernyőt.</string>
     <string name="pref_viewer_gallery_columns">A galéria oszlopainak száma</string>
@@ -263,13 +250,10 @@
     <string name="pref_viewer_resume_last_left_title">Folytassa az olvasást amikor újra megnyitja a könyveket</string>
     <string name="pref_viewer_resume_last_left_summary_off">A könyv újbóli megnyitása mindig az 1. oldalról indul.</string>
     <string name="pref_viewer_resume_last_left_summary_on">A könyv újranyitása az utolsó olvasott oldalon folytatódik, kivéve, ha a könyv végére értek.</string>
-    <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
     <string name="pref_viewer_open_gallery">Mindig galéria módban nyílik meg</string>
-    <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
     <string name="pref_viewer_continuous_title">Folyamatos olvasás</string>
     <string name="pref_viewer_continuous_summary_off">A következő oldal használata az utolsó oldalra nincs hatással</string>
     <string name="pref_viewer_continuous_summary_on">A következő oldal használata az utolsó oldalon betölti a következő könyvet</string>
-    <bool name="pref_viewer_continuous_default" translatable="false">false</bool>
     <string name="pref_viewer_read_threshold">Jelölje a könyvet olvasottnak N oldal után</string>
     
 

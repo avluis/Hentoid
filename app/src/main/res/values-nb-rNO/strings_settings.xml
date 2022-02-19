@@ -20,6 +20,7 @@
     <string name="pref_cat_theme">Programdrakt</string>
     <string name="pref_color_theme_title">Fargedrakt</string>
     <string name="pref_color_theme_summary">Nåværende drakt: <x:g id="theme_name" example="Deep Red">%s</x:g></string>
+
     <!-- Storage -->
     <string name="pref_screen_storage">Lagring</string>
     <string name="pref_cat_downloads_folder">Hentoid-bibliotek</string>
@@ -55,6 +56,7 @@
         <item quantity="one">Slett <x:g id="count" example="1">%d</x:g> bok\?</item>
         <item quantity="other">Slett <x:g id="count" example="2">%d</x:g> bøker\?</item>
     </plurals>
+
     <!-- Browser -->
     <string name="pref_screen_browser">Nettleser</string>
     <string name="pref_browser_behaviour">Oppførsel</string>
@@ -89,6 +91,7 @@
     <!-- pref_browser_initial_zoom_summary -->
     <string name="pref_browser_dns">Egendefinert DNS</string>
     <string name="pref_browser_dns_title">DNS over HTTPS</string>
+
     <!-- Downloader -->
     <string name="pref_screen_downloader">Nedlaster</string>
     <!-- pref_queue_autostart_title -->
@@ -118,6 +121,7 @@
     <string name="pref_dl_hitomi_webp_summary_on">Last ned WebP-bilder når de er tilgjengelige</string>
     <string name="pref_dl_threads_quantity_title">Antall parallelle nedlastinger</string>
     <!-- pref_dl_threads_quantity_summary -->
+
     <!-- Privacy -->
     <string name="pref_screen_privacy">Personvern</string>
     <!-- pref_app_preview_title -->
@@ -129,6 +133,7 @@
     <string name="pref_analytics_preference_title">Firebase Analytics</string>
     <!-- pref_analytics_preference_summary_off -->
     <!-- pref_analytics_preference_summary_on -->
+
     <!-- Updates -->
     <string name="pref_screen_updates">Oppdateringer</string>
     <string name="pref_check_updates_manual_title">Manuell oppdateringssjekk</string>
@@ -139,6 +144,7 @@
     <string name="pref_check_updates_title">Automatiske oppdateringer</string>
     <!-- pref_check_updates_summary_off -->
     <!-- pref_check_updates_summary_on -->
+
     <!-- Viewer -->
     <string name="pref_screen_viewer">Bildeviser</string>
     <string name="pref_viewer_controls">Kontroller</string>

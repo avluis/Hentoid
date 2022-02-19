@@ -20,6 +20,7 @@
     <string name="pref_cat_theme">Tema dell\'app</string>
     <string name="pref_color_theme_title">Colore del tema</string>
     <string name="pref_color_theme_summary">Tema attuale: <x:g id="theme_name" example="Deep Red">%s</x:g></string>
+
     <!-- Storage -->
     <string name="pref_screen_storage">Memoria</string>
     <string name="pref_cat_downloads_folder">Libreria di Hentoid</string>
@@ -55,6 +56,7 @@
         <item quantity="one">Eliminare <x:g id="count" example="1">%d</x:g> libro\?</item>
         <item quantity="other">Eliminare <x:g id="count" example="2">%d</x:g> libri\?</item>
     </plurals>
+
     <!-- Browser -->
     <string name="pref_screen_browser">Browser</string>
     <string name="pref_browser_behaviour">Comportamento</string>
@@ -89,6 +91,7 @@
     <string name="pref_browser_initial_zoom_summary">Livello di zoom della pagina del browser al caricamento iniziale della pagina\nAttualmente: <x:g id="percentage" example="20%">%s%%</x:g></string>
     <string name="pref_browser_dns">DNS personalizzato</string>
     <string name="pref_browser_dns_title">DNS su HTTPS</string>
+
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>
     <string name="pref_queue_autostart_title">Coda di download ad avvio automatico</string>
@@ -118,6 +121,7 @@
     <string name="pref_dl_hitomi_webp_summary_on">Scarica le immagini WebP ogni volta che sono disponibili</string>
     <string name="pref_dl_threads_quantity_title">Numero di download paralleli</string>
     <string name="pref_dl_threads_quantity_summary">Numero di immagini scaricate contemporaneamente\nAttualmente: <x:g id="number" example="5">%s</x:g></string>
+
     <!-- Privacy -->
     <string name="pref_screen_privacy">Privacy</string>
     <string name="pref_app_preview_title">Anteprima dell\'app nelle app recenti</string>
@@ -129,6 +133,7 @@
     <string name="pref_analytics_preference_title">Analisi Firebase</string>
     <string name="pref_analytics_preference_summary_off">Il monitoraggio delle analisi è attualmente disabilitato.\nAbilitarlo ci aiuterà a migliorare l\'app monitorando arresti anomali ed eccezioni.</string>
     <string name="pref_analytics_preference_summary_on">Il monitoraggio delle analisi è attivo.\nGrazie per aver contribuito a migliorare Hentoid!</string>
+
     <!-- Updates -->
     <string name="pref_screen_updates">Aggiornamenti</string>
     <string name="pref_check_updates_manual_title">Controllo manuale degli aggiornamenti</string>
@@ -139,6 +144,7 @@
     <string name="pref_check_updates_title">Aggiornamenti automatici</string>
     <string name="pref_check_updates_summary_off">Abilita i controlli automatici degli aggiornamenti sui dati mobili</string>
     <string name="pref_check_updates_summary_on">Nota: non sovrascrive i controlli di aggiornamento manuali</string>
+
     <!-- Viewer -->
     <string name="pref_screen_viewer">Visualizzatore delle immagini</string>
     <string name="pref_viewer_controls">Controlli</string>

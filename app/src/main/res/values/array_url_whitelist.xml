@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string-array name="allowed_domains" translatable="false">
+<resources translatable="false">
+    <string-array name="allowed_domains">
         <item>disqus</item>
         <item>googletagmanager.com</item>
         <item>cloudflare</item>

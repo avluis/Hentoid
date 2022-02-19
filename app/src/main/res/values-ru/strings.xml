@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Generic usage -->
+    <!-- Основное -->
     <string name="app_intro">Добро пожаловать</string>
     <!-- because Android default "OK" value for "yes" key is nonsense -->
     <string name="yes">Да</string>
@@ -41,7 +41,8 @@
     <string name="open_folder">Открыть папку</string>
     <!-- <string name="error">Ошибка</string> -->
     <string name="_default">по умолчанию</string>
-    <!-- Activities -->
+
+    <!-- Заголовки активностей -->
     <string name="title_activity_api29_migration">Переход на API 29</string>
     <string name="title_activity_downloads">Библиотека</string>
     <string name="title_activity_queue">Очередь</string>
@@ -49,7 +50,8 @@
     <string name="title_activity_about">О Hentoid</string>
     <string name="title_activity_app_lock">Код-пароль</string>
     <string name="title_activity_search">Расширенный поиск</string>
-    <!-- API29 migration / library refresh screen -->
+
+    <!-- Переход на API29 / окно обновления библиотеки -->
     <string name="api29_migration_title">Hentoid v12\nОбновление управления файлами</string>
     <string name="api29_migration_subtitle">Hentoid обновляет вашу коллекцию.\nЭто может занять несколько минут.</string>
     <string name="api29_migration_location">Расположение папки Hentoid\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
@@ -63,7 +65,8 @@
     <string name="api29_migration_step4_init">Импорт очереди…</string>
     <string name="api29_migration_select_folder">Пожалуйста, выберите существующую папку Hentoid. Её расположение показано на экране.</string>
     <string name="api29_migration_allow_write">Пожалуйста, подтвердите разрешение на запись</string>
-    <!-- Library screen toolbar -->
+
+    <!-- Панель экрана библиотеки -->
     <string name="menu_search">Поиск</string>
     <string name="menu_fav">Показать избранное</string>
     <string name="menu_comp">Показать завершённые</string>
@@ -97,7 +100,8 @@
     <string name="low_memory">Заканчивается память на устройстве!</string>
     <string name="fix_permissions">Исправить</string>
     <string name="view_queue">Просмотреть очередь</string>
-    <!-- Queue / Downloader -->
+
+    <!-- Очередь / Загрузчик -->
     <string name="downloader_title">Загрузчик</string>
     <string name="queue_queue_tab">В процессе</string>
     <string name="queue_errors_tab">Ошибки</string>
@@ -172,6 +176,7 @@
     <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> МБ, <x:g id="speed_kbps" example="102.4">%3$d</x:g> Кб/c</string>
     <string name="download_notif_failed">Загрузка не удалась</string>
     <string name="download_notif_failed_details">Невозможно загрузить <x:g id="book_name" example="Крутая хентай-манга">%1$s</x:g>: не удалось создать папку <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Пожалуйста, проверьте папку Hentoid и повторите загрузку с помощью кнопки \'!\'.</string>
+
     <!-- TextViews -->
     <string name="work_series">Сеттинг: <x:g id="series" example="original">%s</x:g></string>
     <string name="work_artist">Художник: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
@@ -199,7 +204,8 @@
     <string name="errortype_wifi">Книга пропущена из-за ограничений на размер загрузок по Wi-Fi</string>
     <string name="errortype_blocked">Книга помечена заблокированным тэгом</string>
     <string name="errortype_undefined">Неизвестно</string>
-    <!-- Refresh library -->
+
+    <!-- Обновление библиотеки -->
     <!-- Опция меню -->
     <string name="refresh_title">Обновить библиотеку</string>
     <!-- Описание опции меню -->
@@ -213,7 +219,8 @@
     <string name="refresh_options_remove_2">Отсутствуют изображения</string>
     <string name="refresh_options_remove_3">JSON-файл не читаем (не рекомендуется)</string>
     <string name="refresh_options_remove_or">или</string>
-    <!-- Delete all except favs -->
+
+    <!-- Удалить всё, кроме избранных -->
     <string name="delete_title">Удалить всё, кроме избранных</string>
     <string name="generic_progress"><x:g id="number" example="7">%1$d</x:g> из <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="книг">%3$s</x:g></string>
     <plurals name="book_progress">
@@ -226,7 +233,8 @@
         <item quantity="few"><x:g id="number" example="2">%1$d</x:g> группы из <x:g id="total" example="42">%2$d</x:g></item>
         <item quantity="many"><x:g id="number" example="5">%1$d</x:g> групп из <x:g id="total" example="42">%2$d</x:g></item>
     </plurals>
-    <!-- Import metadata -->
+
+    <!-- Импорт метаданных -->
     <string name="import_title">Импорт метаданных</string>
     <string name="import_mode_add">Добавить импортированные элементы</string>
     <string name="import_mode_replace">Заменить импортированными элементами</string>
@@ -265,7 +273,8 @@
         <item quantity="many"><x:g id="number" example="5">%d</x:g> закладок успешно импортировано</item>
     </plurals>
     <string name="dialog_prompt">Выберите папку</string>
-    <!-- Export metadata -->
+
+    <!-- Экспорт метаданных -->
     <string name="export_title">Экспорт метаданных</string>
     <plurals name="export_file_library">
         <item quantity="one">Экспорт библиотеки (<x:g id="number" example="1">%d</x:g> книга)</item>
@@ -289,7 +298,8 @@
     <string name="export_run">ЗАПУСТИТЬ ЭКСПОРТ</string>
     <string name="import_settings_title">Импорт настроек</string>
     <string name="import_settings_success">Успешно импортировано</string>
-    <!-- Import Activity -->
+
+    <!-- Мастер импорта -->
     <string name="open_app_settings">Открыть настройки приложения</string>
     <string name="permissioncomplaint_snackbar">Вы должны предоставить разрешения перед тем, как продолжить</string>
     <string name="permissioncomplaint_snackbar_manual">Вы должны вручную предоставить разрешения перед тем, как продолжить</string>
@@ -320,7 +330,8 @@
         <item quantity="few">Не удалось импортировать: <x:g id="number" example="2">%s</x:g></item>
         <item quantity="many">Не удалось импортировать: <x:g id="number" example="5">%s</x:g></item>
     </plurals>
-    <!-- Memory usage -->
+
+    <!-- Использование памяти -->
     <string name="memory_title">Использование памяти</string>
     <string name="memory_total">Всего: <x:g id="total" example="100 МБ">%s</x:g></string>
     <string name="memory_free">Свободно: <x:g id="total" example="50 МБ">%s</x:g></string>
@@ -331,7 +342,8 @@
     <string name="memory_details_source">Источник</string>
     <string name="memory_details_books">Книги</string>
     <string name="memory_details_size">Размер</string>
-    <!-- Logs -->
+
+    <!-- Логи -->
     <string name="logs_title">Последние логи</string>
     <string name="logs_open">Открыть лог</string>
     <string name="read_log">Читать лог</string>
@@ -343,13 +355,15 @@
     <string name="log_import">Обновление/импорт основной библиотеки</string>
     <string name="log_cleanup">Очистка основной библиотеки</string>
     <string name="log_api29_migration">Миграция библиотеки с Hentoid 1.11</string>
-    <!-- Errors -->
+
+    <!-- Ошибки -->
     <string name="error_write_permission">У вас нет прав на запись в этой папке, попробуйте другую.</string>
     <string name="error_creating_folder">Ошибка создания папки.</string>
     <string name="error_open">Ошибка открытия файла: не найдено подходящего приложения</string>
     <string name="error_browser">Ошибка открытия ссылки: не обнаружен браузер</string>
     <string name="error_send">Ошибка отправки архива: не найдено подходящего приложения</string>
-    <!-- Error log -->
+
+    <!-- Лог ошибок -->
     <string name="redownload_dialog_title">Попытаться загрузить снова\?</string>
     <string name="redownload_dialog_message">Всего изображений в загрузке: <x:g id="total_imgs" example="10">%1$d</x:g>\nИзображений без ошибок: <x:g id="fine_imgs" example="8">%2$d</x:g>\nИзображений с ошибками: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
     <string name="redownload_first_error">Первая ошибка: <x:g id="errortype">%s</x:g></string>
@@ -357,7 +371,8 @@
     <string name="redownload_open_log">Открыть лог ошибок</string>
     <string name="redownload_share_log">Поделиться логами ошибок</string>
     <string name="redownload_generating_log_file">Генерирую файл логов…</string>
-    <!-- Library fragment -->
+
+    <!-- Фрагмент библиотеки -->
     <string name="resume_closed">Возобновить чтение\?</string>
     <string name="open_drawer">Открыть меню</string>
     <string name="close_drawer">Закрыть меню</string>
@@ -503,7 +518,8 @@
         <item quantity="many">Удалить группы и книги</item>
     </plurals>
     <string name="group_delete_nothing">Нечего удалять — включите опцию "Разрешить удалять внешний контент"</string>
-    <!-- Merge & split -->
+
+    <!-- Совмещение и разделение -->
     <string name="merge_merge">Совместить</string>
     <string name="merge_progress">Совмещаю книги…</string>
     <string name="split_progress">Разделяю книгу…</string>
@@ -515,13 +531,15 @@
     <string name="split_create_chapters">Создать главы</string>
     <string name="merge_success">Успешно совмещено</string>
     <string name="split_success">Успешно разделено</string>
-    <!-- Groups -->
+
+    <!-- Группы -->
     <string name="groups_flat">Все книги</string>
     <string name="groups_by_artist">По художникам</string>
     <string name="groups_by_dl_date">По дате загрузки</string>
     <string name="groups_custom">Своё</string>
     <string name="no_artist_group_name">[без художника]</string>
-    <!-- Sorting fields -->
+
+    <!-- Поля сортировки -->
     <string name="sort_title">По названиям</string>
     <string name="sort_artist">По художникам</string>
     <string name="sort_pages">По страницам</string>
@@ -534,18 +552,21 @@
     <string name="sort_custom">Своё</string>
     <string name="sort_invalid">-неверно-</string>
     <string name="sort_books">По кол-ву книг</string>
-    <!-- Item card tooltips -->
+
+    <!-- Подсказки карточек элементов -->
     <string name="drag_help">Переместить элемент</string>
     <string name="external_help">Находится во внешней библиотеке</string>
     <string name="streamed_help">Книга передаётся потоком</string>
     <string name="view_source_help">Просмотреть источник в браузере</string>
     <string name="fav_help">Добавить/убрать из избранного</string>
-    <!-- Visibility fields -->
+
+    <!-- Поля отображения -->
     <string name="show_artists">Художники</string>
     <string name="show_groups">Группы</string>
     <string name="show_artists_and_groups">Художники и группы</string>
     <string name="launchcode_present">У вас уже есть эта книга. Искать в других источниках\?</string>
-    <!-- Updates -->
+
+    <!-- Обновления -->
     <string name="updates_title">Обновления</string>
     <string name="checking_updates">Проверка обновлений</string>
     <string name="update_available">Доступно обновление!</string>
@@ -559,14 +580,16 @@
     <string name="error_network_summary">Ошибка сети, пожалуйста, попробуйте позднее.</string>
     <string name="error_file">Не удалось найти файл обновления на сервере.</string>
     <string name="update_check_no_update">Проверка обновлений: Нет новых версий.</string>
-    <!-- Alerts -->
+
+    <!-- Предупреждения -->
     <string name="alert_orange">Учтите, что загрузки могут не работать на этом сайте.</string>
     <string name="alert_red">Кнопка загрузки пока что не работает на этом сайте.</string>
     <string name="alert_grey">Этот сайт сейчас работает нестабильно. Приложение не может ничего с этим сделать. Пожалуйста, попробуйте позднее.</string>
     <string name="alert_black">Этот сайт сейчас недоступен. Приложение не может ничего с этим сделать. Пожалуйста, попробуйте позднее.</string>
     <string name="alert_wip">Команда разработчиков Hentoid работает над исправлением. Мы уведомим вас, когда новая версия приложения будет доступна.</string>
     <string name="alert_fix_available">Исправление доступно в последней версии приложения. Пожалуйста, установите обновление.</string>
-    <!-- App Lock -->
+
+    <!-- Блокировка приложения -->
     <string name="app_lock_pin">Введите код-пароль</string>
     <string name="app_lock_pin_prefs">Код-пароль приложения</string>
     <string name="app_lock_enable">Блокировка включена</string>
@@ -579,7 +602,8 @@
     <string name="pin_new_confirm">Подтвердите новый код-пароль</string>
     <string name="pin_explanation">Блокировка кодом-паролем предотвращает использование этого приложения без предварительной авторизации с помощью 4-значного PIN-кода</string>
     <string name="pin_lock_on_restore">Блокировать при\nповторном открытии</string>
-    <!-- About Activity -->
+
+    <!-- О Hentoid -->
     <string name="about1"><b>Hentoid</b> — это приложение для скачивания додзинси и хентай-манги. Hentoid изначально был создан <b>Сесаром Арасаки</b>.</string>
     <string name="personalDataStatement1"><b>ЗАЯВЛЕНИЕ О КОНФИДЕНЦИАЛЬНОСТИ ПЕРСОНАЛЬНЫХ ДАННЫХ</b>\n\nHentoid — это бесплатное програмное обеспечение с открытым исходным кодом, разрабатываемое сообществом Hentoid (присоединяйтесь к нам в Discord по ссылке ниже)</string>
     <string name="personalDataStatement2">Hentoid собирает следующие персональные данные и делится ими с Google для обработки с помощью библиотеки Firebase:\n - Идентификатор сессии\n - IP-адрес</string>
@@ -587,7 +611,8 @@
     <string name="about_licenses">Показать лицензии</string>
     <string name="about_app_version">Версия Hentoid: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
     <string name="about_chrome_version">Версия Chrome: <x:g id="chrome_ver" example="98">%1$d</x:g></string>
-    <!-- Web browser -->
+
+    <!-- Веб-браузер -->
     <string name="web_gallery">Назад к последней странице галереи</string>
     <string name="web_home">Назад к галерее</string>
     <string name="web_back">Назад</string>
@@ -609,45 +634,37 @@
     <string name="bookmark_homepage">Домашняя страница</string>
     <string name="torrent_dl_fail">Не удалось начать стриминг: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Отсутствует разрешение на запись — невозможно использовать загрузчик</string>
-    <!-- Web browser (site specifics) -->
+
+    <!-- Веб-браузер (особенности сайтов) -->
     <string name="help_web_fakku_account">Hentoid не может работать с FAKKU без их аккаунта. Пожалуйста, создайте его или используйте существующий.</string>
     <string name="help_web_fakku_premium">Эта книга не может быть просмотрена с вашим аккаунтом FAKKU.</string>
     <string name="help_web_exh_account">Пожалуйста, создайте или используйте существующий аккаунт exHentai.</string>
     <string name="help_web_invalid_exh_credentials">Неверные данные, пожалуйста, повторите попытку входа</string>
     <string name="help_web_incomplete_exh_credentials">Авторизация не завершена, пожалуйста, повторите попытку входа. Если проблема сохраняется, попробуйте посетить сайт из другой страны или создайте новый аккаунт.</string>
+
     <!-- SearchActivity -->
     <string name="category_any">Любое</string>
     <string name="exclude">Исключить</string>
     <string name="search_category">Ищем <x:g id="search_category" example="язык">%s</x:g></string>
     <string name="search_prompt">Искать <x:g id="search_prompt">%s</x:g></string>
-    <!-- Used as a category on the search screen -->
+    <!-- Категории на экране поиска -->
     <string name="category_artist">Художник (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_tag">Тэг (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_character">Персонаж (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_series">Сеттинг (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_language">Язык (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_source">Источник (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
+    <!-- Винительный падеж (Искать ... (что?)) -->
     <string name="object_artist">художника</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_tag">тэг</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_character">персонажа</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_series">сеттинг</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_language">язык</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_source">источник</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_uploader">загрузчика</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_circle">круг</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_category">категорию</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_translator">переводчика</string>
-    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_publisher">издателя</string>
     <plurals name="search_button">
         <item quantity="one">Найден <x:g id="count" example="1">%s</x:g> результат</item>
@@ -655,9 +672,11 @@
         <item quantity="many">Найдено <x:g id="count" example="5">%s</x:g> результатов</item>
     </plurals>
     <string name="search_select_a_filter">Выберите фильтр</string>
-    <!-- DB migration & Maintenance -->
+
+    <!-- Миграция базы данных и обслуживание -->
     <string name="maintenance">Выполняется обслуживание</string>
-    <!-- Image viewer -->
+
+    <!-- Просмотрщик изображений -->
     <string name="no_images">Не удалось загрузить книгу: Не найдено ни одного изображения</string>
     <string name="loading_archive">Загрузка: <x:g id="number" example="1">%1$d</x:g> из <x:g id="total" example="42">%2$d</x:g></string>
     <string name="loading_image">Загрузка изображения: <x:g id="percentage" example="50%">%d%%</x:g></string>
@@ -733,16 +752,20 @@
     <string name="chapter_move_failed">Не удалось переместить главу</string>
     <string name="slideshow_start">Начало слайдшоу (задержка в <x:g id="time" example="0.5">%.1f</x:g> с)</string>
     <string name="slideshow_stop">Слайдшоу остановлено</string>
-    <!-- Changelog -->
+    <string name="ask_clear_chapters">Удалить все главы?</string>
+
+    <!-- Список изменений -->
     <string name="view_changelog">Что нового\?</string>
     <string name="view_changelog_flagged">Что нового\?*</string>
     <string name="changelog">Что нового\?</string>
     <string name="get_latest">Доступна новая версия (<x:g id="version" example="1.18.1">%1$s</x:g>)</string>
     <string name="update_success">Обновление завершено!</string>
     <string name="starting_download">Загрузка начата</string>
-    <!-- Edit drawer -->
+
+    <!-- Меню редактирования -->
     <string name="title_activity_drawer_edit">Меню редактирования</string>
-    <!-- Duplicate detector -->
+
+    <!-- Поиск дубликатов -->
     <string name="title_activity_duplicate_detector">Поиск дубликатов</string>
     <string name="duplicate_use_title">Название</string>
     <string name="duplicate_use_cover">Обложка</string>
@@ -788,7 +811,8 @@
     <string name="duplicate_empty_no_result">Дубликатов не обнаружено</string>
     <string name="duplicate_keep">Оставить</string>
     <string name="duplicate_delete">Удалить</string>
-    <!-- Duplicate dialog -->
+
+    <!-- Дубликаты -->
     <string name="duplicate_alert">Внимание: дубликат!</string>
     <string name="duplicate_alert_subtitle_book">Книга, которую вы собираетесь загрузить, может быть дубликатом книги, которая у вас уже есть.</string>
     <string name="duplicate_alert_subtitle_pages">Книга, страницы которой вы собираетесь загрузить, может быть не той, которая у вас есть.</string>
@@ -800,7 +824,8 @@
     <string name="duplicate_alert_download_book">Загрузить книгу</string>
     <string name="duplicate_alert_download_pages">Загрузить дополнительные страницы</string>
     <string name="duplicate_wait_index">Пожалуйста, подождите — идёт индексирование</string>
-    <!-- Generic delete & purge -->
+
+    <!-- Удаление и полная очистка -->
     <string name="notif_archive_title">Архивирование контента</string>
     <string name="notif_delete_title">Удаление контента</string>
     <string name="notif_delete_complete">Удаление завершено</string>
@@ -811,11 +836,13 @@
     </plurals>
     <string name="notif_delete_fail">Удаление не удалось</string>
     <string name="notif_delete_fail_details">Не удалось удалить по крайней мере одну книгу</string>
-    <!-- Startup -->
+
+    <!-- Запуск -->
     <string name="title_startup">Запуск</string>
     <string name="title_startup_progress">Запускается…</string>
     <string name="title_startup_complete">Запуск завершён</string>
-    <!-- Group names -->
+
+    <!-- Названия групп -->
     <string name="group_today">Сегодня</string>
     <string name="group_7">На неделе</string>
     <string name="group_30">За этот месяц</string>
@@ -823,11 +850,13 @@
     <string name="group_year">За последний год</string>
     <string name="group_long">Давно</string>
     <string name="group_no_group">Без группы</string>
-    <!-- Themes -->
+
+    <!-- Темы -->
     <string name="theme_light">Светлая</string>
     <string name="theme_deep_red">Тёмно-красная</string>
     <string name="theme_dark">Тёмная</string>
-    <!-- Book languages detected by the app -->
+
+    <!-- Языки книг -->
     <string name="lang_en">английский</string>
     <string name="lang_zh">китайский</string>
     <string name="lang_ja">японский</string>
@@ -845,7 +874,8 @@
     <string name="lang_hu">венгерский</string>
     <string name="lang_tr">турецкий</string>
     <string name="lang_cs">чешский</string>
-    <!-- Misc -->
+
+    <!-- Прочее -->
     <string name="select_file_manager">Выберите ваш файловый менеджер</string>
     <string name="default_permission">Стандартное разрешение</string>
     <string name="u_byte">б.</string>
