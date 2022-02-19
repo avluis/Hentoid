@@ -208,7 +208,8 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
                 if (coverContent != null) attachCover(coverContent.getCover());
             }
             List<GroupItem> items = item.group.items;
-            title.setText(String.format("%s%s", item.group.name, (null == items || items.isEmpty()) ? "" : " (" + items.size() + ")"));
+            String numberStr = (null == items || items.isEmpty()) ? ivFavourite.getContext().getString(R.string.empty) : items.size() + "";
+            title.setText(String.format("%s (%s)", item.group.name, numberStr));
 
             if (item.group.isFavourite()) {
                 ivFavourite.setImageResource(R.drawable.ic_fav_full);

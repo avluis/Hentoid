@@ -36,6 +36,7 @@
     <string name="service_running">Service is already running</string>
     <string name="open_folder">Open folder</string>
     <string name="_default">default</string>
+    <string name="empty">empty</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
