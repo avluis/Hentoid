@@ -1377,6 +1377,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             loadBookshelf(result);
         }
 
+        // Go back to groups view if there are no books to display (use case : remove the last books from the currently viewed group)
+        if (result.isEmpty() && Grouping.CUSTOM.equals(Preferences.getGroupingDisplay())) activity.get().goBackToGroups();
+
         newSearch = false;
         library = result;
     }
@@ -1555,7 +1558,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      * (in that case, LiveData can't do its job because of https://github.com/objectbox/objectbox-java/issues/141)
      */
     private void refreshIfNeeded() {
-        if (Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
+        if (Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()) || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
             viewModel.updateContentOrder();
     }
 
