@@ -298,10 +298,7 @@ public class QueueActivity extends BaseActivity {
                     Snackbar snackbar = Snackbar.make(tabLayout, message, BaseTransientBottomBar.LENGTH_LONG);
                     snackbar.show();
                 },
-                t -> {
-                    Timber.w(t);
-                    Snackbar.make(tabLayout, R.string.redownloaded_error, BaseTransientBottomBar.LENGTH_LONG).show();
-                });
+                Timber::i);
     }
 
     private void changeReviveUIVisibility(boolean visible) {

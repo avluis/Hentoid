@@ -36,6 +36,9 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     private var _mergedBinding: IncludeImportStepsBinding? = null
     private val binding get() = _binding!!
     private val mergedBinding get() = _mergedBinding!!
+
+    // True when that screen has been validated once
+    private var isDone = false
     private lateinit var importDisposable: Disposable
 
     private val pickFolder = registerForActivityResult(ImportHelper.PickFolderContract()) { res ->
@@ -61,6 +64,25 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         // We need to manually bind the merged view - it won't work at runtime with the main view alone
         _mergedBinding = IncludeImportStepsBinding.bind(binding.root)
         return binding.root
+    }
+
+    /**
+     * Reset the screen to its initial state
+     * useful when coming back from a later step to switch the selected folder
+     */
+    fun reset() {
+        if (!isDone) return
+        Preferences.setStorageUri("")
+
+        mergedBinding.importStep1Button.visibility = View.VISIBLE
+        mergedBinding.importStep1Folder.text = ""
+        mergedBinding.importStep1Check.visibility = View.GONE
+        mergedBinding.importStep2.visibility = View.GONE
+        mergedBinding.importStep2Check.visibility = View.GONE
+        mergedBinding.importStep3.visibility = View.GONE
+        mergedBinding.importStep3Check.visibility = View.GONE
+        mergedBinding.importStep4.visibility = View.GONE
+        mergedBinding.importStep4Check.visibility = View.GONE
     }
 
     override fun onDestroyView() {
@@ -256,5 +278,6 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         val parentActivity = requireActivity() as IntroActivity
         parentActivity.nextStep()
         binding.skipBtn.visibility = View.VISIBLE
+        isDone = true
     }
 }

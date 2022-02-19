@@ -1,6 +1,8 @@
 {
   "sites": {
     "HITOMI": {
+      "useMobileAgent": false,
+      "comment": "Hitomi needs a desktop agent to properly display gallery images on some devices",
       "useWebviewAgent": false,
       "requestsCapPerSecond": 2
     },
@@ -26,10 +28,6 @@
     "EXHENTAI": {
       "hasBackupURLs": true
     },
-    "FAKKU2": {
-      "hasImageProcessing": true,
-      "useWebviewAgent": false
-    },
     "MANHWA": {
       "hasCoverBasedPageUpdates": true,
       "useCloudflare": true
@@ -41,6 +39,10 @@
     "PIXIV": {
       "useWebviewAgent": false,
       "parallelDownloadCap": 3
+    },
+    "IMHENTAI": {
+      "requestsCapPerSecond": 2,
+      "parallelDownloadCap": 2
     }
   }
 }

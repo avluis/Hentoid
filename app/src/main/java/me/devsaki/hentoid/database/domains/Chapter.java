@@ -133,17 +133,18 @@ public class Chapter {
         if (o == null || getClass() != o.getClass()) return false;
         Chapter chapter = (Chapter) o;
         return getId() == chapter.getId() &&
-                Objects.equals(getOrder(), chapter.getOrder()) &&
-                Objects.equals(getUrl(), chapter.getUrl());
+                Objects.equals(getOrder(), chapter.getOrder())
+                && Objects.equals(getUrl(), chapter.getUrl())
+                && Objects.equals(getName(), chapter.getName());
     }
 
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getOrder(), getUrl());
+        return Objects.hash(getId(), getOrder(), getUrl(), getName());
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + order + "." + url).getBytes());
+        return Helper.hash64((id + "." + order + "." + url + "." + name).getBytes());
     }
 }

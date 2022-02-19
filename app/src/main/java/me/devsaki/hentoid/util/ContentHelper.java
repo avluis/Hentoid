@@ -373,14 +373,17 @@ public final class ContentHelper {
     }
 
     /**
-     * Remove the given Content from the queue, disk and the DB
+     * Remove the given Content
+     * - from the queue
+     * - from disk and the DB (optional)
      *
-     * @param context Context to be used
-     * @param dao     DAO to be used
-     * @param content Content to be removed
+     * @param context       Context to be used
+     * @param dao           DAO to be used
+     * @param content       Content to be removed
+     * @param deleteContent If true, the content itself is deleted from disk and DB
      * @throws ContentNotProcessedException in case an issue prevents the content from being actually removed
      */
-    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotProcessedException {
+    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content, boolean deleteContent) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
         // Check if the content is on top of the queue; if so, send a CANCEL event
@@ -394,7 +397,7 @@ public final class ContentHelper {
         }
 
         // Remove content itself
-        removeContent(context, dao, content);
+        if (deleteContent) removeContent(context, dao, content);
     }
 
     /**
@@ -968,12 +971,12 @@ public final class ContentHelper {
      * @param content Content to parse again from its online source
      * @return Content updated from its online source, or Optional.empty if something went wrong
      */
-    public static Optional<Content> reparseFromScratch(@NonNull final Content content) {
+    public static ImmutablePair<Content, Optional<Content>> reparseFromScratch(@NonNull final Content content) {
         try {
-            return reparseFromScratch(content, content.getGalleryUrl());
+            return new ImmutablePair<>(content, reparseFromScratch(content, content.getGalleryUrl()));
         } catch (IOException e) {
             Timber.w(e);
-            return Optional.empty();
+            return new ImmutablePair<>(content, Optional.empty());
         }
     }
 

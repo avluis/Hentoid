@@ -1,0 +1,786 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+<string name="app_intro">Üdvözöllek</string>
+<string name="yes">Igen</string>
+<string name="no">Nem</string>
+    <string name="ok" tools:ignore="MissingTranslation">OK</string>
+    <string name="on">Be</string>
+    <string name="off">Ki</string>
+    <string name="select_all">Összes kiválasztása</string>
+    <string name="select_none">Egyik sem</string>
+    <string name="goto_page">Tovább az oldalra...</string>
+    <string name="confirm">Elfogadás</string>
+    <string name="please_wait">Kérlek várj...</string>
+    <plurals name="book" tools:ignore="ImpliedQuantity">
+        <item quantity="one">könyv</item>
+        <item quantity="other">könyvek</item>
+    </plurals>
+    <plurals name="page" tools:ignore="ImpliedQuantity">
+        <item quantity="one">oldal</item>
+        <item quantity="other">oldalak</item>
+    </plurals>
+    <plurals name="file" tools:ignore="ImpliedQuantity">
+        <item quantity="one">fájl</item>
+        <item quantity="other">fájlok</item>
+    </plurals>
+    <string name="undo">Visszavonás</string>
+    <string name="pause">Megállítás</string>
+    <string name="stop">Leállítás</string>
+    <string name="resume">Folytatás</string>
+    <string name="cancel">Visszavonás</string>
+    <string name="cancel_all">Összes visszavonása</string>
+    <string name="menu_completed_single">Befejezve</string>
+    <string name="service_running">A szolgáltatás már fut</string>
+    <string name="open_folder">Mappa megnyitása</string>
+    
+
+    <string name="_default">alapértelmezett</string>
+    
+
+    <string name="title_activity_downloads">Könyvtár</string>
+    <string name="title_activity_queue">Várakozási sor</string>
+    <string name="title_activity_preferences">Beállítások</string>
+    <string name="title_activity_about">Névjegy</string>
+    <string name="title_activity_app_lock">Alkalmazászár</string>
+    <string name="title_activity_search">Haladó keresés</string>
+<string name="api29_migration_title">Hentoid v12\nFájlkezelői frissítés</string>
+    <string name="api29_migration_subtitle">Hentoid frissíti az Ön gyűjteményét.\Ehhez szükség van pár percre.</string>
+    <string name="api29_migration_location">Jelenlegi Hentoid mappa elérési útvonala\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
+    <string name="api29_migration_step1">Hentoid mappa</string>
+    <string name="api29_migration_step1_external">Külső mappa</string>
+    <string name="api29_migration_step1_select">Hentoid mappa kiválasztása</string>
+    <string name="api29_migration_step1_select_external">Külső mappa kiválasztása</string>
+    <string name="api29_migration_step2">Webhely mappáinak beolvasása</string>
+    <string name="api29_migration_step3_init">Könyvtár beolvasása...</string>
+    <string name="api29_migration_step3">Könyvtár beolvasása (<x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="7">%2$d</x:g>)</string>
+    <string name="api29_migration_step4_init">A várólista importálása...</string>
+    <string name="api29_migration_select_folder">Kérjük, válasszon egy már létező Hentoid mappát. A mappa helye megjelenik a képernyőn.</string>
+    <string name="api29_migration_allow_write">Kérjük, engedélyezze az írási jogosultságot</string>
+<string name="menu_search">Keresés</string>
+    <string name="menu_fav">Kedvencek szűrése</string>
+    <string name="menu_comp">Befejezettek szűrése</string>
+    <string name="menu_mark_fav">Kedvencek mutatása</string>
+    <string name="menu_group_new">Új csport</string>
+    <string name="menu_edit_order">Sorrend szerkesztése</string>
+    <string name="menu_edit_name">Név szerkesztése</string>
+    <string name="menu_edit_cancel">Módosítás elvetése</string>
+    <string name="menu_edit_warning_custom">Az új rendezés felülfogja írni az előzőt.</string>
+    <string name="menu_order">Könyvek rendezése</string>
+    <string name="menu_delete_single">Törlés</string>
+    <string name="menu_delete_multi">Elemek törlése</string>
+    <string name="menu_change_group">Csoporthoz hozzárendelés...</string>
+    <string name="menu_open_folder">Tartalmazó mappa megnyitása</string>
+    <string name="menu_redownload">Újratöltés</string>
+    <string name="menu_redownload_scratch">Újratöltés a nulláról</string>
+    <string name="menu_stream">Váltás streamingre</string>
+    <string name="menu_download_streamed">Letöltés</string>
+    <string name="menu_select_all">Összes kiválasztása</string>
+    <string name="menu_share">Megosztás</string>
+    <string name="menu_share_help">A könyv URL-címének és címének megosztása egy másik alkalmazással</string>
+    <string name="menu_share_title">Könyv URL</string>
+    <string name="menu_archive">Archívum</string>
+    <string name="menu_archive_help">Könyv becsomagolása ZIP fájl-ba</string>
+    <string name="search_hint">Cím, szerző, kategória vagy könyv ID</string>
+    <string name="send_to">Megosztás:</string>
+    <string name="open_settings">Beállítások megnyitása</string>
+    <string name="app_settings">Alkalmazás beállítások</string>
+    <string name="book_settings">Könyv beállítások</string>
+    <string name="permissions_lost">A fájljogosultságok elvesztek</string>
+    <string name="low_memory">Kevés a memória a készülékén!</string>
+    <string name="fix_permissions">Javítás</string>
+    <string name="view_queue">Várólista megtekintése</string>
+<string name="downloader_title">Letöltő</string>
+    <string name="queue_queue_tab">Folyamatban</string>
+    <string name="queue_errors_tab">Hibák</string>
+    <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
+        <item quantity="one">Töröljük a kijelölt elemet\?</item>
+        <item quantity="other">Töröljük a kijelölt elemeket\?</item>
+    </plurals>
+    <string name="invert_queue">Várakozási sor megfordítása</string>
+    <string name="redownload_all">Összes újbóli letöltése</string>
+    <string name="cancel_all_errors">Összes hibás visszavonása</string>
+    <string name="canceled">Visszavonva</string>
+    <string name="move_top">Mozgatás a legtetejére</string>
+    <string name="move_up">Mozgatás fölfelé</string>
+    <string name="move_down">Mozgatás lefelé</string>
+    <string name="move_bottom">Mozgatás az aljára</string>
+    <string name="queue_paused">Várakozási sor megállítva</string>
+    <string name="queue_preparing">Letöltés előkészítése</string>
+    <string name="queue_dl"><x:g id="book_name" example="Cool H-Manga">%s</x:g> letöltése</string>
+    <string name="err_stats_title">Hibastatisztikák</string>
+    <string name="err_stats_help">Részletes statisztikák megjelenítése az aktuális letöltési hibákról</string>
+    <string name="err_no_content">A könyv jelenleg még nem létezik</string>
+    <string name="confirm_cancel_all">Töröljük az egész várakozási sort\?</string>
+    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
+        <item quantity="other">Töröljünk <x:g id="count" example="42">%d</x:g> hibás könyvet\?</item>
+    </plurals>
+    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
+        <item quantity="other">Újra letöltsünk <x:g id="count" example="42">%d</x:g> elemet\?</item>
+    </plurals>
+    <string name="paused_no_internet">Nem lehet letölteni - Nincsen Internet</string>
+    <string name="paused_no_wifi">Nem lehet letölteni - Nincsen Wi-Fi</string>
+    <string name="paused_no_storage">Nem tudjuk letölteni - Kevés a szabad tárhely (<x:g id="size_left_bytes" example="0 bytes">%s</x:g> maradt hátra). Szabadítson fel helyet vagy változtassa meg a letöltési mappa helyét</string>
+    <string name="paused_no_dl_folder">Nem tudjuk letölteni - Nincsen kiválasztva letöltési mappa. Kérjük állítson be egyet az alkalmazás beállításában</string>
+    <string name="paused_dl_folder_not_found">Nem tudjuk letölteni - A letöltési mappa nem található. Kérjük állítson be egyet az alkalmazás beállításában</string>
+    <string name="paused_dl_folder_credentials">Nem tudjuk letölteni - Nincsen megfelelő jogosultsága a letöltési mappához. Kérjük állítson be egy újat az alkalmazás beállításában</string>
+    <string name="paused_dl_stale_online_credentials">Nem tudjuk letölteni - Elavult sütik vagy hitelesítő adatok. Kérjük a megjelenő értesítésben generálja újra</string>
+    <string name="step_init">Inicializálás</string>
+    <string name="step_prepare_img">Képek előkészítése</string>
+    <string name="step_fetch_img">Képek lekérése</string>
+    <string name="step_prepare_folder">Letöltési mappa előkészítése</string>
+    <string name="step_prepare_download">Letöltési lánc előkészítése</string>
+    <string name="step_save_queue">Várakozási sor elmentése</string>
+    <string name="step_start_download">Letöltési lánc elindítva!</string>
+    <string name="help_swipe_cancel">A letöltéseket megszakíthatja, ha balra húzza őket.</string>
+    <string name="redownloaded_error">Újra letöltés közben probléma történt - visszavonva</string>
+    <plurals name="redownloaded_scratch">
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> elem törölve az újra letöltéshez</item>
+        <item quantity="other"><x:g id="number" example="2">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> elemek törölve az újra letöltéshez</item>
+    </plurals>
+    <string name="queue_add_top">Hozzáadás a tetejére</string>
+    <string name="queue_add_bottom">Hozzáadás az aljára</string>
+    <string name="notification_user_action_title">Felhasználói műveletek</string>
+    <string name="notification_user_action_needed">Felhasználói beavatkozás szükséges</string>
+    <string name="notification_action_dl_revive">Koppintson ide a letöltés újbóli elindításához</string>
+    <string name="revive_wait">Kérjük, maradjon ezen a képernyőn, amíg a letöltés újraindul.</string>
+    <string name="queue_json_saved">A várakozási sor JSON fájl-ba elmentve</string>
+    <string name="queue_json_failed">A várakozási sort nem lehet elmenteni a JSON fájl-ba</string>
+    <string name="queue_content_size_estimate">hátravan <x:g id="size_mbytes" example="13.37">%.1f</x:g> MB</string>
+    <string name="queue_bottom_bar_processed"><x:g id="processed" example="3">%1$s</x:g> / <x:g id="total" example="7">%2$d</x:g> feldolgozva</string>
+    <plurals name="queue_bottom_bar_errors">
+        <item quantity="one">(<x:g id="errors" example="1">%d</x:g> hiba)</item>
+        <item quantity="other">(<x:g id="errors" example="2">%d</x:g> hiba)</item>
+    </plurals>
+    <string name="queue_bottom_bar_retry">újrapróbálkozás <x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g></string>
+    <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> KBps</string>
+    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB @ <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
+    <string name="download_notif_failed">A letöltés sikertelen</string>
+    <string name="download_notif_failed_details">Nem tudjuk letölteni <x:g id="book_name" example="Cool H-Manga">%1$s</x:g> könyvet: nem tudjuk létrehozni a mappát <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Kérjük, ellenőrizze a Hentoid mappáját, és próbálja meg újra a letöltést a \'!\' gomb segítségével.</string>
+<string name="work_series">Sorozat: <x:g id="series" example="original">%s</x:g></string>
+    <string name="work_artist">Szerző: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
+    <plurals name="work_pages_missing">
+        <item quantity="one">(<x:g id="number" example="1">%d</x:g> hiányzik)</item>
+        <item quantity="other">(<x:g id="number" example="2">%d</x:g> hiányzik)</item>
+    </plurals>
+    <string name="work_pages_queue">Oldalak: %1$s%2$s</string>
+    <plurals name="work_pages_library">
+        <item quantity="one"><x:g id="pages_count" example="1">%1$d</x:g> oldal / <x:g id="size_mb" example="3.88">%2$.1f</x:g> MB</item>
+        <item quantity="other"><x:g id="pages_count" example="2">%1$d</x:g> oldalak / <x:g id="size_mb" example="3.88">%2$.1f</x:g> MB</item>
+    </plurals>
+    <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> MB</string>
+    <string name="redownload_queue_progress">A kiválasztott könyvek újbóli letöltése</string>
+    <string name="errortype_parsing">Elemzés</string>
+    <string name="errortype_networking">Hálózati kapcsolat</string>
+    <string name="errortype_io">I/O</string>
+    <string name="errortype_captcha">Captcha</string>
+    <string name="errortype_img_processing">Képfeldolgozás</string>
+    <string name="errortype_site_limit">Letöltési/sávszélességi korlát elérve</string>
+    <string name="errortype_account">Nincs fiók vagy nem megfelelő hitelesítési adatokkal rendelkezik</string>
+    <string name="errortype_import">Nem található helyi fájl az importálás után</string>
+    <string name="errortype_wifi">Könyv kihagyva a Wi-Fi letöltési méretkorlátozás miatt</string>
+    <string name="errortype_blocked">A könyv tartalmaz egy blokkolt taget</string>
+    <string name="errortype_undefined">Definiálatlan</string>
+
+<string name="refresh_title">Könyvtár újratöltése</string>
+<string name="refresh_caption">A könyvtári adatok automatikus frissítése a fájlok és mappák újbóli beolvasásával.</string>
+    <string name="refresh_options">Tisztítási lehetőségek</string>
+    <string name="refresh_location_internal">Hentoid könyvtár</string>
+    <string name="refresh_location_external">Külső könyvtár</string>
+    <string name="refresh_options_rename">Az összes mappa átnevezése az aktuális elnevezési és maximális hosszúsági beállításoknak megfelelően</string>
+    <string name="refresh_options_remove">Távolítsa el a mappákat, ahol...</string>
+    <string name="refresh_options_remove_1">JSON fájl hiányzik (ajánlott)</string>
+    <string name="refresh_options_remove_2">Nincs letöltött kép</string>
+    <string name="refresh_options_remove_3">A JSON fájl nem olvasható (nem ajánlott)</string>
+    <string name="refresh_options_remove_or">vagy</string>
+<string name="delete_title">Törölje az összeset a kedvencek kivételével</string>
+    <string name="generic_progress" tools:ignore="MissingTranslation"><x:g id="number" example="7">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="books">%3$s</x:g></string>
+    <plurals name="book_progress">
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> könyv</item>
+        <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> könyvek</item>
+    </plurals>
+    <plurals name="group_progress">
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> csoport</item>
+        <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> csoportok</item>
+    </plurals>
+<string name="import_title">Metaadat importálása</string>
+    <string name="import_mode_add">Importált elemek hozzáadása</string>
+    <string name="import_mode_replace">Lecserélés az importált elemekre</string>
+    <string name="import_select_file">Importálandó fájl kiválasztása</string>
+    <string name="import_file_invalid">Érvénytelen <x:g id="filename" example="metadata.json">%s</x:g> fájl</string>
+    <plurals name="import_file_library">
+        <item quantity="one">Könyvtár importálása (<x:g id="number" example="1">%d</x:g> könyv)</item>
+        <item quantity="other">Könyvtár importálása (<x:g id="number" example="2">%d</x:g> könyv)</item>
+    </plurals>
+    <plurals name="import_file_queue">
+        <item quantity="one">Várakozási sor importálása (<x:g id="number" example="1">%d</x:g> könyv)</item>
+        <item quantity="other">Várakozási sor importálása (<x:g id="number" example="2">%d</x:g> könyv)</item>
+    </plurals>
+    <plurals name="import_file_groups">
+        <item quantity="one">Egyedi csoport importálása (<x:g id="number" example="1">%d</x:g> csoport)</item>
+        <item quantity="other">Egyedi csoportok importálása (<x:g id="number" example="2">%d</x:g> csoport)</item>
+    </plurals>
+    <plurals name="import_file_bookmarks">
+        <item quantity="one">Könyvjelző importálása (<x:g id="number" example="1">%d</x:g> elem)</item>
+        <item quantity="other">Könyvjelzők importálása (<x:g id="number" example="2">%d</x:g> elem)</item>
+    </plurals>
+    <string name="import_warning">Ha nem található olyan mappa, amelyben képek vannak, akkor az importált könyvek üres letöltésekként jelennek meg.\nEzeket le kell töltenie a várakozási sor segítségével &gt; Hibák.</string>
+    <string name="import_run">IMPORTÁLÁS ELINDÍTÁSA</string>
+    <plurals name="import_result_books">
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> könyv sikeresen importálva</item>
+        <item quantity="other"><x:g id="number" example="2">%d</x:g> könyv sikeresen importálva</item>
+    </plurals>
+    <plurals name="import_result_bookmarks">
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> könyvjelző sikeresen importálva</item>
+        <item quantity="other"><x:g id="number" example="2">%d</x:g> könyvjelző sikeresen importálva</item>
+    </plurals>
+    <string name="dialog_prompt">Mappa kiválasztása</string>
+<string name="export_title">Metaadat exportálása</string>
+    <plurals name="export_file_library">
+        <item quantity="one">Könyvtár exportálása (<x:g id="number" example="1">%d</x:g> könyv)</item>
+        <item quantity="other">Könyvtár exportálása (<x:g id="number" example="2">%d</x:g> könyv)</item>
+    </plurals>
+    <string name="export_favs_only">Csak a kedvencek exportálása</string>
+    <string name="export_groups">Saját csoportok exportálása</string>
+    <plurals name="export_file_queue">
+        <item quantity="one">Várakozási sor exportálása (<x:g id="number" example="1">%d</x:g> könyv)</item>
+        <item quantity="other">Várakozási sor exportálása (<x:g id="number" example="2">%d</x:g> könyv)</item>
+    </plurals>
+    <plurals name="export_file_bookmarks">
+        <item quantity="one">Könyvjelző exportálása (<x:g id="number" example="1">%d</x:g> elem)</item>
+        <item quantity="other">Könyjelzők exportálása (<x:g id="number" example="2">%d</x:g> elem)</item>
+    </plurals>
+    <string name="export_warning1">A metaadatok exportálása a könyvek JSON formátumú listájának létrehozására szolgál.\nNem arra szolgál, hogy a gyűjteményt a számítógépre vagy az SD-kártyára áthelyezze.\nKoppintson ide, hogy megtudja, hogyan kell ezt megtenni.</string>
+    <string name="export_warning2">A könyvek képek nélkül kerülnek exportálásra.\nÚjra le kell töltenie őket a visszaállításkor, ha a képek mappa nem található meg.</string>
+    
+
+    <string name="export_run">EXPORTÁLÁS ELINDÍTÁSA</string>
+    <string name="import_settings_title">Beállítások importálása</string>
+    <string name="import_settings_success">Importálva</string>
+<string name="open_app_settings">Alkalmazás beállításainak megnyitása</string>
+    <string name="permissioncomplaint_snackbar">A folytatáshoz szükségünk lenne néhány engedély elfogadásához</string>
+    <string name="permissioncomplaint_snackbar_manual">A folytatás előtt manuálisan meg kell adnia az engedélyeket.</string>
+    <string name="import_canceled">Az importálás megszakítva</string>
+    <string name="import_invalid">Érvénytelen mappa kiválasztva - kérjük, válasszon egy másikat</string>
+    <string name="import_app_folder">Az alkalmazás mappáját nem lehet külső mappaként kiválasztani - kérjük, válasszon egy másikat.</string>
+    <string name="import_download_folder">Ne válassza ki az eszköz letöltési mappáját - kérjük, hogy készítsen egy másik mappát vagy válasszon egy másikat.</string>
+    <string name="import_create_fail">Hentoid mappa létrehozása sikertelen - kérjük, válasszon másik helyet</string>
+    <string name="import_other">Az importálás megállt</string>
+    <string name="import_unexpected">Az importálás váratlanul megállt</string>
+    <string name="task_done">Feladat elvégezve - a naplófájlban megtekintheti a a részleteket</string>
+    <string name="content_not_found">Hiba - A tartalom nem található</string>
+    <string name="contents_detected">A Hentoid felismert ezen a helyen egy már létező könyvtárat.\Szeretné importálni azt\?</string>
+    <string name="library_imports_title">Importált könyvtárak</string>
+    <string name="starting_import">Importálás elkezdése</string>
+    <string name="importing_library">Könyvtár importálása</string>
+    <string name="importing_please_wait">Importálás, kérjük várjon...</string>
+    <string name="updating_please_wait">Frissítés, kérjük várjon...</string>
+    <string name="import_complete">Importálás befejezve</string>
+    <string name="import_complete_details">Importálás befejezve</string>
+    <plurals name="import_complete_details_success">
+        <item quantity="one"><x:g id="number" example="1">%s</x:g> sikeresen importálva</item>
+        <item quantity="other"><x:g id="number" example="2">%s</x:g> sikeresen importálva</item>
+    </plurals>
+    <plurals name="import_complete_details_failure">
+        <item quantity="one"><x:g id="number" example="1">%s</x:g> sikertelen</item>
+        <item quantity="other"><x:g id="number" example="2">%s</x:g> sikertelen</item>
+    </plurals>
+
+
+<string name="memory_title">Memória használat</string>
+    <string name="memory_total">Összesen: <x:g id="total" example="100 MB">%s</x:g></string>
+    <string name="memory_free">Szabad: <x:g id="total" example="50 MB">%s</x:g></string>
+    <string name="memory_hentoid_main">Hentoid (elsődleges): <x:g id="total" example="2 MB">%s</x:g></string>
+    <string name="memory_hentoid_ext">Hentoid (külső): <x:g id="total" example="3 MB">%s</x:g></string>
+    <string name="memory_database">Adatbázis: <x:g id="size_mb" example="1.52 MB">%1$s</x:g> (<x:g id="percentage" example="40%">%2$.1f%%</x:g> tele)</string>
+    <string name="memory_details">Részletek megtekintése (elsődleges)</string>
+    <string name="memory_details_source">Forrás</string>
+    <string name="memory_details_books">Könyvek</string>
+    <string name="memory_details_size">Méret</string>
+<string name="logs_title">Legfrissebb naplófájlok</string>
+    <string name="logs_open">Napló megnyitása</string>
+    <string name="read_log">Napló olvasása</string>
+    <string name="logs_share">Napló megosztása</string>
+    <string name="no_error_detected">Nem történt hiba.</string>
+    
+
+    
+
+    <string name="log_import_external">Külső könyvtár importálása/frissítése</string>
+    <string name="log_import">Elsődleges könyvtár importálása/frissítése</string>
+    <string name="log_cleanup">Elsődleges könyvtár takarítása</string>
+    <string name="log_api29_migration">Könyvtár migrálása a Hentoid v1.11-es veriójából</string>
+<string name="error_write_permission">Nincs jogosultsága írni abba a mappába, próbáljon meg egy másik mappát.</string>
+    <string name="error_creating_folder">Érvénytelen mappa</string>
+    <string name="error_open">Hiba a fájl megnyitásakor: nem találtunk ehhez a fájlhoz releváns alkalmazást</string>
+    <string name="error_browser">Hiba a link megnyitásakor: nem találtunk böngészőt az eszközén</string>
+    <string name="error_send">Hiba az archívum elküldésekor: nem találtunk az archívum elküldéséhez releváns alkalmazást</string>
+<string name="redownload_dialog_title">Megpróbáljuk újra letölteni\?</string>
+    <string name="redownload_dialog_message">Letöltött képek száma: <x:g id="total_imgs" example="10">%1$d</x:g>\nHibamentesen letöltött képek: <x:g id="fine_imgs" example="8">%2$d</x:g>\nHibásan letöltött képek: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
+    <string name="redownload_first_error">Első hiba: <x:g id="errortype">%s</x:g></string>
+    <string name="redownload_action">ÚJRATÖLTÉS</string>
+    <string name="redownload_open_log">Hibanapló megnyitása</string>
+    <string name="redownload_share_log">Hibanapló megosztása</string>
+    <string name="redownload_generating_log_file">Naplófájl generálása</string>
+<string name="resume_closed">Folytassuk onnan az olvasást, ahol abbahagyta\?</string>
+    <string name="open_drawer">Rajzoló megnyitása</string>
+    <string name="close_drawer">Rajzoló becsukása</string>
+    <string name="ask_filter_completed">Hogyan szeretné szűrni a kész könyveket\?</string>
+    <string name="filter_completed">Csak a készek megmutatása</string>
+    <string name="filter_not_completed">Csak a nem készek megmutatása</string>
+    <plurals name="ask_delete_multiple">
+        <item quantity="one">Töröljük a kiválasztott elemet\?</item>
+        <item quantity="other">Töröljünk <x:g id="count" example="2">%d</x:g> kiválasztott elemet\?</item>
+    </plurals>
+    <plurals name="ask_archive_multiple">
+        <item quantity="one">Archiváljuk a kiválasztott elemet\?</item>
+        <item quantity="other">Archiváljunk <x:g id="count" example="2">%d</x:g> kiválasztott elemet\?</item>
+    </plurals>
+    <string name="new_group_name">Neve az új csoportnak\?</string>
+    <string name="group_edit_name">Csoport nevének szerkesztése</string>
+    <string name="book_edit_title">Könyv címének szerkesztése</string>
+    <string name="delete_progress">Könyvek törlése</string>
+    <string name="purge_progress">Könyvek elégetése</string>
+    <string name="cancel_queue_progress">Várakozási sorban lévő elemek megszakítása</string>
+    <plurals name="delete_success_books">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> könyv</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> könyv</item>
+    </plurals>
+    <plurals name="delete_success_groups">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> csoport</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> csoport</item>
+    </plurals>
+    <string name="delete_success">Törölve</string>
+    <string name="archive_progress">Könyvek archiválása</string>
+    <string name="archive_progress_subtitle">Kész: <x:g id="count" example="42">%s</x:g></string>
+    <string name="notif_archive_complete">Archiválás befejezve</string>
+    <plurals name="notif_archive_complete_details">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> könyv sikeresen archiválva</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> könyv sikeresen archiválva</item>
+    </plurals>
+    <string name="notif_archive_fail">Archiválás sikertelen</string>
+    <string name="notif_archive_fail_details">Legalább egy könyv archiválása nem sikerült</string>
+    <plurals name="archive_success">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> könyv sikeresen archiválva a Letöltési mappádba</item>
+        <item quantity="other"> <x:g id="count" example="2">%d</x:g>Könyv sikeresen archiválva a Letöltési mappádba</item>
+    </plurals>
+    <string name="stream_canceled">Streaming megszakítva - a könyv nem elérhető online</string>
+    <string name="download_canceled">Letöltés megszakítva - a könyv nem elérhető online</string>
+    <string name="press_back_again">Nyomja meg kétszer (gyorsan) a vissza gombot a kilépéshez.</string>
+    <string name="queue_empty">Miért vagyok üres\?</string>
+    <string name="errors_empty">A letöltések között nem észleltünk hibát</string>
+    <string name="downloads_empty_library">Rajta, töltsön le valamit.</string>
+    <string name="downloads_loading">Betöltés~</string>
+    <string name="masterdata_no_result">Nincsen eredmény :(</string>
+    <string name="search_entry_not_found">Ez nincs itt, menj és töltsd le.</string>
+    <string name="packaging_content">Fájlok becsomagolása. \nKérjük, várjon...</string>
+    <string name="search_bookid_label">Keresés <x:g id="launchcode" example="4567">\'%s\'</x:g> ban/ben</string>
+    
+
+    <string name="book_launchcode">Indítási kód: <x:g id="launchcode" example="4567">%s</x:g></string>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <plurals name="number_of_items">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> tárgy</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> tárgy</item>
+    </plurals>
+    <plurals name="number_of_book_search_results">
+        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> eredmény</item>
+        <item quantity="other"><x:g id="number" example="2">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> eredmények</item>
+    </plurals>
+    <string name="reset">Az engedélyek visszaállítása megtörtént.\nAz alkalmazás visszaállítása.</string>
+    <string name="restart_needed">\"A változtatások alkalmazásra kerülnek a Hentoid újraindításakor\"</string>
+    <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">A kiválasztott könyv újbóli letöltése a nulláról\?</item>
+        <item quantity="other">A kiválasztott könyvek újbóli letöltése a nulláról\?</item>
+    </plurals>
+    <plurals name="download_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">A kiválasztott könyv letöltése?</item>
+        <item quantity="other">A kiválasztott könyvek letöltése\?</item>
+    </plurals>
+    <plurals name="stream_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">A kiválasztott könyv streamelése\?</item>
+        <item quantity="other">A kiválasztott könyvek streamelése\?</item>
+    </plurals>
+    <plurals name="redownload_external_content">
+        <item quantity="one">Ez a kiválasztott könyv már a külső könyvtárban van és nem lehet újra letölteni\nEz a könyv figyelmen kívül lesz hagyva.</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> kiválasztott könyv már a külső könyvtárban van és nem lehet újra letölteni\nEzek a könyvek figyelmen kívül lesznek hagyva.</item>
+    </plurals>
+    <plurals name="download_non_streamed_content">
+        <item quantity="one">Ez a kiválasztott könyv már le volt töltve\Ez a könyv figyelmen kívül lesz hagyva.</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> kiválasztott könyv már le volt töltve\n Ezek a könyvek figyelmen kívül lesznek hagyva.</item>
+    </plurals>
+    <plurals name="stream_external_streamed_content">
+        <item quantity="one">Egy kiválasztott könyv már beállítva streamelésre vagy már a külső könyvtárban van\nEz a könyv figyelmen kívül lesz hagyva</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> kiválasztott könyv már beállítva streamelésre vagy már a külső könyvtárban vannak\nEzek a kiválasztott könyvek figyelmen kívül lesznek hagyva,</item>
+    </plurals>
+    <string name="about_to_delete">A könyvet hamarosan töröljük...</string>
+    <string name="help_search">Keressen bármire: cím, szerző, címke\\és indítókód is!</string>
+    <string name="help_page_slider">Gyorsabban böngészhet az oldalszámok közötti csúsztatással</string>
+    <plurals name="items_selected">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> elem kiválasztva</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> elem kiválasztva</item>
+    </plurals>
+    <string name="folder_undefined">Hiba - a tartalmazó mappa nincsen definiálva</string>
+    <string name="malformed_url">Hiba - Hibás URL</string>
+    <string name="unsupported_site">Hiba - A weboldal nem támogatott</string>
+    <plurals name="external_not_removed">
+        <item quantity="one">Egy könyv a külső könyvtárból nem kerül törlésre</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> könyv a külső könyvtárból nem kerül törlésre</item>
+    </plurals>
+    <string name="group_make_cover">Beállítás mint, a csoport borítójaként</string>
+    <string name="group_make_cover_ask">Ennek a könyvnek a borítóképe beállítása a jelenlegi csoport borítóképére\?</string>
+    <string name="group_change">Egyéni csoporthoz hozzárendelés...</string>
+    <string name="group_existing">Létező csoport</string>
+    <string name="group_new">Új létrehozása</string>
+    <string name="group_new_name">Új egyedi csoport név</string>
+    <string name="group_remove">Lecsatlakoztatás a jelenlegi csoportból</string>
+    <string name="group_name_exists">Ez a csoport, ezzel a névvel már létezik.</string>
+    <string name="group_rename_forbidden">Ennek a csoportnak az átnevezése nem engedélyezett!</string>
+    <string name="group_name_empty">Üres csoportnév nem használható!</string>
+    <string name="group_not_selected">A csoport nincsen kiválasztva!</string>
+    <plurals name="group_delete_selected_group" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Csak a csoport törlése</item>
+        <item quantity="other">Csak a csoportok törlése</item>
+    </plurals>
+    <plurals name="group_delete_selected_book">
+        <item quantity="one"><x:g id="count" example="1">%d</x:g> könyv törlése</item>
+        <item quantity="other"><x:g id="count" example="2">%d</x:g> könyv törlése</item>
+    </plurals>
+    <plurals name="group_delete_selected_group_books" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Csoport és könyvek törlése</item>
+        <item quantity="other">Csoportok és könyvek törlése</item>
+    </plurals>
+    <string name="group_delete_nothing">Nincs mit törölni - ellenőrizze a \"Külső tartalom törlésének engedélyezése\" lehetőséget, hogy ez törölhető lehessen</string>
+<string name="merge_merge">Egyesítés</string>
+    <string name="merge_progress">Könyvek egyesítése...</string>
+    <string name="split_progress">Könyvek szétválasztása...</string>
+    <string name="merge_split">Szétválasztás</string>
+    <string name="new_title">Új cím</string>
+    <string name="merge_delete_after_merging">Ezen könyvek törlése egyesítés után</string>
+    <string name="split_select_help">Tartsa lenyomva és húzza a kijelöléshez\
+Minden kijelölt fejezet egy új könyvet hoz létre</string>
+    <string name="split_no_chapters">Jelenleg nem található fejezet :-(</string>
+    <string name="split_create_chapters">Fejezet(ek) létrehozása</string>
+    <string name="merge_success">Tartalom egyesítve</string>
+    <string name="split_success">Tartalom szétválasztva</string>
+<string name="groups_flat">Összes könyvek</string>
+    <string name="groups_by_artist">Szerző szerint</string>
+    <string name="groups_by_dl_date">Letöltési dátuma szerint</string>
+    <string name="groups_custom">Egyedi</string>
+    <string name="no_artist_group_name">[nincsen szerző]</string>
+<string name="sort_title">Cím</string>
+    <string name="sort_artist">Szerző</string>
+    <string name="sort_pages">Oldalak</string>
+    <string name="sort_dl_date">Letöltési dátum</string>
+    <string name="sort_read_date">Elolvasás napja</string>
+    <string name="sort_reads">Olvasta</string>
+    <string name="sort_size">Méret</string>
+    <string name="sort_reading_progress">Olvasás előrehaladása</string>
+    <string name="sort_random">Random</string>
+    <string name="sort_custom">Egyedi</string>
+    <string name="sort_invalid">-hibás-</string>
+    <string name="sort_books">Könyvek</string>
+<string name="drag_help">Elem megfogása</string>
+    <string name="external_help">A külső könyvtárhoz tartozik</string>
+    <string name="streamed_help">Streamelt könyv</string>
+    <string name="view_source_help">Forrás megtekintése a böngészőben</string>
+    <string name="fav_help">Kedvencként megjelölni/nem megjelölni</string>
+<string name="show_artists">Szerzők mutatása</string>
+    <string name="show_groups">Csoportok mutatása</string>
+    <string name="show_artists_and_groups">Szerzők &amp; csoportok mutatása</string>
+    <string name="launchcode_present">Már megvan ez a könyv. Szeretne más forrást keresni\?</string>
+<string name="updates_title">Frissítések</string>
+    <string name="checking_updates">Frissítések keresése</string>
+    <string name="update_available">Frissítés elérhető</string>
+    <string name="tap_to_download">Koppintson a letöltésért</string>
+    <string name="update_download_failed">Frissítés letöltése nem sikerült</string>
+    <string name="tap_to_retry">Koppintson az újrapróbálásért</string>
+    <string name="downloading_update">Frissítés letöltése</string>
+    <string name="update_ready">Készen állunk a frissítés telepítésére!</string>
+    <string name="tap_to_install">Koppintson a telepítéshez!</string>
+    <string name="error_dependency">Hiba a frissítési függőség elemzése során.\nKérlek, próbáld meg később újra.</string>
+    <string name="error_network_summary">Hálózati hiba történt, kérjük próbálja meg később.</string>
+    <string name="error_file">Nem található meg a frissítési fájl a szerveren</string>
+    <string name="update_check_no_update">Frissítés ellenőrző: Nincsen új frissítés.</string>
+<string name="alert_orange">Kérjük figyeljen arra, hogy a letöltések ezen az oldalon meghiúsulhatnak</string>
+    <string name="alert_red">A letöltési gomb jelenleg nem használható ezen az oldalon</string>
+    <string name="alert_grey">Ez az oldal jelenleg komoly stabilitási problémákkal küzd. Az alkalmazás nem tud mit kezdeni vele. Kérjük, próbálja meg később újra.</string>
+    <string name="alert_black">Ez az oldal jelenleg nem érhető el. Az alkalmazás nem tud mit kezdeni vele. Kérjük, próbálja meg később újra.</string>
+    <string name="alert_wip">A Hentoid fejlesztőcsapat dolgozik a javításon. Az alkalmazás értesítést fog küldeni, ha az új verzió elkészül.</string>
+    <string name="alert_fix_available">A javítás elérhető az alkalmazás legújabb verziójában. Kérjük, frissítse az alkalmazást.</string>
+<string name="app_lock_pin">Kérjük írja be a PIN-kódot</string>
+    <string name="app_lock_pin_prefs">Alkalmazászár PIN-kód</string>
+    <string name="app_lock_enable">Alkalmazászár bekapcsolva</string>
+    <string name="app_lock_disabled">Alkalmazászár kikapcsolva</string>
+    <string name="pin_reset">PIN-kód alaphelyzetbe állítása</string>
+    <string name="pin_reset_success">PIN-kód alaphelyzetbe állítása</string>
+    <string name="pin_ok">PIN RENDBEN!</string>
+    <string name="pin_current">Kérjük írja be a jelenlegi PIN-kódját</string>
+    <string name="pin_new">Kérjük írja be az új PIN-kódot</string>
+    <string name="pin_new_confirm">Kérjük írja be újra az új PIN-kódot</string>
+    <string name="pin_explanation">Az alkalmazászáró megakadályozza az alkalmazás jogosulatlan használatát, mivel az alkalmazás indulásakor 4 számjegyű PIN-kódot vár el.</string>
+    <string name="pin_lock_on_restore">Zár, amikor visszaállítva\
+háttérből</string>
+<string name="about1"><b>A Hentoid</b> az egy Doujinshi &amp; Hentai Manga archiváló alkalmazás. A Hentoid alkalmazást eredetileg <b>Cesar Arasaki</b> készítette.</string>
+    <string name="personalDataStatement1"><b>SZEMÉLYES ADATVÉDELMI NYILATKOZAT</b>\n\nA Hentoid egy ingyenes és nyílt forráskódú szoftver, amelyet a Hentoid Közösség tart fenn (csatlakozz hozzánk a Discordon - lásd a fenti linket).</string>
+    <string name="personalDataStatement2">A Hentoid a következő személyes adatokat gyűjti és küldi a Google-nak feldolgozásra a firebase könyvtáron keresztül:\
+ - Munkamenet azonosító\n - IP cím</string>
+    <string name="personalDataStatement3">A fent említett adatokat 180 napon belül eltávolítjuk a Firebase live és backup rendszeréből (további részletekért lásd https://firebase.google.com/support/privacy/)\n\nNem gyűjtünk más személyes adatokat és azt nem küldjük el más félnek.</string>
+    
+
+    
+
+    
+
+    <string name="about_licenses">Licencek megjelenítése</string>
+    <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
+    <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g id="chrome_ver" example="98">%1$d</x:g></string>
+<string name="web_gallery">Visszalépés a Galéria legutóbbi oldalára</string>
+    <string name="web_home">Visszalépés a könyvtárba</string>
+    <string name="web_back">Vissza</string>
+    <string name="web_forward">Előre</string>
+    <string name="web_bookmarks">Könyvjelzők</string>
+    <string name="web_refresh_stop">Frissítés/Állj</string>
+    <string name="web_copy_url">A jelenlegi URL cím vágólapra másolása</string>
+    <string name="web_download">Letöltés</string>
+    <string name="web_unparsable">Ez a tartalom nem tölthető le. Sajnálom~</string>
+    <string name="web_url_clipboard">Az URL a vágólapra másolva</string>
+    <string name="help_web_download">Elérted a könyv oldalát.\A letöltéshez kattintson az alsó sávon lévő letöltés ICON-ra!</string>
+    <string name="blocked_tag">A könyv blokkolt kategóriát tartalmaz (<x:g id="tag" example="bad">%s</x:g>)\Letöltés megszakítva</string>
+    <string name="blocked_tag_queued">A könyv blokkolt kategóriát tartalmaz (<x:g id="tag" example="bad">%s</x:g>)\Hibaként kezelve</string>
+    <string name="bookmark_current">A jelenlegi oldal elmentése könyvjelzőként</string>
+    <string name="unbookmark_current">A jelenlegi oldal könyvjelzője törlése</string>
+    <string name="bookmark_copy_url">Könyvjelző URL címének másolása a vágólapra</string>
+    <string name="bookmark_toggle_welcome">Könyvjelző URL üdvözlőoldalként történő kapcsolása</string>
+    <string name="alert_unwanted_tags">Ez a könyv, a jelenlegi kategóriákkal rendelkezik <x:g id="tag" example="bad">%s</x:g></string>
+    <string name="bookmark_homepage">Kezdőlap</string>
+    <string name="torrent_dl_fail">Torrent letöltése sikertelen: <x:g id="torrent">%s</x:g></string>
+    <string name="web_storage_permission_denied">Tárolási engedély megtagadva - a letöltő nem használható</string>
+<string name="help_web_fakku_account">Kérjük, hogy használjon vagy hozzon létre egy legális FAKKU fiókot.\nHentoid nem fog működni anélkül.</string>
+    <string name="help_web_fakku_premium">Ezt a könyvet a jelenlegi FAKKU hozzáféréseddel nem tudod megtekinteni.</string>
+    <string name="help_web_exh_account">Kérjük, használjon vagy hozzon létre egy exHentai fiókot.</string>
+    <string name="help_web_invalid_exh_credentials">Érvénytelen belépési adatok, kérjük jelentkezzen be újra</string>
+    <string name="help_web_incomplete_exh_credentials">Nem teljesek a belépési adatok, kérjük, jelentkezzen be újra. Ha a probléma továbbra is fennáll, fontolja meg, hogy más országból lépjen be a webhelyre, vagy hozzon létre új fiókot.</string>
+<string name="category_any">Minden</string>
+    <string name="exclude">Kizárás</string>
+    <string name="search_category"><x:g id="search_category" example="Language">%s</x:g> keresés</string>
+    <string name="search_prompt">Keresés <x:g id="search_prompt">%s</x:g></string>
+<string name="category_artist">Szerző (<x:g id="count" example="2">%1$d</x:g>)</string>
+    <string name="category_tag">Kategória (<x:g id="count" example="2">%1$d</x:g>)</string>
+    <string name="category_character">Karakter (<x:g id="count" example="2">%1$d</x:g>)</string>
+    <string name="category_series">Sorozat (<x:g id="count" example="2">%1$d</x:g>)</string>
+    <string name="category_language">Nyelv (<x:g id="count" example="2">%1$d</x:g>)</string>
+    <string name="category_source">Forrás (<x:g id="count" example="2">%1$d</x:g>)</string>
+<string name="object_artist">Szerző</string>
+<string name="object_tag">Kategória</string>
+<string name="object_character">Karakter</string>
+<string name="object_series">Sorozat</string>
+<string name="object_language">Nyelv</string>
+<string name="object_source">Forrás</string>
+<string name="object_uploader">Felöltő</string>
+<string name="object_circle">Kör</string>
+<string name="object_category">Kategória</string>
+<string name="object_translator">Fordító</string>
+<string name="object_publisher">Feltöltő</string>
+    <plurals name="search_button">
+        <item quantity="one"><x:g id="count" example="1">%s</x:g> találat</item>
+        <item quantity="other"><x:g id="count" example="2">%s</x:g> találat</item>
+    </plurals>
+    <string name="search_select_a_filter">Szűrő kiválasztása</string>
+<string name="maintenance">Karbantartás elvégzése</string>
+<string name="no_images">Nem sikerült betölteni a könyvet: Nem található kép</string>
+    <string name="loading_archive">Betöltés: <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
+    <string name="loading_image">Kép betöltése: <x:g id="percentage" example="50%">%d%%</x:g></string>
+    <string name="no_image">A kép nem található</string>
+    <string name="viewer_img_details"><x:g id="dimen_x" example="800">%1$d</x:g> x <x:g id="dimen_y" example="600">%2$d</x:g> (skála <x:g id="scale_percentage" example="100%">%3$.0f%%</x:g>) - <x:g id="file_size" example="544.40 KB">%4$s</x:g></string>
+    <string name="viewer_choose_direction">Válassza ki az olvasás irányát</string>
+    <string name="viewer_direction_ltr">Balról, jobbra</string>
+    <string name="viewer_direction_rtl">Jobbról, balra</string>
+    <string name="viewer_direction_ttb">Fentről, lefelé</string>
+    <string name="viewer_slideshow">Diavetítés</string>
+    <string name="viewer_slideshow_help">Diavetítési mód</string>
+    <string name="viewer_order_shuffle">Oldalak keverése</string>
+    <string name="viewer_order_123">Oldalak újrarendezése</string>
+    <string name="viewer_order_shuffle_help">Az oldalak keverésének váltása</string>
+    <string name="viewer_filter_favourite_off">Csak a kedvenc oldalak megjelenítése</string>
+    <string name="viewer_filter_favourite_on">Összes oldal mutatása</string>
+    <string name="viewer_filter_favourite_help">A kedvenc oldal megjelenítésének beállítása</string>
+    <string name="viewer_make_cover">Borítóképként beállítás</string>
+    <string name="viewer_page_menu">Oldalmenü</string>
+    <string name="viewer_page_menu_help">Oldal tulajdonságainak megnyitása</string>
+    <string name="viewer_delete_book">Könyv törlése</string>
+    <string name="copy_download_folder_success">Átmásolva a Letöltések mappába</string>
+    <string name="copy_download_folder_fail">Nem lehet írni a Letöltések mappába</string>
+    <string name="viewer_ask_delete_book">Töröljük ezt a könyvet\?</string>
+    <string name="viewer_ask_delete_page">Töröljük ezt az oldalt\?</string>
+    <string name="information_help">Információ</string>
+    <string name="previous_book_help">Előző könyv</string>
+    <string name="next_book_help">Következő könyv</string>
+    <string name="gallery_help">Könyvgaléria</string>
+    <string name="page_fav_help">Oldal megjelölése/megjelölésének megszüntetése kedvencként</string>
+    <string name="page_copy_help">Az oldal másolása az Android Letöltések mappájába</string>
+    <string name="page_share_help">Oldal megosztása egy másik alkalmazással</string>
+    <string name="page_delete_help">Oldal törlése</string>
+    <string-array name="page_delete_choices">
+        <item>Kérdezd meg legközelebb is</item>
+        <item>Ne kérdezze meg újra az aktuális könyvet</item>
+        <item>Ne kérdezze meg újra a jelenlegi megtekintési munkamenetet</item>
+    </string-array>
+    <string name="viewer_ask_cover">Szeretné beállítani ezt az oldalt a könyv borítójára?</string>
+    <string name="image_not_found">A kép nem található</string>
+    <string name="image_streaming">Kép streamelése...</string>
+    <string name="book_prefs">Könyv beállítások</string>
+    <string name="goto_app_prefs">Alkalmazás beállítások</string>
+    <string name="use_app_prefs">Alkalmazás beállításainak használata (<x:g id="app_default" example="Left to right">%s</x:g>)</string>
+    <string name="page_details">Az oldal részletei</string>
+    <string name="book_details">A könyv részletei</string>
+    <string name="page_favourite_toggle">Kedvenc oldalra váltás</string>
+    <string name="book_favourite_toggle">Kedvenc könyvre váltás</string>
+    <string name="page_favourite_success">Oldal kedvencnek jelölve</string>
+    <string name="page_unfavourite_success">Oldal kedvencekből kijelölés</string>
+    <string name="book_favourite_success">Könyv kedvencnek jelölve</string>
+    <string name="book_unfavourite_success">Könyv kedvencekből kijelölés</string>
+    <string name="viewer_fix">Letöltés hiba javítása</string>
+    <string name="viewer_reload_page">Oldal újratöltése</string>
+    <string name="viewer_reparse_book">A könyv újrarajzolása*</string>
+    <string name="menu_edit_chapters">Fejezetek szerkesztése</string>
+    <string name="gallery_title">Galéria</string>
+    <string name="gallery_chapter_prefix">Fejezet</string>
+    <string name="gallery_edit_chapters_help">Fejezet létrehozásához vagy törléséhez koppintson az első oldalára</string>
+    <string name="gallery_clear_chapters">Összes fejezet törlése</string>
+    <string name="gallery_add_remove_chapters">Fejezet hozzáadása &amp; törlése</string>
+    <string name="gallery_display_page"><x:g id="startMarker" example="&gt;">%1$s</x:g> Oldal <x:g id="number" example="2">%2$d</x:g><x:g id="isFavourite" example="♥">%3$s</x:g><x:g id="endMarker" example="&lt;">%4$s</x:g></string>
+    <string name="gallery_display_chapter">Fejezet <x:g id="number" example="2">%d</x:g></string>
+    <string name="gallery_no_chapter">Nincsen fejezet</string>
+    <string name="renaming_progress">Fájlok átnevezése</string>
+    <string name="content_removal_failed">Tartalom eltávolítása nem sikerült</string>
+    <string name="page_removal_failed">Oldal eltávolítása nem sikerült</string>
+    <string name="file_removal_failed">Fájl eltávolítása nem sikerült</string>
+    <string name="storage_permission_denied">Tárolási engedély megtagadva - nem lehet megnyitni a megjelenítőt</string>
+    <string name="book_list_loading_failed">A könyvlista betöltése sikertelen</string>
+    <string name="chapter_toggle_failed">Nem lehetett fejezetet betölteni a <x:g id="number" example="2">%d</x:g> oldalon</string>
+    <string name="chapters_remove_failed">A fejezet eltávolítása nem történt meg</string>
+    <string name="chapter_move_failed">A fejezet mozgatása nem történt meg</string>
+    <string name="slideshow_start">Diavetítés indítása (<x:g id="time" example="0.5">%.1f</x:g>s késleltetéssel)</string>
+    <string name="slideshow_stop">Diavetítés leállt</string>
+<string name="view_changelog">Változásnapló megtekintése</string>
+    <string name="view_changelog_flagged">Változásnapló megtekintése*</string>
+    <string name="changelog">Változásnapló</string>
+    <string name="get_latest">A legújabb verzió beszerzése (<x:g id="version" example="1.18.1">%1$s</x:g>)</string>
+    <string name="update_success">Sikeres frissítés!</string>
+    <string name="starting_download">Letöltése megkezdése</string>
+<string name="title_activity_drawer_edit">Menü szerkesztése</string>
+<string name="title_activity_duplicate_detector">Duplikátum detektor</string>
+    <string name="duplicate_use_title">Cím</string>
+    <string name="duplicate_use_cover">Borítókép</string>
+    <string name="duplicate_use_artist">Szerző</string>
+    <string name="duplicate_use_same_language">Csak ugyanazon a nyelven</string>
+    <string name="duplicate_ignore_chapters">Fejezetek és folytatások figyelmen kívül hagyása</string>
+    <string name="duplicate_use_sensitivity">Érzékenység</string>
+    <string-array name="duplicate_use_sensitivities">
+        <item>Engedélyezett</item>
+        <item>Szabványos</item>
+        <item>Szigorú</item>
+    </string-array>
+    <string name="duplicate_find_action">Duplikátumok keresése</string>
+    <string name="duplicate_index_covers">Borítóképek indexelése</string>
+    <string name="duplicate_find">Duplikált könyvek észlelése</string>
+    <plurals name="duplicate_count">
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplikátum</item>
+        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplikátumok</item>
+    </plurals>
+    <string name="duplicate_title_score">Cím: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_title_score_nodata">Cím: nincsen adat</string>
+    <string name="duplicate_cover_score">Borítókép: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_cover_score_nodata">Borítókép: nincsen adat</string>
+    <string name="duplicate_artist_score">Szerző: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_artist_score_nodata">Szerző: nincsen adat</string>
+    
+
+    <string name="apply_processing">Elfogadás (<x:g id="remaining" example="5">%d</x:g> választási lehetőséget)</string>
+    <string name="apply_final">Választások elmentése</string>
+    <string name="duplicate_notif_start">Duplikátum felderítés elkezdődött</string>
+    <string name="duplicate_notif_complete_title">Duplikátum felderítés befejeződött</string>
+    <plurals name="duplicate_notif_complete_desc">
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplikátum detektálva</item>
+        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplikátumok detektálva</item>
+    </plurals>
+    <string name="duplicate_empty_first_use">Semmi sem jeleníthető meg - Új duplikátum keresés futtatása</string>
+    <string name="duplicate_processing">Duplikátumok felderítése...</string>
+    <plurals name="duplicate_detail_title">
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplikátum</item>
+        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplikátumok</item>
+    </plurals>
+    <string name="duplicate_empty_no_result">Nem találtunk duplikátumokat</string>
+    <string name="duplicate_keep">Megtartani</string>
+    <string name="duplicate_delete">Törlés</string>
+<string name="duplicate_alert">Duplikátum figyelmeztetés!</string>
+    <string name="duplicate_alert_subtitle_book">A letölteni kívánt könyv lehet, hogy egy olyan könyv másolata, amely már a tulajdonában van.</string>
+    <string name="duplicate_alert_subtitle_pages">A könyv, amelyből oldalakat fog letölteni, nem feltétlenül az a könyv, amelyik már a tulajdonában van.</string>
+    <string name="duplicate_alert_in_library">Könyvtárban</string>
+    <string name="duplicate_alert_in_queue">Várakozási sorban van</string>
+    <string name="duplicate_alert_always_download">Mindig töltsd le, és ne kérdezd újra</string>
+    <string name="duplicate_alert_never_extra_on_dupes">Soha többé ne adjon hozzá oldalakat potenciális másodpéldányokból</string>
+    <string name="duplicate_alert_similarity">Hasonlóság: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_alert_download_book">Könyv letöltése</string>
+    <string name="duplicate_alert_download_pages">Extra oldalak letöltése</string>
+    <string name="duplicate_wait_index">Indexelés...</string>
+<string name="notif_archive_title">Tartalom archiválása</string>
+    <string name="notif_delete_title">Tartalom törlése</string>
+    <string name="notif_delete_complete">A törlés sikeres</string>
+    <plurals name="notif_delete_complete_details">
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> sikeresen törölve</item>
+        <item quantity="other"><x:g id="number" example="1">%d</x:g> sikeresen törölve</item>
+    </plurals>
+    <string name="notif_delete_fail">A törlés sikertelen</string>
+    <string name="notif_delete_fail_details">Legalább egy könyvet nem sikerült törölni</string>
+<string name="title_startup">Indítás</string>
+    <string name="title_startup_progress">Kezdjük...</string>
+    <string name="title_startup_complete">Indítás befejezve</string>
+<string name="group_today">Ma</string>
+    <string name="group_7">Az elmúlt 7napban</string>
+    <string name="group_30">Az elmúlt 30napban</string>
+    <string name="group_60">Az elmúlt 60 napban</string>
+    <string name="group_year">Tavaly</string>
+    <string name="group_long">Réges-régen</string>
+    <string name="group_no_group">Csoportosítatlan</string>
+<string name="theme_light">Világos</string>
+    <string name="theme_deep_red">Mély Vörös</string>
+    <string name="theme_dark">Sötét</string>
+<string name="lang_en">angol</string>
+    <string name="lang_zh">kínai</string>
+    <string name="lang_ja">japán</string>
+    <string name="lang_ko">koreai</string>
+    <string name="lang_es">spanyol</string>
+    <string name="lang_ru">orosz</string>
+    <string name="lang_pt">portugál</string>
+    <string name="lang_th">thaiföldi</string>
+    <string name="lang_fr">francia</string>
+    <string name="lang_vi">vietnámi</string>
+    <string name="lang_it">olasz</string>
+    <string name="lang_de">német</string>
+    <string name="lang_pl">lengyel</string>
+    <string name="lang_id">indonéziai</string>
+    <string name="lang_hu">magyar</string>
+    <string name="lang_tr">török</string>
+    <string name="lang_cs">cseh</string>
+<string name="select_file_manager">Válassza ki a fájlkezelőjét</string>
+    <string name="default_permission">Alapértelmezett jogosultság</string>
+    <string name="u_byte" tools:ignore="MissingTranslation">bájt/bájtok</string>
+    <string name="u_kilobyte" tools:ignore="MissingTranslation">KB</string>
+    <string name="u_megabyte" tools:ignore="MissingTranslation">MB</string>
+    <string name="u_gigabyte" tools:ignore="MissingTranslation">GB</string>
+    <string name="u_terabyte" tools:ignore="MissingTranslation">TB</string>
+    <string name="u_petabyte" tools:ignore="MissingTranslation">PB</string>
+    <string name="u_exabyte" tools:ignore="MissingTranslation">EB</string>
+</resources>

@@ -706,6 +706,7 @@
     <string name="chapter_move_failed">Couldn\'t move chapter</string>
     <string name="slideshow_start">Starting slideshow (delay <x:g id="time" example="0.5">%.1f</x:g>s)</string>
     <string name="slideshow_stop">Slideshow stopped</string>
+    <string name="ask_clear_chapters">Clear all chapters?</string>
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>
     <string name="view_changelog_flagged">View changelog*</string>
