@@ -41,7 +41,7 @@
       "parallelDownloadCap": 3
     },
     "IMHENTAI": {
-      "requestsCapPerSecond": 2,
+      "requestsCapPerSecond": 1,
       "parallelDownloadCap": 2
     }
   }
