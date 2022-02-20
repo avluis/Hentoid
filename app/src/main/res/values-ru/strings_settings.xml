@@ -51,6 +51,8 @@
     <string name="pref_delete_all_except_favs_summary">Очистить библиотеку и оставить лишь избранные книги\nВнимание: не относится к внешней библиотеке</string>
     <plurals name="pref_ask_delete_all_except_favs">
         <item quantity="one">Удалить <x:g id="count" example="1">%d</x:g> книгу\?</item>
+        <item quantity="few">Удалить <x:g id="count" example="2">%d</x:g> книги\?</item>
+        <item quantity="many">Удалить <x:g id="count" example="5">%d</x:g> книг\?</item>
     </plurals>
 <string name="pref_screen_browser">Браузер</string>
     <string name="pref_browser_behaviour">Поведение</string>
