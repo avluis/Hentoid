@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <plurals name="download_completed">
+    <plurals name="download_completed" tools:ignore="MissingQuantity">
         <item quantity="one" tools:ignore="ImpliedQuantity">Download completed</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> downloads completed</item>
     </plurals>
@@ -11,7 +11,7 @@
     <string name="download_error">Download completed, but had an error</string>
     <string name="unhandled_download_error">Unhandled error trying to read images URLs</string>
     <string name="downloading">Downloading</string>
-    <plurals name="add_to_queue">
+    <plurals name="add_to_queue" tools:ignore="MissingQuantity">
         <item quantity="one"><x:g example="1" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> item added to queue</item>
         <item quantity="other"><x:g example="2" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g> items added to queue</item>
     </plurals>
