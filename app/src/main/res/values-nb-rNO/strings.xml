@@ -201,7 +201,8 @@
         <item quantity="other">Eksporter kø (%d bøker)</item>
     </plurals>
     <plurals name="export_file_bookmarks">
-        <item quantity="other">Eksporter bokmerker (%d element)</item>
+        <item quantity="one">Eksporter bokmerke (%d element)</item>
+        <item quantity="other">Eksporter bokmerker (%d elementer)</item>
     </plurals>
 
     <string name="export_run">Kjør eksport</string>

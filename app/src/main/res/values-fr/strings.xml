@@ -13,10 +13,12 @@
     <plurals name="book" tools:ignore="ImpliedQuantity">
         <item quantity="one">livre</item>
         <item quantity="other">livres</item>
+        <item quantity="many">livres</item>
     </plurals>
     <plurals name="file" tools:ignore="ImpliedQuantity">
         <item quantity="one">fichier</item>
         <item quantity="other">fichiers</item>
+        <item quantity="many">fichiers</item>
     </plurals>
     <string name="undo">Annuler</string>
     <string name="stop">Arrêter</string>
@@ -86,6 +88,7 @@
     <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
         <item quantity="one">Êtes-vous sûr·e de vouloir annuler l\'élément sélectionné \?</item>
         <item quantity="other">Êtes-vous sûr·e de vouloir annuler les élément sélectionnés \?</item>
+        <item quantity="many">Êtes-vous sûr·e de vouloir annuler les élément sélectionnés \?</item>
     </plurals>
     <string name="invert_queue">Inverser la file d\'attente</string>
     <string name="redownload_all">Tout retélécharger</string>
@@ -105,6 +108,7 @@
     <plurals name="work_pages_library">
         <item quantity="one">%1$d page / %2$.1f Mo</item>
         <item quantity="other">%1$d pages / %2$.1f Mo</item>
+        <item quantity="many">%1$d pages / %2$.1f Mo</item>
     </plurals>
     <string name="library_metrics_storage">%.0f Mo</string>
 
@@ -130,10 +134,12 @@
     <plurals name="import_result_books">
         <item quantity="one">%d livre importé avec succès</item>
         <item quantity="other">%d livres importés avec succès</item>
+        <item quantity="many">%d livres importés avec succès</item>
     </plurals>
     <plurals name="import_result_bookmarks">
         <item quantity="one">%d marque-page importé</item>
         <item quantity="other">%d marque-pages importés</item>
+        <item quantity="many">%d marque-pages importés</item>
     </plurals>
     <string name="dialog_prompt">Autoriser l\'écriture</string>
 <string name="export_title">Exporter les métadonnées</string>
@@ -170,6 +176,7 @@
     <plurals name="number_of_items">
         <item quantity="one">%d élément</item>
         <item quantity="other">%d éléments</item>
+        <item quantity="many">%d éléments</item>
     </plurals>
 
 
