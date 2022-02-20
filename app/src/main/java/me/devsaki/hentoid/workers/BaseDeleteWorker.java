@@ -105,7 +105,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     private void removeContentList(long[] ids) {
         List<Content> contents = dao.selectContent(ids);
 
-        // Flag the content as "being deleted" (triggers blink animation)
+        // Flag the content as "being deleted" (triggers blink animation; lock operations)
         for (Content c : contents) flagContentDelete(c, true);
         // Delete them
         for (Content c : contents) {
@@ -136,8 +136,14 @@ public abstract class BaseDeleteWorker extends BaseWorker {
 
     private void purgeContentList(long[] ids) {
         List<Content> contents = dao.selectContent(ids);
+
+        // Flag the content as "being deleted" (triggers blink animation; lock operations)
+        for (Content c : contents) flagContentDelete(c, true);
+
+        // Purge them
         for (Content c : contents) {
             purgeContent(c);
+            flagContentDelete(c, false);
             if (isStopped()) break;
         }
     }

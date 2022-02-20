@@ -414,6 +414,23 @@ public class ContentDownloadWorker extends BaseWorker {
         HentoidApp.trackDownloadEvent("Added");
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
 
+
+        // Wait until the end of purge if the content is being purged (e.g. redownload from scratch)
+        boolean isBeingDeleted = content.isBeingDeleted();
+        if (isBeingDeleted)
+            EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.WAIT_PURGE));
+        while (content.isBeingDeleted()) {
+            Timber.d("Waiting for purge to complete");
+            content = dao.selectContent(content.getId());
+            if (null == content)
+                return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
+            Helper.pause(1000);
+            if (downloadInterrupted.get()) break;
+        }
+        if (isBeingDeleted && !downloadInterrupted.get())
+            Timber.d("Purge completed; resuming download");
+
+
         // == DOWNLOAD PHASE ==
 
         EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_DOWNLOAD));

@@ -578,6 +578,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 return R.string.step_prepare_download;
             case DownloadEvent.Step.SAVE_QUEUE:
                 return R.string.step_save_queue;
+            case DownloadEvent.Step.WAIT_PURGE:
+                return R.string.step_wait_purge;
             case DownloadEvent.Step.START_DOWNLOAD:
                 return R.string.step_start_download;
             case DownloadEvent.Step.NONE:

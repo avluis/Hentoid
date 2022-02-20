@@ -41,7 +41,7 @@ public class DownloadEvent {
         int STALE_CREDENTIALS = 6;
     }
 
-    @IntDef({Step.NONE, Step.INIT, Step.PROCESS_IMG, Step.FETCH_IMG, Step.PREPARE_FOLDER, Step.PREPARE_DOWNLOAD, Step.SAVE_QUEUE, Step.START_DOWNLOAD})
+    @IntDef({Step.NONE, Step.INIT, Step.PROCESS_IMG, Step.FETCH_IMG, Step.PREPARE_FOLDER, Step.PREPARE_DOWNLOAD, Step.SAVE_QUEUE, Step.WAIT_PURGE, Step.START_DOWNLOAD})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Step {
         int NONE = -1;
@@ -51,7 +51,8 @@ public class DownloadEvent {
         int PREPARE_FOLDER = 3;
         int PREPARE_DOWNLOAD = 4;
         int SAVE_QUEUE = 5;
-        int START_DOWNLOAD = 6;
+        int WAIT_PURGE = 6;
+        int START_DOWNLOAD = 7;
     }
 
     public final @Type

@@ -50,14 +50,14 @@
     <!-- API29 migration / library refresh screen -->
     <string name="api29_migration_title">Hentoid v12\nFile management update</string>
     <string name="api29_migration_subtitle">Hentoid is updating your collection.\nIt may require a few minutes.</string>
-    <string name="api29_migration_location">Current Hentoid folder location\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
+    <string name="api29_migration_location">Current Hentoid folder location\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
     <string name="api29_migration_step1">Hentoid folder</string>
     <string name="api29_migration_step1_external">External folder</string>
     <string name="api29_migration_step1_select">Select Hentoid folder</string>
     <string name="api29_migration_step1_select_external">Select external folder</string>
     <string name="api29_migration_step2">Scan site folders</string>
     <string name="api29_migration_step3_init">Scanning library…</string>
-    <string name="api29_migration_step3">Scan library (<x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="7">%2$d</x:g>)</string>
+    <string name="api29_migration_step3">Scan library (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
     <string name="api29_migration_step4_init">Importing queue…</string>
     <string name="api29_migration_select_folder">Please select an existing Hentoid folder. Its location is displayed on screen.</string>
     <string name="api29_migration_allow_write">Please allow write permission</string>
@@ -115,20 +115,20 @@
     <string name="move_bottom">Move to bottom</string>
     <string name="queue_paused">Queue paused</string>
     <string name="queue_preparing">Preparing download</string>
-    <string name="queue_dl">Downloading <x:g id="book_name" example="Cool H-Manga">%s</x:g></string>
+    <string name="queue_dl">Downloading <x:g example="Cool H-Manga" id="book_name">%s</x:g></string>
     <string name="err_stats_title">Error stats</string>
     <string name="err_stats_help">Show detailed stats about current download errors</string>
     <string name="err_no_content">Book does not exist yet</string>
     <string name="confirm_cancel_all">Cancel the whole queue\?</string>
     <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
-        <item quantity="other">Cancel all <x:g id="count" example="42">%d</x:g> books with errors\?</item>
+        <item quantity="other">Cancel all <x:g example="42" id="count">%d</x:g> books with errors\?</item>
     </plurals>
     <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
-        <item quantity="other">Redownload <x:g id="count" example="42">%d</x:g> items\?</item>
+        <item quantity="other">Redownload <x:g example="42" id="count">%d</x:g> items\?</item>
     </plurals>
     <string name="paused_no_internet">Cannot download - No Internet</string>
     <string name="paused_no_wifi">Cannot download - No Wi-Fi</string>
-    <string name="paused_no_storage">Cannot download - Low on storage (<x:g id="size_left_bytes" example="0 bytes">%s</x:g> left). Free space or change download folder location</string>
+    <string name="paused_no_storage">Cannot download - Low on storage (<x:g example="0 bytes" id="size_left_bytes">%s</x:g> left). Free space or change download folder location</string>
     <string name="paused_no_dl_folder">Cannot download - No download folder. Use app settings to select one</string>
     <string name="paused_dl_folder_not_found">Cannot download - Download folder not found. Use app settings to select one</string>
     <string name="paused_dl_folder_credentials">Cannot download - Insufficient credentials on download folder. Use app settings to reselect it</string>
@@ -139,12 +139,13 @@
     <string name="step_prepare_folder">Preparing download folder</string>
     <string name="step_prepare_download">Preparing download chain</string>
     <string name="step_save_queue">Saving queue</string>
+    <string name="step_wait_purge">Waiting for purge to complete</string>
     <string name="step_start_download">Download chain started!</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <plurals name="redownloaded_scratch">
-        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> item cleared for redownloading</item>
-        <item quantity="other"><x:g id="number" example="2">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> items cleared for redownloading</item>
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> item cleared for redownloading</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> items cleared for redownloading</item>
     </plurals>
     <string name="queue_add_top">Add on top</string>
     <string name="queue_add_bottom">Add to bottom</string>
@@ -154,31 +155,31 @@
     <string name="revive_wait">Please stay on this screen while your download is being revived</string>
     <string name="queue_json_saved">JSON of the queue saved</string>
     <string name="queue_json_failed">Could not save JSON of the queue</string>
-    <string name="queue_content_size_estimate">estimated <x:g id="size_mbytes" example="13.37">%.1f</x:g> MB</string>
-    <string name="queue_bottom_bar_processed"><x:g id="processed" example="3">%1$s</x:g>/<x:g id="total" example="7">%2$d</x:g> processed</string>
+    <string name="queue_content_size_estimate">estimated <x:g example="13.37" id="size_mbytes">%.1f</x:g> MB</string>
+    <string name="queue_bottom_bar_processed"><x:g example="3" id="processed">%1$s</x:g>/<x:g example="7" id="total">%2$d</x:g> processed</string>
     <plurals name="queue_bottom_bar_errors">
-        <item quantity="one">(<x:g id="errors" example="1">%d</x:g> error)</item>
-        <item quantity="other">(<x:g id="errors" example="2">%d</x:g> errors)</item>
+        <item quantity="one">(<x:g example="1" id="errors">%d</x:g> error)</item>
+        <item quantity="other">(<x:g example="2" id="errors">%d</x:g> errors)</item>
     </plurals>
-    <string name="queue_bottom_bar_retry">retry <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
-    <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> KBps</string>
-    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB @ <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
+    <string name="queue_bottom_bar_retry">retry <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
+    <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
+    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Download failed</string>
-    <string name="download_notif_failed_details">Cannot download <x:g id="book_name" example="Cool H-Manga">%1$s</x:g>: unable to create folder <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Please check your Hentoid folder and retry downloading using the \'!\' button.</string>
+    <string name="download_notif_failed_details">Cannot download <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: unable to create folder <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Please check your Hentoid folder and retry downloading using the \'!\' button.</string>
 
     <!-- TextViews -->
-    <string name="work_series">Series: <x:g id="series" example="original">%s</x:g></string>
-    <string name="work_artist">Artist: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
+    <string name="work_series">Series: <x:g example="original" id="series">%s</x:g></string>
+    <string name="work_artist">Artist: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>
     <plurals name="work_pages_missing">
-        <item quantity="one">(<x:g id="number" example="1">%d</x:g> missing)</item>
-        <item quantity="other">(<x:g id="number" example="2">%d</x:g> missing)</item>
+        <item quantity="one">(<x:g example="1" id="number">%d</x:g> missing)</item>
+        <item quantity="other">(<x:g example="2" id="number">%d</x:g> missing)</item>
     </plurals>
     <string name="work_pages_queue">Pages: %1$s%2$s</string>
     <plurals name="work_pages_library">
-        <item quantity="one"><x:g id="pages_count" example="1">%1$d</x:g> page / <x:g id="size_mb" example="3.88">%2$.1f</x:g> MB</item>
-        <item quantity="other"><x:g id="pages_count" example="2">%1$d</x:g> pages / <x:g id="size_mb" example="3.88">%2$.1f</x:g> MB</item>
+        <item quantity="one"><x:g example="1" id="pages_count">%1$d</x:g> page / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
+        <item quantity="other"><x:g example="2" id="pages_count">%1$d</x:g> pages / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
     </plurals>
-    <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> MB</string>
+    <string name="library_metrics_storage"><x:g example="3.88" id="size_mb">%.0f</x:g> MB</string>
     <string name="redownload_queue_progress">Redownloading selected books</string>
     <string name="errortype_parsing">Parsing</string>
     <string name="errortype_networking">Networking</string>
@@ -207,14 +208,14 @@
 
     <!-- Delete all except favs -->
     <string name="delete_title">Delete all except favourites</string>
-    <string name="generic_progress" tools:ignore="MissingTranslation"><x:g id="number" example="7">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="books">%3$s</x:g></string>
+    <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>
     <plurals name="book_progress">
-        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> book</item>
-        <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> books</item>
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> book</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> books</item>
     </plurals>
     <plurals name="group_progress">
-        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> group</item>
-        <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> groups</item>
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> group</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> groups</item>
     </plurals>
 
     <!-- Import metadata -->
@@ -222,50 +223,50 @@
     <string name="import_mode_add">Add imported items</string>
     <string name="import_mode_replace">Replace with imported items</string>
     <string name="import_select_file">Select file to import</string>
-    <string name="import_file_invalid">File <x:g id="filename" example="metadata.json">%s</x:g> is invalid</string>
+    <string name="import_file_invalid">File <x:g example="metadata.json" id="filename">%s</x:g> is invalid</string>
     <plurals name="import_file_library">
-        <item quantity="one">Import library (<x:g id="number" example="1">%d</x:g> book)</item>
-        <item quantity="other">Import library (<x:g id="number" example="2">%d</x:g> books)</item>
+        <item quantity="one">Import library (<x:g example="1" id="number">%d</x:g> book)</item>
+        <item quantity="other">Import library (<x:g example="2" id="number">%d</x:g> books)</item>
     </plurals>
     <plurals name="import_file_queue">
-        <item quantity="one">Import queue (<x:g id="number" example="1">%d</x:g> book)</item>
-        <item quantity="other">Import queue (<x:g id="number" example="2">%d</x:g> books)</item>
+        <item quantity="one">Import queue (<x:g example="1" id="number">%d</x:g> book)</item>
+        <item quantity="other">Import queue (<x:g example="2" id="number">%d</x:g> books)</item>
     </plurals>
     <plurals name="import_file_groups">
-        <item quantity="one">Import custom group (<x:g id="number" example="1">%d</x:g> group)</item>
-        <item quantity="other">Import custom groups (<x:g id="number" example="2">%d</x:g> groups)</item>
+        <item quantity="one">Import custom group (<x:g example="1" id="number">%d</x:g> group)</item>
+        <item quantity="other">Import custom groups (<x:g example="2" id="number">%d</x:g> groups)</item>
     </plurals>
     <plurals name="import_file_bookmarks">
-        <item quantity="one">Import bookmark (<x:g id="number" example="1">%d</x:g> item)</item>
-        <item quantity="other">Import bookmarks (<x:g id="number" example="2">%d</x:g> items)</item>
+        <item quantity="one">Import bookmark (<x:g example="1" id="number">%d</x:g> item)</item>
+        <item quantity="other">Import bookmarks (<x:g example="2" id="number">%d</x:g> items)</item>
     </plurals>
     <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue &gt; Errors.</string>
     <string name="import_run">RUN IMPORT</string>
     <plurals name="import_result_books">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> book imported successfully</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> books imported successfully</item>
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> book imported successfully</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> books imported successfully</item>
     </plurals>
     <plurals name="import_result_bookmarks">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> bookmark imported successfully</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> bookmarks imported successfully</item>
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> bookmark imported successfully</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> bookmarks imported successfully</item>
     </plurals>
     <string name="dialog_prompt">Choose a Folder</string>
 
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>
     <plurals name="export_file_library">
-        <item quantity="one">Export library (<x:g id="number" example="1">%d</x:g> book)</item>
-        <item quantity="other">Export library (<x:g id="number" example="2">%d</x:g> books)</item>
+        <item quantity="one">Export library (<x:g example="1" id="number">%d</x:g> book)</item>
+        <item quantity="other">Export library (<x:g example="2" id="number">%d</x:g> books)</item>
     </plurals>
     <string name="export_favs_only">Only export favourites</string>
     <string name="export_groups">Export custom groups</string>
     <plurals name="export_file_queue">
-        <item quantity="one">Export queue (<x:g id="number" example="1">%d</x:g> book)</item>
-        <item quantity="other">Export queue (<x:g id="number" example="2">%d</x:g> books)</item>
+        <item quantity="one">Export queue (<x:g example="1" id="number">%d</x:g> book)</item>
+        <item quantity="other">Export queue (<x:g example="2" id="number">%d</x:g> books)</item>
     </plurals>
     <plurals name="export_file_bookmarks">
-        <item quantity="one">Export bookmark (<x:g id="number" example="1">%d</x:g> item)</item>
-        <item quantity="other">Export bookmarks (<x:g id="number" example="2">%d</x:g> items)</item>
+        <item quantity="one">Export bookmark (<x:g example="1" id="number">%d</x:g> item)</item>
+        <item quantity="other">Export bookmarks (<x:g example="2" id="number">%d</x:g> items)</item>
     </plurals>
     <string name="export_warning1">Exporting metadata is meant to create a list of your books in JSON format.\nIt is not meant for moving your collection to your PC or your SD card.\nTap here to learn how to do that.</string>
     <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
@@ -295,21 +296,21 @@
     <string name="import_complete">Import complete</string>
     <string name="import_complete_details">Import complete</string>
     <plurals name="import_complete_details_success">
-        <item quantity="one"><x:g id="number" example="1">%s</x:g> imported successfully</item>
-        <item quantity="other"><x:g id="number" example="2">%s</x:g> imported successfully</item>
+        <item quantity="one"><x:g example="1" id="number">%s</x:g> imported successfully</item>
+        <item quantity="other"><x:g example="2" id="number">%s</x:g> imported successfully</item>
     </plurals>
     <plurals name="import_complete_details_failure">
-        <item quantity="one"><x:g id="number" example="1">%s</x:g> failed</item>
-        <item quantity="other"><x:g id="number" example="2">%s</x:g> failed</item>
+        <item quantity="one"><x:g example="1" id="number">%s</x:g> failed</item>
+        <item quantity="other"><x:g example="2" id="number">%s</x:g> failed</item>
     </plurals>
 
     <!-- Memory usage -->
     <string name="memory_title">Memory usage</string>
-    <string name="memory_total">Total: <x:g id="total" example="100 MB">%s</x:g></string>
-    <string name="memory_free">Free: <x:g id="total" example="50 MB">%s</x:g></string>
-    <string name="memory_hentoid_main">Hentoid (primary): <x:g id="total" example="2 MB">%s</x:g></string>
-    <string name="memory_hentoid_ext">Hentoid (external): <x:g id="total" example="3 MB">%s</x:g></string>
-    <string name="memory_database">Database: <x:g id="size_mb" example="1.52 MB">%1$s</x:g> (<x:g id="percentage" example="40%">%2$.1f%%</x:g> full)</string>
+    <string name="memory_total">Total: <x:g example="100 MB" id="total">%s</x:g></string>
+    <string name="memory_free">Free: <x:g example="50 MB" id="total">%s</x:g></string>
+    <string name="memory_hentoid_main">Hentoid (primary): <x:g example="2 MB" id="total">%s</x:g></string>
+    <string name="memory_hentoid_ext">Hentoid (external): <x:g example="3 MB" id="total">%s</x:g></string>
+    <string name="memory_database">Database: <x:g example="1.52 MB" id="size_mb">%1$s</x:g> (<x:g example="40%" id="percentage">%2$.1f%%</x:g> full)</string>
     <string name="memory_details">View details (primary)</string>
     <string name="memory_details_source">Source</string>
     <string name="memory_details_books">Books</string>
@@ -335,7 +336,7 @@
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again\?</string>
-    <string name="redownload_dialog_message">Total images in download: <x:g id="total_imgs" example="10">%1$d</x:g>\nImages without errors: <x:g id="fine_imgs" example="8">%2$d</x:g>\nImages with errors: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
+    <string name="redownload_dialog_message">Total images in download: <x:g example="10" id="total_imgs">%1$d</x:g>\nImages without errors: <x:g example="8" id="fine_imgs">%2$d</x:g>\nImages with errors: <x:g example="2" id="failed_imgs">%3$d</x:g></string>
     <string name="redownload_first_error">First error: <x:g id="errortype">%s</x:g></string>
     <string name="redownload_action">REDOWNLOAD</string>
     <string name="redownload_open_log">Open error log</string>
@@ -351,11 +352,11 @@
     <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Delete the selected item\?</item>
-        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> selected items\?</item>
+        <item quantity="other">Delete <x:g example="2" id="count">%d</x:g> selected items\?</item>
     </plurals>
     <plurals name="ask_archive_multiple">
         <item quantity="one">Archive the selected item\?</item>
-        <item quantity="other">Archive <x:g id="count" example="2">%d</x:g> selected items\?</item>
+        <item quantity="other">Archive <x:g example="2" id="count">%d</x:g> selected items\?</item>
     </plurals>
     <string name="new_group_name">Name of the new group\?</string>
     <string name="group_edit_name">Edit group name</string>
@@ -364,26 +365,26 @@
     <string name="purge_progress">Purging books</string>
     <string name="cancel_queue_progress">Canceling queue items</string>
     <plurals name="delete_success_books">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> book</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> books</item>
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> book</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> books</item>
     </plurals>
     <plurals name="delete_success_groups">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> group</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> groups</item>
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> group</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> groups</item>
     </plurals>
     <string name="delete_success">Deleted</string>
     <string name="archive_progress">Archiving books</string>
-    <string name="archive_progress_subtitle">Done: <x:g id="count" example="42">%s</x:g></string>
+    <string name="archive_progress_subtitle">Done: <x:g example="42" id="count">%s</x:g></string>
     <string name="notif_archive_complete">Archival complete</string>
     <plurals name="notif_archive_complete_details">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> book archived successfully</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> books archived successfully</item>
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> book archived successfully</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> books archived successfully</item>
     </plurals>
     <string name="notif_archive_fail">Archival failed</string>
     <string name="notif_archive_fail_details">At least one book failed to be archived</string>
     <plurals name="archive_success">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> book archived in your Download folder</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> books archived in your Download folder</item>
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> book archived in your Download folder</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> books archived in your Download folder</item>
     </plurals>
     <string name="stream_canceled">Streaming canceled - book unavailable online</string>
     <string name="download_canceled">Download canceled - book unavailable online</string>
@@ -395,15 +396,15 @@
     <string name="masterdata_no_result">No results :(</string>
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
-    <string name="search_bookid_label">Search <x:g id="launchcode" example="4567">\'%s\'</x:g> in…</string>
-    <string name="book_launchcode">Launch code: <x:g id="launchcode" example="4567">%s</x:g></string>
+    <string name="search_bookid_label">Search <x:g example="4567" id="launchcode">\'%s\'</x:g> in…</string>
+    <string name="book_launchcode">Launch code: <x:g example="4567" id="launchcode">%s</x:g></string>
     <plurals name="number_of_items">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> item</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> items</item>
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> item</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> items</item>
     </plurals>
     <plurals name="number_of_book_search_results">
-        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> result</item>
-        <item quantity="other"><x:g id="number" example="2">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> results</item>
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> result</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> results</item>
     </plurals>
     <string name="reset">Permissions have been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
@@ -421,29 +422,29 @@
     </plurals>
     <plurals name="redownload_external_content">
         <item quantity="one">One of the selected books is stored in the external library and cannot be redownloaded\nThis book will be ignored.</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> selected books are stored in the external library and cannot be redownloaded\nThey will be ignored.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> selected books are stored in the external library and cannot be redownloaded\nThey will be ignored.</item>
     </plurals>
     <plurals name="download_non_streamed_content">
         <item quantity="one">One of the selected books is already downloaded\nThis book will be ignored.</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> selected books are already downloaded\nThey will be ignored.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> selected books are already downloaded\nThey will be ignored.</item>
     </plurals>
     <plurals name="stream_external_streamed_content">
         <item quantity="one">One of the selected books is already streamed or external\nThis book will be ignored.</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> selected books are already set to be streamed or they\'re in an external library\nThey will be ignored.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> selected books are already set to be streamed or they\'re in an external library\nThey will be ignored.</item>
     </plurals>
     <string name="about_to_delete">Book is about to be deleted…</string>
     <string name="help_search">Search anything: title, artist, tag\nand launch code too!</string>
     <string name="help_page_slider">You can browse faster by sliding through page numbers</string>
     <plurals name="items_selected">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> item selected</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> items selected</item>
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> item selected</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> items selected</item>
     </plurals>
     <string name="folder_undefined">Error - containing folder undefined</string>
     <string name="malformed_url">Error - Malformed URL</string>
     <string name="unsupported_site">Error - Site is not supported</string>
     <plurals name="external_not_removed">
         <item quantity="one">One book from the external library will not be removed</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> books from the external library will not be removed</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> books from the external library will not be removed</item>
     </plurals>
     <string name="group_make_cover">Set as group cover</string>
     <string name="group_make_cover_ask">Set this book\'s cover as the current group cover\?</string>
@@ -461,8 +462,8 @@
         <item quantity="other">Delete groups only</item>
     </plurals>
     <plurals name="group_delete_selected_book">
-        <item quantity="one">Delete <x:g id="count" example="1">%d</x:g> book</item>
-        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> books</item>
+        <item quantity="one">Delete <x:g example="1" id="count">%d</x:g> book</item>
+        <item quantity="other">Delete <x:g example="2" id="count">%d</x:g> books</item>
     </plurals>
     <plurals name="group_delete_selected_group_books" tools:ignore="ImpliedQuantity">
         <item quantity="one">Delete group + books</item>
@@ -560,8 +561,8 @@
     <string name="personalDataStatement2">Hentoid collects the following personal data and sends them to Google for processing through the firebase library:\n  - Session ID\n  - IP address</string>
     <string name="personalDataStatement3">The abovementioned data is removed from Firebase live and backup system within 180 days (see https://firebase.google.com/support/privacy/ for more details)\n\nNo other personal data is collected nor sent to any other party.</string>
     <string name="about_licenses">Display Licenses</string>
-    <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
-    <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g id="chrome_ver" example="98">%1$d</x:g></string>
+    <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
+    <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g></string>
 
     <!-- Web browser -->
     <string name="web_gallery">Back to latest gallery page</string>
@@ -575,13 +576,13 @@
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
     <string name="web_url_clipboard">URL copied to clipboard</string>
     <string name="help_web_download">You\'ve reached a book page.\nTime to download with the bottom bar!</string>
-    <string name="blocked_tag">Book has a blocked tag (<x:g id="tag" example="bad">%s</x:g>)\nDownload canceled</string>
-    <string name="blocked_tag_queued">Book has a blocked tag (<x:g id="tag" example="bad">%s</x:g>)\nQueued as an error</string>
+    <string name="blocked_tag">Book has a blocked tag (<x:g example="bad" id="tag">%s</x:g>)\nDownload canceled</string>
+    <string name="blocked_tag_queued">Book has a blocked tag (<x:g example="bad" id="tag">%s</x:g>)\nQueued as an error</string>
     <string name="bookmark_current">Bookmark current page</string>
     <string name="unbookmark_current">Remove bookmark on current page</string>
     <string name="bookmark_copy_url">Copy bookmark URL to clipboard</string>
     <string name="bookmark_toggle_welcome">Toggle bookmark URL as welcome page</string>
-    <string name="alert_unwanted_tags">This book is tagged with <x:g id="tag" example="bad">%s</x:g></string>
+    <string name="alert_unwanted_tags">This book is tagged with <x:g example="bad" id="tag">%s</x:g></string>
     <string name="bookmark_homepage">Homepage</string>
     <string name="torrent_dl_fail">Downloading torrent failed: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Storage permission denied - cannot use the downloader</string>
@@ -596,15 +597,15 @@
     <!-- SearchActivity -->
     <string name="category_any">Any</string>
     <string name="exclude">Exclude</string>
-    <string name="search_category"><x:g id="search_category" example="Language">%s</x:g> search</string>
+    <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> search</string>
     <string name="search_prompt">Search <x:g id="search_prompt">%s</x:g></string>
     <!-- Used as a category on the search screen -->
-    <string name="category_artist">Artist (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_tag">Tag (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_character">Character (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_series">Series (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_language">Language (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_source">Source (<x:g id="count" example="2">%1$d</x:g>)</string>
+    <string name="category_artist">Artist (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_tag">Tag (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_character">Character (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_series">Series (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_language">Language (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_source">Source (<x:g example="2" id="count">%1$d</x:g>)</string>
     <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_artist">Artist</string>
     <string name="object_tag">Tag</string>
@@ -618,8 +619,8 @@
     <string name="object_translator">Translator</string>
     <string name="object_publisher">Publisher</string>
     <plurals name="search_button">
-        <item quantity="one"><x:g id="count" example="1">%s</x:g> Result found</item>
-        <item quantity="other"><x:g id="count" example="2">%s</x:g> Results found</item>
+        <item quantity="one"><x:g example="1" id="count">%s</x:g> Result found</item>
+        <item quantity="other"><x:g example="2" id="count">%s</x:g> Results found</item>
     </plurals>
     <string name="search_select_a_filter">Select a filter</string>
 
@@ -628,10 +629,10 @@
 
     <!-- Image viewer -->
     <string name="no_images">Could not load the book: No image found</string>
-    <string name="loading_archive">Loading: <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
-    <string name="loading_image">Loading image: <x:g id="percentage" example="50%">%d%%</x:g></string>
+    <string name="loading_archive">Loading: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
+    <string name="loading_image">Loading image: <x:g example="50%" id="percentage">%d%%</x:g></string>
     <string name="no_image">Image not found</string>
-    <string name="viewer_img_details"><x:g id="dimen_x" example="800">%1$d</x:g> x <x:g id="dimen_y" example="600">%2$d</x:g> (scale <x:g id="scale_percentage" example="100%">%3$.0f%%</x:g>) - <x:g id="file_size" example="544.40 KB">%4$s</x:g></string>
+    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (scale <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
     <string name="viewer_choose_direction">Choose your reading direction</string>
     <string name="viewer_direction_ltr">Left to right</string>
     <string name="viewer_direction_rtl">Right to left</string>
@@ -670,7 +671,7 @@
     <string name="image_streaming">Streaming image…</string>
     <string name="book_prefs">Book settings</string>
     <string name="goto_app_prefs">App settings</string>
-    <string name="use_app_prefs">Use app settings (<x:g id="app_default" example="Left to right">%s</x:g>)</string>
+    <string name="use_app_prefs">Use app settings (<x:g example="Left to right" id="app_default">%s</x:g>)</string>
     <string name="page_details">Page details</string>
     <string name="book_details">Book details</string>
     <string name="page_favourite_toggle">Toggle page favourite</string>
@@ -688,8 +689,8 @@
     <string name="gallery_edit_chapters_help">To create or remove a chapter, tap its first page</string>
     <string name="gallery_clear_chapters">Clear all chapters</string>
     <string name="gallery_add_remove_chapters">Add &amp; remove chapters</string>
-    <string name="gallery_display_page"><x:g id="startMarker" example="&gt;">%1$s</x:g>Page <x:g id="number" example="2">%2$d</x:g><x:g id="isFavourite" example="♥">%3$s</x:g><x:g id="endMarker" example="&lt;">%4$s</x:g></string>
-    <string name="gallery_display_chapter">Chp <x:g id="number" example="2">%d</x:g></string>
+    <string name="gallery_display_page"><x:g example="&gt;" id="startMarker">%1$s</x:g>Page <x:g example="2" id="number">%2$d</x:g><x:g example="♥" id="isFavourite">%3$s</x:g><x:g example="&lt;" id="endMarker">%4$s</x:g></string>
+    <string name="gallery_display_chapter">Chp <x:g example="2" id="number">%d</x:g></string>
     <string name="gallery_no_chapter">No chapter</string>
     <string name="renaming_progress">Renaming files…</string>
     <string name="content_removal_failed">Content removal failed</string>
@@ -697,10 +698,10 @@
     <string name="file_removal_failed">File removal failed</string>
     <string name="storage_permission_denied">Storage permission denied - cannot open the viewer</string>
     <string name="book_list_loading_failed">Book list loading failed</string>
-    <string name="chapter_toggle_failed">Couldn\'t toggle chapter at page <x:g id="number" example="2">%d</x:g></string>
+    <string name="chapter_toggle_failed">Couldn\'t toggle chapter at page <x:g example="2" id="number">%d</x:g></string>
     <string name="chapters_remove_failed">Couldn\'t remove chapters</string>
     <string name="chapter_move_failed">Couldn\'t move chapter</string>
-    <string name="slideshow_start">Starting slideshow (delay <x:g id="time" example="0.5">%.1f</x:g>s)</string>
+    <string name="slideshow_start">Starting slideshow (delay <x:g example="0.5" id="time">%.1f</x:g>s)</string>
     <string name="slideshow_stop">Slideshow stopped</string>
     <string name="ask_clear_chapters">Clear all chapters?</string>
 
@@ -708,7 +709,7 @@
     <string name="view_changelog">View changelog</string>
     <string name="view_changelog_flagged">View changelog*</string>
     <string name="changelog">Changelog</string>
-    <string name="get_latest">Get the latest version (<x:g id="version" example="1.18.1">%1$s</x:g>)</string>
+    <string name="get_latest">Get the latest version (<x:g example="1.18.1" id="version">%1$s</x:g>)</string>
     <string name="update_success">Update successful!</string>
     <string name="starting_download">Starting download</string>
 
@@ -732,28 +733,28 @@
     <string name="duplicate_index_covers">Indexing cover pictures</string>
     <string name="duplicate_find">Detecting duplicate books</string>
     <plurals name="duplicate_count">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplicate</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplicates</item>
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> duplicate</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> duplicates</item>
     </plurals>
-    <string name="duplicate_title_score">Title: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_title_score">Title: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
     <string name="duplicate_title_score_nodata">Title: no data</string>
-    <string name="duplicate_cover_score">Cover: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_cover_score">Cover: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
     <string name="duplicate_cover_score_nodata">Cover: no data</string>
-    <string name="duplicate_artist_score">Artist: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_artist_score">Artist: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
     <string name="duplicate_artist_score_nodata">Artist: no data</string>
-    <string name="apply_processing">Apply (<x:g id="remaining" example="5">%d</x:g> remaining choices)</string>
+    <string name="apply_processing">Apply (<x:g example="5" id="remaining">%d</x:g> remaining choices)</string>
     <string name="apply_final">Apply choices</string>
     <string name="duplicate_notif_start">Starting duplicate detection</string>
     <string name="duplicate_notif_complete_title">Duplicate detection complete</string>
     <plurals name="duplicate_notif_complete_desc">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplicate detected</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplicates detected</item>
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> duplicate detected</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> duplicates detected</item>
     </plurals>
     <string name="duplicate_empty_first_use">Nothing to display - Run a new duplicate search</string>
     <string name="duplicate_processing">Detecting duplicates…</string>
     <plurals name="duplicate_detail_title">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplicate</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplicates</item>
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> duplicate</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> duplicates</item>
     </plurals>
     <string name="duplicate_empty_no_result">No duplicates found</string>
     <string name="duplicate_keep">Keep</string>
@@ -767,7 +768,7 @@
     <string name="duplicate_alert_in_queue">In queue</string>
     <string name="duplicate_alert_always_download">Always download and don\'t ask me again</string>
     <string name="duplicate_alert_never_extra_on_dupes">Never add pages from potential duplicates again</string>
-    <string name="duplicate_alert_similarity">Similarity: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_alert_similarity">Similarity: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
     <string name="duplicate_wait_index">Indexing…</string>
@@ -777,8 +778,8 @@
     <string name="notif_delete_title">Content deletion</string>
     <string name="notif_delete_complete">Deletion complete</string>
     <plurals name="notif_delete_complete_details">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> deleted successfully</item>
-        <item quantity="other"><x:g id="number" example="1">%d</x:g> deleted successfully</item>
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> deleted successfully</item>
+        <item quantity="other"><x:g example="1" id="number">%d</x:g> deleted successfully</item>
     </plurals>
     <string name="notif_delete_fail">Deletion failed</string>
     <string name="notif_delete_fail_details">At least one book failed to be deleted</string>
