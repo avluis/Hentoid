@@ -267,6 +267,7 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         else {
             synchronized (waitingRequestQueue) {
                 waitingRequestQueue.add(order);
+                Timber.d("Waiting requests queue ::: added new request - current total %d", waitingRequestQueue.size());
             }
         }
     }
@@ -354,7 +355,6 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
      * @param now   Tiemstamp to record the execution for
      */
     private void executeRequest(@NonNull RequestOrder order, long now) {
-        Timber.d("Waiting requests queue ::: request executed for host %s - current total %s", Uri.parse(order.getUrl()).getHost(), waitingRequestQueue.size());
         synchronized (currentRequests) {
             currentRequests.add(order);
         }
@@ -364,7 +364,9 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
                 previousRequestsTimestamps.add(now);
             }
         }
-        Timber.v("Global requests queue ::: request added for host %s - current total %s", Uri.parse(order.getUrl()).getHost(), getNbActiveRequests());
+        synchronized (waitingRequestQueue) {
+            Timber.d("Requests queue ::: request executed for host %s - current total (%d active + %d waiting)", Uri.parse(order.getUrl()).getHost(), getNbActiveRequests(), waitingRequestQueue.size());
+        }
     }
 
     /**

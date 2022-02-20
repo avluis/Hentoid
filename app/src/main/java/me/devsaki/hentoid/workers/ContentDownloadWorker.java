@@ -98,6 +98,9 @@ public class ContentDownloadWorker extends BaseWorker {
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
     }
 
+    private static final int IDLE_THRESHOLD = 20; // seconds; should be higher than the connect + I/O timeout defined in RequestQueueManager
+    private static final int LOW_NETWORK_THRESHOLD = 10; // KBps
+
     // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
     private final CollectionDAO dao;
 
@@ -556,8 +559,8 @@ public class ContentDownloadWorker extends BaseWorker {
             // Download speed and size estimation
             long networkBytesNow = NetworkHelper.getIncomingNetworkUsage(getApplicationContext());
             deltaNetworkBytes = networkBytesNow - networkBytes;
-            if (deltaNetworkBytes < 1024 * 10 && firstPageDownloaded)
-                nbDeltaLowNetwork++; // 10 KBps threshold once download has started
+            if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD && firstPageDownloaded)
+                nbDeltaLowNetwork++; // LOW_NETWORK_THRESHOLD KBps threshold once download has started
             else nbDeltaLowNetwork = 0;
             networkBytes = networkBytesNow;
             downloadSpeedCalculator.addSampleNow(networkBytes);
@@ -567,7 +570,7 @@ public class ContentDownloadWorker extends BaseWorker {
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
 
             // Restart request queue when the queue has idled for too long
-            if (nbDeltaLowNetwork > 10 || nbDeltaZeroPages > 10) {
+            if (nbDeltaLowNetwork > IDLE_THRESHOLD || nbDeltaZeroPages > IDLE_THRESHOLD) {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
                 Timber.d("Inactivity detected ====> restarting request queue");
