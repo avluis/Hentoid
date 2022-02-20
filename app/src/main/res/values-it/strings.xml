@@ -600,7 +600,7 @@ Hentoid non funzionerà senza di esso.</string>
     <string name="gallery_help">Galleria del libro</string>
     <string name="page_fav_help">Segna/deseleziona la pagina come preferita</string>
     <string name="page_copy_help">Copia la pagina nella cartella Downloads di Android</string>
-    <string name="page_share_help">Condividi la pagina usando un\\'altra app</string>
+    <string name="page_share_help">Condividi la pagina usando un\'altra app</string>
     <string name="page_delete_help">Elimina pagina</string>
     <string-array name="page_delete_choices">
         <item>Chiedimelo di nuovo la prossima volta</item>
