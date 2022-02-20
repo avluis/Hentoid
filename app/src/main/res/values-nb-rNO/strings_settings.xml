@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Interface -->
-    <string name="pref_screen_interface">Grensesnitt og navigasjon</string>
+<string name="pref_screen_interface">Grensesnitt og navigasjon</string>
     <string name="pref_cat_library">Bibliotek</string>
     <string name="pref_drawer_sources_title">Håndter kilder</string>
-    <string name="pref_drawer_sources_summary">Skru på, av, og reorganiser kilder\nsom vises i navigasjonskuffen til venstre.</string>
+    <string name="pref_drawer_sources_summary">Skru på, av, og reorganiser kilder \nsom vises i navigasjonskuffen til venstre.</string>
     <string name="pref_library_display_title">Visningstype</string>
-    <!-- pref_library_display_summary -->
     <string name="pref_endless_scroll_title">Uendelig rulling</string>
-    <string name="pref_endless_scroll_summary_off">Skru på uendelig rulling i nedlastingslisten.\nDette skrur av sideinndeling.</string>
+    <string name="pref_endless_scroll_summary_off">Skru på uendelig rulling i nedlastingslisten. \nDette skrur av sideinndeling.</string>
     <string name="pref_endless_scroll_summary_on">Rull så mye du vil</string>
     <string name="pref_quantity_per_page_title">Mengde per side</string>
-    <string name="pref_quantity_per_page_summary">Antall elementer per side i nedlastingslisten.\nNå: <x:g id="count" example="10">%s</x:g> elementer</string>
+    <string name="pref_quantity_per_page_summary">Antall elementer per side i nedlastingslisten. \nNå: %s elementer</string>
     <string name="pref_cat_search">Avansert søk</string>
     <string name="pref_attributes_list_order_title">Sorteringsrekkefølge for vist metadata</string>
     <string name="pref_attributes_list_count_title">Tell tilgjengelige bøker</string>
@@ -19,10 +17,8 @@
     <string name="pref_attributes_list_count_off">Antall tilgjengelige bøker vises ikke</string>
     <string name="pref_cat_theme">Programdrakt</string>
     <string name="pref_color_theme_title">Fargedrakt</string>
-    <string name="pref_color_theme_summary">Nåværende drakt: <x:g id="theme_name" example="Deep Red">%s</x:g></string>
-
-    <!-- Storage -->
-    <string name="pref_screen_storage">Lagring</string>
+    <string name="pref_color_theme_summary">Nåværende drakt: %s</string>
+<string name="pref_screen_storage">Lagring</string>
     <string name="pref_cat_downloads_folder">Hentoid-bibliotek</string>
     <string name="pref_select_folder_title">Velg nedlastingsmappe</string>
     <string name="pref_select_folder_summary">Velg hvor Hentoid skal lagre nedlastningene dine.</string>
@@ -30,14 +26,14 @@
     <string name="pref_import_queue_empty_on">Tomme bøker vil bli lagt til i køen som feil</string>
     <string name="pref_import_queue_empty_off">Tomme bøker vil bli lagt til i biblioteket</string>
     <string name="pref_folder_naming_content_title">Mappenavn</string>
-    <string name="pref_folder_naming_content_summary">Navngivningssystem for bøker:\n<x:g id="convention" example="Name - ID">%s</x:g></string>
+    <string name="pref_folder_naming_content_summary">Navngivningssystem for bøker: \n%s</string>
     <string name="pref_import_running">Import kjører allerede</string>
     <string name="prefs_ask_detach_external_library">Koble fra det eksterne biblioteket\?</string>
     <string name="prefs_external_library_detached">Eksternt bibliotek frakoblet</string>
     <string name="pref_folder_trunc_title">Forkort mappenavn</string>
-    <string name="pref_folder_trunc_summary">Forkortelse av bokmappenavn.\nNå: <x:g id="chars" example="80 characters">%s</x:g>.</string>
+    <string name="pref_folder_trunc_summary">Forkortelse av bokmappenavn. \nNå: %s.</string>
     <string name="pref_memory_usage_title">Minnebruk</string>
-    <string name="pref_memory_usage_summary">Nåværende ledig plass: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (trykk for detaljer)</string>
+    <string name="pref_memory_usage_summary">Nåværende ledig plass: %.2f%% (trykk for detaljer)</string>
     <string name="pref_memory_alert_title">Varsel ved lavt minne</string>
     <string name="pref_cat_external">Eksternt bibliotek</string>
     <string name="pref_external_library_title">Eksternt bibliotek</string>
@@ -51,26 +47,20 @@
     <string name="pref_refresh_library_title">Gjenoppfrisk bibliotek</string>
     <string name="pref_refresh_library_summary">Gjenoppfrisk biblioteksinnhold manuelt</string>
     <string name="pref_delete_all_except_favs_title">Slett alle bøker unntatt favoritter</string>
-    <!-- pref_delete_all_except_favs_summary -->
     <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Slett <x:g id="count" example="1">%d</x:g> bok\?</item>
-        <item quantity="other">Slett <x:g id="count" example="2">%d</x:g> bøker\?</item>
+        <item quantity="one">Slett %d bok\?</item>
+        <item quantity="other">Slett %d bøker\?</item>
     </plurals>
-
-    <!-- Browser -->
-    <string name="pref_screen_browser">Nettleser</string>
+<string name="pref_screen_browser">Nettleser</string>
     <string name="pref_browser_behaviour">Oppførsel</string>
     <string name="pref_browser_resume_last_title">Fortsett fra sist viste side</string>
-    <!-- pref_browser_resume_last_off -->
-    <!-- pref_browser_resume_last_on -->
+
     <string name="pref_browser_dl_action_title">Nedlastingshandling</string>
     <string name="pref_browser_quick_dl_title">Hurtignedlasting</string>
-    <!-- pref_browser_quick_dl_summary -->
-    <string name="pref_browser_nhentai_invisible_blacklist_title">Vis Nhentai-svartelistede bøker</string>
+
     <string name="pref_browser_nhentai_invisible_blacklist_off">NHentai-svartelistede bøker er tilslørt</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">NHentai-svartelistede bøker er usynlige</string>
-    <!-- pref_browser_quick_dl_threshold_title -->
-    <!-- pref_browser_quick_dl_threshold_summary -->
+
     <string name="pref_browser_duplicate_ask_title">Duplikatsjekking</string>
     <string name="pref_browser_duplicate_ask_off">Nei: alltid last ned</string>
     <string name="pref_browser_duplicate_ask_on">Ja: Spør før nedlasting</string>
@@ -79,108 +69,79 @@
     <string name="pref_browser_duplicate_try_pages_on">Prøv å finne ekstra sider på potensielle duplikater</string>
     <string name="pref_browser_mark_downloaded_title">Marker nedlastede bøker</string>
     <string name="pref_browser_mark_downloaded_off">Nedlastede bøker har ingen spesiell visning</string>
-    <string name="pref_browser_mark_downloaded_on">Nedlastede bøker markeres\nNB: fungerer ikke på alle sider</string>
+    <string name="pref_browser_mark_downloaded_on">Nedlastede bøker markeres \nNB: fungerer ikke på alle sider</string>
     <string name="pref_browser_visuals">Utseende</string>
-    <!-- pref_browser_augmented_title -->
-    <!-- pref_browser_augmented_off -->
+
     <string name="pref_browser_augmented_on">Bruker reklameblokkering og rask fortolkning</string>
     <string name="pref_browser_override_overview_title">Skru av sideoversikt</string>
-    <!-- pref_browser_override_overview_summary_off -->
-    <!-- pref_browser_override_overview_summary_on -->
-    <string name="pref_browser_initial_zoom_title">Opprinnelig forstørrelsesnivå</string>
-    <!-- pref_browser_initial_zoom_summary -->
-    <string name="pref_browser_dns">Egendefinert DNS</string>
-    <string name="pref_browser_dns_title">DNS over HTTPS</string>
 
-    <!-- Downloader -->
-    <string name="pref_screen_downloader">Nedlaster</string>
-    <!-- pref_queue_autostart_title -->
-    <!-- pref_queue_autostart_on -->
-    <!-- pref_queue_autostart_off -->
+    <string name="pref_browser_initial_zoom_title">Opprinnelig forstørrelsesnivå</string>
+    <string name="pref_browser_dns">Egendefinert DNS</string>
+<string name="pref_screen_downloader">Nedlaster</string>
+
+
     <string name="pref_queue_wifi_only_title">Kun last ned på Wi-Fi</string>
     <string name="pref_queue_wifi_only_on">Nedlastingskø vil kun starte når enheten er tilkoblet Wi-Fi</string>
     <string name="pref_queue_wifi_only_off">Nedlastingskøen vil starte hvis enheten er tilknyttet et nettverk</string>
     <string name="pref_queue_new_position_title">Posisjon for nye nedlastninger</string>
     <string name="download_size_wifi_title">Hopp over store nedlastinger på mobildata</string>
-    <!-- pref_dl_size_wifi_on -->
     <string name="pref_dl_size_wifi_off">Alle nedlastinger vil bli behandlet</string>
     <string name="pref_dl_size_wifi_threshold_title">Terskelsstørrelse for store nedlastinger</string>
-    <!-- pref_dl_pages_wifi_threshold_title -->
-    <!-- download_retries_screen_title -->
-    <!-- download_retries_active_title -->
-    <!-- pref_dl_retries_on -->
-    <!-- pref_dl_retries_off -->
-    <!-- pref_dl_retries_number_title -->
-    <!-- pref_dl_retries_mem_limit_title -->
+
+
+
+
+
+
     <string name="tag_blocking_screen_title">Etikett-blokkering</string>
     <string name="pref_dl_blocked_tags_title">Blokkerte etiketter</string>
-    <!-- pref_dl_blocked_tags_summary -->
     <string name="pref_dl_blocked_tags_behaviour_title">Blokkeringsoppførsel</string>
     <string name="pref_dl_hitomi_webp_title">Foretrekk nedlasting av WebP</string>
     <string name="pref_dl_hitomi_webp_summary_off">Last ned andre typer bilder (PNG, JPG)</string>
     <string name="pref_dl_hitomi_webp_summary_on">Last ned WebP-bilder når de er tilgjengelige</string>
     <string name="pref_dl_threads_quantity_title">Antall parallelle nedlastinger</string>
-    <!-- pref_dl_threads_quantity_summary -->
+<string name="pref_screen_privacy">Personvern</string>
 
-    <!-- Privacy -->
-    <string name="pref_screen_privacy">Personvern</string>
-    <!-- pref_app_preview_title -->
-    <!-- pref_app_preview_summary_off -->
-    <!-- pref_app_preview_summary_on -->
+
     <string name="pref_screenshot_title">Skru på skjermavbildninger</string>
-    <!-- pref_screenshot_summary_off -->
-    <!-- pref_screenshot_summary_on -->
-    <string name="pref_analytics_preference_title">Firebase Analytics</string>
-    <!-- pref_analytics_preference_summary_off -->
-    <!-- pref_analytics_preference_summary_on -->
 
-    <!-- Updates -->
-    <string name="pref_screen_updates">Oppdateringer</string>
+
+
+
+<string name="pref_screen_updates">Oppdateringer</string>
     <string name="pref_check_updates_manual_title">Manuell oppdateringssjekk</string>
     <string name="pref_check_updates_manual_summary">Se etter oppdateringer manuelt nå.</string>
     <string name="pref_check_updates_manual_checking">Ser etter oppdateringer…</string>
     <string name="pref_check_updates_manual_no_new">Fant ingen oppdateringer. Bruker allerede siste versjon.</string>
-    <!-- pref_check_updates_manual_no_connection -->
     <string name="pref_check_updates_title">Automatiske oppdateringer</string>
-    <!-- pref_check_updates_summary_off -->
-    <!-- pref_check_updates_summary_on -->
 
-    <!-- Viewer -->
-    <string name="pref_screen_viewer">Bildeviser</string>
+<string name="pref_screen_viewer">Bildeviser</string>
     <string name="pref_viewer_controls">Kontroller</string>
     <string name="pref_viewer_browse_mode">Utforskningsmodus</string>
-    <!-- pref_viewer_page_turn -->
-    <!-- pref_viewer_page_turn_swipe -->
+
     <string name="pref_viewer_page_turn_tap">Kanttrykk</string>
-    <!-- pref_viewer_page_turn_tap_2x -->
     <string name="pref_viewer_page_turn_volume">Lydstyrkeknapp</string>
-    <!-- pref_viewer_page_turn_keyboard -->
-    <!-- pref_viewer_swipe_to_fling -->
+
     <string name="pref_viewer_invert_volume">Inverter lydstyrkeknapper</string>
     <string name="pref_viewer_zoom">Forstørr</string>
-    <!-- pref_viewer_zoom_holding -->
-    <!-- pref_viewer_cap_tap_zoom -->
+
     <string name="pref_viewer_visuals">Utseende</string>
     <string name="pref_viewer_keep_screen_on">Behold skjermen påslått</string>
     <string name="pref_viewer_display_pagenum">Alltid vis sidenummer</string>
     <string name="pref_viewer_tap_transitions">Sidevendingsanimasjon</string>
     <string name="pref_viewer_zoom_transitions">Forsstørrelsesanimasjoner</string>
-    <!-- pref_viewer_separating_bars -->
-    <!-- pref_viewer_display_mode -->
+
     <string name="pref_viewer_rendering">Opptegningsmodus</string>
-    <!-- pref_viewer_rendering_no_android5 -->
-    <!-- pref_viewer_auto_rotate -->
-    <!-- pref_viewer_auto_rotate_summary_off -->
-    <!-- pref_viewer_auto_rotate_summary_on -->
-    <!-- pref_viewer_gallery_columns -->
-    <!-- pref_viewer_navigation -->
-    <!-- pref_viewer_resume_last_left_title -->
-    <!-- pref_viewer_resume_last_left_summary_off -->
-    <!-- pref_viewer_resume_last_left_summary_on -->
+
+
+
+
+
+
+
+
     <string name="pref_viewer_open_gallery">Alltid åpne i gallerimodus</string>
     <string name="pref_viewer_continuous_title">Kontinuerlig lesning</string>
     <string name="pref_viewer_continuous_summary_off">Bruk av neste side på siste side har ingen effekt</string>
-    <!-- pref_viewer_continuous_summary_on -->
     <string name="pref_viewer_read_threshold">Marker bok som lest etter N sider</string>
-    <!-- pref_viewer_slideshow_delay -->
 </resources>

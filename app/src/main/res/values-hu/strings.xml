@@ -32,11 +32,8 @@
     <string name="menu_completed_single">Befejezve</string>
     <string name="service_running">A szolgáltatás már fut</string>
     <string name="open_folder">Mappa megnyitása</string>
-    
-
     <string name="_default">alapértelmezett</string>
-    
-
+<string name="title_activity_api29_migration">API 29 migráció</string>
     <string name="title_activity_downloads">Könyvtár</string>
     <string name="title_activity_queue">Várakozási sor</string>
     <string name="title_activity_preferences">Beállítások</string>
@@ -180,9 +177,8 @@
     <string name="errortype_wifi">Könyv kihagyva a Wi-Fi letöltési méretkorlátozás miatt</string>
     <string name="errortype_blocked">A könyv tartalmaz egy blokkolt taget</string>
     <string name="errortype_undefined">Definiálatlan</string>
-
 <string name="refresh_title">Könyvtár újratöltése</string>
-<string name="refresh_caption">A könyvtári adatok automatikus frissítése a fájlok és mappák újbóli beolvasásával.</string>
+    <string name="refresh_caption">A könyvtári adatok automatikus frissítése a fájlok és mappák újbóli beolvasásával.</string>
     <string name="refresh_options">Tisztítási lehetőségek</string>
     <string name="refresh_location_internal">Hentoid könyvtár</string>
     <string name="refresh_location_external">Külső könyvtár</string>
@@ -251,8 +247,6 @@
     </plurals>
     <string name="export_warning1">A metaadatok exportálása a könyvek JSON formátumú listájának létrehozására szolgál.\nNem arra szolgál, hogy a gyűjteményt a számítógépre vagy az SD-kártyára áthelyezze.\nKoppintson ide, hogy megtudja, hogyan kell ezt megtenni.</string>
     <string name="export_warning2">A könyvek képek nélkül kerülnek exportálásra.\nÚjra le kell töltenie őket a visszaállításkor, ha a képek mappa nem található meg.</string>
-    
-
     <string name="export_run">EXPORTÁLÁS ELINDÍTÁSA</string>
     <string name="import_settings_title">Beállítások importálása</string>
     <string name="import_settings_success">Importálva</string>
@@ -284,8 +278,6 @@
         <item quantity="one"><x:g id="number" example="1">%s</x:g> sikertelen</item>
         <item quantity="other"><x:g id="number" example="2">%s</x:g> sikertelen</item>
     </plurals>
-
-
 <string name="memory_title">Memória használat</string>
     <string name="memory_total">Összesen: <x:g id="total" example="100 MB">%s</x:g></string>
     <string name="memory_free">Szabad: <x:g id="total" example="50 MB">%s</x:g></string>
@@ -301,10 +293,6 @@
     <string name="read_log">Napló olvasása</string>
     <string name="logs_share">Napló megosztása</string>
     <string name="no_error_detected">Nem történt hiba.</string>
-    
-
-    
-
     <string name="log_import_external">Külső könyvtár importálása/frissítése</string>
     <string name="log_import">Elsődleges könyvtár importálása/frissítése</string>
     <string name="log_cleanup">Elsődleges könyvtár takarítása</string>
@@ -374,21 +362,7 @@
     <string name="search_entry_not_found">Ez nincs itt, menj és töltsd le.</string>
     <string name="packaging_content">Fájlok becsomagolása. \nKérjük, várjon...</string>
     <string name="search_bookid_label">Keresés <x:g id="launchcode" example="4567">\'%s\'</x:g> ban/ben</string>
-    
-
     <string name="book_launchcode">Indítási kód: <x:g id="launchcode" example="4567">%s</x:g></string>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
     <plurals name="number_of_items">
         <item quantity="one"><x:g id="count" example="1">%d</x:g> tárgy</item>
         <item quantity="other"><x:g id="count" example="2">%d</x:g> tárgy</item>
@@ -536,12 +510,6 @@ háttérből</string>
     <string name="personalDataStatement2">A Hentoid a következő személyes adatokat gyűjti és küldi a Google-nak feldolgozásra a firebase könyvtáron keresztül:\
  - Munkamenet azonosító\n - IP cím</string>
     <string name="personalDataStatement3">A fent említett adatokat 180 napon belül eltávolítjuk a Firebase live és backup rendszeréből (további részletekért lásd https://firebase.google.com/support/privacy/)\n\nNem gyűjtünk más személyes adatokat és azt nem küldjük el más félnek.</string>
-    
-
-    
-
-    
-
     <string name="about_licenses">Licencek megjelenítése</string>
     <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
     <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g id="chrome_ver" example="98">%1$d</x:g></string>
@@ -582,16 +550,16 @@ háttérből</string>
     <string name="category_language">Nyelv (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_source">Forrás (<x:g id="count" example="2">%1$d</x:g>)</string>
 <string name="object_artist">Szerző</string>
-<string name="object_tag">Kategória</string>
-<string name="object_character">Karakter</string>
-<string name="object_series">Sorozat</string>
-<string name="object_language">Nyelv</string>
-<string name="object_source">Forrás</string>
-<string name="object_uploader">Felöltő</string>
-<string name="object_circle">Kör</string>
-<string name="object_category">Kategória</string>
-<string name="object_translator">Fordító</string>
-<string name="object_publisher">Feltöltő</string>
+    <string name="object_tag">Kategória</string>
+    <string name="object_character">Karakter</string>
+    <string name="object_series">Sorozat</string>
+    <string name="object_language">Nyelv</string>
+    <string name="object_source">Forrás</string>
+    <string name="object_uploader">Felöltő</string>
+    <string name="object_circle">Kör</string>
+    <string name="object_category">Kategória</string>
+    <string name="object_translator">Fordító</string>
+    <string name="object_publisher">Feltöltő</string>
     <plurals name="search_button">
         <item quantity="one"><x:g id="count" example="1">%s</x:g> találat</item>
         <item quantity="other"><x:g id="count" example="2">%s</x:g> találat</item>
@@ -705,8 +673,6 @@ háttérből</string>
     <string name="duplicate_cover_score_nodata">Borítókép: nincsen adat</string>
     <string name="duplicate_artist_score">Szerző: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
     <string name="duplicate_artist_score_nodata">Szerző: nincsen adat</string>
-    
-
     <string name="apply_processing">Elfogadás (<x:g id="remaining" example="5">%d</x:g> választási lehetőséget)</string>
     <string name="apply_final">Választások elmentése</string>
     <string name="duplicate_notif_start">Duplikátum felderítés elkezdődött</string>
