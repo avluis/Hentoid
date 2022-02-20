@@ -33,6 +33,7 @@
     <string name="service_running">A szolgáltatás már fut</string>
     <string name="open_folder">Mappa megnyitása</string>
     <string name="_default">alapértelmezett</string>
+    <string name="empty">üres</string>
 <string name="title_activity_api29_migration">API 29 migráció</string>
     <string name="title_activity_downloads">Könyvtár</string>
     <string name="title_activity_queue">Várakozási sor</string>
@@ -641,6 +642,7 @@ háttérből</string>
     <string name="chapter_move_failed">A fejezet mozgatása nem történt meg</string>
     <string name="slideshow_start">Diavetítés indítása (<x:g id="time" example="0.5">%.1f</x:g>s késleltetéssel)</string>
     <string name="slideshow_stop">Diavetítés leállt</string>
+    <string name="ask_clear_chapters">Összes fejezet törlése?</string>
 <string name="view_changelog">Változásnapló megtekintése</string>
     <string name="view_changelog_flagged">Változásnapló megtekintése*</string>
     <string name="changelog">Változásnapló</string>
