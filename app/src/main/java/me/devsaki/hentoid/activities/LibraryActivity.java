@@ -799,6 +799,12 @@ public class LibraryActivity extends BaseActivity {
             favsMenu.setChecked(false);
             updateFavouriteFilter();
 
+            if (isGroupDisplayed() && selectedGrouping.equals(Grouping.ARTIST)) {
+                showArtistsGroupsButton.setVisibility(View.VISIBLE);
+            } else {
+                showArtistsGroupsButton.setVisibility(View.GONE);
+            }
+
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
             if (!selectedGrouping.canReorderBooks()
                     && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
