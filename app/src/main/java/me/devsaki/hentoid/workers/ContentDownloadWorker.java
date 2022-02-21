@@ -587,7 +587,8 @@ public class ContentDownloadWorker extends BaseWorker {
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
 
             // Restart request queue when the queue has idled for too long
-            if (nbDeltaLowNetwork > IDLE_THRESHOLD || nbDeltaZeroPages > IDLE_THRESHOLD) {
+            // Idle = very low download speed _AND_ no new pages downloaded
+            if (nbDeltaLowNetwork > IDLE_THRESHOLD && nbDeltaZeroPages > IDLE_THRESHOLD) {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
                 Timber.d("Inactivity detected ====> restarting request queue");
