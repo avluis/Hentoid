@@ -1436,8 +1436,9 @@ public final class ContentHelper {
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
                 newChapter = null;
+                // Create a default "content chapter" that represents the original book before merging
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
-                contentChapter.setUniqueId(c.getUniqueSiteId());
+                contentChapter.setUniqueId(c.getUniqueSiteId() + "-" + contentChapter.getOrder());
                 for (ImageFile img : c.getImageFiles()) {
                     if (!img.isReadable()) continue;
                     ImageFile newImg = new ImageFile(img);
@@ -1448,11 +1449,10 @@ public final class ContentHelper {
                     Chapter chapLink = img.getLinkedChapter();
                     if (null == chapLink) { // No chapter -> set content chapter
                         newChapter = contentChapter;
-                    } else if (null == newChapter || (
-                            !chapLink.getUrl().equals(newChapter.getUrl()) && !chapLink.getUniqueId().equals(newChapter.getUniqueId())
-                    )
-                    ) {
-                        newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
+                    } else {
+                        if (chapLink.getUniqueId().isEmpty()) chapLink.populateUniqueId();
+                        if (null == newChapter || !chapLink.getUniqueId().equals(newChapter.getUniqueId()))
+                            newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
                     }
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
                     newImg.setChapter(newChapter);
@@ -1475,7 +1475,8 @@ public final class ContentHelper {
                     mergedImages.add(newImg);
                 }
             }
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             Timber.w(e);
             isError = true;
         }
@@ -1499,7 +1500,9 @@ public final class ContentHelper {
                 GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
         }
 
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
+        EventBus.getDefault().
+
+                post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
     }
 
 

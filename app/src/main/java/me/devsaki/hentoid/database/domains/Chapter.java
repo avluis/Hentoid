@@ -85,6 +85,11 @@ public class Chapter {
         return this;
     }
 
+    // NB : Doesn't work when Content is not linked
+    public void populateUniqueId() {
+        this.uniqueId = content.getTarget().getUniqueSiteId() + "-" + order;
+    }
+
     public Chapter setContentId(long contentId) {
         this.content.setTargetId(contentId);
         return this;
