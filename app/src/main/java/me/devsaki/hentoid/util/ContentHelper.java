@@ -1395,7 +1395,28 @@ public final class ContentHelper {
         mergedContent.addAttributes(mergedAttributes);
 
         // Create destination folder for new content
-        DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent);
+        DocumentFile targetFolder;
+        // External library root for external content
+        if (mergedContent.getStatus().equals(StatusContent.EXTERNAL)) {
+            DocumentFile externalRootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getExternalLibraryUri());
+            if (null == externalRootFolder || !externalRootFolder.exists())
+                throw new ContentNotProcessedException(mergedContent, "Could not create target directory : external root unreachable");
+
+            ImmutablePair<String, String> bookFolderName = formatBookFolderName(mergedContent);
+            // First try finding the folder with new naming...
+            targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.left);
+            if (null == targetFolder) { // ...then with old (sanitized) naming...
+                targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.right);
+                if (null == targetFolder) { // ...if not, create a new folder with the new naming...
+                    targetFolder = externalRootFolder.createDirectory(bookFolderName.left);
+                    if (null == targetFolder) { // ...if it fails, create a new folder with the old naming
+                        targetFolder = externalRootFolder.createDirectory(bookFolderName.right);
+                    }
+                }
+            }
+        } else { // Hentoid download folder for non-external content
+            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent);
+        }
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
 
@@ -1413,7 +1434,7 @@ public final class ContentHelper {
         boolean isError = false;
         try {
             // Set cover
-            if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
+            if (isInLibrary(coverPic.getStatus())) {
                 String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
                 Uri newUri = FileHelper.copyFile(
                         context,
@@ -1458,7 +1479,7 @@ public final class ContentHelper {
                     newImg.setChapter(newChapter);
 
                     // If exists, move the picture to the merged books' folder
-                    if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
+                    if (isInLibrary(newImg.getStatus())) {
                         String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
                         Uri newUri = FileHelper.copyFile(
                                 context,
@@ -1500,9 +1521,7 @@ public final class ContentHelper {
                 GroupHelper.moveContentToCustomGroup(mergedContent, customGroup.get(), dao);
         }
 
-        EventBus.getDefault().
-
-                post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, (int) nbImages, 0, (int) nbImages));
     }
 
 
