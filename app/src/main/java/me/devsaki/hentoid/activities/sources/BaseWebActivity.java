@@ -298,6 +298,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         progressBar = findViewById(R.id.progress_bar);
 
         downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
+        actionMenu.setIcon(downloadIcon);
 
         displayTopAlertBanner();
     }
