@@ -1105,10 +1105,14 @@ public final class ContentHelper {
      * @param context Context to use
      * @param content Content to remove files from
      */
-    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content, boolean removeJson) {
+    public static void purgeFiles(
+            @NonNull final Context context,
+            @NonNull final Content content,
+            boolean removeJson,
+            boolean keepCover) {
         DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
-            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, null);
+            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, displayName -> !keepCover || !displayName.startsWith(Consts.THUMB_FILE_NAME));
             if (!files.isEmpty())
                 for (DocumentFile file : files)
                     if (removeJson || !HttpHelper.getExtensionFromUri(file.getUri().toString()).toLowerCase().endsWith("json"))

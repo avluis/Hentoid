@@ -432,7 +432,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Content content = c.get();
                                 // Non-blocking performance bottleneck; run in a dedicated worker
                                 // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
-                                if (reparseImages) purgeItem(content);
+                                if (reparseImages) purgeItem(content, false);
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position,
                                         ContentQueueManager.getInstance().isQueueActive(getApplication()));
@@ -527,8 +527,12 @@ public class LibraryViewModel extends AndroidViewModel {
                                     Content reparsedContent = newContent.getRight().get();
                                     // Reparse pages
                                     List<ImageFile> newImages = ContentHelper.fetchImageURLs(reparsedContent, StatusContent.ONLINE);
+                                    reparsedContent.setImageFiles(newImages);
+                                    // Associate new pages' cover with current cover file (that won't be deleted)
+                                    reparsedContent.getCover().setStatus(StatusContent.DOWNLOADED).setFileUri(c.getCover().getFileUri());
+                                    // Save everything
                                     dao.replaceImageList(reparsedContent.getId(), newImages);
-                                    return Optional.of(reparsedContent.setImageFiles(newImages));
+                                    return Optional.of(reparsedContent);
                                 }
                             }
                             return Optional.of(c);
@@ -538,7 +542,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Content dbContent = dao.selectContent(c.get().getId());
                                 if (null == dbContent) return;
                                 // Non-blocking performance bottleneck; scheduled in a dedicated worker
-                                purgeItem(c.get());
+                                purgeItem(c.get(), true);
                                 dbContent.setDownloadMode(Content.DownloadMode.STREAM);
                                 List<ImageFile> imgs = dbContent.getImageFiles();
                                 if (imgs != null) {
@@ -609,9 +613,10 @@ public class LibraryViewModel extends AndroidViewModel {
         workManager.getWorkInfoByIdLiveData(request.getId()).observeForever(workInfoObserver);
     }
 
-    public void purgeItem(@NonNull final Content content) {
+    public void purgeItem(@NonNull final Content content, boolean keepCover) {
         DeleteData.Builder builder = new DeleteData.Builder();
         builder.setContentPurgeIds(Stream.of(content).map(Content::getId).toList());
+        builder.setContentPurgeKeepCovers(keepCover);
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueueUniqueWork(
