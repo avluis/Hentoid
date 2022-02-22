@@ -139,9 +139,9 @@ class DuplicateDetectorActivity : BaseActivity() {
         binding!!.toolbar.menu.findItem(R.id.action_merge).isVisible = (
                 1 == viewPager.currentItem
                         && (
-                        localCount > 1 && 0 == streamedCount && 0 == externalCount
-                                || streamedCount > 1 && 0 == localCount && 0 == externalCount
-                                || externalCount > 1 && 0 == localCount && 0 == streamedCount
+                        (localCount > 1 && 0 == streamedCount && 0 == externalCount)
+                                || (streamedCount > 1 && 0 == localCount && 0 == externalCount)
+                                || (externalCount > 1 && 0 == localCount && 0 == streamedCount)
                         )
                 )
     }

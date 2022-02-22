@@ -137,8 +137,8 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
         binding.list.adapter = fastAdapter
 
         viewModel.selectedDuplicates.observe(
-            viewLifecycleOwner,
-            { l: List<DuplicateEntry>? -> this.onDuplicatesChanged(l) })
+            viewLifecycleOwner
+        ) { l: List<DuplicateEntry>? -> this.onDuplicatesChanged(l) }
 
         // Item click listener
         fastAdapter.onClickListener = { _, _, item, _ ->
@@ -213,16 +213,19 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
         // TODO update UI title
 
         activity.get()?.updateTitle(duplicates.size)
-        val contentStream =
-            duplicates.map(DuplicateEntry::duplicateContent)
-        val localCount = contentStream.map { return@map Content::getStatus }
-            .filter { s -> !s.equals(StatusContent.EXTERNAL) }.count()
-        val externaCount = duplicates.size - localCount
-        val streamedCount = contentStream.map { return@map Content::getDownloadMode }
-            .filter { mode -> mode.equals(Content.DownloadMode.STREAM) }.count()
+        val externalCount =
+            duplicates.asSequence().map(DuplicateEntry::duplicateContent)
+                .filterNotNull()
+                .map { c -> c.status }
+                .filter { s -> s.equals(StatusContent.EXTERNAL) }.count()
+        val streamedCount = duplicates.asSequence().map(DuplicateEntry::duplicateContent)
+            .filterNotNull()
+            .map { c -> c.downloadMode }
+            .filter { mode -> mode == Content.DownloadMode.STREAM }.count()
+        val localCount = duplicates.size - externalCount - streamedCount
 
         // streamed, external
-        activity.get()?.updateToolbar(localCount, externaCount, streamedCount)
+        activity.get()?.updateToolbar(localCount, externalCount, streamedCount)
 
         // Order by relevance desc and transforms to DuplicateItem
         val items = duplicates.sortedByDescending { it.calcTotalScore() }
