@@ -49,7 +49,7 @@
     <string name="pref_folder_trunc_content_entries_5">120 characters</string>
     <!-- Choice for "Download action" setting -->
     <string name="pref_viewer_dl_action_entries_1">Download all pages</string>
-    <string name="pref_viewer_dl_action_entries_2">Stream the pages when reading</string>
+    <string name="pref_viewer_dl_action_entries_2">Stream the pages while reading</string>
     <!-- Choice for "Sort order of displayed metadata" setting -->
     <string name="pref_attribute_list_order_entries_1">Alphabetical</string>
     <string name="pref_attribute_list_order_entries_2">Item count (most used first)</string>
