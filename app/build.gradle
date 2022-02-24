@@ -29,9 +29,6 @@ android {
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8
     }
-    lintOptions {
-        informational 'MissingTranslation' // Handled by Weblate
-    }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 21
@@ -47,9 +44,9 @@ android {
         buildConfigField "boolean", "INCLUDE_LEAK_CANARY", includeLeakCanary
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        resConfigs 'en', 'ru', 'it'
 
         // Only include complete translations
-        resConfigs "en", "ru", "it"
 
         renderscriptTargetApi 21
         renderscriptSupportModeEnabled false
@@ -88,6 +85,9 @@ android {
     }
     testOptions {
         unitTests.includeAndroidResources = true
+    }
+    lint {
+        informational 'MissingTranslation'
     }
 }
 
