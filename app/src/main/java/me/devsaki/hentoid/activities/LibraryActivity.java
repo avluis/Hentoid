@@ -959,10 +959,9 @@ public class LibraryActivity extends BaseActivity {
             long selectedTotalCount,
             long selectedLocalCount,
             long selectedStreamedCount,
-            long selectedEligibleExternalCount) {
+            long selectedExternalCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
         long selectedDownloadedCount = selectedLocalCount - selectedStreamedCount;
-        long selectedExternalCount = selectedTotalCount - selectedLocalCount;
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
 
         if (isGroupDisplayed()) {
@@ -994,7 +993,7 @@ public class LibraryActivity extends BaseActivity {
             mergeMenu.setVisible(
                     (selectedLocalCount > 1 && 0 == selectedStreamedCount && 0 == selectedExternalCount)
                             || (selectedStreamedCount > 1 && 0 == selectedLocalCount && 0 == selectedExternalCount)
-                            || (selectedExternalCount > 1 && 0 == selectedLocalCount && 0 == selectedStreamedCount && selectedEligibleExternalCount == selectedExternalCount)
+                            || (selectedExternalCount > 1 && 0 == selectedLocalCount && 0 == selectedStreamedCount)
             ); // Can only merge downloaded, streamed or non-archive external content together
             splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         }
