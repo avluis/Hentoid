@@ -785,7 +785,8 @@ public final class ContentHelper {
 
         // Put file names into a Map to speed up the lookup
         for (DocumentFile file : files)
-            fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
+            if (file.getName() != null)
+                fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
 
         // Look up similar names between images and file names
         int order;
@@ -794,30 +795,36 @@ public final class ContentHelper {
             ImageFile img = images.get(i);
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
 
-            // Detect gaps inside image numbering
-            order = img.getOrder();
-            // Look for files named with the forgotten number
-            if (previousOrder > -1 && previousOrder < order - 1) {
-                Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
-                for (int j = previousOrder + 1; j < order; j++) {
-                    ImmutablePair<String, Long> property = fileNameProperties.get(j + "");
-                    if (property != null) {
-                        Timber.i("Numbering gap filled with a file : %d", j);
-                        ImageFile newImage = ImageFile.fromImageUrl(j, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
-                        newImage.setFileUri(property.left).setSize(property.right);
-                        result.add(result.size() - 1, newImage);
+            ImmutablePair<String, Long> property;
+            boolean isOnline = img.getStatus().equals(StatusContent.ONLINE);
+            if (isOnline) {
+                property = new ImmutablePair<>("", 0L);
+            } else {
+                // Detect gaps inside image numbering
+                order = img.getOrder();
+                // Look for files named with the forgotten number
+                if (previousOrder > -1 && previousOrder < order - 1) {
+                    Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
+                    for (int j = previousOrder + 1; j < order; j++) {
+                        ImmutablePair<String, Long> localProperty = fileNameProperties.get(j + "");
+                        if (localProperty != null) {
+                            Timber.i("Numbering gap filled with a file : %d", j);
+                            ImageFile newImage = ImageFile.fromImageUrl(j, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
+                            newImage.setFileUri(localProperty.left).setSize(localProperty.right);
+                            result.add(result.size() - 1, newImage);
+                        }
                     }
                 }
-            }
-            previousOrder = order;
+                previousOrder = order;
 
-            ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
+                property = fileNameProperties.get(imgName);
+            }
             if (property != null) {
                 if (imgName.equals(Consts.THUMB_FILE_NAME)) {
                     coverFound = true;
                     img.setIsCover(true);
                 }
-                result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
+                result.add(img.setFileUri(property.left).setSize(property.right).setStatus(isOnline ? StatusContent.ONLINE : StatusContent.DOWNLOADED));
             } else
                 Timber.i(">> image not found among files : %s", imgName);
         }
