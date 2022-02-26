@@ -6,11 +6,7 @@
     </plurals>
     <string name="download_complete">Téléchargement terminé</string>
     <string name="download_cancelled">Téléchargement annulé</string>
-    <string name="download_skipped">Téléchargement ignoré</string>
-    <string name="download_paused">Téléchargement en pause</string>
     <string name="download_error">Le téléchargement est terminé, mais une erreur s\'est produite</string>
-    <string name="unhandled_download_error">Erreur non gérée lors de la lecture d\'URL d\'images</string>
-    <string name="downloading">Téléchargement</string>
     <plurals name="add_to_queue" tools:ignore="MissingQuantity">
         <item quantity="one">%1$d/%2$d élément ajouté à la file d\'attente</item>
         <item quantity="other">%1$d/%2$d éléments ajoutés à la file d\'attente</item>

@@ -6,11 +6,7 @@
     </plurals>
     <string name="download_complete">Descarga completada</string>
     <string name="download_cancelled">Descarga cancelada</string>
-    <string name="download_skipped">Descarga omitida</string>
-    <string name="download_paused">Descarga pausada</string>
     <string name="download_error">Descarga completada pero hay un error</string>
-    <string name="unhandled_download_error">Se ha producido un error al intentar leer los URLs de estas imágenes</string>
-    <string name="downloading">Descargando</string>
     <plurals name="add_to_queue" tools:ignore="MissingQuantity">
         <item quantity="one"><x:g example="1" id="processed">%1$d</x:g><x:g example="10" id="total">%2$d</x:g> artículo agregado a la cola de descarga</item>
         <item quantity="other"><x:g example="2" id="processed">%1$d</x:g><x:g example="10" id="total">%2$d</x:g> artículos agregados a la cola de descarga</item>

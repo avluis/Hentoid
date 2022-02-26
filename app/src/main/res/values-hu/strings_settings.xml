@@ -109,9 +109,6 @@
     <string name="pref_dl_blocked_tags_title">Blokkolt címkék</string>
     <string name="pref_dl_blocked_tags_summary">Bizonyos címkékkel ellátott könyvek letöltésének blokkolása\nTipp: a címkéket vesszővel válassza el egymástól</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Blokkoló viselkedés</string>
-    <string name="pref_dl_hitomi_webp_title">WEBP formátum letöltés preferálása, amikor lehet</string>
-    <string name="pref_dl_hitomi_webp_summary_off">Más típusú képek letöltése (PNG, JPG)</string>
-    <string name="pref_dl_hitomi_webp_summary_on">WebP képek letöltése, amikor azok elérhetők</string>
     <string name="pref_dl_threads_quantity_title">Párhuzamos letöltések száma</string>
     <string name="pref_dl_threads_quantity_summary">A letöltött képek száma egyidejűleg\nJelenleg: <x:g id="number" example="5">%s</x:g></string>
 <string name="pref_screen_privacy">Adatvédelem</string>
