@@ -44,9 +44,9 @@ android {
         buildConfigField "boolean", "INCLUDE_LEAK_CANARY", includeLeakCanary
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        resConfigs 'en', 'ru', 'it'
 
         // Only include complete translations
+        resConfigs 'en', 'ru', 'it'
 
         renderscriptTargetApi 21
         renderscriptSupportModeEnabled false
