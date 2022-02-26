@@ -116,9 +116,6 @@
     <string name="pref_dl_blocked_tags_title">Blocked tags</string>
     <string name="pref_dl_blocked_tags_summary">Block the download of books with specific tags\nTip: separate tags with commas</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Blocking behaviour</string>
-    <string name="pref_dl_hitomi_webp_title">Prefer downloading WebP</string>
-    <string name="pref_dl_hitomi_webp_summary_off">Download other type of pictures (PNG, JPG)</string>
-    <string name="pref_dl_hitomi_webp_summary_on">Download WebP pictures whenever they are available</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
     <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g id="number" example="5">%s</x:g></string>
 
