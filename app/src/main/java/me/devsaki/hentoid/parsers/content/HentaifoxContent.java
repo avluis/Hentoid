@@ -75,8 +75,8 @@ public class HentaifoxContent extends BaseContentParser {
         content.putAttributes(attributes);
 
         if (updateImages) {
-            content.setImageFiles(ParseHelper.urlsToImageFiles(HentaifoxParser.parseImages(content, thumbs, scripts), content.getCoverImageUrl(), StatusContent.SAVED));
             content.setQtyPages(qtyPages);
+            content.setImageFiles(ParseHelper.urlsToImageFiles(HentaifoxParser.parseImages(content, thumbs, scripts), content.getCoverImageUrl(), StatusContent.SAVED));
         }
 
         return content;
