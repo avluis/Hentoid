@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities
 
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -14,6 +15,7 @@ import me.devsaki.hentoid.databinding.ActivityDuplicateDetectorBinding
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.fragments.tools.DuplicateDetailsFragment
 import me.devsaki.hentoid.fragments.tools.DuplicateMainFragment
+import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -40,6 +42,13 @@ class DuplicateDetectorActivity : BaseActivity() {
 
         val vmFactory = ViewModelFactory(application)
         viewModel = ViewModelProvider(this, vmFactory).get(DuplicateViewModel::class.java)
+
+        if (!Preferences.getRecentVisibility()) {
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+            )
+        }
 
         // Cancel any previous worker that might be running TODO CANCEL BUTTON
 //        WorkManager.getInstance(application).cancelAllWorkByTag(DuplicateDetectorWorker.WORKER_TAG)
