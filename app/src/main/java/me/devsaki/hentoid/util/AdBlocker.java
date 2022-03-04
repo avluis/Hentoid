@@ -214,7 +214,8 @@ public class AdBlocker {
                 Timber.e(iae);
                 return true; // Avoid feeding malformed URLs to Chromium on older Androids (crash reported on Lollipop)
             }
-            addToJsUrlWhitelist(cleanUrl);
+            // Don't whitelist the site root as it will auto-whitelist every file hosted there
+            if (!cleanUrl.equals(site.getUrl().toLowerCase())) addToJsUrlWhitelist(cleanUrl);
             Timber.d(">> grey file %s ALLOWED", url);
         }
 
