@@ -322,7 +322,6 @@
 
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>
-    <string name="app_id" translatable="false">me.devsaki.hentoid</string>
     <string name="error" translatable="false">Error</string>
     <string name="empty_string" translatable="false"/>
     <!-- Strings: Main: TextViews -->
@@ -342,7 +341,6 @@
     <string name="book_artist" translatable="false">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
     <string name="book_pages_queue" translatable="false">Pages: 1234; estimated 125 MB</string>
     <string name="book_pages_library" translatable="false">1234 pages / 1125 MB</string>
-    <string name="book_pages_library2" translatable="false">1234 pages / 30 chapters / 1125 MB [Merged]</string>
     <string name="book_tags" translatable="false">tag1, tag2, tag3, etc.</string>
     <!-- Strings: Main: About Activity -->
     <string name="about_github" translatable="false"><u>GitHub</u></string>
@@ -393,8 +391,6 @@
     <string name="pref_dl_retries_mem_limit_summary" translatable="false">%s</string>
     <string name="pref_dl_retries_mem_limit_default" translatable="false">100</string>
     <string name="pref_dl_blocked_tags_behaviour_default" translatable="false">0</string>
-    <string name="pref_dl_hitomi" translatable="false">Hitomi.la</string>
-    <string name="pref_dl_hitomi_webp_default" translatable="false">true</string>
     <string name="pref_dl_threads_quantity_default" translatable="false">0</string>
     <!-- Strings: Settings: Privacy -->
     <string name="pref_app_preview_default" translatable="false">false</string>

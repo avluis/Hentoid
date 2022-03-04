@@ -980,7 +980,9 @@ public class LibraryActivity extends BaseActivity {
             splitMenu.setVisible(false);
         } else {
             editNameMenu.setVisible(!isMultipleSelection);
-            deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
+            deleteMenu.setVisible(
+                    (selectedLocalCount > 0 || selectedStreamedCount > 0) && (0 == selectedExternalCount || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary()))
+            );
             completedMenu.setVisible(true);
             shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
             archiveMenu.setVisible(true);

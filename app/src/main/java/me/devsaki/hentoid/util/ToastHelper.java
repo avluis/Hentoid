@@ -19,6 +19,10 @@ public class ToastHelper {
         throw new IllegalStateException("Utility class");
     }
 
+    /**
+     * @deprecated Prefer using @StringRes to better support localization
+     * @param message Message to display
+     */
     @Deprecated
     public static void toast(String message) {
         toast(HentoidApp.getInstance(), message, Toast.LENGTH_SHORT);

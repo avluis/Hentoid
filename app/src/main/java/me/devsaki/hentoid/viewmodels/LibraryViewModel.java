@@ -927,25 +927,19 @@ public class LibraryViewModel extends AndroidViewModel {
 
         compositeDisposable.add(
                 Single.fromCallable(() -> {
-                    boolean result = false;
-                    try {
-                        ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
-                        if (deleteAfterMerging)
-                            deleteItems(contentList, Collections.emptyList(), false, null);
-                        result = true;
-                    } catch (ContentNotProcessedException e) {
-                        Timber.e(e);
-                        if (deleteAfterMerging)
-                            for (Content c : contentList) flagContentDelete(c, false);
-                    }
-                    return result;
+                    ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
+                    return true;
                 })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
+                        .map(b -> {
+                                    if (deleteAfterMerging)
+                                        deleteItems(contentList, Collections.emptyList(), false, null);
+                                    return true;
+                                }
+                        )
                         .subscribe(
-                                b -> {
-                                    if (b) onSuccess.run();
-                                },
+                                b -> onSuccess.run(),
                                 t -> {
                                     Timber.e(t);
                                     if (deleteAfterMerging)

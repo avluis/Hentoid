@@ -18,7 +18,7 @@ public class NhentaiActivity extends BaseWebActivity {
     private static final String[] GALLERY_FILTER = {"nhentai.net/g/", "nhentai.net/search/\\?q=[%0-9]+$"};
     private static final String[] RESULTS_FILTER = {"//nhentai.net[/]*$", "//nhentai.net/\\?", "//nhentai.net/search/\\?", "//nhentai.net/(character|artist|parody|tag|group)/"};
     private static final String[] BLOCKED_CONTENT = {"popunder"};
-    private static final String[] DIRTY_ELEMENTS = {"section.advertisement"};
+    private static final String[] AD_BLOCKS = {"section.advertisement"};
 
     Site getStartSite() {
         return Site.NHENTAI;
@@ -31,7 +31,7 @@ public class NhentaiActivity extends BaseWebActivity {
         client.restrictTo(DOMAIN_FILTER);
         client.setResultsUrlPatterns(RESULTS_FILTER);
         client.setResultUrlRewriter(this::rewriteResultsUrl);
-        client.addRemovableElements(DIRTY_ELEMENTS);
+        client.addRemovableElements(AD_BLOCKS);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);
         return client;
     }
