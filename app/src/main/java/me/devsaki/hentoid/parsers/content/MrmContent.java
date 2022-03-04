@@ -44,7 +44,8 @@ public class MrmContent extends BaseContentParser {
             content.setTitle(title);
         } else content.setTitle(NO_TITLE);
 
-        if (!images.isEmpty()) content.setCoverImageUrl(ParseHelper.getImgSrc(images.get(0)));
+        if (images != null && !images.isEmpty())
+            content.setCoverImageUrl(ParseHelper.getImgSrc(images.get(0)));
 
         AttributeMap attributes = new AttributeMap();
         // On MRM, most titles are formatted "[Artist] Title" although there's no actual artist field on the book page
