@@ -52,38 +52,39 @@ public class EHentaiGalleriesMetadata {
             AttributeType type;
             String name;
 
-            for (String s : tags) {
-                tagParts = s.split(":");
-                if (1 == tagParts.length) {
-                    type = AttributeType.TAG;
-                    name = s;
-                } else {
-                    name = tagParts[1];
-                    switch (tagParts[0]) {
-                        case "parody":
-                            type = AttributeType.SERIE;
-                            break;
-                        case "character":
-                            type = AttributeType.CHARACTER;
-                            break;
-                        case "language":
-                            type = AttributeType.LANGUAGE;
-                            break;
-                        case "artist":
-                            type = AttributeType.ARTIST;
-                            break;
-                        case "group":
-                            type = AttributeType.CIRCLE;
-                            break;
-                        default:
-                            type = AttributeType.TAG;
-                            name = s;
-                            break;
+            if (tags != null)
+                for (String s : tags) {
+                    tagParts = s.split(":");
+                    if (1 == tagParts.length) {
+                        type = AttributeType.TAG;
+                        name = s;
+                    } else {
+                        name = tagParts[1];
+                        switch (tagParts[0]) {
+                            case "parody":
+                                type = AttributeType.SERIE;
+                                break;
+                            case "character":
+                                type = AttributeType.CHARACTER;
+                                break;
+                            case "language":
+                                type = AttributeType.LANGUAGE;
+                                break;
+                            case "artist":
+                                type = AttributeType.ARTIST;
+                                break;
+                            case "group":
+                                type = AttributeType.CIRCLE;
+                                break;
+                            default:
+                                type = AttributeType.TAG;
+                                name = s;
+                                break;
+                        }
                     }
-                }
 
-                attributes.add(new Attribute(type, name, type.name() + "/" + name, site));
-            }
+                    attributes.add(new Attribute(type, name, type.name() + "/" + name, site));
+                }
             content.putAttributes(attributes);
 
             return content;
