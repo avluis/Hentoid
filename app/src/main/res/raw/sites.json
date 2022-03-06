@@ -7,7 +7,8 @@
       "requestsCapPerSecond": 2
     },
     "NHENTAI": {
-      "useHentoidAgent": true
+      "useHentoidAgent": false,
+      "useWebviewAgent": false
     },
     "TSUMINO": {
       "useHentoidAgent": true

@@ -1030,7 +1030,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(onlineContent.getCoverImageUrl()));
                     downloadParams.put(HttpHelper.HEADER_REFERER_KEY, onlineContent.getSite().getUrl());
 
-                    Response onlineCover = HttpHelper.getOnlineResource(
+                    Response onlineCover = HttpHelper.getOnlineResourceFast(
                             HttpHelper.fixUrl(onlineContent.getCoverImageUrl(), getStartUrl()),
                             requestHeadersList,
                             getStartSite().useMobileAgent(),
