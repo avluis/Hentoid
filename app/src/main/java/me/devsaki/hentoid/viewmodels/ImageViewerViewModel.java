@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
@@ -490,11 +491,36 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
 
-        synchronized (viewerImagesInternal) {
-            viewerImagesInternal.clear();
-            viewerImagesInternal.addAll(imgs);
+        // Only update if there's any noticeable difference on images...
+        boolean hasDiff = (imgs.size() != viewerImagesInternal.size());
+        if (!hasDiff) {
+            for (int i = 0; i < imgs.size(); i++) {
+                hasDiff = !Objects.equals(imgs.get(i), viewerImagesInternal.get(i));
+                if (hasDiff) break;
+            }
         }
-        viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
+        // ...or chapters
+        if (!hasDiff) {
+            List<Chapter> oldChapters = Stream.of(viewerImagesInternal).map(ImageFile::getLinkedChapter).toList();
+            List<Chapter> newChapters = Stream.of(imgs).map(ImageFile::getLinkedChapter).toList();
+
+            hasDiff = (oldChapters.size() != newChapters.size());
+
+            if (!hasDiff) {
+                for (int i = 0; i < oldChapters.size(); i++) {
+                    hasDiff = !Objects.equals(oldChapters.get(i), newChapters.get(i));
+                    if (hasDiff) break;
+                }
+            }
+        }
+
+        if (hasDiff) {
+            synchronized (viewerImagesInternal) {
+                viewerImagesInternal.clear();
+                viewerImagesInternal.addAll(imgs);
+            }
+            viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
+        }
     }
 
     public void onLeaveBook(int readerIndex) {
@@ -711,7 +737,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     private void doDeleteBook(@NonNull Content targetContent) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
-        ContentHelper.removeQueuedContent(getApplication(), dao, targetContent);
+        ContentHelper.removeQueuedContent(getApplication(), dao, targetContent, true);
     }
 
     public void deletePage(int pageViewerIndex, Consumer<Throwable> onError) {
@@ -1103,9 +1129,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .observeOn(Schedulers.io())
                         .map(ContentHelper::reparseFromScratch)
                         .doOnNext(c -> {
-                            if (c.isEmpty()) throw new EmptyResultException();
+                            if (c.right.isEmpty()) throw new EmptyResultException();
                             dao.addContentToQueue(
-                                    c.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP,
+                                    c.right.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP,
                                     ContentQueueManager.getInstance().isQueueActive(getApplication()));
                         })
                         .observeOn(AndroidSchedulers.mainThread())
@@ -1188,7 +1214,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (null == theContent) return;
 
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doCreateRemoveChapter(theContent.getId(), selectedPage))
+                Completable.fromRunnable(() -> doCreateRemoveChapter(theContent.getId(), selectedPage.getId()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -1206,10 +1232,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
      * * - If the given position is the first page of a chapter -> remove this chapter
      * * - If not, create a new chapter at this position
      *
-     * @param contentId    ID of the corresponding content
-     * @param selectedPage Position to remove or create a chapter at
+     * @param contentId      ID of the corresponding content
+     * @param selectedPageId ID of the page to remove or create a chapter at
      */
-    private void doCreateRemoveChapter(long contentId, @NonNull ImageFile selectedPage) {
+    private void doCreateRemoveChapter(long contentId, long selectedPageId) {
         Helper.assertNonUiThread();
         String chapterStr = getApplication().getString(R.string.gallery_chapter_prefix);
         if (null == VANILLA_CHAPTERNAME_PATTERN)
@@ -1218,13 +1244,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Content theContent = dao.selectContent(contentId); // Work on a fresh content
         if (null == theContent) throw new IllegalArgumentException("No content found");
 
+        ImageFile selectedPage = dao.selectImageFile(selectedPageId);
         Chapter currentChapter = selectedPage.getLinkedChapter();
         // Creation of the very first chapter of the book -> unchaptered pages are considered as "chapter 1"
         if (null == currentChapter) {
             currentChapter = new Chapter(1, "", chapterStr + " 1");
-            currentChapter.setImageFiles(viewerImagesInternal);
-            // Link images the other way around so that what follows works properly
-            for (ImageFile img : viewerImagesInternal) img.setChapter(currentChapter);
+            List<ImageFile> workingList = theContent.getImageFiles();
+            if (workingList != null) {
+                currentChapter.setImageFiles(workingList);
+                // Link images the other way around so that what follows works properly
+                for (ImageFile img : workingList) img.setChapter(currentChapter);
+            }
             currentChapter.setContent(theContent);
         }
 
@@ -1406,7 +1436,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
         dao.insertChapters(chapters);
 
-        // Renumber all images and update the DB
+        // Renumber all readable images and update the DB
         List<ImageFile> images = Stream.of(chapters).map(Chapter::getImageFiles).withoutNulls().flatMap(Stream::of).toList();
         if (images.isEmpty())
             throw new IllegalArgumentException("No images found");
@@ -1415,9 +1445,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         int nbMaxDigits = images.get(images.size() - 1).getName().length(); // Keep existing formatting
         Map<String, ImageFile> fileNames = new HashMap<>();
         for (ImageFile img : images) {
-            img.setOrder(index++);
-            img.computeName(nbMaxDigits);
-            fileNames.put(img.getFileUri(), img);
+            if (img.isReadable()) {
+                img.setOrder(index++);
+                img.computeName(nbMaxDigits);
+                fileNames.put(img.getFileUri(), img);
+            }
         }
 
         // = Rename all files that need to be renamed

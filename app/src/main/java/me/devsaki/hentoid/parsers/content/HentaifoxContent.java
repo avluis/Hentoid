@@ -43,13 +43,14 @@ public class HentaifoxContent extends BaseContentParser {
 
         if (null == information || information.children().isEmpty()) return content;
 
+        int qtyPages = 0;
         AttributeMap attributes = new AttributeMap();
 
         for (Element e : information.children()) {
             // Flat info (pages, posted date)
             if (e.children().isEmpty() && e.hasText()) {
                 if (e.text().toLowerCase().startsWith("pages")) {
-                    content.setQtyPages(Integer.parseInt(e.text().toLowerCase().replace(" ", "").replace("pages:", "")));
+                    qtyPages = Integer.parseInt(e.text().toLowerCase().replace(" ", "").replace("pages:", ""));
                 }
             } else if (e.children().size() > 1) { // Tags
                 String metaType = e.child(0).text().replace(":", "").trim();
@@ -73,8 +74,10 @@ public class HentaifoxContent extends BaseContentParser {
         }
         content.putAttributes(attributes);
 
-        if (updateImages)
+        if (updateImages) {
+            content.setQtyPages(qtyPages);
             content.setImageFiles(ParseHelper.urlsToImageFiles(HentaifoxParser.parseImages(content, thumbs, scripts), content.getCoverImageUrl(), StatusContent.SAVED));
+        }
 
         return content;
     }

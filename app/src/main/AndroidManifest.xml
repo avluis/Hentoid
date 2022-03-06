@@ -514,7 +514,6 @@
         </activity>
 
         <!-- Services -->
-        <service android:name=".services.UpdateCheckService" />
 
         <service android:name=".services.API29MigrationService" />
 

@@ -34,6 +34,15 @@ public class HitomiGalleryInfo {
     private static class HitomiTag {
         private String url;
         private String tag;
+        private String female;
+        private String male;
+
+        String getLabel() {
+            String result = StringHelper.protect(tag);
+            if (female != null && female.equals("1")) result += " ♀";
+            else if (male != null && male.equals("1")) result += " ♂";
+            return result;
+        }
     }
 
     private static class HitomiCharacter {
@@ -66,7 +75,7 @@ public class HitomiGalleryInfo {
                 addAttribute(AttributeType.SERIE, parody.parody, parody.url, attributes);
         if (tags != null)
             for (HitomiTag tag : tags)
-                addAttribute(AttributeType.TAG, tag.tag, tag.url, attributes);
+                addAttribute(AttributeType.TAG, tag.getLabel(), tag.url, attributes);
         if (characters != null)
             for (HitomiCharacter chara : characters)
                 addAttribute(AttributeType.CHARACTER, chara.character, chara.url, attributes);

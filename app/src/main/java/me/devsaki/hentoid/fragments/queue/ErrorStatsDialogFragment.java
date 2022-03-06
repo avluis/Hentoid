@@ -117,7 +117,7 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         StringBuilder detailsStr = new StringBuilder();
 
         for (Map.Entry<ErrorType, Integer> entry : errorsByType.entrySet()) {
-            detailsStr.append(entry.getKey().getName()).append(" : ");
+            detailsStr.append(getResources().getString(entry.getKey().getName())).append(": ");
             detailsStr.append(entry.getValue());
             detailsStr.append(System.getProperty("line.separator"));
         }

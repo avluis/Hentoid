@@ -113,7 +113,7 @@ public class ErrorsDialogFragment extends DialogFragment {
         if (content.getErrorLog() != null && !content.getErrorLog().isEmpty()) {
             TextView firstErrorTxt = rootView.findViewById(R.id.redownload_detail_first_error);
             ErrorRecord firstError = content.getErrorLog().get(0);
-            String message = context.getString(R.string.redownload_first_error, firstError.getType().getName());
+            String message = context.getString(R.string.redownload_first_error, context.getString(firstError.getType().getName()));
             if (!firstError.getDescription().isEmpty())
                 message += String.format(" - %s", firstError.getDescription());
             firstErrorTxt.setText(message);

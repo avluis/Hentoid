@@ -44,7 +44,8 @@ public class MrmContent extends BaseContentParser {
             content.setTitle(title);
         } else content.setTitle(NO_TITLE);
 
-        if (!images.isEmpty()) content.setCoverImageUrl(ParseHelper.getImgSrc(images.get(0)));
+        if (images != null && !images.isEmpty())
+            content.setCoverImageUrl(ParseHelper.getImgSrc(images.get(0)));
 
         AttributeMap attributes = new AttributeMap();
         // On MRM, most titles are formatted "[Artist] Title" although there's no actual artist field on the book page
@@ -61,7 +62,10 @@ public class MrmContent extends BaseContentParser {
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, false, Site.MRM);
         content.putAttributes(attributes);
 
-        if (updateImages) content.setImageFiles(Collections.emptyList());
+        if (updateImages) {
+            content.setImageFiles(Collections.emptyList());
+            content.setQtyPages(0);
+        }
 
         return content;
     }

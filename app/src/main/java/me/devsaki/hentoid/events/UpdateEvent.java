@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.json.UpdateInfo;
+import me.devsaki.hentoid.json.core.UpdateInfo;
 
 public class UpdateEvent {
     public final boolean hasNewVersion;

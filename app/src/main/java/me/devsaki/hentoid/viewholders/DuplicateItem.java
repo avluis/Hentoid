@@ -368,7 +368,14 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             }
 
             // External icon
-            ivExternal.setVisibility(content.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
+            if (content.getStatus().equals(StatusContent.EXTERNAL)) {
+                if (content.isArchive())
+                    ivExternal.setImageResource(R.drawable.ic_archive);
+                else
+                    ivExternal.setImageResource(R.drawable.ic_folder_full);
+                ivExternal.setVisibility(View.VISIBLE);
+            } else
+                ivExternal.setVisibility(View.GONE);
 
             // Favourite icon
             if (content.isFavourite()) {

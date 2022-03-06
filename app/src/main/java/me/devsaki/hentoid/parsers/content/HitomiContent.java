@@ -76,7 +76,10 @@ public class HitomiContent extends BaseContentParser {
 */
         content.putAttributes(new AttributeMap());
 
-        if (updateImages) content.setImageFiles(Collections.emptyList());
+        if (updateImages) {
+            content.setImageFiles(Collections.emptyList());
+            content.setQtyPages(0);
+        }
 
         return content;
     }

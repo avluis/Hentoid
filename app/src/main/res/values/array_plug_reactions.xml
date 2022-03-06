@@ -1,51 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <!-- DO NOT modify the way these arrays are set up - it is required for Weblate to work -->
-    <!-- see https://docs.weblate.org/en/latest/formats.html#android-string-resources -->
-
-    <string-array name="audio_reactions" translatable="false">
-        <item>@string/audio_plug1</item>
-        <item>@string/audio_plug2</item>
-        <item>@string/audio_plug3</item>
-        <item>@string/audio_plug4</item>
-        <item>@string/audio_plug5</item>
-        <item>@string/audio_plug6</item>
-        <item>@string/audio_plug7</item>
-    </string-array>
     <!-- Plugging in audio device reaction -->
     <string name="audio_plug1">yametee~~♡</string>
-    <!-- Plugging in audio device reaction -->
     <string name="audio_plug2">stop, that\'s… the wrong hole~</string>
-    <!-- Plugging in audio device reaction -->
     <string name="audio_plug3">ughhh~</string>
-    <!-- Plugging in audio device reaction -->
     <string name="audio_plug4">ewww ♡ ♡</string>
-    <!-- Plugging in audio device reaction -->
     <string name="audio_plug5">not here~~♡</string>
-    <!-- Plugging in audio device reaction -->
     <string name="audio_plug6">bad, bad boy~~</string>
-    <!-- Plugging in audio device reaction -->
     <string name="audio_plug7">too… tight…♡</string>
-    <!-- Plugging in audio device reaction -->
-    <string-array name="power_reactions" translatable="false">
-        <item>♡~</item>
-        <item>@string/power_plug1</item>
-        <item>@string/power_plug2</item>
-        <item>@string/power_plug3</item>
-        <item>@string/power_plug4</item>
-        <item>@string/power_plug5</item>
-        <item>@string/power_plug6</item>
-    </string-array>
     <!-- Plugging in power cord reaction -->
     <string name="power_plug1">I like it there~~</string>
-    <!-- Plugging in power cord reaction -->
     <string name="power_plug2">push it further~~~♡</string>
-    <!-- Plugging in power cord reaction -->
     <string name="power_plug3">ikuuuu~~</string>
-    <!-- Plugging in power cord reaction -->
     <string name="power_plug4">ahh ♡</string>
-    <!-- Plugging in power cord reaction -->
     <string name="power_plug5">ohhh~</string>
-    <!-- Plugging in power cord reaction -->
     <string name="power_plug6">give me more ♡</string>
 </resources>

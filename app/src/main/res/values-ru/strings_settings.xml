@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <!-- Interface -->
-    <string name="pref_screen_interface">Интерфейс и навигация</string>
+<string name="pref_screen_interface">Интерфейс и навигация</string>
     <string name="pref_cat_library">Библиотека</string>
     <string name="pref_drawer_sources_title">Управление источниками</string>
     <string name="pref_drawer_sources_summary">Включайте, выключайте и реорганизовывайте источники, показываемые в левом меню</string>
@@ -20,8 +19,7 @@
     <string name="pref_cat_theme">Тема приложения</string>
     <string name="pref_color_theme_title">Цветовая схема</string>
     <string name="pref_color_theme_summary">Текущая тема: <x:g id="theme_name" example="Тёмно-красная">%s</x:g></string>
-    <!-- Storage -->
-    <string name="pref_screen_storage">Хранилище</string>
+<string name="pref_screen_storage">Хранилище</string>
     <string name="pref_cat_downloads_folder">Библиотека Hentoid</string>
     <string name="pref_select_folder_title">Выбор папки загрузок</string>
     <string name="pref_select_folder_summary">Выберите, где Hentoid будет хранить ваши загрузки</string>
@@ -56,8 +54,7 @@
         <item quantity="few">Удалить <x:g id="count" example="2">%d</x:g> книги\?</item>
         <item quantity="many">Удалить <x:g id="count" example="5">%d</x:g> книг\?</item>
     </plurals>
-    <!-- Browser -->
-    <string name="pref_screen_browser">Браузер</string>
+<string name="pref_screen_browser">Браузер</string>
     <string name="pref_browser_behaviour">Поведение</string>
     <string name="pref_browser_resume_last_title">Восстанавливать последнюю страницу</string>
     <string name="pref_browser_resume_last_off">Сайты будут открываться со своих главных страниц</string>
@@ -65,7 +62,6 @@
     <string name="pref_browser_dl_action_title">Загрузка</string>
     <string name="pref_browser_quick_dl_title">Быстрая загрузка</string>
     <string name="pref_browser_quick_dl_summary">Не открывая книгу, нажмите на неё для загрузки</string>
-    <string name="pref_browser_nhentai_invisible_blacklist_title">Заблокированные на nhentai книги</string>
     <string name="pref_browser_nhentai_invisible_blacklist_off">Отображаются с размытием</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">Не отображаются</string>
     <string name="pref_browser_quick_dl_threshold_title">Порог долгого нажатия для быстрой загрузки</string>
@@ -90,8 +86,7 @@
     <string name="pref_browser_initial_zoom_summary">Уровень масштаба при загрузке страницы\nСейчас: <x:g id="percentage" example="20%">%s%%</x:g></string>
     <string name="pref_browser_dns">Сторонний DNS</string>
     <string name="pref_browser_dns_title">DNS через HTTPS</string>
-    <!-- Downloader -->
-    <string name="pref_screen_downloader">Загрузчик</string>
+<string name="pref_screen_downloader">Загрузчик</string>
     <string name="pref_queue_autostart_title">Автоматически начинать очередь загрузки</string>
     <string name="pref_queue_autostart_on">Очередь загрузки начнётся как только загрузка завершится</string>
     <string name="pref_queue_autostart_off">Очередь загрузки запустится только вручную</string>
@@ -119,20 +114,18 @@
     <string name="pref_dl_hitomi_webp_summary_on">Загружать WebP, когда возможно</string>
     <string name="pref_dl_threads_quantity_title">Кол-во параллельных загрузок</string>
     <string name="pref_dl_threads_quantity_summary">Число изображений, загружающихся одновременно\nСейчас: <x:g id="number" example="5">%s</x:g></string>
-    <!-- Privacy -->
-    <string name="pref_screen_privacy">Конфиденциальность</string>
+<string name="pref_screen_privacy">Конфиденциальность</string>
     <string name="pref_app_preview_title">Предпросмотр в списке недавних приложений</string>
     <string name="pref_app_preview_summary_off">В списке недавних приложений не отображается, что открыто в приложении\nВключите, если хотите делать скриншоты приложения</string>
     <string name="pref_app_preview_summary_on">Содержимое экрана не скрывается в списке недавних приложений</string>
     <string name="pref_screenshot_title">Разрешить скриншоты</string>
     <string name="pref_screenshot_summary_off">Предпросмотр в списке недавних приложений и скриншоты в приложении отключены</string>
     <string name="pref_screenshot_summary_on">Скриншоты разрешены</string>
-    <!-- Updates -->
+<string name="pref_screen_updates">Обновления</string>
     <string name="pref_check_updates_manual_checking">Проверяю обновления…</string>
     <string name="pref_check_updates_manual_no_new">Обновлений не найдено — Вы уже используете последнюю версию</string>
     <string name="pref_check_updates_manual_no_connection">Не удалось проверить обновления. Проверьте соединение или попытайтесь позднее</string>
-    <!-- Viewer -->
-    <string name="pref_screen_viewer">Просмотр изображений</string>
+<string name="pref_screen_viewer">Просмотр изображений</string>
     <string name="pref_viewer_controls">Управление</string>
     <string name="pref_viewer_browse_mode">Режим обзора</string>
     <string name="pref_viewer_page_turn">Режим перелистывания страниц</string>

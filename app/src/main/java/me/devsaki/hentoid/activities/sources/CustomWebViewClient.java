@@ -687,7 +687,12 @@ class CustomWebViewClient extends WebViewClient {
                 Elements links = doc.select("a");
                 Set<String> found = new HashSet<>();
                 for (Element link : links) {
-                    String aHref = link.attr("href").replaceAll("\\p{Punct}", ".");
+                    String aHref = link.attr("href");
+                    // Only examine path
+                    int paramsIndex = aHref.indexOf("?");
+                    if (paramsIndex > -1) aHref = aHref.substring(0, paramsIndex);
+                    // Simplify & eliminate double separators
+                    aHref = aHref.replaceAll("\\p{Punct}", ".");
                     if (aHref.length() < 2) continue;
                     if (aHref.endsWith(".")) aHref = aHref.substring(0, aHref.length() - 1);
                     for (String url : siteUrls) {

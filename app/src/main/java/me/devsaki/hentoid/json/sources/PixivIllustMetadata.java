@@ -302,13 +302,15 @@ public class PixivIllustMetadata {
         if (urlValue.isEmpty()) urlValue = url;
         content.setUrl(urlValue.replace(Site.PIXIV.getUrl(), ""));
 
-        content.setQtyPages(illustData.getPageCount());
         content.setCoverImageUrl(illustData.getThumbUrl());
         content.setUploadDate(illustData.getUploadTimestamp());
 
         content.putAttributes(getAttributes());
 
-        if (updateImages) content.setImageFiles(illustData.getImageFiles());
+        if (updateImages) {
+            content.setImageFiles(illustData.getImageFiles());
+            content.setQtyPages(illustData.getPageCount());
+        }
 
         return content;
     }

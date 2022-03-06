@@ -1,55 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_intro">Benvenuto</string>
-    <string name="no">No</string>
-    <string name="ok">Ok</string>
+<string name="app_intro">Benvenuto</string>
+<string name="yes">Si</string>
+<string name="no">No</string>
+    <string name="ok" tools:ignore="MissingTranslation">Ok</string>
     <string name="on">Acceso</string>
+    <string name="off">Spento</string>
     <string name="select_all">Seleziona tutto</string>
     <string name="select_none">Seleziona niente</string>
     <string name="goto_page">Vai a pagina…</string>
+    <string name="confirm">Conferma</string>
     <string name="please_wait">Aspetta perfavore…</string>
-    <plurals name="book">
+    <plurals name="book" tools:ignore="ImpliedQuantity">
         <item quantity="one">Libro</item>
         <item quantity="other">Libri</item>
     </plurals>
-    <plurals name="file">
+    <plurals name="page" tools:ignore="ImpliedQuantity">
+        <item quantity="one">pagina</item>
+        <item quantity="other">pagine</item>
+    </plurals>
+    <plurals name="file" tools:ignore="ImpliedQuantity">
         <item quantity="one">File</item>
         <item quantity="other">Files</item>
     </plurals>
-    <string name="undo">Annulla</string>
     <string name="pause">Pausa</string>
     <string name="stop">Ferma</string>
+    <string name="resume">Riprendi</string>
     <string name="cancel">Annulla</string>
     <string name="cancel_all">Annulla tutto</string>
     <string name="menu_completed_single">Completato</string>
     <string name="service_running">Il servizio è già in esecuzione</string>
     <string name="open_folder">Apri cartella</string>
-    <string name="error">Errore</string>
     <string name="_default">predefinito</string>
-    <string name="title_activity_api29_migration">Migrazione API 29</string>
+    <string name="empty">vuoto</string>
+<string name="title_activity_api29_migration">Migrazione API 29</string>
     <string name="title_activity_downloads">Libreria</string>
     <string name="title_activity_queue">Coda</string>
     <string name="title_activity_preferences">Preferenze</string>
     <string name="title_activity_about">Informazioni</string>
     <string name="title_activity_app_lock">Blocco app</string>
     <string name="title_activity_search">Ricerca avanzata</string>
-    <string name="api29_migration_title">Hendroid v12
-\nAggiornamento gestione file</string>
-    <string name="api29_migration_subtitle">Hendroid sta aggiornando la tua raccolta.
-\nPotrebbero essere necessari alcuni minuti.</string>
-    <string name="api29_migration_location">Posizione attuale della cartella Hendroid
-\n<x:g id="path" example="/storage/emulated/0/Hendroid">%s</x:g></string>
+<string name="api29_migration_title">Hendroid v12 \nAggiornamento gestione file</string>
+    <string name="api29_migration_subtitle">Hentoid sta aggiornando la tua raccolta. \nPotrebbero essere necessari alcuni minuti.</string>
+    <string name="api29_migration_location">L\'attuale posizione della cartelle di Hentoid è \n<x:g example="/storage/emulated/0/Hendroid" id="path">%s</x:g></string>
     <string name="api29_migration_step1">Cartella Hendroid</string>
     <string name="api29_migration_step1_external">Cartella esterna</string>
     <string name="api29_migration_step1_select">Seleziona la cartella Hendroid</string>
     <string name="api29_migration_step1_select_external">Seleziona cartella esterna</string>
     <string name="api29_migration_step2">Analizza le cartelle del sito</string>
     <string name="api29_migration_step3_init">Scansionando la libreria…</string>
-    <string name="api29_migration_step3">Scansiona libreria (<x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="7">%2$d</x:g>)</string>
+    <string name="api29_migration_step3">Scansiona libreria (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
     <string name="api29_migration_step4_init">Importazione coda…</string>
     <string name="api29_migration_select_folder">Seleziona una cartella Hendroid esistente. La sua posizione è visualizzata sullo schermo.</string>
     <string name="api29_migration_allow_write">Si prega di consentire il permesso di scrittura</string>
-    <string name="menu_search">Cerca</string>
+<string name="menu_search">Cerca</string>
     <string name="menu_fav">Attiva/disattiva filtro preferito</string>
     <string name="menu_comp">Attiva/disattiva filtro completato</string>
     <string name="menu_mark_fav">Attiva/disattiva preferito</string>
@@ -57,10 +61,9 @@
     <string name="menu_edit_order">Modifica ordine</string>
     <string name="menu_edit_name">Modifica nome</string>
     <string name="menu_edit_cancel">Annulla modifica</string>
-    <string name="menu_edit_warning_custom">Il nuovo ordine personalizzato sovrascriverà quello precedente.</string>
+    <string name="menu_edit_warning_custom">Il nuovo ordine personalizzato che stai per creare sovrascriverà quello precedente.</string>
     <string name="menu_order">Ordina libri</string>
     <string name="menu_delete_single">Elimina</string>
-    <string name="menu_delete_multi">Elimina elementi</string>
     <string name="menu_change_group">Passa al gruppo…</string>
     <string name="menu_open_folder">Apri la cartella contenente</string>
     <string name="menu_redownload">Scarica di nuovo</string>
@@ -73,7 +76,7 @@
     <string name="menu_share_title">URL del libro</string>
     <string name="menu_archive">Archivio</string>
     <string name="menu_archive_help">Archivia il libro in un file ZIP</string>
-    <string name="search_hint">Titolo, artista, tag o ID del libro</string>
+    <string name="search_hint">Titolo, autore, tag o ID del libro</string>
     <string name="send_to">Condividi con:</string>
     <string name="open_settings">Apri impostazioni</string>
     <string name="app_settings">Impostazioni app</string>
@@ -82,39 +85,34 @@
     <string name="low_memory">Il tuo dispositivo ha poca memoria!</string>
     <string name="fix_permissions">Aggiusta</string>
     <string name="view_queue">Visualizza coda</string>
-    <string name="downloader_title">Downloader</string>
+<string name="downloader_title">Downloader</string>
     <string name="queue_queue_tab">In corso</string>
     <string name="queue_errors_tab">Errori</string>
-    <plurals name="ask_cancel_multiple">
+    <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
         <item quantity="one">Cancellare l\'elemento selezionato\?</item>
         <item quantity="other">Cancellare gli elementi selezionati\?</item>
     </plurals>
     <string name="invert_queue">Inverti coda</string>
     <string name="redownload_all">Scarica di nuovo tutto</string>
     <string name="cancel_all_errors">Cancella tutti gli errori</string>
-    <string name="canceled">Annullato</string>
     <string name="move_top">Vai all\'inizio</string>
-    <string name="move_up">Sali</string>
-    <string name="move_down">Scendi</string>
     <string name="move_bottom">Scendi alla fine</string>
     <string name="queue_paused">Coda in pausa</string>
     <string name="queue_preparing">Preparazione del download</string>
-    <string name="queue_dl">Scaricando <x:g id="book_name" example="Cool H-Manga">%s</x:g></string>
-    <string name="err_stats_help">Mostra informazioni dettagliate riguardo gli attuali errori dei download</string>
+    <string name="queue_dl">Scaricando <x:g example="Cool H-Manga" id="book_name">%s</x:g></string>
     <string name="err_stats_title">Informazioni degli errori</string>
+    <string name="err_stats_help">Mostra informazioni dettagliate riguardo gli attuali errori dei download</string>
     <string name="err_no_content">Il libro non esiste ancora</string>
     <string name="confirm_cancel_all">Cancellare l\'intera coda\?</string>
-    <plurals name="confirm_cancel_all_errors">
-        <item quantity="one">Cancellare <x:g id="count" example="42">%d</x:g> libro con errori\?</item>
-        <item quantity="other">Cancellare <x:g id="count" example="42">%d</x:g> libri con errori\?</item>
+    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
+        <item quantity="other">Cancellare tutti i <x:g example="42" id="count">%d</x:g> libri con errori\?</item>
     </plurals>
-    <plurals name="confirm_redownload_all">
-        <item quantity="one">Riscaricare <x:g id="count" example="42">%d</x:g> elemento\?</item>
-        <item quantity="other">Riscaricare <x:g id="count" example="42">%d</x:g> elementi\?</item>
+    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
+        <item quantity="other">Riscaricare <x:g example="42" id="count">%d</x:g> elementi\?</item>
     </plurals>
     <string name="paused_no_internet">Impossibile scaricare - Nessuna connessione Internet</string>
     <string name="paused_no_wifi">Impossibile scaricare - Nessun Wi-Fi</string>
-    <string name="paused_no_storage">Impossibile scaricare - Memoria insufficiente (<x:g id="size_left_bytes" example="0 bytes">%s</x:g> rimanente). Libera spazio o cambia la posizione della cartella di download</string>
+    <string name="paused_no_storage">Impossibile scaricare - Memoria insufficiente (<x:g example="0 bytes" id="size_left_bytes">%s</x:g> rimanente). Libera spazio o cambia la posizione della cartella</string>
     <string name="paused_no_dl_folder">Impossibile scaricare - Nessuna cartella di download. Utilizza le impostazioni dell\'app per selezionarne una</string>
     <string name="paused_dl_folder_not_found">Impossibile scaricare - Cartella di download non trovata. Usa le impostazioni dell\'app per selezionarne una</string>
     <string name="paused_dl_folder_credentials">Impossibile scaricare - Credenziali insufficienti nella cartella di download. Usa le impostazioni dell\'app per riselezionarla</string>
@@ -123,47 +121,60 @@
     <string name="step_prepare_img">Preparazione delle immagini</string>
     <string name="step_fetch_img">Recupero delle immagini</string>
     <string name="step_prepare_folder">Preparazione della cartella di download</string>
-    <string name="step_save_queue">Salvataggio della coda</string>
     <string name="step_prepare_download">Preparazione della coda dei download</string>
+    <string name="step_save_queue">Salvataggio della coda</string>
+    <string name="step_wait_purge">Aspetta che l\'eleminazione finisca</string>
     <string name="step_start_download">Download della coda iniziato !</string>
     <string name="help_swipe_cancel">Puoi annullare i download scorrendoli verso sinistra</string>
     <string name="redownloaded_error">Si è verificato un problema durante il nuovo download - annullato</string>
     <plurals name="redownloaded_scratch">
-        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> elemento cancellato per riscaricarlo</item>
-        <item quantity="other"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g> elementi cancellati per riscaricarli</item>
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> elemento cancellato per riscaricarlo</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> elementi cancellati per riscaricarli</item>
     </plurals>
     <string name="queue_add_top">Aggiungi in cima</string>
     <string name="queue_add_bottom">Aggiungi al fondo</string>
     <string name="notification_user_action_title">Azioni dell\'utente</string>
     <string name="notification_user_action_needed">Azione dell\'utente necessaria</string>
     <string name="notification_action_dl_revive">Tocca qui per riattivare il download</string>
-    <string name="revive_wait">Si prega di rimanere su questa schermata mentre il download viene ripristinato</string>
-    <string name="queue_json_saved">JSON della coda salvato</string>
-    <string name="queue_json_failed">Impossibile salvare il JSON della coda</string>
-    <string name="queue_content_size_estimate">circa <x:g id="size_mbytes" example="13.37">%.1f</x:g> MB</string>
-    <string name="queue_bottom_bar_processed"><x:g id="processed" example="3">%1$s</x:g>/<x:g id="total" example="7">%2$d</x:g> elaborato</string>
+    <string name="revive_wait">Rimani su questa schermata mentre il download viene riattivato</string>
+    <string name="queue_json_saved">Coda JSON salvata</string>
+    <string name="queue_json_failed">Salvataggio JSON della coda non riuscito</string>
+    <string name="queue_content_size_estimate"><x:g example="13.37" id="size_mbytes">%.1f</x:g> MB estimati</string>
+    <string name="queue_bottom_bar_processed"><x:g example="3" id="processed">%1$s</x:g>/<x:g example="7" id="total">%2$d</x:g> processati</string>
     <plurals name="queue_bottom_bar_errors">
-        <item quantity="one">(<x:g id="errors" example="1">%d</x:g> errore)</item>
-        <item quantity="other">(<x:g id="errors" example="1">%d</x:g> errori)</item>
+        <item quantity="one">(<x:g example="1" id="errors">%d</x:g> errore)</item>
+        <item quantity="other">(<x:g example="2" id="errors">%d</x:g> errori)</item>
     </plurals>
-    <string name="queue_bottom_bar_retry">riprova <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
-    <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> KBps</string>
-    <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> MB a <x:g id="speed_kbps" example="102.4">%3$d</x:g> KBps</string>
-    <string name="download_notif_failed">Download fallito</string>
-    <string name="download_notif_failed_details">Impossibile scaricare <x:g id="book_name" example="Cool H-Manga">%1$s</x:g>: impossibile creare la cartella <x:g id="path" example="/storage/emulated/0/Hendroid/nhentai/coolhmanga">%2$s</x:g>. Perfavore controlla la tua cartella Hendroid e riprova a scaricarlo usando il pulsante \'!\'.</string>
-    <string name="work_series">Serie: <x:g id="series" example="original">%s</x:g></string>
-    <string name="work_artist">Artista: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
+    <string name="queue_bottom_bar_retry">riprova <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
+    <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
+    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB a <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
+    <string name="download_notif_failed">Attenzione: download fallito</string>
+    <string name="download_notif_failed_details">Impossibile scaricare <x:g example="Cool H-Manga" id="book_name">%1$s</x:g> : impossibile creare cartella <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g> . Perfavore controlla la tua cartella Hentoid e riprova a scaricare usando il pulsante \'!\'.</string>
+<string name="work_series">Serie: <x:g example="original" id="series">%s</x:g></string>
+    <string name="work_artist">Artista: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>
     <plurals name="work_pages_missing">
-        <item quantity="one">(<x:g id="number" example="1">%d</x:g> mancante)</item>
-        <item quantity="other">(<x:g id="number" example="2">%d</x:g> mancanti)</item>
+        <item quantity="one">(<x:g example="1" id="number">%d</x:g> mancante)</item>
+        <item quantity="other">(<x:g example="2" id="number">%d</x:g> mancanti)</item>
     </plurals>
     <string name="work_pages_queue">Pagine: %1$s%2$s</string>
     <plurals name="work_pages_library">
-        <item quantity="one"><x:g id="pages_count" example="1">%1$d</x:g> pagina / <x:g id="size_mb" example="3.88">%2$.1f</x:g> MB</item>
-        <item quantity="other"><x:g id="pages_count" example="1">%1$d</x:g> pagine / <x:g id="size_mb" example="3.88">%2$.1f</x:g> MB</item>
+        <item quantity="one"><x:g example="1" id="pages_count">%1$d</x:g> pagina / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
+        <item quantity="other"><x:g example="2" id="pages_count">%1$d</x:g> pagine / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
     </plurals>
-    <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> MB</string>
-    <string name="refresh_title">Aggiorna libreria</string>
+    <string name="library_metrics_storage"><x:g example="3.88" id="size_mb">%.0f</x:g> MB</string>
+    <string name="redownload_queue_progress">Riscarica libri selezionati</string>
+    <string name="errortype_parsing">Analisi</string>
+    <string name="errortype_networking">Rete</string>
+    <string name="errortype_io">Imput/Output</string>
+    <string name="errortype_captcha">Captcha</string>
+    <string name="errortype_img_processing">Processando immagine</string>
+    <string name="errortype_site_limit">Limite downloads/connessione raggiunto</string>
+    <string name="errortype_account">Nessun account o credenziali insufficienti</string>
+    <string name="errortype_import">Nessun file locale trovato dopo l\'importazione</string>
+    <string name="errortype_wifi">Libro saltato per limite della grandezza di download in Wi-Fi</string>
+    <string name="errortype_blocked">Libro contiene un tag bloccato</string>
+    <string name="errortype_undefined">Indefinito</string>
+<string name="refresh_title">Aggiorna libreria</string>
     <string name="refresh_caption">Aggiorna automaticamente i dati della libreria con una nuova scansione di file e cartelle.</string>
     <string name="refresh_options">Opzioni di pulizia</string>
     <string name="refresh_location_internal">Libreria Hendroid</string>
@@ -171,45 +182,71 @@
     <string name="refresh_options_rename">Rinomina tutte le cartelle in base alla denominazione corrente e alla preferenza di lunghezza massima</string>
     <string name="refresh_options_remove">Rimuovi le cartelle in cui…</string>
     <string name="refresh_options_remove_1">Il file JSON è assente (raccomandato)</string>
-    <string name="yes">Si</string>
-    <string name="app_name">Hendroid</string>
-    <string name="off">Spento</string>
-    <string name="confirm">Conferma</string>
-    <string name="resume">Riprendi</string>
-    <plurals name="page" tools:ignore="ImpliedQuantity">
-        <item quantity="one">pagina</item>
-        <item quantity="other">pagine</item>
-    </plurals>
     <string name="refresh_options_remove_2">Nessuna immagine è stata scaricata</string>
-    <string name="refresh_options_remove_3">Il file JSON è illeggibile (non consigliato)</string>
-    <string name="refresh_options_remove_or">oppure</string>
-    <string name="delete_title">Elimina tutti tranne i preferiti</string>
-    <string name="generic_progress"><x:g id="number" example="7">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="books">%3$s</x:g></string>
+    <string name="refresh_options_remove_or">o</string>
+<string name="delete_title">Elimina tutti tranne i preferiti</string>
+    <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> <x:g example="books" id="type">%3$s</x:g></string>
     <plurals name="book_progress">
-        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> libro</item>
-        <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> libri</item>
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> libro</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> libri</item>
     </plurals>
-    <string name="import_title">Importa metadata</string>
+    <plurals name="group_progress">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> gruppo</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> gruppi</item>
+    </plurals>
+<string name="import_title">Importa metadata</string>
     <string name="import_mode_add">Aggiungi elementi importati</string>
     <string name="import_mode_replace">Sostituisci con elementi importati</string>
     <string name="import_select_file">Seleziona il file da importare</string>
-    <string name="import_file_invalid">Il file <x:g id="filename" example="metadata.json">%s</x:g> è invalido</string>
-    <string name="import_warning">Se nessuna immagine è rilevata, i libri importati apprariranno come download vuoti.
-\nDovrai scaricarli usando Coda &gt; Errori.</string>
+    <string name="import_file_invalid">File <x:g example="metadata.json" id="filename">%s</x:g> è invalido</string>
+    <plurals name="import_file_library">
+        <item quantity="one">Importa libreria (<x:g example="1" id="number">%d</x:g> libro)</item>
+        <item quantity="other">Importa libreria (<x:g example="2" id="number">%d</x:g> libri)</item>
+    </plurals>
+    <plurals name="import_file_queue">
+        <item quantity="one">Importa coda (<x:g example="1" id="number">%d</x:g> libro)</item>
+        <item quantity="other">Importa coda (<x:g example="2" id="number">%d</x:g> libri)</item>
+    </plurals>
+    <plurals name="import_file_groups">
+        <item quantity="one">Importa gruppo personalizzato (<x:g example="1" id="number">%d</x:g> gruppo)</item>
+        <item quantity="other">Importa gruppi personalizzati (<x:g example="2" id="number">%d</x:g> gruppi)</item>
+    </plurals>
+    <plurals name="import_file_bookmarks">
+        <item quantity="one">Importa segnalibro (<x:g example="1" id="number">%d</x:g> elemento)</item>
+        <item quantity="other">Importa segnalibri (<x:g example="2" id="number">%d</x:g> elementi)</item>
+    </plurals>
+    <string name="import_warning">Se nessuna immagine è rilevata, i libri importati apprariranno come download vuoti. \nDovrai scaricarli usando Coda &gt; Errori.</string>
     <string name="import_run">ESEGUI IMPORTAZIONE</string>
-    <string name="dialog_prompt">Concedi il permesso di scrittura</string>
-    <string name="export_warning1">L\'esportazione del metadata ha lo scopo di creare una lista dei tuoi libri in formato JSON.
-\nNon è pensata per muovere la tua collezione sul tuo Pc o sulla tua scheda SD.
-\nClicca qui per scoprire come farlo.</string>
-    <string name="export_warning2">I libri vengono esportati senza immagini.
-\nDovrai scaricarli di nuovo al ripristino se la cartella delle immagini non è presente.</string>
-    <string name="export_run">ESEGUI ESPORTAZIONE</string>
-    <string name="export_title">Esporta metadata</string>
+    <plurals name="import_result_books">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> libro importato correttamente</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> libri importati correttamente</item>
+    </plurals>
+    <plurals name="import_result_bookmarks">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> segnalibro importato correttamente</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> segnalibri importati correttamente</item>
+    </plurals>
+    <string name="dialog_prompt">Scegli una cartella</string>
+<string name="export_title">Esporta metadata</string>
+    <plurals name="export_file_library">
+        <item quantity="one">Esporta libreria (<x:g example="1" id="number">%d</x:g> libro)</item>
+        <item quantity="other">Esporta libreria (<x:g example="2" id="number">%d</x:g> libri)</item>
+    </plurals>
     <string name="export_favs_only">Esporta solo i preferiti</string>
     <string name="export_groups">Esporta gruppi personalizzati</string>
+    <plurals name="export_file_queue">
+        <item quantity="one">Esporta coda (<x:g example="1" id="number">%d</x:g> libro)</item>
+        <item quantity="other">Esporta coda (<x:g example="2" id="number">%d</x:g> libri)</item>
+    </plurals>
+    <plurals name="export_file_bookmarks">
+        <item quantity="one">Esporta segnalibro (<x:g example="1" id="number">%d</x:g> elemento)</item>
+        <item quantity="other">Esporta segnalibri (<x:g example="2" id="number">%d</x:g> elementi)</item>
+    </plurals>
+    <string name="export_warning1">L\'esportazione del metadata ha lo scopo di creare una lista dei tuoi libri in formato JSON. \nNon è pensata per muovere la tua collezione sul tuo Pc o sulla tua scheda SD. \nClicca qui per scoprire come farlo.</string>
+    <string name="export_warning2">I libri vengono esportati senza immagini. \nDovrai scaricarli di nuovo al ripristino se la cartella delle immagini non è presente.</string>
+    <string name="export_run">Esegui esportazione</string>
     <string name="import_settings_title">Importa impostazioni</string>
-    <string name="open_app_settings">Aprire le impostazioni dell\'app</string>
-    <string name="permissioncomplaint_snackbar">È necessario concedere i permessi prima di poter continuare</string>
+    <string name="import_settings_success">Importati</string>
+<string name="permissioncomplaint_snackbar">È necessario concedere i permessi prima di poter continuare</string>
     <string name="permissioncomplaint_snackbar_manual">È necessario concedere manualmente i permessi prima di poter continuare</string>
     <string name="import_canceled">Importazione annullata</string>
     <string name="import_invalid">Cartella selezionata non valida: selezionane un\'altra</string>
@@ -217,56 +254,94 @@
     <string name="import_download_folder">Non dovresti selezionare la cartella di download del tuo dispositivo: crea o selezionane un\'altra</string>
     <string name="import_create_fail">Creazione della cartella Hendroid fallita - seleziona un\'altra posizione</string>
     <string name="import_other">L\'importazione è stata interrotta</string>
+    <string name="import_unexpected">L\'importazione si è fermata inaspettatamente</string>
     <string name="task_done">Attività completata: vedi i dettagli nel registro</string>
+    <string name="content_not_found">Errore - contenuto non trovato</string>
+    <string name="contents_detected">Hentoid ha riconosciuto una libreria esistente in questa posizione. \nVuoi importare questa libreria\?</string>
     <string name="library_imports_title">Importazione delle librerie</string>
     <string name="starting_import">Inizio importazione…</string>
     <string name="importing_library">Importando la libreria</string>
-    <string name="importing_please_wait">Importazione in corso, attendere…</string>
-    <string name="updating_please_wait">Aggiornamento in corso, attendere…</string>
     <string name="import_complete">Importazione completata</string>
-    <string name="memory_title">Utilizzo della memoria</string>
-    <string name="memory_database">Database: <x:g id="size_mb" example="1.52 MB">%1$s</x:g> (<x:g id="percentage" example="40%">%2$.1f%%</x:g> pieno)</string>
+    <plurals name="import_complete_details_success">
+        <item quantity="one"><x:g example="1" id="number">%s</x:g> importato correttamente</item>
+        <item quantity="other"><x:g example="2" id="number">%s</x:g> importati correttamente</item>
+    </plurals>
+    <plurals name="import_complete_details_failure">
+        <item quantity="one"><x:g example="1" id="number">%s</x:g> fallito</item>
+        <item quantity="other"><x:g example="2" id="number">%s</x:g> falliti</item>
+    </plurals>
+<string name="memory_title">Utilizzo della memoria</string>
+    <string name="memory_total">Totale: <x:g example="100 MB" id="total">%s</x:g></string>
+    <string name="memory_free">Libero: <x:g example="50 MB" id="total">%s</x:g></string>
+    <string name="memory_hentoid_main">Hentoid (principale): <x:g example="2 MB" id="total">%s</x:g></string>
+    <string name="memory_hentoid_ext">Hentoid (esterno): <x:g example="3 MB" id="total">%s</x:g></string>
+    <string name="memory_database">Database <x:g example="1.52 MB" id="size_mb">%1$s</x:g> (<x:g example="40%" id="percentage">%2$.1f%%</x:g> pieno)</string>
     <string name="memory_details">Visualizza dettagli (principale)</string>
     <string name="memory_details_source">Fonte</string>
     <string name="memory_details_books">Libri</string>
     <string name="memory_details_size">Dimensione</string>
-    <string name="logs_title">Ultimi registri</string>
+<string name="logs_title">Ultimi registri</string>
     <string name="logs_open">Apri registro</string>
     <string name="read_log">Leggi registro</string>
     <string name="logs_share">Condividi registro</string>
     <string name="no_error_detected">Nessun errore rilevato.</string>
-    <string name="error_log_header">Registro errore per <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>\@<x:g id="site_name">%3$s</x:g>]: <x:g id="error_count" example="2">%4$d</x:g> errori</string>
-    <string name="error_log_header_queue">Registro errori per la coda</string>
     <string name="log_import_external">Importazione/aggiornamento della libreria esterna</string>
     <string name="log_import">Importazione/aggiornamento della libreria principale</string>
     <string name="log_cleanup">Pulizia della libreria principale</string>
     <string name="log_api29_migration">Migrazione della libreria da Hendroid v1.11</string>
-    <string name="error_write_permission">Non hai il permesso di scrivere in quella cartella, prova un\'altra cartella.</string>
+<string name="error_write_permission">Non hai il permesso di scrivere in quella cartella, prova un\'altra cartella.</string>
     <string name="error_creating_folder">La cartella non è valida.</string>
     <string name="error_open">Errore nell\'apertura del file: nessuna applicazione rilevante trovata</string>
     <string name="error_browser">Errore nell\'apertura del link: nessun browser trovato</string>
-    <string name="error_send">Errore nell\'invio dell\'archivio: nessuna applicazione pertinente trovata</string>
-    <string name="redownload_dialog_title">Provare a scaricare di nuovo\?</string>
+<string name="redownload_dialog_title">Provare a scaricare di nuovo\?</string>
+    <string name="redownload_dialog_message">Immagini totali in download: <x:g example="10" id="total_imgs">%1$d</x:g>\nImmagini senza errori: <x:g example="8" id="fine_imgs">%2$d</x:g>\nImmagini con errori: <x:g example="2" id="failed_imgs">%3$d</x:g></string>
+    <string name="redownload_first_error">Primo errore: <x:g id="errortype">%s</x:g></string>
+    <string name="redownload_action">SCARICA DI NUOVO</string>
     <string name="redownload_open_log">Apri registro errori</string>
     <string name="redownload_share_log">Condividi il registro degli errori</string>
     <string name="redownload_generating_log_file">Generazione del file di registro…</string>
-    <string name="resume_closed">Riprendere a leggere da dove l\'hai lasciato\?</string>
+<string name="resume_closed">Riprendere a leggere da dove l\'hai lasciato\?</string>
     <string name="open_drawer">Apri il cassetto</string>
     <string name="close_drawer">Chiudi il cassetto</string>
     <string name="ask_filter_completed">Come vorresti filtrare i libri completati\?</string>
     <string name="filter_completed">Mostra solo completati</string>
     <string name="filter_not_completed">Mostra solo i non completati</string>
+    <plurals name="ask_delete_multiple">
+        <item quantity="one">Cancellare l\'elemento selezionato\?</item>
+        <item quantity="other">Cancellare <x:g example="2" id="count">%d</x:g> elementi selezionati\?</item>
+    </plurals>
+    <plurals name="ask_archive_multiple">
+        <item quantity="one">Archiviare l\'elemento selezionato\?</item>
+        <item quantity="other">Archiviare <x:g example="2" id="count">%d</x:g> elementi selezionati\?</item>
+    </plurals>
+    <string name="new_group_name">Nome del nuovo gruppo\?</string>
     <string name="group_edit_name">Modifica il nome del gruppo</string>
-    <string name="delete_success">Eliminato</string>
-    <string name="archive_progress">Archiviando i libri</string>
-    <string name="archive_progress_subtitle">Fatto: <x:g id="count" example="42">%s</x:g></string>
-    <string name="notif_archive_complete">Archiviazione completata</string>
     <string name="book_edit_title">Modifica il titolo del libro</string>
     <string name="delete_progress">Cancellando i libri</string>
     <string name="purge_progress">Eliminando i libri</string>
     <string name="cancel_queue_progress">Annullamento degli elementi in coda</string>
+    <plurals name="delete_success_books">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> libro</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> libri</item>
+    </plurals>
+    <plurals name="delete_success_groups">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> gruppo</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> gruppi</item>
+    </plurals>
+    <string name="delete_success">Eliminato</string>
+    <string name="archive_progress">Archiviando i libri</string>
+    <string name="archive_progress_subtitle">Finito: <x:g example="42" id="count">%s</x:g></string>
+    <string name="notif_archive_complete">Archiviazione completata</string>
+    <plurals name="notif_archive_complete_details">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> libro archiviato correttamente</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> libri archiviati correttamente</item>
+    </plurals>
     <string name="notif_archive_fail">Archiviazione fallita</string>
     <string name="notif_archive_fail_details">Almeno un libro non è riuscito ad essere archiviato</string>
+    <plurals name="archive_success">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> libro archiviato nella tua cartella Download</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> libri archiviati nella tua cartella Download</item>
+    </plurals>
     <string name="stream_canceled">Streaming annullato - libro non disponibile online</string>
     <string name="download_canceled">Download annullato - libro non disponibile online</string>
     <string name="press_back_again">Premi indietro due volte (rapidamente) per uscire.</string>
@@ -276,12 +351,21 @@
     <string name="downloads_loading">Caricamento in corso~</string>
     <string name="masterdata_no_result">Nessun risultato :(</string>
     <string name="search_entry_not_found">Non è qui, vai a scaricarlo.</string>
-    <string name="packaging_content">Confezionando i files.
-\nAttendere prego…</string>
-    <string name="reset">I permessi sono stati reimpostati.
-\nRipristino dell\'app.</string>
-    <string name="search_bookid_label">Cerca <x:g id="launchcode" example="4567">\'%s\'</x:g> in…</string>
-    <string name="book_launchcode">Codici di lancio: <x:g id="launchcode" example="4567">%s</x:g></string>
+    <string name="search_bookid_label">Cerca <x:g example="4567" id="launchcode">\'%s\'</x:g> in...</string>
+    <string name="book_launchcode">Codice di lancio: <x:g example="4567" id="launchcode">%s</x:g></string>
+    <plurals name="number_of_items">
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> elemento</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> elementi</item>
+    </plurals>
+    <plurals name="number_of_book_search_results">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> risultato</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> risultati</item>
+    </plurals>
+    <string name="restart_needed">Le modifiche verranno applicate dopo il riavvio di Hendroid</string>
+    <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Riscaricare il libro selezionato da zero\?</item>
+        <item quantity="other">Riscaricare i libri selezionati da zero\?</item>
+    </plurals>
     <plurals name="download_confirm" tools:ignore="ImpliedQuantity">
         <item quantity="one">Scaricare il libro selezionato\?</item>
         <item quantity="other">Scaricare i libri selezionati\?</item>
@@ -290,282 +374,121 @@
         <item quantity="one">Passare il libro selezionato allo streaming\?</item>
         <item quantity="other">Passare i libri selezionati allo streaming\?</item>
     </plurals>
-    <string name="restart_needed">Le modifiche verranno applicate dopo il riavvio di Hendroid</string>
-    <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
-        <item quantity="one">Riscaricare il libro selezionato da zero\?</item>
-        <item quantity="other">Riscaricare i libri selezionati da zero\?</item>
-    </plurals>
-    <string name="import_settings_success">Importati</string>
-    <string name="new_group_name">Nome del nuovo gruppo\?</string>
-    <string name="memory_total">Totale: <x:g id="total" example="100 MB">%s</x:g></string>
-    <string name="memory_free">Libero: <x:g id="total" example="50 MB">%s</x:g></string>
-    <string name="memory_hentoid_main">Hendroid (principale): <x:g id="total" example="2 MB">%s</x:g></string>
-    <string name="memory_hentoid_ext">Hendroid (esterna): <x:g id="total" example="3 MB">%s</x:g></string>
-    <string name="redownload_first_error">Primo errore: <x:g id="errortype">%s</x:g></string>
-    <string name="redownload_action">SCARICA DI NUOVO</string>
-    <string name="import_unexpected">L\'importazione si è fermata inaspettatamente</string>
-    <string name="import_complete_details">Importazione completata</string>
-    <string name="redownload_dialog_message">Immagini totali in download: <x:g id="total_imgs" example="10">%1$d</x:g>
-\nImmagini senza errori: <x:g id="fine_imgs" example="8">%2$d</x:g>
-\nImmagini con errori: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
-    <string name="content_not_found">Errore - contenuto non trovato</string>
-    <string name="contents_detected">Hendroid ha riconosciuto una libreria esistente in questa posizione.
-\nVuoi importare questa libreria\?</string>
-    <plurals name="group_delete_selected_group_books">
-        <item quantity="one">Elimina gruppo + libri</item>
-        <item quantity="other">Elimina gruppi + libri</item>
-    </plurals>
-    <plurals name="ask_delete_multiple">
-        <item quantity="one">Cancellare l\'elemento selezionato\?</item>
-        <item quantity="other">Cancellare <x:g id="count" example="2">%d</x:g> elementi selezionati\?</item>
-    </plurals>
-    <string name="groups_custom">Personalizzato</string>
-    <string name="sort_read_date">Leggi data</string>
-    <string name="group_name_empty">Il nome del gruppo è vuoto!</string>
-    <string name="sort_dl_date">Data di download</string>
-    <plurals name="group_delete_selected_book">
-        <item quantity="one">Elimina <x:g id="count" example="1">%d</x:g> libro</item>
-        <item quantity="other">Elimina <x:g id="count" example="2">%d</x:g> libri</item>
-    </plurals>
-    <string name="split_select_help">Tieni premuto e trascina per selezionare
-\nOgni capitolo selezionato crea un nuovo libro</string>
-    <string name="merge_success">Contenuto unito</string>
-    <string name="no_artist_group_name">[nessun artista]</string>
-    <string name="sort_title">Titolo</string>
-    <string name="pin_current">Inserisci il PIN attuale</string>
-    <string name="personalDataStatement1"><b>INFORMATIVA SULLA PRIVACY DEI DATI PERSONALI</b>
-\n
-\nHendroid è un software gratuito e open-source gestito dalla community di Hendroid (Unisciti a noi su Discord - vedi il link sopra)</string>
-    <plurals name="import_file_queue">
-        <item quantity="one">Importa la coda (<x:g id="number" example="1">%d</x:g> libro)</item>
-        <item quantity="other">Importa la coda (<x:g id="number" example="2">%d</x:g> libri)</item>
-    </plurals>
-    <plurals name="group_progress">
-        <item quantity="one"><x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> gruppo</item>
-        <item quantity="other"><x:g id="number" example="2">%1$d</x:g> / <x:g id="total" example="42">%2$d</x:g> gruppi</item>
-    </plurals>
-    <plurals name="import_file_library">
-        <item quantity="one">Importa la libreria (<x:g id="number" example="1">%d</x:g> libro)</item>
-        <item quantity="other">Importa la libreria (<x:g id="number" example="2">%d</x:g> libri)</item>
-    </plurals>
-    <plurals name="export_file_library">
-        <item quantity="one">Esporta libreria (<x:g id="number" example="1">%d</x:g> libro)</item>
-        <item quantity="other">Esporta libreria (<x:g id="number" example="2">%d</x:g> libri)</item>
-    </plurals>
-    <plurals name="export_file_queue">
-        <item quantity="one">Esporta coda (<x:g id="number" example="1">%d</x:g> libro)</item>
-        <item quantity="other">Esporta coda (<x:g id="number" example="2">%d</x:g> libri)</item>
-    </plurals>
-    <plurals name="export_file_bookmarks">
-        <item quantity="one">Esporta segnalibro (<x:g id="number" example="1">%d</x:g> elemento)</item>
-        <item quantity="other">Esporta segnalibri (<x:g id="number" example="2">%d</x:g> elementi)</item>
-    </plurals>
-    <plurals name="import_complete_details_success">
-        <item quantity="one"><x:g id="number" example="1">%s</x:g> importato correttamente</item>
-        <item quantity="other"><x:g id="number" example="2">%s</x:g> importati correttamente</item>
-    </plurals>
-    <plurals name="archive_success">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> libro archiviato nella tua cartella Download</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri archiviati nella tua cartella Download</item>
-    </plurals>
-    <plurals name="delete_success_books">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> libro</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri</item>
-    </plurals>
-    <plurals name="delete_success_groups">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> gruppo</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> gruppi</item>
-    </plurals>
-    <plurals name="notif_archive_complete_details">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> libro archiviato correttamente</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri archiviati correttamente</item>
-    </plurals>
-    <plurals name="number_of_items">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> elemento</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> elementi</item>
-    </plurals>
-    <plurals name="number_of_book_search_results">
-        <item quantity="one"><x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> risultato</item>
-        <item quantity="other"><x:g id="number" example="2">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g> risultati</item>
-    </plurals>
     <plurals name="redownload_external_content">
-        <item quantity="one">Uno dei libri selezionati è memorizzato nella libreria esterna e non può essere riscaricato
-\nQuesto libro sarà ignorato.</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri selezionati sono memorizzati nella libreria esterna e non possono essere riscaricati
-\nQuesti libri saranno ignorati.</item>
+        <item quantity="one">Uno dei libri selezionati è memorizzato nella libreria esterna e non può essere riscaricato \nQuesto libro sarà ignorato.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> libri selezionati sono salvati in una libreria esterna e non possono essere riscaricati\nSaranno ignorati.</item>
     </plurals>
-    <string name="folder_undefined">Errore - cartella contenente non definita</string>
-    <string name="group_make_cover">Imposta come copertina del gruppo</string>
-    <string name="group_change">Passa al gruppo personalizzato</string>
     <plurals name="download_non_streamed_content">
-        <item quantity="one">Uno dei libri selezionati è già scaricato
-\nQuesto libro sarà ingnorato.</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri selezionati sono già scaricati
-\nQuesti libri saranno ingnorati.</item>
+        <item quantity="one">Uno dei libri selezionati è già scaricato \nQuesto libro sarà ingnorato.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> libri selezionati sono già scaricati\nSaranno ignorati.</item>
     </plurals>
-    <string name="about_to_delete">Il libro sta per essere cancellato…</string>
-    <string name="help_search">Cerca qualsiasi cosa: titolo, artista, tag
-\ne anche codici di lancio!</string>
+    <plurals name="stream_external_streamed_content">
+        <item quantity="one">Uno dei libri selezionati sta già venendo letto o è aperto in una libreria esterna
+Questo libro sarà ignorato.</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> libri selezionati stanno già venendo letti o sono aperti in una libreria esterna\nSaranno ignorati.</item>
+    </plurals>
+    <string name="help_search">Cerca qualsiasi cosa: titolo, autore, tag \ne anche codici di lancio!</string>
     <string name="help_page_slider">Puoi navigare più velocemente scorrendo tra i numeri delle pagine</string>
     <plurals name="items_selected">
-        <item quantity="one"><x:g id="count" example="1">%d</x:g> elemento selezionato</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> elementi selezionati</item>
+        <item quantity="one"><x:g example="1" id="count">%d</x:g> elemento selezionato</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> elementi selezionati</item>
     </plurals>
+    <string name="folder_undefined">Errore - cartella contenente non definita</string>
     <string name="malformed_url">Errore - URL non valido</string>
     <string name="unsupported_site">Errore - Il sito non è supportato</string>
     <plurals name="external_not_removed">
         <item quantity="one">Un libro dalla libreria esterna non verrà rimosso</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri dalla libreria esterna non verranno rimossi</item>
+        <item quantity="other"><x:g example="2" id="count">%d</x:g> libri dalla libreria esterna non saranno rimossi</item>
     </plurals>
+    <string name="group_make_cover">Imposta come copertina del gruppo</string>
     <string name="group_make_cover_ask">Impostare la copertina di questo libro come copertina di questo gruppo\?</string>
-    <string name="group_delete_nothing">Niente da eliminare - seleziona Consenti l\'eleminazione di contenuti esterni per cambiarlo</string>
+    <string name="group_change">Passa al gruppo personalizzato</string>
     <string name="group_existing">Gruppo esistente</string>
     <string name="group_new">Crea nuovo</string>
     <string name="group_new_name">Nuovo nome del gruppo personalizzato</string>
     <string name="group_remove">Stacca dal gruppo attuale</string>
     <string name="group_name_exists">Esiste già un gruppo con quel nome.</string>
     <string name="group_rename_forbidden">È vietato rinominare quel gruppo!</string>
+    <string name="group_name_empty">Il nome del gruppo è vuoto!</string>
     <string name="group_not_selected">Il gruppo non è stato selezionato!</string>
-    <plurals name="group_delete_selected_group">
+    <plurals name="group_delete_selected_group" tools:ignore="ImpliedQuantity">
         <item quantity="one">Elimina solo il gruppo</item>
         <item quantity="other">Elimina solo i gruppi</item>
     </plurals>
-    <string name="merge_merge">Unisci</string>
+    <plurals name="group_delete_selected_book">
+        <item quantity="one">Cancella <x:g example="1" id="count">%d</x:g> libro</item>
+        <item quantity="other">Cancella <x:g example="2" id="count">%d</x:g> libri</item>
+    </plurals>
+    <plurals name="group_delete_selected_group_books" tools:ignore="ImpliedQuantity">
+        <item quantity="one">Elimina gruppo + libri</item>
+        <item quantity="other">Elimina gruppi + libri</item>
+    </plurals>
+    <string name="group_delete_nothing">Niente da eliminare - seleziona Consenti l\'eleminazione di contenuti esterni per cambiarlo</string>
+<string name="merge_merge">Unisci</string>
     <string name="merge_progress">Unendo i libri…</string>
     <string name="split_progress">Dividendo il libro…</string>
     <string name="merge_split">Diviso</string>
     <string name="new_title">Nuovo titolo</string>
     <string name="merge_delete_after_merging">Elimina questi libri dopo l\'unione</string>
+    <string name="split_select_help">Tieni premuto e trascina per selezionare \nOgni capitolo selezionato crea un nuovo libro</string>
     <string name="split_no_chapters">Nessun capitolo ancora creato :-(</string>
     <string name="split_create_chapters">Crea capitoli</string>
+    <string name="merge_success">Contenuto unito</string>
     <string name="split_success">Contenuto diviso</string>
-    <string name="groups_flat">Tutti i libri</string>
+<string name="groups_flat">Tutti i libri</string>
     <string name="groups_by_artist">Per artista</string>
     <string name="groups_by_dl_date">Per data di download</string>
+    <string name="groups_custom">Personalizzato</string>
+    <string name="no_artist_group_name">[nessun artista]</string>
+<string name="sort_title">Titolo</string>
     <string name="sort_artist">Artista</string>
     <string name="sort_pages">Pagine</string>
+    <string name="sort_dl_date">Data di download</string>
+    <string name="sort_read_date">Leggi data</string>
     <string name="sort_reads">Legge</string>
     <string name="sort_size">Dimensione</string>
     <string name="sort_reading_progress">Progresso lettura</string>
-    <string name="sort_random">Casuale</string>
+    <string name="sort_random">casuale</string>
     <string name="sort_custom">Personalizzato</string>
     <string name="sort_invalid">-invalido-</string>
     <string name="sort_books">Libri</string>
-    <string name="drag_help">Trascina elemento</string>
+<string name="drag_help">Trascina elemento</string>
     <string name="external_help">Appartiene alla libreria esterna</string>
     <string name="streamed_help">Libro in streaming</string>
     <string name="view_source_help">Visualizza sorgente nel browser</string>
     <string name="fav_help">Segna/deseleziona come preferito</string>
-    <string name="show_artists">Mostra artisti</string>
+<string name="show_artists">Mostra artisti</string>
     <string name="show_groups">Mostra gruppi</string>
     <string name="show_artists_and_groups">Mostra artisti e gruppi</string>
     <string name="launchcode_present">Hai già questo libro. Cercare altre fonti\?</string>
-    <string name="updates_title">Aggiornamenti</string>
+<string name="updates_title">Aggiornamenti</string>
     <string name="tap_to_retry">Toccare per riprovare</string>
     <string name="downloading_update">Download dell\'aggiornamento</string>
     <string name="update_ready">L\'aggiornamento è pronto!</string>
     <string name="tap_to_install">Tocca per installare</string>
-    <string name="alert_orange">Tieni presente che i download potrebbero non riuscire su questo sito.</string>
-    <string name="alert_red">Il pulsante di download è attualmente rotto per questo sito.</string>
+<string name="alert_orange">Tieni presente che i download potrebbero non riuscire su questo sito. \n</string>
+    <string name="alert_red">Il pulsante di download è attualmente rotto per questo sito. \n</string>
     <string name="alert_grey">Questo sito ha attualmente seri problemi di stabilità. L\'app non c\'entra nulla. Per favore riprova più tardi.</string>
     <string name="alert_black">Questo sito non è attualmente disponibile per davvero. L\'app non c\'entra nulla. Per favore riprova più tardi.</string>
     <string name="alert_wip">Il team di sviluppo di Hendroid sta lavorando a una soluzione. Riceverai una notifica dall\'app quando una nuova versione sarà pronta.</string>
     <string name="alert_fix_available">Una correzione è disponibile nell\'ultima versione dell\'app. Si prega di aggiornare.</string>
-    <string name="app_lock_pin">Inserisci il PIN</string>
-    <string name="app_lock_pin_prefs">PIN blocco app</string>
+<string name="app_lock_pin">Inserisci il PIN</string>
     <string name="app_lock_enable">Blocco app abilitato</string>
     <string name="app_lock_disabled">Blocco app disabilitato</string>
     <string name="pin_reset">Reimposta PIN</string>
     <string name="pin_reset_success">Reset del PIN</string>
-    <string name="pin_ok">PIN OK!</string>
+    <string name="pin_current">Inserisci il PIN attuale</string>
     <string name="pin_new">Inserisci il nuovo PIN</string>
     <string name="pin_new_confirm">Conferma il nuovo PIN</string>
     <string name="pin_explanation">Il blocco app impedisce l\'uso non autorizzato di questa app richiedendo un PIN di 4 cifre all\'avvio</string>
-    <string name="pin_lock_on_restore">Blocca quando aperto
-\ndallo schermo principale</string>
-    <string name="about1"><b>Hendroid</b> è un\'app per archiviare Doujinshi e H-manga. Hendroid è stato originariamente creato da <b>Cesar Arasaki</b>.</string>
-    <string name="personalDataStatement2">Hendroid raccogli i seguenti dati personali e li manda a Google per l\'elaborazione tramite la libreria Firebase:
-\n - ID Sessione
-\n - Indirizzo IP</string>
+    <string name="pin_lock_on_restore">Blocca quando aperto \ndallo schermo principale</string>
+<string name="about1"><b>Hentoid</b> è un\'app per archiviare Doujinshi e H-manga. Hentoid è stato originariamente creato da <b>Cesar Arasaki</b>.</string>
+    <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHendroid is a free and open-source software maintained by the Hendroid Community</string>
+    <string name="personalDataStatement2">No personal data is collected by the app, but may be collected by external sites.</string>    
     <string name="about_licenses">Visualizza licenze</string>
-    <string name="about_app_version">Hendroid versione: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
-    <string name="about_chrome_version">Chrome versione <x:g id="chrome_ver" example="98">%1$d</x:g></string>
-    <plurals name="ask_archive_multiple">
-        <item quantity="one">Archiviare l\'elemento selezionato\?</item>
-        <item quantity="other">Archiviare <x:g id="count" example="2">%d</x:g> elementi selezionati\?</item>
-    </plurals>
-    <plurals name="import_complete_details_failure">
-        <item quantity="one"><x:g id="number" example="1">%s</x:g> fallito</item>
-        <item quantity="other"><x:g id="number" example="2">%s</x:g> falliti</item>
-    </plurals>
-    <plurals name="import_file_groups">
-        <item quantity="one">Importa gruppo personalizzato (<x:g id="number" example="1">%d</x:g> gruppo)</item>
-        <item quantity="other">Importa gruppi personalizzati (<x:g id="number" example="2">%d</x:g> gruppi)</item>
-    </plurals>
-    <plurals name="import_file_bookmarks">
-        <item quantity="one">Importa segnalibro (<x:g id="number" example="1">%d</x:g> elemento)</item>
-        <item quantity="other">Importa segnalibri (<x:g id="number" example="2">%d</x:g> elementi)</item>
-    </plurals>
-    <plurals name="import_result_books">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> libro importato correttamente</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> libri importati correttamente</item>
-    </plurals>
-    <plurals name="import_result_bookmarks">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> segnalibro importato correttamente</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> segnalibri importati correttamente</item>
-    </plurals>
-    <plurals name="search_button">
-        <item quantity="one"><x:g id="count" example="1">%s</x:g> Risultato trovato</item>
-        <item quantity="other"><x:g id="count" example="2">%s</x:g> Risultati trovati</item>
-    </plurals>
-    <plurals name="duplicate_detail_title">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplicato</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplicati</item>
-    </plurals>
-    <plurals name="duplicate_notif_complete_desc">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplicato rilevato</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplicati rilevati</item>
-    </plurals>
-    <plurals name="notif_delete_complete_details">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> cancellato correttamente</item>
-        <item quantity="other"><x:g id="number" example="1">%d</x:g> cancellati correttamente</item>
-    </plurals>
-    <string name="category_character">Personaggio (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="object_circle">Cerchio</string>
-    <string name="category_artist">Artista (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="object_source">Fonte</string>
-    <string name="object_uploader">Uploader</string>
-    <string name="object_translator">Traduttore</string>
-    <string name="viewer_choose_direction">Scegli la tua direzione di lettura</string>
-    <string name="object_category">Categoria</string>
-    <string name="gallery_display_page"><x:g id="startMarker" example="&gt;">%1$s</x:g>Pagina <x:g id="number" example="2">%2$d</x:g><x:g id="isFavourite" example="♥">%3$s</x:g><x:g id="endMarker" example="&lt;">%4$s</x:g></string>
-    <string name="group_30">Ultimi 30 giorni</string>
-    <string name="u_gigabyte" tools:ignore="MissingTranslation">GB</string>
-    <string name="chapter_move_failed">Impossibile spostare il capitolo</string>
-    <string name="duplicate_alert_in_library">In libreria</string>
-    <string name="view_changelog_flagged">Visualizza il registro modifiche*</string>
-    <string name="duplicate_artist_score_nodata">Artista: nessun dato</string>
-    <string name="duplicate_processing">Rilevando duplicati…</string>
-    <string name="duplicate_alert_in_queue">In coda</string>
-    <string name="duplicate_use_same_language">Solo nella stessa lingua</string>
-    <string name="duplicate_ignore_chapters">Ignora i capitoli e i sequel</string>
-    <string name="duplicate_alert_similarity">Simile: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
-    <string name="group_7">Ultimi 7 giorni</string>
-    <string name="group_60">Ultimi 60 giorni</string>
-    <string name="u_kilobyte" tools:ignore="MissingTranslation">KB</string>
-    <string name="title_startup_progress">Avviando…</string>
-    <string name="title_startup_complete">Avvio completato</string>
-    <string name="u_terabyte" tools:ignore="MissingTranslation">TB</string>
-    <string name="group_no_group">Non raggruppato</string>
-    <string name="u_megabyte" tools:ignore="MissingTranslation">MB</string>
-    <string name="u_petabyte" tools:ignore="MissingTranslation">PB</string>
-    <string name="u_byte" tools:ignore="MissingTranslation">bytes</string>
-    <plurals name="stream_external_streamed_content">
-        <item quantity="one">Uno dei libri selezionati sta già venendo letto o è aperto in una libreria esterna
-\nQuesto libro sarà ignorato.</item>
-        <item quantity="other"><x:g id="count" example="2">%d</x:g> libri selezionati stanno venendo letti o sono aperti in una libreria esterna
-\nQuesti libri saranno ignorati.</item>
-    </plurals>
+    <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
+    <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g></string>
+<string name="web_gallery">Torna all\'ultima pagina della galleria</string>
     <string name="web_home">Torna alla libreria</string>
     <string name="web_back">Indietro</string>
     <string name="web_forward">Avanti</string>
@@ -575,32 +498,52 @@
     <string name="web_unparsable">Questo contenuto non può essere scaricato. Scusa~</string>
     <string name="web_url_clipboard">URL copiato negli appunti</string>
     <string name="help_web_download">Hai raggiunto la pagina di un libro.
-\nÈ ora di scaricare con la barra in basso!</string>
-    <string name="blocked_tag">Il libro ha un tag bloccato (<x:g id="tag" example="bad">%s</x:g>)
-\nDownload annullato</string>
-    <string name="blocked_tag_queued">Il libro ha un tag bloccato (<x:g id="tag" example="bad">%s</x:g>)
-\nMesso in coda come errore</string>
+È ora di scaricare con la barra in basso!</string>
+    <string name="blocked_tag">Libro ha un tag bloccato (<x:g example="bad" id="tag">%s</x:g>)\nDownload cancellato</string>
+    <string name="blocked_tag_queued">Libro ha un tag bloccato (<x:g example="bad" id="tag">%s</x:g>)\nMesso in coda come errore</string>
     <string name="bookmark_current">Aggiungi la pagina ai segnalibri</string>
     <string name="unbookmark_current">Rimuovi segnalibro da questa pagina</string>
     <string name="bookmark_copy_url">Copia l\'URL del segnalibro negli appunti</string>
     <string name="bookmark_toggle_welcome">Attiva/disattiva l\'URL del segnalibro come pagina di benvenuto</string>
-    <string name="alert_unwanted_tags">Questo libro è etichettato con <x:g id="tag" example="bad">%s</x:g></string>
+    <string name="alert_unwanted_tags">Questo libro è taggato come <x:g example="bad" id="tag">%s</x:g></string>
     <string name="bookmark_homepage">Pagina iniziale</string>
     <string name="torrent_dl_fail">Download del torrent fallito: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Autorizzazione di archiviazione negata - impossibile utilizzare il downloader</string>
-    <string name="help_web_fakku_account">Si prega di utilizzare o creare un account FAKKU legittimo.
-\nHendroid non funzionerà senza di esso.</string>
-    <string name="web_gallery">Torna all\'ultima pagina della galleria</string>
-    <string name="help_web_fakku_premium">Quel libro non può essere visualizzato con il tuo attuale accesso a FAKKU.</string>
-    <string name="help_web_exh_account">Si prega di utilizzare o creare un account exHentai</string>
+<string name="help_web_exh_account">Si prega di utilizzare o creare un account exHentai</string>
     <string name="help_web_invalid_exh_credentials">Credenziali non valide, perfavore accedi di nuovo</string>
     <string name="help_web_incomplete_exh_credentials">Credenziali incomplete, accedi di nuovo. Se il problema persiste, considera di accedere al sito da un altro paese o di creare un nuovo account.</string>
-    <string name="category_any">Qualsiasi</string>
+<string name="category_any">Qualsiasi</string>
     <string name="exclude">Escludi</string>
-    <string name="search_category"><x:g id="search_category" example="Language">%s</x:g> cerca</string>
+    <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> cerca</string>
+    <string name="search_prompt">Cerca <x:g id="search_prompt">%s</x:g></string>
+<string name="category_artist">Artista (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_tag">Tag (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_character">Personaggio (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_series">Serie (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_language">Lingua (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_source">Fonte (<x:g example="2" id="count">%1$d</x:g>)</string>
+<string name="object_artist">Artista</string>
+    <string name="object_tag">Tag</string>
+    <string name="object_character">Personaggio</string>
+    <string name="object_series">Serie</string>
+    <string name="object_language">Lingua</string>
+    <string name="object_source">Fonte</string>
+    <string name="object_uploader">Uploader</string>
+    <string name="object_circle">Cerchio</string>
+    <string name="object_category">Categoria</string>
+    <string name="object_translator">Traduttore</string>
+    <string name="object_publisher">Editore</string>
+    <plurals name="search_button">
+        <item quantity="one"><x:g example="1" id="count">%s</x:g> Risultato trovato</item>
+        <item quantity="other"><x:g example="2" id="count">%s</x:g> Risultati trovati</item>
+    </plurals>
     <string name="search_select_a_filter">Seleziona un filtro</string>
-    <string name="maintenance">Manutenzione in corso</string>
-    <string name="no_image">Immagine non trovata</string>
+
+<string name="no_images">Impossibile caricare il libro: nessuna immagine trovata</string>
+    <string name="loading_archive">Caricando: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
+    <string name="loading_image">Caricando immagine: <x:g example="50%" id="percentage">%d%%</x:g></string>
+    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (scala <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="viewer_choose_direction">Scegli la tua direzione di lettura</string>
     <string name="viewer_direction_ltr">Da sinistra a destra</string>
     <string name="viewer_direction_rtl">Da destra a sinistra</string>
     <string name="viewer_direction_ttb">Dall\'alto in basso</string>
@@ -613,12 +556,9 @@
     <string name="viewer_filter_favourite_on">Mostra tutte le pagine</string>
     <string name="viewer_filter_favourite_help">Attiva/disattiva la visualizzazione della pagina preferita</string>
     <string name="viewer_make_cover">Imposta come copertina</string>
-    <string name="viewer_page_menu">Menu pagina</string>
-    <string name="viewer_page_menu_help">Apri le proprietà della pagina</string>
     <string name="viewer_delete_book">Cancella libro</string>
     <string name="copy_download_folder_success">Copiato nella cartella Downloads</string>
     <string name="copy_download_folder_fail">Impossibile scrivere nella cartella Downloads</string>
-    <string name="viewer_ask_delete_book">Cancellare questo libro\?</string>
     <string name="viewer_ask_delete_page">Cancellare questa pagina\?</string>
     <string name="information_help">Informazione</string>
     <string name="previous_book_help">Libro precedente</string>
@@ -628,114 +568,147 @@
     <string name="page_copy_help">Copia la pagina nella cartella Downloads di Android</string>
     <string name="page_share_help">Condividi la pagina usando un\'altra app</string>
     <string name="page_delete_help">Elimina pagina</string>
-    <string name="page_delete_choices_1">Chiedimelo di nuovo la prossima volta</string>
-    <string name="page_delete_choices_2">Non chiedermelo di nuovo per questo libro</string>
-    <string name="page_delete_choices_3">Non chiedermelo di nuovo per questa sessione</string>
-    <string name="viewer_ask_cover">Impostare questa pagina come copertina del libro\?</string>
+    <string-array name="page_delete_choices">
+        <item>Chiedimelo di nuovo la prossima volta</item>
+        <item>Non chiedermelo di nuovo per questo libro</item>
+        <item>Non chiedermelo di nuovo per questa sessione</item>
+    </string-array>
+    <string name="viewer_ask_cover">Impostare questa pagina come copertina del libro?</string>
     <string name="image_not_found">Immagine non trovata</string>
-    <string name="book_prefs">Impostazioni del libro</string>
-    <string name="goto_app_prefs">Impostazioni dell\'app</string>
-    <string name="page_details">Dettagli pagina</string>
-    <string name="book_details">Dettagli libro</string>
-    <string name="page_favourite_toggle">Attiva/disattiva pagina preferita</string>
-    <string name="book_favourite_toggle">Attiva/disattiva libro preferito</string>
+    <string name="image_streaming">Immagine in streaming…</string>
+    <string name="book_prefs">Impostazioni libro</string>
+    <string name="goto_app_prefs">Impostazioni app</string>
+    <string name="use_app_prefs">Utilizza impostazioni app (<x:g example="Left to right" id="app_default">%s</x:g>)</string>
     <string name="page_favourite_success">Pagina preferita</string>
     <string name="page_unfavourite_success">Pagina sfavorita</string>
     <string name="book_favourite_success">Libro preferito</string>
     <string name="book_unfavourite_success">Libro sfavorito</string>
     <string name="viewer_fix">Correggi errore di download</string>
     <string name="viewer_reload_page">Ricarica pagina</string>
+    <string name="viewer_reparse_book">Rianalizza libro</string>
     <string name="menu_edit_chapters">Modifica capitoli</string>
     <string name="gallery_title">Galleria</string>
     <string name="gallery_chapter_prefix">Capitolo</string>
     <string name="gallery_edit_chapters_help">Per creare o rimuovere un capitolo, tocca la sua prima pagina</string>
     <string name="gallery_clear_chapters">Cancella tutti i capitoli</string>
     <string name="gallery_add_remove_chapters">Aggiungi e rimuovi capitoli</string>
+    <string name="gallery_display_page"><x:g example="&gt;" id="startMarker">%1$s</x:g>Pagina <x:g example="2" id="number">%2$d</x:g><x:g example="♥" id="isFavourite">%3$s</x:g><x:g example="&lt;" id="endMarker">%4$s</x:g></string>
+    <string name="gallery_display_chapter">Capitolo <x:g example="2" id="number">%d</x:g></string>
     <string name="gallery_no_chapter">Nessun capitolo</string>
     <string name="renaming_progress">Rinominando i file…</string>
     <string name="content_removal_failed">Rimozione del contenuto non riuscita</string>
     <string name="page_removal_failed">Rimozione della pagina non riuscita</string>
-    <string name="image_streaming">Immagine in streaming…</string>
-    <string name="viewer_reparse_book">Rianalizza libro</string>
     <string name="file_removal_failed">Rimozione del file non riuscita</string>
     <string name="storage_permission_denied">Autorizzazione di archiviazione negata - Impossibile aprire il visualizzatore</string>
     <string name="book_list_loading_failed">Caricamento elenco libri fallito</string>
+    <string name="chapter_toggle_failed">Impossibile caricare capitolo a pagina <x:g example="2" id="number">%d</x:g></string>
     <string name="chapters_remove_failed">Impossibile rimuovere i capitoli</string>
+    <string name="chapter_move_failed">Impossibile spostare il capitolo</string>
+    <string name="slideshow_start">Inizio presentazione (ritardo <x:g example="0.5" id="time">%.1f</x:g> sec)</string>
     <string name="slideshow_stop">Presentazione interrotta</string>
-    <string name="view_changelog">Visualizza il registro modifiche</string>
+    <string name="ask_clear_chapters">Cancellare tutti i capitoli?</string>
+<string name="view_changelog">Visualizza il registro modifiche</string>
+    <string name="view_changelog_flagged">Visualizza il registro modifiche*</string>
     <string name="changelog">Registro modifiche</string>
+    <string name="get_latest">Scarica l\'ultima versione (<x:g example="1.18.1" id="version">%1$s</x:g>)</string>
+    <string name="update_success">Aggiornamento riuscito!</string>
     <string name="starting_download">Avvio download</string>
-    <string name="title_activity_drawer_edit">Menu Modifica</string>
-    <string name="title_activity_duplicate_detector">Rivelatore duplicati</string>
+<string name="title_activity_drawer_edit">Menu Modifica</string>
+<string name="title_activity_duplicate_detector">Rilevatore duplicati</string>
     <string name="duplicate_use_title">Titolo</string>
     <string name="duplicate_use_cover">Copertina</string>
     <string name="duplicate_use_artist">Artista</string>
+    <string name="duplicate_use_same_language">Solo nella stessa lingua</string>
+    <string name="duplicate_ignore_chapters">Ignora i capitoli e i sequel</string>
     <string name="duplicate_use_sensitivity">Sensibilità</string>
+    <string-array name="duplicate_use_sensitivities">
+        <item>Permissivo</item>
+        <item>Standard</item>
+        <item>Severo</item>
+    </string-array>
     <string name="duplicate_find_action">Trova duplicati</string>
     <string name="duplicate_index_covers">Indice delle immagini delle copertine</string>
     <string name="duplicate_find">Rilevando libri duplicati</string>
     <plurals name="duplicate_count">
-        <item quantity="one"><x:g id="number" example="1">%d</x:g> duplicato</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> duplicati</item>
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> duplicato</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> duplicati</item>
     </plurals>
+    <string name="duplicate_title_score">Titolo: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
     <string name="duplicate_title_score_nodata">Titolo: nessun dato</string>
-    <string name="update_success">Aggiornamento riuscito!</string>
-    <string name="no_images">Impossibile caricare il libro: nessuna immagine trovata</string>
-    <string name="search_prompt">Cerca <x:g id="search_prompt">%s</x:g></string>
-    <string name="category_tag">Tag (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_series">Serie (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_language">Lingua (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_source">Fonte (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="object_artist">Artista</string>
-    <string name="object_tag">Tag</string>
-    <string name="object_character">Personaggio</string>
-    <string name="object_series">Serie</string>
-    <string name="object_language">Lingua</string>
-    <string name="object_publisher">Editore</string>
-    <string name="loading_archive">Caricamento: <x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="42">%2$d</x:g></string>
-    <string name="loading_image">Caricando immagine: <x:g id="percentage" example="50%">%d%%</x:g></string>
-    <string name="viewer_img_details"><x:g id="dimen_x" example="800">%1$d</x:g> x <x:g id="dimen_y" example="600">%2$d</x:g> (scala <x:g id="scale_percentage" example="100%">%3$.0f%%</x:g>) - <x:g id="file_size" example="544.40 KB">%4$s</x:g></string>
-    <string name="use_app_prefs">Utilizza le impostazioni dell\'app (<x:g id="app_default" example="Left to right">%s</x:g>)</string>
-    <string name="gallery_display_chapter">Cap <x:g id="number" example="2">%d</x:g></string>
-    <string name="chapter_toggle_failed">Impossibile attivare/disattivare capitolo a pagina <x:g id="number" example="2">%d</x:g></string>
-    <string name="slideshow_start">Avvio presentazione (ritardo <x:g id="time" example="0.5">%.1f</x:g> sec)</string>
-    <string name="get_latest">Scarica l\'ultima versione (<x:g id="version" example="1.18.1">%1$s</x:g>)</string>
-    <string name="duplicate_sensitivity_permissive">Permissivo</string>
-    <string name="duplicate_sensitivity_standard">Standard</string>
-    <string name="duplicate_sensitivity_strict">Severo</string>
-    <string name="duplicate_title_score">Titolo: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
-    <string name="duplicate_cover_score">Copertina: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_cover_score">Copertina: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
     <string name="duplicate_cover_score_nodata">Copertina: nessun dato</string>
-    <string name="duplicate_artist_score">Artista: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
-    <string name="apply_processing">Applica (<x:g id="remaining" example="5">%d</x:g> scelte rimanenti)</string>
+    <string name="duplicate_artist_score">Artista: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_artist_score_nodata">Artista: nessun dato</string>
     <string name="apply_final">Applica scelte</string>
     <string name="duplicate_notif_start">Avvio del rilevamento duplicati</string>
     <string name="duplicate_notif_complete_title">Rilevamento duplicati completato</string>
+    <plurals name="duplicate_notif_complete_desc">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> duplicato rilevato</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> duplicati rilevati</item>
+    </plurals>
     <string name="duplicate_empty_first_use">Niente da visualizzare - Esegui una nuova ricerca di duplicati</string>
+    <string name="duplicate_processing">Rilevando duplicati…</string>
+    <plurals name="duplicate_detail_title">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> duplicato</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> duplicati</item>
+    </plurals>
     <string name="duplicate_empty_no_result">Nessun duplicato trovato</string>
     <string name="duplicate_keep">Tieni</string>
     <string name="duplicate_delete">Elimina</string>
-    <string name="duplicate_alert">Allarme duplicato!</string>
+<string name="duplicate_alert">Allarme duplicato!</string>
     <string name="duplicate_alert_subtitle_book">Il libro che stai per scaricare potrebbe essere un duplicato di un libro che già possiedi.</string>
     <string name="duplicate_alert_subtitle_pages">Il libro da cui stai per scaricare le pagine potrebbe non essere quello che già possiedi.</string>
     <string name="duplicate_alert_always_download">Scarica sempre e non chiederlo più</string>
     <string name="duplicate_alert_never_extra_on_dupes">Non aggiungere mai più pagine da potenziali duplicati</string>
+    <string name="duplicate_alert_similarity">Similitudine: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
     <string name="duplicate_alert_download_book">Scarica libro</string>
     <string name="duplicate_alert_download_pages">Scarica pagine extra</string>
     <string name="duplicate_wait_index">Indicizzazione…</string>
-    <string name="notif_archive_title">Archiviazione dei contenuti</string>
+<string name="notif_archive_title">Archiviazione dei contenuti</string>
     <string name="notif_delete_title">Eliminazione del contenuto</string>
     <string name="notif_delete_complete">Eliminazione completata</string>
+    <plurals name="notif_delete_complete_details">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> eliminato correttamente</item>
+        <item quantity="other"><x:g example="1" id="number">%d</x:g> eliminato correttamente</item>
+    </plurals>
     <string name="notif_delete_fail">Cancellazione fallita</string>
     <string name="notif_delete_fail_details">Almeno un libro non è stato cancellato</string>
-    <string name="title_startup">Avvio</string>
-    <string name="group_today">Oggi</string>
+<string name="title_startup">Avvio</string>
+    <string name="title_startup_progress">Avviando…</string>
+    <string name="title_startup_complete">Avvio completato</string>
+<string name="group_today">Oggi</string>
+    <string name="group_7">Ultimi 7 giorni</string>
+    <string name="group_30">Ultimi 30 giorni</string>
+    <string name="group_60">Ultimi 60 giorni</string>
     <string name="group_year">Anno scorso</string>
     <string name="group_long">Molto tempo fa</string>
-    <string name="theme_light">Bianco</string>
+    <string name="group_no_group">Non raggruppato</string>
+<string name="theme_light">Bianco</string>
     <string name="theme_deep_red">Rosso scuro</string>
     <string name="theme_dark">Nero</string>
-    <string name="select_file_manager">Seleziona il tuo file manager</string>
-    <string name="default_permission">Autorizzazione predefinita</string>
+<string name="lang_en">inglese</string>
+    <string name="lang_zh">cinese</string>
+    <string name="lang_ja">giapponese</string>
+    <string name="lang_ko">coreano</string>
+    <string name="lang_es">spagnolo</string>
+    <string name="lang_ru">russo</string>
+    <string name="lang_pt">portoghese</string>
+    <string name="lang_th">tailandese</string>
+    <string name="lang_fr">francese</string>
+    <string name="lang_vi">vietnamita</string>
+    <string name="lang_it">italiano</string>
+    <string name="lang_de">tedesco</string>
+    <string name="lang_pl">polacco</string>
+    <string name="lang_id">indonesiano</string>
+    <string name="lang_hu">ungherese</string>
+    <string name="lang_tr">turco</string>
+    <string name="lang_cs">ceco slovacco</string>
+<string name="select_file_manager">Seleziona il tuo file manager</string>
+    <string name="u_byte" tools:ignore="MissingTranslation">bytes</string>
+    <string name="u_kilobyte" tools:ignore="MissingTranslation">KB</string>
+    <string name="u_megabyte" tools:ignore="MissingTranslation">MB</string>
+    <string name="u_gigabyte" tools:ignore="MissingTranslation">GB</string>
+    <string name="u_terabyte" tools:ignore="MissingTranslation">TB</string>
+    <string name="u_petabyte" tools:ignore="MissingTranslation">PB</string>
     <string name="u_exabyte" tools:ignore="MissingTranslation">EB</string>
 </resources>

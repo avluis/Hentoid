@@ -1,6 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="tools_title">Herramientas</string>
-    <string name="tools_screen_import_export">Importar / Exportar</string>
-    <string name="tools_export_library_title">Exportar metadatos</string>
+<string name="tools_title">Herramientas</string>
+<string name="tools_screen_import_export">Importar / Exportar</string>
+<string name="tools_export_library_title">Exportar metadatos</string>
+<string name="tools_export_library_summary">Exportar a un archivo JSON los libros de Hendroid</string>
+<string name="tools_import_library_title">Importar metadatos</string>
+<string name="tools_import_library_summary">Restaurar desde un archivo JSON los libros exportados de Hentoid</string>
+<string name="tools_screen_cat_settings">Ajustes</string>
+<string name="tools_export_settings_title">Exportar ajustes</string>
+<string name="tools_export_settings_summary">Exportar a un archivo JSON los ajustes</string>
+<string name="tools_import_settings_title">Importar ajustes</string>
+<string name="tools_import_settings_summary">Importar desde un archivo JSON los ajustes exportados</string>
+<string name="tools_duplicate_detector_title">Detector de duplicados</string>
+<string name="tools_duplicate_detector_summary">Identificar y remover libros duplicados</string>
+<string name="tools_screen_cache">Gestionar caché</string>
+<string name="tools_cache_browser">Eliminar el caché del explorador</string>
+<string name="tools_cache_browser_success">La caché del Webview se ha borrado con éxito</string>
+<string name="tools_cache_app">Eliminar caché de la aplicación</string>
+<string name="tools_cache_app_success">La caché de la aplicación se ha borrado con éxito</string>
+<string name="tools_latest_logs_title">Registros de la aplicación</string>
+<string name="tools_latest_logs_summary">Revisar los últimos registros de la aplicación</string>
 </resources>

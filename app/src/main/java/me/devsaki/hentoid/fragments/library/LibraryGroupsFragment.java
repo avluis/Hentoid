@@ -468,11 +468,11 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 powerMenu.setOnMenuItemClickListener((position, item) -> {
                     int tag = (Integer) item.getTag();
                     if (0 == tag) { // Delete books only
-                        viewModel.deleteItems(finalContent, Collections.emptyList(), false);
+                        viewModel.deleteItems(finalContent, Collections.emptyList(), false, null);
                     } else if (1 == tag) { // Delete group only
-                        viewModel.deleteItems(Collections.emptyList(), finalGroups, true);
+                        viewModel.deleteItems(Collections.emptyList(), finalGroups, true, null);
                     } else if (2 == tag) { // Delete groups and books
-                        viewModel.deleteItems(finalContent, finalGroups, false);
+                        viewModel.deleteItems(finalContent, finalGroups, false, null);
                     } else {
                         selectExtension.deselect(selectExtension.getSelections()); // Cancel button
                     }

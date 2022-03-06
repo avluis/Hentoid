@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json;
+package me.devsaki.hentoid.json.core;
 
 import com.squareup.moshi.Json;
 

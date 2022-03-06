@@ -48,7 +48,10 @@ public class Manhwa18Content extends BaseContentParser {
         }
         content.setTitle(titleStr);
 
-        if (updateImages) content.setImageFiles(Collections.emptyList());
+        if (updateImages) {
+            content.setImageFiles(Collections.emptyList());
+            content.setQtyPages(0);
+        }
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, Site.MANHWA18);

@@ -51,10 +51,13 @@ public class Hentai2ReadContent extends BaseContentParser {
                         currentProperty = child.text().toLowerCase().trim();
                     else if (child.nodeName().equals("a")) {
                         switch (currentProperty) {
+                            /*
+                            Apparently, we can't trust that figure as some books have less actual chapters/pages than advertised
                             case "page":
-                                String qtyPages = child.text().substring(0, child.text().indexOf(" page")).replace(",", "");
-                                content.setQtyPages(Integer.parseInt(qtyPages));
+                                String qtyPagesStr = child.text().substring(0, child.text().indexOf(" page")).replace(",", "");
+                                qtyPages = Integer.parseInt(qtyPagesStr);
                                 break;
+                             */
                             case "parody":
                                 ParseHelper.parseAttribute(attributes, AttributeType.SERIE, child, false, Site.HENTAI2READ);
                                 break;
@@ -79,7 +82,10 @@ public class Hentai2ReadContent extends BaseContentParser {
             }
         content.putAttributes(attributes);
 
-        if (updateImages) content.setImageFiles(Collections.emptyList());
+        if (updateImages) {
+            content.setImageFiles(Collections.emptyList());
+            content.setQtyPages(0);
+        }
 
         return content;
     }

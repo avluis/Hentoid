@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2" translatable="false" tools:ignore="MissingTranslation">
+    <!-- Array: Plug Reactions -->
+    <string-array name="audio_reactions" translatable="false">
+        <item>@string/audio_plug1</item>
+        <item>@string/audio_plug2</item>
+        <item>@string/audio_plug3</item>
+        <item>@string/audio_plug4</item>
+        <item>@string/audio_plug5</item>
+        <item>@string/audio_plug6</item>
+        <item>@string/audio_plug7</item>
+    </string-array>
+    <string-array name="power_reactions" translatable="false">
+        <item>♡~</item>
+        <item>@string/power_plug1</item>
+        <item>@string/power_plug2</item>
+        <item>@string/power_plug3</item>
+        <item>@string/power_plug4</item>
+        <item>@string/power_plug5</item>
+        <item>@string/power_plug6</item>
+    </string-array>
+
+    <!-- Array: Preferences -->
+    <string-array name="pref_library_display_entries" translatable="false">
+        <item>@string/pref_library_display_entries_1</item>
+        <item>@string/pref_library_display_entries_2</item>
+    </string-array>
+    <string-array name="pref_library_display_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="pref_quantity_per_page_entries" translatable="false">
+        <item>20</item>
+        <item>40</item>
+        <item>60</item>
+        <item>80</item>
+        <item>100</item>
+    </string-array>
+    <string-array name="pref_quantity_per_page_entry_values" translatable="false">
+        <item>20</item>
+        <item>40</item>
+        <item>60</item>
+        <item>80</item>
+        <item>100</item>
+    </string-array>
+    <string-array name="pref_memory_alert_entries" translatable="false">
+        <item>@string/pref_memory_alert_entries_1</item>
+        <item>@string/pref_memory_alert_entries_2</item>
+        <item>@string/pref_memory_alert_entries_3</item>
+        <item>@string/pref_memory_alert_entries_4</item>
+    </string-array>
+    <string-array name="pref_memory_alert_values" translatable="false">
+        <item>110</item>
+        <item>90</item>
+        <item>95</item>
+        <item>98</item>
+    </string-array>
+    <string-array name="pref_browser_quick_dl_threshold_entries" translatable="false">
+        <item>@string/pref_browser_quick_dl_threshold_entries_1</item>
+        <item>@string/pref_browser_quick_dl_threshold_entries_2</item>
+        <item>@string/pref_browser_quick_dl_threshold_entries_3</item>
+        <item>@string/pref_browser_quick_dl_threshold_entries_4</item>
+        <item>@string/pref_browser_quick_dl_threshold_entries_5</item>
+    </string-array>
+    <string-array name="pref_browser_quick_dl_threshold_values" translatable="false">
+        <item>500</item>
+        <item>1000</item>
+        <item>1500</item>
+        <item>2000</item>
+        <item>3000</item>
+    </string-array>
+    <string-array name="pref_browser_dns_entries" translatable="false">
+        <item>@string/pref_browser_dns_entries_1</item>
+        <item>Cloudflare</item>
+        <item>Quad9</item>
+        <item>AdGuard</item>
+    </string-array>
+    <string-array name="pref_browser_dns_values" translatable="false">
+        <item>-1</item>
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="pref_queue_new_position_entries" translatable="false">
+        <item>@string/pref_queue_new_position_entries_1</item>
+        <item>@string/pref_queue_new_position_entries_2</item>
+        <item>@string/pref_queue_new_position_entries_3</item>
+    </string-array>
+    <string-array name="pref_queue_new_position_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="pref_dl_size_wifi_threshold_entries" translatable="false">
+        <item>@string/pref_dl_size_wifi_threshold_entries_1</item>
+        <item>@string/pref_dl_size_wifi_threshold_entries_2</item>
+        <item>@string/pref_dl_size_wifi_threshold_entries_3</item>
+        <item>@string/pref_dl_size_wifi_threshold_entries_4</item>
+        <item>@string/pref_dl_size_wifi_threshold_entries_5</item>
+    </string-array>
+    <string-array name="pref_dl_size_wifi_threshold_values" translatable="false">
+        <item>999999</item>
+        <item>20</item>
+        <item>40</item>
+        <item>100</item>
+        <item>200</item>
+    </string-array>
+    <string-array name="pref_dl_pages_wifi_threshold_entries" translatable="false">
+        <item>@string/pref_dl_pages_wifi_threshold_entries_1</item>
+        <item>@string/pref_dl_pages_wifi_threshold_entries_2</item>
+        <item>@string/pref_dl_pages_wifi_threshold_entries_3</item>
+        <item>@string/pref_dl_pages_wifi_threshold_entries_4</item>
+        <item>@string/pref_dl_pages_wifi_threshold_entries_5</item>
+    </string-array>
+    <string-array name="pref_dl_pages_wifi_threshold_values" translatable="false">
+        <item>999999</item>
+        <item>60</item>
+        <item>120</item>
+        <item>200</item>
+        <item>500</item>
+    </string-array>
+    <string-array name="pref_dl_threads_quantity_entries" translatable="false">
+        <item>@string/pref_dl_threads_quantity_entries_1</item>
+        <item>@string/pref_dl_threads_quantity_entries_2</item>
+        <item>4</item>
+        <item>6</item>
+        <item>8</item>
+        <item>@string/pref_dl_threads_quantity_entries_6</item>
+    </string-array>
+    <string-array name="pref_dl_threads_quantity_values" translatable="false">
+        <item>0</item>
+        <item>2</item>
+        <item>4</item>
+        <item>6</item>
+        <item>8</item>
+        <item>10</item>
+    </string-array>
+    <string-array name="pref_folder_naming_content_entries" translatable="false">
+        <item>@string/pref_folder_naming_content_entries_1</item>
+        <item>@string/pref_folder_naming_content_entries_2</item>
+        <item>@string/pref_folder_naming_content_entries_3</item>
+        <item>@string/pref_folder_naming_content_entries_4</item>
+    </string-array>
+    <string-array name="pref_folder_naming_content_entry_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="pref_folder_trunc_content_entries" translatable="false">
+        <item>@string/pref_folder_trunc_content_entries_1</item>
+        <item>@string/pref_folder_trunc_content_entries_2</item>
+        <item>@string/pref_folder_trunc_content_entries_3</item>
+        <item>@string/pref_folder_trunc_content_entries_4</item>
+        <item>@string/pref_folder_trunc_content_entries_5</item>
+    </string-array>
+    <string-array name="pref_folder_trunc_content_entry_values" translatable="false">
+        <item>0</item>
+        <item>60</item>
+        <item>80</item>
+        <item>100</item>
+        <item>120</item>
+    </string-array>
+    <string-array name="pref_webview_initial_zoom_entries" translatable="false">
+        <item>0</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+    </string-array>
+    <string-array name="pref_webview_initial_zoom_values" translatable="false">
+        <item>0</item>
+        <item>20</item>
+        <item>50</item>
+        <item>100</item>
+    </string-array>
+    <string-array name="pref_viewer_dl_action_entries" translatable="false">
+        <item>@string/pref_viewer_dl_action_entries_1</item>
+        <item>@string/pref_viewer_dl_action_entries_2</item>
+    </string-array>
+    <string-array name="pref_viewer_dl_action_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="pref_attribute_list_order_entries" translatable="false">
+        <item>@string/pref_attribute_list_order_entries_1</item>
+        <item>@string/pref_attribute_list_order_entries_2</item>
+    </string-array>
+    <string-array name="pref_attribute_list_order_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="pref_color_theme_entries" translatable="false">
+        <item>@string/theme_light</item>
+        <item>@string/theme_deep_red</item>
+        <item>@string/theme_dark</item>
+    </string-array>
+    <string-array name="pref_color_theme_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="pref_dl_retries_number_entries" translatable="false">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="pref_dl_retries_mem_limit_entries" translatable="false">
+        <item>90%</item>
+        <item>95%</item>
+        <item>98%</item>
+        <item>@string/pref_dl_retries_mem_limit_entries_4</item>
+    </string-array>
+    <string-array name="pref_dl_retries_mem_limit_values" translatable="false">
+        <item>90</item>
+        <item>95</item>
+        <item>98</item>
+        <item>100</item>
+    </string-array>
+    <string-array name="pref_dl_blocked_tags_behaviour_entries" translatable="false">
+        <item>@string/pref_dl_blocked_tags_behaviour_entries_1</item>
+        <item>@string/pref_dl_blocked_tags_behaviour_entries_2</item>
+    </string-array>
+    <string-array name="pref_dl_blocked_tags_behaviour_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="pref_viewer_browse_mode_entries" translatable="false">
+        <item>@string/pref_viewer_browse_mode_entries_1</item>
+        <item>@string/pref_viewer_browse_mode_entries_2</item>
+        <item>@string/pref_viewer_browse_mode_entries_3</item>
+    </string-array>
+    <string-array name="pref_viewer_browse_mode_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="pref_viewer_separating_bars_entries" translatable="false">
+        <item>@string/pref_viewer_separating_bars_entries_1</item>
+        <item>@string/pref_viewer_separating_bars_entries_2</item>
+        <item>@string/pref_viewer_separating_bars_entries_3</item>
+        <item>@string/pref_viewer_separating_bars_entries_4</item>
+    </string-array>
+    <string-array name="pref_viewer_separating_bars_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="pref_viewer_read_threshold_entries" translatable="false">
+        <item>@string/pref_viewer_read_threshold_entries_1</item>
+        <item>@string/pref_viewer_read_threshold_entries_2</item>
+        <item>@string/pref_viewer_read_threshold_entries_3</item>
+        <item>@string/pref_viewer_read_threshold_entries_4</item>
+    </string-array>
+    <string-array name="pref_viewer_read_threshold_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="pref_viewer_slideshow_delay_entries" translatable="false">
+        <item>@string/pref_viewer_slideshow_delay_entries_1</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_2</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_3</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_4</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_5</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_6</item>
+    </string-array>
+    <string-array name="pref_viewer_slideshow_delay_values" translatable="false">
+        <item>5</item>
+        <item>4</item>
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+    <string-array name="pref_viewer_display_mode_entries" translatable="false">
+        <item>@string/pref_viewer_display_mode_entries_1</item>
+        <item>@string/pref_viewer_display_mode_entries_2</item>
+        <item>@string/pref_viewer_display_mode_entries_3</item>
+    </string-array>
+    <string-array name="pref_viewer_display_mode_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+    <string-array name="pref_viewer_rendering_entries" translatable="false">
+        <item>@string/pref_viewer_rendering_entries_1</item>
+        <item>@string/pref_viewer_rendering_entries_2</item>
+    </string-array>
+    <string-array name="pref_viewer_rendering_values" translatable="false">
+        <item>0</item>
+        <item>1</item>
+    </string-array>
+    <string-array name="pref_viewer_cap_tap_zoom_entries" translatable="false">
+        <item>@string/pref_viewer_cap_tap_zoom_entries_1</item>
+        <item>@string/pref_viewer_cap_tap_zoom_entries_2</item>
+        <item>@string/pref_viewer_cap_tap_zoom_entries_3</item>
+        <item>@string/pref_viewer_cap_tap_zoom_entries_4</item>
+    </string-array>
+    <string-array name="pref_viewer_cap_tap_zoom_values" translatable="false">
+        <item>0</item>
+        <item>2</item>
+        <item>4</item>
+        <item>6</item>
+    </string-array>
+    <string-array name="pref_viewer_gallery_columns_values" translatable="false">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+    <string-array name="pref_lock_timer_entries" translatable="false">
+        <item>@string/pref_lock_timer_entries_1</item>
+        <item>@string/pref_lock_timer_entries_2</item>
+        <item>@string/pref_lock_timer_entries_3</item>
+        <item>@string/pref_lock_timer_entries_4</item>
+        <item>@string/pref_lock_timer_entries_5</item>
+    </string-array>
+
+    <!-- Strings: Main: Generic Usage -->
+    <string name="app_name" translatable="false">Hendroid</string>
+    <string name="error" translatable="false">Error</string>
+    <string name="empty_string" translatable="false"/>
+    <!-- Strings: Main: TextViews -->
+    <string name="work_untitled" translatable="false">[No data]</string>
+    <!-- Strings: Main: Export metadata -->
+    <string name="export_faq_url" translatable="false">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
+    <!-- Strings: Main: Import Activity -->
+    <!-- for logging only -->
+    <string name="enabled" translatable="false">ENABLED</string>
+    <string name="disabled" translatable="false">DISABLED</string>
+    <!-- Strings: Main: Logs -->
+    <string name="error_log_header" translatable="false">Error log for <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>@<x:g id="site_name">%3$s</x:g>]: <x:g id="error_count" example="2">%4$d</x:g> errors</string>
+    <string name="error_log_header_queue" translatable="false">Error log for queue</string>
+    <!-- Strings: Main: Library fragment -->
+    <string name="book_title" translatable="false">This is a rather long title, just because we need it to be.</string>
+    <string name="book_series" translatable="false">Series: Name</string>
+    <string name="book_artist" translatable="false">Artist: In this book there are so many artists crammed in one place that one display line definitely can\'t contain them all</string>
+    <string name="book_pages_queue" translatable="false">Pages: 1234; estimated 125 MB</string>
+    <string name="book_pages_library" translatable="false">1234 pages / 1125 MB</string>
+    <string name="book_tags" translatable="false">tag1, tag2, tag3, etc.</string>
+    <!-- Strings: Main: About Activity -->
+    <string name="about_github" translatable="false"><u>GitHub</u></string>
+    <string name="about_discord" translatable="false"><u>Discord</u></string>
+    <string name="about_reddit" translatable="false"><u>Reddit</u></string>
+    <!-- Strings: Main: Duplicate detector -->
+    <string name="duplicate_total_score" translatable="false">%.0f%%</string>
+
+    <!-- Strings: Settings -->
+    <string name="pref_generic_summary" translatable="false">%s</string>
+    <!-- Strings: Settings: Interface -->
+    <string name="pref_library_display_default" translatable="false">0</string>
+    <string name="pref_endless_scroll_default" translatable="false">true</string>
+    <string name="pref_quantity_per_page_default" translatable="false">20</string>
+    <string name="pref_attributes_list_order_default" translatable="false">1</string>
+    <string name="pref_attributes_list_order_summary" translatable="false">%s</string>
+    <string name="pref_attributes_list_count_default" translatable="false">true</string>
+    <string name="pref_color_theme_default" translatable="false">0</string>
+    <!-- Strings: Settings: Storage -->
+    <string name="pref_import_queue_empty_default" translatable="false">false</string>
+    <string name="pref_folder_naming_content_default" translatable="false">2</string>
+    <string name="pref_folder_trunc_default" translatable="false">100</string>
+    <string name="pref_memory_alert_default" translatable="false">110</string>
+    <string name="pref_external_library_delete_default" translatable="false">false</string>
+    <!-- Strings: Settings: Browser -->
+    <string name="pref_browser_resume_last_default" translatable="false">false</string>
+    <string name="pref_browser_dl_action_default" translatable="false">0</string>
+    <string name="pref_browser_quick_dl_default" translatable="false">true</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_default" translatable="false">false</string>
+    <string name="pref_browser_quick_dl_threshold_default" translatable="false">500</string>
+    <string name="pref_browser_augmented_default" translatable="false">true</string>
+    <string name="pref_browser_duplicate_ask_default" translatable="false">true</string>
+    <string name="pref_browser_duplicate_try_pages_default" translatable="false">true</string>
+    <string name="pref_browser_mark_downloaded_default" translatable="false">false</string>
+    <string name="pref_browser_override_overview_default" translatable="false">false</string>
+    <string name="pref_browser_initial_zoom_default" translatable="false">20</string>
+    <string name="pref_browser_dns_default" translatable="false">-1</string>
+    <!-- Strings: Settings: Downloader -->
+    <string name="pref_queue_autostart_default" translatable="false">true</string>
+    <string name="pref_queue_wifi_only_default" translatable="false">false</string>
+    <string name="pref_queue_new_position_default" translatable="false">1</string>
+    <string name="pref_dl_size_wifi_default" translatable="false">false</string>
+    <string name="pref_dl_size_wifi_threshold_default" translatable="false">40</string>
+    <string name="pref_dl_pages_wifi_threshold_default" translatable="false">999999</string>
+    <string name="pref_dl_retries_active_default" translatable="false">false</string>
+    <string name="pref_dl_retries_number_summary" translatable="false">%s</string>
+    <string name="pref_dl_retries_number_default" translatable="false">3</string>
+    <string name="pref_dl_retries_mem_limit_summary" translatable="false">%s</string>
+    <string name="pref_dl_retries_mem_limit_default" translatable="false">100</string>
+    <string name="pref_dl_blocked_tags_behaviour_default" translatable="false">0</string>
+    <string name="pref_dl_threads_quantity_default" translatable="false">0</string>
+    <!-- Strings: Settings: Privacy -->
+    <string name="pref_app_preview_default" translatable="false">false</string>
+    <string name="pref_analytics_preference_default" translatable="false">true</string>
+    <!-- Strings: Settings: Updates -->
+    <string name="pref_check_updates_default" translatable="false">true</string>
+    <!-- Strings: Settings: Viewer -->
+    <string name="pref_viewer_browse_mode_default" translatable="false">0</string>
+    <bool name="pref_viewer_page_turn_swipe_default" translatable="false">true</bool>
+    <bool name="pref_viewer_page_turn_tap_default" translatable="false">true</bool>
+    <bool name="pref_viewer_page_turn_tap_2x_default" translatable="false">false</bool>
+    <bool name="pref_viewer_page_turn_volume_default" translatable="false">true</bool>
+    <bool name="pref_viewer_page_turn_keyboard_default" translatable="false">true</bool>
+    <bool name="pref_viewer_swipe_to_fling_default" translatable="false">false</bool>
+    <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
+    <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
+    <string name="pref_viewer_cap_tap_zoom_default" translatable="false">0</string>
+    <bool name="pref_viewer_keep_screen_on_default" translatable="false">true</bool>
+    <bool name="pref_viewer_display_pagenum_default" translatable="false">false</bool>
+    <bool name="pref_viewer_tap_transitions_default" translatable="false">true</bool>
+    <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
+    <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
+    <string name="pref_viewer_display_mode_default" translatable="false">0</string>
+    <string name="pref_viewer_rendering_default" translatable="false">0</string>
+    <bool name="pref_viewer_auto_rotate_default" translatable="false">false</bool>
+    <string name="pref_viewer_gallery_columns_default" translatable="false">4</string>
+    <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
+    <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
+    <bool name="pref_viewer_continuous_default" translatable="false">false</bool>
+    <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
+    <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
+</resources>

@@ -38,7 +38,7 @@ import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
-import me.devsaki.hentoid.json.JsonSiteSettings;
+import me.devsaki.hentoid.json.core.JsonSiteSettings;
 import me.devsaki.hentoid.notification.action.UserActionNotificationChannel;
 import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;

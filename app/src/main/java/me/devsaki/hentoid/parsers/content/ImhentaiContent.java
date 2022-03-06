@@ -48,11 +48,13 @@ public class ImhentaiContent extends BaseContentParser {
         content.setTitle(str);
 
         if (updateImages) {
+            int qtyPages = 0;
             if (!pages.isEmpty()) {
                 str = pages.replace("Pages", "").replace("pages", "").replace(":", "").trim();
-                content.setQtyPages(Integer.parseInt(str));
+                qtyPages = Integer.parseInt(str);
             }
             content.setImageFiles(Collections.emptyList());
+            content.setQtyPages(qtyPages);
         }
 
         AttributeMap attributes = new AttributeMap();

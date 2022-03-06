@@ -20,14 +20,13 @@ import me.devsaki.hentoid.R
 /**
  * Inspired by mikepenz
  */
-open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
+open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper, val name: String) :
     AbstractExpandableItem<SubExpandableItem.ViewHolder>(),
     IClickable<SubExpandableItem>, ISubItem<SubExpandableItem.ViewHolder>,
     IExtendedDraggable<SubExpandableItem.ViewHolder>,
     INestedItem<SubExpandableItem.ViewHolder> {
 
     var header: String? = null
-    var name: StringHolder? = null
     var description: StringHolder? = null
     private var draggable: Boolean = false
 
@@ -90,16 +89,6 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
         return this
     }
 
-    fun withName(Name: String): SubExpandableItem {
-        this.name = StringHolder(Name)
-        return this
-    }
-
-    fun withName(@StringRes NameRes: Int): SubExpandableItem {
-        this.name = StringHolder(NameRes)
-        return this
-    }
-
     fun withDescription(description: String): SubExpandableItem {
         this.description = StringHolder(description)
         return this
@@ -133,7 +122,7 @@ open class SubExpandableItem(private val mTouchHelper: ItemTouchHelper) :
             FastAdapterUIUtils.getSelectableBackground(ctx, Color.RED, true)
         )
         //set the text for the name
-        StringHolder.applyTo(name, holder.name)
+        holder.name.text = name
         //set the text for the description or hide
         StringHolder.applyToOrHide(description, holder.description)
 

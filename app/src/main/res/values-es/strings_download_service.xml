@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <plurals name="download_completed">
-        <item quantity="one">Descarga completada</item>
-        <item quantity="other"><x:g id="number" example="2">%d</x:g> descargas completadas</item>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <plurals name="download_completed" tools:ignore="MissingQuantity">
+        <item quantity="one" tools:ignore="ImpliedQuantity">Descarga completada</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> descargas completadas</item>
     </plurals>
     <string name="download_complete">Descarga completada</string>
     <string name="download_cancelled">Descarga cancelada</string>
-    <string name="download_skipped">Descarga omitida</string>
-    <string name="download_paused">Descarga pausada</string>
     <string name="download_error">Descarga completada pero hay un error</string>
-    <!-- unhandled_download_error -->
-    <string name="downloading">Descargando</string>
-    <plurals name="add_to_queue">
-        <item quantity="one"><x:g id="processed" example="1">%1$d</x:g>/<x:g id="total" example="10">%2$d</x:g> artículo agregado a la cola</item>
-        <item quantity="other"><x:g id="processed" example="2">%1$d</x:g>/<x:g id="total" example="10">%2$d</x:g> artículos agregados a la cola</item>
+    <plurals name="add_to_queue" tools:ignore="MissingQuantity">
+        <item quantity="one"><x:g example="1" id="processed">%1$d</x:g><x:g example="10" id="total">%2$d</x:g> artículo agregado a la cola de descarga</item>
+        <item quantity="other"><x:g example="2" id="processed">%1$d</x:g><x:g example="10" id="total">%2$d</x:g> artículos agregados a la cola de descarga</item>
     </plurals>
     <string name="already_downloaded">Ya había sido descargado</string>
     <string name="already_queued">Ya había sido agregado a la cola</string>

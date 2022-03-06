@@ -31,17 +31,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            android:layout_marginStart="5dp"
+            android:layout_width="0dp"
+
             <ImageView
                 android:id="@+id/appLogo"
                 android:layout_width="@dimen/about_ic_hentoid_width"
                 android:layout_height="@dimen/about_ic_hentoid_height"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
                 android:src="@drawable/ic_hentoid"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="ContentDescription" />
 
-                android:layout_marginStart="5dp"
-                android:layout_width="0dp"
             <TextView
                 android:id="@+id/tv_version_name"
                 android:layout_width="0dp"

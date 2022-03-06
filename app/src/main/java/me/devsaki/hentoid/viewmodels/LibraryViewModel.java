@@ -13,25 +13,31 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.paging.PagedList;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
+import androidx.work.WorkRequest;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.greenrobot.eventbus.EventBus;
 import org.threeten.bp.Instant;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
@@ -80,6 +86,8 @@ public class LibraryViewModel extends AndroidViewModel {
     private final ContentSearchManager searchManager;
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    // Cleanup for all work observers
+    private final List<Pair<UUID, Observer<WorkInfo>>> workObservers = new ArrayList<>();
 
     // Collection data
     private LiveData<PagedList<Content>> currentSource;
@@ -118,6 +126,11 @@ public class LibraryViewModel extends AndroidViewModel {
         super.onCleared();
         dao.cleanup();
         compositeDisposable.clear();
+        if (workObservers.isEmpty()) {
+            WorkManager workManager = WorkManager.getInstance(getApplication());
+            for (Pair<UUID, Observer<WorkInfo>> info : workObservers)
+                workManager.getWorkInfoByIdLiveData(info.getLeft()).removeObserver(info.getRight());
+        }
     }
 
     @NonNull
@@ -413,13 +426,13 @@ public class LibraryViewModel extends AndroidViewModel {
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
                         .observeOn(Schedulers.io())
-                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c) : Optional.of(c))
+                        .map(c -> (reparseContent) ? ContentHelper.reparseFromScratch(c).right : Optional.of(c))
                         .doOnNext(c -> {
                             if (c.isPresent()) {
                                 Content content = c.get();
                                 // Non-blocking performance bottleneck; run in a dedicated worker
                                 // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
-                                if (reparseImages) purgeItem(content);
+                                if (reparseImages) purgeItem(content, false);
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position,
                                         ContentQueueManager.getInstance().isQueueActive(getApplication()));
@@ -459,9 +472,9 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (!ContentHelper.isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
-                                Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
-                                if (newContent.isEmpty()) flagContentDelete(c, false);
-                                return newContent;
+                                Pair<Content, Optional<Content>> newContent = ContentHelper.reparseFromScratch(c);
+                                if (newContent.getRight().isEmpty()) flagContentDelete(c, false);
+                                return newContent.getRight();
                             }
                             return Optional.of(c);
                         })
@@ -506,16 +519,20 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (!ContentHelper.isDownloadable(c)) {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
-                                Optional<Content> newContent = ContentHelper.reparseFromScratch(c);
-                                if (newContent.isEmpty()) {
+                                Pair<Content, Optional<Content>> newContent = ContentHelper.reparseFromScratch(c);
+                                if (newContent.getRight().isEmpty()) {
                                     flagContentDelete(c, false);
-                                    return newContent;
+                                    return newContent.getRight();
                                 } else {
-                                    Content reparsedContent = newContent.get();
+                                    Content reparsedContent = newContent.getRight().get();
                                     // Reparse pages
                                     List<ImageFile> newImages = ContentHelper.fetchImageURLs(reparsedContent, StatusContent.ONLINE);
+                                    reparsedContent.setImageFiles(newImages);
+                                    // Associate new pages' cover with current cover file (that won't be deleted)
+                                    reparsedContent.getCover().setStatus(StatusContent.DOWNLOADED).setFileUri(c.getCover().getFileUri());
+                                    // Save everything
                                     dao.replaceImageList(reparsedContent.getId(), newImages);
-                                    return Optional.of(reparsedContent.setImageFiles(newImages));
+                                    return Optional.of(reparsedContent);
                                 }
                             }
                             return Optional.of(c);
@@ -525,7 +542,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Content dbContent = dao.selectContent(c.get().getId());
                                 if (null == dbContent) return;
                                 // Non-blocking performance bottleneck; scheduled in a dedicated worker
-                                purgeItem(c.get());
+                                purgeItem(c.get(), true);
                                 dbContent.setDownloadMode(Content.DownloadMode.STREAM);
                                 List<ImageFile> imgs = dbContent.getImageFiles();
                                 if (imgs != null) {
@@ -572,7 +589,8 @@ public class LibraryViewModel extends AndroidViewModel {
     public void deleteItems(
             @NonNull final List<Content> contents,
             @NonNull final List<Group> groups,
-            boolean deleteGroupsOnly) {
+            boolean deleteGroupsOnly,
+            Runnable onSuccess) {
         DeleteData.Builder builder = new DeleteData.Builder();
         if (!contents.isEmpty())
             builder.setContentIds(Stream.of(contents).map(Content::getId).toList());
@@ -581,13 +599,24 @@ public class LibraryViewModel extends AndroidViewModel {
         builder.setDeleteGroupsOnly(deleteGroupsOnly);
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
-        workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
-        // TODO update isCustomGroupingAvailable when the whole delete chain is complete
+        WorkRequest request = new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build();
+        workManager.enqueue(request);
+
+        Observer<WorkInfo> workInfoObserver = workInfo -> {
+            if (workInfo.getState().isFinished()) {
+                if (onSuccess != null) onSuccess.run();
+                refreshCustomGroupingAvailable();
+            }
+        };
+
+        workObservers.add(new ImmutablePair<>(request.getId(), workInfoObserver));
+        workManager.getWorkInfoByIdLiveData(request.getId()).observeForever(workInfoObserver);
     }
 
-    public void purgeItem(@NonNull final Content content) {
+    public void purgeItem(@NonNull final Content content, boolean keepCover) {
         DeleteData.Builder builder = new DeleteData.Builder();
         builder.setContentPurgeIds(Stream.of(content).map(Content::getId).toList());
+        builder.setContentPurgeKeepCovers(keepCover);
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueueUniqueWork(
@@ -898,25 +927,19 @@ public class LibraryViewModel extends AndroidViewModel {
 
         compositeDisposable.add(
                 Single.fromCallable(() -> {
-                    boolean result = false;
-                    try {
-                        ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
-                        if (deleteAfterMerging)
-                            deleteItems(contentList, Collections.emptyList(), false);
-                        result = true;
-                    } catch (ContentNotProcessedException e) {
-                        Timber.e(e);
-                        if (deleteAfterMerging)
-                            for (Content c : contentList) flagContentDelete(c, false);
-                    }
-                    return result;
+                    ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
+                    return true;
                 })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
+                        .map(b -> {
+                                    if (deleteAfterMerging)
+                                        deleteItems(contentList, Collections.emptyList(), false, null);
+                                    return true;
+                                }
+                        )
                         .subscribe(
-                                b -> {
-                                    if (b) onSuccess.run();
-                                },
+                                b -> onSuccess.run(),
                                 t -> {
                                     Timber.e(t);
                                     if (deleteAfterMerging)

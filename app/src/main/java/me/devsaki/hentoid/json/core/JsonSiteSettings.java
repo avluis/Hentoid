@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.json;
+package me.devsaki.hentoid.json.core;
 
 import java.util.Map;
 

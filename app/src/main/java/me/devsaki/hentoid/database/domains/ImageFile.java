@@ -329,16 +329,18 @@ public class ImageFile {
                 && Objects.equals(getPageUrl(), imageFile.getPageUrl())
                 && Objects.equals(getFileUri(), imageFile.getFileUri())
                 && Objects.equals(getOrder(), imageFile.getOrder())
-                && Objects.equals(isCover(), imageFile.isCover()); // Sometimes the thumb picture has the same URL as the 1st page
+                && Objects.equals(isCover(), imageFile.isCover()) // Sometimes the thumb picture has the same URL as the 1st page
+                && isFavourite() == imageFile.isFavourite()
+                && chapter.getTargetId() == imageFile.chapter.getTargetId();
     }
 
     @Override
     public int hashCode() {
         // Must be an int32, so we're bound to use Objects.hash
-        return Objects.hash(getId(), getPageUrl(), getUrl(), getFileUri(), getOrder(), isCover());
+        return Objects.hash(getId(), getPageUrl(), getUrl(), getFileUri(), getOrder(), isCover(), isFavourite(), chapter.getTargetId());
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover).getBytes());
+        return Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + favourite + "." + chapter.getTargetId()).getBytes());
     }
 }

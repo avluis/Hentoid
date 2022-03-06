@@ -98,6 +98,9 @@ public class ContentDownloadWorker extends BaseWorker {
         CONTENT_FOUND, CONTENT_SKIPPED, CONTENT_FAILED, QUEUE_END
     }
 
+    private static final int IDLE_THRESHOLD = 20; // seconds; should be higher than the connect + I/O timeout defined in RequestQueueManager
+    private static final int LOW_NETWORK_THRESHOLD = 10; // KBps
+
     // DAO is full scope to avoid putting try / finally's everywhere and be sure to clear it upon worker stop
     private final CollectionDAO dao;
 
@@ -321,12 +324,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 if (content.isUpdatedProperties()) dao.insertContent(content);
 
                 // Manually insert new images (without using insertContent)
-                long contentId = content.getId();
-                dao.replaceImageList(contentId, images);
-                // Get updated Content with the generated ID of new images
-                content = dao.selectContent(contentId);
-                if (null == content)
-                    return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
+                dao.replaceImageList(content.getId(), images);
             } catch (CaptchaException cpe) {
                 Timber.i(cpe, "A captcha has been found while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), CONTENT_PART_IMAGE_LIST, "Captcha found. Please go back to the site, browse a book and solve the captcha.");
@@ -349,8 +347,6 @@ public class ContentDownloadWorker extends BaseWorker {
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, "No images have been found. Error = " + ere.getMessage());
                 hasError = true;
             } catch (Exception e) {
-                if (null == content)
-                    return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
                 Timber.w(e, "An exception has occurred while parsing %s. Download aborted.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), CONTENT_PART_IMAGE_LIST, e.getMessage());
                 hasError = true;
@@ -362,6 +358,11 @@ public class ContentDownloadWorker extends BaseWorker {
             if (downloadMode == Content.DownloadMode.STREAM)
                 dao.updateImageContentStatus(content.getId(), null, StatusContent.ONLINE);
         }
+
+        // Get updated Content with the udpated ID and status of new images
+        content = dao.selectContent(content.getId());
+        if (null == content)
+            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
 
         if (hasError) {
             moveToErrors(content.getId());
@@ -401,20 +402,35 @@ public class ContentDownloadWorker extends BaseWorker {
         // Don't count the cover thumbnail in the number of pages
         if (0 == content.getQtyPages()) content.setQtyPages(images.size() - 1);
         content.setStatus(StatusContent.DOWNLOADING);
+        // Mark the cover for downloading when saving a streamed book
+        if (downloadMode == Content.DownloadMode.STREAM)
+            content.getCover().setStatus(StatusContent.SAVED);
         dao.insertContent(content);
-
-        if (downloadMode == Content.DownloadMode.STREAM) {
-            completeDownload(content.getId(), content.getTitle(), images.size(), 0, 0);
-            return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, content);
-        }
 
         HentoidApp.trackDownloadEvent("Added");
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
+
+        // Wait until the end of purge if the content is being purged (e.g. redownload from scratch)
+        boolean isBeingDeleted = content.isBeingDeleted();
+        if (isBeingDeleted)
+            EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.WAIT_PURGE));
+        while (content.isBeingDeleted()) {
+            Timber.d("Waiting for purge to complete");
+            content = dao.selectContent(content.getId());
+            if (null == content)
+                return new ImmutablePair<>(QueuingResult.CONTENT_SKIPPED, null);
+            Helper.pause(1000);
+            if (downloadInterrupted.get()) break;
+        }
+        if (isBeingDeleted && !downloadInterrupted.get())
+            Timber.d("Purge completed; resuming download");
+
 
         // == DOWNLOAD PHASE ==
 
         EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_DOWNLOAD));
 
+        // Set up downloader constraints
         if (content.getSite().getParallelDownloadCap() > 0 &&
                 (requestQueueManager.getDownloadThreadCap() > content.getSite().getParallelDownloadCap()
                         || -1 == requestQueueManager.getDownloadThreadCap())
@@ -436,62 +452,63 @@ public class ContentDownloadWorker extends BaseWorker {
         List<ImageFile> pagesToParse = new ArrayList<>();
         List<ImageFile> ugoirasToDownload = new ArrayList<>();
 
-        // Queue image download requests
-        for (ImageFile img : images) {
-            if (img.getStatus().equals(StatusContent.SAVED)) {
-                // Enrich download params just in case
-                Map<String, String> downloadParams;
-                if (img.getDownloadParams().length() > 2)
-                    downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
-                else
-                    downloadParams = new HashMap<>();
-                // Add referer if unset
-                if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
-                    downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
-                // Add cookies if unset or if the site needs fresh cookies
-                if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY) || content.getSite().isUseCloudflare())
-                    downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(img.getUrl()));
-
-                img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
-
-                // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
-                if (img.isCover() && images.size() > 1) img.setBackupUrl(images.get(1).getUrl());
-
-                if (img.needsPageParsing()) pagesToParse.add(img);
-                else if (img.getDownloadParams().contains(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES))
-                    ugoirasToDownload.add(img);
-                else requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
+        // Just get the cover if we're in a streamed download
+        if (downloadMode == Content.DownloadMode.STREAM) {
+            Optional<ImageFile> coverOptional = Stream.of(images).filter(ImageFile::isCover).findFirst();
+            if (coverOptional.isPresent()) {
+                ImageFile cover = coverOptional.get();
+                enrichImageDownloadParams(cover, content);
+                requestQueueManager.queueRequest(buildImageDownloadRequest(cover, dir, content));
             }
-        }
+        } else { // Regular downloads
 
-        // Parse pages for images
-        if (!pagesToParse.isEmpty()) {
-            final Content contentFinal = content;
-            compositeDisposable.add(
-                    Observable.fromIterable(pagesToParse)
-                            .observeOn(Schedulers.io())
-                            .subscribe(
-                                    img -> parsePageforImage(img, dir, contentFinal),
-                                    t -> {
-                                        // Nothing; just exit the Rx chain
-                                    }
-                            )
-            );
-        }
+            // Queue image download requests
+            for (ImageFile img : images) {
+                if (img.getStatus().equals(StatusContent.SAVED)) {
 
-        // Parse ugoiras for images
-        if (!ugoirasToDownload.isEmpty()) {
-            final Site siteFinal = content.getSite();
-            compositeDisposable.add(
-                    Observable.fromIterable(ugoirasToDownload)
-                            .observeOn(Schedulers.io())
-                            .subscribe(
-                                    img -> downloadAndUnzipUgoira(img, dir, siteFinal),
-                                    t -> {
-                                        // Nothing; just exit the Rx chain
-                                    }
-                            )
-            );
+                    enrichImageDownloadParams(img, content);
+
+                    // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
+                    if (img.isCover() && images.size() > 1)
+                        img.setBackupUrl(images.get(1).getUrl());
+
+                    if (img.needsPageParsing()) pagesToParse.add(img);
+                    else if (img.getDownloadParams().contains(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES))
+                        ugoirasToDownload.add(img);
+                    else
+                        requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
+                }
+            }
+
+            // Parse pages for images
+            if (!pagesToParse.isEmpty()) {
+                final Content contentFinal = content;
+                compositeDisposable.add(
+                        Observable.fromIterable(pagesToParse)
+                                .observeOn(Schedulers.io())
+                                .subscribe(
+                                        img -> parsePageforImage(img, dir, contentFinal),
+                                        t -> {
+                                            // Nothing; just exit the Rx chain
+                                        }
+                                )
+                );
+            }
+
+            // Parse ugoiras for images
+            if (!ugoirasToDownload.isEmpty()) {
+                final Site siteFinal = content.getSite();
+                compositeDisposable.add(
+                        Observable.fromIterable(ugoirasToDownload)
+                                .observeOn(Schedulers.io())
+                                .subscribe(
+                                        img -> downloadAndUnzipUgoira(img, dir, siteFinal),
+                                        t -> {
+                                            // Nothing; just exit the Rx chain
+                                        }
+                                )
+                );
+            }
         }
 
         EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.SAVE_QUEUE));
@@ -503,6 +520,23 @@ public class ContentDownloadWorker extends BaseWorker {
         EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.START_DOWNLOAD));
 
         return new ImmutablePair<>(QueuingResult.CONTENT_FOUND, content);
+    }
+
+    private void enrichImageDownloadParams(@NonNull ImageFile img, @NonNull Content content) {
+        // Enrich download params just in case
+        Map<String, String> downloadParams;
+        if (img.getDownloadParams().length() > 2)
+            downloadParams = ContentHelper.parseDownloadParams(img.getDownloadParams());
+        else
+            downloadParams = new HashMap<>();
+        // Add referer if unset
+        if (!downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
+            downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getGalleryUrl());
+        // Add cookies if unset or if the site needs fresh cookies
+        if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY) || content.getSite().isUseCloudflare())
+            downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(img.getUrl()));
+
+        img.setDownloadParams(JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS));
     }
 
     /**
@@ -526,7 +560,8 @@ public class ContentDownloadWorker extends BaseWorker {
         int nbDeltaLowNetwork = 0;
 
         List<ImageFile> images = content.getImageFiles();
-        int totalPages = (null == images) ? 0 : images.size();
+        // Compute total downloadable pages; online (stream) pages do not count
+        int totalPages = (null == images) ? 0 : (int) Stream.of(images).filter(i -> !i.getStatus().equals(StatusContent.ONLINE)).count();
 
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
         do {
@@ -556,8 +591,8 @@ public class ContentDownloadWorker extends BaseWorker {
             // Download speed and size estimation
             long networkBytesNow = NetworkHelper.getIncomingNetworkUsage(getApplicationContext());
             deltaNetworkBytes = networkBytesNow - networkBytes;
-            if (deltaNetworkBytes < 1024 * 10 && firstPageDownloaded)
-                nbDeltaLowNetwork++; // 10 Kbps threshold once download has started
+            if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD && firstPageDownloaded)
+                nbDeltaLowNetwork++; // LOW_NETWORK_THRESHOLD KBps threshold once download has started
             else nbDeltaLowNetwork = 0;
             networkBytes = networkBytesNow;
             downloadSpeedCalculator.addSampleNow(networkBytes);
@@ -567,7 +602,8 @@ public class ContentDownloadWorker extends BaseWorker {
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);
 
             // Restart request queue when the queue has idled for too long
-            if (nbDeltaLowNetwork > 10 || nbDeltaZeroPages > 10) {
+            // Idle = very low download speed _AND_ no new pages downloaded
+            if (nbDeltaLowNetwork > IDLE_THRESHOLD && nbDeltaZeroPages > IDLE_THRESHOLD) {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
                 Timber.d("Inactivity detected ====> restarting request queue");

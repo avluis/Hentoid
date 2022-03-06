@@ -1,0 +1,106 @@
+{
+  "languages": [
+    {
+      "lang_code": "en",
+      "flag_country_code": "uk",
+      "local_name": "english",
+      "english_name": "english"
+    },
+    {
+      "lang_code": "zh",
+      "flag_country_code": "cn",
+      "local_name": "中文",
+      "english_name": "chinese"
+    },
+    {
+      "lang_code": "ja",
+      "flag_country_code": "jp",
+      "local_name": "日本語",
+      "english_name": "japanese"
+    },
+    {
+      "lang_code": "ko",
+      "flag_country_code": "kr",
+      "local_name": "한국어",
+      "english_name": "korean"
+    },
+    {
+      "lang_code": "es",
+      "flag_country_code": "es",
+      "local_name": "español",
+      "english_name": "spanish"
+    },
+    {
+      "lang_code": "ru",
+      "flag_country_code": "ru",
+      "local_name": "русский",
+      "english_name": "russian"
+    },
+    {
+      "lang_code": "pt",
+      "flag_country_code": "pt",
+      "local_name": "português",
+      "english_name": "portuguese"
+    },
+    {
+      "lang_code": "th",
+      "flag_country_code": "th",
+      "local_name": "ไทย",
+      "english_name": "thai"
+    },
+    {
+      "lang_code": "fr",
+      "flag_country_code": "fr",
+      "local_name": "français",
+      "english_name": "french"
+    },
+    {
+      "lang_code": "vi",
+      "flag_country_code": "vn",
+      "local_name": "tiếng việt",
+      "english_name": "vietnamese"
+    },
+    {
+      "lang_code": "it",
+      "flag_country_code": "it",
+      "local_name": "italiano",
+      "english_name": "italian"
+    },
+    {
+      "lang_code": "de",
+      "flag_country_code": "de",
+      "local_name": "deutsch",
+      "english_name": "german"
+    },
+    {
+      "lang_code": "pl",
+      "flag_country_code": "pl",
+      "local_name": "polski",
+      "english_name": "polish"
+    },
+    {
+      "lang_code": "id",
+      "flag_country_code": "in",
+      "local_name": "bahasa indonesia",
+      "english_name": "indonesian"
+    },
+    {
+      "lang_code": "hu",
+      "flag_country_code": "hu",
+      "local_name": "magyar",
+      "english_name": "hungarian"
+    },
+    {
+      "lang_code": "tr",
+      "flag_country_code": "tr",
+      "local_name": "türkçe",
+      "english_name": "turkish"
+    },
+    {
+      "lang_code": "cs",
+      "flag_country_code": "cz",
+      "local_name": "čeština",
+      "english_name": "czech"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources translatable="false">
     <string-array name="blocked_domains" translatable="false">
         <item>exoclick.com</item>
         <item>juicyadultads.com</item>
@@ -19,7 +19,7 @@
         <item>popads.net</item>
         <item>adsco.re</item>
         <item>s24hc8xzag.com</item>
-        <item>/nutaku/</item>item>
+        <item>/nutaku/</item>
         <item>trafficjunky</item>
         <item>traffichaus</item>
         <item>google-analytics.com</item>
@@ -55,5 +55,8 @@
         <item>googlesyndication</item>
         <item>adoperatorcore</item>
         <item>sb4you1</item>
+        <item>adsymptotic.com</item>
+        <item>intentiq.com</item>
+        <item>bidswitch.net</item>
     </string-array>
 </resources>

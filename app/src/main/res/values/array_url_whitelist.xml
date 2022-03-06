@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources translatable="false">
     <string-array name="allowed_domains" translatable="false">
         <item>disqus</item>
         <item>googletagmanager.com</item>

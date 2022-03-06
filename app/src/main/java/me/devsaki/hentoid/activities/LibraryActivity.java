@@ -801,6 +801,12 @@ public class LibraryActivity extends BaseActivity {
             favsMenu.setChecked(false);
             updateFavouriteFilter();
 
+            if (isGroupDisplayed() && selectedGrouping.equals(Grouping.ARTIST)) {
+                showArtistsGroupsButton.setVisibility(View.VISIBLE);
+            } else {
+                showArtistsGroupsButton.setVisibility(View.GONE);
+            }
+
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
             if (!selectedGrouping.canReorderBooks()
                     && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
@@ -955,10 +961,9 @@ public class LibraryActivity extends BaseActivity {
             long selectedTotalCount,
             long selectedLocalCount,
             long selectedStreamedCount,
-            long selectedEligibleExternalCount) {
+            long selectedExternalCount) {
         boolean isMultipleSelection = selectedTotalCount > 1;
         long selectedDownloadedCount = selectedLocalCount - selectedStreamedCount;
-        long selectedExternalCount = selectedTotalCount - selectedLocalCount;
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
 
         if (isGroupDisplayed()) {
@@ -977,7 +982,9 @@ public class LibraryActivity extends BaseActivity {
             splitMenu.setVisible(false);
         } else {
             editNameMenu.setVisible(!isMultipleSelection);
-            deleteMenu.setVisible(selectedLocalCount > 0 || Preferences.isDeleteExternalLibrary());
+            deleteMenu.setVisible(
+                    (selectedLocalCount > 0 || selectedStreamedCount > 0) && (0 == selectedExternalCount || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary()))
+            );
             completedMenu.setVisible(true);
             shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
             archiveMenu.setVisible(true);
@@ -990,7 +997,7 @@ public class LibraryActivity extends BaseActivity {
             mergeMenu.setVisible(
                     (selectedLocalCount > 1 && 0 == selectedStreamedCount && 0 == selectedExternalCount)
                             || (selectedStreamedCount > 1 && 0 == selectedLocalCount && 0 == selectedExternalCount)
-                            || (selectedExternalCount > 1 && 0 == selectedLocalCount && 0 == selectedStreamedCount && selectedEligibleExternalCount == selectedExternalCount)
+                            || (selectedExternalCount > 1 && 0 == selectedLocalCount && 0 == selectedStreamedCount)
             ); // Can only merge downloaded, streamed or non-archive external content together
             splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         }
@@ -1034,7 +1041,7 @@ public class LibraryActivity extends BaseActivity {
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
                             selectExtension.deselect(selectExtension.getSelections());
-                            viewModel.deleteItems(contents, groups, false);
+                            viewModel.deleteItems(contents, groups, false, onSuccess);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> selectExtension.deselect(selectExtension.getSelections()))

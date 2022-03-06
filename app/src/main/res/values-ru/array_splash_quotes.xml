@@ -2,6 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string-array name="splash_quotes" tools:ignore="InconsistentArrays">
         <item>искусство в приложении</item>
+        <item>опять _эти_ книги?</item>
         <item>опять <i>эти</i> книги\?</item>
         <item>приложение для тренировки руки</item>
         <item>пятиминутное упражнение для руки</item>
@@ -22,6 +23,7 @@
         <item>Папочка....</item>
         <item>и вверх, и вниз…</item>
         <item>ВОТ ЭТО КОЛБАСА</item>
+        <item>Ты серьёзно дрочишь один?</item>
         <item>Ты серьёзно дрочишь один\?</item>
         <item>Пригласи друзей ;3</item>
         <item>Попроси девушку- а, стоп…</item>
@@ -30,17 +32,20 @@
         <item>Эректус</item>
         <item>милая палочка, анон</item>
         <item>милый, пора вертеть колбаску</item>
+        <item>Колбаска *БРРРРРРР*</item>
         <item>Колбаска <b>*БРРРРРРР*</b></item>
         <item>Прыгающие дыньки</item>
         <item>Cолёно, но вкусно</item>
         <item>Есть дырка — есть и способ</item>
         <item>входи в меня полностью</item>
+        <item>а? это что, член?</item>
         <item>а\? это что, член\?</item>
         <item>Фууу, убери это</item>
         <item>то ещё приложеньице</item>
         <item>используй смазку, брат</item>
         <item>https://youtu.be/dQw4w9WgXcQ</item>
         <item>книги мои книги</item>
+        <item>Стоп, не манга?</item>
         <item>Стоп, не манга\?</item>
         <item>Дьявольски соблазнительно</item>
         <item>Я думал, мы будем есть моллюсков на пару</item>

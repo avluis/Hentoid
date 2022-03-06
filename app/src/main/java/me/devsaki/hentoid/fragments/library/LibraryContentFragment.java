@@ -1154,6 +1154,40 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             }
         });
 
+        // "To top" button click listener (groups view only)
+        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
+            @Override
+            public void onClick(@NotNull View view, int position, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                itemTouchOnMove(position, 0);
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof ContentItem.ContentViewHolder) {
+                    return ((ContentItem.ContentViewHolder) viewHolder).getTopButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
+        // "To bottom" button click listener (groups view only)
+        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
+            @Override
+            public void onClick(@NotNull View view, int position, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                itemTouchOnMove(position, fastAdapter.getItemCount() - 1);
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof ContentItem.ContentViewHolder) {
+                    return ((ContentItem.ContentViewHolder) viewHolder).getBottomButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
         if (selectExtension != null) {
@@ -1349,6 +1383,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             loadBookshelf(result);
         }
 
+        // Go back to groups view if there are no books to display (use case : remove the last books from the currently viewed group)
+        if (result.isEmpty() && Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()))
+            activity.get().goBackToGroups();
+
         newSearch = false;
         library = result;
     }
@@ -1473,7 +1511,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             selectExtension.setSelectOnLongClick(true);
         } else {
             List<Content> contentList = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
-            long selectedLocalCount = Stream.of(contentList).map(Content::getStatus).filterNot(s -> s.equals(StatusContent.EXTERNAL)).count();
+            long selectedLocalCount = Stream.of(contentList).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).filterNot(c -> c.getDownloadMode() == Content.DownloadMode.STREAM).count();
             long selectedStreamedCount = Stream.of(contentList).map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
             long selectedEligibleExternalCount = Stream.of(contentList).filter(c -> c.getStatus().equals(StatusContent.EXTERNAL) && !c.isArchive()).count();
             activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedStreamedCount, selectedEligibleExternalCount);
@@ -1523,11 +1561,12 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     }
 
     /**
-     * Force a new search when the sort order is custom
-     * (in that case, LiveData can't do its job because of https://github.com/objectbox/objectbox-java/issues/141)
+     * Force a new search :
+     * - when the book sort order is custom (in that case, LiveData can't do its job because of https://github.com/objectbox/objectbox-java/issues/141)
+     * - when the current grouping is custom (because the app needs to refresh the display when moving books out of the currently displayed group)
      */
     private void refreshIfNeeded() {
-        if (Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
+        if (Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()) || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
             viewModel.updateContentOrder();
     }
 
@@ -1619,6 +1658,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         }
         Content content = item.getContent();
         if (content != null)
-            viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false);
+            viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false, null);
     }
 }

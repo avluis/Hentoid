@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2" translatable="false" tools:ignore="MissingTranslation">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<bool name="pref_viewer_page_turn_swipe_default" translatable="false">true</bool>
+    <bool name="pref_viewer_page_turn_tap_default" translatable="false">true</bool>
+    <bool name="pref_viewer_page_turn_tap_2x_default" translatable="false">false</bool>
+    <bool name="pref_viewer_page_turn_volume_default" translatable="false">true</bool>
+    <bool name="pref_viewer_page_turn_keyboard_default" translatable="false">true</bool>
+    <bool name="pref_viewer_swipe_to_fling_default" translatable="false">false</bool>
+    <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
+    <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
+    
+
+    <bool name="pref_viewer_keep_screen_on_default" translatable="false">true</bool>
+    <bool name="pref_viewer_display_pagenum_default" translatable="false">false</bool>
+    <bool name="pref_viewer_tap_transitions_default" translatable="false">true</bool>
+    <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
+    
+
+    
+
+    
+
+    <bool name="pref_viewer_auto_rotate_default" translatable="false">false</bool>
+    
+
+    <bool name="pref_viewer_resume_last_left_default" translatable="false">true</bool>
+    <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
+    <bool name="pref_viewer_continuous_default" translatable="false">false</bool>
+    
+
+    
+</resources>

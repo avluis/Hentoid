@@ -1,0 +1,46 @@
+New
+
+    The app is now available in Italian on devices where default language is Italian
+
+
+Changed
+
+    Duplicate detector screen doesn't appear on active apps when privacy option is enabled
+    Imhentai : Download rate is now limited to avoid being blocked by the site when mass-downloading
+    Streamed books are now always created with the thumbnail file so that cover-based duplicate detection works with them
+    Queue screen : Redownloading from scratch now shows a progress dialog
+    Queue screen : Books that failed being redownloaded from scratch now go to the error queue
+    Advanced search : Language names are now translated
+    Library / Merge : Create merged external book in the external library instead of Hentoid's "None" source folder
+    Library / Groups : Empty groups are now displayed with "(empty)" as their book count
+    Library / Groups : Visually update book list when moving a book to another group
+    Library / Groups : Go back to groups list when there's no book remaining in the currently viewed group
+    Gallery / Expandable chapters screen : "Clear chapters" now asks for a confirmation
+    Duplicate detector : Proper external icon display on duplicate results
+
+Fixed
+
+    Hentaifox : Fix downloads
+    Imhentai : Prevent ads from showing a blank page when navigating
+    Allporncomic : Remove ads
+    Hitomi : Male and Female signs are back on book tags
+    Nhentai : The nhentai search bar is not marked as a downloaded item when coming back from the library to a book page
+    Using "delete after merging" option doesn't crash anymore
+    Streamed books can now be deleted using long tap > select > delete
+    Hentai2Read : Avoid errors due to the book page's number of pages being wrong
+    Browser / Hitomi : In-site reader doesn't display small images anymore on certain devices
+    Browser : Display the correct download icon (download / stream) at screen startup
+    Downloader : Better support for downloading large files under low bandwidth
+    Intro wizard : Allow to select a different folder when going back from the themes screen to the folder select screen
+    Export metadata : The export button now appears when there are 0 items in the library and 1+ items in queue or bookmarks
+    Library : When redownloading from scratch, queued books wait until picture purging is complete
+    Library / Custom Groups : The "to top" and "to bottom" buttons are now functional on the "reorder books" screen
+    Library / Merge : Preserve manually-created chapters when merging books
+    Library / Merge : When merging external books, properly duplicate initial picture files
+    Gallery / Expandable chapters screen : Chapters don't blink anymore during downloads
+    Gallery / Expandable chapters screen : Fix navigation with the back button
+    Gallery / Expandable chapters screen : Reordering chapter 1 doesn't make the thumbnail part of the gallery anymore
+    Gallery / Expandable chapters screen : Pages are now clickable
+    Duplicate detector : The "merge all books" icon now appears under the correct conditions
+    Fix number of images set to the wrong value when redownloading certains sources from scratch (e.g. ASMHentai)
+

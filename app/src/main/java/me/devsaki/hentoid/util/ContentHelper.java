@@ -367,14 +367,17 @@ public final class ContentHelper {
     }
 
     /**
-     * Remove the given Content from the queue, disk and the DB
+     * Remove the given Content
+     * - from the queue
+     * - from disk and the DB (optional)
      *
-     * @param context Context to be used
-     * @param dao     DAO to be used
-     * @param content Content to be removed
+     * @param context       Context to be used
+     * @param dao           DAO to be used
+     * @param content       Content to be removed
+     * @param deleteContent If true, the content itself is deleted from disk and DB
      * @throws ContentNotProcessedException in case an issue prevents the content from being actually removed
      */
-    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content) throws ContentNotProcessedException {
+    public static void removeQueuedContent(@NonNull Context context, @NonNull CollectionDAO dao, @NonNull Content content, boolean deleteContent) throws ContentNotProcessedException {
         Helper.assertNonUiThread();
 
         // Check if the content is on top of the queue; if so, send a CANCEL event
@@ -388,7 +391,7 @@ public final class ContentHelper {
         }
 
         // Remove content itself
-        removeContent(context, dao, content);
+        if (deleteContent) removeContent(context, dao, content);
     }
 
     /**
@@ -776,7 +779,8 @@ public final class ContentHelper {
 
         // Put file names into a Map to speed up the lookup
         for (DocumentFile file : files)
-            fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
+            if (file.getName() != null)
+                fileNameProperties.put(removeLeadingZeroesAndExtensionCached(file.getName()), new ImmutablePair<>(file.getUri().toString(), file.length()));
 
         // Look up similar names between images and file names
         int order;
@@ -785,30 +789,36 @@ public final class ContentHelper {
             ImageFile img = images.get(i);
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
 
-            // Detect gaps inside image numbering
-            order = img.getOrder();
-            // Look for files named with the forgotten number
-            if (previousOrder > -1 && previousOrder < order - 1) {
-                Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
-                for (int j = previousOrder + 1; j < order; j++) {
-                    ImmutablePair<String, Long> property = fileNameProperties.get(j + "");
-                    if (property != null) {
-                        Timber.i("Numbering gap filled with a file : %d", j);
-                        ImageFile newImage = ImageFile.fromImageUrl(j, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
-                        newImage.setFileUri(property.left).setSize(property.right);
-                        result.add(result.size() - 1, newImage);
+            ImmutablePair<String, Long> property;
+            boolean isOnline = img.getStatus().equals(StatusContent.ONLINE);
+            if (isOnline) {
+                property = new ImmutablePair<>("", 0L);
+            } else {
+                // Detect gaps inside image numbering
+                order = img.getOrder();
+                // Look for files named with the forgotten number
+                if (previousOrder > -1 && previousOrder < order - 1) {
+                    Timber.i("Numbering gap detected : %d to %d", previousOrder, order);
+                    for (int j = previousOrder + 1; j < order; j++) {
+                        ImmutablePair<String, Long> localProperty = fileNameProperties.get(j + "");
+                        if (localProperty != null) {
+                            Timber.i("Numbering gap filled with a file : %d", j);
+                            ImageFile newImage = ImageFile.fromImageUrl(j, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
+                            newImage.setFileUri(localProperty.left).setSize(localProperty.right);
+                            result.add(result.size() - 1, newImage);
+                        }
                     }
                 }
-            }
-            previousOrder = order;
+                previousOrder = order;
 
-            ImmutablePair<String, Long> property = fileNameProperties.get(imgName);
+                property = fileNameProperties.get(imgName);
+            }
             if (property != null) {
                 if (imgName.equals(Consts.THUMB_FILE_NAME)) {
                     coverFound = true;
                     img.setIsCover(true);
                 }
-                result.add(img.setFileUri(property.left).setSize(property.right).setStatus(StatusContent.DOWNLOADED));
+                result.add(img.setFileUri(property.left).setSize(property.right).setStatus(isOnline ? StatusContent.ONLINE : StatusContent.DOWNLOADED));
             } else
                 Timber.i(">> image not found among files : %s", imgName);
         }
@@ -962,12 +972,12 @@ public final class ContentHelper {
      * @param content Content to parse again from its online source
      * @return Content updated from its online source, or Optional.empty if something went wrong
      */
-    public static Optional<Content> reparseFromScratch(@NonNull final Content content) {
+    public static ImmutablePair<Content, Optional<Content>> reparseFromScratch(@NonNull final Content content) {
         try {
-            return reparseFromScratch(content, content.getGalleryUrl());
+            return new ImmutablePair<>(content, reparseFromScratch(content, content.getGalleryUrl()));
         } catch (IOException e) {
             Timber.w(e);
-            return Optional.empty();
+            return new ImmutablePair<>(content, Optional.empty());
         }
     }
 
@@ -1009,8 +1019,6 @@ public final class ContentHelper {
 
         ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(url));
         Content newContent = contentParser.update(content, url, true);
-        List<ImageFile> imgs = newContent.getImageFiles();
-        if (null == imgs || imgs.isEmpty()) newContent.setQtyPages(0);
 
         if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
             String canonicalUrl = contentParser.getCanonicalUrl();
@@ -1098,10 +1106,14 @@ public final class ContentHelper {
      * @param context Context to use
      * @param content Content to remove files from
      */
-    public static void purgeFiles(@NonNull final Context context, @NonNull final Content content, boolean removeJson) {
+    public static void purgeFiles(
+            @NonNull final Context context,
+            @NonNull final Content content,
+            boolean removeJson,
+            boolean keepCover) {
         DocumentFile bookFolder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (bookFolder != null) {
-            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, null);
+            List<DocumentFile> files = FileHelper.listFiles(context, bookFolder, displayName -> !keepCover || !displayName.startsWith(Consts.THUMB_FILE_NAME));
             if (!files.isEmpty())
                 for (DocumentFile file : files)
                     if (removeJson || !HttpHelper.getExtensionFromUri(file.getUri().toString()).toLowerCase().endsWith("json"))
@@ -1388,7 +1400,28 @@ public final class ContentHelper {
         mergedContent.addAttributes(mergedAttributes);
 
         // Create destination folder for new content
-        DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent);
+        DocumentFile targetFolder;
+        // External library root for external content
+        if (mergedContent.getStatus().equals(StatusContent.EXTERNAL)) {
+            DocumentFile externalRootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getExternalLibraryUri());
+            if (null == externalRootFolder || !externalRootFolder.exists())
+                throw new ContentNotProcessedException(mergedContent, "Could not create target directory : external root unreachable");
+
+            ImmutablePair<String, String> bookFolderName = formatBookFolderName(mergedContent);
+            // First try finding the folder with new naming...
+            targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.left);
+            if (null == targetFolder) { // ...then with old (sanitized) naming...
+                targetFolder = FileHelper.findFolder(context, externalRootFolder, bookFolderName.right);
+                if (null == targetFolder) { // ...if not, create a new folder with the new naming...
+                    targetFolder = externalRootFolder.createDirectory(bookFolderName.left);
+                    if (null == targetFolder) { // ...if it fails, create a new folder with the old naming
+                        targetFolder = externalRootFolder.createDirectory(bookFolderName.right);
+                    }
+                }
+            }
+        } else { // Hentoid download folder for non-external content
+            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent);
+        }
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
 
@@ -1406,7 +1439,7 @@ public final class ContentHelper {
         boolean isError = false;
         try {
             // Set cover
-            if (coverPic.getStatus().equals(StatusContent.DOWNLOADED)) {
+            if (isInLibrary(coverPic.getStatus())) {
                 String extension = HttpHelper.getExtensionFromUri(firstCover.getFileUri());
                 Uri newUri = FileHelper.copyFile(
                         context,
@@ -1429,8 +1462,9 @@ public final class ContentHelper {
             for (Content c : contentList) {
                 if (null == c.getImageFiles()) continue;
                 newChapter = null;
+                // Create a default "content chapter" that represents the original book before merging
                 Chapter contentChapter = new Chapter(chapterOrder++, c.getGalleryUrl(), c.getTitle());
-                contentChapter.setUniqueId(c.getUniqueSiteId());
+                contentChapter.setUniqueId(c.getUniqueSiteId() + "-" + contentChapter.getOrder());
                 for (ImageFile img : c.getImageFiles()) {
                     if (!img.isReadable()) continue;
                     ImageFile newImg = new ImageFile(img);
@@ -1441,17 +1475,16 @@ public final class ContentHelper {
                     Chapter chapLink = img.getLinkedChapter();
                     if (null == chapLink) { // No chapter -> set content chapter
                         newChapter = contentChapter;
-                    } else if (null == newChapter || (
-                            !chapLink.getUrl().equals(newChapter.getUrl()) && !chapLink.getUniqueId().equals(newChapter.getUniqueId())
-                    )
-                    ) {
-                        newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
+                    } else {
+                        if (chapLink.getUniqueId().isEmpty()) chapLink.populateUniqueId();
+                        if (null == newChapter || !chapLink.getUniqueId().equals(newChapter.getUniqueId()))
+                            newChapter = Chapter.fromChapter(chapLink).setOrder(chapterOrder++);
                     }
                     if (!mergedChapters.contains(newChapter)) mergedChapters.add(newChapter);
                     newImg.setChapter(newChapter);
 
                     // If exists, move the picture to the merged books' folder
-                    if (newImg.getStatus().equals(StatusContent.DOWNLOADED)) {
+                    if (isInLibrary(newImg.getStatus())) {
                         String extension = HttpHelper.getExtensionFromUri(img.getFileUri());
                         Uri newUri = FileHelper.copyFile(
                                 context,
@@ -1468,7 +1501,8 @@ public final class ContentHelper {
                     mergedImages.add(newImg);
                 }
             }
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             Timber.w(e);
             isError = true;
         }

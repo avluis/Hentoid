@@ -66,6 +66,7 @@ import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.DragSelectTouchListener;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
+import me.devsaki.hentoid.widget.ViewerKeyListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
@@ -74,9 +75,9 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
     @IntDef({EditMode.NONE, EditMode.EDIT_CHAPTERS, EditMode.ADD_CHAPTER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface EditMode {
-        int NONE = 0;
-        int EDIT_CHAPTERS = 1;
-        int ADD_CHAPTER = 2;
+        int NONE = 0; // Plain gallery
+        int EDIT_CHAPTERS = 1; // Screen with foldable and draggable chapters
+        int ADD_CHAPTER = 2; // Screen with tappable images to add and remove chapters
     }
 
     // ======== COMMUNICATION
@@ -157,7 +158,6 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         }
     };
 
-
     static ViewerGalleryFragment newInstance() {
         return new ViewerGalleryFragment();
     }
@@ -184,15 +184,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
         // Toolbar
         toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
-        toolbar.setNavigationOnClickListener(v -> {
-            // TODO exit chapter edit mode on back button press
-            if (editMode == EditMode.EDIT_CHAPTERS)
-                setChapterEditMode(EditMode.NONE);
-            if (editMode == EditMode.ADD_CHAPTER)
-                setChapterEditMode(EditMode.EDIT_CHAPTERS);
-            else
-                requireActivity().onBackPressed();
-        });
+        toolbar.setNavigationOnClickListener(v -> onBackClick());
 
         toolbar.setOnMenuItemClickListener(clickedMenuItem -> {
             if (clickedMenuItem.getItemId() == R.id.action_show_favorite_pages) {
@@ -202,7 +194,15 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             } else if (clickedMenuItem.getItemId() == R.id.action_add_remove_chapters) {
                 setChapterEditMode(EditMode.ADD_CHAPTER);
             } else if (clickedMenuItem.getItemId() == R.id.action_remove_chapters) {
-                stripChapters();
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity());
+                String title = requireActivity().getString(R.string.ask_clear_chapters);
+                builder.setMessage(title)
+                        .setPositiveButton(R.string.yes,
+                                (dialog, which) -> stripChapters())
+                        .setNegativeButton(R.string.no,
+                                (dialog, which) -> {
+                                })
+                        .create().show();
             }
             return true;
         });
@@ -254,6 +254,29 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         super.onDestroy();
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        ((ImageViewerActivity) requireActivity()).registerKeyListener(
+                new ViewerKeyListener().setOnBackListener(this::onBackClick)
+        );
+    }
+
+    private void onBackClick() {
+        if (editMode == EditMode.EDIT_CHAPTERS)
+            setChapterEditMode(EditMode.NONE);
+        else if (editMode == EditMode.ADD_CHAPTER)
+            setChapterEditMode(EditMode.EDIT_CHAPTERS);
+        else
+            requireActivity().onBackPressed();
+    }
+
+    @Override
+    public void onStop() {
+        ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
+        super.onStop();
+    }
+
     private void updateListAdapter(boolean isChapterEditMode) {
         if (isChapterEditMode) {
             if (!fastAdapter2.hasObservers()) fastAdapter2.setHasStableIds(true);
@@ -296,6 +319,9 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                             }
                     )
             );
+
+            // Item click listener
+            fastAdapter2.setOnClickListener((v, a, i, p) -> onNestedItemClick(i));
 
             // Select on swipe
             if (mDragSelectTouchListener != null) {
@@ -398,14 +424,17 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     .withoutNulls()
                     .sortBy(Chapter::getOrder).filter(c -> c.getOrder() > -1).distinct().toList();
 
+            int displayOrder = 0;
             for (Chapter c : chapters) {
-                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName(c.getName()).withDraggable(!isArchive);
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper, c.getName()).withDraggable(!isArchive);
                 expandableItem.setIdentifier(c.getId());
 
                 List<ImageFileItem> imgs = new ArrayList<>();
                 List<ImageFile> chpImgs = c.getImageFiles();
                 if (chpImgs != null) {
                     for (ImageFile img : chpImgs) {
+                        // Reconstitute display order that has been lost because of @Transient property
+                        img.setDisplayOrder(displayOrder++);
                         if (img.isReadable()) {
                             ImageFileItem holder = new ImageFileItem(img, false);
                             imgs.add(holder);
@@ -422,7 +451,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                     .toList();
 
             if (!chapterlessImages.isEmpty()) {
-                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper).withName(getResources().getString(R.string.gallery_no_chapter)).withDraggable(!isArchive);
+                SubExpandableItem expandableItem = new SubExpandableItem(touchHelper, getResources().getString(R.string.gallery_no_chapter)).withDraggable(!isArchive);
                 expandableItem.setIdentifier(Long.MAX_VALUE);
 
                 List<ImageFileItem> imgs = new ArrayList<>();
@@ -527,6 +556,24 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 }
             } else { // Create/remove chapter
                 viewModel.createRemoveChapter(img, t -> ToastHelper.toast(R.string.chapter_toggle_failed, img.getOrder()));
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean onNestedItemClick(INestedItem<?> item) {
+        if (item.getLevel() > 0) {
+            ImageFile img = ((ImageFileItem) item).getImage();
+            viewModel.setReaderStartingIndex(img.getDisplayOrder());
+            if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .replace(android.R.id.content, new ViewerPagerFragment())
+                        .addToBackStack(null)
+                        .commit();
+            } else { // Pager mode (Library -> pager -> gallery -> pager)
+                getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
             }
             return true;
         }
