@@ -1,47 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Activity Title -->
-    <string name="tools_title">Инструменты</string>
-    <!-- Menu item -->
-    <string name="tools_screen_import_export">Импорт и экспорт</string>
-
-    <!-- Button -->
-    <string name="tools_export_library_title">Экспортировать метаданные</string>
-    <!-- Button description -->
-    <string name="tools_export_library_summary">Экспортировать книги из Hentoid в JSON</string>
-    <!-- Button -->
-    <string name="tools_import_library_title">Импортировать метаданные</string>
-    <!-- Button description -->
-    <string name="tools_import_library_summary">Восстановить книги в Hentoid из JSON</string>
-    <!-- Subheading -->
-    <string name="tools_screen_cat_settings">Настройки</string>
-    <!-- Button -->
-    <string name="tools_export_settings_title">Экспортировать настройки</string>
-    <!-- Button description -->
-    <string name="tools_export_settings_summary">Экспортировать настройки в JSON</string>
-    <!-- Button -->
-    <string name="tools_import_settings_title">Импортировать настройки</string>
-    <!-- Button description -->
-    <string name="tools_import_settings_summary">Восстановить настройки из JSON</string>
-
-    <!-- Menu item -->
-    <string name="tools_duplicate_detector_title">Поиск дубликатов</string>
-    <!-- Menu item description -->
-    <string name="tools_duplicate_detector_summary">Поиск и удаление идентичных копий книг</string>
-
-    <!-- Menu item -->
-    <string name="tools_screen_cache">Управление кэшем</string>
-    <!-- Button -->
-    <string name="tools_cache_browser">Очистить кэш браузера</string>
-    <!-- Toast notification -->
-    <string name="tools_cache_browser_success">Кэш WebView успешно очищен</string>
-    <!-- Button -->
-    <string name="tools_cache_app">Очистить кэш приложения</string>
-    <!-- Toast notification -->
-    <string name="tools_cache_app_success">Кэш приложения успешно очищен</string>
-
-    <!-- Menu item -->
-    <string name="tools_latest_logs_title">Логи приложения</string>
-    <!-- Menu item description -->
-    <string name="tools_latest_logs_summary">Просмотреть последние логи приложения</string>
+<string name="tools_title">Инструменты</string>
+<string name="tools_screen_import_export">Импорт и экспорт</string>
+<string name="tools_export_library_title">Экспортировать метаданные</string>
+<string name="tools_export_library_summary">Экспортировать книги из Hentoid в JSON</string>
+<string name="tools_import_library_title">Импортировать метаданные</string>
+<string name="tools_import_library_summary">Восстановить книги в Hentoid из JSON</string>
+<string name="tools_screen_cat_settings">Настройки</string>
+<string name="tools_export_settings_title">Экспортировать настройки</string>
+<string name="tools_export_settings_summary">Экспортировать настройки в JSON</string>
+<string name="tools_import_settings_title">Импортировать настройки</string>
+<string name="tools_import_settings_summary">Восстановить настройки из JSON</string>
+<string name="tools_duplicate_detector_title">Поиск дубликатов</string>
+<string name="tools_duplicate_detector_summary">Поиск и удаление идентичных копий книг</string>
+<string name="tools_screen_cache">Управление кэшем</string>
+<string name="tools_cache_browser">Очистить кэш браузера</string>
+<string name="tools_cache_browser_success">Кэш WebView успешно очищен</string>
+<string name="tools_cache_app">Очистить кэш приложения</string>
+<string name="tools_cache_app_success">Кэш приложения успешно очищен</string>
+<string name="tools_latest_logs_title">Логи приложения</string>
+<string name="tools_latest_logs_summary">Просмотреть последние логи приложения</string>
 </resources>

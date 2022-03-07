@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<string name="slide_01_header">Üdvözlünk a Hentoid alkalmazásban!</string>
+    <string name="slide_01_header">Üdvözlünk a Hentoid alkalmazásban!</string>
     <string name="slide_01_text">A Hentoid az egy Doujinshi\n&amp; Hentai Manga archiváló alkalmazás.</string>
-<string name="slide_02_header">Engedélyek</string>
+    <string name="slide_02_header">Engedélyek</string>
     <string name="slide_02_text">Szükségünk van néhány engedélyre, hogy adatokat tárolhassunk a eszközén.</string>
-<string name="slide_04_header">Könyvtár</string>
+    <string name="slide_04_header">Könyvtár</string>
     <string name="slide_04_text">A Hentoid alkalmazásnak szüksége van egy dedikált mappának, a médiád eltárolásához.</string>
 <string name="slide_04_skip">Átugrás</string>
 <string name="slide_04_skip_title">Átugrás\?</string>
     <string name="slide_04_skip_msg">Nem fogsz tudni letölteni, hogyha kihagyod ezt a lépést.\nAhhoz hogy letudj tölteni, be kell állítanod a letöltési mappát az alkalmazás beállításában.</string>
-<string name="slide_05_header">Téma</string>
+    <string name="slide_05_header">Téma</string>
     <string name="slide_05_text">Kérjük, válasszon egy megjelenítési témát.</string>
-<string name="slide_06_header">Források</string>
+    <string name="slide_06_header">Források</string>
 <string name="slide_06_text">Válaszd ki a forrásokat ahonnan leszeretnél tölteni.</string>
     <string name="slide_06_subtext">A választását később bármikor megváltoztathatja a bal oldali menüben található szerkesztés gomb segítségével.</string>
-<string name="slide_end_header">Minden készen áll!</string>
+    <string name="slide_end_header">Minden készen áll!</string>
     <string name="slide_end_text">Készen is vagyunk!\nÉlvezd az alkalmazást.</string>
 </resources>
