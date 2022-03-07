@@ -124,7 +124,7 @@
 <string name="pref_screen_updates">Frissítések</string>
     <string name="pref_check_updates_manual_title">Manuális frissítés ellenőrzése</string>
     <string name="pref_check_updates_manual_summary">Manuálisan ellenőrizze a frissítéseket most</string>
-    <string name="pref_check_updates_manual_checking">Frissítések keresése...</string>
+    <string name="pref_check_updates_manual_checking">Frissítések keresése…</string>
     <string name="pref_check_updates_manual_no_new">Nem található frissítés - Már a legfrissebb verziót használja</string>
     <string name="pref_check_updates_manual_no_connection">Nem sikerült ellenőrizni a frissítéseket. Ellenőrizze a kapcsolatot, vagy próbálja meg később újra</string>
     <string name="pref_check_updates_title">Automatikus frissítések</string>

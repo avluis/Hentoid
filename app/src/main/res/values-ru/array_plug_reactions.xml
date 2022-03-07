@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-<string name="audio_plug1">ямете~~♡</string>
+<resources>
+    <string name="audio_plug1">ямете~~♡</string>
     <string name="audio_plug2">стой, это… не та дырка~</string>
     <string name="audio_plug3">ах~</string>
     <string name="audio_plug4">фууу ♡ ♡</string>
     <string name="audio_plug5">не сюда~~♡</string>
     <string name="audio_plug6">плохой, плохой мальчик~~</string>
     <string name="audio_plug7">так… тесно…♡</string>
-<string name="power_plug1">мне так приятно там~~</string>
+    <string name="power_plug1">мне так приятно там~~</string>
     <string name="power_plug2">глубже~~~♡</string>
     <string name="power_plug3">икуууу~~</string>
     <string name="power_plug4">а-ах ♡</string>
