@@ -311,8 +311,8 @@ public class EHentaiParser implements ImageListParser {
         return Optional.empty();
     }
 
-    static ImmutablePair<String, Optional<String>> parseImagePageEh(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
-        Document doc = getOnlineDocument(url, requestHeaders, Site.EHENTAI.useHentoidAgent(), Site.EHENTAI.useWebviewAgent());
+    static ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders, @NonNull final Site site) throws IOException, LimitReachedException, EmptyResultException {
+        Document doc = getOnlineDocument(url, requestHeaders, site.useHentoidAgent(), site.useWebviewAgent());
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
@@ -329,7 +329,7 @@ public class EHentaiParser implements ImageListParser {
 
     @Override
     public ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders) throws IOException, LimitReachedException, EmptyResultException {
-        return parseImagePageEh(url, requestHeaders);
+        return parseImagePage(url, requestHeaders, Site.EHENTAI);
     }
 
     /**
