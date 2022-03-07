@@ -351,7 +351,7 @@
     <string name="downloads_loading">Caricamento in corso~</string>
     <string name="masterdata_no_result">Nessun risultato :(</string>
     <string name="search_entry_not_found">Non è qui, vai a scaricarlo.</string>
-    <string name="search_bookid_label">Cerca <x:g example="4567" id="launchcode">\'%s\'</x:g> in...</string>
+    <string name="search_bookid_label">Cerca <x:g example="4567" id="launchcode">\'%s\'</x:g> in…</string>
     <string name="book_launchcode">Codice di lancio: <x:g example="4567" id="launchcode">%s</x:g></string>
     <plurals name="number_of_items">
         <item quantity="one"><x:g example="1" id="count">%d</x:g> elemento</item>
