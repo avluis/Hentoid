@@ -107,7 +107,6 @@ public class ExHentaiParser implements ImageListParser {
         return result;
     }
 
-    @SuppressWarnings("BusyWait")
     private List<ImageFile> loadMpv(
             @NonNull Content content,
             @NonNull final String mpvUrl,
