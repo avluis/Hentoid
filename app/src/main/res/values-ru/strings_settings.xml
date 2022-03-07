@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-<string name="pref_screen_interface">Интерфейс и навигация</string>
+
+    <!-- Interface -->
+    <string name="pref_screen_interface">Интерфейс и навигация</string>
     <string name="pref_cat_library">Библиотека</string>
     <string name="pref_drawer_sources_title">Управление источниками</string>
     <string name="pref_drawer_sources_summary">Включайте, выключайте и реорганизовывайте источники, показываемые в левом меню</string>
@@ -19,7 +21,9 @@
     <string name="pref_cat_theme">Тема приложения</string>
     <string name="pref_color_theme_title">Цветовая схема</string>
     <string name="pref_color_theme_summary">Текущая тема: <x:g id="theme_name" example="Тёмно-красная">%s</x:g></string>
-<string name="pref_screen_storage">Хранилище</string>
+
+    <!-- Storage -->
+    <string name="pref_screen_storage">Хранилище</string>
     <string name="pref_cat_downloads_folder">Библиотека Hentoid</string>
     <string name="pref_select_folder_title">Выбор папки загрузок</string>
     <string name="pref_select_folder_summary">Выберите, где Hentoid будет хранить ваши загрузки</string>
@@ -54,7 +58,9 @@
         <item quantity="few">Удалить <x:g id="count" example="2">%d</x:g> книги\?</item>
         <item quantity="many">Удалить <x:g id="count" example="5">%d</x:g> книг\?</item>
     </plurals>
-<string name="pref_screen_browser">Браузер</string>
+
+    <!-- Browser -->
+    <string name="pref_screen_browser">Браузер</string>
     <string name="pref_browser_behaviour">Поведение</string>
     <string name="pref_browser_resume_last_title">Восстанавливать последнюю страницу</string>
     <string name="pref_browser_resume_last_off">Сайты будут открываться со своих главных страниц</string>
@@ -86,7 +92,9 @@
     <string name="pref_browser_initial_zoom_summary">Уровень масштаба при загрузке страницы\nСейчас: <x:g id="percentage" example="20%">%s%%</x:g></string>
     <string name="pref_browser_dns">Сторонний DNS</string>
     <string name="pref_browser_dns_title">DNS через HTTPS</string>
-<string name="pref_screen_downloader">Загрузчик</string>
+
+    <!-- Downloader -->
+    <string name="pref_screen_downloader">Загрузчик</string>
     <string name="pref_queue_autostart_title">Автоматически начинать очередь загрузки</string>
     <string name="pref_queue_autostart_on">Очередь загрузки начнётся как только загрузка завершится</string>
     <string name="pref_queue_autostart_off">Очередь загрузки запустится только вручную</string>
@@ -109,12 +117,11 @@
     <string name="pref_dl_blocked_tags_title">Заблокированные тэги</string>
     <string name="pref_dl_blocked_tags_summary">Книги с определёнными тэгами не будут загружаться\nПодсказка: тэги разделяются запятыми</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Плохие тэги нужно…</string>
-    <string name="pref_dl_hitomi_webp_title">Предпочитать загрузку WebP</string>
-    <string name="pref_dl_hitomi_webp_summary_off">Загружать изображения в других форматах (PNG, JPG)</string>
-    <string name="pref_dl_hitomi_webp_summary_on">Загружать WebP, когда возможно</string>
     <string name="pref_dl_threads_quantity_title">Кол-во параллельных загрузок</string>
     <string name="pref_dl_threads_quantity_summary">Число изображений, загружающихся одновременно\nСейчас: <x:g id="number" example="5">%s</x:g></string>
-<string name="pref_screen_privacy">Конфиденциальность</string>
+
+    <!-- Privacy -->
+    <string name="pref_screen_privacy">Конфиденциальность</string>
     <string name="pref_app_preview_title">Предпросмотр в списке недавних приложений</string>
     <string name="pref_app_preview_summary_off">В списке недавних приложений не отображается, что открыто в приложении\nВключите, если хотите делать скриншоты приложения</string>
     <string name="pref_app_preview_summary_on">Содержимое экрана не скрывается в списке недавних приложений</string>
@@ -124,7 +131,9 @@
     <string name="pref_analytics_preference_title">Аналитика Firebase</string>
     <string name="pref_analytics_preference_summary_off">Сбор аналитики выключен.\nВключите его, чтобы мы могли улучшать приложение, отслеживая сбои и ошибки в нём</string>
     <string name="pref_analytics_preference_summary_on">Сбор аналитики включён.\nСпасибо, что помогаете нам улучшить Hentoid!</string>
-<string name="pref_screen_updates">Обновления</string>
+
+    <!-- Updates -->
+    <string name="pref_screen_updates">Обновления</string>
     <string name="pref_check_updates_manual_title">Проверить обновления вручную</string>
     <string name="pref_check_updates_manual_summary">Сделать проверку прямо сейчас</string>
     <string name="pref_check_updates_manual_checking">Проверяю обновления…</string>
@@ -133,7 +142,9 @@
     <string name="pref_check_updates_title">Автоматические обновления</string>
     <string name="pref_check_updates_summary_off">Вы также можете включить автоматическую проверку обновлений по мобильной сети</string>
     <string name="pref_check_updates_summary_on">Это не отключает возможность ручной проверки обновлений</string>
-<string name="pref_screen_viewer">Просмотр изображений</string>
+
+    <!-- Viewer -->
+    <string name="pref_screen_viewer">Просмотр изображений</string>
     <string name="pref_viewer_controls">Управление</string>
     <string name="pref_viewer_browse_mode">Режим обзора</string>
     <string name="pref_viewer_page_turn">Режим перелистывания страниц</string>

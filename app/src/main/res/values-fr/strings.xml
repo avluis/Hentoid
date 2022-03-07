@@ -20,7 +20,6 @@
         <item quantity="other">fichiers</item>
         <item quantity="many">fichiers</item>
     </plurals>
-    <string name="undo">Annuler</string>
     <string name="stop">Arrêter</string>
     <string name="resume">Reprendre</string>
     <string name="cancel">Annuler</string>
@@ -60,7 +59,6 @@
     <string name="menu_edit_warning_custom">Le nouvel ordre personnalisé que vous êtes sur le point de créer écrasera le précédent.</string>
     <string name="menu_order">Ordonner les livres</string>
     <string name="menu_delete_single">Supprimer</string>
-    <string name="menu_delete_multi">Supprimer des éléments</string>
     <string name="menu_change_group">Déplacer dans le groupe…</string>
     <string name="menu_open_folder">Ouvrir le dossier contenant</string>
     <string name="menu_redownload">Retélécharger</string>
@@ -93,10 +91,7 @@
     <string name="invert_queue">Inverser la file d\'attente</string>
     <string name="redownload_all">Tout retélécharger</string>
     <string name="cancel_all_errors">Annuler toutes les erreurs</string>
-    <string name="canceled">Annulé</string>
     <string name="move_top">Déplacer vers le haut</string>
-    <string name="move_up">Monter</string>
-    <string name="move_down">Descendre</string>
     <string name="move_bottom">Déplacer vers le bas</string>
     <string name="queue_paused">File d\'attente en pause</string>
 
