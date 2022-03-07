@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -38,6 +39,7 @@ import me.devsaki.hentoid.json.sources.EHentaiImageResponse;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
@@ -222,6 +224,14 @@ public class EHentaiParser implements ImageListParser {
             Element e = elements.first();
             if (e != null) return ParseHelper.getImgSrc(e);
         }
+        elements = doc.select("#i3.img");
+        if (!elements.isEmpty()) {
+            Element e = elements.first();
+            if (e != null) return ParseHelper.getImgSrc(e);
+        }
+        LogHelper.LogInfo log = new LogHelper.LogInfo("exhentai");
+        log.addEntry(doc.body().toString());
+        LogHelper.writeLog(HentoidApp.getInstance(), log);
         return "";
     }
 
