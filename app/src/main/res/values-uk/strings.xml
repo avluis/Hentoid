@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <!-- Generic usage -->
+    <string name="app_intro">Ласкаво просимо</string>
+    <!-- because Android default "OK" value for "yes" key is nonsense -->
+    <string name="yes">Так</string>
+    <!-- because Android default "Cancel" value for "no" key is nonsense -->
+    <string name="no">Ні</string>
+    <string name="ok">ОК</string>
+    <string name="on">Вмик.</string>
+    <string name="off">Вимк.</string>
+    <string name="select_all">Вибрати все</string>
+    <string name="select_none">Зняти виділення</string>
+    <string name="goto_page">Перейти до сторінки…</string>
+    <string name="confirm">Підтвердити</string>
+    <string name="please_wait">Будь ласка, зачекайте…</string>
+    <plurals name="book" tools:ignore="ImpliedQuantity">
+        <item quantity="one">книга</item>
+        <item quantity="few">книги</item>
+        <item quantity="many">книг</item>
+    </plurals>
+    <plurals name="page" tools:ignore="ImpliedQuantity">
+        <item quantity="one">сторінка</item>
+        <item quantity="few">сторінки</item>
+        <item quantity="many">сторінок</item>
+    </plurals>
+    <plurals name="file" tools:ignore="ImpliedQuantity">
+        <item quantity="one">файл</item>
+        <item quantity="few">файла</item>
+        <item quantity="many">файлів</item>
+    </plurals>
+    <string name="pause">Призупинити</string>
+    <string name="stop">Зупинити</string>
+    <string name="resume">Відновити</string>
+    <string name="cancel">Скасувати</string>
+    <string name="cancel_all">Скасувати все</string>
+    <string name="menu_completed_single">Завершено</string>
+    <string name="service_running">Сервіс вже запущений</string>
+    <string name="open_folder">Відкрити папку</string>
+    <string name="_default">за замовчуванням</string>
+
+    <!-- Activities -->
+    <string name="title_activity_api29_migration">Перехід на API 29</string>
+    <string name="title_activity_downloads">Бібліотека</string>
+    <string name="title_activity_queue">Черга</string>
+    <string name="title_activity_preferences">Налаштування</string>
+    <string name="title_activity_about">Про Hentoid</string>
+    <string name="title_activity_app_lock">Код-пароль</string>
+    <string name="title_activity_search">Розширений пошук</string>
+
+    <!-- API29 migration / library refresh screen -->
+    <string name="api29_migration_title">Hentoid v12\nОновлення керування файлами</string>
+    <string name="api29_migration_subtitle">Hentoid оновлює вашу колекцію.\nЦе може зайняти кілька хвилин.</string>
+    <string name="api29_migration_location">Розташування папки Hentoid\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
+    <string name="api29_migration_step1">Папка Hentoid</string>
+    <string name="api29_migration_step1_external">Зовнішня папка</string>
+    <string name="api29_migration_step1_select">Вибрати папку Hentoid</string>
+    <string name="api29_migration_step1_select_external">Вибрати зовнішню папку</string>
+    <string name="api29_migration_step2">Сканую папки сайтів</string>
+    <string name="api29_migration_step3_init">Сканую бібліотеку…</string>
+    <string name="api29_migration_step3">Сканування бібліотеки (<x:g id="number" example="1">%1$d</x:g>/<x:g id="total" example="7">%2$d</x:g>)</string>
+    <string name="api29_migration_step4_init">Імпорт черги…</string>
+    <string name="api29_migration_select_folder">Будь ласка, виберіть існуючу папку Hentoid. Її розташування показано на екрані.</string>
+    <string name="api29_migration_allow_write">Будь ласка, підтвердіть дозвіл на запис</string>
+
+    <!-- Library screen toolbar -->
+    <string name="menu_search">Пошук</string>
+</resources>
