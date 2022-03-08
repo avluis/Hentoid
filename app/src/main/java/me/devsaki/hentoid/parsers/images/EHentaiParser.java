@@ -26,7 +26,6 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -39,7 +38,6 @@ import me.devsaki.hentoid.json.sources.EHentaiImageResponse;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
@@ -308,12 +306,6 @@ public class EHentaiParser implements ImageListParser {
     }
 
     static ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders, @NonNull final Site site) throws IOException, LimitReachedException, EmptyResultException {
-
-        LogHelper.LogInfo log = new LogHelper.LogInfo("exhentai");
-        for (Pair<String, String> entry : requestHeaders)
-            log.addEntry("header %s=%s", entry.first, entry.second);
-        LogHelper.writeLog(HentoidApp.getInstance(), log);
-
         Document doc = getOnlineDocument(url, requestHeaders, site.useHentoidAgent(), site.useWebviewAgent());
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
