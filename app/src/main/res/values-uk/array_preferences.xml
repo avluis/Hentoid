@@ -91,6 +91,6 @@
     <string name="pref_lock_timer_entries_1">Відразу</string>
     <string name="pref_lock_timer_entries_2">10 с</string>
     <string name="pref_lock_timer_entries_3">30 с (за замовчуванням)</string>
-    <string name="pref_lock_timer_entries_4">1 мин.</string>
-    <string name="pref_lock_timer_entries_5">2 мин.</string>
+    <string name="pref_lock_timer_entries_4">1 хв.</string>
+    <string name="pref_lock_timer_entries_5">2 хв.</string>
 </resources>
