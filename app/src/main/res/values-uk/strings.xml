@@ -124,7 +124,7 @@
         <item quantity="many">Скасувати <x:g id="count" example="5">%d</x:g> книг із помилками\?</item>
     </plurals>
     <plurals name="confirm_redownload_all">
-        <item quantity="one">Завантажити <x:g id="count" example="1">%d</x:g> елемент снова\?</item>
+        <item quantity="one">Завантажити <x:g id="count" example="1">%d</x:g> елемент знову\?</item>
         <item quantity="few">Завантажити <x:g id="count" example="2">%d</x:g> елементи знову\?</item>
         <item quantity="many">Завантажити <x:g id="count" example="5">%d</x:g> елементів знову\?</item>
     </plurals>
