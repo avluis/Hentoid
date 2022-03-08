@@ -228,9 +228,6 @@ public class EHentaiParser implements ImageListParser {
             Element e = elements.first();
             if (e != null) return ParseHelper.getImgSrc(e);
         }
-        LogHelper.LogInfo log = new LogHelper.LogInfo("exhentai");
-        log.addEntry(doc.body().toString());
-        LogHelper.writeLog(HentoidApp.getInstance(), log);
         return "";
     }
 
@@ -311,6 +308,12 @@ public class EHentaiParser implements ImageListParser {
     }
 
     static ImmutablePair<String, Optional<String>> parseImagePage(@NonNull String url, @NonNull List<Pair<String, String>> requestHeaders, @NonNull final Site site) throws IOException, LimitReachedException, EmptyResultException {
+
+        LogHelper.LogInfo log = new LogHelper.LogInfo("exhentai");
+        for (Pair<String, String> entry : requestHeaders)
+            log.addEntry("header %s=%s", entry.first, entry.second);
+        LogHelper.writeLog(HentoidApp.getInstance(), log);
+
         Document doc = getOnlineDocument(url, requestHeaders, site.useHentoidAgent(), site.useWebviewAgent());
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
