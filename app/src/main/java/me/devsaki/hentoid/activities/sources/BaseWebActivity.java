@@ -934,6 +934,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 List<ErrorRecord> errors = new ArrayList<>();
                 errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tags : " + TextUtils.join(", ", blockedTagsLocal), Instant.now()));
                 currentContent.setErrorLog(errors);
+                currentContent.setDownloadMode(Preferences.getBrowserDlAction());
                 currentContent.setStatus(StatusContent.ERROR);
                 dao.insertContent(currentContent);
                 ToastHelper.toast(R.string.blocked_tag_queued, blockedTagsLocal.get(0));
