@@ -4,7 +4,7 @@
 -->
 ___
 
-[![Завантажити](https://img.shields.io/badge/Скачать-APK-brightgreen.svg)](https://github.com/avluis/Hentoid/releases/latest)
+[![Завантажити](https://img.shields.io/badge/Завантажити-APK-brightgreen.svg)](https://github.com/avluis/Hentoid/releases/latest)
 
 [![Контроль якості](https://sonarcloud.io/api/project_badges/measure?project=RobbWatershed_hentoid-sonar&metric=alert_status)](https://sonarcloud.io/dashboard?id=RobbWatershed_hentoid-sonar) [![Статус збірки](https://app.bitrise.io/app/70539fbfc39cb9d8/status.svg?token=_kOMCvtscTfWpw7mdsqvJA&branch=dev)](https://app.bitrise.io/app/70539fbfc39cb9d8)
 
