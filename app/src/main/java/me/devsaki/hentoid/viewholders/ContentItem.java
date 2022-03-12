@@ -314,7 +314,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             // Payloads are set when the content stays the same but some properties alone change
             if (!payloads.isEmpty()) {
                 Bundle bundle = (Bundle) payloads.get(0);
-                ContentItemBundle.Parser bundleParser = new ContentItemBundle.Parser(bundle);
+                ContentItemBundle bundleParser = new ContentItemBundle(bundle);
 
                 Boolean boolValue = bundleParser.isBeingDeleted();
                 if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
