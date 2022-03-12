@@ -38,6 +38,7 @@
     <string name="service_running">Сервіс вже запущений</string>
     <string name="open_folder">Відкрити папку</string>
     <string name="_default">за замовчуванням</string>
+    <string name="empty">порожньо</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">Перехід на API 29</string>

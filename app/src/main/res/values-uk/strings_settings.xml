@@ -68,6 +68,7 @@
     <string name="pref_browser_dl_action_title">Завантаження</string>
     <string name="pref_browser_quick_dl_title">Швидке завантаження</string>
     <string name="pref_browser_quick_dl_summary">Не відкриваючи книгу, натисніть на неї, щоб завантажити</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_title">Заблоковані на книги nhentai відображаються…</string>
     <string name="pref_browser_nhentai_invisible_blacklist_off">Відображаються з розмиттям</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">Не відображаються</string>
     <string name="pref_browser_quick_dl_threshold_title">Поріг довгого натискання для швидкого завантаження</string>
