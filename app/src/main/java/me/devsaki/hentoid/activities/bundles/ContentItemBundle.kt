@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities.bundles
 
 import android.os.Bundle
 import me.devsaki.hentoid.util.boolean
+import me.devsaki.hentoid.util.int
 import me.devsaki.hentoid.util.long
 import me.devsaki.hentoid.util.string
 
@@ -19,7 +20,7 @@ class ContentItemBundle(val bundle: Bundle = Bundle()) {
 
     var reads by bundle.long()
 
-    var readPagesCount by bundle.long()
+    var readPagesCount by bundle.int()
 
     var coverUri by bundle.string()
 

@@ -227,7 +227,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 diffBundleBuilder.setReads(newItem.getReads());
             }
             if (oldItem.getReadPagesCount() != newItem.getReadPagesCount()) {
-                diffBundleBuilder.setReadPagesCount((long) newItem.getReadPagesCount());
+                diffBundleBuilder.setReadPagesCount(newItem.getReadPagesCount());
             }
             if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
                 diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());
@@ -273,7 +273,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 diffBundleBuilder.setReads(newItem.getReads());
             }
             if (oldItem.getReadPagesCount() != newItem.getReadPagesCount()) {
-                diffBundleBuilder.setReadPagesCount((long) newItem.getReadPagesCount());
+                diffBundleBuilder.setReadPagesCount(newItem.getReadPagesCount());
             }
             if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
                 diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());

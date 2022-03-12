@@ -324,8 +324,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (boolValue != null) item.content.setCompleted(boolValue);
                 Long longValue = bundleParser.getReads();
                 if (longValue != null) item.content.setReads(longValue);
-                longValue = bundleParser.getReadPagesCount();
-                if (longValue != null) item.content.setReadPagesCount(longValue.intValue());
+                Integer intValue = bundleParser.getReadPagesCount();
+                if (intValue != null) item.content.setReadPagesCount(intValue);
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) item.content.getCover().setFileUri(stringValue);
                 stringValue = bundleParser.getTitle();
