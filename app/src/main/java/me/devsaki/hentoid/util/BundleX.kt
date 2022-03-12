@@ -16,6 +16,14 @@ fun Bundle.boolean(default: Boolean) = object : ReadWriteProperty<Any, Boolean> 
         putBoolean(property.name, value)
 }
 
+fun Bundle.bundle() = object : ReadWriteProperty<Any, Bundle?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        getBundle(property.name)
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Bundle?) =
+        putBundle(property.name, value)
+}
+
 fun Bundle.byte(default: Byte) = object : ReadWriteProperty<Any, Byte> {
     override fun getValue(thisRef: Any, property: KProperty<*>) =
         getByte(property.name, default)

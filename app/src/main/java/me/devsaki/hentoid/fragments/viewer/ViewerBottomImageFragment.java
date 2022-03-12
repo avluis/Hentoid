@@ -89,7 +89,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
     }
 
     public static void invoke(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
-        ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
+        ImageViewerActivityBundle builder = new ImageViewerActivityBundle();
 
         builder.setImageIndex(imageIndex);
         builder.setScale(currentScale);
@@ -106,7 +106,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
         Bundle bundle = getArguments();
         if (bundle != null) {
-            ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(bundle);
+            ImageViewerActivityBundle parser = new ImageViewerActivityBundle(bundle);
             imageIndex = parser.getImageIndex();
             if (-1 == imageIndex) throw new IllegalArgumentException("Initialization failed");
             scale = parser.getScale();

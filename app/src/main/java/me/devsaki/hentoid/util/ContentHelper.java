@@ -265,7 +265,7 @@ public final class ContentHelper {
 
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageUri());
 
-        ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
+        ImageViewerActivityBundle builder = new ImageViewerActivityBundle();
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
         if (pageNumber > -1) builder.setPageNumber(pageNumber);
