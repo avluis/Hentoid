@@ -8,7 +8,7 @@ import me.devsaki.hentoid.util.long
 import me.devsaki.hentoid.util.string
 
 /**
- * Helper class to transfer data from any Activity to [me.devsaki.hentoid.activities.PrefsActivity]
+ * Helper class to transfer data from any Activity to [me.devsaki.hentoid.activities.QueueActivity]
  * through a Bundle
  */
 class QueueActivityBundle(val bundle: Bundle = Bundle()) {
