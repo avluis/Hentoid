@@ -215,19 +215,19 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         @Nullable
         @Override
         public Object getChangePayload(@NonNull Content oldItem, @NonNull Content newItem) {
-            ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
+            ContentItemBundle diffBundleBuilder = new ContentItemBundle();
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
-                diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+                diffBundleBuilder.setFavourite(newItem.isFavourite());
             }
             if (oldItem.isCompleted() != newItem.isCompleted()) {
-                diffBundleBuilder.setIsCompleted(newItem.isCompleted());
+                diffBundleBuilder.setCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
             }
             if (oldItem.getReadPagesCount() != newItem.getReadPagesCount()) {
-                diffBundleBuilder.setReadPagesCount(newItem.getReadPagesCount());
+                diffBundleBuilder.setReadPagesCount((long) newItem.getReadPagesCount());
             }
             if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
                 diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());
@@ -261,19 +261,19 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
             if (null == oldItem || null == newItem) return false;
 
-            ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
+            ContentItemBundle diffBundleBuilder = new ContentItemBundle();
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
-                diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+                diffBundleBuilder.setFavourite(newItem.isFavourite());
             }
             if (oldItem.isCompleted() != newItem.isCompleted()) {
-                diffBundleBuilder.setIsCompleted(newItem.isCompleted());
+                diffBundleBuilder.setCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
             }
             if (oldItem.getReadPagesCount() != newItem.getReadPagesCount()) {
-                diffBundleBuilder.setReadPagesCount(newItem.getReadPagesCount());
+                diffBundleBuilder.setReadPagesCount((long) newItem.getReadPagesCount());
             }
             if (!oldItem.getCoverImageUrl().equals(newItem.getCoverImageUrl())) {
                 diffBundleBuilder.setCoverUri(newItem.getCover().getFileUri());

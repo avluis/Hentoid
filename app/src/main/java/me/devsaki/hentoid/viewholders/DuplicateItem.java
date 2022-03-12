@@ -220,9 +220,9 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             // Payloads are set when the content stays the same but some properties alone change
             if (!payloads.isEmpty()) {
                 Bundle bundle = (Bundle) payloads.get(0);
-                DuplicateItemBundle.Parser bundleParser = new DuplicateItemBundle.Parser(bundle);
+                DuplicateItemBundle bundleParser = new DuplicateItemBundle(bundle);
 
-                Boolean boolValue = bundleParser.getKeep();
+                Boolean boolValue = bundleParser.isKeep();
                 if (boolValue != null) item.keep = boolValue;
                 boolValue = bundleParser.isBeingDeleted();
                 if (boolValue != null) item.isBeingDeleted = boolValue;

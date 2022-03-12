@@ -401,7 +401,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
         bundle.setUrl(webView.getUrl());
-        outState.putAll(bundle.toBundle());
+        outState.putAll(bundle.getBundle());
     }
 
     @Override
@@ -1312,7 +1312,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         PrefsBundle prefsBundle = new PrefsBundle();
         prefsBundle.setBrowserPrefs(true);
-        intent.putExtras(prefsBundle.toBundle());
+        intent.putExtras(prefsBundle.getBundle());
 
         startActivity(intent);
     }

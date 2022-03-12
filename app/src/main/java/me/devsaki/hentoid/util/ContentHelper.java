@@ -159,7 +159,7 @@ public final class ContentHelper {
         Intent intent = new Intent(context, Content.getWebActivityClass(content.getSite()));
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
         bundle.setUrl(content.getGalleryUrl());
-        intent.putExtras(bundle.toBundle());
+        intent.putExtras(bundle.getBundle());
         if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
@@ -942,7 +942,7 @@ public final class ContentHelper {
 
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
         bundle.setUrl(targetUrl);
-        intent.putExtras(bundle.toBundle());
+        intent.putExtras(bundle.getBundle());
 
         context.startActivity(intent);
     }

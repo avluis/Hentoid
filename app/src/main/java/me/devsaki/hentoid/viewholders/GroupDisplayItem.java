@@ -175,7 +175,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             // Payloads are set when the content stays the same but some properties alone change
             if (!payloads.isEmpty()) {
                 Bundle bundle = (Bundle) payloads.get(0);
-                GroupItemBundle.Parser bundleParser = new GroupItemBundle.Parser(bundle);
+                GroupItemBundle bundleParser = new GroupItemBundle(bundle);
 
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) coverUri = stringValue;
