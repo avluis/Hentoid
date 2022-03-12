@@ -52,7 +52,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.reflect.Field;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,10 +176,10 @@ public class LibraryActivity extends BaseActivity {
     // ======== VARIABLES
     // Used to ignore native calls to onQueryTextChange
     private boolean invalidateNextQueryTextChange = false;
-    // Current text search query
-    private String query = "";
-    // Current metadata search query
-    private List<Attribute> metadata = Collections.emptyList();
+    // Current text search query; one per tab
+    private final List<String> query = Arrays.asList("", "");
+    // Current metadata search query; one per tab
+    private final List<List<Attribute>> metadata = Arrays.asList(new ArrayList<>(), new ArrayList<>());
     // True if item positioning edit mode is on (only available for specific groupings)
     private boolean editMode = false;
     // True if there's at least one existing custom group; false instead
@@ -212,19 +213,19 @@ public class LibraryActivity extends BaseActivity {
     }
 
     public String getQuery() {
-        return query;
+        return query.get(getCurrentFragmentIndex());
     }
 
     public void setQuery(String query) {
-        this.query = query;
+        this.query.set(getCurrentFragmentIndex(), query);
     }
 
     public List<Attribute> getMetadata() {
-        return metadata;
+        return metadata.get(getCurrentFragmentIndex());
     }
 
     public void setMetadata(List<Attribute> metadata) {
-        this.metadata = metadata;
+        this.metadata.set(getCurrentFragmentIndex(), metadata);
     }
 
     public boolean isEditMode() {
@@ -415,8 +416,8 @@ public class LibraryActivity extends BaseActivity {
         // Clear search
         searchClearButton = findViewById(R.id.search_clear_btn);
         searchClearButton.setOnClickListener(v -> {
-            query = "";
-            metadata.clear();
+            setQuery("");
+            getMetadata().clear();
             actionSearchView.setQuery("", false);
             hideSearchSortBar(false);
             signalCurrentFragment(EV_SEARCH, "");
@@ -464,12 +465,12 @@ public class LibraryActivity extends BaseActivity {
                 invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
-                if (!query.isEmpty())
+                if (!getQuery().isEmpty())
                     // Use of handler allows to set the value _after_ the UI has auto-cleared it
                     // Without that handler the view displays with an empty value
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         invalidateNextQueryTextChange = true;
-                        actionSearchView.setQuery(query, false);
+                        actionSearchView.setQuery(getQuery(), false);
                     }, 100);
 
                 return true;
@@ -500,8 +501,8 @@ public class LibraryActivity extends BaseActivity {
         actionSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                query = s;
-                signalCurrentFragment(EV_SEARCH, query);
+                setQuery(s);
+                signalCurrentFragment(EV_SEARCH, getQuery());
                 actionSearchView.clearFocus();
 
                 return true;
@@ -512,8 +513,8 @@ public class LibraryActivity extends BaseActivity {
                 if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
-                    query = "";
-                    signalCurrentFragment(EV_SEARCH, query);
+                    setQuery("");
+                    signalCurrentFragment(EV_SEARCH, getQuery());
                     searchClearButton.setVisibility(View.GONE);
                 }
 
@@ -544,9 +545,16 @@ public class LibraryActivity extends BaseActivity {
 
     public void updateSearchBarOnResults(boolean nonEmptyResults) {
         if (isSearchQueryActive()) {
-            showSearchSortBar(true, true, false);
-            if (nonEmptyResults) collapseSearchMenu();
+            if (!getQuery().isEmpty()) {
+                actionSearchView.setQuery(getQuery(), false);
+                expandSearchMenu();
+            } else if (nonEmptyResults) {
+                collapseSearchMenu();
+            }
+            showSearchSortBar(!isGroupDisplayed(), true, false);
         } else {
+            collapseSearchMenu();
+            actionSearchView.setQuery("", false);
             searchClearButton.setVisibility(View.GONE);
         }
     }
@@ -573,7 +581,7 @@ public class LibraryActivity extends BaseActivity {
                 updateFavouriteFilter();
                 if (isGroupDisplayed()) {
                     isGroupFavsChecked = menuItem.isChecked();
-                    viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
+                    viewModel.searchGroup(Preferences.getGroupingDisplay(), getQuery(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
                 } else
                     viewModel.setContentFavouriteFilter(menuItem.isChecked());
                 break;
@@ -656,6 +664,12 @@ public class LibraryActivity extends BaseActivity {
             return true;
         }
         return false;
+    }
+
+    public void expandSearchMenu() {
+        if (searchMenu != null && !searchMenu.isActionViewExpanded()) {
+            searchMenu.expandActionView();
+        }
     }
 
     private void initSelectionToolbar() {
@@ -882,7 +896,7 @@ public class LibraryActivity extends BaseActivity {
      * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
     public boolean isSearchQueryActive() {
-        return (!query.isEmpty() || !metadata.isEmpty());
+        return (!getQuery().isEmpty() || !getMetadata().isEmpty());
     }
 
     private void fixPermissions() {
@@ -927,7 +941,7 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) return;
 
         enableFragment(0);
-        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
+        viewModel.searchGroup(Preferences.getGroupingDisplay(), query.get(0), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
     }
@@ -1117,7 +1131,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void signalCurrentFragment(int eventType, @Nullable String message) {
-        signalFragment(isGroupDisplayed() ? 0 : 1, eventType, message);
+        signalFragment(getCurrentFragmentIndex(), eventType, message);
     }
 
     private void signalFragment(int fragmentIndex, int eventType, @Nullable String message) {
@@ -1125,8 +1139,11 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void enableCurrentFragment() {
-        if (isGroupDisplayed()) enableFragment(0);
-        else enableFragment(1);
+        enableFragment(getCurrentFragmentIndex());
+    }
+
+    private int getCurrentFragmentIndex() {
+        return isGroupDisplayed() ? 0 : 1;
     }
 
     private void enableFragment(int fragmentIndex) {
