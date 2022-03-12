@@ -133,7 +133,7 @@ public class ContentSearchManager {
         outState.putString(KEY_QUERY, query);
         outState.putInt(KEY_SORT_FIELD, contentSortField);
         outState.putBoolean(KEY_SORT_DESC, contentSortDesc);
-        String searchUri = SearchActivityBundle.Builder.buildSearchUri(tags).toString();
+        String searchUri = SearchActivityBundle.Companion.buildSearchUri(tags).toString();
         outState.putString(KEY_SELECTED_TAGS, searchUri);
         outState.putLong(KEY_GROUP, groupId);
     }
@@ -147,7 +147,7 @@ public class ContentSearchManager {
         contentSortDesc = state.getBoolean(KEY_SORT_DESC, Preferences.isContentSortDesc());
 
         String searchUri = state.getString(KEY_SELECTED_TAGS);
-        tags = SearchActivityBundle.Parser.parseSearchUri(Uri.parse(searchUri));
+        tags = SearchActivityBundle.Companion.parseSearchUri(Uri.parse(searchUri));
         groupId = state.getLong(KEY_GROUP);
     }
 

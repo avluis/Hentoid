@@ -1036,13 +1036,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void onAdvancedSearchButtonClick() {
         Intent search = new Intent(this.getContext(), SearchActivity.class);
 
-        SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
+        SearchActivityBundle builder = new SearchActivityBundle();
 
         if (!getMetadata().isEmpty())
-            builder.setUri(SearchActivityBundle.Builder.buildSearchUri(getMetadata()));
+            builder.setUri(SearchActivityBundle.Companion.buildSearchUri(getMetadata()).toString());
 
         if (group != null)
-            builder.setGroup(group.id);
+            builder.setGroupId(group.id);
 
         builder.setExcludeMode(excludeClicked);
         search.putExtras(builder.getBundle());
@@ -1057,13 +1057,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void advancedSearchReturnResult(final ActivityResult result) {
         if (result.getResultCode() == Activity.RESULT_OK
                 && result.getData() != null && result.getData().getExtras() != null) {
-            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(result.getData().getExtras());
-            Uri searchUri = parser.getUri();
+            SearchActivityBundle parser = new SearchActivityBundle(result.getData().getExtras());
+            Uri searchUri = Uri.parse(parser.getUri());
 
             if (searchUri != null) {
                 excludeClicked = parser.getExcludeMode();
                 setQuery(searchUri.getPath());
-                setMetadata(SearchActivityBundle.Parser.parseSearchUri(searchUri));
+                setMetadata(SearchActivityBundle.Companion.parseSearchUri(searchUri));
                 viewModel.searchContent(getQuery(), getMetadata());
             }
         }
