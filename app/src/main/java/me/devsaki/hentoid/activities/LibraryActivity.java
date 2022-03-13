@@ -167,8 +167,6 @@ public class LibraryActivity extends BaseActivity {
     private final List<List<Attribute>> metadata = Arrays.asList(new ArrayList<>(), new ArrayList<>());
     // True if item positioning edit mode is on (only available for specific groupings)
     private boolean editMode = false;
-    // True if there's at least one existing custom group; false instead
-    private boolean isCustomGroupingAvailable;
     // Titles of each of the Viewpager2's tabs
     private final Map<Integer, String> titles = new HashMap<>();
     // TODO doc
@@ -267,7 +265,6 @@ public class LibraryActivity extends BaseActivity {
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
-        viewModel.isCustomGroupingAvailable().observe(this, b -> this.isCustomGroupingAvailable = b);
         viewModel.getContentSearchManagerBundle().observe(this, b -> contentSearchBundle = b);
         viewModel.getGroupSearchManagerBundle().observe(this, b -> {
             GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
@@ -444,6 +441,11 @@ public class LibraryActivity extends BaseActivity {
             }
         });
 
+        MenuItem displayTypeMenu = toolbar.getMenu().findItem(R.id.action_display_type);
+        if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+            displayTypeMenu.setIcon(R.drawable.ic_view_gallery);
+        else
+            displayTypeMenu.setIcon(R.drawable.ic_view_list);
         reorderMenu = toolbar.getMenu().findItem(R.id.action_edit);
         reorderCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
         newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
@@ -518,7 +520,11 @@ public class LibraryActivity extends BaseActivity {
     public boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_display_type:
-                // TODO
+                int displayType = Preferences.getLibraryDisplay();
+                if (Preferences.Constant.LIBRARY_DISPLAY_LIST == displayType)
+                    displayType = Preferences.Constant.LIBRARY_DISPLAY_GRID;
+                else displayType = Preferences.Constant.LIBRARY_DISPLAY_LIST;
+                Preferences.setLibraryDisplay(displayType);
                 break;
             case R.id.action_browse_groups:
                 LibraryBottomGroupsFragment.invoke(
