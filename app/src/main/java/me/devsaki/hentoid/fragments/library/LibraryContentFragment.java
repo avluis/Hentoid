@@ -49,6 +49,7 @@ import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -117,6 +118,7 @@ import me.devsaki.hentoid.widget.AddQueueMenu;
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
+import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
@@ -147,6 +149,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
+    // "Go to top" FAB
+    private FloatingActionButton topFab;
+    // Scroll listener for the top FAB
+    private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -350,7 +356,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         else
             llm = new AutofitGridLayoutManager(requireContext(), (int) getResources().getDimension(R.dimen.card_grid_width));
         recyclerView.setLayoutManager(llm);
+        recyclerView.addOnScrollListener(scrollListener);
         new FastScrollerBuilder(recyclerView).build();
+
+        // Top FAB
+        topFab = requireViewById(rootView, R.id.top_fab);
+        topFab.setOnClickListener(v -> llm.scrollToPositionWithOffset(0, 0));
+        topFab.setOnLongClickListener(v -> {
+            Preferences.setTopFabEnabled(false);
+            topFab.setVisibility(View.GONE);
+            return true;
+        });
 
         // Pager
         pager.initUI(rootView);
@@ -881,6 +897,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void onSharedPreferenceChanged(String key) {
         Timber.i("Prefs change detected : %s", key);
         switch (key) {
+            case Preferences.Key.TOP_FAB:
+                topFab.setVisibility(Preferences.isTopFabEnabled() ? View.VISIBLE : View.GONE);
+                break;
             case Preferences.Key.ENDLESS_SCROLL:
                 setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
                 FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
@@ -1528,5 +1547,19 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         Content content = item.getContent();
         if (content != null)
             viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false, null);
+    }
+
+    /**
+     * Scroll / page change listener
+     *
+     * @param scrollPosition New 0-based scroll position
+     */
+    private void onScrollPositionChange(int scrollPosition) {
+        if (Preferences.isTopFabEnabled()) {
+            if (scrollPosition > 2)
+                topFab.setVisibility(View.VISIBLE);
+            else
+                topFab.setVisibility(View.GONE);
+        }
     }
 }

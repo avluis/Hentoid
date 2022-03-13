@@ -355,6 +355,7 @@
     <string name="pref_library_display_default" translatable="false">0</string>
     <string name="pref_endless_scroll_default" translatable="false">true</string>
     <string name="pref_quantity_per_page_default" translatable="false">20</string>
+    <string name="pref_top_fab_default" translatable="false">true</string>
     <string name="pref_attributes_list_order_default" translatable="false">1</string>
     <string name="pref_attributes_list_order_summary" translatable="false">%s</string>
     <string name="pref_attributes_list_count_default" translatable="false">true</string>
