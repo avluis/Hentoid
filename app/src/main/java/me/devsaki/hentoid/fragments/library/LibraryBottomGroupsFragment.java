@@ -104,10 +104,9 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
         binding.list.setAdapter(fastAdapter);
         itemAdapter.set(getGroupings());
 
-        updateArtistVisiblity();
+        updateArtistVisibility();
 
         binding.artistDisplayGrp.addOnButtonCheckedListener((g, i, b) -> {
-            if (!b) return;
             int code;
             if (binding.artistDisplayArtists.isChecked() && binding.artistDisplayGroups.isChecked())
                 code = ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
@@ -115,7 +114,7 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
                 code = ARTIST_GROUP_VISIBILITY_ARTISTS;
             else code = ARTIST_GROUP_VISIBILITY_GROUPS;
             Preferences.setArtistGroupVisibility(code);
-            updateArtistVisiblity();
+            updateArtistVisibility();
             viewModel.searchGroup();
         });
     }
@@ -137,8 +136,8 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
                 Preferences.getGroupingDisplay().getId() == grouping.getId());
     }
 
-    private void updateArtistVisiblity() {
-        int visibility = (Preferences.getGroupingDisplay() == Grouping.ARTIST) ? View.VISIBLE : View.GONE;
+    private void updateArtistVisibility() {
+        int visibility = (Preferences.getGroupingDisplay() == Grouping.ARTIST) ? View.VISIBLE : View.INVISIBLE;
         binding.artistDisplayTxt.setVisibility(visibility);
         binding.artistDisplayGrp.setVisibility(visibility);
         int code = Preferences.getArtistGroupVisibility();
@@ -155,7 +154,7 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
             Integer code = item.get().getTag();
             if (code != null) {
                 Preferences.setGroupingDisplay(code);
-                updateArtistVisiblity();
+                updateArtistVisibility();
                 viewModel.searchGroup();
             }
         }

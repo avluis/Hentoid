@@ -188,13 +188,13 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
             binding.sortAscending.setVisibility(View.GONE);
             binding.sortDescending.setVisibility(View.GONE);
             binding.sortRandom.setVisibility(View.VISIBLE);
-            boolean currentPrefSortDesc = isGroupsDisplayed ? Preferences.isGroupSortDesc() : Preferences.isContentSortDesc();
-            binding.sortAscDesc.check(currentPrefSortDesc ? R.id.sort_descending : R.id.sort_ascending);
+            binding.sortRandom.setChecked(true);
         } else {
             binding.sortRandom.setVisibility(View.GONE);
             binding.sortAscending.setVisibility(View.VISIBLE);
             binding.sortDescending.setVisibility(View.VISIBLE);
-            binding.sortAscDesc.check(R.id.sort_random);
+            boolean currentPrefSortDesc = isGroupsDisplayed ? Preferences.isGroupSortDesc() : Preferences.isContentSortDesc();
+            binding.sortAscDesc.check(currentPrefSortDesc ? R.id.sort_descending : R.id.sort_ascending);
         }
     }
 
