@@ -490,13 +490,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             case EV_SEARCH:
                 if (event.getMessage() != null) onSubmitSearch(event.getMessage());
                 break;
-                /*
-            case EV_UPDATE_SORT:
-                updateSortControls();
-                addCustomBackControl();
-                activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
-                break;
-                 */
             case EV_ENABLE:
                 onEnable();
                 break;

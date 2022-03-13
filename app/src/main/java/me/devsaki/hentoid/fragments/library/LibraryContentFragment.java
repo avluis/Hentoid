@@ -817,13 +817,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             case EV_ADVANCED_SEARCH:
                 onAdvancedSearchButtonClick();
                 break;
-                /*
-            case EV_UPDATE_SORT:
-                updateSortControls();
-                addCustomBackControl();
-                activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
-                break;
-                 */
             case EV_ENABLE:
                 onEnable();
                 break;

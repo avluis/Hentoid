@@ -517,26 +517,6 @@ public class LibraryActivity extends BaseActivity {
      */
     public boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
-            /*
-            case R.id.action_completed_filter:
-                if (!menuItem.isChecked())
-                    askFilterCompleted();
-                else {
-                    completedFilterMenu.setChecked(!completedFilterMenu.isChecked());
-                    updateCompletedFilter();
-                    viewModel.resetCompletedFilter();
-                }
-                break;
-            case R.id.action_favourites:
-                menuItem.setChecked(!menuItem.isChecked());
-                updateFavouriteFilter();
-                if (isGroupDisplayed()) {
-                    isGroupFavsChecked = menuItem.isChecked();
-                    viewModel.searchGroup(Preferences.getGroupingDisplay(), getQuery(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
-                } else
-                    viewModel.setContentFavouriteFilter(menuItem.isChecked());
-                break;
-             */
             case R.id.action_display_type:
                 // TODO
                 break;
