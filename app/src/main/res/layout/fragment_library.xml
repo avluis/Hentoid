@@ -28,7 +28,7 @@
         app:menu="@menu/library_selection_menu"
         app:navigationIcon="@drawable/ic_arrow_back" />
 
-    <include layout="@layout/include_library_search_sort_bar" />
+    <include layout="@layout/include_library_search_subbar" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/library_pager"

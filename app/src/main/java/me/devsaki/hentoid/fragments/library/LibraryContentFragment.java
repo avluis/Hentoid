@@ -6,7 +6,6 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
@@ -22,12 +21,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -38,7 +35,6 @@ import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -151,14 +147,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
-
-    // === SORT TOOLBAR
-    // Sort direction button
-    private ImageView sortDirectionButton;
-    // Sort reshuffle button
-    private View sortReshuffleButton;
-    // Sort field button
-    private TextView sortFieldButton;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -355,10 +343,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void initUI(@NonNull View rootView) {
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
 
-        sortDirectionButton = activity.get().getSortDirectionButton();
-        sortReshuffleButton = activity.get().getSortReshuffleButton();
-        sortFieldButton = activity.get().getSortFieldButton();
-
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
         if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
@@ -372,7 +356,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         pager.initUI(rootView);
         setPagingMethod(Preferences.getEndlessScroll(), false);
 
-        updateSortControls();
         addCustomBackControl();
     }
 
@@ -385,58 +368,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             }
         };
         activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
-    }
-
-    private void updateSortControls() {
-        // Sort controls
-        sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-        sortDirectionButton.setOnClickListener(v -> {
-            boolean sortDesc = !Preferences.isContentSortDesc();
-            Preferences.setContentSortDesc(sortDesc);
-            // Update icon
-            sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-            // Run a new search
-            viewModel.updateContentOrder();
-            activity.get().sortCommandsAutoHide(true, null);
-        });
-        sortReshuffleButton.setOnClickListener(v -> {
-            viewModel.shuffleContent();
-            viewModel.updateContentOrder();
-            activity.get().sortCommandsAutoHide(true, null);
-        });
-        sortFieldButton.setText(LibraryActivity.getNameFromFieldCode(Preferences.getContentSortField()));
-        sortFieldButton.setOnClickListener(v -> {
-            // Load and display the field popup menu
-            PopupMenu popup = new PopupMenu(requireContext(), sortFieldButton, Gravity.END);
-            popup.getMenuInflater()
-                    .inflate(R.menu.library_books_sort_popup, popup.getMenu());
-
-            popup.getMenu().findItem(R.id.sort_custom).setVisible(group != null && group.hasCustomBookOrder);
-            popup.setOnMenuItemClickListener(item -> {
-                // Update button text
-                sortFieldButton.setText(item.getTitle());
-                item.setChecked(true);
-                /*
-                int fieldCode = getFieldCodeFromMenuId(item.getItemId());
-                if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM) {
-                    viewModel.shuffleContent();
-                    sortDirectionButton.setVisibility(View.GONE);
-                    sortReshuffleButton.setVisibility(View.VISIBLE);
-                } else {
-                    sortReshuffleButton.setVisibility(View.GONE);
-                    sortDirectionButton.setVisibility(View.VISIBLE);
-                }
-                Preferences.setContentSortField(fieldCode);
-                 */
-
-                // Run a new search
-                viewModel.updateContentOrder();
-                activity.get().sortCommandsAutoHide(true, popup);
-                return true;
-            });
-            popup.show(); //showing popup menu
-            activity.get().sortCommandsAutoHide(true, popup);
-        }); //closing the setOnClickListener method
     }
 
     private String getQuery() {
@@ -462,7 +393,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (!activity.get().isEditMode()) {
             // Set ordering field to custom
             Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
-            sortFieldButton.setText(LibraryActivity.getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
             // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
             Preferences.setContentSortDesc(false);
             viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList(), this::refreshIfNeeded);
@@ -879,7 +809,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActivityEvent(CommunicationEvent event) {
-        if (event.getRecipient() != RC_CONTENTS || null == sortDirectionButton) return;
+        if (event.getRecipient() != RC_CONTENTS) return;
         switch (event.getType()) {
             case EV_SEARCH:
                 if (event.getMessage() != null) onSubmitSearch(event.getMessage());
@@ -887,11 +817,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             case EV_ADVANCED_SEARCH:
                 onAdvancedSearchButtonClick();
                 break;
+                /*
             case EV_UPDATE_SORT:
                 updateSortControls();
                 addCustomBackControl();
                 activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
                 break;
+                 */
             case EV_ENABLE:
                 onEnable();
                 break;
@@ -934,7 +866,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             else if (isSearchQueryActive()) {
                 setQuery("");
                 setMetadata(Collections.emptyList());
-                activity.get().hideSearchSortBar(false);
+                activity.get().hideSearchSubBar();
                 viewModel.searchContent(getQuery(), getMetadata());
             }
             // If none of the above, user is asking to leave => use double-tap

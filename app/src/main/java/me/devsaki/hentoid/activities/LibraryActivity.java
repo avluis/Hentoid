@@ -6,7 +6,6 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
@@ -21,15 +20,12 @@ import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -69,6 +65,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.fragments.library.LibraryBottomGroupsFragment;
 import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment;
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment;
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment;
@@ -78,7 +75,6 @@ import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel;
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
 import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionHelper;
@@ -87,6 +83,7 @@ import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.devsaki.hentoid.widget.GroupSearchManager;
 import timber.log.Timber;
 
 @SuppressLint("NonConstantResourceId")
@@ -110,16 +107,8 @@ public class LibraryActivity extends BaseActivity {
     private View searchSubBar;
     // Advanced search text button
     private View advancedSearchButton;
-    // Show artists / groups button
-    private TextView showArtistsGroupsButton;
     // CLEAR button
     private View searchClearButton;
-    // Sort direction button
-    private ImageView sortDirectionButton;
-    // Sort reshuffle button
-    private ImageView sortReshuffleButton;
-    // Sort field button
-    private TextView sortFieldButton;
 
     // === Alert bar
     // Background and text of the alert bar
@@ -141,8 +130,6 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem newGroupMenu;
     // "Sort" button on top menu
     private MenuItem sortMenu;
-    // Alert bars
-    private PopupMenu autoHidePopup;
 
     // === Selection toolbar
     private Toolbar selectionToolbar;
@@ -185,31 +172,15 @@ public class LibraryActivity extends BaseActivity {
     // Titles of each of the Viewpager2's tabs
     private final Map<Integer, String> titles = new HashMap<>();
     // TODO doc
-    private Bundle contentSearchBundle = null;
+    private Grouping grouping = Preferences.getGroupingDisplay();
     // TODO doc
-    private Bundle groupSearchBundle = null;
-
-
-    // Used to auto-hide the sort controls bar when no activity is detected
-    private Debouncer<Boolean> sortCommandsAutoHide;
+    private Bundle contentSearchBundle = null;
 
 
     // === PUBLIC ACCESSORS (to be used by fragments)
 
     public Toolbar getSelectionToolbar() {
         return selectionToolbar;
-    }
-
-    public ImageView getSortDirectionButton() {
-        return sortDirectionButton;
-    }
-
-    public View getSortReshuffleButton() {
-        return sortReshuffleButton;
-    }
-
-    public TextView getSortFieldButton() {
-        return sortFieldButton;
     }
 
     public String getQuery() {
@@ -298,7 +269,10 @@ public class LibraryActivity extends BaseActivity {
         viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
         viewModel.isCustomGroupingAvailable().observe(this, b -> this.isCustomGroupingAvailable = b);
         viewModel.getContentSearchManagerBundle().observe(this, b -> contentSearchBundle = b);
-        viewModel.getGroupSearchManagerBundle().observe(this, b -> groupSearchBundle = b);
+        viewModel.getGroupSearchManagerBundle().observe(this, b -> {
+            GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
+            onGroupingChanged(searchBundle.getGroupingId());
+        });
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
@@ -314,7 +288,6 @@ public class LibraryActivity extends BaseActivity {
         updateSelectionToolbar(0, 0, 0, 0);
 
         onCreated();
-        sortCommandsAutoHide = new Debouncer<>(this, 3000, this::hideSearchSortBar);
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
     }
@@ -398,18 +371,9 @@ public class LibraryActivity extends BaseActivity {
         // Search bar
         searchSubBar = findViewById(R.id.advanced_search_background);
 
-        // "Group by" menu
-        View groupByButton = findViewById(R.id.group_by_btn);
-        groupByButton.setOnClickListener(this::onGroupByButtonClick);
-
         // Link to advanced search
         advancedSearchButton = findViewById(R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
-
-        // "Show artists/groups" menu (group tab only when Grouping.ARTIST is on)
-        showArtistsGroupsButton = findViewById(R.id.groups_visibility_btn);
-        showArtistsGroupsButton.setText(getArtistsGroupsTextFromPrefs());
-        showArtistsGroupsButton.setOnClickListener(this::onGroupsVisibilityButtonClick);
 
         // Clear search
         searchClearButton = findViewById(R.id.search_clear_btn);
@@ -417,14 +381,9 @@ public class LibraryActivity extends BaseActivity {
             setQuery("");
             getMetadata().clear();
             actionSearchView.setQuery("", false);
-            hideSearchSortBar(false);
+            hideSearchSubBar();
             signalCurrentFragment(EV_SEARCH, "");
         });
-
-        // Sort controls
-        sortDirectionButton = findViewById(R.id.sort_direction_btn);
-        sortReshuffleButton = findViewById(R.id.sort_reshuffle_btn);
-        sortFieldButton = findViewById(R.id.sort_field_btn);
 
         // Main tabs
         viewPager = findViewById(R.id.library_pager);
@@ -433,7 +392,7 @@ public class LibraryActivity extends BaseActivity {
             @Override
             public void onPageSelected(int position) {
                 enableCurrentFragment();
-                hideSearchSortBar(false);
+                hideSearchSubBar();
                 updateToolbar();
                 updateSelectionToolbar(0, 0, 0, 0);
             }
@@ -447,6 +406,7 @@ public class LibraryActivity extends BaseActivity {
         pagerAdapter.notifyDataSetChanged();
         if (Preferences.getGroupingDisplay().equals(Grouping.FLAT)) { // Display books right away
             viewPager.setCurrentItem(1);
+            viewModel.updateContentOrder(); // Trigger a blank search
         }
         enableCurrentFragment();
     }
@@ -459,7 +419,7 @@ public class LibraryActivity extends BaseActivity {
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                showSearchSubBar(true, false, null);
+                showSearchSubBar(true, false);
                 invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
@@ -477,7 +437,7 @@ public class LibraryActivity extends BaseActivity {
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 if (!isSearchQueryActive()) {
-                    hideSearchSortBar(false);
+                    hideSearchSubBar();
                 }
                 invalidateNextQueryTextChange = true;
                 return true;
@@ -533,11 +493,6 @@ public class LibraryActivity extends BaseActivity {
         }
     }
 
-    public void sortCommandsAutoHide(boolean hideSortOnly, PopupMenu popup) {
-        this.autoHidePopup = popup;
-        sortCommandsAutoHide.submit(hideSortOnly);
-    }
-
     public void updateSearchBarOnResults(boolean nonEmptyResults) {
         if (isSearchQueryActive()) {
             if (!getQuery().isEmpty()) {
@@ -546,7 +501,7 @@ public class LibraryActivity extends BaseActivity {
             } else if (nonEmptyResults) {
                 collapseSearchMenu();
             }
-            showSearchSubBar(!isGroupDisplayed(), true, false);
+            showSearchSubBar(!isGroupDisplayed(), true);
         } else {
             collapseSearchMenu();
             actionSearchView.setQuery("", false);
@@ -586,7 +541,10 @@ public class LibraryActivity extends BaseActivity {
                 // TODO
                 break;
             case R.id.action_browse_groups:
-                // TODO
+                LibraryBottomGroupsFragment.invoke(
+                        this,
+                        this.getSupportFragmentManager()
+                );
                 break;
             case R.id.action_sort_filter:
                 LibraryBottomSortFilterFragment.invoke(
@@ -595,7 +553,6 @@ public class LibraryActivity extends BaseActivity {
                         isGroupDisplayed(),
                         0
                 );
-                sortCommandsAutoHide.submit(true);
                 break;
             default:
                 return false;
@@ -603,59 +560,22 @@ public class LibraryActivity extends BaseActivity {
         return true;
     }
 
-    private void showSearchSubBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
-        if (showSort != null && showSort && View.VISIBLE == sortFieldButton.getVisibility()) {
-            hideSearchSortBar(View.GONE != advancedSearchButton.getVisibility());
-            return;
-        }
-
+    private void showSearchSubBar(Boolean showAdvancedSearch, Boolean showClear) {
         searchSubBar.setVisibility(View.VISIBLE);
         if (showAdvancedSearch != null)
             advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
 
         if (showClear != null)
             searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
-
-        if (showSort != null) {
-            sortFieldButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
-            if (showSort) {
-                boolean isRandom = (!isGroupDisplayed() && Preferences.Constant.ORDER_FIELD_RANDOM == Preferences.getContentSortField());
-                sortDirectionButton.setVisibility(isRandom ? View.GONE : View.VISIBLE);
-                sortReshuffleButton.setVisibility(isRandom ? View.VISIBLE : View.GONE);
-                searchClearButton.setVisibility(View.GONE);
-            } else {
-                sortDirectionButton.setVisibility(View.GONE);
-                sortReshuffleButton.setVisibility(View.GONE);
-            }
-        }
-
-        if (isGroupDisplayed() && Preferences.getGroupingDisplay().equals(Grouping.ARTIST)) {
-            showArtistsGroupsButton.setVisibility(View.VISIBLE);
-        } else {
-            showArtistsGroupsButton.setVisibility(View.GONE);
-        }
     }
 
-    public void hideSearchSortBar(boolean hideSortOnly) {
+    public void hideSearchSubBar() {
         boolean isSearchVisible = (View.VISIBLE == advancedSearchButton.getVisibility() || View.VISIBLE == searchClearButton.getVisibility());
 
-        if (!hideSortOnly || !isSearchVisible)
-            searchSubBar.setVisibility(View.GONE);
+        if (!isSearchVisible) searchSubBar.setVisibility(View.GONE);
 
-        if (!hideSortOnly) {
-            advancedSearchButton.setVisibility(View.GONE);
-            searchClearButton.setVisibility(View.GONE);
-        }
-
-        sortDirectionButton.setVisibility(View.GONE);
-        sortReshuffleButton.setVisibility(View.GONE);
-        sortFieldButton.setVisibility(View.GONE);
-        showArtistsGroupsButton.setVisibility(View.GONE);
-
-        if (autoHidePopup != null) autoHidePopup.dismiss();
-
-        // Restore CLEAR button if it's needed
-        if (hideSortOnly && isSearchQueryActive()) searchClearButton.setVisibility(View.VISIBLE);
+        advancedSearchButton.setVisibility(View.GONE);
+        searchClearButton.setVisibility(View.GONE);
     }
 
     public boolean closeLeftDrawer() {
@@ -701,49 +621,6 @@ public class LibraryActivity extends BaseActivity {
         splitMenu = selectionToolbar.getMenu().findItem(R.id.action_split);
     }
 
-    private Grouping getGroupingFromMenuId(@IdRes int menuId) {
-        switch (menuId) {
-            case (R.id.groups_flat):
-                return Grouping.FLAT;
-            case (R.id.groups_by_artist):
-                return Grouping.ARTIST;
-            case (R.id.groups_by_dl_date):
-                return Grouping.DL_DATE;
-            case (R.id.groups_custom):
-                return Grouping.CUSTOM;
-            default:
-                return Grouping.NONE;
-        }
-    }
-
-    private @IdRes
-    int getMenuIdFromGrouping(Grouping grouping) {
-        switch (grouping) {
-            case ARTIST:
-                return R.id.groups_by_artist;
-            case DL_DATE:
-                return R.id.groups_by_dl_date;
-            case CUSTOM:
-                return R.id.groups_custom;
-            case FLAT:
-            case NONE:
-            default:
-                return R.id.groups_flat;
-        }
-    }
-
-    private int getVisibilityCodeFromMenuId(@IdRes int menuId) {
-        switch (menuId) {
-            case (R.id.show_artists):
-                return Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS;
-            case (R.id.show_groups):
-                return Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS;
-            case (R.id.show_artists_and_groups):
-            default:
-                return Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
-        }
-    }
-
     /**
      * Callback for any change in Preferences
      */
@@ -765,10 +642,6 @@ public class LibraryActivity extends BaseActivity {
                 viewModel.setGroup(null, true);
                 updateDisplay();
                 break;
-            case Preferences.Key.GROUPING_DISPLAY:
-            case Preferences.Key.ARTIST_GROUP_VISIBILITY:
-                viewModel.setGroupArtistGroupVisibility(Preferences.getArtistGroupVisibility());
-                break;
             default:
                 // Nothing to handle there
         }
@@ -781,43 +654,16 @@ public class LibraryActivity extends BaseActivity {
         signalCurrentFragment(EV_ADVANCED_SEARCH, null);
     }
 
-    /**
-     * Handler for the "Group by" button
-     */
-    private void onGroupByButtonClick(View groupByButton) {
-        // Load and display the field popup menu
-        PopupMenu popup = new PopupMenu(this, groupByButton);
-        popup.getMenuInflater()
-                .inflate(R.menu.library_groups_popup, popup.getMenu());
-
-        popup.getMenu().findItem(R.id.groups_custom).setVisible(isCustomGroupingAvailable);
-
-        // Mark current grouping
-        MenuItem currentItem = popup.getMenu().findItem(getMenuIdFromGrouping(Preferences.getGroupingDisplay()));
-        currentItem.setTitle(currentItem.getTitle() + " <");
-
-        popup.setOnMenuItemClickListener(item -> {
-            Grouping currentGrouping = Preferences.getGroupingDisplay();
-            Grouping selectedGrouping = getGroupingFromMenuId(item.getItemId());
-            // Don't do anything if the current group is selected
-            if (currentGrouping.equals(selectedGrouping)) return false;
-
-            Preferences.setGroupingDisplay(selectedGrouping.getId());
-            viewModel.setGroupFavouriteFilter(false);
-
-            if (isGroupDisplayed() && selectedGrouping.equals(Grouping.ARTIST)) {
-                showArtistsGroupsButton.setVisibility(View.VISIBLE);
-            } else {
-                showArtistsGroupsButton.setVisibility(View.GONE);
-            }
-
+    private void onGroupingChanged(int targetGroupingId) {
+        Grouping targetGrouping = Grouping.searchById(targetGroupingId);
+        if (grouping.getId() != targetGroupingId) {
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
-            if (!selectedGrouping.canReorderBooks()
+            if (!targetGrouping.canReorderBooks()
                     && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
                 Preferences.setContentSortField(Preferences.Default.ORDER_CONTENT_FIELD);
             }
             // Reset custom group ordering if reverting to a grouping where that doesn't apply
-            if (!selectedGrouping.canReorderGroups()
+            if (!targetGrouping.canReorderGroups()
                     && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getGroupSortField()) {
                 Preferences.setGroupSortField(Preferences.Default.ORDER_GROUP_FIELD);
             }
@@ -826,45 +672,11 @@ public class LibraryActivity extends BaseActivity {
             goBackToGroups();
 
             // Update screen display if needed (flat <-> the rest)
-            if (currentGrouping.equals(Grouping.FLAT) || selectedGrouping.equals(Grouping.FLAT))
+            if (grouping.equals(Grouping.FLAT) || targetGroupingId == Grouping.FLAT.getId())
                 updateDisplay();
-            sortCommandsAutoHide(true, popup);
-            return true;
-        });
-        popup.show(); //showing popup menu
-        sortCommandsAutoHide(true, popup);
-    }
 
-    private String getArtistsGroupsTextFromPrefs() {
-        switch (Preferences.getArtistGroupVisibility()) {
-            case Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS:
-                return getResources().getString(R.string.show_artists);
-            case Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS:
-                return getResources().getString(R.string.show_groups);
-            case Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS:
-                return getResources().getString(R.string.show_artists_and_groups);
-            default:
-                return "";
+            grouping = targetGrouping;
         }
-    }
-
-    /**
-     * Handler for the "Show artists/groups" button
-     */
-    private void onGroupsVisibilityButtonClick(View groupsVisibilityButton) {
-        // Load and display the visibility popup menu
-        PopupMenu popup = new PopupMenu(this, groupsVisibilityButton);
-        popup.getMenuInflater().inflate(R.menu.library_groups_visibility_popup, popup.getMenu());
-        popup.setOnMenuItemClickListener(item -> {
-            item.setChecked(true);
-            int code = getVisibilityCodeFromMenuId(item.getItemId());
-            Preferences.setArtistGroupVisibility(code);
-            showArtistsGroupsButton.setText(getArtistsGroupsTextFromPrefs());
-            sortCommandsAutoHide(true, popup);
-            return true;
-        });
-        popup.show();
-        sortCommandsAutoHide(true, popup);
     }
 
     /**
@@ -955,8 +767,6 @@ public class LibraryActivity extends BaseActivity {
 
         if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
         else reorderMenu.setVisible(currentGrouping.canReorderBooks());
-
-        signalCurrentFragment(EV_UPDATE_SORT, null);
     }
 
     public void updateSelectionToolbar(

@@ -194,15 +194,15 @@ public class LibraryViewModel extends AndroidViewModel {
      * Perform a new library search
      */
     private void doSearchContent() {
-        if (currentSource != null) libraryPaged.removeSource(currentSource);
-
+        // Update search properties set directly through Preferences
         contentSearchManager.setContentSortField(Preferences.getContentSortField());
         contentSearchManager.setContentSortDesc(Preferences.isContentSortDesc());
+        if (Preferences.getGroupingDisplay().equals(Grouping.FLAT))
+            contentSearchManager.setGroup(null);
 
+        if (currentSource != null) libraryPaged.removeSource(currentSource);
         currentSource = contentSearchManager.getLibrary();
-
         libraryPaged.addSource(currentSource, libraryPaged::setValue);
-
         contentSearchBundle.postValue(contentSearchManager.toBundle());
     }
 
@@ -243,17 +243,13 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchGroup();
     }
 
-    public void searchGroup(Grouping grouping, @NonNull String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
-        groupSearchManager.setGrouping(grouping);
-        groupSearchManager.setQuery(query);
-        groupSearchManager.setSortField(orderField);
-        groupSearchManager.setSortDesc(orderDesc);
-        groupSearchManager.setArtistGroupVisibility(artistGroupVisibility);
-        groupSearchManager.setFilterFavourites(groupFavouritesOnly);
-        doSearchGroup();
-    }
-
     private void doSearchGroup() {
+        // Update search properties set directly through Preferences
+        groupSearchManager.setSortField(Preferences.getGroupSortField());
+        groupSearchManager.setSortDesc(Preferences.isGroupSortDesc());
+        groupSearchManager.setGrouping(Preferences.getGroupingDisplay());
+        groupSearchManager.setArtistGroupVisibility(Preferences.getArtistGroupVisibility());
+
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
         currentGroupsSource = groupSearchManager.getGroups();
         groups.addSource(currentGroupsSource, groups::setValue);
@@ -292,11 +288,6 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     public void setGroupFavouriteFilter(boolean value) {
         groupSearchManager.setFilterFavourites(value);
-        doSearchGroup();
-    }
-
-    public void setGroupArtistGroupVisibility(int value) {
-        groupSearchManager.setArtistGroupVisibility(value);
         doSearchGroup();
     }
 

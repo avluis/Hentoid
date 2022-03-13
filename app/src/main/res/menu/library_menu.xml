@@ -34,7 +34,7 @@
         android:tooltipText="@string/menu_group_new"
         android:visible="false"
         app:showAsAction="ifRoom" />
-    <!-- Specific to groups -->
+    <!-- Specific to specific groupings / books within specific groupings -->
     <item
         android:id="@+id/action_edit"
         android:icon="@drawable/ic_reorder_lines"

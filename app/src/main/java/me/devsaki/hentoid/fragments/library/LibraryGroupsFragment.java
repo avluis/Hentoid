@@ -4,7 +4,6 @@ import static androidx.core.view.ViewCompat.requireViewById;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 
 import android.annotation.SuppressLint;
@@ -17,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -108,12 +106,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
-
-    // === SORT TOOLBAR
-    // Sort direction button
-    private ImageView sortDirectionButton;
-    // Sort field button
-    private TextView sortFieldButton;
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<GroupDisplayItem> itemAdapter;
@@ -223,8 +215,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      */
     private void initUI(@NonNull View rootView) {
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
-        sortDirectionButton = activity.get().getSortDirectionButton();
-        sortFieldButton = activity.get().getSortFieldButton();
 
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
@@ -238,7 +228,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         // Pager
         setPagingMethod();
 
-        updateSortControls();
         addCustomBackControl();
     }
 
@@ -251,43 +240,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             }
         };
         activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
-    }
-
-    private void updateSortControls() {
-        // Sort controls
-        sortDirectionButton.setImageResource(Preferences.isGroupSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-        sortDirectionButton.setOnClickListener(v -> {
-            boolean sortDesc = !Preferences.isGroupSortDesc();
-            Preferences.setGroupSortDesc(sortDesc);
-            // Update icon
-            sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-            // Run a new search
-            viewModel.searchGroup();
-            activity.get().sortCommandsAutoHide(true, null);
-        });
-        sortFieldButton.setText(LibraryActivity.getNameFromFieldCode(Preferences.getGroupSortField()));
-        sortFieldButton.setOnClickListener(v -> {
-            /*
-            // Load and display the field popup menu
-            PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
-            popup.getMenuInflater()
-                    .inflate(R.menu.library_groups_sort_popup, popup.getMenu());
-            popup.getMenu().findItem(R.id.sort_custom).setVisible(Preferences.getGroupingDisplay().canReorderGroups());
-            popup.setOnMenuItemClickListener(item -> {
-                // Update button text
-                sortFieldButton.setText(item.getTitle());
-                item.setChecked(true);
-                int fieldCode = getFieldCodeFromMenuId(item.getItemId());
-                Preferences.setGroupSortField(fieldCode);
-                // Run a new search
-                viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), fieldCode, Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), activity.get().isGroupFavsChecked());
-                activity.get().sortCommandsAutoHide(true, popup);
-                return true;
-            });
-            popup.show(); //showing popup menu
-            activity.get().sortCommandsAutoHide(true, popup);
-             */
-        }); //closing the setOnClickListener method
     }
 
     private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
@@ -341,7 +293,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (!activity.get().isEditMode()) {
             // Set ordering field to custom
             Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
-            sortFieldButton.setText(LibraryActivity.getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
             // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
             Preferences.setGroupSortDesc(false);
             viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
@@ -539,11 +490,13 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             case EV_SEARCH:
                 if (event.getMessage() != null) onSubmitSearch(event.getMessage());
                 break;
+                /*
             case EV_UPDATE_SORT:
                 updateSortControls();
                 addCustomBackControl();
                 activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
                 break;
+                 */
             case EV_ENABLE:
                 onEnable();
                 break;
@@ -576,7 +529,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             if (activity.get().isSearchQueryActive()) {
                 activity.get().setQuery("");
                 activity.get().setMetadata(Collections.emptyList());
-                activity.get().hideSearchSortBar(false);
+                activity.get().hideSearchSubBar();
                 viewModel.searchContent(activity.get().getQuery(), activity.get().getMetadata());
             }
             // If none of the above, user is asking to leave => use double-tap

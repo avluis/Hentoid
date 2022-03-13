@@ -37,6 +37,7 @@
     <string name="open_folder">Open folder</string>
     <string name="_default">default</string>
     <string name="empty">empty</string>
+    <string name="none">None</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -468,14 +469,14 @@
     <string name="merge_success">Content merged</string>
     <string name="split_success">Content split</string>
 
-    <!-- Groups -->
+    <!-- Groupings -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
     <string name="groups_by_dl_date">By Download date</string>
-    <string name="groups_custom">Custom</string>
+    <string name="groups_custom">Custom groups</string>
     <string name="no_artist_group_name">[no artist]</string>
 
-    <!-- Sort / filter -->
+    <!-- Sort / filter bottom panel -->
     <string name="sort">Sort</string>
     <string name="sort_ascending">Ascending</string>
     <string name="sort_descending">Descending</string>
@@ -499,6 +500,12 @@
     <string name="filter_completed">Show completed only</string>
     <string name="filter_not_completed">Show not completed only</string>
 
+    <!-- Groups bottom panel -->
+    <string name="display_groups_title">Display groups</string>
+    <string name="display">Display</string>
+    <string name="display_artists">Artists</string>
+    <string name="display_groups">Groups</string>
+
     <!-- Item card tooltips -->
     <string name="drag_help">Drag item</string>
     <string name="external_help">Belongs to the external library</string>
@@ -507,9 +514,6 @@
     <string name="fav_help">Mark/unmark as favourite</string>
 
     <!-- Visibility fields -->
-    <string name="show_artists">Show artists</string>
-    <string name="show_groups">Show groups</string>
-    <string name="show_artists_and_groups">Show artists &amp; groups</string>
     <string name="launchcode_present">You already have this book. Search other sources\?</string>
 
     <!-- Updates -->
