@@ -7,13 +7,13 @@
     tools:targetApi="o">
     <item
         android:id="@+id/action_check_all"
-        android:icon="@drawable/ic_check_square"
+        android:icon="@drawable/ic_checked_square"
         android:title="@string/select_all"
         android:tooltipText="@string/select_all"
         app:showAsAction="collapseActionView|always" />
     <item
         android:id="@+id/action_uncheck_all"
-        android:icon="@drawable/ic_uncheck"
+        android:icon="@drawable/ic_unchecked"
         android:title="@string/select_none"
         android:tooltipText="@string/select_none"
         app:showAsAction="collapseActionView|always" />

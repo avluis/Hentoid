@@ -1,0 +1,187 @@
+package me.devsaki.hentoid.fragments.library;
+
+import android.content.Context;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
+
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.tabs.TabLayout;
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.adapters.ItemAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.LibraryActivity;
+import me.devsaki.hentoid.activities.bundles.LibraryBottomSortFilterBundle;
+import me.devsaki.hentoid.databinding.IncludeLibrarySortFilterBottomPanelBinding;
+import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ThemeHelper;
+import me.devsaki.hentoid.viewholders.TextItem;
+import me.devsaki.hentoid.viewmodels.LibraryViewModel;
+import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+
+public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment implements TabLayout.OnTabSelectedListener {
+
+    private LibraryViewModel viewModel;
+
+    // UI
+    private IncludeLibrarySortFilterBottomPanelBinding binding = null;
+
+    // RecyclerView controls
+    private final ItemAdapter<TextItem<Integer>> itemAdapter = new ItemAdapter<>();
+    private final FastAdapter<TextItem<Integer>> fastAdapter = FastAdapter.with(itemAdapter);
+
+    // Variables
+    private boolean isGroupsDisplayed;
+    private int initialTabIndex;
+    private boolean initialFavouriteFilter;
+    private boolean initialCompletedFilter;
+    private boolean initialNotCompletedFilter;
+    private @ColorInt
+    int greyColor;
+    private @ColorInt
+    int selectedColor;
+
+
+    public static void invoke(
+            Context context,
+            FragmentManager fragmentManager,
+            boolean isGroupsDisplayed,
+            boolean favouriteFilter,
+            boolean completedFilter,
+            boolean notCompletedFilter,
+            int showTabIndex) {
+        LibraryBottomSortFilterBundle builder = new LibraryBottomSortFilterBundle();
+        builder.setGroupsDisplayed(isGroupsDisplayed);
+        builder.setShowTabIndex(showTabIndex);
+        builder.setFavouriteFilter(favouriteFilter);
+        builder.setCompletedFilter(completedFilter);
+        builder.setNotCompletedFilter(notCompletedFilter);
+
+        LibraryBottomSortFilterFragment libraryBottomSheetFragment = new LibraryBottomSortFilterFragment();
+        libraryBottomSheetFragment.setArguments(builder.getBundle());
+        ThemeHelper.setStyle(context, libraryBottomSheetFragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
+        libraryBottomSheetFragment.show(fragmentManager, "libraryBottomSheetFragment");
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            LibraryBottomSortFilterBundle parser = new LibraryBottomSortFilterBundle(bundle);
+            isGroupsDisplayed = parser.isGroupsDisplayed();
+            initialTabIndex = parser.getShowTabIndex();
+            initialFavouriteFilter = parser.getFavouriteFilter();
+            initialCompletedFilter = parser.getCompletedFilter();
+            initialNotCompletedFilter = parser.getNotCompletedFilter();
+        }
+
+        ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
+
+        greyColor = ContextCompat.getColor(context, R.color.medium_gray);
+        selectedColor = ThemeHelper.getColor(context, R.color.secondary_light);
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        binding = IncludeLibrarySortFilterBottomPanelBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        // SORT TAB
+        boolean currentPrefSortDesc = isGroupsDisplayed ? Preferences.isGroupSortDesc() : Preferences.isContentSortDesc();
+        binding.sortAscDesc.check(currentPrefSortDesc ? R.id.sort_descending : R.id.sort_ascending);
+        binding.list.setAdapter(fastAdapter);
+        itemAdapter.set(getSortFields());
+
+        // FILTER TAB
+        binding.filterFavsBtn.setColorFilter(initialFavouriteFilter ? selectedColor : greyColor);
+        binding.filterCompletedBtn.setColorFilter(initialCompletedFilter ? selectedColor : greyColor);
+        binding.filterNotCompletedBtn.setColorFilter(initialNotCompletedFilter ? selectedColor : greyColor);
+
+        binding.tabs.addOnTabSelectedListener(this);
+        binding.tabs.selectTab(binding.tabs.getTabAt(initialTabIndex));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // TODO keep ?
+    }
+
+    private List<TextItem<Integer>> getSortFields() {
+        List<TextItem<Integer>> result = new ArrayList<>();
+        if (isGroupsDisplayed) {
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_TITLE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CHILDREN));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
+        } else {
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_TITLE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_ARTIST));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_NB_PAGES));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_DATE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READS));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_SIZE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_PROGRESS));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_RANDOM));
+        }
+        return result;
+    }
+
+    private TextItem<Integer> createFromFieldCode(int sortFieldCode) {
+        int currentPrefFieldCode = isGroupsDisplayed ? Preferences.getGroupSortField() : Preferences.getContentSortField();
+        return new TextItem<>(
+                getResources().getString(LibraryActivity.getNameFromFieldCode(sortFieldCode)),
+                sortFieldCode,
+                false,
+                true,
+                currentPrefFieldCode == sortFieldCode,
+                null);
+    }
+
+    @Override
+    public void onTabSelected(TabLayout.Tab tab) {
+        if (tab.getPosition() == 0) {
+            binding.filterControls.setVisibility(View.GONE);
+            binding.sortControls.setVisibility(View.VISIBLE);
+        } else {
+            binding.sortControls.setVisibility(View.GONE);
+            binding.filterControls.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onTabUnselected(TabLayout.Tab tab) {
+        // Nothing to do here
+    }
+
+    @Override
+    public void onTabReselected(TabLayout.Tab tab) {
+        onTabSelected(tab);
+    }
+}

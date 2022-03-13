@@ -58,10 +58,6 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
     private ImageViewerViewModel viewModel;
 
-    private int imageIndex = -1;
-    private float scale = -1;
-    private ImageFile image = null;
-
     // UI
     private View rootView;
     private ImageView imgThumb;
@@ -72,6 +68,11 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
     private ImageView copyButton;
     private ImageView shareButton;
     private ImageView deleteButton;
+
+    // Variables
+    private int imageIndex = -1;
+    private float scale = -1;
+    private ImageFile image = null;
 
 
     static {
@@ -118,7 +119,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.include_viewer_image_info, container, false);
+        rootView = inflater.inflate(R.layout.include_viewer_image_bottom_panel, container, false);
 
         imgThumb = requireViewById(rootView, R.id.ivThumb);
         imgPath = requireViewById(rootView, R.id.image_path);

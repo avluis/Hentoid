@@ -138,7 +138,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.include_search_filter_category, container, false);
+        View rootView = inflater.inflate(R.layout.include_search_bottom_panel, container, false);
         AttributeType mainAttr = selectedAttributeTypes.get(0);
 
         // Image that displays current metadata type icon (e.g. face icon for character)

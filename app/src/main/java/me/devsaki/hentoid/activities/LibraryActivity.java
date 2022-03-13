@@ -27,6 +27,7 @@ import android.widget.TextView;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
@@ -68,6 +69,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment;
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment;
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment;
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment;
@@ -105,7 +107,7 @@ public class LibraryActivity extends BaseActivity {
 
     // ==== Advanced search / sort bar
     // Grey background of the advanced search / sort bar
-    private View searchSortBar;
+    private View searchSubBar;
     // Advanced search text button
     private View advancedSearchButton;
     // Show artists / groups button
@@ -137,10 +139,6 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem reorderCancelMenu;
     // "Create new group" button on top menu
     private MenuItem newGroupMenu;
-    // "Toggle completed" button on top menu
-    private MenuItem completedFilterMenu;
-    // "Toggle favourites" button on top menu
-    private MenuItem favsMenu;
     // "Sort" button on top menu
     private MenuItem sortMenu;
     // Alert bars
@@ -186,8 +184,12 @@ public class LibraryActivity extends BaseActivity {
     private boolean isCustomGroupingAvailable;
     // Titles of each of the Viewpager2's tabs
     private final Map<Integer, String> titles = new HashMap<>();
-    // TODO doc
-    private boolean isGroupFavsChecked = false;
+    // Favourite filter (one per tab)
+    private final List<Boolean> favouriteFilter = Arrays.asList(false, false);
+    // Completed filter (one per tab)
+    private final List<Boolean> completedFilter = Arrays.asList(false, false);
+    // Not completed filter (one per tab)
+    private final List<Boolean> notCompletedFilter = Arrays.asList(false, false);
 
 
     // Used to auto-hide the sort controls bar when no activity is detected
@@ -242,7 +244,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     public boolean isGroupFavsChecked() {
-        return isGroupFavsChecked;
+        return favouriteFilter.get(0);
     }
 
 
@@ -398,7 +400,7 @@ public class LibraryActivity extends BaseActivity {
         alertFixBtn = findViewById(R.id.library_alert_fix_btn);
 
         // Search bar
-        searchSortBar = findViewById(R.id.advanced_search_background);
+        searchSubBar = findViewById(R.id.advanced_search_background);
 
         // "Group by" menu
         View groupByButton = findViewById(R.id.group_by_btn);
@@ -461,7 +463,7 @@ public class LibraryActivity extends BaseActivity {
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                showSearchSortBar(true, false, null);
+                showSearchSubBar(true, false, null);
                 invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
@@ -485,14 +487,11 @@ public class LibraryActivity extends BaseActivity {
                 return true;
             }
         });
-        completedFilterMenu = toolbar.getMenu().findItem(R.id.action_completed_filter);
-        favsMenu = toolbar.getMenu().findItem(R.id.action_favourites);
-        updateFavouriteFilter();
 
         reorderMenu = toolbar.getMenu().findItem(R.id.action_edit);
         reorderCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
         newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
-        sortMenu = toolbar.getMenu().findItem(R.id.action_order);
+        sortMenu = toolbar.getMenu().findItem(R.id.action_sort_filter);
 
         actionSearchView = (SearchView) searchMenu.getActionView();
         actionSearchView.setIconifiedByDefault(true);
@@ -551,7 +550,7 @@ public class LibraryActivity extends BaseActivity {
             } else if (nonEmptyResults) {
                 collapseSearchMenu();
             }
-            showSearchSortBar(!isGroupDisplayed(), true, false);
+            showSearchSubBar(!isGroupDisplayed(), true, false);
         } else {
             collapseSearchMenu();
             actionSearchView.setQuery("", false);
@@ -567,6 +566,7 @@ public class LibraryActivity extends BaseActivity {
      */
     public boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
+            /*
             case R.id.action_completed_filter:
                 if (!menuItem.isChecked())
                     askFilterCompleted();
@@ -585,8 +585,23 @@ public class LibraryActivity extends BaseActivity {
                 } else
                     viewModel.setContentFavouriteFilter(menuItem.isChecked());
                 break;
-            case R.id.action_order:
-                showSearchSortBar(null, null, true);
+             */
+            case R.id.action_display_type:
+                // TODO
+                break;
+            case R.id.action_browse_groups:
+                // TODO
+                break;
+            case R.id.action_sort_filter:
+                LibraryBottomSortFilterFragment.invoke(
+                        this,
+                        this.getSupportFragmentManager(),
+                        isGroupDisplayed(),
+                        favouriteFilter.get(getCurrentFragmentIndex()),
+                        completedFilter.get(getCurrentFragmentIndex()),
+                        notCompletedFilter.get(getCurrentFragmentIndex()),
+                        0
+                );
                 sortCommandsAutoHide.submit(true);
                 break;
             default:
@@ -595,13 +610,13 @@ public class LibraryActivity extends BaseActivity {
         return true;
     }
 
-    private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
+    private void showSearchSubBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
         if (showSort != null && showSort && View.VISIBLE == sortFieldButton.getVisibility()) {
             hideSearchSortBar(View.GONE != advancedSearchButton.getVisibility());
             return;
         }
 
-        searchSortBar.setVisibility(View.VISIBLE);
+        searchSubBar.setVisibility(View.VISIBLE);
         if (showAdvancedSearch != null)
             advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
 
@@ -632,7 +647,7 @@ public class LibraryActivity extends BaseActivity {
         boolean isSearchVisible = (View.VISIBLE == advancedSearchButton.getVisibility() || View.VISIBLE == searchClearButton.getVisibility());
 
         if (!hideSortOnly || !isSearchVisible)
-            searchSortBar.setVisibility(View.GONE);
+            searchSubBar.setVisibility(View.GONE);
 
         if (!hideSortOnly) {
             advancedSearchButton.setVisibility(View.GONE);
@@ -737,20 +752,6 @@ public class LibraryActivity extends BaseActivity {
     }
 
     /**
-     * Update completed filter button appearance on the action bar
-     */
-    private void updateCompletedFilter() {
-        completedFilterMenu.setIcon(completedFilterMenu.isChecked() ? R.drawable.ic_completed_filter_on : R.drawable.ic_completed_filter_off);
-    }
-
-    /**
-     * Update favourite filter button appearance on the action bar
-     */
-    private void updateFavouriteFilter() {
-        favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
-    }
-
-    /**
      * Callback for any change in Preferences
      */
     private void onSharedPreferenceChanged(String key) {
@@ -773,7 +774,7 @@ public class LibraryActivity extends BaseActivity {
                 break;
             case Preferences.Key.GROUPING_DISPLAY:
             case Preferences.Key.ARTIST_GROUP_VISIBILITY:
-                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
+                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked());
                 break;
             default:
                 // Nothing to handle there
@@ -809,9 +810,7 @@ public class LibraryActivity extends BaseActivity {
             if (currentGrouping.equals(selectedGrouping)) return false;
 
             Preferences.setGroupingDisplay(selectedGrouping.getId());
-            isGroupFavsChecked = false;
-            favsMenu.setChecked(false);
-            updateFavouriteFilter();
+            favouriteFilter.set(0, false);
 
             if (isGroupDisplayed() && selectedGrouping.equals(Grouping.ARTIST)) {
                 showArtistsGroupsButton.setVisibility(View.VISIBLE);
@@ -941,7 +940,7 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) return;
 
         enableFragment(0);
-        viewModel.searchGroup(Preferences.getGroupingDisplay(), query.get(0), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
+        viewModel.searchGroup(Preferences.getGroupingDisplay(), query.get(0), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked());
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
     }
@@ -957,11 +956,9 @@ public class LibraryActivity extends BaseActivity {
 
         searchMenu.setVisible(!editMode);
         newGroupMenu.setVisible(!editMode && isGroupDisplayed() && currentGrouping.canReorderGroups()); // Custom groups only
-        favsMenu.setVisible(!editMode);
-        reorderMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_reorder_lines);
+        reorderMenu.setIcon(editMode ? R.drawable.ic_checked : R.drawable.ic_reorder_lines);
         reorderCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
-        completedFilterMenu.setVisible(!editMode && !isGroupDisplayed());
 
         if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
         else reorderMenu.setVisible(currentGrouping.canReorderBooks());
@@ -1014,26 +1011,6 @@ public class LibraryActivity extends BaseActivity {
             splitMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
         }
     }
-
-    public void askFilterCompleted() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        String title = getString(R.string.ask_filter_completed);
-        builder.setMessage(title)
-                .setPositiveButton(R.string.filter_not_completed,
-                        (dialog, which) -> {
-                            completedFilterMenu.setChecked(!completedFilterMenu.isChecked());
-                            updateCompletedFilter();
-                            viewModel.toggleNotCompletedFilter();
-                        })
-                .setNegativeButton(R.string.filter_completed,
-                        (dialog, which) -> {
-                            completedFilterMenu.setChecked(!completedFilterMenu.isChecked());
-                            updateCompletedFilter();
-                            viewModel.toggleCompletedFilter();
-                        })
-                .create().show();
-    }
-
 
     /**
      * Display the yes/no dialog to make sure the user really wants to delete selected items
@@ -1149,6 +1126,36 @@ public class LibraryActivity extends BaseActivity {
     private void enableFragment(int fragmentIndex) {
         EventBus.getDefault().post(new CommunicationEvent(EV_ENABLE, (0 == fragmentIndex) ? RC_GROUPS : RC_CONTENTS, null));
         EventBus.getDefault().post(new CommunicationEvent(EV_DISABLE, (0 == fragmentIndex) ? RC_CONTENTS : RC_GROUPS, null));
+    }
+
+    public static @StringRes
+    int getNameFromFieldCode(int prefFieldCode) {
+        switch (prefFieldCode) {
+            case (Preferences.Constant.ORDER_FIELD_TITLE):
+                return R.string.sort_title;
+            case (Preferences.Constant.ORDER_FIELD_ARTIST):
+                return R.string.sort_artist;
+            case (Preferences.Constant.ORDER_FIELD_NB_PAGES):
+                return R.string.sort_pages;
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
+                return R.string.sort_dl_date;
+            case (Preferences.Constant.ORDER_FIELD_READ_DATE):
+                return R.string.sort_read_date;
+            case (Preferences.Constant.ORDER_FIELD_READS):
+                return R.string.sort_reads;
+            case (Preferences.Constant.ORDER_FIELD_SIZE):
+                return R.string.sort_size;
+            case (Preferences.Constant.ORDER_FIELD_READ_PROGRESS):
+                return R.string.sort_reading_progress;
+            case (Preferences.Constant.ORDER_FIELD_CUSTOM):
+                return R.string.sort_custom;
+            case (Preferences.Constant.ORDER_FIELD_RANDOM):
+                return R.string.sort_random;
+            case (Preferences.Constant.ORDER_FIELD_CHILDREN):
+                return R.string.sort_books;
+            default:
+                return R.string.sort_invalid;
+        }
     }
 
     /**

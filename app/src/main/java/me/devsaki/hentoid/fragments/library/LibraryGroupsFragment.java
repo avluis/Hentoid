@@ -272,8 +272,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), Preferences.getGroupSortField(), sortDesc, Preferences.getArtistGroupVisibility(), activity.get().isGroupFavsChecked());
             activity.get().sortCommandsAutoHide(true, null);
         });
-        sortFieldButton.setText(getNameFromFieldCode(Preferences.getGroupSortField()));
+        sortFieldButton.setText(LibraryActivity.getNameFromFieldCode(Preferences.getGroupSortField()));
         sortFieldButton.setOnClickListener(v -> {
+            /*
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
             popup.getMenuInflater()
@@ -292,37 +293,8 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             });
             popup.show(); //showing popup menu
             activity.get().sortCommandsAutoHide(true, popup);
+             */
         }); //closing the setOnClickListener method
-    }
-
-    private int getFieldCodeFromMenuId(@IdRes int menuId) {
-        switch (menuId) {
-            case (R.id.sort_title):
-                return Preferences.Constant.ORDER_FIELD_TITLE;
-            case (R.id.sort_books):
-                return Preferences.Constant.ORDER_FIELD_CHILDREN;
-            case (R.id.sort_dl_date):
-                return Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE;
-            case (R.id.sort_custom):
-                return Preferences.Constant.ORDER_FIELD_CUSTOM;
-            default:
-                return Preferences.Constant.ORDER_FIELD_NONE;
-        }
-    }
-
-    private int getNameFromFieldCode(int prefFieldCode) {
-        switch (prefFieldCode) {
-            case (Preferences.Constant.ORDER_FIELD_TITLE):
-                return R.string.sort_title;
-            case (Preferences.Constant.ORDER_FIELD_CHILDREN):
-                return R.string.sort_books;
-            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
-                return R.string.sort_dl_date;
-            case (Preferences.Constant.ORDER_FIELD_CUSTOM):
-                return R.string.sort_custom;
-            default:
-                return R.string.sort_invalid;
-        }
     }
 
     private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
@@ -376,7 +348,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (!activity.get().isEditMode()) {
             // Set ordering field to custom
             Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
-            sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
+            sortFieldButton.setText(LibraryActivity.getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
             // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
             Preferences.setGroupSortDesc(false);
             viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());

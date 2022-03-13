@@ -12,6 +12,20 @@
         android:tooltipText="@string/menu_search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="collapseActionView|always" />
+    <item
+        android:id="@+id/action_display_type"
+        android:icon="@drawable/ic_view_list"
+        android:title="@string/pref_library_display_title"
+        android:tooltipText="@string/pref_library_display_title"
+        android:visible="true"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_browse_groups"
+        android:icon="@drawable/ic_folders"
+        android:title="@string/groups"
+        android:tooltipText="@string/groups"
+        android:visible="true"
+        app:showAsAction="always" />
     <!-- Specific to groups -->
     <item
         android:id="@+id/action_group_new"
@@ -19,29 +33,15 @@
         android:title="@string/menu_group_new"
         android:tooltipText="@string/menu_group_new"
         android:visible="false"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/action_completed_filter"
-        android:checkable="true"
-        android:checked="false"
-        android:icon="@drawable/ic_completed_filter_off"
-        android:title="@string/menu_comp"
-        android:tooltipText="@string/menu_comp"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/action_favourites"
-        android:checkable="true"
-        android:checked="false"
-        android:icon="@drawable/ic_filter_favs_off"
-        android:title="@string/menu_fav"
-        android:tooltipText="@string/menu_fav"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
+    <!-- Specific to groups -->
     <item
         android:id="@+id/action_edit"
         android:icon="@drawable/ic_reorder_lines"
         android:title="@string/menu_edit_order"
         android:tooltipText="@string/menu_edit_order"
         app:showAsAction="always" />
+    <!-- Specific to groups -->
     <item
         android:id="@+id/action_edit_cancel"
         android:icon="@drawable/ic_close"
@@ -50,8 +50,8 @@
         android:visible="false"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_order"
-        android:icon="@drawable/ic_sort"
+        android:id="@+id/action_sort_filter"
+        android:icon="@drawable/ic_action_sort"
         android:title="@string/menu_order"
         android:tooltipText="@string/menu_order"
         app:showAsAction="always" />

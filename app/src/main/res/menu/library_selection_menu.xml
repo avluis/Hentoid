@@ -19,7 +19,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/action_completed"
-        android:icon="@drawable/ic_completed_single"
+        android:icon="@drawable/ic_completed_empty"
         android:title="@string/menu_completed_single"
         android:tooltipText="@string/menu_completed_single"
         app:showAsAction="always" />

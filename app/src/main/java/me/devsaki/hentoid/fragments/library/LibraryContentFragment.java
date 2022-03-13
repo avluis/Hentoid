@@ -35,7 +35,6 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.DimenRes;
-import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
@@ -402,7 +401,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             viewModel.updateContentOrder();
             activity.get().sortCommandsAutoHide(true, null);
         });
-        sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
+        sortFieldButton.setText(LibraryActivity.getNameFromFieldCode(Preferences.getContentSortField()));
         sortFieldButton.setOnClickListener(v -> {
             // Load and display the field popup menu
             PopupMenu popup = new PopupMenu(requireContext(), sortFieldButton, Gravity.END);
@@ -414,6 +413,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 // Update button text
                 sortFieldButton.setText(item.getTitle());
                 item.setChecked(true);
+                /*
                 int fieldCode = getFieldCodeFromMenuId(item.getItemId());
                 if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM) {
                     viewModel.shuffleContent();
@@ -423,8 +423,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     sortReshuffleButton.setVisibility(View.GONE);
                     sortDirectionButton.setVisibility(View.VISIBLE);
                 }
-
                 Preferences.setContentSortField(fieldCode);
+                 */
+
                 // Run a new search
                 viewModel.updateContentOrder();
                 activity.get().sortCommandsAutoHide(true, popup);
@@ -451,60 +452,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         activity.get().setMetadata(attrs);
     }
 
-    private int getFieldCodeFromMenuId(@IdRes int menuId) {
-        switch (menuId) {
-            case (R.id.sort_title):
-                return Preferences.Constant.ORDER_FIELD_TITLE;
-            case (R.id.sort_artist):
-                return Preferences.Constant.ORDER_FIELD_ARTIST;
-            case (R.id.sort_pages):
-                return Preferences.Constant.ORDER_FIELD_NB_PAGES;
-            case (R.id.sort_dl_date):
-                return Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE;
-            case (R.id.sort_read_date):
-                return Preferences.Constant.ORDER_FIELD_READ_DATE;
-            case (R.id.sort_reads):
-                return Preferences.Constant.ORDER_FIELD_READS;
-            case (R.id.sort_size):
-                return Preferences.Constant.ORDER_FIELD_SIZE;
-            case (R.id.sort_reading_progress):
-                return Preferences.Constant.ORDER_FIELD_READ_PROGRESS;
-            case (R.id.sort_custom):
-                return Preferences.Constant.ORDER_FIELD_CUSTOM;
-            case (R.id.sort_random):
-                return Preferences.Constant.ORDER_FIELD_RANDOM;
-            default:
-                return Preferences.Constant.ORDER_FIELD_NONE;
-        }
-    }
-
-    private int getNameFromFieldCode(int prefFieldCode) {
-        switch (prefFieldCode) {
-            case (Preferences.Constant.ORDER_FIELD_TITLE):
-                return R.string.sort_title;
-            case (Preferences.Constant.ORDER_FIELD_ARTIST):
-                return R.string.sort_artist;
-            case (Preferences.Constant.ORDER_FIELD_NB_PAGES):
-                return R.string.sort_pages;
-            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
-                return R.string.sort_dl_date;
-            case (Preferences.Constant.ORDER_FIELD_READ_DATE):
-                return R.string.sort_read_date;
-            case (Preferences.Constant.ORDER_FIELD_READS):
-                return R.string.sort_reads;
-            case (Preferences.Constant.ORDER_FIELD_SIZE):
-                return R.string.sort_size;
-            case (Preferences.Constant.ORDER_FIELD_READ_PROGRESS):
-                return R.string.sort_reading_progress;
-            case (Preferences.Constant.ORDER_FIELD_CUSTOM):
-                return R.string.sort_custom;
-            case (Preferences.Constant.ORDER_FIELD_RANDOM):
-                return R.string.sort_random;
-            default:
-                return R.string.sort_invalid;
-        }
-    }
-
     private void toggleEditMode() {
         activity.get().toggleEditMode();
 
@@ -512,7 +459,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         if (!activity.get().isEditMode()) {
             // Set ordering field to custom
             Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
-            sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
+            sortFieldButton.setText(LibraryActivity.getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
             // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
             Preferences.setContentSortDesc(false);
             viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList(), this::refreshIfNeeded);
