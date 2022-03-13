@@ -72,6 +72,7 @@ import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
+import me.devsaki.hentoid.widget.GroupSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.PurgeWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
@@ -82,43 +83,50 @@ public class LibraryViewModel extends AndroidViewModel {
 
     // Collection DAO
     private final CollectionDAO dao;
-    // Library search manager
-    private final ContentSearchManager searchManager;
+    // Content search manager
+    private final ContentSearchManager contentSearchManager;
+    // Groups search manager
+    private final GroupSearchManager groupSearchManager;
     // Cleanup for all RxJava calls
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     // Cleanup for all work observers
     private final List<Pair<UUID, Observer<WorkInfo>>> workObservers = new ArrayList<>();
 
-    // Collection data
+    // Content data
     private LiveData<PagedList<Content>> currentSource;
     private final LiveData<Integer> totalContent;
     private final MediatorLiveData<PagedList<Content>> libraryPaged = new MediatorLiveData<>();
+    private final MutableLiveData<Bundle> contentSearchBundle = new MutableLiveData<>();
     // Groups data
     private final MutableLiveData<Group> group = new MutableLiveData<>();
     private LiveData<List<Group>> currentGroupsSource;
     private final MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
     private final MediatorLiveData<Integer> currentGroupTotal = new MediatorLiveData<>();
     private final MutableLiveData<Boolean> isCustomGroupingAvailable = new MutableLiveData<>();     // True if there's at least one existing custom group; false instead
+    private final MutableLiveData<Bundle> groupSearchBundle = new MutableLiveData<>();
 
-    // Updated whenever a new search is performed
-    private final MediatorLiveData<Boolean> newSearch = new MediatorLiveData<>();
+    // Updated whenever a new COntentsearch is performed
+    private final MediatorLiveData<Boolean> newContentSearch = new MediatorLiveData<>();
 
 
     public LibraryViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
         dao = collectionDAO;
-        searchManager = new ContentSearchManager(dao);
+        contentSearchManager = new ContentSearchManager(dao);
+        groupSearchManager = new GroupSearchManager(dao);
         totalContent = dao.countAllBooks();
         refreshCustomGroupingAvailable();
     }
 
     public void onSaveState(Bundle outState) {
-        searchManager.saveToBundle(outState);
+        contentSearchManager.saveToBundle(outState);
+        groupSearchManager.saveToBundle(outState);
     }
 
     public void onRestoreState(@Nullable Bundle savedState) {
         if (savedState == null) return;
-        searchManager.loadFromBundle(savedState);
+        contentSearchManager.loadFromBundle(savedState);
+        groupSearchManager.loadFromBundle(savedState);
     }
 
     @Override
@@ -149,8 +157,8 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     @NonNull
-    public LiveData<Boolean> getNewSearch() {
-        return newSearch;
+    public LiveData<Boolean> getNewContentSearch() {
+        return newContentSearch;
     }
 
     @NonNull
@@ -168,10 +176,14 @@ public class LibraryViewModel extends AndroidViewModel {
         return isCustomGroupingAvailable;
     }
 
-    public Bundle getSearchManagerBundle() {
-        Bundle bundle = new Bundle();
-        searchManager.saveToBundle(bundle);
-        return bundle;
+    @NonNull
+    public LiveData<Bundle> getContentSearchManagerBundle() {
+        return contentSearchBundle;
+    }
+
+    @NonNull
+    public LiveData<Bundle> getGroupSearchManagerBundle() {
+        return groupSearchBundle;
     }
 
     // =========================
@@ -184,12 +196,14 @@ public class LibraryViewModel extends AndroidViewModel {
     private void doSearchContent() {
         if (currentSource != null) libraryPaged.removeSource(currentSource);
 
-        searchManager.setContentSortField(Preferences.getContentSortField());
-        searchManager.setContentSortDesc(Preferences.isContentSortDesc());
+        contentSearchManager.setContentSortField(Preferences.getContentSortField());
+        contentSearchManager.setContentSortDesc(Preferences.isContentSortDesc());
 
-        currentSource = searchManager.getLibrary();
+        currentSource = contentSearchManager.getLibrary();
 
         libraryPaged.addSource(currentSource, libraryPaged::setValue);
+
+        contentSearchBundle.postValue(contentSearchManager.toBundle());
     }
 
     /**
@@ -198,9 +212,9 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param query Query to use for the universal search
      */
     public void searchContentUniversal(@NonNull String query) {
-        searchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
-        searchManager.setQuery(query);
-        newSearch.setValue(true);
+        contentSearchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
+        contentSearchManager.setQuery(query);
+        newContentSearch.setValue(true);
         doSearchContent();
     }
 
@@ -211,9 +225,9 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param metadata Metadata to use for the search
      */
     public void searchContent(@NonNull String query, @NonNull List<Attribute> metadata) {
-        searchManager.setQuery(query);
-        searchManager.setTags(metadata);
-        newSearch.setValue(true);
+        contentSearchManager.setQuery(query);
+        contentSearchManager.setTags(metadata);
+        newContentSearch.setValue(true);
         doSearchContent();
     }
 
@@ -225,23 +239,33 @@ public class LibraryViewModel extends AndroidViewModel {
         }
     }
 
-    /**
-     * Perform a new group search using the given query
-     *
-     * @param query Query to use for the search
-     */
+    public void searchGroup() {
+        doSearchGroup();
+    }
+
     public void searchGroup(Grouping grouping, @NonNull String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
+        groupSearchManager.setGrouping(grouping);
+        groupSearchManager.setQuery(query);
+        groupSearchManager.setSortField(orderField);
+        groupSearchManager.setSortDesc(orderDesc);
+        groupSearchManager.setArtistGroupVisibility(artistGroupVisibility);
+        groupSearchManager.setFilterFavourites(groupFavouritesOnly);
+        doSearchGroup();
+    }
+
+    private void doSearchGroup() {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroupsLive(grouping.getId(), query, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
+        currentGroupsSource = groupSearchManager.getGroups();
         groups.addSource(currentGroupsSource, groups::setValue);
+        groupSearchBundle.postValue(groupSearchManager.toBundle());
     }
 
     /**
      * Toggle the completed filter
      */
     public void toggleCompletedFilter() {
-        searchManager.setFilterBookCompleted(!searchManager.isFilterBookCompleted());
-        newSearch.setValue(true);
+        contentSearchManager.setFilterBookCompleted(!contentSearchManager.isFilterBookCompleted());
+        newContentSearch.setValue(true);
         doSearchContent();
     }
 
@@ -249,8 +273,8 @@ public class LibraryViewModel extends AndroidViewModel {
      * Toggle the completed filter
      */
     public void toggleNotCompletedFilter() {
-        searchManager.setFilterBookNotCompleted(!searchManager.isFilterBookNotCompleted());
-        newSearch.setValue(true);
+        contentSearchManager.setFilterBookNotCompleted(!contentSearchManager.isFilterBookNotCompleted());
+        newContentSearch.setValue(true);
         doSearchContent();
     }
 
@@ -258,17 +282,35 @@ public class LibraryViewModel extends AndroidViewModel {
      * Toggle the books favourite filter
      */
     public void setContentFavouriteFilter(boolean value) {
-        searchManager.setFilterBookFavourites(value);
-        newSearch.setValue(true);
+        contentSearchManager.setFilterBookFavourites(value);
+        newContentSearch.setValue(true);
         doSearchContent();
+    }
+
+    /**
+     * Toggle the groups favourite filter
+     */
+    public void setGroupFavouriteFilter(boolean value) {
+        groupSearchManager.setFilterFavourites(value);
+        doSearchGroup();
+    }
+
+    public void setGroupArtistGroupVisibility(int value) {
+        groupSearchManager.setArtistGroupVisibility(value);
+        doSearchGroup();
+    }
+
+    public void setGroupQuery(String value) {
+        groupSearchManager.setQuery(value);
+        doSearchGroup();
     }
 
     /**
      * Set the mode (endless or paged)
      */
     public void setPagingMethod(boolean isEndless) {
-        searchManager.setLoadAll(!isEndless);
-        newSearch.setValue(true);
+        contentSearchManager.setLoadAll(!isEndless);
+        newContentSearch.setValue(true);
         doSearchContent();
     }
 
@@ -276,7 +318,7 @@ public class LibraryViewModel extends AndroidViewModel {
      * Update the order of the content list
      */
     public void updateContentOrder() {
-        newSearch.setValue(true);
+        newContentSearch.setValue(true);
         doSearchContent();
     }
 
@@ -285,8 +327,8 @@ public class LibraryViewModel extends AndroidViewModel {
         if (!forceRefresh && Objects.equals(group, currentGroup)) return;
 
         this.group.postValue(group);
-        searchManager.setGroup(group);
-        newSearch.setValue(true);
+        contentSearchManager.setGroup(group);
+        newContentSearch.setValue(true);
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?
         doSearchContent();
@@ -877,9 +919,9 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     public void resetCompletedFilter() {
-        if (searchManager.isFilterBookCompleted())
+        if (contentSearchManager.isFilterBookCompleted())
             toggleCompletedFilter();
-        else if (searchManager.isFilterBookNotCompleted())
+        else if (contentSearchManager.isFilterBookNotCompleted())
             toggleNotCompletedFilter();
     }
 

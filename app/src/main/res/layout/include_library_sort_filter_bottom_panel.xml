@@ -101,7 +101,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="8dp"
-            android:src="@drawable/ic_fav_empty"
+            android:src="@drawable/ic_fav_full"
             android:tooltipText="@string/library_filter_favourite_help"
             app:layout_constraintBottom_toBottomOf="@id/filter_favs_txt"
             app:layout_constraintStart_toEndOf="@id/filter_favs_txt"

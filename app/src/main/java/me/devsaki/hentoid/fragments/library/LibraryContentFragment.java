@@ -184,6 +184,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private Group group = null;
     // TODO doc
     private boolean enabled = true;
+    // TODO doc
+    private Bundle contentSearchBundle = null;
 
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
@@ -323,10 +325,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel.getNewSearch().observe(getViewLifecycleOwner(), this::onNewSearch);
+        viewModel.getNewContentSearch().observe(getViewLifecycleOwner(), this::onNewSearch);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
         viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
         viewModel.getGroup().observe(getViewLifecycleOwner(), this::onGroupChanged);
+        viewModel.getContentSearchManagerBundle().observe(getViewLifecycleOwner(), b -> contentSearchBundle = b);
 
         viewModel.updateContentOrder(); // Trigger a blank search
 
@@ -1370,7 +1373,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     // TODO doc
     public void readBook(@NonNull Content content, boolean forceShowGallery) {
         topItemPosition = getTopItemPosition();
-        ContentHelper.openHentoidViewer(requireContext(), content, -1, viewModel.getSearchManagerBundle(), forceShowGallery);
+        ContentHelper.openHentoidViewer(requireContext(), content, -1, contentSearchBundle, forceShowGallery);
     }
 
     /**

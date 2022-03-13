@@ -184,12 +184,10 @@ public class LibraryActivity extends BaseActivity {
     private boolean isCustomGroupingAvailable;
     // Titles of each of the Viewpager2's tabs
     private final Map<Integer, String> titles = new HashMap<>();
-    // Favourite filter (one per tab)
-    private final List<Boolean> favouriteFilter = Arrays.asList(false, false);
-    // Completed filter (one per tab)
-    private final List<Boolean> completedFilter = Arrays.asList(false, false);
-    // Not completed filter (one per tab)
-    private final List<Boolean> notCompletedFilter = Arrays.asList(false, false);
+    // TODO doc
+    private Bundle contentSearchBundle = null;
+    // TODO doc
+    private Bundle groupSearchBundle = null;
 
 
     // Used to auto-hide the sort controls bar when no activity is detected
@@ -241,10 +239,6 @@ public class LibraryActivity extends BaseActivity {
 
     public void toggleEditMode() {
         setEditMode(!editMode);
-    }
-
-    public boolean isGroupFavsChecked() {
-        return favouriteFilter.get(0);
     }
 
 
@@ -303,6 +297,8 @@ public class LibraryActivity extends BaseActivity {
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
         viewModel.isCustomGroupingAvailable().observe(this, b -> this.isCustomGroupingAvailable = b);
+        viewModel.getContentSearchManagerBundle().observe(this, b -> contentSearchBundle = b);
+        viewModel.getGroupSearchManagerBundle().observe(this, b -> groupSearchBundle = b);
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
@@ -378,7 +374,7 @@ public class LibraryActivity extends BaseActivity {
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle(), false);
+                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, contentSearchBundle, false);
                 } finally {
                     dao.cleanup();
                 }
@@ -597,9 +593,6 @@ public class LibraryActivity extends BaseActivity {
                         this,
                         this.getSupportFragmentManager(),
                         isGroupDisplayed(),
-                        favouriteFilter.get(getCurrentFragmentIndex()),
-                        completedFilter.get(getCurrentFragmentIndex()),
-                        notCompletedFilter.get(getCurrentFragmentIndex()),
                         0
                 );
                 sortCommandsAutoHide.submit(true);
@@ -774,7 +767,7 @@ public class LibraryActivity extends BaseActivity {
                 break;
             case Preferences.Key.GROUPING_DISPLAY:
             case Preferences.Key.ARTIST_GROUP_VISIBILITY:
-                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked());
+                viewModel.setGroupArtistGroupVisibility(Preferences.getArtistGroupVisibility());
                 break;
             default:
                 // Nothing to handle there
@@ -810,7 +803,7 @@ public class LibraryActivity extends BaseActivity {
             if (currentGrouping.equals(selectedGrouping)) return false;
 
             Preferences.setGroupingDisplay(selectedGrouping.getId());
-            favouriteFilter.set(0, false);
+            viewModel.setGroupFavouriteFilter(false);
 
             if (isGroupDisplayed() && selectedGrouping.equals(Grouping.ARTIST)) {
                 showArtistsGroupsButton.setVisibility(View.VISIBLE);
@@ -940,7 +933,7 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) return;
 
         enableFragment(0);
-        viewModel.searchGroup(Preferences.getGroupingDisplay(), query.get(0), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked());
+        viewModel.searchGroup();
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
     }

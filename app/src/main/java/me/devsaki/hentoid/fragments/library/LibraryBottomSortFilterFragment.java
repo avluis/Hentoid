@@ -30,6 +30,8 @@ import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.devsaki.hentoid.widget.ContentSearchManager;
+import me.devsaki.hentoid.widget.GroupSearchManager;
 
 public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment implements TabLayout.OnTabSelectedListener {
 
@@ -45,9 +47,9 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
     // Variables
     private boolean isGroupsDisplayed;
     private int initialTabIndex;
-    private boolean initialFavouriteFilter;
-    private boolean initialCompletedFilter;
-    private boolean initialNotCompletedFilter;
+    private boolean favouriteFilter;
+    private boolean completedFilter;
+    private boolean notCompletedFilter;
     private @ColorInt
     int greyColor;
     private @ColorInt
@@ -58,16 +60,10 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
             Context context,
             FragmentManager fragmentManager,
             boolean isGroupsDisplayed,
-            boolean favouriteFilter,
-            boolean completedFilter,
-            boolean notCompletedFilter,
             int showTabIndex) {
         LibraryBottomSortFilterBundle builder = new LibraryBottomSortFilterBundle();
         builder.setGroupsDisplayed(isGroupsDisplayed);
         builder.setShowTabIndex(showTabIndex);
-        builder.setFavouriteFilter(favouriteFilter);
-        builder.setCompletedFilter(completedFilter);
-        builder.setNotCompletedFilter(notCompletedFilter);
 
         LibraryBottomSortFilterFragment libraryBottomSheetFragment = new LibraryBottomSortFilterFragment();
         libraryBottomSheetFragment.setArguments(builder.getBundle());
@@ -84,13 +80,23 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
             LibraryBottomSortFilterBundle parser = new LibraryBottomSortFilterBundle(bundle);
             isGroupsDisplayed = parser.isGroupsDisplayed();
             initialTabIndex = parser.getShowTabIndex();
-            initialFavouriteFilter = parser.getFavouriteFilter();
-            initialCompletedFilter = parser.getCompletedFilter();
-            initialNotCompletedFilter = parser.getNotCompletedFilter();
         }
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
+
+        viewModel.getContentSearchManagerBundle().observe(this, b -> {
+            if (isGroupsDisplayed) return;
+            ContentSearchManager.ContentSearchBundle searchBundle = new ContentSearchManager.ContentSearchBundle(b);
+            favouriteFilter = searchBundle.getFilterBookFavourites();
+            completedFilter = searchBundle.getFilterBookCompleted();
+            notCompletedFilter = searchBundle.getFilterBookNotCompleted();
+        });
+        viewModel.getGroupSearchManagerBundle().observe(this, b -> {
+            if (!isGroupsDisplayed) return;
+            GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
+            favouriteFilter = searchBundle.getFilterFavourites();
+        });
 
         greyColor = ContextCompat.getColor(context, R.color.medium_gray);
         selectedColor = ThemeHelper.getColor(context, R.color.secondary_light);
@@ -116,13 +122,58 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
         binding.list.setAdapter(fastAdapter);
         itemAdapter.set(getSortFields());
 
-        // FILTER TAB
-        binding.filterFavsBtn.setColorFilter(initialFavouriteFilter ? selectedColor : greyColor);
-        binding.filterCompletedBtn.setColorFilter(initialCompletedFilter ? selectedColor : greyColor);
-        binding.filterNotCompletedBtn.setColorFilter(initialNotCompletedFilter ? selectedColor : greyColor);
+        binding.sortAscDesc.addOnButtonCheckedListener((g, i, b) -> {
+            if (!b) return;
+            if (isGroupsDisplayed) {
+                Preferences.setGroupSortDesc(i == R.id.sort_descending);
+                viewModel.searchGroup();
+            } else {
+                Preferences.setContentSortDesc(i == R.id.sort_descending);
+                viewModel.updateContentOrder(); // Trigger a blank search
+            }
+        });
+
+        binding.filterFavsBtn.setOnClickListener(
+                v -> {
+                    favouriteFilter = !favouriteFilter;
+                    updateFilterTab();
+                    if (isGroupsDisplayed)
+                        viewModel.setGroupFavouriteFilter(favouriteFilter);
+                    else
+                        viewModel.setContentFavouriteFilter(favouriteFilter);
+                }
+        );
+        binding.filterCompletedBtn.setOnClickListener(
+                v -> {
+                    completedFilter = !completedFilter;
+                    updateFilterTab();
+                    viewModel.toggleCompletedFilter();
+                }
+        );
+        binding.filterNotCompletedBtn.setOnClickListener(
+                v -> {
+                    notCompletedFilter = !notCompletedFilter;
+                    updateFilterTab();
+                    viewModel.toggleNotCompletedFilter();
+                }
+        );
+
+        updateFilterTab();
 
         binding.tabs.addOnTabSelectedListener(this);
         binding.tabs.selectTab(binding.tabs.getTabAt(initialTabIndex));
+    }
+
+    private void updateFilterTab() {
+        binding.filterFavsBtn.setColorFilter(favouriteFilter ? selectedColor : greyColor);
+
+        int completeFiltersVisibility = isGroupsDisplayed ? View.GONE : View.VISIBLE;
+        binding.filterCompletedTxt.setVisibility(completeFiltersVisibility);
+        binding.filterCompletedBtn.setVisibility(completeFiltersVisibility);
+        binding.filterNotCompletedBtn.setVisibility(completeFiltersVisibility);
+
+        binding.filterCompletedBtn.setColorFilter(completedFilter ? selectedColor : greyColor);
+        binding.filterNotCompletedBtn.setColorFilter(notCompletedFilter ? selectedColor : greyColor);
     }
 
     @Override
