@@ -101,6 +101,7 @@ public class LibraryViewModel extends AndroidViewModel {
     private final MutableLiveData<Group> group = new MutableLiveData<>();
     private LiveData<List<Group>> currentGroupsSource;
     private final MediatorLiveData<List<Group>> groups = new MediatorLiveData<>();
+    private LiveData<List<Group>> currentGroupsTotalSource;
     private final MediatorLiveData<Integer> currentGroupTotal = new MediatorLiveData<>();
     private final MutableLiveData<Boolean> isCustomGroupingAvailable = new MutableLiveData<>();     // True if there's at least one existing custom group; false instead
     private final MutableLiveData<Bundle> groupSearchBundle = new MutableLiveData<>();
@@ -253,8 +254,20 @@ public class LibraryViewModel extends AndroidViewModel {
         if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
         currentGroupsSource = groupSearchManager.getGroups();
         groups.addSource(currentGroupsSource, groups::setValue);
+
+        if (currentGroupsTotalSource != null)
+            currentGroupTotal.removeSource(currentGroupsTotalSource);
+        currentGroupsTotalSource = groupSearchManager.getAllGroups();
+        currentGroupTotal.addSource(currentGroupsTotalSource, list -> currentGroupTotal.postValue(list.size()));
+
         groupSearchBundle.postValue(groupSearchManager.toBundle());
+        refreshCustomGroupingAvailable();
     }
+
+    public void refreshCustomGroupingAvailable() {
+        isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
+    }
+
 
     /**
      * Toggle the completed filter
@@ -325,6 +338,7 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchContent();
     }
 
+    /*
     public void setGrouping(@NonNull final Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
         if (grouping.equals(Grouping.FLAT)) {
             setGroup(null, false);
@@ -335,16 +349,7 @@ public class LibraryViewModel extends AndroidViewModel {
         currentGroupsSource = dao.selectGroupsLive(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
         groups.addSource(currentGroupsSource, this::onGroupsChanged);
     }
-
-    private void onGroupsChanged(@NonNull final List<Group> newGroups) {
-        groups.setValue(newGroups);
-        currentGroupTotal.postValue(newGroups.size());
-        refreshCustomGroupingAvailable();
-    }
-
-    public void refreshCustomGroupingAvailable() {
-        isCustomGroupingAvailable.postValue(dao.countGroupsFor(Grouping.CUSTOM) > 0);
-    }
+     */
 
     // =========================
     // ========= CONTENT ACTIONS

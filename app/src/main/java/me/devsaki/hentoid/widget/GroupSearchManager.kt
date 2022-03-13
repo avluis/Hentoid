@@ -63,6 +63,17 @@ class GroupSearchManager(val dao: CollectionDAO) {
         )
     }
 
+    fun getAllGroups(): LiveData<List<Group>> {
+        return dao.selectGroupsLive(
+            values.groupingId,
+            "",
+            values.sortField,
+            values.sortDesc,
+            Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS,
+            false
+        )
+    }
+
     class GroupSearchBundle(val bundle: Bundle = Bundle()) {
 
         var filterFavourites by bundle.boolean(default = false)
