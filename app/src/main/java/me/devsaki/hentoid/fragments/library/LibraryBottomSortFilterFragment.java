@@ -13,10 +13,13 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.tabs.TabLayout;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.select.SelectExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +46,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
     // RecyclerView controls
     private final ItemAdapter<TextItem<Integer>> itemAdapter = new ItemAdapter<>();
     private final FastAdapter<TextItem<Integer>> fastAdapter = FastAdapter.with(itemAdapter);
+    private SelectExtension<TextItem<Integer>> selectExtension;
 
     // Variables
     private boolean isGroupsDisplayed;
@@ -119,6 +123,16 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
         // SORT TAB
         boolean currentPrefSortDesc = isGroupsDisplayed ? Preferences.isGroupSortDesc() : Preferences.isContentSortDesc();
         binding.sortAscDesc.check(currentPrefSortDesc ? R.id.sort_descending : R.id.sort_ascending);
+
+        // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
+        selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
+        if (selectExtension != null) {
+            selectExtension.setSelectable(true);
+            selectExtension.setMultiSelect(false);
+            selectExtension.setSelectOnLongClick(false);
+            selectExtension.setSelectWithItemUpdate(true);
+            selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+        }
         binding.list.setAdapter(fastAdapter);
         itemAdapter.set(getSortFields());
 
@@ -209,10 +223,26 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
         return new TextItem<>(
                 getResources().getString(LibraryActivity.getNameFromFieldCode(sortFieldCode)),
                 sortFieldCode,
-                false,
                 true,
-                currentPrefFieldCode == sortFieldCode,
-                null);
+                currentPrefFieldCode == sortFieldCode);
+    }
+
+    /**
+     * Callback for any selection change (item added to or removed from selection)
+     */
+    private void onSelectionChanged() {
+        Optional<TextItem<Integer>> item = Stream.of(selectExtension.getSelectedItems()).findFirst();
+        if (item.isPresent()) {
+            Integer code = item.get().getTag();
+            if (code != null)
+                if (isGroupsDisplayed) {
+                    Preferences.setGroupSortField(code);
+                    viewModel.searchGroup();
+                } else {
+                    Preferences.setContentSortField(code);
+                    viewModel.updateContentOrder(); // Trigger a blank search
+                }
+        }
     }
 
     @Override

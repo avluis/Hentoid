@@ -51,6 +51,17 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         this.isHighlighted = false;
     }
 
+    public TextItem(String text, T tag, boolean reformatCase, boolean isSelected) {
+        this.text = text;
+        this.tag = tag;
+        this.centered = false;
+        this.draggable = false;
+        this.touchHelper = null;
+        this.reformatCase = reformatCase;
+        this.isHighlighted = false;
+        this.setSelected(isSelected);
+    }
+
     public TextItem(String text, T tag, boolean draggable, boolean reformatCase, boolean isHighlighted, ItemTouchHelper touchHelper) {
         this.text = text;
         this.tag = tag;
