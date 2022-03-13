@@ -95,11 +95,13 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
             favouriteFilter = searchBundle.getFilterBookFavourites();
             completedFilter = searchBundle.getFilterBookCompleted();
             notCompletedFilter = searchBundle.getFilterBookNotCompleted();
+            updateFilterTab();
         });
         viewModel.getGroupSearchManagerBundle().observe(this, b -> {
             if (!isGroupsDisplayed) return;
             GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
             favouriteFilter = searchBundle.getFilterFavourites();
+            updateFilterTab();
         });
 
         greyColor = ContextCompat.getColor(context, R.color.medium_gray);
@@ -175,8 +177,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
                     viewModel.toggleNotCompletedFilter();
                 }
         );
-
-        updateFilterTab();
 
         binding.tabs.addOnTabSelectedListener(this);
         binding.tabs.selectTab(binding.tabs.getTabAt(initialTabIndex));
