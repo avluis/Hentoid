@@ -121,9 +121,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         // SORT TAB
-        boolean currentPrefSortDesc = isGroupsDisplayed ? Preferences.isGroupSortDesc() : Preferences.isContentSortDesc();
-        binding.sortAscDesc.check(currentPrefSortDesc ? R.id.sort_descending : R.id.sort_ascending);
-
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
         if (selectExtension != null) {
@@ -136,6 +133,12 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
         binding.list.setAdapter(fastAdapter);
         itemAdapter.set(getSortFields());
 
+        updateSortDirection();
+
+        binding.sortRandom.setOnClickListener(v -> {
+            viewModel.shuffleContent();
+            viewModel.updateContentOrder(); // Trigger a blank search
+        });
         binding.sortAscDesc.addOnButtonCheckedListener((g, i, b) -> {
             if (!b) return;
             if (isGroupsDisplayed) {
@@ -178,6 +181,22 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
         binding.tabs.selectTab(binding.tabs.getTabAt(initialTabIndex));
     }
 
+    private void updateSortDirection() {
+        boolean isRandom = ((isGroupsDisplayed ? Preferences.getGroupSortField() : Preferences.getContentSortField()) == Preferences.Constant.ORDER_FIELD_RANDOM);
+        if (isRandom) {
+            binding.sortAscending.setVisibility(View.GONE);
+            binding.sortDescending.setVisibility(View.GONE);
+            binding.sortRandom.setVisibility(View.VISIBLE);
+            boolean currentPrefSortDesc = isGroupsDisplayed ? Preferences.isGroupSortDesc() : Preferences.isContentSortDesc();
+            binding.sortAscDesc.check(currentPrefSortDesc ? R.id.sort_descending : R.id.sort_ascending);
+        } else {
+            binding.sortRandom.setVisibility(View.GONE);
+            binding.sortAscending.setVisibility(View.VISIBLE);
+            binding.sortDescending.setVisibility(View.VISIBLE);
+            binding.sortAscDesc.check(R.id.sort_random);
+        }
+    }
+
     private void updateFilterTab() {
         binding.filterFavsBtn.setColorFilter(favouriteFilter ? selectedColor : greyColor);
 
@@ -188,12 +207,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
 
         binding.filterCompletedBtn.setColorFilter(completedFilter ? selectedColor : greyColor);
         binding.filterNotCompletedBtn.setColorFilter(notCompletedFilter ? selectedColor : greyColor);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        // TODO keep ?
     }
 
     private List<TextItem<Integer>> getSortFields() {
@@ -243,6 +256,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
                     viewModel.updateContentOrder(); // Trigger a blank search
                 }
         }
+        updateSortDirection();
     }
 
     @Override

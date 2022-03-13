@@ -61,6 +61,16 @@
                 android:text="@string/sort_descending"
                 app:icon="@drawable/ic_simple_arrow_down" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sort_random"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sort_reshuffle"
+                android:visibility="gone"
+                app:icon="@drawable/ic_menu_sort_random"
+                tools:visibility="visible" />
+
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -81,8 +91,9 @@
         android:id="@+id/filter_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@id/sort_controls">
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/sort_controls"
+        tools:visibility="visible">
 
         <TextView
             android:id="@+id/filter_favs_txt"

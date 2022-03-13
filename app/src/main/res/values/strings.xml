@@ -479,6 +479,7 @@
     <string name="sort">Sort</string>
     <string name="sort_ascending">Ascending</string>
     <string name="sort_descending">Descending</string>
+    <string name="sort_reshuffle">Reshuffle</string>
     <string name="sort_title">Title</string>
     <string name="sort_artist">Artist</string>
     <string name="sort_pages">Pages</string>
