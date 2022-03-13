@@ -128,6 +128,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
             selectExtension.setMultiSelect(false);
             selectExtension.setSelectOnLongClick(false);
             selectExtension.setSelectWithItemUpdate(true);
+            selectExtension.setAllowDeselection(false);
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
         }
         binding.list.setAdapter(fastAdapter);
