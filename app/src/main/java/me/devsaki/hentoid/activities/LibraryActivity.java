@@ -556,10 +556,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     public void hideSearchSubBar() {
-        boolean isSearchVisible = (View.VISIBLE == advancedSearchButton.getVisibility() || View.VISIBLE == searchClearButton.getVisibility());
-
-        if (!isSearchVisible) searchSubBar.setVisibility(View.GONE);
-
+        searchSubBar.setVisibility(View.GONE);
         advancedSearchButton.setVisibility(View.GONE);
         searchClearButton.setVisibility(View.GONE);
     }

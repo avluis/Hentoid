@@ -523,6 +523,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 activity.get().setQuery("");
                 activity.get().setMetadata(Collections.emptyList());
                 activity.get().hideSearchSubBar();
+                viewModel.setGroupQuery("");
                 viewModel.searchContent(activity.get().getQuery(), activity.get().getMetadata());
             }
             // If none of the above, user is asking to leave => use double-tap
