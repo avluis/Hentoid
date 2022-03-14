@@ -309,6 +309,16 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchGroup();
     }
 
+    public void clearGroupFilters() {
+        groupSearchManager.clearFilters();
+        doSearchGroup();
+    }
+
+    public void clearContentFilters() {
+        contentSearchManager.clearFilters();
+        doSearchContent();
+    }
+
     /**
      * Set the mode (endless or paged)
      */

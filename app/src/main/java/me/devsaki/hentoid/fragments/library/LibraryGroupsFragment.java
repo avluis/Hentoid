@@ -519,15 +519,11 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         if (!activity.get().collapseSearchMenu() && !activity.get().closeLeftDrawer()) {
             // If none of the above and a search filter is on => clear search filter
-            if (activity.get().isSearchQueryActive()) {
-                activity.get().setQuery("");
-                activity.get().setMetadata(Collections.emptyList());
-                activity.get().hideSearchSubBar();
-                viewModel.setGroupQuery("");
-                viewModel.searchContent(activity.get().getQuery(), activity.get().getMetadata());
+            if (activity.get().isFilterActive()) {
+                viewModel.clearGroupFilters();
             }
             // If none of the above, user is asking to leave => use double-tap
-            if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
+            else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
                 callback.remove();
                 requireActivity().onBackPressed();
             } else {

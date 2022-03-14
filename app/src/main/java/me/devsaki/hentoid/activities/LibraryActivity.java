@@ -51,6 +51,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,7 @@ import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.widget.GroupSearchManager;
 import timber.log.Timber;
 
@@ -173,6 +175,8 @@ public class LibraryActivity extends BaseActivity {
     private Grouping grouping = Preferences.getGroupingDisplay();
     // TODO doc
     private Bundle contentSearchBundle = null;
+    // TODO doc
+    private Bundle groupSearchBundle = null;
 
 
     // === PUBLIC ACCESSORS (to be used by fragments)
@@ -267,6 +271,7 @@ public class LibraryActivity extends BaseActivity {
         viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
         viewModel.getContentSearchManagerBundle().observe(this, b -> contentSearchBundle = b);
         viewModel.getGroupSearchManagerBundle().observe(this, b -> {
+            groupSearchBundle = b;
             GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
             onGroupingChanged(searchBundle.getGroupingId());
         });
@@ -737,6 +742,22 @@ public class LibraryActivity extends BaseActivity {
         enableFragment(1);
         viewModel.setGroup(group, true);
         viewPager.setCurrentItem(1);
+    }
+
+    public boolean isFilterActive() {
+        if (isSearchQueryActive()) {
+            setQuery("");
+            setMetadata(Collections.emptyList());
+            collapseSearchMenu();
+            hideSearchSubBar();
+        }
+        if (isGroupDisplayed()) {
+            GroupSearchManager.GroupSearchBundle bundle = new GroupSearchManager.GroupSearchBundle(groupSearchBundle);
+            return bundle.isFilterActive();
+        } else {
+            ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle(contentSearchBundle);
+            return bundle.isFilterActive();
+        }
     }
 
     private void updateToolbar() {

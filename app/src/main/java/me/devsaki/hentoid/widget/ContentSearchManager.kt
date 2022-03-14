@@ -88,6 +88,14 @@ class ContentSearchManager(val dao: CollectionDAO) {
         values.searchUri = SearchActivityBundle.buildSearchUri(Collections.emptyList()).toString()
     }
 
+    fun clearFilters() {
+        clearSelectedSearchTags()
+        setQuery("")
+        setFilterBookFavourites(false)
+        setFilterBookCompleted(false)
+        setFilterBookNotCompleted(false)
+        setFilterPageFavourites(false)
+    }
 
     fun getLibrary(): LiveData<PagedList<Content>> {
         val tags = parseSearchUri(Uri.parse(values.searchUri))
@@ -185,5 +193,16 @@ class ContentSearchManager(val dao: CollectionDAO) {
         var searchUri by bundle.string(default = "")
 
         var groupId by bundle.long(default = -1)
+
+
+        fun isFilterActive(): Boolean {
+            val tags = SearchActivityBundle.parseSearchUri(Uri.parse(searchUri))
+            return query.isNotEmpty()
+                    || tags.isNotEmpty()
+                    || filterBookFavourites
+                    || filterBookCompleted
+                    || filterBookNotCompleted
+                    || filterPageFavourites
+        }
     }
 }
