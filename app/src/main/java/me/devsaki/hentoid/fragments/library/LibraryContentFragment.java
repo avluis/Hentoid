@@ -6,6 +6,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
@@ -827,6 +828,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     public void onActivityEvent(CommunicationEvent event) {
         if (event.getRecipient() != RC_CONTENTS) return;
         switch (event.getType()) {
+            case EV_UPDATE_TOOLBAR:
+                addCustomBackControl();
+                activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
+                break;
             case EV_SEARCH:
                 if (event.getMessage() != null) onSubmitSearch(event.getMessage());
                 break;

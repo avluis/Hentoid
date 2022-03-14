@@ -6,6 +6,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
@@ -771,6 +772,8 @@ public class LibraryActivity extends BaseActivity {
 
         if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
         else reorderMenu.setVisible(currentGrouping.canReorderBooks());
+
+        signalCurrentFragment(EV_UPDATE_TOOLBAR, null);
     }
 
     public void updateSelectionToolbar(

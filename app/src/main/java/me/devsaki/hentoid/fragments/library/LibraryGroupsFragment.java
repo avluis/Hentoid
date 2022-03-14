@@ -4,6 +4,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 
 import android.annotation.SuppressLint;
@@ -487,6 +488,10 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     public void onActivityEvent(CommunicationEvent event) {
         if (event.getRecipient() != RC_GROUPS) return;
         switch (event.getType()) {
+            case EV_UPDATE_TOOLBAR:
+                addCustomBackControl();
+                activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
+                break;
             case EV_SEARCH:
                 if (event.getMessage() != null) onSubmitSearch(event.getMessage());
                 break;
