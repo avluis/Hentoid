@@ -16,7 +16,6 @@ import androidx.lifecycle.ViewModelProvider;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.tabs.TabLayout;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
 import com.mikepenz.fastadapter.select.SelectExtension;
@@ -36,7 +35,7 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.widget.GroupSearchManager;
 
-public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment implements TabLayout.OnTabSelectedListener {
+public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
 
     private LibraryViewModel viewModel;
 
@@ -50,7 +49,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
 
     // Variables
     private boolean isGroupsDisplayed;
-    private int initialTabIndex;
     private boolean favouriteFilter;
     private boolean completedFilter;
     private boolean notCompletedFilter;
@@ -63,11 +61,9 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
     public static void invoke(
             Context context,
             FragmentManager fragmentManager,
-            boolean isGroupsDisplayed,
-            int showTabIndex) {
+            boolean isGroupsDisplayed) {
         LibraryBottomSortFilterBundle builder = new LibraryBottomSortFilterBundle();
         builder.setGroupsDisplayed(isGroupsDisplayed);
-        builder.setShowTabIndex(showTabIndex);
 
         LibraryBottomSortFilterFragment libraryBottomSheetFragment = new LibraryBottomSortFilterFragment();
         libraryBottomSheetFragment.setArguments(builder.getBundle());
@@ -83,7 +79,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
         if (bundle != null) {
             LibraryBottomSortFilterBundle parser = new LibraryBottomSortFilterBundle(bundle);
             isGroupsDisplayed = parser.isGroupsDisplayed();
-            initialTabIndex = parser.getShowTabIndex();
         }
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
@@ -177,9 +172,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
                     viewModel.toggleNotCompletedFilter();
                 }
         );
-
-        binding.tabs.addOnTabSelectedListener(this);
-        binding.tabs.selectTab(binding.tabs.getTabAt(initialTabIndex));
     }
 
     private void updateSortDirection() {
@@ -202,7 +194,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
         binding.filterFavsBtn.setColorFilter(favouriteFilter ? selectedColor : greyColor);
 
         int completeFiltersVisibility = isGroupsDisplayed ? View.GONE : View.VISIBLE;
-        binding.filterCompletedTxt.setVisibility(completeFiltersVisibility);
         binding.filterCompletedBtn.setVisibility(completeFiltersVisibility);
         binding.filterNotCompletedBtn.setVisibility(completeFiltersVisibility);
 
@@ -258,26 +249,5 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment i
                 }
         }
         updateSortDirection();
-    }
-
-    @Override
-    public void onTabSelected(TabLayout.Tab tab) {
-        if (tab.getPosition() == 0) {
-            binding.filterControls.setVisibility(View.GONE);
-            binding.sortControls.setVisibility(View.VISIBLE);
-        } else {
-            binding.sortControls.setVisibility(View.GONE);
-            binding.filterControls.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @Override
-    public void onTabUnselected(TabLayout.Tab tab) {
-        // Nothing to do here
-    }
-
-    @Override
-    public void onTabReselected(TabLayout.Tab tab) {
-        onTabSelected(tab);
     }
 }

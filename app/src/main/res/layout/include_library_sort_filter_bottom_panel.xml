@@ -6,33 +6,56 @@
     android:layout_height="wrap_content"
     android:theme="@style/Theme.Light.BottomSheetDialog">
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabs"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:id="@+id/filter_favs_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_fav_full"
+        android:tooltipText="@string/library_filter_favourite_help"
         app:layout_constraintTop_toTopOf="parent"
-        app:tabInlineLabel="true">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/filter_completed_btn"
+        app:tint="@color/medium_gray"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:icon="@drawable/ic_action_sort"
-            android:text="@string/sort" />
+    <ImageView
+        android:id="@+id/filter_completed_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_checked_circle"
+        android:tooltipText="@string/filter_completed"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/filter_favs_btn"
+        app:layout_constraintEnd_toStartOf="@id/filter_not_completed_btn"
+        app:tint="@color/medium_gray"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:icon="@drawable/ic_action_filter"
-            android:text="@string/filter" />
+    <ImageView
+        android:id="@+id/filter_not_completed_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_completed_empty"
+        android:tooltipText="@string/filter_not_completed"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/filter_completed_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/medium_gray"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
 
-    </com.google.android.material.tabs.TabLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/sort_controls"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@id/tabs">
+        app:layout_constraintTop_toBottomOf="@id/filter_favs_btn">
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/sort_asc_desc"
@@ -84,82 +107,6 @@
             app:layout_constraintTop_toBottomOf="@id/sort_asc_desc"
             app:spanCount="2"
             tools:listitem="@layout/item_text" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/filter_controls"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/sort_controls"
-        tools:visibility="visible">
-
-        <TextView
-            android:id="@+id/filter_favs_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:text="@string/filter_favourites"
-            android:textSize="@dimen/text_subtitle_1"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/filter_favs_btn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="8dp"
-            android:src="@drawable/ic_fav_full"
-            android:tooltipText="@string/library_filter_favourite_help"
-            app:layout_constraintBottom_toBottomOf="@id/filter_favs_txt"
-            app:layout_constraintStart_toEndOf="@id/filter_favs_txt"
-            app:layout_constraintTop_toTopOf="@id/filter_favs_txt"
-            app:tint="@color/medium_gray"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
-
-        <TextView
-            android:id="@+id/filter_completed_txt"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:padding="8dp"
-            android:text="@string/filter_completed_label"
-            android:textSize="@dimen/text_subtitle_1"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/filter_favs_txt" />
-
-        <ImageView
-            android:id="@+id/filter_completed_btn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="8dp"
-            android:src="@drawable/ic_checked_circle"
-            android:tooltipText="@string/filter_completed"
-            app:layout_constraintBottom_toBottomOf="@id/filter_completed_txt"
-            app:layout_constraintStart_toEndOf="@id/filter_favs_txt"
-            app:layout_constraintTop_toTopOf="@id/filter_completed_txt"
-            app:tint="@color/medium_gray"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
-
-        <ImageView
-            android:id="@+id/filter_not_completed_btn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="8dp"
-            android:src="@drawable/ic_completed_empty"
-            android:tooltipText="@string/filter_not_completed"
-            app:layout_constraintBottom_toBottomOf="@id/filter_completed_txt"
-            app:layout_constraintStart_toEndOf="@id/filter_completed_btn"
-            app:layout_constraintTop_toTopOf="@id/filter_completed_txt"
-            app:tint="@color/medium_gray"
-            tools:ignore="ContentDescription"
-            tools:targetApi="o" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

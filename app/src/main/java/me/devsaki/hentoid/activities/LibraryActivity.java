@@ -542,8 +542,7 @@ public class LibraryActivity extends BaseActivity {
                 LibraryBottomSortFilterFragment.invoke(
                         this,
                         this.getSupportFragmentManager(),
-                        isGroupDisplayed(),
-                        0
+                        isGroupDisplayed()
                 );
                 break;
             default:
