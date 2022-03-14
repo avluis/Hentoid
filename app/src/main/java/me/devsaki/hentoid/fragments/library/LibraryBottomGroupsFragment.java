@@ -73,7 +73,10 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
         viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(LibraryViewModel.class);
 
-        viewModel.isCustomGroupingAvailable().observe(this, b -> isCustomGroupingAvailable = b);
+        viewModel.isCustomGroupingAvailable().observe(this, b -> {
+            isCustomGroupingAvailable = b;
+            itemAdapter.set(getGroupings());
+        });
     }
 
     @Override
@@ -102,7 +105,6 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
             selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
         }
         binding.list.setAdapter(fastAdapter);
-        itemAdapter.set(getGroupings());
 
         updateArtistVisibility();
 
