@@ -140,7 +140,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
 
         binding.sortRandom.setOnClickListener(v -> {
             viewModel.shuffleContent();
-            viewModel.updateContentOrder(); // Trigger a blank search
+            viewModel.searchContent();
         });
         binding.sortAscDesc.addOnButtonCheckedListener((g, i, b) -> {
             if (!b) return;
@@ -149,7 +149,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
                 viewModel.searchGroup();
             } else {
                 Preferences.setContentSortDesc(i == R.id.sort_descending);
-                viewModel.updateContentOrder(); // Trigger a blank search
+                viewModel.searchContent();
             }
         });
 
@@ -250,7 +250,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
                     viewModel.searchGroup();
                 } else {
                     Preferences.setContentSortField(code);
-                    viewModel.updateContentOrder(); // Trigger a blank search
+                    viewModel.searchContent();
                 }
         }
         updateSortDirection();

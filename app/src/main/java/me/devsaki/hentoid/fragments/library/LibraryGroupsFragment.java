@@ -300,6 +300,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         }
 
         setPagingMethod();
+        viewModel.searchGroup();
     }
 
     private void cancelEditMode() {
@@ -543,7 +544,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     /**
      * Initialize the paging method of the screen
      */
-    private void setPagingMethod(/*boolean isEditMode*/) {
+    private void setPagingMethod() {
         viewModel.setPagingMethod(true);
 
         itemAdapter = new ItemAdapter<>();

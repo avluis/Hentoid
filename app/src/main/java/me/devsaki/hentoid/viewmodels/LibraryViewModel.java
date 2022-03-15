@@ -328,10 +328,7 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchContent();
     }
 
-    /**
-     * Update the order of the content list
-     */
-    public void updateContentOrder() {
+    public void searchContent() {
         newContentSearch.setValue(true);
         doSearchContent();
     }

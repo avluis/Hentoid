@@ -409,7 +409,7 @@ public class LibraryActivity extends BaseActivity {
         pagerAdapter.notifyDataSetChanged();
         if (Preferences.getGroupingDisplay().equals(Grouping.FLAT)) { // Display books right away
             viewPager.setCurrentItem(1);
-            viewModel.updateContentOrder(); // Trigger a blank search
+            viewModel.searchContent(); // Trigger a blank search
         }
         enableCurrentFragment();
     }

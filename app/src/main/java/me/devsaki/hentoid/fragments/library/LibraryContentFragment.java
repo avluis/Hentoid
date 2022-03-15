@@ -326,7 +326,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         viewModel.getGroup().observe(getViewLifecycleOwner(), this::onGroupChanged);
         viewModel.getContentSearchManagerBundle().observe(getViewLifecycleOwner(), b -> contentSearchBundle = b);
 
-        viewModel.updateContentOrder(); // Trigger a blank search
+        viewModel.searchContent(); // Trigger a blank search
 
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
@@ -905,7 +905,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             case Preferences.Key.ENDLESS_SCROLL:
                 setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
                 FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
-                viewModel.updateContentOrder(); // Trigger a blank search
+                viewModel.searchContent(); // Trigger a blank search
                 break;
             default:
                 // Nothing to handle there
@@ -1457,7 +1457,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void refreshIfNeeded() {
         if (Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()) || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
-            viewModel.updateContentOrder();
+            viewModel.searchContent();
     }
 
     /**
