@@ -1584,7 +1584,9 @@ public class ObjectBoxDB {
 
     long[] selectCustomGroupedContent() {
         QueryBuilder<Content> customContentQB = store.boxFor(Content.class).query();
-        customContentQB.link(Content_.groupItems).link(GroupItem_.group).equal(Group_.grouping, Grouping.CUSTOM.getId());
+        customContentQB.link(Content_.groupItems).link(GroupItem_.group)
+                .equal(Group_.grouping, Grouping.CUSTOM.getId()) // Custom group
+                .equal(Group_.subtype, 0); // Not the Ungrouped group (subtype 1)
         return customContentQB.build().findIds();
         // See https://github.com/objectbox/objectbox-java/issues/1028
         /*
