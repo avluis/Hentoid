@@ -123,7 +123,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     // TODO doc
     private boolean firstLibraryLoad = true;
     // TODO doc
-    private boolean enabled = true;
+    private boolean enabled = false;
 
 
     public static final DiffCallback<GroupDisplayItem> GROUPITEM_DIFF_CALLBACK = new DiffCallback<GroupDisplayItem>() {
