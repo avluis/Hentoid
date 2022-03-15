@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -50,11 +51,14 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
     // Variables
     private boolean isCustomGroupingAvailable;
 
-    public static void invoke(
+    public static synchronized void invoke(
             Context context,
             FragmentManager fragmentManager) {
-        LibraryBottomSortFilterBundle builder = new LibraryBottomSortFilterBundle();
+        // Don't re-create it if already shown
+        for (Fragment fragment : fragmentManager.getFragments())
+            if (fragment instanceof LibraryBottomGroupsFragment) return;
 
+        LibraryBottomSortFilterBundle builder = new LibraryBottomSortFilterBundle();
         LibraryBottomGroupsFragment libraryBottomSheetFragment = new LibraryBottomGroupsFragment();
         libraryBottomSheetFragment.setArguments(builder.getBundle());
         ThemeHelper.setStyle(context, libraryBottomSheetFragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);

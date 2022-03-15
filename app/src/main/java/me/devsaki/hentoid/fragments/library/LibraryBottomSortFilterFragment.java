@@ -10,6 +10,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -58,10 +59,14 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
     int selectedColor;
 
 
-    public static void invoke(
+    public static synchronized void invoke(
             Context context,
             FragmentManager fragmentManager,
             boolean isGroupsDisplayed) {
+        // Don't re-create it if already shown
+        for (Fragment fragment : fragmentManager.getFragments())
+            if (fragment instanceof LibraryBottomSortFilterFragment) return;
+
         LibraryBottomSortFilterBundle builder = new LibraryBottomSortFilterBundle();
         builder.setGroupsDisplayed(isGroupsDisplayed);
 
