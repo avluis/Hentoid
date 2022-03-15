@@ -1515,8 +1515,8 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.readProgress).build().find();
     }
 
-    List<Group> selecGroupsWithNoCoverContent() {
-        return store.boxFor(Group.class).query().isNull(Group_.coverContentId).build().find();
+    List<Group> selectGroupsWithNoCoverContent() {
+        return store.boxFor(Group.class).query().isNull(Group_.coverContentId).or().equal(Group_.coverContentId, 0).build().find();
     }
 
     List<Content> selectContentWithNullCompleteField() {

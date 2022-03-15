@@ -441,7 +441,7 @@ public class DatabaseMaintenance {
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Reattaching group covers : start");
-            List<Group> groups = db.selecGroupsWithNoCoverContent();
+            List<Group> groups = db.selectGroupsWithNoCoverContent();
             Timber.i("Reattaching group covers : %s groups detected", groups.size());
             int max = groups.size();
             float pos = 1;
