@@ -51,20 +51,21 @@
         app:layout_constraintBottom_toBottomOf="@id/artist_display_txt"
         app:layout_constraintStart_toEndOf="@id/artist_display_txt"
         app:layout_constraintTop_toTopOf="@id/artist_display_txt"
+        app:checkedButton="@id/artist_display_artists"
         app:selectionRequired="true"
         app:singleSelection="false"
         tools:visibility="visible">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/artist_display_artists"
-            style="?attr/materialButtonOutlinedStyle"
+            style="@style/HentoidButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/display_artists" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/artist_display_groups"
-            style="?attr/materialButtonOutlinedStyle"
+            style="@style/HentoidButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/display_groups" />

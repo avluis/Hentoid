@@ -6,7 +6,6 @@
     android:layout_height="wrap_content"
     android:theme="@style/Theme.Light.BottomSheetDialog">
 
-
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/sort_asc_desc"
         android:layout_width="wrap_content"
@@ -20,7 +19,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sort_ascending"
-            style="?attr/materialButtonOutlinedStyle"
+            style="@style/HentoidButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/sort_ascending"
@@ -28,7 +27,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sort_descending"
-            style="?attr/materialButtonOutlinedStyle"
+            style="@style/HentoidButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/sort_descending"
@@ -36,7 +35,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sort_random"
-            style="?attr/materialButtonOutlinedStyle"
+            style="@style/HentoidButtonOutlinedStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/sort_reshuffle"
