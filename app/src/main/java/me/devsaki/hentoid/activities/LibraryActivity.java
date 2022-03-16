@@ -63,6 +63,7 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
@@ -744,7 +745,7 @@ public class LibraryActivity extends BaseActivity {
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
     }
 
-    public void showBooksInGroup(me.devsaki.hentoid.database.domains.Group group) {
+    public void showBooksInGroup(Group group) {
         enableFragment(1);
         viewModel.setGroup(group, true);
         viewPager.setCurrentItem(1);
@@ -834,7 +835,7 @@ public class LibraryActivity extends BaseActivity {
      */
     public void askDeleteItems(
             @NonNull final List<Content> contents,
-            @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups,
+            @NonNull final List<Group> groups,
             @Nullable final Runnable onSuccess,
             @NonNull final SelectExtension<?> selectExtension) {
         // TODO display the number of books and groups that will be deleted
