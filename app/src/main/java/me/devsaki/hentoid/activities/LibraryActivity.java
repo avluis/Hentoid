@@ -409,7 +409,6 @@ public class LibraryActivity extends BaseActivity {
         pagerAdapter.notifyDataSetChanged();
         if (Preferences.getGroupingDisplay().equals(Grouping.FLAT)) { // Display books right away
             viewPager.setCurrentItem(1);
-            viewModel.searchContent(); // Trigger a blank search
         }
         enableCurrentFragment();
     }
@@ -512,7 +511,8 @@ public class LibraryActivity extends BaseActivity {
             showSearchSubBar(!isGroupDisplayed(), true);
         } else {
             collapseSearchMenu();
-            actionSearchView.setQuery("", false);
+            if (actionSearchView.getQuery().length() > 0)
+                actionSearchView.setQuery("", false);
             searchClearButton.setVisibility(View.GONE);
         }
     }

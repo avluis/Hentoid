@@ -326,8 +326,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         viewModel.getGroup().observe(getViewLifecycleOwner(), this::onGroupChanged);
         viewModel.getContentSearchManagerBundle().observe(getViewLifecycleOwner(), b -> contentSearchBundle = b);
 
-        viewModel.searchContent(); // Trigger a blank search
-
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
     }
