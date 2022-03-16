@@ -311,6 +311,15 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchGroup();
     }
 
+    public void setGrouping(int groupingId) {
+        int currentGrouping = Preferences.getGroupingDisplay().getId();
+        if (groupingId != currentGrouping) {
+            Preferences.setGroupingDisplay(groupingId);
+            if (groupingId == Grouping.FLAT.getId()) doSearchContent();
+            doSearchGroup();
+        }
+    }
+
     public void clearGroupFilters() {
         groupSearchManager.clearFilters();
         doSearchGroup();
@@ -322,9 +331,9 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     /**
-     * Set the mode (endless or paged)
+     * Set Content paging mode (endless or paged)
      */
-    public void setPagingMethod(boolean isEndless) {
+    public void setContentPagingMethod(boolean isEndless) {
         contentSearchManager.setLoadAll(!isEndless);
         newContentSearch.setValue(true);
         doSearchContent();

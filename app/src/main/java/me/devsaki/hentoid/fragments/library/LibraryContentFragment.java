@@ -970,7 +970,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void setPagingMethod(boolean isEndless, boolean isEditMode) {
         // Editing will always be done in Endless mode
-        viewModel.setPagingMethod(isEndless || isEditMode);
+        viewModel.setContentPagingMethod(isEndless || isEditMode);
 
         // RecyclerView horizontal centering
         ViewGroup.LayoutParams layoutParams = recyclerView.getLayoutParams();
@@ -1218,7 +1218,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">> Library changed ! Size=%s", result.size());
-        if (!enabled) return;
+        if (!enabled && !Preferences.getGroupingDisplay().equals(Grouping.FLAT)) return;
 
         activity.get().updateTitle(result.size(), totalContentCount);
 

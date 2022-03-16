@@ -545,8 +545,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * Initialize the paging method of the screen
      */
     private void setPagingMethod() {
-        viewModel.setPagingMethod(true);
-
         itemAdapter = new ItemAdapter<>();
         fastAdapter = FastAdapter.with(itemAdapter);
         if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);

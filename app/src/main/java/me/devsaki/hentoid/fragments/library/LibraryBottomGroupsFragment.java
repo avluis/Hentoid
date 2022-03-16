@@ -16,8 +16,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.annimon.stream.Optional;
-import com.annimon.stream.Stream;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
@@ -106,7 +104,9 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
             selectExtension.setSelectOnLongClick(false);
             selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setAllowDeselection(false);
-            selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+            selectExtension.setSelectionListener((item, selected) -> {
+                if (selected) onSelectionChanged(item);
+            });
         }
         binding.list.setAdapter(fastAdapter);
 
@@ -152,17 +152,13 @@ public class LibraryBottomGroupsFragment extends BottomSheetDialogFragment {
     }
 
     /**
-     * Callback for any selection change (item added to or removed from selection)
+     * Callback for any selected item
      */
-    private void onSelectionChanged() {
-        Optional<TextItem<Integer>> item = Stream.of(selectExtension.getSelectedItems()).findFirst();
-        if (item.isPresent()) {
-            Integer code = item.get().getTag();
-            if (code != null) {
-                Preferences.setGroupingDisplay(code);
-                updateArtistVisibility();
-                viewModel.searchGroup();
-            }
+    private void onSelectionChanged(TextItem<Integer> item) {
+        Integer code = item.getTag();
+        if (code != null) {
+            viewModel.setGrouping(code);
+            updateArtistVisibility();
         }
     }
 }

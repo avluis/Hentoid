@@ -402,13 +402,14 @@ public class LibraryActivity extends BaseActivity {
         });
         viewPager.setAdapter(pagerAdapter);
 
-        updateDisplay();
+        updateDisplay(Preferences.getGroupingDisplay().getId());
     }
 
-    private void updateDisplay() {
+    private void updateDisplay(int targetGroupingId) {
         pagerAdapter.notifyDataSetChanged();
-        if (Preferences.getGroupingDisplay().equals(Grouping.FLAT)) { // Display books right away
+        if (targetGroupingId == Grouping.FLAT.getId()) { // Display books right away
             viewPager.setCurrentItem(1);
+//            viewModel.searchContent();
         }
         enableCurrentFragment();
     }
@@ -626,9 +627,13 @@ public class LibraryActivity extends BaseActivity {
                 break;
             case Preferences.Key.SD_STORAGE_URI:
             case Preferences.Key.EXTERNAL_LIBRARY_URI:
+                updateDisplay(Grouping.FLAT.getId());
+                viewModel.setGrouping(Grouping.FLAT.getId());
+                /*
                 Preferences.setGroupingDisplay(Grouping.FLAT.getId());
                 viewModel.setGroup(null, true);
-                updateDisplay();
+                updateDisplay(Grouping.FLAT.getId());
+                 */
                 break;
             default:
                 // Nothing to handle there
@@ -657,11 +662,12 @@ public class LibraryActivity extends BaseActivity {
             }
 
             // Go back to groups tab if we're not
-            goBackToGroups();
+            if (targetGroupingId != Grouping.FLAT.getId())
+                goBackToGroups();
 
             // Update screen display if needed (flat <-> the rest)
             if (grouping.equals(Grouping.FLAT) || targetGroupingId == Grouping.FLAT.getId())
-                updateDisplay();
+                updateDisplay(targetGroupingId);
 
             grouping = targetGrouping;
         }
