@@ -196,6 +196,7 @@ public class LibraryViewModel extends AndroidViewModel {
      */
     private void doSearchContent() {
         // Update search properties set directly through Preferences
+        Timber.v(">> doSearchContent");
         contentSearchManager.setContentSortField(Preferences.getContentSortField());
         contentSearchManager.setContentSortDesc(Preferences.isContentSortDesc());
         if (Preferences.getGroupingDisplay().equals(Grouping.FLAT))
@@ -245,6 +246,7 @@ public class LibraryViewModel extends AndroidViewModel {
     }
 
     private void doSearchGroup() {
+        Timber.v(">> doSearchGroup");
         // Update search properties set directly through Preferences
         groupSearchManager.setSortField(Preferences.getGroupSortField());
         groupSearchManager.setSortDesc(Preferences.isGroupSortDesc());
@@ -344,19 +346,6 @@ public class LibraryViewModel extends AndroidViewModel {
         // TODO only useful when browsing custom groups ?
         doSearchContent();
     }
-
-    /*
-    public void setGrouping(@NonNull final Grouping grouping, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly) {
-        if (grouping.equals(Grouping.FLAT)) {
-            setGroup(null, false);
-            return;
-        }
-
-        if (currentGroupsSource != null) groups.removeSource(currentGroupsSource);
-        currentGroupsSource = dao.selectGroupsLive(grouping.getId(), null, orderField, orderDesc, artistGroupVisibility, groupFavouritesOnly);
-        groups.addSource(currentGroupsSource, this::onGroupsChanged);
-    }
-     */
 
     // =========================
     // ========= CONTENT ACTIONS

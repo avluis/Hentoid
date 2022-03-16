@@ -131,7 +131,9 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             selectExtension.setSelectOnLongClick(false);
             selectExtension.setSelectWithItemUpdate(true);
             selectExtension.setAllowDeselection(false);
-            selectExtension.setSelectionListener((i, b) -> this.onSelectionChanged());
+            selectExtension.setSelectionListener((item, selected) -> {
+                if (selected) this.onSelectionChanged();
+            });
         }
         binding.list.setAdapter(fastAdapter);
         itemAdapter.set(getSortFields());
