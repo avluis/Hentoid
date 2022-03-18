@@ -349,7 +349,7 @@ public class LibraryViewModel extends AndroidViewModel {
         if (!forceRefresh && Objects.equals(group, currentGroup)) return;
 
         // Reset content sorting to TITLE when reaching the Ungrouped group with CUSTOM sorting (can't work)
-        if (group.grouping.equals(Grouping.CUSTOM) && 1 == group.getSubtype())
+        if (!group.grouping.canReorderBooks() || (group.grouping.equals(Grouping.CUSTOM) && 1 == group.getSubtype()))
             Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_TITLE);
 
         this.group.postValue(group);

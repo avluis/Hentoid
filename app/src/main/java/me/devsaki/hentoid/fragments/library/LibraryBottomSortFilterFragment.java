@@ -228,7 +228,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READS));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_SIZE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_PROGRESS));
-            if (!isUngroupedGroupDisplayed)
+            if (Preferences.getGroupingDisplay().canReorderBooks() && !isUngroupedGroupDisplayed)
                 result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_RANDOM));
         }

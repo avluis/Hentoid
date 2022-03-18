@@ -678,6 +678,7 @@ public class LibraryActivity extends BaseActivity {
                 updateDisplay(targetGroupingId);
 
             grouping = targetGrouping;
+            updateToolbar();
         }
     }
 
@@ -784,10 +785,8 @@ public class LibraryActivity extends BaseActivity {
         sortMenu.setVisible(!editMode);
 
         if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
-        else {
-            boolean isCustomOk = !currentGrouping.equals(Grouping.CUSTOM) || (group != null && group.getSubtype() != 1);
-            reorderMenu.setVisible(currentGrouping.canReorderBooks() && isCustomOk);
-        }
+        else
+            reorderMenu.setVisible(currentGrouping.canReorderBooks() && group != null && group.getSubtype() != 1);
 
         signalCurrentFragment(EV_UPDATE_TOOLBAR, null);
     }
