@@ -174,6 +174,8 @@ public class LibraryActivity extends BaseActivity {
     // Titles of each of the Viewpager2's tabs
     private final Map<Integer, String> titles = new HashMap<>();
     // TODO doc
+    private Group group = null;
+    // TODO doc
     private Grouping grouping = Preferences.getGroupingDisplay();
     // TODO doc
     private Bundle contentSearchBundle = null;
@@ -272,6 +274,10 @@ public class LibraryActivity extends BaseActivity {
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
         viewModel.getContentSearchManagerBundle().observe(this, b -> contentSearchBundle = b);
+        viewModel.getGroup().observe(this, g -> {
+            group = g;
+            updateToolbar();
+        });
         viewModel.getGroupSearchManagerBundle().observe(this, b -> {
             groupSearchBundle = b;
             GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
@@ -544,7 +550,8 @@ public class LibraryActivity extends BaseActivity {
                 LibraryBottomSortFilterFragment.invoke(
                         this,
                         this.getSupportFragmentManager(),
-                        isGroupDisplayed()
+                        isGroupDisplayed(),
+                        group != null && group.grouping.equals(Grouping.CUSTOM) && 1 == group.getSubtype()
                 );
                 break;
             default:
@@ -777,7 +784,10 @@ public class LibraryActivity extends BaseActivity {
         sortMenu.setVisible(!editMode);
 
         if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
-        else reorderMenu.setVisible(currentGrouping.canReorderBooks());
+        else {
+            boolean isCustomOk = !currentGrouping.equals(Grouping.CUSTOM) || (group != null && group.getSubtype() != 1);
+            reorderMenu.setVisible(currentGrouping.canReorderBooks() && isCustomOk);
+        }
 
         signalCurrentFragment(EV_UPDATE_TOOLBAR, null);
     }

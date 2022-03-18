@@ -49,6 +49,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
     private SelectExtension<TextItem<Integer>> selectExtension;
 
     // Variables
+    private boolean isUngroupedGroupDisplayed;
     private boolean isGroupsDisplayed;
     private boolean favouriteFilter;
     private boolean completedFilter;
@@ -62,13 +63,15 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
     public static synchronized void invoke(
             Context context,
             FragmentManager fragmentManager,
-            boolean isGroupsDisplayed) {
+            boolean isGroupsDisplayed,
+            boolean isUngroupedGroupDisplayed) {
         // Don't re-create it if already shown
         for (Fragment fragment : fragmentManager.getFragments())
             if (fragment instanceof LibraryBottomSortFilterFragment) return;
 
         LibraryBottomSortFilterBundle builder = new LibraryBottomSortFilterBundle();
         builder.setGroupsDisplayed(isGroupsDisplayed);
+        builder.setUngroupedGroupDisplayed(isUngroupedGroupDisplayed);
 
         LibraryBottomSortFilterFragment libraryBottomSheetFragment = new LibraryBottomSortFilterFragment();
         libraryBottomSheetFragment.setArguments(builder.getBundle());
@@ -84,6 +87,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
         if (bundle != null) {
             LibraryBottomSortFilterBundle parser = new LibraryBottomSortFilterBundle(bundle);
             isGroupsDisplayed = parser.isGroupsDisplayed();
+            isUngroupedGroupDisplayed = parser.isUngroupedGroupDisplayed();
         }
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
@@ -224,7 +228,8 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READS));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_SIZE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_PROGRESS));
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
+            if (!isUngroupedGroupDisplayed)
+                result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_RANDOM));
         }
         return result;

@@ -348,8 +348,13 @@ public class LibraryViewModel extends AndroidViewModel {
         Group currentGroup = this.group.getValue();
         if (!forceRefresh && Objects.equals(group, currentGroup)) return;
 
+        // Reset content sorting to TITLE when reaching the Ungrouped group with CUSTOM sorting (can't work)
+        if (group.grouping.equals(Grouping.CUSTOM) && 1 == group.getSubtype())
+            Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_TITLE);
+
         this.group.postValue(group);
         contentSearchManager.setGroup(group);
+
         newContentSearch.setValue(true);
         // Don't search now as the UI will inevitably search as well upon switching to books view
         // TODO only useful when browsing custom groups ?
