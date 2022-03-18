@@ -24,6 +24,7 @@
 	  {"sourceName":"HITOMI", "status":"RED", "fixedByBuild":"480"},
 	  {"sourceName":"MRM", "status":"ORANGE", "fixedByBuild":"467"},
 	  {"sourceName":"HENTAIFOX", "status":"RED", "fixedByBuild":"500"},
+	  {"sourceName":"IMHENTAI", "status":"GREY"},
 	  {"sourceName":"FAKKU2", "status":"BLACK"},
 	  {"sourceName":"HENTAICAFE", "status":"BLACK"},
 	  {"sourceName":"NEXUS", "status":"BLACK"}
