@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -781,11 +782,11 @@ public class ObjectBoxDB {
         return selectContentUniversalContentByGroupItem(queryStr, groupId, filterBookFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
     }
 
-    public List<Long> getShuffledIds() {
+    List<Long> getShuffledIds() {
         return Stream.of(store.boxFor(ShuffleRecord.class).getAll()).map(ShuffleRecord::getContentId).toList();
     }
 
-    public void shuffleContentIds() {
+    void shuffleContentIds() {
         // Clear previous shuffled list
         Box<ShuffleRecord> shuffleStore = store.boxFor(ShuffleRecord.class);
         shuffleStore.removeAll();
@@ -796,19 +797,21 @@ public class ObjectBoxDB {
     }
 
     private long[] shuffleRandomSortId(Query<Content> query) {
-        List<Long> queryIds = Helper.getListFromPrimitiveArray(query.findIds());
+        Set<Long> queryIds = Helper.getSetFromPrimitiveArray(query.findIds());
         List<Long> shuffleIds = getShuffledIds();
+        LinkedHashSet<Long> shuffledSet = new LinkedHashSet<>(shuffleIds.size());
+        shuffledSet.addAll(shuffleIds);
 
         // Keep common IDs
-        shuffleIds.retainAll(queryIds);
+        shuffledSet.retainAll(queryIds);
 
         // Isolate new IDs that have never been shuffled and append them at the end
-        if (shuffleIds.size() < queryIds.size()) {
-            queryIds.removeAll(shuffleIds);
-            shuffleIds.addAll(queryIds);
+        if (shuffledSet.size() < queryIds.size()) {
+            queryIds.removeAll(shuffledSet);
+            shuffledSet.addAll(queryIds);
         }
 
-        return Helper.getPrimitiveArrayFromList(shuffleIds);
+        return Helper.getPrimitiveArrayFromList(Stream.of(shuffledSet).toList());
     }
 
     long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
@@ -946,7 +949,7 @@ public class ObjectBoxDB {
                 if (attr.isExcluded())
                     results.removeAll(idsAsList);
                 else
-                    results.retainAll(idsAsList);
+                    results.retainAll(idsAsList); // Careful with retainAll performance
             }
         }
 
@@ -1550,8 +1553,10 @@ public class ObjectBoxDB {
             query.in(Content_.status, libraryQueueStatus);
         else
             query.in(Content_.status, libraryStatus);
+        /* TODO temp
         query.notNull(Content_.storageUri);
         query.notEqual(Content_.storageUri, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
+         */
         if (nonFavouritesOnly) query.equal(Content_.favourite, false);
         if (orderField > -1) {
             Property<Content> field = getPropertyFromField(orderField);

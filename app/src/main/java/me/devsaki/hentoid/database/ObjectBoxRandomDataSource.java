@@ -4,11 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.paging.DataSource;
 import androidx.paging.PositionalDataSource;
 
+import com.annimon.stream.Stream;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
@@ -54,26 +58,28 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
 
     private List<T> shuffleRandomSort(Query<T> query, int startPosition, int loadCount) {
         LazyList<T> lazyList = query.findLazy();
-        List<Long> queryIds = Helper.getListFromPrimitiveArray(query.findIds());
+        Set<Long> queryIds = Helper.getSetFromPrimitiveArray(query.findIds());
         Map<Long, Integer> idsToIndexes = new HashMap<>();
-        for (int i = 0; i < queryIds.size(); i++) {
-            idsToIndexes.put(queryIds.get(i), i);
-        }
+        int idx = 0;
+        for (Long id : queryIds) idsToIndexes.put(id, idx++);
+        LinkedHashSet<Long> shuffledSet = new LinkedHashSet<>(shuffleIds.size());
+        shuffledSet.addAll(shuffleIds);
 
-        // Keep common IDs
-        shuffleIds.retainAll(queryIds);
+        // Keep common IDs (intersect)
+        shuffledSet.retainAll(queryIds);
 
         // Isolate new IDs that have never been shuffled and append them at the end
-        if (shuffleIds.size() < queryIds.size()) {
-            queryIds.removeAll(shuffleIds);
-            shuffleIds.addAll(queryIds);
+        if (shuffledSet.size() < queryIds.size()) {
+            queryIds.removeAll(shuffledSet);
+            shuffledSet.addAll(queryIds);
         }
 
-        int maxPage = Math.min(startPosition + loadCount, shuffleIds.size());
+        int maxPage = Math.min(startPosition + loadCount, shuffledSet.size());
 
+        List<Long> shuffledListFinal = Stream.of(shuffledSet).toList();
         List<T> result = new ArrayList<>();
         for (int i = startPosition; i < maxPage; i++) {
-            Integer index = idsToIndexes.get(shuffleIds.get(i));
+            Integer index = idsToIndexes.get(shuffledListFinal.get(i));
             if (index != null)
                 result.add(lazyList.get(index));
         }

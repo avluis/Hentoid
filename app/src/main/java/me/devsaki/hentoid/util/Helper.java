@@ -35,6 +35,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -94,11 +95,11 @@ public final class Helper {
     }
 
     public static Set<Long> getSetFromPrimitiveArray(long[] input) {
-        Set<Long> list = new HashSet<>(input.length);
-        for (long n : input) list.add(n);
-        return list;
+        Set<Long> set = new HashSet<>(input.length);
+        for (long n : input) set.add(n);
+        return set;
     }
-
+    
     /**
      * Create a Collections.List from the given array of primitive values
      *

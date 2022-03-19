@@ -1463,6 +1463,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
+        Timber.v(">> differEndCallback");
         if (topItemPosition > -1) {
             int targetPos = topItemPosition;
             listRefreshDebouncer.submit(targetPos);
