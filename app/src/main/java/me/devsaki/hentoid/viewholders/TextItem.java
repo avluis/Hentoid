@@ -49,6 +49,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         this.touchHelper = null;
         this.reformatCase = true;
         this.isHighlighted = false;
+        this.setSelectable(false);
     }
 
     public TextItem(String text, T tag, boolean reformatCase, boolean isSelected) {
@@ -60,6 +61,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         this.reformatCase = reformatCase;
         this.isHighlighted = false;
         this.setSelected(isSelected);
+        this.setSelectable(true);
     }
 
     public TextItem(String text, T tag, boolean draggable, boolean reformatCase, boolean isHighlighted, ItemTouchHelper touchHelper) {
@@ -70,6 +72,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
         this.touchHelper = touchHelper;
         this.reformatCase = reformatCase;
         this.isHighlighted = isHighlighted;
+        this.setSelectable(true);
     }
 
     @Nullable
@@ -147,6 +150,7 @@ public class TextItem<T> extends AbstractItem<TextItem.TextViewHolder<T>> implem
             }
 
             if (item.isSelected()) checkedIndicator.setVisibility(View.VISIBLE);
+            else if (item.isSelectable()) checkedIndicator.setVisibility(View.INVISIBLE);
             else checkedIndicator.setVisibility(View.GONE);
 
             title.setText(item.getDisplayText());

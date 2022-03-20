@@ -472,7 +472,7 @@
     <!-- Groupings -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
-    <string name="groups_by_dl_date">By Download date</string>
+    <string name="groups_by_dl_date">By Download processing date</string>
     <string name="groups_custom">Custom groups</string>
     <string name="no_artist_group_name">[no artist]</string>
 
@@ -484,7 +484,7 @@
     <string name="sort_title">Title</string>
     <string name="sort_artist">Artist</string>
     <string name="sort_pages">Pages</string>
-    <string name="sort_dl_date">Download date</string>
+    <string name="sort_dl_date">Download processing date</string>
     <string name="sort_read_date">Read date</string>
     <string name="sort_reads">Reads</string>
     <string name="sort_size">Size</string>
