@@ -56,7 +56,7 @@ public class TsuminoContent extends BaseContentParser {
         content.setCoverImageUrl(coverUrl);
         content.setTitle(StringHelper.removeNonPrintableChars(title));
 
-        content.setUploadDate(Helper.parseDateToEpoch(uploadDate.trim(), "yyyy MMMM dd")); // e.g. 2021 December 13
+        content.setUploadDate(Helper.parseDateToEpoch(uploadDate, "yyyy MMMM dd")); // e.g. 2021 December 13
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, TSUMINO);

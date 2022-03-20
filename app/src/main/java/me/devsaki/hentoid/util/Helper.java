@@ -423,6 +423,7 @@ public final class Helper {
 
     // TODO doc
     public static long parseDatetimeToEpoch(@NonNull String date, @NonNull String pattern) {
+        final String dateClean = date.trim().replaceAll("(?<=\\d)(st|nd|rd|th)", "");
         final DateTimeFormatter formatter = DateTimeFormatter
                 .ofPattern(pattern)
                 .withResolverStyle(ResolverStyle.LENIENT)
@@ -430,7 +431,7 @@ public final class Helper {
                 .withZone(ZoneId.systemDefault());
 
         try {
-            return Instant.from(formatter.parse(date)).toEpochMilli();
+            return Instant.from(formatter.parse(dateClean)).toEpochMilli();
         } catch (DateTimeParseException e) {
             Timber.w(e);
         }
@@ -438,6 +439,7 @@ public final class Helper {
     }
 
     public static long parseDateToEpoch(@NonNull String date, @NonNull String pattern) {
+        final String dateClean = date.trim().replaceAll("(?<=\\d)(st|nd|rd|th)", "");
         final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                 .appendPattern(pattern)
                 .parseDefaulting(ChronoField.NANO_OF_DAY, 0) // To allow passing dates without time
@@ -447,7 +449,7 @@ public final class Helper {
                 .withZone(ZoneId.systemDefault());
 
         try {
-            return Instant.from(formatter.parse(date)).toEpochMilli();
+            return Instant.from(formatter.parse(dateClean)).toEpochMilli();
         } catch (DateTimeParseException e) {
             Timber.w(e);
         }
