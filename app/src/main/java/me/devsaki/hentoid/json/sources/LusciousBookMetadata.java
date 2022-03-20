@@ -29,6 +29,7 @@ public class LusciousBookMetadata {
         private String id;
         private String title;
         private String url;
+        private String created;
         private Integer number_of_pictures;
         private CoverInfo cover;
         private LanguageInfo language;
@@ -59,6 +60,7 @@ public class LusciousBookMetadata {
             return content.setStatus(StatusContent.IGNORED);
 
         content.setUrl(info.url);
+        if (!info.created.isEmpty()) content.setUploadDate(Long.parseLong(info.created));
 
         content.setTitle(StringHelper.removeNonPrintableChars(info.title));
 
