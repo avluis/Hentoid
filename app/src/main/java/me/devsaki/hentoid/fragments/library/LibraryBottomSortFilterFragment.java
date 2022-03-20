@@ -217,13 +217,14 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
         if (isGroupsDisplayed) {
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_TITLE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CHILDREN));
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
         } else {
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_TITLE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_ARTIST));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_NB_PAGES));
-            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_DATE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READS));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_SIZE));

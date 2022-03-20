@@ -962,8 +962,10 @@ public class LibraryActivity extends BaseActivity {
                 return R.string.sort_artist;
             case (Preferences.Constant.ORDER_FIELD_NB_PAGES):
                 return R.string.sort_pages;
-            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE):
                 return R.string.sort_dl_date;
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE):
+                return R.string.sort_dl_completion_date;
             case (Preferences.Constant.ORDER_FIELD_READ_DATE):
                 return R.string.sort_read_date;
             case (Preferences.Constant.ORDER_FIELD_READS):

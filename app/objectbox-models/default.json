@@ -41,7 +41,7 @@
     },
     {
       "id": "2:5880334030341287801",
-      "lastPropertyId": "28:576356326453963220",
+      "lastPropertyId": "29:6098325687122950518",
       "name": "Content",
       "properties": [
         {
@@ -185,6 +185,11 @@
           "id": "28:576356326453963220",
           "name": "manuallyMerged",
           "type": 1
+        },
+        {
+          "id": "29:6098325687122950518",
+          "name": "downloadCompletionDate",
+          "type": 6
         }
       ],
       "relations": [

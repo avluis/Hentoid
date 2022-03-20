@@ -95,11 +95,11 @@ public final class Preferences {
                     isDesc = true;
                     break;
                 case (Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST):
-                    field = Constant.ORDER_FIELD_DOWNLOAD_DATE;
+                    field = Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE;
                     isDesc = true;
                     break;
                 case (Constant.ORDER_CONTENT_LAST_DL_DATE_LAST):
-                    field = Constant.ORDER_FIELD_DOWNLOAD_DATE;
+                    field = Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE;
                     break;
                 case (Constant.ORDER_CONTENT_RANDOM):
                     field = Constant.ORDER_FIELD_RANDOM;
@@ -1022,13 +1022,14 @@ public final class Preferences {
         public static final int ORDER_FIELD_TITLE = 0;
         public static final int ORDER_FIELD_ARTIST = 1;
         public static final int ORDER_FIELD_NB_PAGES = 2;
-        public static final int ORDER_FIELD_DOWNLOAD_DATE = 3;
+        public static final int ORDER_FIELD_DOWNLOAD_PROCESSING_DATE = 3;
         public static final int ORDER_FIELD_UPLOAD_DATE = 4;
         public static final int ORDER_FIELD_READ_DATE = 5;
         public static final int ORDER_FIELD_READS = 6;
         public static final int ORDER_FIELD_SIZE = 7;
         public static final int ORDER_FIELD_CHILDREN = 8; // Groups only
         public static final int ORDER_FIELD_READ_PROGRESS = 9;
+        public static final int ORDER_FIELD_DOWNLOAD_COMPLETION_DATE = 10;
         public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 

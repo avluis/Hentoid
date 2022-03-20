@@ -29,6 +29,7 @@ import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -302,6 +303,18 @@ public class DatabaseMaintenance {
             pos = 1;
             for (Content c : contents) {
                 c.setManuallyMerged(false);
+                db.updateContentObject(c);
+                emitter.onNext(pos++ / max);
+            }
+            contents = db.selectContentWithNullDlCompletionDateField();
+            Timber.i("Set default value for Content.downloadCompletionDate field : %s items detected", contents.size());
+            max = contents.size();
+            pos = 1;
+            for (Content c : contents) {
+                if (ContentHelper.isInLibrary(c.getStatus()))
+                    c.setDownloadCompletionDate(c.getDownloadDate());
+                else
+                    c.setDownloadCompletionDate(0);
                 db.updateContentObject(c);
                 emitter.onNext(pos++ / max);
             }

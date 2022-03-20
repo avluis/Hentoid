@@ -511,8 +511,10 @@ public class ObjectBoxDB {
                 return Content_.author; // Might not be what users want when there are multiple authors
             case Preferences.Constant.ORDER_FIELD_NB_PAGES:
                 return Content_.qtyPages;
-            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE:
+            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE:
                 return Content_.downloadDate;
+            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE:
+                return Content_.downloadCompletionDate;
             case Preferences.Constant.ORDER_FIELD_UPLOAD_DATE:
                 return Content_.uploadDate;
             case Preferences.Constant.ORDER_FIELD_READ_DATE:
@@ -1532,6 +1534,10 @@ public class ObjectBoxDB {
 
     List<Content> selectContentWithNullMergeField() {
         return store.boxFor(Content.class).query().isNull(Content_.manuallyMerged).build().find();
+    }
+
+    List<Content> selectContentWithNullDlCompletionDateField() {
+        return store.boxFor(Content.class).query().isNull(Content_.downloadCompletionDate).build().find();
     }
 
     Query<Content> selectOldStoredContentQ() {
