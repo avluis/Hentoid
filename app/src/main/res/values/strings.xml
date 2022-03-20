@@ -66,7 +66,6 @@
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
     <string name="menu_fav">Toggle favourite filter</string>
-    <string name="menu_comp">Toggle completed filter</string>
     <string name="menu_mark_fav">Toggle favourite</string>
     <string name="menu_group_new">New group</string>
     <string name="menu_edit_order">Reorder</string>
@@ -477,7 +476,6 @@
     <string name="no_artist_group_name">[no artist]</string>
 
     <!-- Sort / filter bottom panel -->
-    <string name="sort">Sort</string>
     <string name="sort_ascending">Ascending</string>
     <string name="sort_descending">Descending</string>
     <string name="sort_reshuffle">Reshuffle</string>
@@ -494,12 +492,9 @@
     <string name="sort_custom">Custom</string>
     <string name="sort_invalid">-invalid-</string>
     <string name="sort_books">Books</string>
-    <string name="filter">Filter</string>
-    <string name="filter_favourites">Favourites</string>
     <string name="library_filter_favourite_help">Toggle display of favourite books</string>
-    <string name="filter_completed_label">Completed</string>
-    <string name="filter_completed">Show completed only</string>
-    <string name="filter_not_completed">Show not completed only</string>
+    <string name="filter_completed">Show completed books only</string>
+    <string name="filter_not_completed">Show not completed books only</string>
 
     <!-- Groups bottom panel -->
     <string name="display_groups_title">Display groups</string>
