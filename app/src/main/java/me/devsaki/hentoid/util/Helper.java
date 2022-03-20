@@ -31,6 +31,7 @@ import org.threeten.bp.Instant;
 import org.threeten.bp.ZoneId;
 import org.threeten.bp.format.DateTimeFormatter;
 import org.threeten.bp.format.DateTimeParseException;
+import org.threeten.bp.format.ResolverStyle;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -421,6 +422,7 @@ public final class Helper {
     public static long parseDateToEpoch(@NonNull String date, @NonNull String pattern) {
         final DateTimeFormatter formatter = DateTimeFormatter
                 .ofPattern(pattern)
+                .withResolverStyle(ResolverStyle.LENIENT)
                 .withZone(ZoneId.systemDefault());
         try {
             return Instant.from(formatter.parse(date)).toEpochMilli();

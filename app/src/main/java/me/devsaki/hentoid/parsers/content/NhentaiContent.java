@@ -16,6 +16,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.parsers.images.NhentaiParser;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -31,6 +32,8 @@ public class NhentaiContent extends BaseContentParser {
     // Fallback value for title (see #449)
     @Selector(value = "#info h1", defValue = NO_TITLE)
     private String titleAlt;
+    @Selector(value = "#tags time", attr = "datetime", defValue = "")
+    private String uploadDate;
 
     @Selector(value = "#info a[href*='/artist']")
     private List<Element> artists;
@@ -67,6 +70,8 @@ public class NhentaiContent extends BaseContentParser {
         String titleDef = title.trim();
         if (titleDef.isEmpty()) titleDef = titleAlt.trim();
         content.setTitle(StringHelper.removeNonPrintableChars(titleDef));
+
+        content.setUploadDate(Helper.parseDateToEpoch(uploadDate,"yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")); // e.g. 2022-03-20T00:09:43.309901+00:00
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, "name", Site.NHENTAI);
