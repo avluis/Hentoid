@@ -20,7 +20,7 @@ public class HitomiGalleryInfo {
     private String title;
     private List<HitomiCharacter> characters;
     private List<HitomiGroup> groups;
-    private String date; // Format : "YYYY-MM-DD HH:MM:SS-05" (05 being the timezone of the server ?)
+    private String date; // Format : "YYYY-MM-DD HH:MM:SS-05" (-05 being the timezone of the server ?)
     private String language;
     private String language_localname;
     private String language_url;
