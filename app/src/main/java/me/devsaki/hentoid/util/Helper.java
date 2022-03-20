@@ -30,8 +30,10 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import org.threeten.bp.Instant;
 import org.threeten.bp.ZoneId;
 import org.threeten.bp.format.DateTimeFormatter;
+import org.threeten.bp.format.DateTimeFormatterBuilder;
 import org.threeten.bp.format.DateTimeParseException;
 import org.threeten.bp.format.ResolverStyle;
+import org.threeten.bp.temporal.ChronoField;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -42,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
@@ -419,11 +422,30 @@ public final class Helper {
     }
 
     // TODO doc
-    public static long parseDateToEpoch(@NonNull String date, @NonNull String pattern) {
+    public static long parseDatetimeToEpoch(@NonNull String date, @NonNull String pattern) {
         final DateTimeFormatter formatter = DateTimeFormatter
                 .ofPattern(pattern)
                 .withResolverStyle(ResolverStyle.LENIENT)
+                .withLocale(Locale.ENGLISH)
                 .withZone(ZoneId.systemDefault());
+
+        try {
+            return Instant.from(formatter.parse(date)).toEpochMilli();
+        } catch (DateTimeParseException e) {
+            Timber.w(e);
+        }
+        return 0;
+    }
+
+    public static long parseDateToEpoch(@NonNull String date, @NonNull String pattern) {
+        final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                .appendPattern(pattern)
+                .parseDefaulting(ChronoField.NANO_OF_DAY, 0) // To allow passing dates without time
+                .toFormatter()
+                .withResolverStyle(ResolverStyle.LENIENT)
+                .withLocale(Locale.ENGLISH) // To parse english expressions (e.g. month name)
+                .withZone(ZoneId.systemDefault());
+
         try {
             return Instant.from(formatter.parse(date)).toEpochMilli();
         } catch (DateTimeParseException e) {

@@ -69,7 +69,7 @@ public class HitomiGalleryInfo {
     public void updateContent(@NonNull Content content) {
         content.setTitle(StringHelper.removeNonPrintableChars(title));
 
-        content.setUploadDate(Helper.parseDateToEpoch(date, "yyyy-MM-dd HH:mm:ssx"));
+        content.setUploadDate(Helper.parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx"));
 
         AttributeMap attributes = new AttributeMap();
         if (parodys != null)

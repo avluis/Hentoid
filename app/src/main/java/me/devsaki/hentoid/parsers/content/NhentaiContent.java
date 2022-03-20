@@ -71,7 +71,7 @@ public class NhentaiContent extends BaseContentParser {
         if (titleDef.isEmpty()) titleDef = titleAlt.trim();
         content.setTitle(StringHelper.removeNonPrintableChars(titleDef));
 
-        content.setUploadDate(Helper.parseDateToEpoch(uploadDate,"yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")); // e.g. 2022-03-20T00:09:43.309901+00:00
+        content.setUploadDate(Helper.parseDatetimeToEpoch(uploadDate,"yyyy-MM-dd'T'HH:mm:ss'.'nnnnnnXXX")); // e.g. 2022-03-20T00:09:43.309901+00:00
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, "name", Site.NHENTAI);
