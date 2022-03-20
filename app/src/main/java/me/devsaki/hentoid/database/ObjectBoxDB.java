@@ -1540,6 +1540,10 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().isNull(Content_.downloadCompletionDate).build().find();
     }
 
+    List<Content> selectContentWithInvalidUploadDate() {
+        return store.boxFor(Content.class).query().greater(Content_.uploadDate, 0).less(Content_.uploadDate, 10000000000L).build().find();
+    }
+
     Query<Content> selectOldStoredContentQ() {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, new int[]{

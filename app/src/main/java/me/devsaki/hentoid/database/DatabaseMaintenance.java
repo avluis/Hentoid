@@ -318,6 +318,15 @@ public class DatabaseMaintenance {
                 db.updateContentObject(c);
                 emitter.onNext(pos++ / max);
             }
+            contents = db.selectContentWithInvalidUploadDate();
+            Timber.i("Fixing invalid upload dates : %s items detected", contents.size());
+            max = contents.size();
+            pos = 1;
+            for (Content c : contents) {
+                c.setUploadDate(c.getUploadDate() * 1000);
+                db.updateContentObject(c);
+                emitter.onNext(pos++ / max);
+            }
             Timber.i("Set default ObjectBox properties : done");
         } finally {
             db.closeThreadResources();
