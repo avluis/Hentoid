@@ -27,6 +27,11 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
+import org.threeten.bp.Instant;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.format.DateTimeFormatter;
+import org.threeten.bp.format.DateTimeParseException;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,7 +40,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -99,7 +103,7 @@ public final class Helper {
         for (long n : input) set.add(n);
         return set;
     }
-    
+
     /**
      * Create a Collections.List from the given array of primitive values
      *
@@ -411,6 +415,19 @@ public final class Helper {
      */
     public static int getRandomInt(int maxExclude) {
         return rand.nextInt(maxExclude);
+    }
+
+    // TODO doc
+    public static long parseDateToEpoch(@NonNull String date, @NonNull String pattern) {
+        final DateTimeFormatter formatter = DateTimeFormatter
+                .ofPattern(pattern)
+                .withZone(ZoneId.systemDefault());
+        try {
+            return Instant.from(formatter.parse(date)).toEpochMilli();
+        } catch (DateTimeParseException e) {
+            Timber.w(e);
+        }
+        return 0;
     }
 
     /**
