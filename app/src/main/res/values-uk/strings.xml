@@ -29,6 +29,7 @@
         <item quantity="few">файла</item>
         <item quantity="many">файлів</item>
     </plurals>
+    <string name="groups">Групи</string>
     <string name="pause">Призупинити</string>
     <string name="stop">Зупинити</string>
     <string name="resume">Відновити</string>
@@ -39,6 +40,7 @@
     <string name="open_folder">Відкрити папку</string>
     <string name="_default">за замовчуванням</string>
     <string name="empty">порожньо</string>
+    <string name="none">Ніяк</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">Перехід на API 29</string>
@@ -70,8 +72,8 @@
     <string name="menu_comp">Показати завершені</string>
     <string name="menu_mark_fav">Обране</string>
     <string name="menu_group_new">Нова група</string>
-    <string name="menu_edit_order">Редагувати порядок</string>
-    <string name="menu_edit_name">Редагувати назву</string>
+    <string name="menu_edit_order">Пересортувати</string>
+    <string name="menu_edit_name">Перейменувати</string>
     <string name="menu_edit_cancel">Скасувати редагування</string>
     <string name="menu_edit_warning_custom">Нове користувальницьке сортування замінить попереднє.</string>
     <string name="menu_order">Сортувати книги</string>
@@ -361,9 +363,6 @@
     <string name="resume_closed">Відновити читання\?</string>
     <string name="open_drawer">Відкрити меню</string>
     <string name="close_drawer">Закрити меню</string>
-    <string name="ask_filter_completed">Як би ви хотіли поводитися з дочитаними книгами?</string>
-    <string name="filter_completed">Показувати тільки дочитані</string>
-    <string name="filter_not_completed">Показувати тільки недочитані</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Видалити <x:g id="count" example="1">%d</x:g> вибраний елемент\?</item>
         <item quantity="few">Видалити <x:g id="count" example="2">%d</x:g> вибраних елементи\?</item>
@@ -514,14 +513,18 @@
     <string name="merge_success">Успішно поєднано</string>
     <string name="split_success">Успішно розділено</string>
 
-    <!-- Groups -->
+    <!-- Groupings -->
     <string name="groups_flat">Всі книги</string>
     <string name="groups_by_artist">За художниками</string>
     <string name="groups_by_dl_date">За датою завантаження</string>
-    <string name="groups_custom">Своє</string>
+    <string name="groups_custom">Свої групи</string>
     <string name="no_artist_group_name">[без художника]</string>
 
-    <!-- Sorting fields -->
+    <!-- Sort / filter bottom panel -->
+    <string name="sort">Сортування</string>
+    <string name="sort_ascending">За зростаючою</string>
+    <string name="sort_descending">За спадною</string>
+    <string name="sort_reshuffle">Пересортувати</string>
     <string name="sort_title">За назвами</string>
     <string name="sort_artist">За художниками</string>
     <string name="sort_pages">За сторінками</string>
@@ -534,6 +537,18 @@
     <string name="sort_custom">Своє</string>
     <string name="sort_invalid">-невірно-</string>
     <string name="sort_books">За кількістю книг</string>
+    <string name="filter">Фільтр</string>
+    <string name="filter_favourites">Обране</string>
+    <string name="library_filter_favourite_help">Відображення обраних книг</string>
+    <string name="filter_completed_label">Завершене</string>
+    <string name="filter_completed">Відображається тільки завершене</string>
+    <string name="filter_not_completed">Відображається не тільки завершене</string>
+
+    <!-- Groups bottom panel -->
+    <string name="display_groups_title">Показати групи</string>
+    <string name="display">Показати</string>
+    <string name="display_artists">Художники</string>
+    <string name="display_groups">Групи</string>
 
     <!-- Item card tooltips -->
     <string name="drag_help">Перемістити елемент</string>
@@ -543,9 +558,6 @@
     <string name="fav_help">Додати/видалити з обраного</string>
 
     <!-- Visibility fields -->
-    <string name="show_artists">Художники</string>
-    <string name="show_groups">Групи</string>
-    <string name="show_artists_and_groups">Художники та групи</string>
     <string name="launchcode_present">У вас вже є ця книга. Шукати в інших джерелах\?</string>
 
     <!-- Updates -->

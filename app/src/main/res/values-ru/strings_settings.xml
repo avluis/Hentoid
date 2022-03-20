@@ -13,6 +13,9 @@
     <string name="pref_endless_scroll_summary_on">Прокручивайте, сколько вашей душе угодно</string>
     <string name="pref_quantity_per_page_title">Кол-во элементов на странице</string>
     <string name="pref_quantity_per_page_summary">Определяет, сколько элементов отображается на одной странице в списке загрузок\nСейчас: <x:g id="count" example="10">%s</x:g> элементов</string>
+    <string name="pref_top_fab_title">Кнопка перехода наверх</string>
+    <string name="pref_top_fab_summary_off">Отключена</string>
+    <string name="pref_top_fab_summary_on">Включена</string>
     <string name="pref_cat_search">Расширенный поиск</string>
     <string name="pref_attributes_list_order_title">Способ сортировки отображаемых метаданных</string>
     <string name="pref_attributes_list_count_title">Отображать число доступных книг</string>

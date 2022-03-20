@@ -13,6 +13,9 @@
     <string name="pref_endless_scroll_summary_on">Прокручуйте, скільки вашій душі завгодно</string>
     <string name="pref_quantity_per_page_title">Кількість елементів на сторінці</string>
     <string name="pref_quantity_per_page_summary">Визначає, скільки елементів відображається на одній сторінці у списку завантажень\nЗараз: <x:g id="count" example="10">%s</x:g> елементів</string>
+    <string name="pref_top_fab_title">Кнопка переходу наверх</string>
+    <string name="pref_top_fab_summary_off">Вимкнена</string>
+    <string name="pref_top_fab_summary_on">Увімкнена</string>
     <string name="pref_cat_search">Розширений пошук</string>
     <string name="pref_attributes_list_order_title">Спосіб сортування метаданих</string>
     <string name="pref_attributes_list_count_title">Відображати кількість доступних книг</string>
