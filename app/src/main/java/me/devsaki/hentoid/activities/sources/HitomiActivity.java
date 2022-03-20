@@ -7,17 +7,10 @@ import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
-import java.util.List;
 import java.util.Map;
 
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.parsers.images.HitomiParser;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import timber.log.Timber;
 
 /**
  * Implements Hitomi.la source
@@ -69,7 +62,7 @@ public class HitomiActivity extends BaseWebActivity {
         return builder.toString();
     }
 
-    private class HitomiWebClient extends CustomWebViewClient {
+    private static class HitomiWebClient extends CustomWebViewClient {
 
         HitomiWebClient(Site site, String[] filter, CustomWebActivity activity) {
             super(site, filter, activity);
@@ -88,6 +81,7 @@ public class HitomiActivity extends BaseWebActivity {
             return super.shouldInterceptRequest(view, request);
         }
 
+        /*
         @Override
         protected Content processContent(@NonNull Content content, @NonNull String url, boolean quickDownload) {
             // Wait until the page's resources are all loaded
@@ -110,5 +104,6 @@ public class HitomiActivity extends BaseWebActivity {
 
             return super.processContent(content, url, quickDownload);
         }
+         */
     }
 }
