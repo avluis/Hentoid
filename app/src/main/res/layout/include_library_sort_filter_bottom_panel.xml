@@ -33,17 +33,27 @@
             android:text="@string/sort_descending"
             app:icon="@drawable/ic_simple_arrow_down" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/sort_random"
-            style="@style/HentoidButtonOutlinedStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/sort_reshuffle"
-            android:visibility="gone"
-            app:icon="@drawable/ic_menu_sort_random"
-            tools:visibility="visible" />
-
     </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sort_random"
+        style="@style/HentoidMaterialButtonOutlinedStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sort_reshuffle"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:icon="@drawable/ic_menu_sort_random"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/horizontal_barrier"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="sort_asc_desc,sort_random" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
@@ -53,7 +63,7 @@
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/sort_asc_desc"
+        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
         app:spanCount="2"
         tools:listitem="@layout/item_text" />
 
