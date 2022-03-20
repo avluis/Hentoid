@@ -92,11 +92,11 @@ public class HitomiActivity extends BaseWebActivity {
         protected Content processContent(@NonNull Content content, @NonNull String url, boolean quickDownload) {
             // Wait until the page's resources are all loaded
             if (!quickDownload) {
-                Timber.i(">> not loading");
+                Timber.v(">> not loading");
                 while (!isLoading()) Helper.pause(20);
-                Timber.i(">> loading");
+                Timber.v(">> loading");
                 while (isLoading()) Helper.pause(100);
-                Timber.i(">> done");
+                Timber.v(">> done");
             }
             HitomiParser parser = new HitomiParser();
             try {
@@ -104,7 +104,7 @@ public class HitomiActivity extends BaseWebActivity {
                 content.setImageFiles(images);
                 content.setStatus(StatusContent.SAVED);
             } catch (Exception e) {
-                Timber.w(e);
+                Timber.i(e);
                 content.setStatus(StatusContent.IGNORED);
             }
 
