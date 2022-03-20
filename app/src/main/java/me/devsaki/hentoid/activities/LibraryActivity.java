@@ -423,7 +423,6 @@ public class LibraryActivity extends BaseActivity {
 
     private void initToolbar() {
         toolbar = findViewById(R.id.library_toolbar);
-        toolbar.setNavigationOnClickListener(v -> openNavigationDrawer());
 
         searchMenu = toolbar.getMenu().findItem(R.id.action_search);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
@@ -751,12 +750,14 @@ public class LibraryActivity extends BaseActivity {
         viewModel.searchGroup();
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
+        //toolbar.setNavigationIcon(R.drawable.ic_drawer);
     }
 
     public void showBooksInGroup(Group group) {
         enableFragment(1);
         viewModel.setGroup(group, true);
         viewPager.setCurrentItem(1);
+        //toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
     }
 
     public boolean isFilterActive() {
@@ -784,9 +785,21 @@ public class LibraryActivity extends BaseActivity {
         reorderCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
 
-        if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
-        else
+        boolean isToolbarNavigationDrawer = true;
+        if (isGroupDisplayed()) {
+            reorderMenu.setVisible(currentGrouping.canReorderGroups());
+        } else {
             reorderMenu.setVisible(currentGrouping.canReorderBooks() && group != null && group.getSubtype() != 1);
+            isToolbarNavigationDrawer = currentGrouping.equals(Grouping.FLAT);
+        }
+
+        if (isToolbarNavigationDrawer) { // Open the left drawer
+            toolbar.setNavigationIcon(R.drawable.ic_drawer);
+            toolbar.setNavigationOnClickListener(v -> openNavigationDrawer());
+        } else { // Go back to groups
+            toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+            toolbar.setNavigationOnClickListener(v -> goBackToGroups());
+        }
 
         signalCurrentFragment(EV_UPDATE_TOOLBAR, null);
     }
