@@ -42,7 +42,7 @@ public class EHentaiGalleriesMetadata {
                     .setTitle(title)
                     .setStatus(StatusContent.SAVED);
 
-            if (!posted.isEmpty()) content.setUploadDate(Long.parseLong(posted));
+            if (!posted.isEmpty()) content.setUploadDate(Long.parseLong(posted) * 1000);
 
             if (updatePages) {
                 if (filecount != null) content.setQtyPages(Integer.parseInt(filecount));

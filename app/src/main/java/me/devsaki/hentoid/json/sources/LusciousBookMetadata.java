@@ -60,7 +60,7 @@ public class LusciousBookMetadata {
             return content.setStatus(StatusContent.IGNORED);
 
         content.setUrl(info.url);
-        if (!info.created.isEmpty()) content.setUploadDate(Long.parseLong(info.created));
+        if (!info.created.isEmpty()) content.setUploadDate(Long.parseLong(info.created) * 1000);
 
         content.setTitle(StringHelper.removeNonPrintableChars(info.title));
 
