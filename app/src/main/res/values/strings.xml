@@ -477,6 +477,7 @@
     <string name="no_artist_group_name">[no artist]</string>
 
     <!-- Sort / filter bottom panel -->
+    <string name="library_sort_title">Sort</string>
     <string name="sort_ascending">Ascending</string>
     <string name="sort_descending">Descending</string>
     <string name="sort_reshuffle">Reshuffle</string>
@@ -493,7 +494,7 @@
     <string name="sort_custom">Custom</string>
     <string name="sort_invalid">-invalid-</string>
     <string name="sort_books">Books</string>
-    <string name="library_filter_title">Filters</string>
+    <string name="library_filter_title">Filter</string>
     <string name="library_filter_favourite_help">Toggle display of favourite books</string>
     <string name="filter_completed">Show completed books only</string>
     <string name="filter_not_completed">Show not completed books only</string>
