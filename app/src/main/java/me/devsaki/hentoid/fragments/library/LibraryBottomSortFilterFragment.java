@@ -225,6 +225,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_NB_PAGES));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE));
+            result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_UPLOAD_DATE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READ_DATE));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_READS));
             result.add(createFromFieldCode(Preferences.Constant.ORDER_FIELD_SIZE));

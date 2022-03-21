@@ -493,6 +493,7 @@
     <string name="sort_custom">Custom</string>
     <string name="sort_invalid">-invalid-</string>
     <string name="sort_books">Books</string>
+    <string name="sort_uplodad_date">Upload date</string>
     <string name="library_filters_title">Filters</string>
     <string name="library_filter_favourite_help">Toggle display of favourite books</string>
     <string name="filter_completed">Show completed books only</string>
