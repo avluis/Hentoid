@@ -636,11 +636,6 @@ public class LibraryActivity extends BaseActivity {
             case Preferences.Key.EXTERNAL_LIBRARY_URI:
                 updateDisplay(Grouping.FLAT.getId());
                 viewModel.setGrouping(Grouping.FLAT.getId());
-                /*
-                Preferences.setGroupingDisplay(Grouping.FLAT.getId());
-                viewModel.setGroup(null, true);
-                updateDisplay(Grouping.FLAT.getId());
-                 */
                 break;
             default:
                 // Nothing to handle there
