@@ -6,21 +6,6 @@
     android:layout_height="wrap_content"
     android:theme="@style/Theme.Light.BottomSheetDialog">
 
-    <me.devsaki.hentoid.views.VerticalTextView
-        android:id="@+id/sort_txt"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="8dp"
-        android:gravity="center_vertical"
-        android:rotation="180"
-        android:text="@string/library_sort_title"
-        android:textSize="@dimen/text_subtitle_1"
-        android:textStyle="bold"
-        android:textAllCaps="true"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/sort_asc_desc"
         android:layout_width="wrap_content"
@@ -87,33 +72,30 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        app:dividerColor="@color/medium_gray"
         app:layout_constraintEnd_toEndOf="@id/list"
         app:layout_constraintStart_toStartOf="@id/list"
         app:layout_constraintTop_toBottomOf="@id/list" />
 
-    <me.devsaki.hentoid.views.VerticalTextView
+    <TextView
         android:id="@+id/filter_txt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="8dp"
-        android:rotation="180"
-        android:text="@string/library_filter_title"
+        android:text="@string/library_filters_title"
         android:textSize="@dimen/text_subtitle_1"
         android:textStyle="bold"
-        android:textAllCaps="true"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/filters_divider" />
+        app:layout_constraintBottom_toBottomOf="@id/filter_favs_btn"
+        app:layout_constraintStart_toStartOf="@id/list"
+        app:layout_constraintTop_toTopOf="@id/filter_favs_btn" />
 
     <ImageView
         android:id="@+id/filter_favs_btn"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginStart="32dp"
         android:padding="8dp"
         android:src="@drawable/ic_fav_full"
         android:tooltipText="@string/library_filter_favourite_help"
-        app:layout_constraintStart_toStartOf="@id/list"
+        app:layout_constraintStart_toEndOf="@id/filter_txt"
         app:layout_constraintTop_toBottomOf="@id/filters_divider"
         app:tint="@color/medium_gray"
         tools:ignore="ContentDescription"
