@@ -126,8 +126,10 @@ public class LibraryActivity extends BaseActivity {
     private Toolbar toolbar;
     // "Search" button on top menu
     private MenuItem searchMenu;
-    // "Edit mode" / "Validate edit" button on top menu
+    // "Edit mode" button on top menu
     private MenuItem reorderMenu;
+    // "Confirm edit" button on top menu
+    private MenuItem reorderConfirmMenu;
     // "Cancel edit" button on top menu
     private MenuItem reorderCancelMenu;
     // "Create new group" button on top menu
@@ -212,10 +214,6 @@ public class LibraryActivity extends BaseActivity {
     public void setEditMode(boolean editMode) {
         this.editMode = editMode;
         updateToolbar();
-    }
-
-    public void toggleEditMode() {
-        setEditMode(!editMode);
     }
 
 
@@ -460,6 +458,7 @@ public class LibraryActivity extends BaseActivity {
             displayTypeMenu.setIcon(R.drawable.ic_view_list);
         reorderMenu = toolbar.getMenu().findItem(R.id.action_edit);
         reorderCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
+        reorderConfirmMenu = toolbar.getMenu().findItem(R.id.action_edit_confirm);
         newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
         sortMenu = toolbar.getMenu().findItem(R.id.action_sort_filter);
 
@@ -776,7 +775,7 @@ public class LibraryActivity extends BaseActivity {
 
         searchMenu.setVisible(!editMode);
         newGroupMenu.setVisible(!editMode && isGroupDisplayed() && currentGrouping.canReorderGroups()); // Custom groups only
-        reorderMenu.setIcon(editMode ? R.drawable.ic_checked : R.drawable.ic_reorder_lines);
+        reorderConfirmMenu.setVisible(editMode);
         reorderCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
 

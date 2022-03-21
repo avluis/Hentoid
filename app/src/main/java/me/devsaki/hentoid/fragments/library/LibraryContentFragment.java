@@ -401,18 +401,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         activity.get().setMetadata(attrs);
     }
 
-    private void toggleEditMode() {
-        activity.get().toggleEditMode();
+    private void enterEditMode() {
+        activity.get().setEditMode(true);
 
-        // Leave edit mode by validating => Save new item position
-        if (!activity.get().isEditMode()) {
-            // Set ordering field to custom
-            Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
-            // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
-            Preferences.setContentSortDesc(false);
-            viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList(), this::refreshIfNeeded);
-            group.hasCustomBookOrder = true;
-        } else if (group.hasCustomBookOrder) { // Enter edit mode -> warn if a custom order already exists
+        if (group.hasCustomBookOrder) { // Warn if a custom order already exists
             new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_warning)
                     .setTitle(R.string.app_name)
@@ -422,7 +414,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     .setNegativeButton(R.string.no,
                             (dialog2, which) -> {
                                 dialog2.dismiss();
-                                cancelEditMode();
+                                cancelEdit();
                             })
                     .create()
                     .show();
@@ -431,18 +423,35 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
     }
 
-    private void cancelEditMode() {
+    private void cancelEdit() {
         activity.get().setEditMode(false);
         setPagingMethod(Preferences.getEndlessScroll(), false);
+    }
+
+    private void confirmEdit() {
+        activity.get().setEditMode(false);
+
+        // == Save new item position
+        // Set ordering field to custom
+        Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
+        // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
+        Preferences.setContentSortDesc(false);
+        viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList(), this::refreshIfNeeded);
+        group.hasCustomBookOrder = true;
+
+        setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
     }
 
     private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
-                toggleEditMode();
+                enterEditMode();
+                break;
+            case R.id.action_edit_confirm:
+                confirmEdit();
                 break;
             case R.id.action_edit_cancel:
-                cancelEditMode();
+                cancelEdit();
                 break;
             default:
                 return activity.get().toolbarOnItemClicked(menuItem);

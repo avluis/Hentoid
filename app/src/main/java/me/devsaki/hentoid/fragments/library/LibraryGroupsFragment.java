@@ -246,10 +246,13 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
-                toggleEditMode();
+                enterEditMode();
+                break;
+            case R.id.action_edit_confirm:
+                confirmEdit();
                 break;
             case R.id.action_edit_cancel:
-                cancelEditMode();
+                cancelEdit();
                 break;
             case R.id.action_group_new:
                 newGroupPrompt();
@@ -287,25 +290,29 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         return true;
     }
 
-    private void toggleEditMode() {
-        activity.get().toggleEditMode();
-
-        // Leave edit mode by validating => Save new item position
-        if (!activity.get().isEditMode()) {
-            // Set ordering field to custom
-            Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
-            // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
-            Preferences.setGroupSortDesc(false);
-            viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
-        }
-
+    private void enterEditMode() {
+        activity.get().setEditMode(true);
         setPagingMethod();
         viewModel.searchGroup();
     }
 
-    private void cancelEditMode() {
+    private void cancelEdit() {
         activity.get().setEditMode(false);
         setPagingMethod();
+    }
+
+    private void confirmEdit() {
+        activity.get().setEditMode(false);
+
+        // == Save new item position
+        // Set ordering field to custom
+        Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
+        // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
+        Preferences.setGroupSortDesc(false);
+        viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
+
+        setPagingMethod();
+        viewModel.searchGroup();
     }
 
     private void newGroupPrompt() {

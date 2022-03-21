@@ -34,7 +34,13 @@
         android:title="@string/menu_edit_order"
         android:tooltipText="@string/menu_edit_order"
         app:showAsAction="ifRoom" />
-    <!-- Specific to groups -->
+    <item
+        android:id="@+id/action_edit_confirm"
+        android:icon="@drawable/ic_checked"
+        android:title="@string/menu_edit_confirm"
+        android:tooltipText="@string/menu_edit_confirm"
+        android:visible="false"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_edit_cancel"
         android:icon="@drawable/ic_close"
