@@ -18,7 +18,7 @@ public class PorncomixGalleryMetadata {
     public String getDatePublished() {
         if (graph != null) {
             for (GraphData data : graph) {
-                if (data.type != null && data.type.toLowerCase().equals("webpage")) {
+                if (data.type != null && data.type.equalsIgnoreCase("webpage")) {
                     return data.datePublished;
                 }
             }
