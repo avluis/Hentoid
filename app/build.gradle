@@ -160,7 +160,7 @@ dependencies {
     implementation "com.github.zjupure:webpdecoder:2.0.$webp_glide_version"
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
-    implementation 'com.github.penfeizhou.android.animation:apng:2.17.2'
+    implementation 'com.github.penfeizhou.android.animation:apng:2.18.0'
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
     implementation 'com.waynejo:androidndkgif:0.3.3'
