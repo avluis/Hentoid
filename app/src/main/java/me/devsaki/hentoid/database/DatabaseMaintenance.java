@@ -327,6 +327,15 @@ public class DatabaseMaintenance {
                 db.updateContentObject(c);
                 emitter.onNext(pos++ / max);
             }
+            List<Chapter> chapters = db.selectChapterWithNullUploadDate();
+            Timber.i("Set default value for Chapter.uploadDate field : %s items detected", chapters.size());
+            max = chapters.size();
+            pos = 1;
+            for (Chapter c : chapters) {
+                c.setUploadDate(0);
+                emitter.onNext(pos++ / max);
+            }
+            db.insertChapters(chapters);
             Timber.i("Set default ObjectBox properties : done");
         } finally {
             db.closeThreadResources();

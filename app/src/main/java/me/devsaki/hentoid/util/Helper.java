@@ -427,7 +427,7 @@ public final class Helper {
         final DateTimeFormatter formatter = DateTimeFormatter
                 .ofPattern(pattern)
                 .withResolverStyle(ResolverStyle.LENIENT)
-                .withLocale(Locale.ENGLISH)
+                .withLocale(Locale.ENGLISH) // To parse english expressions (e.g. month name)
                 .withZone(ZoneId.systemDefault());
 
         try {
