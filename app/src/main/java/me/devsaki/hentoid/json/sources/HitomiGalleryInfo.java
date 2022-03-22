@@ -9,6 +9,7 @@ import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
@@ -19,7 +20,7 @@ public class HitomiGalleryInfo {
     private String title;
     private List<HitomiCharacter> characters;
     private List<HitomiGroup> groups;
-    //    private Date date; TODO
+    private String date; // Format : "YYYY-MM-DD HH:MM:SS-05" (-05 being the timezone of the server ?)
     private String language;
     private String language_localname;
     private String language_url;
@@ -67,7 +68,8 @@ public class HitomiGalleryInfo {
 
     public void updateContent(@NonNull Content content) {
         content.setTitle(StringHelper.removeNonPrintableChars(title));
-//        content.setUploadDate(date.getTime()); TODO
+
+        content.setUploadDate(Helper.parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx"));
 
         AttributeMap attributes = new AttributeMap();
         if (parodys != null)

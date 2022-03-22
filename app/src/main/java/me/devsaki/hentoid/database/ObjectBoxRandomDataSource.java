@@ -4,11 +4,15 @@ import androidx.annotation.NonNull;
 import androidx.paging.DataSource;
 import androidx.paging.PositionalDataSource;
 
+import com.annimon.stream.Stream;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
@@ -19,11 +23,29 @@ import me.devsaki.hentoid.util.Helper;
 class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
     private final Query<T> query;
     private final DataObserver<List<T>> observer;
-    private final List<Long> shuffleIds;
+    private final List<Long> shuffledList;
+    private final Map<Long, Integer> idsToQueryListIndexes = new HashMap<>();
 
     private ObjectBoxRandomDataSource(Query<T> query, List<Long> shuffleIds) {
         this.query = query;
-        this.shuffleIds = shuffleIds;
+
+        Set<Long> queryIds = Helper.getSetFromPrimitiveArray(query.findIds());
+        int idx = 0;
+        for (Long id : queryIds) idsToQueryListIndexes.put(id, idx++);
+
+        LinkedHashSet<Long> shuffledSet = new LinkedHashSet<>(shuffleIds.size());
+        shuffledSet.addAll(shuffleIds);
+
+        // Keep common IDs (intersect)
+        shuffledSet.retainAll(queryIds);
+
+        // Isolate new IDs that have never been shuffled and append them at the end
+        if (shuffledSet.size() < queryIds.size()) {
+            queryIds.removeAll(shuffledSet);
+            shuffledSet.addAll(queryIds);
+        }
+        shuffledList = Stream.of(shuffledSet).toList();
+
         this.observer = data -> ObjectBoxRandomDataSource.this.invalidate();
         query.subscribe().onlyChanges().weak().observer(this.observer);
     }
@@ -49,31 +71,13 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
     }
 
     private List<T> loadRange(int startPosition, int loadCount) {
-        return shuffleRandomSort(this.query, startPosition, loadCount);
-    }
-
-    private List<T> shuffleRandomSort(Query<T> query, int startPosition, int loadCount) {
         LazyList<T> lazyList = query.findLazy();
-        List<Long> queryIds = Helper.getListFromPrimitiveArray(query.findIds());
-        Map<Long, Integer> idsToIndexes = new HashMap<>();
-        for (int i = 0; i < queryIds.size(); i++) {
-            idsToIndexes.put(queryIds.get(i), i);
-        }
 
-        // Keep common IDs
-        shuffleIds.retainAll(queryIds);
-
-        // Isolate new IDs that have never been shuffled and append them at the end
-        if (shuffleIds.size() < queryIds.size()) {
-            queryIds.removeAll(shuffleIds);
-            shuffleIds.addAll(queryIds);
-        }
-
-        int maxPage = Math.min(startPosition + loadCount, shuffleIds.size());
+        int maxPage = Math.min(startPosition + loadCount, shuffledList.size());
 
         List<T> result = new ArrayList<>();
         for (int i = startPosition; i < maxPage; i++) {
-            Integer index = idsToIndexes.get(shuffleIds.get(i));
+            Integer index = idsToQueryListIndexes.get(shuffledList.get(i));
             if (index != null)
                 result.add(lazyList.get(index));
         }

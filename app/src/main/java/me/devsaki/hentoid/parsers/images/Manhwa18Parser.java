@@ -45,7 +45,7 @@ public class Manhwa18Parser extends BaseImageListParser {
 
         List<Element> chapterLinks = doc.select("div ul a[href*=chap]");
         if (chapterLinks.isEmpty()) chapterLinks = doc.select("div ul a[href*=ch-]");
-        chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId());
+        chapters = ParseHelper.getChaptersFromLinks(chapterLinks, onlineContent.getId(), "div.chapter-time", "dd/MM/yyyy");
 
         // If the stored content has chapters already, save them for comparison
         List<Chapter> storedChapters = null;
@@ -65,7 +65,9 @@ public class Manhwa18Parser extends BaseImageListParser {
         int imgOffset = ParseHelper.getMaxImageOrder(storedChapters);
 
         // 2. Open each chapter URL and get the image data until all images are found
+        long minEpoch = Long.MAX_VALUE;
         for (Chapter chp : extraChapters) {
+            if (chp.getUploadDate() > 0) minEpoch = Math.min(minEpoch, chp.getUploadDate());
             if (processHalted.get()) break;
             doc = getOnlineDocument(chp.getUrl(), headers, Site.MANHWA18.useHentoidAgent(), Site.MANHWA18.useWebviewAgent());
             if (doc != null) {
@@ -79,6 +81,10 @@ public class Manhwa18Parser extends BaseImageListParser {
                 Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
             }
             progressPlus();
+        }
+        if (minEpoch > 0) {
+            onlineContent.setUploadDate(minEpoch);
+            onlineContent.setUpdatedProperties(true);
         }
         progressComplete();
 

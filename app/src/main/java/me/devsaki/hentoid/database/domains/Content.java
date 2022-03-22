@@ -93,6 +93,7 @@ public class Content implements Serializable {
     private Integer qtyPages; // Integer is actually unnecessary, but changing this to plain int requires a small DB model migration...
     private long uploadDate;
     private long downloadDate = 0;
+    private long downloadCompletionDate = 0;
     @Index
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
@@ -527,6 +528,15 @@ public class Content implements Serializable {
 
     public Content setDownloadDate(long downloadDate) {
         this.downloadDate = downloadDate;
+        return this;
+    }
+
+    public long getDownloadCompletionDate() {
+        return downloadCompletionDate;
+    }
+
+    public Content setDownloadCompletionDate(long value) {
+        downloadCompletionDate = value;
         return this;
     }
 

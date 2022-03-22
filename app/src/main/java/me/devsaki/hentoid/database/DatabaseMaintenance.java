@@ -29,6 +29,7 @@ import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -305,6 +306,36 @@ public class DatabaseMaintenance {
                 db.updateContentObject(c);
                 emitter.onNext(pos++ / max);
             }
+            contents = db.selectContentWithNullDlCompletionDateField();
+            Timber.i("Set default value for Content.downloadCompletionDate field : %s items detected", contents.size());
+            max = contents.size();
+            pos = 1;
+            for (Content c : contents) {
+                if (ContentHelper.isInLibrary(c.getStatus()))
+                    c.setDownloadCompletionDate(c.getDownloadDate());
+                else
+                    c.setDownloadCompletionDate(0);
+                db.updateContentObject(c);
+                emitter.onNext(pos++ / max);
+            }
+            contents = db.selectContentWithInvalidUploadDate();
+            Timber.i("Fixing invalid upload dates : %s items detected", contents.size());
+            max = contents.size();
+            pos = 1;
+            for (Content c : contents) {
+                c.setUploadDate(c.getUploadDate() * 1000);
+                db.updateContentObject(c);
+                emitter.onNext(pos++ / max);
+            }
+            List<Chapter> chapters = db.selectChapterWithNullUploadDate();
+            Timber.i("Set default value for Chapter.uploadDate field : %s items detected", chapters.size());
+            max = chapters.size();
+            pos = 1;
+            for (Chapter c : chapters) {
+                c.setUploadDate(0);
+                emitter.onNext(pos++ / max);
+            }
+            db.insertChapters(chapters);
             Timber.i("Set default ObjectBox properties : done");
         } finally {
             db.closeThreadResources();
@@ -441,7 +472,7 @@ public class DatabaseMaintenance {
         try {
             // Compute missing downloaded Content size according to underlying ImageFile sizes
             Timber.i("Reattaching group covers : start");
-            List<Group> groups = db.selecGroupsWithNoCoverContent();
+            List<Group> groups = db.selectGroupsWithNoCoverContent();
             Timber.i("Reattaching group covers : %s groups detected", groups.size());
             int max = groups.size();
             float pos = 1;

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -510,8 +511,10 @@ public class ObjectBoxDB {
                 return Content_.author; // Might not be what users want when there are multiple authors
             case Preferences.Constant.ORDER_FIELD_NB_PAGES:
                 return Content_.qtyPages;
-            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE:
+            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE:
                 return Content_.downloadDate;
+            case Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE:
+                return Content_.downloadCompletionDate;
             case Preferences.Constant.ORDER_FIELD_UPLOAD_DATE:
                 return Content_.uploadDate;
             case Preferences.Constant.ORDER_FIELD_READ_DATE:
@@ -781,11 +784,11 @@ public class ObjectBoxDB {
         return selectContentUniversalContentByGroupItem(queryStr, groupId, filterBookFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
     }
 
-    public List<Long> getShuffledIds() {
+    List<Long> getShuffledIds() {
         return Stream.of(store.boxFor(ShuffleRecord.class).getAll()).map(ShuffleRecord::getContentId).toList();
     }
 
-    public void shuffleContentIds() {
+    void shuffleContentIds() {
         // Clear previous shuffled list
         Box<ShuffleRecord> shuffleStore = store.boxFor(ShuffleRecord.class);
         shuffleStore.removeAll();
@@ -796,19 +799,21 @@ public class ObjectBoxDB {
     }
 
     private long[] shuffleRandomSortId(Query<Content> query) {
-        List<Long> queryIds = Helper.getListFromPrimitiveArray(query.findIds());
+        Set<Long> queryIds = Helper.getSetFromPrimitiveArray(query.findIds());
         List<Long> shuffleIds = getShuffledIds();
+        LinkedHashSet<Long> shuffledSet = new LinkedHashSet<>(shuffleIds.size());
+        shuffledSet.addAll(shuffleIds);
 
         // Keep common IDs
-        shuffleIds.retainAll(queryIds);
+        shuffledSet.retainAll(queryIds);
 
         // Isolate new IDs that have never been shuffled and append them at the end
-        if (shuffleIds.size() < queryIds.size()) {
-            queryIds.removeAll(shuffleIds);
-            shuffleIds.addAll(queryIds);
+        if (shuffledSet.size() < queryIds.size()) {
+            queryIds.removeAll(shuffledSet);
+            shuffledSet.addAll(queryIds);
         }
 
-        return Helper.getPrimitiveArrayFromList(shuffleIds);
+        return Helper.getPrimitiveArrayFromList(Stream.of(shuffledSet).toList());
     }
 
     long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
@@ -946,7 +951,7 @@ public class ObjectBoxDB {
                 if (attr.isExcluded())
                     results.removeAll(idsAsList);
                 else
-                    results.retainAll(idsAsList);
+                    results.retainAll(idsAsList); // Careful with retainAll performance
             }
         }
 
@@ -1515,8 +1520,8 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, libraryStatus).isNull(Content_.readProgress).build().find();
     }
 
-    List<Group> selecGroupsWithNoCoverContent() {
-        return store.boxFor(Group.class).query().isNull(Group_.coverContentId).build().find();
+    List<Group> selectGroupsWithNoCoverContent() {
+        return store.boxFor(Group.class).query().isNull(Group_.coverContentId).or().equal(Group_.coverContentId, 0).build().find();
     }
 
     List<Content> selectContentWithNullCompleteField() {
@@ -1529,6 +1534,18 @@ public class ObjectBoxDB {
 
     List<Content> selectContentWithNullMergeField() {
         return store.boxFor(Content.class).query().isNull(Content_.manuallyMerged).build().find();
+    }
+
+    List<Content> selectContentWithNullDlCompletionDateField() {
+        return store.boxFor(Content.class).query().isNull(Content_.downloadCompletionDate).build().find();
+    }
+
+    List<Content> selectContentWithInvalidUploadDate() {
+        return store.boxFor(Content.class).query().greater(Content_.uploadDate, 0).less(Content_.uploadDate, 10000000000L).build().find();
+    }
+
+    List<Chapter> selectChapterWithNullUploadDate() {
+        return store.boxFor(Chapter.class).query().isNull(Chapter_.uploadDate).build().find();
     }
 
     Query<Content> selectOldStoredContentQ() {
@@ -1550,8 +1567,10 @@ public class ObjectBoxDB {
             query.in(Content_.status, libraryQueueStatus);
         else
             query.in(Content_.status, libraryStatus);
+        /* TODO temp
         query.notNull(Content_.storageUri);
         query.notEqual(Content_.storageUri, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
+         */
         if (nonFavouritesOnly) query.equal(Content_.favourite, false);
         if (orderField > -1) {
             Property<Content> field = getPropertyFromField(orderField);
@@ -1584,7 +1603,9 @@ public class ObjectBoxDB {
 
     long[] selectCustomGroupedContent() {
         QueryBuilder<Content> customContentQB = store.boxFor(Content.class).query();
-        customContentQB.link(Content_.groupItems).link(GroupItem_.group).equal(Group_.grouping, Grouping.CUSTOM.getId());
+        customContentQB.link(Content_.groupItems).link(GroupItem_.group)
+                .equal(Group_.grouping, Grouping.CUSTOM.getId()) // Custom group
+                .equal(Group_.subtype, 0); // Not the Ungrouped group (subtype 1)
         return customContentQB.build().findIds();
         // See https://github.com/objectbox/objectbox-java/issues/1028
         /*

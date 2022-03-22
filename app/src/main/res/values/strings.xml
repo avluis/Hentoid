@@ -26,6 +26,7 @@
         <item quantity="one">file</item>
         <item quantity="other">files</item>
     </plurals>
+    <string name="groups">Groups</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
     <string name="resume">Resume</string>
@@ -36,6 +37,7 @@
     <string name="open_folder">Open folder</string>
     <string name="_default">default</string>
     <string name="empty">empty</string>
+    <string name="none">None</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -64,11 +66,11 @@
     <!-- Library screen toolbar -->
     <string name="menu_search">Search</string>
     <string name="menu_fav">Toggle favourite filter</string>
-    <string name="menu_comp">Toggle completed filter</string>
     <string name="menu_mark_fav">Toggle favourite</string>
     <string name="menu_group_new">New group</string>
-    <string name="menu_edit_order">Edit order</string>
-    <string name="menu_edit_name">Edit name</string>
+    <string name="menu_edit_order">Reorder</string>
+    <string name="menu_edit_name">Rename</string>
+    <string name="menu_edit_confirm">Confirm editing</string>
     <string name="menu_edit_cancel">Cancel editing</string>
     <string name="menu_edit_warning_custom">New custom ordering will overwrite the previous one.</string>
     <string name="menu_order">Order books</string>
@@ -336,9 +338,6 @@
     <string name="resume_closed">Resume reading from where you left\?</string>
     <string name="open_drawer">Open drawer</string>
     <string name="close_drawer">Close drawer</string>
-    <string name="ask_filter_completed">How would you like to filter completed books\?</string>
-    <string name="filter_completed">Show completed only</string>
-    <string name="filter_not_completed">Show not completed only</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Delete the selected item\?</item>
         <item quantity="other">Delete <x:g example="2" id="count">%d</x:g> selected items\?</item>
@@ -470,18 +469,22 @@
     <string name="merge_success">Content merged</string>
     <string name="split_success">Content split</string>
 
-    <!-- Groups -->
+    <!-- Groupings -->
     <string name="groups_flat">All books</string>
     <string name="groups_by_artist">By Artist</string>
-    <string name="groups_by_dl_date">By Download date</string>
-    <string name="groups_custom">Custom</string>
+    <string name="groups_by_dl_date">By Download date (processed)</string>
+    <string name="groups_custom">Custom groups</string>
     <string name="no_artist_group_name">[no artist]</string>
 
-    <!-- Sorting fields -->
+    <!-- Sort / filter bottom panel -->
+    <string name="sort_ascending">Ascending</string>
+    <string name="sort_descending">Descending</string>
+    <string name="sort_reshuffle">Reshuffle</string>
     <string name="sort_title">Title</string>
     <string name="sort_artist">Artist</string>
     <string name="sort_pages">Pages</string>
-    <string name="sort_dl_date">Download date</string>
+    <string name="sort_dl_date">Download date (processed)</string>
+    <string name="sort_dl_completion_date">Download date (completed)</string>
     <string name="sort_read_date">Read date</string>
     <string name="sort_reads">Reads</string>
     <string name="sort_size">Size</string>
@@ -490,6 +493,17 @@
     <string name="sort_custom">Custom</string>
     <string name="sort_invalid">-invalid-</string>
     <string name="sort_books">Books</string>
+    <string name="sort_uplodad_date">Upload date</string>
+    <string name="library_filters_title">Filters</string>
+    <string name="library_filter_favourite_help">Toggle display of favourite books</string>
+    <string name="filter_completed">Show completed books only</string>
+    <string name="filter_not_completed">Show not completed books only</string>
+
+    <!-- Groups bottom panel -->
+    <string name="display_groups_title">Display groups</string>
+    <string name="display">Display</string>
+    <string name="display_artists">Artists</string>
+    <string name="display_groups">Groups</string>
 
     <!-- Item card tooltips -->
     <string name="drag_help">Drag item</string>
@@ -499,9 +513,6 @@
     <string name="fav_help">Mark/unmark as favourite</string>
 
     <!-- Visibility fields -->
-    <string name="show_artists">Show artists</string>
-    <string name="show_groups">Show groups</string>
-    <string name="show_artists_and_groups">Show artists &amp; groups</string>
     <string name="launchcode_present">You already have this book. Search other sources\?</string>
 
     <!-- Updates -->
@@ -620,7 +631,7 @@
     <string name="viewer_order_shuffle_help">Toggle page shuffling</string>
     <string name="viewer_filter_favourite_off">Only show favourite pages</string>
     <string name="viewer_filter_favourite_on">Show all pages</string>
-    <string name="viewer_filter_favourite_help">Toggle display of favourite page</string>
+    <string name="viewer_filter_favourite_help">Toggle display of favourite pages</string>
     <string name="viewer_make_cover">Set as cover</string>
     <string name="viewer_delete_book">Delete book</string>
     <string name="copy_download_folder_success">Copied to Downloads folder</string>
