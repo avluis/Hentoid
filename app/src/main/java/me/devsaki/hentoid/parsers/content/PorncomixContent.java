@@ -16,7 +16,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.json.sources.PorncomixGalleryMetadata;
+import me.devsaki.hentoid.json.sources.YoastGalleryMetadata;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -72,7 +72,7 @@ public class PorncomixContent extends BaseContentParser {
 
         if (metadata != null && metadata.childNodeSize() > 0) {
             try {
-                PorncomixGalleryMetadata galleryMeta = JsonHelper.jsonToObject(metadata.childNode(0).toString(), PorncomixGalleryMetadata.class);
+                YoastGalleryMetadata galleryMeta = JsonHelper.jsonToObject(metadata.childNode(0).toString(), YoastGalleryMetadata.class);
                 String publishDate = galleryMeta.getDatePublished(); // e.g. 2021-01-27T15:20:38+00:00
                 if (!publishDate.isEmpty())
                     content.setUploadDate(Helper.parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX"));

@@ -5,7 +5,7 @@ import com.squareup.moshi.Json;
 import java.util.List;
 
 @SuppressWarnings({"unused, MismatchedQueryAndUpdateOfCollection", "squid:S1172", "squid:S1068"})
-public class PorncomixGalleryMetadata {
+public class YoastGalleryMetadata {
     private @Json(name = "@graph")
     List<GraphData> graph;
 
