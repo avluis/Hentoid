@@ -9,8 +9,13 @@ import androidx.annotation.NonNull;
 
 import java.util.Map;
 
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.parsers.images.HitomiParser;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import timber.log.Timber;
 
 /**
  * Implements Hitomi.la source
@@ -62,7 +67,7 @@ public class HitomiActivity extends BaseWebActivity {
         return builder.toString();
     }
 
-    private static class HitomiWebClient extends CustomWebViewClient {
+    private class HitomiWebClient extends CustomWebViewClient {
 
         HitomiWebClient(Site site, String[] filter, CustomWebActivity activity) {
             super(site, filter, activity);
@@ -81,7 +86,6 @@ public class HitomiActivity extends BaseWebActivity {
             return super.shouldInterceptRequest(view, request);
         }
 
-        /*
         @Override
         protected Content processContent(@NonNull Content content, @NonNull String url, boolean quickDownload) {
             // Wait until the page's resources are all loaded
@@ -94,8 +98,9 @@ public class HitomiActivity extends BaseWebActivity {
             }
             HitomiParser parser = new HitomiParser();
             try {
-                List<ImageFile> images = parser.parseImageListWithWebview(content, webView);
-                content.setImageFiles(images);
+                /*List<ImageFile> images =*/
+                parser.parseImageListWithWebview(content, webView); // Only fetch them when queue is processed
+                //content.setImageFiles(images);
                 content.setStatus(StatusContent.SAVED);
             } catch (Exception e) {
                 Timber.i(e);
@@ -104,6 +109,5 @@ public class HitomiActivity extends BaseWebActivity {
 
             return super.processContent(content, url, quickDownload);
         }
-         */
     }
 }
