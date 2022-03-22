@@ -126,6 +126,8 @@ public class LibraryActivity extends BaseActivity {
     private Toolbar toolbar;
     // "Search" button on top menu
     private MenuItem searchMenu;
+    // "Display type" button on top menu
+    private MenuItem displayTypeMenu;
     // "Edit mode" button on top menu
     private MenuItem reorderMenu;
     // "Confirm edit" button on top menu
@@ -451,7 +453,7 @@ public class LibraryActivity extends BaseActivity {
             }
         });
 
-        MenuItem displayTypeMenu = toolbar.getMenu().findItem(R.id.action_display_type);
+        displayTypeMenu = toolbar.getMenu().findItem(R.id.action_display_type);
         if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
             displayTypeMenu.setIcon(R.drawable.ic_view_gallery);
         else
@@ -773,6 +775,7 @@ public class LibraryActivity extends BaseActivity {
     private void updateToolbar() {
         Grouping currentGrouping = Preferences.getGroupingDisplay();
 
+        displayTypeMenu.setVisible(!editMode);
         searchMenu.setVisible(!editMode);
         newGroupMenu.setVisible(!editMode && isGroupDisplayed() && currentGrouping.canReorderGroups()); // Custom groups only
         reorderConfirmMenu.setVisible(editMode);
