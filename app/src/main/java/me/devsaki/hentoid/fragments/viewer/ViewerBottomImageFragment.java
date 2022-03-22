@@ -264,7 +264,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
     private void onShareClick() {
         Uri fileUri = Uri.parse(image.getFileUri());
         if (FileHelper.fileExists(requireContext(), fileUri))
-            FileHelper.shareFile(requireContext(), fileUri, "Share picture");
+            FileHelper.shareFile(requireContext(), fileUri, "");
     }
 
     /**
