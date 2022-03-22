@@ -30,6 +30,7 @@
         <item quantity="few">файла</item>
         <item quantity="many">файлов</item>
     </plurals>
+    <string name="groups">Группы</string>
     <string name="pause">Приостановить</string>
     <string name="stop">Остановить</string>
     <string name="resume">Возобновить</string>
@@ -39,6 +40,8 @@
     <string name="service_running">Сервис уже запущен</string>
     <string name="open_folder">Открыть папку</string>
     <string name="_default">по умолчанию</string>
+    <string name="empty">пусто</string>
+    <string name="none">Никак</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">Переход на API 29</string>
@@ -70,8 +73,8 @@
     <string name="menu_comp">Показать завершённые</string>
     <string name="menu_mark_fav">Избранные</string>
     <string name="menu_group_new">Новая группа</string>
-    <string name="menu_edit_order">Редактировать порядок</string>
-    <string name="menu_edit_name">Редактировать название</string>
+    <string name="menu_edit_order">Пересортировать</string>
+    <string name="menu_edit_name">Переименовать</string>
     <string name="menu_edit_cancel">Отменить редактирование</string>
     <string name="menu_edit_warning_custom">Новая пользовательская сортировка заменит предыдущую.</string>
     <string name="menu_order">Сортировать книги</string>
@@ -361,9 +364,6 @@
     <string name="resume_closed">Возобновить чтение\?</string>
     <string name="open_drawer">Открыть меню</string>
     <string name="close_drawer">Закрыть меню</string>
-    <string name="ask_filter_completed">Как бы вы хотели обращаться с дочитанными книгами?</string>
-    <string name="filter_completed">Показывать только дочитанные</string>
-    <string name="filter_not_completed">Показывать только недочитанные</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Удалить <x:g id="count" example="1">%d</x:g> выбранный элемент\?</item>
         <item quantity="few">Удалить <x:g id="count" example="2">%d</x:g> выбранных элемента\?</item>
@@ -514,14 +514,18 @@
     <string name="merge_success">Успешно совмещено</string>
     <string name="split_success">Успешно разделено</string>
 
-    <!-- Groups -->
+    <!-- Groupings -->
     <string name="groups_flat">Все книги</string>
     <string name="groups_by_artist">По художникам</string>
     <string name="groups_by_dl_date">По дате загрузки</string>
-    <string name="groups_custom">Своё</string>
+    <string name="groups_custom">Свои группы</string>
     <string name="no_artist_group_name">[без художника]</string>
 
-    <!-- Sorting fields -->
+    <!-- Sort / filter bottom panel -->
+    <string name="sort">Сортировка</string>
+    <string name="sort_ascending">По возрастающей</string>
+    <string name="sort_descending">По убывающей</string>
+    <string name="sort_reshuffle">Пересортировать</string>
     <string name="sort_title">По названиям</string>
     <string name="sort_artist">По художникам</string>
     <string name="sort_pages">По страницам</string>
@@ -534,6 +538,18 @@
     <string name="sort_custom">Своё</string>
     <string name="sort_invalid">-неверно-</string>
     <string name="sort_books">По кол-ву книг</string>
+    <string name="filter">Фильтр</string>
+    <string name="filter_favourites">Избранное</string>
+    <string name="library_filter_favourite_help">Отображение избранных книг</string>
+    <string name="filter_completed_label">Завершённое</string>
+    <string name="filter_completed">Показывается только завершённое</string>
+    <string name="filter_not_completed">Показывается не только завершённое</string>
+
+    <!-- Groups bottom panel -->
+    <string name="display_groups_title">Показать группы</string>
+    <string name="display">Показать</string>
+    <string name="display_artists">Художники</string>
+    <string name="display_groups">Группы</string>
 
     <!-- Item card tooltips -->
     <string name="drag_help">Переместить элемент</string>
@@ -543,9 +559,6 @@
     <string name="fav_help">Добавить/убрать из избранного</string>
 
     <!-- Visibility fields -->
-    <string name="show_artists">Художники</string>
-    <string name="show_groups">Группы</string>
-    <string name="show_artists_and_groups">Художники и группы</string>
     <string name="launchcode_present">У вас уже есть эта книга. Искать в других источниках\?</string>
 
     <!-- Updates -->

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="slide_01_header">Ласкаво просимо до Hentoid!</string>
+    <string name="slide_01_text">Hentoid — це додаток для завантаження\nдодзінсі та хентай-манґи.</string>
+    <string name="slide_02_header">Дозволи</string>
+    <string name="slide_02_text">Нам потрібен ваш дозвіл, щоб зберігати файли на пристрої.</string>
+    <string name="slide_04_header">Бібліотека</string>
+    <string name="slide_04_text">Hentoid потрібна окрема папка для зберігання файлів.</string>
+    <!-- Button -->
+    <string name="slide_04_skip">Пропустити</string>
+    <!-- Dialog title -->
+    <string name="slide_04_skip_title">Пропустити\?</string>
+    <string name="slide_04_skip_msg">Якщо ви не пропустите цей крок, ви не зможете нічого завантажити.\nДля завантаження вам потрібно вибрати папку завантажень у налаштуваннях додатка.</string>
+    <string name="slide_05_header">Тема</string>
+    <string name="slide_05_text">Виберіть тему.</string>
+    <string name="slide_06_header">Джерела</string>
+    <!-- Description text -->
+    <string name="slide_06_text">Виберіть джерела для завантажень.</string>
+    <string name="slide_06_subtext">Ви можете змінити цей вибір пізніше в будь-який момент, натиснувши на \'Змінити\' у меню зліва.</string>
+    <string name="slide_end_header">От і все!</string>
+    <string name="slide_end_text">Все готово!\nНасолоджуйтесь додатком.</string>
+</resources>
