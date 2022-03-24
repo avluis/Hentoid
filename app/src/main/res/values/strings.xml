@@ -93,7 +93,7 @@
     <string name="app_settings">App settings</string>
     <string name="book_settings">Book settings</string>
     <string name="permissions_lost">File permissions have been lost</string>
-    <string name="low_memory">Your device is low on memory!</string>
+    <string name="low_memory">Your device is low on storage!</string>
     <string name="fix_permissions">Fix</string>
     <string name="view_queue">View queue</string>
 
@@ -296,8 +296,8 @@
         <item quantity="other"><x:g example="2" id="number">%s</x:g> failed</item>
     </plurals>
 
-    <!-- Memory usage -->
-    <string name="memory_title">Memory usage</string>
+    <!-- Storage usage -->
+    <string name="memory_title">Storage usage</string>
     <string name="memory_total">Total: <x:g example="100 MB" id="total">%s</x:g></string>
     <string name="memory_free">Free: <x:g example="50 MB" id="total">%s</x:g></string>
     <string name="memory_hentoid_main">Hentoid (primary): <x:g example="2 MB" id="total">%s</x:g></string>
