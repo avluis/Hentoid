@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="slide_01_header">Benvenuto su Hentoid !</string>
-    <string name="slide_01_text">Hentoid è un\'app di archiviazione \ndi Doujinshi e H-manga.</string>
+    <string name="slide_01_header">Benvenuto su Hentoid!</string>
+    <string name="slide_01_text">Hentoid è un app di archiviazione per\n&amp; Doujinshi e H-manga.</string>
     <string name="slide_02_header">Permessi</string>
     <string name="slide_02_text">Dobbiamo chiederti l\'autorizzazione per archiviare i file sul tuo dispositivo.</string>
     <string name="slide_04_header">Libreria</string>
     <string name="slide_04_text">Hentoid richiede una cartella dedicata per salvare i vostri media.</string>
 <string name="slide_04_skip">Salta</string>
 <string name="slide_04_skip_title">Saltare\?</string>
-    <string name="slide_04_skip_msg">Non potrai scaricare se salti questo passaggio. \nPer scaricare, dovrai impostare la cartella di download tramite le impostazioni dell\'app.</string>
+    <string name="slide_04_skip_msg">Non potrai scaricare se salti questo passaggio.\nPer scaricare, dovrai impostare la cartella di download tramite le impostazioni dell\'app.</string>
     <string name="slide_05_header">Tema</string>
     <string name="slide_05_text">Scegli un tema di visualizzazione.</string>
     <string name="slide_06_header">Fonti</string>
 <string name="slide_06_text">Seleziona le fonti da cui scaricare.</string>
-    <string name="slide_06_subtext">Puoi cambiare questa selezione in un\'altro momento utilizzando il pulsante di modifica nel menu a sinistra.</string>
+    <string name="slide_06_subtext">Puoi cambiare questa selezione in un altro momento utilizzando il pulsante di modifica nel menu a sinistra.</string>
     <string name="slide_end_header">Tutto pronto!</string>
     <string name="slide_end_text">Siamo pronti! \nGodetevi l\'applicazione.</string>
 </resources>
