@@ -70,11 +70,11 @@
     <!-- Library screen toolbar -->
     <string name="menu_search">Поиск</string>
     <string name="menu_fav">Показать избранное</string>
-    <string name="menu_comp">Показать завершённые</string>
     <string name="menu_mark_fav">Избранные</string>
     <string name="menu_group_new">Новая группа</string>
     <string name="menu_edit_order">Пересортировать</string>
     <string name="menu_edit_name">Переименовать</string>
+    <string name="menu_edit_confirm">Подтвердить редактирование</string>
     <string name="menu_edit_cancel">Отменить редактирование</string>
     <string name="menu_edit_warning_custom">Новая пользовательская сортировка заменит предыдущую.</string>
     <string name="menu_order">Сортировать книги</string>
@@ -522,14 +522,14 @@
     <string name="no_artist_group_name">[без художника]</string>
 
     <!-- Sort / filter bottom panel -->
-    <string name="sort">Сортировка</string>
     <string name="sort_ascending">По возрастающей</string>
     <string name="sort_descending">По убывающей</string>
     <string name="sort_reshuffle">Пересортировать</string>
     <string name="sort_title">По названиям</string>
     <string name="sort_artist">По художникам</string>
     <string name="sort_pages">По страницам</string>
-    <string name="sort_dl_date">По дате загрузки</string>
+    <string name="sort_dl_date">По дате начала загрузки</string>
+    <string name="sort_dl_completion_date">По дате завершения загрузки</string>
     <string name="sort_read_date">По дате чтения</string>
     <string name="sort_reads">По прочтениям</string>
     <string name="sort_size">По размеру</string>
@@ -538,12 +538,11 @@
     <string name="sort_custom">Своё</string>
     <string name="sort_invalid">-неверно-</string>
     <string name="sort_books">По кол-ву книг</string>
-    <string name="filter">Фильтр</string>
-    <string name="filter_favourites">Избранное</string>
+    <string name="sort_uplodad_date">По дате начала загрузки</string>
+    <string name="library_filters_title">Фильтры</string>
     <string name="library_filter_favourite_help">Отображение избранных книг</string>
-    <string name="filter_completed_label">Завершённое</string>
-    <string name="filter_completed">Показывается только завершённое</string>
-    <string name="filter_not_completed">Показывается не только завершённое</string>
+    <string name="filter_completed">Показывать только завершённое</string>
+    <string name="filter_not_completed">Показывать не только завершённое</string>
 
     <!-- Groups bottom panel -->
     <string name="display_groups_title">Показать группы</string>
