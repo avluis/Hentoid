@@ -11,6 +11,9 @@
     <string name="pref_endless_scroll_summary_on">Scorri fino al contenuto del tuo cuore.</string>
     <string name="pref_quantity_per_page_title">Quantità per pagina</string>
     <string name="pref_quantity_per_page_summary">Numero di elementi per pagina nell\'elenco dei download. \nAttualmente: <x:g id="count" example="10">%s</x:g> elementi</string>
+    <string name="pref_top_fab_title">Pulsante vai in cima</string>
+    <string name="pref_top_fab_summary_off">Pulsante disattivato</string>
+    <string name="pref_top_fab_summary_on">Pulsante attivato</string>
     <string name="pref_cat_search">Ricerca avanzata</string>
     <string name="pref_attributes_list_order_title">Ordine di selezione del metadata visualizzato</string>
     <string name="pref_attributes_list_count_title">Conta i libri disponibili</string>
@@ -35,7 +38,7 @@
     <string name="pref_folder_trunc_summary">Riduci il nome della cartella \nAttualmente: <x:g id="chars" example="80 characters">%s</x:g></string>
     <string name="pref_memory_usage_title">Utilizzo della memoria</string>
     <string name="pref_memory_usage_summary">Spazio libero attuale: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (tocca per i dettagli)</string>
-    <string name="pref_memory_alert_title">Avvisa con memoria bassa</string>
+    <string name="pref_memory_alert_title">Avvisa con memoria bassa </string>
     <string name="pref_cat_external">Libreria esterna</string>
     <string name="pref_external_library_title">Libreria esterna</string>
     <string name="pref_external_library_summary_empty">Nessuna libreria esterna impostata</string>
