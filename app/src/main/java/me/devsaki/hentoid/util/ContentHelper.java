@@ -29,6 +29,7 @@ import org.threeten.bp.Instant;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
@@ -177,8 +178,10 @@ public final class ContentHelper {
         if (null == file)
             throw new IllegalArgumentException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
-        try {
-            JsonHelper.updateJson(context, JsonContent.fromEntity(content), JsonContent.class, file);
+        try (OutputStream output = FileHelper.getOutputStream(context, file)) {
+            if (output != null)
+                JsonHelper.updateJson(JsonContent.fromEntity(content), JsonContent.class, output);
+            else Timber.w("JSON file creation failed for %s", file.getUri());
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getJsonUri());
         }
