@@ -29,6 +29,7 @@ import org.threeten.bp.Instant;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.net.URL;
@@ -159,7 +160,7 @@ public final class ContentHelper {
         Intent intent = new Intent(context, Content.getWebActivityClass(content.getSite()));
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
         bundle.setUrl(content.getGalleryUrl());
-        intent.putExtras(bundle.toBundle());
+        intent.putExtras(bundle.getBundle());
         if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
@@ -177,8 +178,10 @@ public final class ContentHelper {
         if (null == file)
             throw new IllegalArgumentException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
-        try {
-            JsonHelper.updateJson(context, JsonContent.fromEntity(content), JsonContent.class, file);
+        try (OutputStream output = FileHelper.getOutputStream(context, file)) {
+            if (output != null)
+                JsonHelper.updateJson(JsonContent.fromEntity(content), JsonContent.class, output);
+            else Timber.w("JSON file creation failed for %s", file.getUri());
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", content.getJsonUri());
         }
@@ -265,7 +268,7 @@ public final class ContentHelper {
 
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageUri());
 
-        ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
+        ImageViewerActivityBundle builder = new ImageViewerActivityBundle();
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
         if (pageNumber > -1) builder.setPageNumber(pageNumber);
@@ -942,7 +945,7 @@ public final class ContentHelper {
 
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
         bundle.setUrl(targetUrl);
-        intent.putExtras(bundle.toBundle());
+        intent.putExtras(bundle.getBundle());
 
         context.startActivity(intent);
     }

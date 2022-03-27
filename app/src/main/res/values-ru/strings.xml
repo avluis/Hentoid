@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-<string name="app_intro">Добро пожаловать</string>
-<string name="yes">Да</string>
-<string name="no">Нет</string>
-    <string name="ok" tools:ignore="MissingTranslation">ОК</string>
+    <!-- Generic usage -->
+    <string name="app_intro">Добро пожаловать</string>
+    <!-- because Android default "OK" value for "yes" key is nonsense -->
+    <string name="yes">Да</string>
+    <!-- because Android default "Cancel" value for "no" key is nonsense -->
+    <string name="no">Нет</string>
+    <string name="ok">ОК</string>
     <string name="on">Вкл.</string>
     <string name="off">Выкл.</string>
     <string name="select_all">Выбрать всё</string>
@@ -27,7 +30,7 @@
         <item quantity="few">файла</item>
         <item quantity="many">файлов</item>
     </plurals>
-    <string name="undo">Отменить</string>
+    <string name="groups">Группы</string>
     <string name="pause">Приостановить</string>
     <string name="stop">Остановить</string>
     <string name="resume">Возобновить</string>
@@ -37,14 +40,20 @@
     <string name="service_running">Сервис уже запущен</string>
     <string name="open_folder">Открыть папку</string>
     <string name="_default">по умолчанию</string>
-<string name="title_activity_api29_migration">Переход на API 29</string>
+    <string name="empty">пусто</string>
+    <string name="none">Никак</string>
+
+    <!-- Activities -->
+    <string name="title_activity_api29_migration">Переход на API 29</string>
     <string name="title_activity_downloads">Библиотека</string>
     <string name="title_activity_queue">Очередь</string>
     <string name="title_activity_preferences">Настройки</string>
     <string name="title_activity_about">О Hentoid</string>
     <string name="title_activity_app_lock">Код-пароль</string>
     <string name="title_activity_search">Расширенный поиск</string>
-<string name="api29_migration_title">Hentoid v12\nОбновление управления файлами</string>
+
+    <!-- API29 migration / library refresh screen -->
+    <string name="api29_migration_title">Hentoid v12\nОбновление управления файлами</string>
     <string name="api29_migration_subtitle">Hentoid обновляет вашу коллекцию.\nЭто может занять несколько минут.</string>
     <string name="api29_migration_location">Расположение папки Hentoid\n<x:g id="path" example="/storage/emulated/0/Hentoid">%s</x:g></string>
     <string name="api29_migration_step1">Папка Hentoid</string>
@@ -57,30 +66,31 @@
     <string name="api29_migration_step4_init">Импорт очереди…</string>
     <string name="api29_migration_select_folder">Пожалуйста, выберите существующую папку Hentoid. Её расположение показано на экране.</string>
     <string name="api29_migration_allow_write">Пожалуйста, подтвердите разрешение на запись</string>
-<string name="menu_search">Поиск</string>
+
+    <!-- Library screen toolbar -->
+    <string name="menu_search">Поиск</string>
     <string name="menu_fav">Показать избранное</string>
-    <string name="menu_comp">Показать завершённые</string>
     <string name="menu_mark_fav">Избранные</string>
     <string name="menu_group_new">Новая группа</string>
-    <string name="menu_edit_order">Редактировать порядок</string>
-    <string name="menu_edit_name">Редактировать название</string>
+    <string name="menu_edit_order">Пересортировать</string>
+    <string name="menu_edit_name">Переименовать</string>
+    <string name="menu_edit_confirm">Подтвердить редактирование</string>
     <string name="menu_edit_cancel">Отменить редактирование</string>
     <string name="menu_edit_warning_custom">Новая пользовательская сортировка заменит предыдущую.</string>
     <string name="menu_order">Сортировать книги</string>
     <string name="menu_delete_single">Удалить</string>
-    <string name="menu_delete_multi">Удалить элементы</string>
     <string name="menu_change_group">Переместить в группу…</string>
     <string name="menu_open_folder">Открыть родительскую папку</string>
     <string name="menu_redownload">Загрузить снова</string>
     <string name="menu_redownload_scratch">Загрузить с нуля</string>
-    <string name="menu_stream">Переключиться на потоковую передачу</string>
+    <string name="menu_stream">Передавать потоком</string>
     <string name="menu_download_streamed">Загрузить</string>
     <string name="menu_select_all">Выбрать всё</string>
     <string name="menu_share">Поделиться</string>
     <string name="menu_share_help">Поделиться ссылкой на книгу и её названием через стороннее приложение</string>
-    <string name="menu_share_title">Ссылка на книгу</string>
     <string name="menu_archive">В архив</string>
     <string name="menu_archive_help">Заархивировать книгу в ZIP</string>
+    <string name="menu_share_title">Ссылка на книгу</string>
     <string name="search_hint">Название, художник, тэг или ID книги</string>
     <string name="send_to">Поделиться через:</string>
     <string name="open_settings">Настройки</string>
@@ -90,10 +100,12 @@
     <string name="low_memory">Заканчивается память на устройстве!</string>
     <string name="fix_permissions">Исправить</string>
     <string name="view_queue">Просмотреть очередь</string>
-<string name="downloader_title">Загрузчик</string>
+
+    <!-- Queue / Downloader -->
+    <string name="downloader_title">Загрузчик</string>
     <string name="queue_queue_tab">В процессе</string>
     <string name="queue_errors_tab">Ошибки</string>
-    <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
+    <plurals name="ask_cancel_multiple" tools:ignore="ImpliedQuantity">
         <item quantity="one">Отменить выбранный элемент\?</item>
         <item quantity="few">Отменить выбранные элементы\?</item>
         <item quantity="many">Отменить выбранные элементы\?</item>
@@ -101,10 +113,7 @@
     <string name="invert_queue">Инвертировать порядок</string>
     <string name="redownload_all">Загрузить всё снова</string>
     <string name="cancel_all_errors">Отменить все ошибки</string>
-    <string name="canceled">Отменено</string>
     <string name="move_top">В начало</string>
-    <string name="move_up">Вверх</string>
-    <string name="move_down">Вниз</string>
     <string name="move_bottom">В конец</string>
     <string name="queue_paused">Очередь приостановлена</string>
     <string name="queue_preparing">Подготовка загрузки</string>
@@ -136,6 +145,7 @@
     <string name="step_prepare_folder">Подготовка папки загрузок</string>
     <string name="step_prepare_download">Подготовка цепочки загрузок</string>
     <string name="step_save_queue">Сохранение очереди</string>
+    <string name="step_wait_purge">Очистка в процессе…</string>
     <string name="step_start_download">Начата цепочка загрузок!</string>
     <string name="help_swipe_cancel">Вы можете отменять загрузки свайпом влево</string>
     <string name="redownloaded_error">Возникла проблема при повторной загрузке — отменено</string>
@@ -160,11 +170,13 @@
         <item quantity="many">(<x:g id="errors" example="5">%d</x:g> ошибок)</item>
     </plurals>
     <string name="queue_bottom_bar_retry">[попытка <x:g id="number" example="1">%1$d</x:g> из <x:g id="total" example="42">%2$d</x:g>]</string>
-    <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> Кб/с</string>
-    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> МБ, <x:g id="speed_kbps" example="102.4">%3$d</x:g> Кб/c</string>
+    <string name="queue_bottom_bar_speed"><x:g id="formatted_speed_kbps" example="/102.4">%d</x:g> Кб/с</string>
+    <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> МБ, <x:g id="speed_kbps" example="102.4">%3$d</x:g> Кб/c</string>
     <string name="download_notif_failed">Загрузка не удалась</string>
     <string name="download_notif_failed_details">Невозможно загрузить <x:g id="book_name" example="Крутая хентай-манга">%1$s</x:g>: не удалось создать папку <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Пожалуйста, проверьте папку Hentoid и повторите загрузку с помощью кнопки \'!\'.</string>
-<string name="work_series">Сеттинг: <x:g id="series" example="original">%s</x:g></string>
+
+    <!-- TextViews -->
+    <string name="work_series">Сеттинг: <x:g id="series" example="original">%s</x:g></string>
     <string name="work_artist">Художник: <x:g id="artist" example="hayao miyazaki">%s</x:g></string>
     <plurals name="work_pages_missing">
         <item quantity="one">(<x:g id="number" example="1">%d</x:g> пропущена)</item>
@@ -191,11 +203,8 @@
     <string name="errortype_blocked">Книга помечена заблокированным тэгом</string>
     <string name="errortype_undefined">Неизвестно</string>
 
-
-
-
-
-<string name="refresh_title">Обновить библиотеку</string>
+    <!-- Refresh library -->
+    <string name="refresh_title">Обновить библиотеку</string>
     <string name="refresh_caption">Автоматически обновить библиотеку, сканируя файлы и папки снова.</string>
     <string name="refresh_options">Опции очистки</string>
     <string name="refresh_location_internal">Библиотека Hentoid</string>
@@ -204,10 +213,11 @@
     <string name="refresh_options_remove">Удалить папки, в которых…</string>
     <string name="refresh_options_remove_1">Отсутствует JSON-файл (рекомендуется)</string>
     <string name="refresh_options_remove_2">Отсутствуют изображения</string>
-    <string name="refresh_options_remove_3">JSON-файл не читаем (не рекомендуется)</string>
     <string name="refresh_options_remove_or">или</string>
-<string name="delete_title">Удалить всё, кроме избранных</string>
-    <string name="generic_progress" tools:ignore="MissingTranslation"><x:g id="number" example="7">%1$d</x:g> из <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="книг">%3$s</x:g></string>
+
+    <!-- Delete all except favs -->
+    <string name="delete_title">Удалить всё, кроме избранных</string>
+    <string name="generic_progress"><x:g id="number" example="7">%1$d</x:g> из <x:g id="total" example="42">%2$d</x:g> <x:g id="type" example="книг">%3$s</x:g></string>
     <plurals name="book_progress">
         <item quantity="one"><x:g id="number" example="1">%1$d</x:g> книга из <x:g id="total" example="42">%2$d</x:g></item>
         <item quantity="few"><x:g id="number" example="2">%1$d</x:g> книги из <x:g id="total" example="42">%2$d</x:g></item>
@@ -218,7 +228,9 @@
         <item quantity="few"><x:g id="number" example="2">%1$d</x:g> группы из <x:g id="total" example="42">%2$d</x:g></item>
         <item quantity="many"><x:g id="number" example="5">%1$d</x:g> групп из <x:g id="total" example="42">%2$d</x:g></item>
     </plurals>
-<string name="import_title">Импорт метаданных</string>
+
+    <!-- Import metadata -->
+    <string name="import_title">Импорт метаданных</string>
     <string name="import_mode_add">Добавить импортированные элементы</string>
     <string name="import_mode_replace">Заменить импортированными элементами</string>
     <string name="import_select_file">Выбор файла для импорта</string>
@@ -256,7 +268,9 @@
         <item quantity="many"><x:g id="number" example="5">%d</x:g> закладок успешно импортировано</item>
     </plurals>
     <string name="dialog_prompt">Выберите папку</string>
-<string name="export_title">Экспорт метаданных</string>
+
+    <!-- Export metadata -->
+    <string name="export_title">Экспорт метаданных</string>
     <plurals name="export_file_library">
         <item quantity="one">Экспорт библиотеки (<x:g id="number" example="1">%d</x:g> книга)</item>
         <item quantity="few">Экспорт библиотеки (<x:g id="number" example="2">%d</x:g> книги)</item>
@@ -279,7 +293,8 @@
     <string name="export_run">ЗАПУСТИТЬ ЭКСПОРТ</string>
     <string name="import_settings_title">Импорт настроек</string>
     <string name="import_settings_success">Успешно импортировано</string>
-<string name="open_app_settings">Открыть настройки приложения</string>
+
+    <!-- Import Activity -->
     <string name="permissioncomplaint_snackbar">Вы должны предоставить разрешения перед тем, как продолжить</string>
     <string name="permissioncomplaint_snackbar_manual">Вы должны вручную предоставить разрешения перед тем, как продолжить</string>
     <string name="import_canceled">Импорт отменён</string>
@@ -295,10 +310,7 @@
     <string name="library_imports_title">Импорт библиотеки</string>
     <string name="starting_import">Импорт начинается…</string>
     <string name="importing_library">Импорт библиотеки</string>
-    <string name="importing_please_wait">Импортирую, пожалуйста, подождите…</string>
-    <string name="updating_please_wait">Обновляю, пожалуйста, подождите…</string>
     <string name="import_complete">Импорт завершён</string>
-    <string name="import_complete_details">Импорт завершён</string>
     <plurals name="import_complete_details_success">
         <item quantity="one">Успешно импортировано: <x:g id="number" example="1">%s</x:g></item>
         <item quantity="few">Успешно импортировано: <x:g id="number" example="2">%s</x:g></item>
@@ -309,7 +321,9 @@
         <item quantity="few">Не удалось импортировать: <x:g id="number" example="2">%s</x:g></item>
         <item quantity="many">Не удалось импортировать: <x:g id="number" example="5">%s</x:g></item>
     </plurals>
-<string name="memory_title">Использование памяти</string>
+
+    <!-- Memory usage -->
+    <string name="memory_title">Использование памяти</string>
     <string name="memory_total">Всего: <x:g id="total" example="100 МБ">%s</x:g></string>
     <string name="memory_free">Свободно: <x:g id="total" example="50 МБ">%s</x:g></string>
     <string name="memory_hentoid_main">Hentoid (основное хранилище): <x:g id="total" example="2 МБ">%s</x:g></string>
@@ -319,7 +333,9 @@
     <string name="memory_details_source">Источник</string>
     <string name="memory_details_books">Книги</string>
     <string name="memory_details_size">Размер</string>
-<string name="logs_title">Последние логи</string>
+
+    <!-- Logs -->
+    <string name="logs_title">Последние логи</string>
     <string name="logs_open">Открыть лог</string>
     <string name="read_log">Читать лог</string>
     <string name="logs_share">Поделиться логом</string>
@@ -328,24 +344,26 @@
     <string name="log_import">Обновление/импорт основной библиотеки</string>
     <string name="log_cleanup">Очистка основной библиотеки</string>
     <string name="log_api29_migration">Миграция библиотеки с Hentoid 1.11</string>
-<string name="error_write_permission">У вас нет прав на запись в этой папке, попробуйте другую.</string>
+
+    <!-- Errors -->
+    <string name="error_write_permission">У вас нет прав на запись в этой папке, попробуйте другую.</string>
     <string name="error_creating_folder">Ошибка создания папки.</string>
     <string name="error_open">Ошибка открытия файла: не найдено подходящего приложения</string>
     <string name="error_browser">Ошибка открытия ссылки: не обнаружен браузер</string>
-    <string name="error_send">Ошибка отправки архива: не найдено подходящего приложения</string>
-<string name="redownload_dialog_title">Попытаться загрузить снова\?</string>
+
+    <!-- Error log -->
+    <string name="redownload_dialog_title">Попытаться загрузить снова\?</string>
     <string name="redownload_dialog_message">Всего изображений в загрузке: <x:g id="total_imgs" example="10">%1$d</x:g>\nИзображений без ошибок: <x:g id="fine_imgs" example="8">%2$d</x:g>\nИзображений с ошибками: <x:g id="failed_imgs" example="2">%3$d</x:g></string>
     <string name="redownload_first_error">Первая ошибка: <x:g id="errortype">%s</x:g></string>
     <string name="redownload_action">ЗАГРУЗИТЬ СНОВА</string>
     <string name="redownload_open_log">Открыть лог ошибок</string>
     <string name="redownload_share_log">Поделиться логами ошибок</string>
     <string name="redownload_generating_log_file">Генерирую файл логов…</string>
-<string name="resume_closed">Возобновить чтение\?</string>
+
+    <!-- Library fragment -->
+    <string name="resume_closed">Возобновить чтение\?</string>
     <string name="open_drawer">Открыть меню</string>
     <string name="close_drawer">Закрыть меню</string>
-    <string name="ask_filter_completed">Как бы вы хотели обращаться с дочитанными книгами?</string>
-    <string name="filter_completed">Показывать только дочитанные</string>
-    <string name="filter_not_completed">Показывать только недочитанные</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Удалить <x:g id="count" example="1">%d</x:g> выбранный элемент\?</item>
         <item quantity="few">Удалить <x:g id="count" example="2">%d</x:g> выбранных элемента\?</item>
@@ -397,7 +415,6 @@
     <string name="downloads_loading">Загружаю~</string>
     <string name="masterdata_no_result">Нет результатов :(</string>
     <string name="search_entry_not_found">Тут такого нет, иди, скачай это.</string>
-    <string name="packaging_content">Упаковываю файлы.\nПожалуйста, подождите…</string>
     <string name="search_bookid_label">Поиск <x:g id="launchcode" example="4567">\'%s\'</x:g> в…</string>
     <string name="book_launchcode">ID: <x:g id="launchcode" example="4567">\'%s\'</x:g></string>
     <plurals name="number_of_items">
@@ -410,11 +427,10 @@
         <item quantity="few"><x:g id="number" example="2">%1$d</x:g> результата из <x:g id="total" example="7">%2$d</x:g></item>
         <item quantity="many"><x:g id="number" example="5">%1$d</x:g> результатов из <x:g id="total" example="7">%2$d</x:g></item>
     </plurals>
-    <string name="reset">Разрешения были сброшены.\nПриложение перезапускается.</string>
-    <string name="restart_needed">\"Изменения будут применены после перезапуска Hentoid\"</string>
+    <string name="restart_needed">Изменения будут применены после перезапуска Hentoid</string>
     <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
         <item quantity="one">Загрузить эту книгу снова\?</item>
-        <item quantity="few">Загрузить эту книгу снова\?</item>
+        <item quantity="few">Загрузить эти книги снова\?</item>
         <item quantity="many">Загрузить эти книги снова\?</item>
     </plurals>
     <plurals name="download_confirm" tools:ignore="ImpliedQuantity">
@@ -442,7 +458,6 @@
         <item quantity="few"><x:g id="count" example="2">%d</x:g> книги уже стримятся или находятся во внешней библиотеке\nЭти книги будут пропущены.</item>
         <item quantity="many"><x:g id="count" example="5">%d</x:g> книг уже стримятся или находятся во внешней библиотеке\nЭти книги будут пропущены.</item>
     </plurals>
-    <string name="about_to_delete">Книга будет удалена…</string>
     <string name="help_search">Ищите по чему угодно: названию, художнику, тэгам\nи даже ID книги!</string>
     <string name="help_page_slider">Вы можете проводить пальцем по номерам страниц</string>
     <plurals name="items_selected">
@@ -485,7 +500,9 @@
         <item quantity="many">Удалить группы и книги</item>
     </plurals>
     <string name="group_delete_nothing">Нечего удалять — включите опцию \"Разрешить удалять внешний контент\"</string>
-<string name="merge_merge">Совместить</string>
+
+    <!-- Merge & split -->
+    <string name="merge_merge">Совместить</string>
     <string name="merge_progress">Совмещаю книги…</string>
     <string name="split_progress">Разделяю книгу…</string>
     <string name="merge_split">Разделить</string>
@@ -496,15 +513,23 @@
     <string name="split_create_chapters">Создать главы</string>
     <string name="merge_success">Успешно совмещено</string>
     <string name="split_success">Успешно разделено</string>
-<string name="groups_flat">Все книги</string>
+
+    <!-- Groupings -->
+    <string name="groups_flat">Все книги</string>
     <string name="groups_by_artist">По художникам</string>
     <string name="groups_by_dl_date">По дате загрузки</string>
-    <string name="groups_custom">Своё</string>
+    <string name="groups_custom">Свои группы</string>
     <string name="no_artist_group_name">[без художника]</string>
-<string name="sort_title">По названиям</string>
+
+    <!-- Sort / filter bottom panel -->
+    <string name="sort_ascending">По возрастающей</string>
+    <string name="sort_descending">По убывающей</string>
+    <string name="sort_reshuffle">Пересортировать</string>
+    <string name="sort_title">По названиям</string>
     <string name="sort_artist">По художникам</string>
     <string name="sort_pages">По страницам</string>
-    <string name="sort_dl_date">По дате загрузки</string>
+    <string name="sort_dl_date">По дате начала загрузки</string>
+    <string name="sort_dl_completion_date">По дате завершения загрузки</string>
     <string name="sort_read_date">По дате чтения</string>
     <string name="sort_reads">По прочтениям</string>
     <string name="sort_size">По размеру</string>
@@ -513,16 +538,30 @@
     <string name="sort_custom">Своё</string>
     <string name="sort_invalid">-неверно-</string>
     <string name="sort_books">По кол-ву книг</string>
-<string name="drag_help">Переместить элемент</string>
+    <string name="sort_uplodad_date">По дате начала загрузки</string>
+    <string name="library_filters_title">Фильтры</string>
+    <string name="library_filter_favourite_help">Отображение избранных книг</string>
+    <string name="filter_completed">Показывать только завершённое</string>
+    <string name="filter_not_completed">Показывать не только завершённое</string>
+
+    <!-- Groups bottom panel -->
+    <string name="display_groups_title">Показать группы</string>
+    <string name="display">Показать</string>
+    <string name="display_artists">Художники</string>
+    <string name="display_groups">Группы</string>
+
+    <!-- Item card tooltips -->
+    <string name="drag_help">Переместить элемент</string>
     <string name="external_help">Находится во внешней библиотеке</string>
     <string name="streamed_help">Книга передаётся потоком</string>
     <string name="view_source_help">Просмотреть источник в браузере</string>
     <string name="fav_help">Добавить/убрать из избранного</string>
-<string name="show_artists">Художники</string>
-    <string name="show_groups">Группы</string>
-    <string name="show_artists_and_groups">Художники и группы</string>
+
+    <!-- Visibility fields -->
     <string name="launchcode_present">У вас уже есть эта книга. Искать в других источниках\?</string>
-<string name="updates_title">Обновления</string>
+
+    <!-- Updates -->
+    <string name="updates_title">Обновления</string>
     <string name="checking_updates">Проверка обновлений</string>
     <string name="update_available">Доступно обновление!</string>
     <string name="tap_to_download">Нажмите для загрузки</string>
@@ -531,36 +570,38 @@
     <string name="downloading_update">Загружается обновление</string>
     <string name="update_ready">Обновление готово!</string>
     <string name="tap_to_install">Нажмите для установки</string>
-    <string name="error_dependency">Произошла ошибка при сравнении зависимостей обновления.\nПожалуйста, попробуйте позднее.</string>
-    <string name="error_network_summary">Ошибка сети, пожалуйста, попробуйте позднее.</string>
-    <string name="error_file">Не удалось найти файл обновления на сервере.</string>
-    <string name="update_check_no_update">Проверка обновлений: Нет новых версий.</string>
-<string name="alert_orange">Учтите, что загрузки могут не работать на этом сайте.</string>
+
+    <!-- Alerts -->
+    <string name="alert_orange">Учтите, что загрузки могут не работать на этом сайте.</string>
     <string name="alert_red">Кнопка загрузки пока что не работает на этом сайте.</string>
     <string name="alert_grey">Этот сайт сейчас работает нестабильно. Приложение не может ничего с этим сделать. Пожалуйста, попробуйте позднее.</string>
     <string name="alert_black">Этот сайт сейчас недоступен. Приложение не может ничего с этим сделать. Пожалуйста, попробуйте позднее.</string>
     <string name="alert_wip">Команда разработчиков Hentoid работает над исправлением. Мы уведомим вас, когда новая версия приложения будет доступна.</string>
     <string name="alert_fix_available">Исправление доступно в последней версии приложения. Пожалуйста, установите обновление.</string>
-<string name="app_lock_pin">Введите код-пароль</string>
-    <string name="app_lock_pin_prefs">Код-пароль приложения</string>
+
+    <!-- App Lock -->
+    <string name="app_lock_pin">Введите код-пароль</string>
     <string name="app_lock_enable">Блокировка включена</string>
     <string name="app_lock_disabled">Блокировка выключена</string>
     <string name="pin_reset">Изменить код-пароль</string>
     <string name="pin_reset_success">Код-пароль изменён</string>
-    <string name="pin_ok">Код-пароль верный!</string>
     <string name="pin_current">Введите текущий код-пароль</string>
     <string name="pin_new">Введите новый код-пароль</string>
     <string name="pin_new_confirm">Подтвердите новый код-пароль</string>
     <string name="pin_explanation">Блокировка кодом-паролем предотвращает использование этого приложения без предварительной авторизации с помощью 4-значного PIN-кода</string>
     <string name="pin_lock_on_restore">Блокировать при\nповторном открытии</string>
-<string name="about1"><b>Hentoid</b> — это приложение для скачивания додзинси и хентай-манги. Hentoid изначально был создан <b>Сесаром Арасаки</b>.</string>
+
+    <!-- About Activity -->
+    <string name="about1"><b>Hentoid</b> — это приложение для скачивания додзинси и хентай-манги. Hentoid изначально был создан <b>Сесаром Арасаки</b>.</string>
     <string name="personalDataStatement1"><b>ЗАЯВЛЕНИЕ О КОНФИДЕНЦИАЛЬНОСТИ ПЕРСОНАЛЬНЫХ ДАННЫХ</b>\n\nHentoid — это бесплатное програмное обеспечение с открытым исходным кодом, разрабатываемое сообществом Hentoid (присоединяйтесь к нам в Discord по ссылке ниже)</string>
     <string name="personalDataStatement2">Hentoid собирает следующие персональные данные и делится ими с Google для обработки с помощью библиотеки Firebase:\n - Идентификатор сессии\n - IP-адрес</string>
     <string name="personalDataStatement3">Вышеупомянутые данные удаляются как из действующей, так и из запасной систем Firebase в течение 180 дней (подробности доступны на https://firebase.google.com/support/privacy/)\n\nНикакие другие персональные данные не собираются и не передаются третьим лицам.</string>
     <string name="about_licenses">Показать лицензии</string>
-    <string name="about_app_version" tools:ignore="MissingTranslation">Версия Hentoid: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
-    <string name="about_chrome_version" tools:ignore="MissingTranslation">Версия Chrome: <x:g id="chrome_ver" example="98">%1$d</x:g></string>
-<string name="web_gallery">Назад к последней странице галереи</string>
+    <string name="about_app_version">Версия Hentoid: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
+    <string name="about_chrome_version">Версия Chrome: <x:g id="chrome_ver" example="98">%1$d</x:g></string>
+
+    <!-- Web browser -->
+    <string name="web_gallery">Назад к последней странице галереи</string>
     <string name="web_home">Назад к галерее</string>
     <string name="web_back">Назад</string>
     <string name="web_forward">Вперёд</string>
@@ -581,22 +622,25 @@
     <string name="bookmark_homepage">Домашняя страница</string>
     <string name="torrent_dl_fail">Не удалось начать стриминг: <x:g id="torrent">%s</x:g></string>
     <string name="web_storage_permission_denied">Отсутствует разрешение на запись — невозможно использовать загрузчик</string>
-<string name="help_web_fakku_account">Hentoid не может работать с FAKKU без их аккаунта. Пожалуйста, создайте его или используйте существующий.</string>
-    <string name="help_web_fakku_premium">Эта книга не может быть просмотрена с вашим аккаунтом FAKKU.</string>
+    <!-- Web browser (site specifics) -->
     <string name="help_web_exh_account">Пожалуйста, создайте или используйте существующий аккаунт exHentai.</string>
     <string name="help_web_invalid_exh_credentials">Неверные данные, пожалуйста, повторите попытку входа</string>
     <string name="help_web_incomplete_exh_credentials">Авторизация не завершена, пожалуйста, повторите попытку входа. Если проблема сохраняется, попробуйте посетить сайт из другой страны или создайте новый аккаунт.</string>
-<string name="category_any">Любое</string>
+
+    <!-- SearchActivity -->
+    <string name="category_any">Любое</string>
     <string name="exclude">Исключить</string>
     <string name="search_category">Ищем <x:g id="search_category" example="язык">%s</x:g></string>
     <string name="search_prompt">Искать <x:g id="search_prompt">%s</x:g></string>
-<string name="category_artist">Художник (<x:g id="count" example="2">%1$d</x:g>)</string>
+    <!-- Used as a category on the search screen -->
+    <string name="category_artist">Художник (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_tag">Тэг (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_character">Персонаж (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_series">Сеттинг (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_language">Язык (<x:g id="count" example="2">%1$d</x:g>)</string>
     <string name="category_source">Источник (<x:g id="count" example="2">%1$d</x:g>)</string>
-<string name="object_artist">художника</string>
+    <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
+    <string name="object_artist">художника</string>
     <string name="object_tag">тэг</string>
     <string name="object_character">персонажа</string>
     <string name="object_series">сеттинг</string>
@@ -613,11 +657,11 @@
         <item quantity="many">Найдено <x:g id="count" example="5">%s</x:g> результатов</item>
     </plurals>
     <string name="search_select_a_filter">Выберите фильтр</string>
-<string name="maintenance">Выполняется обслуживание</string>
-<string name="no_images">Не удалось загрузить книгу: Не найдено ни одного изображения</string>
+
+    <!-- Image viewer -->
+    <string name="no_images">Не удалось загрузить книгу: Не найдено ни одного изображения</string>
     <string name="loading_archive">Загрузка: <x:g id="number" example="1">%1$d</x:g> из <x:g id="total" example="42">%2$d</x:g></string>
     <string name="loading_image">Загрузка изображения: <x:g id="percentage" example="50%">%d%%</x:g></string>
-    <string name="no_image">Изображение не найдено</string>
     <string name="viewer_img_details"><x:g id="dimen_x" example="800">%1$d</x:g> x <x:g id="dimen_y" example="600">%2$d</x:g> (масштаб <x:g id="scale_percentage" example="100%">%3$.0f%%</x:g>) - <x:g id="file_size" example="544.40 КБ">%4$s</x:g></string>
     <string name="viewer_choose_direction">Выберите направление чтения</string>
     <string name="viewer_direction_ltr">Слева направо</string>
@@ -632,12 +676,9 @@
     <string name="viewer_filter_favourite_on">Показывать все страницы</string>
     <string name="viewer_filter_favourite_help">Показ избранных страниц</string>
     <string name="viewer_make_cover">Установить как обложку</string>
-    <string name="viewer_page_menu">Меню страницы</string>
-    <string name="viewer_page_menu_help">Открыть настройки страницы</string>
     <string name="viewer_delete_book">Удалить книгу</string>
     <string name="copy_download_folder_success">Скопировано в Загрузки</string>
     <string name="copy_download_folder_fail">Не удалось скопировать в Загрузки</string>
-    <string name="viewer_ask_delete_book">Удалить эту книгу\?</string>
     <string name="viewer_ask_delete_page">Удалить эту страницу\?</string>
     <string name="information_help">Информация</string>
     <string name="previous_book_help">Предыдущая книга</string>
@@ -658,10 +699,6 @@
     <string name="book_prefs">Настройки книги</string>
     <string name="goto_app_prefs">Настройки приложения</string>
     <string name="use_app_prefs">Использовать настройки приложения (<x:g id="app_default" example="Сверху вниз">%s</x:g>)</string>
-    <string name="page_details">Подробности о странице</string>
-    <string name="book_details">Подробности о книге</string>
-    <string name="page_favourite_toggle">Избранное (страница)</string>
-    <string name="book_favourite_toggle">Избранное (книга)</string>
     <string name="page_favourite_success">Страница добавлена в избранное</string>
     <string name="page_unfavourite_success">Страница удалена из избранного</string>
     <string name="book_favourite_success">Книга добавлена в избранное</string>
@@ -690,14 +727,20 @@
     <string name="slideshow_start">Начало слайдшоу (задержка в <x:g id="time" example="0.5">%.1f</x:g> с)</string>
     <string name="slideshow_stop">Слайдшоу остановлено</string>
     <string name="ask_clear_chapters">Удалить все главы?</string>
-<string name="view_changelog">Что нового\?</string>
+
+    <!-- Changelog -->
+    <string name="view_changelog">Что нового\?</string>
     <string name="view_changelog_flagged">Что нового\?*</string>
     <string name="changelog">Что нового\?</string>
     <string name="get_latest">Доступна новая версия (<x:g id="version" example="1.18.1">%1$s</x:g>)</string>
     <string name="update_success">Обновление завершено!</string>
     <string name="starting_download">Загрузка начата</string>
-<string name="title_activity_drawer_edit">Меню редактирования</string>
-<string name="title_activity_duplicate_detector">Поиск дубликатов</string>
+
+    <!-- Edit drawer -->
+    <string name="title_activity_drawer_edit">Меню редактирования</string>
+
+    <!-- Duplicate detector -->
+    <string name="title_activity_duplicate_detector">Поиск дубликатов</string>
     <string name="duplicate_use_title">Название</string>
     <string name="duplicate_use_cover">Обложка</string>
     <string name="duplicate_use_artist">Художник</string>
@@ -723,7 +766,6 @@
     <string name="duplicate_cover_score_nodata">Обложка: нет данных</string>
     <string name="duplicate_artist_score">Художник: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
     <string name="duplicate_artist_score_nodata">Художник: нет данных</string>
-    <string name="apply_processing">Применить (осталось <x:g id="remaining" example="5">%d</x:g>)</string>
     <string name="apply_final">Применить</string>
     <string name="duplicate_notif_start">Начинаю определение дубликатов</string>
     <string name="duplicate_notif_complete_title">Определение дубликатов завершено</string>
@@ -742,18 +784,20 @@
     <string name="duplicate_empty_no_result">Дубликатов не обнаружено</string>
     <string name="duplicate_keep">Оставить</string>
     <string name="duplicate_delete">Удалить</string>
-<string name="duplicate_alert">Внимание: дубликат!</string>
+
+    <!-- Duplicate dialog -->
+    <string name="duplicate_alert">Внимание: дубликат!</string>
     <string name="duplicate_alert_subtitle_book">Книга, которую вы собираетесь загрузить, может быть дубликатом книги, которая у вас уже есть.</string>
     <string name="duplicate_alert_subtitle_pages">Книга, страницы которой вы собираетесь загрузить, может быть не той, которая у вас есть.</string>
-    <string name="duplicate_alert_in_library">В библиотеке</string>
-    <string name="duplicate_alert_in_queue">В очереди</string>
     <string name="duplicate_alert_always_download">Всегда загружать и больше не спрашивать</string>
     <string name="duplicate_alert_never_extra_on_dupes">Никогда больше не добавлять страницы из потенциальных дубликатов</string>
     <string name="duplicate_alert_similarity">Схожесть: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
     <string name="duplicate_alert_download_book">Загрузить книгу</string>
     <string name="duplicate_alert_download_pages">Загрузить дополнительные страницы</string>
     <string name="duplicate_wait_index">Пожалуйста, подождите — идёт индексирование</string>
-<string name="notif_archive_title">Архивирование контента</string>
+
+    <!-- Generic delete & purge -->
+    <string name="notif_archive_title">Архивирование контента</string>
     <string name="notif_delete_title">Удаление контента</string>
     <string name="notif_delete_complete">Удаление завершено</string>
     <plurals name="notif_delete_complete_details">
@@ -763,21 +807,27 @@
     </plurals>
     <string name="notif_delete_fail">Удаление не удалось</string>
     <string name="notif_delete_fail_details">Не удалось удалить по крайней мере одну книгу</string>
-<string name="title_startup">Запуск</string>
+
+    <!-- Startup -->
+    <string name="title_startup">Запуск</string>
     <string name="title_startup_progress">Запускается…</string>
     <string name="title_startup_complete">Запуск завершён</string>
-<string name="group_today">Сегодня</string>
+
+    <!-- Group names -->
+    <string name="group_today">Сегодня</string>
     <string name="group_7">На неделе</string>
     <string name="group_30">За этот месяц</string>
     <string name="group_60">За последние 60 дней</string>
     <string name="group_year">За последний год</string>
     <string name="group_long">Давно</string>
     <string name="group_no_group">Без группы</string>
-<string name="theme_light">Светлая</string>
+
+    <!-- Themes -->
+    <string name="theme_light">Светлая</string>
     <string name="theme_deep_red">Тёмно-красная</string>
     <string name="theme_dark">Тёмная</string>
 
-    <!-- Языки книг -->
+    <!-- Languages -->
     <string name="lang_en">английский</string>
     <string name="lang_zh">китайский</string>
     <string name="lang_ja">японский</string>
@@ -796,17 +846,13 @@
     <string name="lang_tr">турецкий</string>
     <string name="lang_cs">чешский</string>
 
-
-
-
-
-<string name="select_file_manager">Выберите ваш файловый менеджер</string>
-    <string name="default_permission">Стандартное разрешение</string>
-    <string name="u_byte" tools:ignore="MissingTranslation">б.</string>
-    <string name="u_kilobyte" tools:ignore="MissingTranslation">КБ</string>
-    <string name="u_megabyte" tools:ignore="MissingTranslation">МБ</string>
-    <string name="u_gigabyte" tools:ignore="MissingTranslation">ГБ</string>
-    <string name="u_terabyte" tools:ignore="MissingTranslation">ТБ</string>
-    <string name="u_petabyte" tools:ignore="MissingTranslation">ПБ</string>
-    <string name="u_exabyte" tools:ignore="MissingTranslation">ЭБ</string>
+    <!-- Misc -->
+    <string name="select_file_manager">Выберите ваш файловый менеджер</string>
+    <string name="u_byte">б.</string>
+    <string name="u_kilobyte">КБ</string>
+    <string name="u_megabyte">МБ</string>
+    <string name="u_gigabyte">ГБ</string>
+    <string name="u_terabyte">ТБ</string>
+    <string name="u_petabyte">ПБ</string>
+    <string name="u_exabyte">ЭБ</string>
 </resources>

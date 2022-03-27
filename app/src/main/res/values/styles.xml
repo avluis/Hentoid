@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="TextButton">
         <item name="android:padding">16dp</item>
@@ -8,6 +8,19 @@
         <item name="android:foreground">?attr/selectableItemBackground</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
+    </style>
+
+    <style name="HentoidButtonOutlinedStyle" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/secondary_color_selector_check</item>
+        <item name="android:textColor">@color/secondary_text_color_selector_check</item>
+        <item name="iconTint">@color/secondary_text_color_selector_check</item>
+    </style>
+
+    <style name="HentoidMaterialButtonOutlinedStyle" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="strokeColor">@color/secondary_color_selector</item>
+        <item name="android:textColor">@color/secondary_text_color_selector</item>
+        <item name="iconTint">@color/secondary_text_color_selector</item>
+        <item name="rippleColor">?colorSecondary</item>
     </style>
 
     <style name="SearchCategoryButton">

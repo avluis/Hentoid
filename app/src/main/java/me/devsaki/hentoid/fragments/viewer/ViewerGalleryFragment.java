@@ -144,10 +144,10 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
             if (null == oldImage || null == newImage) return false;
 
-            ImageItemBundle.Builder diffBundleBuilder = new ImageItemBundle.Builder();
+            ImageItemBundle diffBundleBuilder = new ImageItemBundle();
 
             if (oldImage.isFavourite() != newImage.isFavourite()) {
-                diffBundleBuilder.setIsFavourite(newImage.isFavourite());
+                diffBundleBuilder.setFavourite(newImage.isFavourite());
             }
             if (oldItem.getChapterOrder() != newItem.getChapterOrder()) {
                 diffBundleBuilder.setChapterOrder(newItem.getChapterOrder());

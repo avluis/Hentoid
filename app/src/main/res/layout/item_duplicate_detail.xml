@@ -198,7 +198,7 @@
             android:textColor="?colorSecondary"
             android:textSize="@dimen/caption"
             android:textStyle="bold"
-            app:drawableStartCompat="@drawable/ic_check"
+            app:drawableStartCompat="@drawable/ic_checked"
             app:drawableTint="?colorSecondary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/guideline_middle"

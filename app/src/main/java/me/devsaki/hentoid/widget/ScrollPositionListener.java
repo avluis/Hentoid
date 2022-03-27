@@ -74,16 +74,20 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
                 if (!(llm.findLastVisibleItemPosition() == llm.getItemCount() - 1 || 0 == llm.findFirstVisibleItemPosition()))
                     return;
 
+                if (null == onEndOutOfBoundScroll || null == onStartOutOfBoundScroll) return;
+
                 int scrollDirection = 0;
                 if (llm instanceof PrefetchLinearLayoutManager)
                     scrollDirection = ((PrefetchLinearLayoutManager) llm).getRawDeltaPx();
 
                 if (recyclerView.computeHorizontalScrollOffset() == dragStartPositionX && !isSettlingX && llm.canScrollHorizontally()) {
-                    if ((!llm.getReverseLayout() && scrollDirection >= 0) || (llm.getReverseLayout() && scrollDirection < 0)) onEndOutOfBoundScroll.run();
+                    if ((!llm.getReverseLayout() && scrollDirection >= 0) || (llm.getReverseLayout() && scrollDirection < 0))
+                        onEndOutOfBoundScroll.run();
                     else onStartOutOfBoundScroll.run();
                 }
                 if (recyclerView.computeVerticalScrollOffset() == dragStartPositionY && !isSettlingY && llm.canScrollVertically()) {
-                    if ((!llm.getReverseLayout() && scrollDirection >= 0) || (llm.getReverseLayout() && scrollDirection < 0)) onEndOutOfBoundScroll.run();
+                    if ((!llm.getReverseLayout() && scrollDirection >= 0) || (llm.getReverseLayout() && scrollDirection < 0))
+                        onEndOutOfBoundScroll.run();
                     else onStartOutOfBoundScroll.run();
                 }
             }

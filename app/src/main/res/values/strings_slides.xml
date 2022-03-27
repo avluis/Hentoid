@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Slide 01 -->
     <string name="slide_01_header">Welcome to Hentoid!</string>
     <string name="slide_01_text">Hentoid is a Doujinshi\n&amp; H-Manga archiving app.</string>
-    <!-- Slide 02 -->
     <string name="slide_02_header">Permissions</string>
     <string name="slide_02_text">We need to ask for your permission to store files on your device.</string>
-    <!-- Slide 04 -->
     <string name="slide_04_header">Library</string>
     <string name="slide_04_text">Hentoid requires a dedicated folder for storing your media.</string>
     <!-- Button -->
@@ -14,15 +11,12 @@
     <!-- Dialog title -->
     <string name="slide_04_skip_title">Skip\?</string>
     <string name="slide_04_skip_msg">You won\'t be able to download if you skip this step.\nIn order to download, you\'ll have to set the download folder through the app settings.</string>
-    <!-- Slide 05 -->
     <string name="slide_05_header">Theme</string>
     <string name="slide_05_text">Choose a display theme.</string>
-    <!-- Slide 06 -->
     <string name="slide_06_header">Sources</string>
     <!-- Description text -->
     <string name="slide_06_text">Select sources to download from.</string>
     <string name="slide_06_subtext">You can change this selection later at any time using the edit button on the left menu.</string>
-    <!-- Last slide -->
     <string name="slide_end_header">All set up!</string>
     <string name="slide_end_text">We are set!\nEnjoy the app.</string>
 </resources>

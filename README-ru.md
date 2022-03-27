@@ -12,7 +12,7 @@ ___
 
 ![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome-ru.png)
 
-###### [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/en-flag.svg) English](https://github.com/avluis/Hentoid/tree/master/README.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/ru-flag.svg) Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md)
+###### [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/en-flag.svg) English](https://github.com/avluis/Hentoid/tree/master/README.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/ru-flag.svg) Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/uk-flag.svg) Українська](https://github.com/avluis/Hentoid/tree/master/README-uk.md)
 
 ##### `Hentoid` — это приложение для скачивания додзинси и хентай-манги без рекламы.
 ###### `Hentoid` поддерживает следующие сайты:
@@ -21,7 +21,7 @@ ___
 ##### Посетите [вики Hentoid](https://github.com/AVnetWS/Hentoid/wiki), если вам нужна помощь с установкой `Hentoid` на ваше устройство.
 ##### Последнюю версию можно найти [здесь](https://github.com/AVnetWS/Hentoid/releases/latest).
 
-##### Не забывайте о [ЧаВО](https://github.com/avluis/Hentoid/wiki/FAQ), если у вас есть какие-либо проблемы
+##### Не забывайте о [ЧаВО](https://github.com/avluis/Hentoid/wiki/FAQ), если у вас есть какие-либо проблемы.
 ##### На нашем [сервере в Discord](https://discord.gg/QEZ3qk9) вы можете пообщаться с другими пользователями, узнать про последние объявления, найти бета-версии или просто пообщаться с командой разработчиков.
 ### Учтите: язык сервера — английский. Пожалуйста, не пишите на нём по-русски.
 ___

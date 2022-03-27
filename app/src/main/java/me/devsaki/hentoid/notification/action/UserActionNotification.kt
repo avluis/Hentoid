@@ -29,9 +29,9 @@ class UserActionNotification(val site: Site, private val oldCookie: String) : No
         val resultIntent = Intent(context, QueueActivity::class.java)
         resultIntent.flags =
             Intent.FLAG_ACTIVITY_CLEAR_TOP or FLAG_ACTIVITY_NEW_TASK// or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        val bundleBuilder = QueueActivityBundle.Builder()
-        bundleBuilder.setReviveDownload(site)
-        bundleBuilder.setReviveOldCookie(oldCookie)
+        val bundleBuilder = QueueActivityBundle()
+        bundleBuilder.reviveDownloadForSiteCode = site.code
+        bundleBuilder.reviveOldCookie = oldCookie
         resultIntent.putExtras(bundleBuilder.bundle)
 
         val flags =

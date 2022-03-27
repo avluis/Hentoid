@@ -122,7 +122,7 @@ public final class ViewerPrefsDialogFragment extends DialogFragment {
 
             PrefsBundle prefsBundle = new PrefsBundle();
             prefsBundle.setViewerPrefs(true);
-            intent.putExtras(prefsBundle.toBundle());
+            intent.putExtras(prefsBundle.getBundle());
 
             requireContext().startActivity(intent);
         });

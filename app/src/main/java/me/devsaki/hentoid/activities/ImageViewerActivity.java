@@ -50,7 +50,7 @@ public class ImageViewerActivity extends BaseActivity {
         if (null == intent || null == intent.getExtras())
             throw new IllegalArgumentException("Required init arguments not found");
 
-        ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
+        ImageViewerActivityBundle parser = new ImageViewerActivityBundle(intent.getExtras());
         long contentId = parser.getContentId();
         if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
         int pageNumber = parser.getPageNumber();

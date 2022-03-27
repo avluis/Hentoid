@@ -6,7 +6,7 @@ public class CommunicationEvent {
 
     public static final int EV_SEARCH = 1;
     public static final int EV_ADVANCED_SEARCH = 2;
-    public static final int EV_UPDATE_SORT = 4;
+    public static final int EV_UPDATE_TOOLBAR = 4;
     public static final int EV_CLOSED = 5;
     public static final int EV_ENABLE = 6;
     public static final int EV_DISABLE = 7;

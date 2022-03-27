@@ -27,6 +27,7 @@ public class EHentaiGalleriesMetadata {
 
         private String gid;
         private String token;
+        private String posted;
         private String title;
         private String thumb;
         private String filecount;
@@ -40,6 +41,8 @@ public class EHentaiGalleriesMetadata {
                     .setCoverImageUrl(thumb)
                     .setTitle(title)
                     .setStatus(StatusContent.SAVED);
+
+            if (!posted.isEmpty()) content.setUploadDate(Long.parseLong(posted) * 1000);
 
             if (updatePages) {
                 if (filecount != null) content.setQtyPages(Integer.parseInt(filecount));

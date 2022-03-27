@@ -82,12 +82,12 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
                 newItem: DuplicateItem,
                 newItemPosition: Int
             ): Any? {
-                val diffBundleBuilder = DuplicateItemBundle.Builder()
+                val diffBundleBuilder = DuplicateItemBundle()
                 if (oldItem.keep != newItem.keep) {
-                    diffBundleBuilder.setKeep(newItem.keep)
+                    diffBundleBuilder.isKeep = newItem.keep
                 }
                 if (oldItem.isBeingDeleted != newItem.isBeingDeleted) {
-                    diffBundleBuilder.setIsBeingDeleted(newItem.isBeingDeleted)
+                    diffBundleBuilder.isBeingDeleted = newItem.isBeingDeleted
                 }
                 return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
             }

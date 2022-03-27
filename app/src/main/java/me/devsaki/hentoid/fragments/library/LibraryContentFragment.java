@@ -6,7 +6,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
@@ -22,12 +22,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -35,11 +33,9 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.annotation.DimenRes;
-import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -54,6 +50,7 @@ import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -122,6 +119,7 @@ import me.devsaki.hentoid.widget.AddQueueMenu;
 import me.devsaki.hentoid.widget.AutofitGridLayoutManager;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.devsaki.hentoid.widget.LibraryPager;
+import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
@@ -152,14 +150,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private RecyclerView recyclerView;
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
-
-    // === SORT TOOLBAR
-    // Sort direction button
-    private ImageView sortDirectionButton;
-    // Sort reshuffle button
-    private View sortReshuffleButton;
-    // Sort field button
-    private TextView sortFieldButton;
+    // "Go to top" FAB
+    private FloatingActionButton topFab;
+    // Scroll listener for the top FAB
+    private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
 
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<ContentItem> itemAdapter;
@@ -185,6 +179,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private Group group = null;
     // TODO doc
     private boolean enabled = true;
+    // TODO doc
+    private Bundle contentSearchBundle = null;
 
     // Used to start processing when the recyclerView has finished updating
     private Debouncer<Integer> listRefreshDebouncer;
@@ -215,13 +211,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         @Nullable
         @Override
         public Object getChangePayload(@NonNull Content oldItem, @NonNull Content newItem) {
-            ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
+            ContentItemBundle diffBundleBuilder = new ContentItemBundle();
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
-                diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+                diffBundleBuilder.setFavourite(newItem.isFavourite());
             }
             if (oldItem.isCompleted() != newItem.isCompleted()) {
-                diffBundleBuilder.setIsCompleted(newItem.isCompleted());
+                diffBundleBuilder.setCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
@@ -261,13 +257,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
             if (null == oldItem || null == newItem) return false;
 
-            ContentItemBundle.Builder diffBundleBuilder = new ContentItemBundle.Builder();
+            ContentItemBundle diffBundleBuilder = new ContentItemBundle();
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
-                diffBundleBuilder.setIsFavourite(newItem.isFavourite());
+                diffBundleBuilder.setFavourite(newItem.isFavourite());
             }
             if (oldItem.isCompleted() != newItem.isCompleted()) {
-                diffBundleBuilder.setIsCompleted(newItem.isCompleted());
+                diffBundleBuilder.setCompleted(newItem.isCompleted());
             }
             if (oldItem.getReads() != newItem.getReads()) {
                 diffBundleBuilder.setReads(newItem.getReads());
@@ -324,12 +320,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel.getNewSearch().observe(getViewLifecycleOwner(), this::onNewSearch);
+        viewModel.getNewContentSearch().observe(getViewLifecycleOwner(), this::onNewSearch);
         viewModel.getLibraryPaged().observe(getViewLifecycleOwner(), this::onLibraryChanged);
         viewModel.getTotalContent().observe(getViewLifecycleOwner(), this::onTotalContentChanged);
         viewModel.getGroup().observe(getViewLifecycleOwner(), this::onGroupChanged);
-
-        viewModel.updateContentOrder(); // Trigger a blank search
+        viewModel.getContentSearchManagerBundle().observe(getViewLifecycleOwner(), b -> contentSearchBundle = b);
 
         // Display pager tooltip
         if (pager.isVisible()) pager.showTooltip(getViewLifecycleOwner());
@@ -353,10 +348,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void initUI(@NonNull View rootView) {
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
 
-        sortDirectionButton = activity.get().getSortDirectionButton();
-        sortReshuffleButton = activity.get().getSortReshuffleButton();
-        sortFieldButton = activity.get().getSortFieldButton();
-
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
         if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
@@ -364,13 +355,22 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         else
             llm = new AutofitGridLayoutManager(requireContext(), (int) getResources().getDimension(R.dimen.card_grid_width));
         recyclerView.setLayoutManager(llm);
+        recyclerView.addOnScrollListener(scrollListener);
         new FastScrollerBuilder(recyclerView).build();
+
+        // Top FAB
+        topFab = requireViewById(rootView, R.id.top_fab);
+        topFab.setOnClickListener(v -> llm.scrollToPositionWithOffset(0, 0));
+        topFab.setOnLongClickListener(v -> {
+            Preferences.setTopFabEnabled(false);
+            topFab.setVisibility(View.GONE);
+            return true;
+        });
 
         // Pager
         pager.initUI(rootView);
         setPagingMethod(Preferences.getEndlessScroll(), false);
 
-        updateSortControls();
         addCustomBackControl();
     }
 
@@ -383,56 +383,6 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             }
         };
         activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
-    }
-
-    private void updateSortControls() {
-        // Sort controls
-        sortDirectionButton.setImageResource(Preferences.isContentSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-        sortDirectionButton.setOnClickListener(v -> {
-            boolean sortDesc = !Preferences.isContentSortDesc();
-            Preferences.setContentSortDesc(sortDesc);
-            // Update icon
-            sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-            // Run a new search
-            viewModel.updateContentOrder();
-            activity.get().sortCommandsAutoHide(true, null);
-        });
-        sortReshuffleButton.setOnClickListener(v -> {
-            viewModel.shuffleContent();
-            viewModel.updateContentOrder();
-            activity.get().sortCommandsAutoHide(true, null);
-        });
-        sortFieldButton.setText(getNameFromFieldCode(Preferences.getContentSortField()));
-        sortFieldButton.setOnClickListener(v -> {
-            // Load and display the field popup menu
-            PopupMenu popup = new PopupMenu(requireContext(), sortFieldButton, Gravity.END);
-            popup.getMenuInflater()
-                    .inflate(R.menu.library_books_sort_popup, popup.getMenu());
-
-            popup.getMenu().findItem(R.id.sort_custom).setVisible(group != null && group.hasCustomBookOrder);
-            popup.setOnMenuItemClickListener(item -> {
-                // Update button text
-                sortFieldButton.setText(item.getTitle());
-                item.setChecked(true);
-                int fieldCode = getFieldCodeFromMenuId(item.getItemId());
-                if (fieldCode == Preferences.Constant.ORDER_FIELD_RANDOM) {
-                    viewModel.shuffleContent();
-                    sortDirectionButton.setVisibility(View.GONE);
-                    sortReshuffleButton.setVisibility(View.VISIBLE);
-                } else {
-                    sortReshuffleButton.setVisibility(View.GONE);
-                    sortDirectionButton.setVisibility(View.VISIBLE);
-                }
-
-                Preferences.setContentSortField(fieldCode);
-                // Run a new search
-                viewModel.updateContentOrder();
-                activity.get().sortCommandsAutoHide(true, popup);
-                return true;
-            });
-            popup.show(); //showing popup menu
-            activity.get().sortCommandsAutoHide(true, popup);
-        }); //closing the setOnClickListener method
     }
 
     private String getQuery() {
@@ -451,73 +401,10 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         activity.get().setMetadata(attrs);
     }
 
-    private int getFieldCodeFromMenuId(@IdRes int menuId) {
-        switch (menuId) {
-            case (R.id.sort_title):
-                return Preferences.Constant.ORDER_FIELD_TITLE;
-            case (R.id.sort_artist):
-                return Preferences.Constant.ORDER_FIELD_ARTIST;
-            case (R.id.sort_pages):
-                return Preferences.Constant.ORDER_FIELD_NB_PAGES;
-            case (R.id.sort_dl_date):
-                return Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE;
-            case (R.id.sort_read_date):
-                return Preferences.Constant.ORDER_FIELD_READ_DATE;
-            case (R.id.sort_reads):
-                return Preferences.Constant.ORDER_FIELD_READS;
-            case (R.id.sort_size):
-                return Preferences.Constant.ORDER_FIELD_SIZE;
-            case (R.id.sort_reading_progress):
-                return Preferences.Constant.ORDER_FIELD_READ_PROGRESS;
-            case (R.id.sort_custom):
-                return Preferences.Constant.ORDER_FIELD_CUSTOM;
-            case (R.id.sort_random):
-                return Preferences.Constant.ORDER_FIELD_RANDOM;
-            default:
-                return Preferences.Constant.ORDER_FIELD_NONE;
-        }
-    }
+    private void enterEditMode() {
+        activity.get().setEditMode(true);
 
-    private int getNameFromFieldCode(int prefFieldCode) {
-        switch (prefFieldCode) {
-            case (Preferences.Constant.ORDER_FIELD_TITLE):
-                return R.string.sort_title;
-            case (Preferences.Constant.ORDER_FIELD_ARTIST):
-                return R.string.sort_artist;
-            case (Preferences.Constant.ORDER_FIELD_NB_PAGES):
-                return R.string.sort_pages;
-            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
-                return R.string.sort_dl_date;
-            case (Preferences.Constant.ORDER_FIELD_READ_DATE):
-                return R.string.sort_read_date;
-            case (Preferences.Constant.ORDER_FIELD_READS):
-                return R.string.sort_reads;
-            case (Preferences.Constant.ORDER_FIELD_SIZE):
-                return R.string.sort_size;
-            case (Preferences.Constant.ORDER_FIELD_READ_PROGRESS):
-                return R.string.sort_reading_progress;
-            case (Preferences.Constant.ORDER_FIELD_CUSTOM):
-                return R.string.sort_custom;
-            case (Preferences.Constant.ORDER_FIELD_RANDOM):
-                return R.string.sort_random;
-            default:
-                return R.string.sort_invalid;
-        }
-    }
-
-    private void toggleEditMode() {
-        activity.get().toggleEditMode();
-
-        // Leave edit mode by validating => Save new item position
-        if (!activity.get().isEditMode()) {
-            // Set ordering field to custom
-            Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
-            sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
-            // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
-            Preferences.setContentSortDesc(false);
-            viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList(), this::refreshIfNeeded);
-            group.hasCustomBookOrder = true;
-        } else if (group.hasCustomBookOrder) { // Enter edit mode -> warn if a custom order already exists
+        if (group.hasCustomBookOrder) { // Warn if a custom order already exists
             new MaterialAlertDialogBuilder(requireContext(), ThemeHelper.getIdForCurrentTheme(requireContext(), R.style.Theme_Light_Dialog))
                     .setIcon(R.drawable.ic_warning)
                     .setTitle(R.string.app_name)
@@ -527,7 +414,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                     .setNegativeButton(R.string.no,
                             (dialog2, which) -> {
                                 dialog2.dismiss();
-                                cancelEditMode();
+                                cancelEdit();
                             })
                     .create()
                     .show();
@@ -536,18 +423,35 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
     }
 
-    private void cancelEditMode() {
+    private void cancelEdit() {
         activity.get().setEditMode(false);
         setPagingMethod(Preferences.getEndlessScroll(), false);
+    }
+
+    private void confirmEdit() {
+        activity.get().setEditMode(false);
+
+        // == Save new item position
+        // Set ordering field to custom
+        Preferences.setContentSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
+        // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
+        Preferences.setContentSortDesc(false);
+        viewModel.saveContentPositions(Stream.of(itemAdapter.getAdapterItems()).map(ContentItem::getContent).withoutNulls().toList(), this::refreshIfNeeded);
+        group.hasCustomBookOrder = true;
+
+        setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
     }
 
     private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
-                toggleEditMode();
+                enterEditMode();
+                break;
+            case R.id.action_edit_confirm:
+                confirmEdit();
                 break;
             case R.id.action_edit_cancel:
-                cancelEditMode();
+                cancelEdit();
                 break;
             default:
                 return activity.get().toolbarOnItemClicked(menuItem);
@@ -929,18 +833,17 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onActivityEvent(CommunicationEvent event) {
-        if (event.getRecipient() != RC_CONTENTS || null == sortDirectionButton) return;
+        if (event.getRecipient() != RC_CONTENTS) return;
         switch (event.getType()) {
+            case EV_UPDATE_TOOLBAR:
+                addCustomBackControl();
+                activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
+                break;
             case EV_SEARCH:
                 if (event.getMessage() != null) onSubmitSearch(event.getMessage());
                 break;
             case EV_ADVANCED_SEARCH:
                 onAdvancedSearchButtonClick();
-                break;
-            case EV_UPDATE_SORT:
-                updateSortControls();
-                addCustomBackControl();
-                activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
                 break;
             case EV_ENABLE:
                 onEnable();
@@ -981,11 +884,8 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 new Handler(Looper.getMainLooper()).postDelayed(() -> activity.get().goBackToGroups(), 100);
             }
             // If none of the above and a search filter is on => clear search filter
-            else if (isSearchQueryActive()) {
-                setQuery("");
-                setMetadata(Collections.emptyList());
-                activity.get().hideSearchSortBar(false);
-                viewModel.searchContent(getQuery(), getMetadata());
+            else if (activity.get().isFilterActive()) {
+                viewModel.clearContentFilters();
             }
             // If none of the above, user is asking to leave => use double-tap
             else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
@@ -1006,10 +906,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void onSharedPreferenceChanged(String key) {
         Timber.i("Prefs change detected : %s", key);
         switch (key) {
+            case Preferences.Key.TOP_FAB:
+                topFab.setVisibility(Preferences.isTopFabEnabled() ? View.VISIBLE : View.GONE);
+                break;
             case Preferences.Key.ENDLESS_SCROLL:
                 setPagingMethod(Preferences.getEndlessScroll(), activity.get().isEditMode());
                 FirebaseCrashlytics.getInstance().setCustomKey("Library display mode", Preferences.getEndlessScroll() ? "endless" : "paged");
-                viewModel.updateContentOrder(); // Trigger a blank search
+                viewModel.searchContent(); // Trigger a blank search
                 break;
             default:
                 // Nothing to handle there
@@ -1036,13 +939,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void onAdvancedSearchButtonClick() {
         Intent search = new Intent(this.getContext(), SearchActivity.class);
 
-        SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
+        SearchActivityBundle builder = new SearchActivityBundle();
 
         if (!getMetadata().isEmpty())
-            builder.setUri(SearchActivityBundle.Builder.buildSearchUri(getMetadata()));
+            builder.setUri(SearchActivityBundle.Companion.buildSearchUri(getMetadata()).toString());
 
         if (group != null)
-            builder.setGroup(group.id);
+            builder.setGroupId(group.id);
 
         builder.setExcludeMode(excludeClicked);
         search.putExtras(builder.getBundle());
@@ -1057,13 +960,13 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     private void advancedSearchReturnResult(final ActivityResult result) {
         if (result.getResultCode() == Activity.RESULT_OK
                 && result.getData() != null && result.getData().getExtras() != null) {
-            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(result.getData().getExtras());
-            Uri searchUri = parser.getUri();
+            SearchActivityBundle parser = new SearchActivityBundle(result.getData().getExtras());
+            Uri searchUri = Uri.parse(parser.getUri());
 
             if (searchUri != null) {
                 excludeClicked = parser.getExcludeMode();
                 setQuery(searchUri.getPath());
-                setMetadata(SearchActivityBundle.Parser.parseSearchUri(searchUri));
+                setMetadata(SearchActivityBundle.Companion.parseSearchUri(searchUri));
                 viewModel.searchContent(getQuery(), getMetadata());
             }
         }
@@ -1076,7 +979,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void setPagingMethod(boolean isEndless, boolean isEditMode) {
         // Editing will always be done in Endless mode
-        viewModel.setPagingMethod(isEndless || isEditMode);
+        viewModel.setContentPagingMethod(isEndless || isEditMode);
 
         // RecyclerView horizontal centering
         ViewGroup.LayoutParams layoutParams = recyclerView.getLayoutParams();
@@ -1324,7 +1227,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">> Library changed ! Size=%s", result.size());
-        if (!enabled) return;
+        if (!enabled && !Preferences.getGroupingDisplay().equals(Grouping.FLAT)) return;
 
         activity.get().updateTitle(result.size(), totalContentCount);
 
@@ -1423,7 +1326,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     // TODO doc
     public void readBook(@NonNull Content content, boolean forceShowGallery) {
         topItemPosition = getTopItemPosition();
-        ContentHelper.openHentoidViewer(requireContext(), content, -1, viewModel.getSearchManagerBundle(), forceShowGallery);
+        ContentHelper.openHentoidViewer(requireContext(), content, -1, contentSearchBundle, forceShowGallery);
     }
 
     /**
@@ -1561,7 +1464,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void refreshIfNeeded() {
         if (Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()) || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
-            viewModel.updateContentOrder();
+            viewModel.searchContent();
     }
 
     /**
@@ -1569,6 +1472,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      * Activated when all _adapter_ items are placed on their definitive position
      */
     private void differEndCallback() {
+        Timber.v(">> differEndCallback");
         if (topItemPosition > -1) {
             int targetPos = topItemPosition;
             listRefreshDebouncer.submit(targetPos);
@@ -1653,5 +1557,19 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
         Content content = item.getContent();
         if (content != null)
             viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false, null);
+    }
+
+    /**
+     * Scroll / page change listener
+     *
+     * @param scrollPosition New 0-based scroll position
+     */
+    private void onScrollPositionChange(int scrollPosition) {
+        if (Preferences.isTopFabEnabled()) {
+            if (scrollPosition > 2)
+                topFab.setVisibility(View.VISIBLE);
+            else
+                topFab.setVisibility(View.GONE);
+        }
     }
 }

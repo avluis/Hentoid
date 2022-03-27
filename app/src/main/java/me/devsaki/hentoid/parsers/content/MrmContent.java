@@ -16,12 +16,15 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class MrmContent extends BaseContentParser {
     @Selector(value = "article h1", defValue = "")
     private String title;
+    @Selector(value = "time.entry-time", attr = "datetime", defValue = "")
+    private String uploadDate;
     @Selector(".entry-header .entry-meta .entry-categories a")
     private List<Element> categories;
     @Selector(value = ".entry-header .entry-terms a[href*='/lang/']")
@@ -43,6 +46,8 @@ public class MrmContent extends BaseContentParser {
             title = StringHelper.removeNonPrintableChars(title.trim());
             content.setTitle(title);
         } else content.setTitle(NO_TITLE);
+
+        content.setUploadDate(Helper.parseDatetimeToEpoch(uploadDate,"yyyy-MM-dd'T'HH:mm:ssXXX")); // e.g. 2022-03-20T00:09:43+07:00
 
         if (images != null && !images.isEmpty())
             content.setCoverImageUrl(ParseHelper.getImgSrc(images.get(0)));

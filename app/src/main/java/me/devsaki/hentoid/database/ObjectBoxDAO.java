@@ -456,7 +456,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
 
         // Order by latest download date of children (ObjectBox can't do that natively)
-        if (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE == orderField) {
+        if (Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE == orderField) {
             MediatorLiveData<List<Group>> result = new MediatorLiveData<>();
             result.addSource(workingData, groups -> {
                 int sortOrder = orderDesc ? -1 : 1;

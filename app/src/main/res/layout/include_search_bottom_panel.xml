@@ -12,17 +12,17 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:gravity="center"
-        android:text="@string/app_intro"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/tag_wait_image"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Category search" />
 
     <ImageView
         android:id="@+id/tag_wait_image"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_action_pause"
+        android:src="@drawable/ic_attribute_source"
         app:layout_constraintBottom_toTopOf="@+id/tag_wait_description"
         app:layout_constraintTop_toBottomOf="@+id/tag_wait_title"
         tools:ignore="ContentDescription" />
@@ -32,10 +32,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="@string/app_intro"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/tag_suggestion"
-        app:layout_constraintTop_toBottomOf="@+id/tag_wait_image" />
+        app:layout_constraintTop_toBottomOf="@+id/tag_wait_image"
+        tools:text="X results" />
 
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/tag_suggestion"

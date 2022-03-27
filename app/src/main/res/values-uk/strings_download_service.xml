@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <plurals name="download_completed">
+        <item quantity="one"><x:g id="number" example="1">%d</x:g> завантаження завершено</item>
+        <item quantity="few"><x:g id="number" example="2">%d</x:g> завантаження завершено</item>
+        <item quantity="many"><x:g id="number" example="5">%d</x:g> завантаження завершено</item>
+    </plurals>
+    <string name="download_complete">Завантаження завершено</string>
+    <string name="download_cancelled">Завантаження скасовано</string>
+    <string name="download_error">Завантаження завершено, але з помилками</string>
+    <plurals name="add_to_queue">
+        <item quantity="one"><x:g id="processed" example="1">%1$d</x:g> елемент із <x:g id="total" example="10">%2$d</x:g> додано до черги</item>
+        <item quantity="few"><x:g id="processed" example="2">%1$d</x:g> елементи з <x:g id="total" example="10">%2$d</x:g> додано до черги</item>
+        <item quantity="many"><x:g id="processed" example="5">%1$d</x:g> елементів із <x:g id="total" example="10">%2$d</x:g> додано до черги</item>
+    </plurals>
+    <string name="already_downloaded">Вже завантажено</string>
+    <string name="already_queued">Вже у черзі</string>
+</resources>

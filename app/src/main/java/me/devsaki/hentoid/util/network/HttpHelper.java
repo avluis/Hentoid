@@ -248,14 +248,23 @@ public class HttpHelper {
 
     /**
      * Add current cookies of the given URL to the given headers structure
+     * If the given header already has a cookie entry, it is removed and replaced with the one
+     * associated with the given URL.
      *
      * @param url     URL to get cookies for
-     * @param headers Structure to populate
+     * @param headers Structure to populate or update
      */
     public static void addCurrentCookiesToHeader(@NonNull final String url, @NonNull List<Pair<String, String>> headers) {
         String cookieStr = getCookies(url);
-        if (!cookieStr.isEmpty())
+        if (!cookieStr.isEmpty()) {
+            for (int i = 0; i < headers.size(); i++) {
+                if (headers.get(i).first.equals(HEADER_COOKIE_KEY)) {
+                    headers.remove(i);
+                    break;
+                }
+            }
             headers.add(new Pair<>(HEADER_COOKIE_KEY, cookieStr));
+        }
     }
 
     /**

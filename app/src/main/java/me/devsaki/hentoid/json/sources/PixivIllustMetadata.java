@@ -303,7 +303,7 @@ public class PixivIllustMetadata {
         content.setUrl(urlValue.replace(Site.PIXIV.getUrl(), ""));
 
         content.setCoverImageUrl(illustData.getThumbUrl());
-        content.setUploadDate(illustData.getUploadTimestamp());
+        content.setUploadDate(illustData.getUploadTimestamp() * 1000);
 
         content.putAttributes(getAttributes());
 

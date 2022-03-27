@@ -38,7 +38,7 @@
     <string name="pref_folder_trunc_content_entries_4">100 caratteri</string>
     <string name="pref_folder_trunc_content_entries_5">120 caratteri</string>
 <string name="pref_viewer_dl_action_entries_1">Scarica tutte le pagine</string>
-    <string name="pref_viewer_dl_action_entries_2">Trasmetti in streaming le pagine durante la lettura</string>
+    <string name="pref_viewer_dl_action_entries_2">Mostra le pagine mentre leggi</string>
 <string name="pref_attribute_list_order_entries_1">Alfabetico</string>
     <string name="pref_attribute_list_order_entries_2">Conteggio degli elementi (i più usati per primi)</string>
 <string name="pref_dl_retries_mem_limit_entries_4">Nessuno</string>

@@ -304,6 +304,7 @@ public class QueueViewModel extends AndroidViewModel {
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
 
         AtomicInteger errorCount = new AtomicInteger(0);
+        AtomicInteger okCount = new AtomicInteger(0);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
@@ -314,6 +315,7 @@ public class QueueViewModel extends AndroidViewModel {
                                 Content content = res.right.get();
                                 // Non-blocking performance bottleneck; run in a dedicated worker
                                 if (reparseImages) purgeItem(content);
+                                okCount.incrementAndGet();
                                 dao.addContentToQueue(
                                         content, targetImageStatus, position,
                                         ContentQueueManager.getInstance().isQueueActive(getApplication()));
@@ -335,13 +337,13 @@ public class QueueViewModel extends AndroidViewModel {
                                 errorCount.incrementAndGet();
                                 onError.accept(new EmptyResultException("Redownload from scratch -> Content unreachable"));
                             }
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, contentList.size() - errorCount.get(), errorCount.get(), contentList.size()));
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.generic_progress, 0, okCount.get(), errorCount.get(), contentList.size()));
                         })
                         .observeOn(AndroidSchedulers.mainThread())
                         .doOnComplete(() -> {
                             if (Preferences.isQueueAutostart())
                                 ContentQueueManager.getInstance().resumeQueue(getApplication());
-                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, contentList.size() - errorCount.get(), errorCount.get(), contentList.size()));
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, okCount.get(), errorCount.get(), contentList.size()));
                             onSuccess.accept(contentList.size() - errorCount.get());
                         })
                         .subscribe(

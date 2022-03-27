@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Choice for "Display type" setting -->
+    <string name="pref_library_display_entries_1">Список (за замовчуванням)</string>
+    <string name="pref_library_display_entries_2">Сітка</string>
+    <!-- Choice for "Alert on low memory" setting -->
+    <string name="pref_memory_alert_entries_1">Не повідомляти</string>
+    <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">коли заповнена на 90%</string>
+    <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">коли заповнена на 95%</string>
+    <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">коли заповнена на 98%</string>
+    <!-- Choice for "Quick download long press threshold" setting -->
+    <string name="pref_browser_quick_dl_threshold_entries_1">500 мс (за замовчуванням)</string>
+    <string name="pref_browser_quick_dl_threshold_entries_2">1 с</string>
+    <string name="pref_browser_quick_dl_threshold_entries_3">1.5 с</string>
+    <string name="pref_browser_quick_dl_threshold_entries_4">2 с</string>
+    <string name="pref_browser_quick_dl_threshold_entries_5">3 с</string>
+    <!-- Choice for "DNS over HTTPS entries" setting -->
+    <string name="pref_browser_dns_entries_1">Ніякий</string>
+    <!-- Choice for "New downloads position" setting -->
+    <string name="pref_queue_new_position_entries_1">Вгорі</string>
+    <string name="pref_queue_new_position_entries_2">Внизу</string>
+    <string name="pref_queue_new_position_entries_3">Завжди запитувати</string>
+    <!-- Choice for "Large downloads size threshold" setting -->
+    <string name="pref_dl_size_wifi_threshold_entries_1">Без обмеження на розмір</string>
+    <string name="pref_dl_size_wifi_threshold_entries_2">20 МБ</string>
+    <string name="pref_dl_size_wifi_threshold_entries_3">40 МБ</string>
+    <string name="pref_dl_size_wifi_threshold_entries_4">100 МБ</string>
+    <string name="pref_dl_size_wifi_threshold_entries_5">200 МБ</string>
+    <!-- Choice for "Large downloads pages threshold" setting -->
+    <string name="pref_dl_pages_wifi_threshold_entries_1">Без обмеження на кількість сторінок</string>
+    <string name="pref_dl_pages_wifi_threshold_entries_2">60 сторінок</string>
+    <string name="pref_dl_pages_wifi_threshold_entries_3">120 сторінок</string>
+    <string name="pref_dl_pages_wifi_threshold_entries_4">200 сторінок</string>
+    <string name="pref_dl_pages_wifi_threshold_entries_5">500 сторінок</string>
+    <!-- Choice for "Number of parallel downloads" setting -->
+    <string name="pref_dl_threads_quantity_entries_1">Автоматично (за замовчуванням)</string>
+    <string name="pref_dl_threads_quantity_entries_2">2 (повільний інтернет)</string>
+    <string name="pref_dl_threads_quantity_entries_6">10 (швидкий інтернет та продуктивний пристрій)</string>
+    <!-- Choice for "Book folder naming convention" setting -->
+    <string name="pref_folder_naming_content_entries_2">Назва - ID</string>
+    <string name="pref_folder_naming_content_entries_3">Художник - Назва - ID</string>
+    <string name="pref_folder_naming_content_entries_4">Назва - Художник - ID</string>
+    <!-- Choice for "Truncate folder name" setting -->
+    <string name="pref_folder_trunc_content_entries_1">Не скорочувати</string>
+    <string name="pref_folder_trunc_content_entries_2">60 символів</string>
+    <string name="pref_folder_trunc_content_entries_3">80 символів</string>
+    <string name="pref_folder_trunc_content_entries_4">100 символів</string>
+    <string name="pref_folder_trunc_content_entries_5">120 символів</string>
+    <!-- Choice for "Download action" setting -->
+    <string name="pref_viewer_dl_action_entries_1">Завантажувати усі сторінки</string>
+    <string name="pref_viewer_dl_action_entries_2">Передавати сторінки потоком (стріміти)</string>
+    <!-- Choice for "Sort order of displayed metadata" setting -->
+    <string name="pref_attribute_list_order_entries_1">За алфавітом</string>
+    <string name="pref_attribute_list_order_entries_2">Спочатку найбільш використовувані</string>
+    <!-- Choice for "Mem usage threshold before aborting" setting -->
+    <string name="pref_dl_retries_mem_limit_entries_4">Ніякий</string>
+    <!-- Choice for "Blocking behaviour" setting -->
+    <string name="pref_dl_blocked_tags_behaviour_entries_1">Не додавати в чергу</string>
+    <string name="pref_dl_blocked_tags_behaviour_entries_2">Додавати у чергу як невдалі завантаження</string>
+    <!-- Choice for "Browse mode" setting -->
+    <string name="pref_viewer_browse_mode_entries_1">Зліва направо</string>
+    <string name="pref_viewer_browse_mode_entries_2">Справа наліво</string>
+    <string name="pref_viewer_browse_mode_entries_3">Зверху вниз</string>
+    <!-- Choice for "Separating bars in vertical mode" setting -->
+    <string name="pref_viewer_separating_bars_entries_1">Вимк. (за замовчуванням)</string>
+    <string name="pref_viewer_separating_bars_entries_2">Маленькі</string>
+    <string name="pref_viewer_separating_bars_entries_3">Звичайні</string>
+    <string name="pref_viewer_separating_bars_entries_4">Великі</string>
+    <!-- Choice for "Mark book as read after N pages" setting -->
+    <string name="pref_viewer_read_threshold_entries_1">1 сторінка (за замовчуванням)</string>
+    <string name="pref_viewer_read_threshold_entries_2">2 сторінки</string>
+    <string name="pref_viewer_read_threshold_entries_3">5 сторінок</string>
+    <string name="pref_viewer_read_threshold_entries_4">Всі сторінки</string>
+    <!-- Choice for "Slideshow delay" setting -->
+    <string name="pref_viewer_slideshow_delay_entries_1">500 мс</string>
+    <string name="pref_viewer_slideshow_delay_entries_2">1 с</string>
+    <string name="pref_viewer_slideshow_delay_entries_3">2 с (за замовчуванням)</string>
+    <string name="pref_viewer_slideshow_delay_entries_4">4 с</string>
+    <string name="pref_viewer_slideshow_delay_entries_5">8 с</string>
+    <string name="pref_viewer_slideshow_delay_entries_6">16 с</string>
+    <!-- Choice for "Display mode" setting -->
+    <string name="pref_viewer_display_mode_entries_1">За розміром екрану (за замовчуванням)</string>
+    <string name="pref_viewer_display_mode_entries_2">Заповнити екран</string>
+    <string name="pref_viewer_display_mode_entries_3">Розтягнути на весь екран</string>
+    <!-- Choice for "Rendering mode" setting -->
+    <string name="pref_viewer_rendering_entries_1">Чітке відмальовування (за замовчуванням)</string>
+    <string name="pref_viewer_rendering_entries_2">Плавне відмальовування</string>
+    <!-- Choice for "Cap double & long tap zoom" setting -->
+    <string name="pref_viewer_cap_tap_zoom_entries_1">Не обмежувати</string>
+    <!-- Choice for "Lock timer" setting -->
+    <string name="pref_lock_timer_entries_1">Відразу</string>
+    <string name="pref_lock_timer_entries_2">10 с</string>
+    <string name="pref_lock_timer_entries_3">30 с (за замовчуванням)</string>
+    <string name="pref_lock_timer_entries_4">1 хв.</string>
+    <string name="pref_lock_timer_entries_5">2 хв.</string>
+</resources>

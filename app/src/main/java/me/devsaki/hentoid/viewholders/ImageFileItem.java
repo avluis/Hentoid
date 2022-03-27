@@ -165,7 +165,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
             // Payloads are set when the content stays the same but some properties alone change
             if (!payloads.isEmpty()) {
                 Bundle bundle = (Bundle) payloads.get(0);
-                ImageItemBundle.Parser bundleParser = new ImageItemBundle.Parser(bundle);
+                ImageItemBundle bundleParser = new ImageItemBundle(bundle);
 
                 Boolean boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.image.setFavourite(boolValue);

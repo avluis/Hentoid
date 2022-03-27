@@ -142,7 +142,7 @@ class CustomWebViewClient extends WebViewClient {
 
         checkmark = ImageHelper.BitmapToWebp(
                 ImageHelper.tintBitmap(
-                        ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_check),
+                        ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_checked),
                         HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );

@@ -967,7 +967,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         PrefsBundle prefsBundle = new PrefsBundle();
         prefsBundle.setDownloaderPrefs(true);
-        intent.putExtras(prefsBundle.toBundle());
+        intent.putExtras(prefsBundle.getBundle());
 
         requireContext().startActivity(intent);
     }

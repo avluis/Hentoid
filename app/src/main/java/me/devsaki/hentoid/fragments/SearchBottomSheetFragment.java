@@ -79,7 +79,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     // Current page of paged content (used to display the attributes list as an endless list)
     private int currentPage;
-    private long mTotalSelectedCount; // Total count of current available attributes
+    private int mTotalSelectedCount; // Total count of current available attributes
 
     // Selected attribute types (selection done in the activity view)
     private List<AttributeType> selectedAttributeTypes = new ArrayList<>();
@@ -98,9 +98,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private boolean excludeAttr = false;
 
     public static void invoke(@NonNull Context context, @NonNull FragmentManager fragmentManager, AttributeType[] types, boolean excludeClicked) {
-        SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
+        SearchActivityBundle builder = new SearchActivityBundle();
 
-        builder.setAttributeTypes(types);
+        ArrayList<Integer> attrTypes = new ArrayList<>(Stream.of(types).map(AttributeType::getCode).toList());
+        builder.setAttributeTypes(attrTypes);
         builder.setExcludeMode(excludeClicked);
 
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
@@ -115,8 +116,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         Bundle bundle = getArguments();
         if (bundle != null) {
-            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(bundle);
-            selectedAttributeTypes = parser.getAttributeTypes();
+            SearchActivityBundle parser = new SearchActivityBundle(bundle);
+            List<Integer> attributeTypeCodes = parser.getAttributeTypes();
+            if (null == attributeTypeCodes) attributeTypeCodes = Collections.emptyList();
+            selectedAttributeTypes = Stream.of(attributeTypeCodes).map(AttributeType::searchByCode).toList();
             excludeAttr = parser.getExcludeMode();
             long groupId = parser.getGroupId();
             currentPage = 1;
@@ -135,7 +138,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.include_search_filter_category, container, false);
+        View rootView = inflater.inflate(R.layout.include_search_bottom_panel, container, false);
         AttributeType mainAttr = selectedAttributeTypes.get(0);
 
         // Image that displays current metadata type icon (e.g. face icon for character)
@@ -257,7 +260,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 a.setName(LanguageHelper.getLocalNameFromLanguage(requireContext(), a.getName()));
         }
 
-        mTotalSelectedCount = results.totalSelectedAttributes/* - selectedAttributes.size()*/;
+        mTotalSelectedCount = (int) results.totalSelectedAttributes/* - selectedAttributes.size()*/;
         if (clearOnSuccess) attributeAdapter.clear();
         if (0 == mTotalSelectedCount) {
             String searchQuery = tagSearchView.getQuery().toString();

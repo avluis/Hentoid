@@ -30,7 +30,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.databinding.IncludeViewerContentInfoBinding;
+import me.devsaki.hentoid.databinding.IncludeViewerContentBottomPanelBinding;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -43,7 +43,7 @@ public class ViewerBottomContentFragment extends BottomSheetDialogFragment {
     private ImageViewerViewModel viewModel;
 
     // UI
-    private IncludeViewerContentInfoBinding binding = null;
+    private IncludeViewerContentBottomPanelBinding binding = null;
 
 
     static {
@@ -76,7 +76,7 @@ public class ViewerBottomContentFragment extends BottomSheetDialogFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = IncludeViewerContentInfoBinding.inflate(inflater, container, false);
+        binding = IncludeViewerContentBottomPanelBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 
