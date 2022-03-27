@@ -46,8 +46,6 @@ public class ExHentaiParser implements ImageListParser {
 
     private final ParseProgress progress = new ParseProgress();
 
-    private boolean processHalted = false;
-
 
     @Override
     public List<ImageFile> parseImageList(@NonNull Content onlineContent, @NonNull Content storedContent) throws Exception {
@@ -100,7 +98,7 @@ public class ExHentaiParser implements ImageListParser {
             progress.complete();
 
             // If the process has been halted manually, the result is incomplete and should not be returned as is
-            if (processHalted) throw new PreparationInterruptedException();
+            if (progress.isProcessHalted()) throw new PreparationInterruptedException();
         } finally {
             EventBus.getDefault().unregister(this);
         }
@@ -124,7 +122,7 @@ public class ExHentaiParser implements ImageListParser {
         progress.start(content.getId(), -1, pageCount);
 
         // B.2- Call the API to get the pictures URL
-        for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
+        for (int pageNum = 1; pageNum <= pageCount && !progress.isProcessHalted(); pageNum++) {
             EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum - 1).getKey(), mpvInfo.mpvkey, pageNum);
             String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
             Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, true, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
@@ -154,39 +152,7 @@ public class ExHentaiParser implements ImageListParser {
             @NonNull final List<Pair<String, String>> headers,
             boolean useHentoidAgent,
             boolean useWebviewAgent) throws IOException {
-        List<ImageFile> result = new ArrayList<>();
-
-        // A.1- Detect the number of pages of the gallery
-        Elements elements = galleryDoc.select("table.ptt a");
-        if (elements.isEmpty()) return result;
-
-        int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
-        int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
-
-        progress.start(content.getId(), -1, nbGalleryPages);
-
-        // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
-        List<String> pageUrls = new ArrayList<>();
-
-        EHentaiParser.fetchPageUrls(galleryDoc, pageUrls);
-
-        if (nbGalleryPages > 1) {
-            for (int i = 1; i < nbGalleryPages && !processHalted; i++) {
-                Document pageDoc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent, useWebviewAgent);
-                if (pageDoc != null) EHentaiParser.fetchPageUrls(pageDoc, pageUrls);
-                progress.advance();
-            }
-        }
-
-        // 3- Add all pages for the downloader to parse
-        result.add(ImageFile.newCover(content.getCoverImageUrl(), StatusContent.SAVED));
-
-        int order = 1;
-        for (String pageUrl : pageUrls) {
-            result.add(ImageFile.fromPageUrl(order++, pageUrl, StatusContent.SAVED, pageUrls.size()));
-        }
-
-        return result;
+        return EHentaiParser.loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent, progress);
     }
 
     @Nullable
@@ -210,7 +176,7 @@ public class ExHentaiParser implements ImageListParser {
             case DownloadEvent.Type.EV_PAUSE:
             case DownloadEvent.Type.EV_CANCEL:
             case DownloadEvent.Type.EV_SKIP:
-                processHalted = true;
+                progress.haltProcess();
                 break;
             default:
                 // Other events aren't handled here

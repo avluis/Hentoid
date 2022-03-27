@@ -50,8 +50,6 @@ public class EHentaiParser implements ImageListParser {
 
     private final ParseProgress progress = new ParseProgress();
 
-    private boolean processHalted = false;
-
     static class MpvInfo {
         Integer gid;
         String mpvkey;
@@ -126,16 +124,16 @@ public class EHentaiParser implements ImageListParser {
                     try {
                         result = loadMpv(mpvUrl, headers, useHentoidAgent, useWebviewAgent);
                     } catch (EmptyResultException e) {
-                        result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
+                        result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent, progress);
                     }
                 } else {
-                    result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
+                    result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent, progress);
                 }
             }
             progress.complete();
 
             // If the process has been halted manually, the result is incomplete and should not be returned as is
-            if (processHalted) throw new PreparationInterruptedException();
+            if (progress.isProcessHalted()) throw new PreparationInterruptedException();
         } finally {
             EventBus.getDefault().unregister(this);
         }
@@ -174,7 +172,7 @@ public class EHentaiParser implements ImageListParser {
 
         int pageCount = Math.min(mpvInfo.pagecount, mpvInfo.images.size());
 
-        for (int pageNum = 1; pageNum <= pageCount && !processHalted; pageNum++) {
+        for (int pageNum = 1; pageNum <= pageCount && !progress.isProcessHalted(); pageNum++) {
             // Get the URL of he 1st page as the cover
             if (1 == pageNum) {
                 EHentaiImageResponse imageMetadata = getMpvImage(mpvInfo.getImageInfo(0), headers, useHentoidAgent, useWebviewAgent);
@@ -190,12 +188,13 @@ public class EHentaiParser implements ImageListParser {
         return result;
     }
 
-    private List<ImageFile> loadClassic(
+    static List<ImageFile> loadClassic(
             @NonNull Content content,
             @NonNull final Document galleryDoc,
             @NonNull final List<Pair<String, String>> headers,
             boolean useHentoidAgent,
-            boolean useWebviewAgent) throws IOException {
+            boolean useWebviewAgent,
+            @NonNull ParseProgress progress) throws IOException {
         List<ImageFile> result = new ArrayList<>();
 
         // A.1- Detect the number of pages of the gallery
@@ -213,7 +212,7 @@ public class EHentaiParser implements ImageListParser {
         fetchPageUrls(galleryDoc, pageUrls);
 
         if (nbGalleryPages > 1) {
-            for (int i = 1; i < nbGalleryPages && !processHalted; i++) {
+            for (int i = 1; i < nbGalleryPages && !progress.isProcessHalted(); i++) {
                 Document pageDoc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, useHentoidAgent, useWebviewAgent);
                 if (pageDoc != null) fetchPageUrls(pageDoc, pageUrls);
                 progress.advance();
@@ -404,7 +403,7 @@ public class EHentaiParser implements ImageListParser {
             case DownloadEvent.Type.EV_PAUSE:
             case DownloadEvent.Type.EV_CANCEL:
             case DownloadEvent.Type.EV_SKIP:
-                processHalted = true;
+                progress.haltProcess();
                 break;
             case DownloadEvent.Type.EV_COMPLETE:
             case DownloadEvent.Type.EV_PREPARATION:
