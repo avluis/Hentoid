@@ -122,7 +122,7 @@ public class EHentaiParser implements ImageListParser {
                 if (!elements.isEmpty()) {
                     String mpvUrl = elements.get(0).attr("href");
                     try {
-                        result = loadMpv(mpvUrl, headers, useHentoidAgent, useWebviewAgent);
+                        result = loadMpv(mpvUrl, headers, useHentoidAgent, useWebviewAgent, progress);
                     } catch (EmptyResultException e) {
                         result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent, progress);
                     }
@@ -158,11 +158,12 @@ public class EHentaiParser implements ImageListParser {
         return JsonHelper.jsonToObject(bodyStr, EHentaiImageResponse.class);
     }
 
-    private List<ImageFile> loadMpv(
+    static List<ImageFile> loadMpv(
             @NonNull final String mpvUrl,
             @NonNull final List<Pair<String, String>> headers,
             boolean useHentoidAgent,
-            boolean useWebviewAgent) throws IOException, EmptyResultException {
+            boolean useWebviewAgent,
+            @NonNull ParseProgress progress) throws IOException, EmptyResultException {
         List<ImageFile> result = new ArrayList<>();
 
         // B.1- Open the MPV and parse gallery metadata

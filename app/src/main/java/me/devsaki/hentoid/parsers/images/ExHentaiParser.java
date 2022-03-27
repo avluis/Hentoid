@@ -28,19 +28,11 @@ import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.json.sources.EHentaiImageQuery;
-import me.devsaki.hentoid.json.sources.EHentaiImageResponse;
-import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 public class ExHentaiParser implements ImageListParser {
 
@@ -87,12 +79,12 @@ public class ExHentaiParser implements ImageListParser {
                 if (!elements.isEmpty()) {
                     String mpvUrl = elements.get(0).attr("href");
                     try {
-                        result = loadMpv(content, mpvUrl, headers, useHentoidAgent, useWebviewAgent);
+                        result = EHentaiParser.loadMpv(mpvUrl, headers, useHentoidAgent, useWebviewAgent, progress);
                     } catch (EmptyResultException e) {
-                        result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
+                        result = EHentaiParser.loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent, progress);
                     }
                 } else {
-                    result = loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent);
+                    result = EHentaiParser.loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent, progress);
                 }
             }
             progress.complete();
@@ -103,56 +95,6 @@ public class ExHentaiParser implements ImageListParser {
             EventBus.getDefault().unregister(this);
         }
         return result;
-    }
-
-    private List<ImageFile> loadMpv(
-            @NonNull Content content,
-            @NonNull final String mpvUrl,
-            @NonNull final List<Pair<String, String>> headers,
-            boolean useHentoidAgent,
-            boolean useWebviewAgent) throws IOException, EmptyResultException {
-        List<ImageFile> result = new ArrayList<>();
-
-        // B.1- Open the MPV and parse gallery metadata
-        EHentaiParser.MpvInfo mpvInfo = EHentaiParser.parseMpvPage(mpvUrl, headers, useHentoidAgent, useWebviewAgent);
-        if (null == mpvInfo)
-            throw new EmptyResultException("No exploitable data has been found on the multiple page viewer");
-
-        int pageCount = Math.min(mpvInfo.pagecount, mpvInfo.images.size());
-        progress.start(content.getId(), -1, pageCount);
-
-        // B.2- Call the API to get the pictures URL
-        for (int pageNum = 1; pageNum <= pageCount && !progress.isProcessHalted(); pageNum++) {
-            EHentaiImageQuery query = new EHentaiImageQuery(mpvInfo.gid, mpvInfo.images.get(pageNum - 1).getKey(), mpvInfo.mpvkey, pageNum);
-            String jsonRequest = JsonHelper.serializeToJson(query, EHentaiImageQuery.class);
-            Response response = HttpHelper.postOnlineResource(mpvInfo.api_url, headers, true, useHentoidAgent, useWebviewAgent, jsonRequest, JsonHelper.JSON_MIME_TYPE);
-            ResponseBody body = response.body();
-            if (null == body)
-                throw new EmptyResultException("API " + mpvInfo.api_url + " returned an empty body");
-            String bodyStr = body.string();
-            if (!bodyStr.contains("{") || !bodyStr.contains("}"))
-                throw new EmptyResultException("API " + mpvInfo.api_url + " returned non-JSON data");
-
-            EHentaiImageResponse imageMetadata = JsonHelper.jsonToObject(bodyStr, EHentaiImageResponse.class);
-
-            if (1 == pageNum)
-                result.add(ImageFile.newCover(imageMetadata.getUrl(), StatusContent.SAVED));
-            result.add(ParseHelper.urlToImageFile(imageMetadata.getUrl(), pageNum, pageCount, StatusContent.SAVED));
-            progress.advance();
-            // Emulate JS loader
-            if (0 == pageNum % 10) Helper.pause(750);
-        }
-
-        return result;
-    }
-
-    private List<ImageFile> loadClassic(
-            @NonNull Content content,
-            @NonNull final Document galleryDoc,
-            @NonNull final List<Pair<String, String>> headers,
-            boolean useHentoidAgent,
-            boolean useWebviewAgent) throws IOException {
-        return EHentaiParser.loadClassic(content, galleryDoc, headers, useHentoidAgent, useWebviewAgent, progress);
     }
 
     @Nullable
@@ -178,6 +120,11 @@ public class ExHentaiParser implements ImageListParser {
             case DownloadEvent.Type.EV_SKIP:
                 progress.haltProcess();
                 break;
+            case DownloadEvent.Type.EV_COMPLETE:
+            case DownloadEvent.Type.EV_PREPARATION:
+            case DownloadEvent.Type.EV_PROGRESS:
+            case DownloadEvent.Type.EV_UNPAUSE:
+            case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
             default:
                 // Other events aren't handled here
         }
