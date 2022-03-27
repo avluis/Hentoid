@@ -317,19 +317,29 @@ public class EHentaiParser implements ImageListParser {
         return result;
     }
 
-    @Nullable
-    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) throws Exception {
+    static Optional<ImageFile> parseBackupUrl(
+            @NonNull String url,
+            @NonNull Site site,
+            @NonNull Map<String, String> requestHeaders,
+            int order,
+            int maxPages,
+            Chapter chapter) throws Exception {
         List<Pair<String, String>> reqHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(requestHeaders, url);
-        Document doc = getOnlineDocument(url, reqHeaders, Site.EHENTAI.useHentoidAgent(), Site.EHENTAI.useWebviewAgent());
+        Document doc = getOnlineDocument(url, reqHeaders, site.useHentoidAgent(), site.useWebviewAgent());
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
             if (imageUrl.contains("/509.gif"))
-                throw new LimitReachedException("Bandwidth limit reached");
+                throw new LimitReachedException(site.getDescription() + " download points regenerate over time or can be bought if you're in a hurry");
             if (!imageUrl.isEmpty())
                 return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED, chapter));
         }
         return Optional.empty();
+    }
+
+    @Nullable
+    public Optional<ImageFile> parseBackupUrl(@NonNull String url, @NonNull Map<String, String> requestHeaders, int order, int maxPages, Chapter chapter) throws Exception {
+        return parseBackupUrl(url, Site.EHENTAI, requestHeaders, order, maxPages, chapter);
     }
 
     static ImmutablePair<String, Optional<String>> parseImagePageMpv(@NonNull String json, @NonNull List<Pair<String, String>> requestHeaders, @NonNull final Site site) throws IOException, LimitReachedException, EmptyResultException {
