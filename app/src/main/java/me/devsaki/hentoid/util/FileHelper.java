@@ -284,6 +284,7 @@ public class FileHelper {
      * @return New OutputStream opened on the given file
      * @throws IOException In case something horrible happens during I/O
      */
+    @Nullable
     public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
         return context.getContentResolver().openOutputStream(target.getUri(), "rwt"); // Always truncate file to whatever data needs to be written
     }
