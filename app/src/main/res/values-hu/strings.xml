@@ -8,9 +8,9 @@
     <string name="off">Ki</string>
     <string name="select_all">Összes kiválasztása</string>
     <string name="select_none">Egyik sem</string>
-    <string name="goto_page">Tovább az oldalra...</string>
+    <string name="goto_page">Tovább az oldalra…</string>
     <string name="confirm">Elfogadás</string>
-    <string name="please_wait">Kérlek várj...</string>
+    <string name="please_wait">Kérlek várj…</string>
     <plurals name="book" tools:ignore="ImpliedQuantity">
         <item quantity="one">könyv</item>
         <item quantity="other">könyvek</item>
@@ -48,9 +48,9 @@
     <string name="api29_migration_step1_select">Hentoid mappa kiválasztása</string>
     <string name="api29_migration_step1_select_external">Külső mappa kiválasztása</string>
     <string name="api29_migration_step2">Webhely mappáinak beolvasása</string>
-    <string name="api29_migration_step3_init">Könyvtár beolvasása...</string>
+    <string name="api29_migration_step3_init">Könyvtár beolvasása…</string>
     <string name="api29_migration_step3">Könyvtár beolvasása (<x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="7">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">A várólista importálása...</string>
+    <string name="api29_migration_step4_init">A várólista importálása…</string>
     <string name="api29_migration_select_folder">Kérjük, válasszon egy már létező Hentoid mappát. A mappa helye megjelenik a képernyőn.</string>
     <string name="api29_migration_allow_write">Kérjük, engedélyezze az írási jogosultságot</string>
 <string name="menu_search">Keresés</string>
@@ -64,7 +64,7 @@
     <string name="menu_edit_warning_custom">Az új rendezés felülfogja írni az előzőt.</string>
     <string name="menu_order">Könyvek rendezése</string>
     <string name="menu_delete_single">Törlés</string>
-    <string name="menu_change_group">Csoporthoz hozzárendelés...</string>
+    <string name="menu_change_group">Csoporthoz hozzárendelés…</string>
     <string name="menu_open_folder">Tartalmazó mappa megnyitása</string>
     <string name="menu_redownload">Újratöltés</string>
     <string name="menu_redownload_scratch">Újratöltés a nulláról</string>
@@ -179,7 +179,7 @@
     <string name="refresh_location_internal">Hentoid könyvtár</string>
     <string name="refresh_location_external">Külső könyvtár</string>
     <string name="refresh_options_rename">Az összes mappa átnevezése az aktuális elnevezési és maximális hosszúsági beállításoknak megfelelően</string>
-    <string name="refresh_options_remove">Távolítsa el a mappákat, ahol...</string>
+    <string name="refresh_options_remove">Távolítsa el a mappákat, ahol…</string>
     <string name="refresh_options_remove_1">JSON fájl hiányzik (ajánlott)</string>
     <string name="refresh_options_remove_2">Nincs letöltött kép</string>
     <string name="refresh_options_remove_or">vagy</string>
@@ -400,7 +400,7 @@
     </plurals>
     <string name="group_make_cover">Beállítás mint, a csoport borítójaként</string>
     <string name="group_make_cover_ask">Ennek a könyvnek a borítóképe beállítása a jelenlegi csoport borítóképére\?</string>
-    <string name="group_change">Egyéni csoporthoz hozzárendelés...</string>
+    <string name="group_change">Egyéni csoporthoz hozzárendelés…</string>
     <string name="group_existing">Létező csoport</string>
     <string name="group_new">Új létrehozása</string>
     <string name="group_new_name">Új egyedi csoport név</string>
@@ -423,8 +423,8 @@
     </plurals>
     <string name="group_delete_nothing">Nincs mit törölni - ellenőrizze a \"Külső tartalom törlésének engedélyezése\" lehetőséget, hogy ez törölhető lehessen</string>
 <string name="merge_merge">Egyesítés</string>
-    <string name="merge_progress">Könyvek egyesítése...</string>
-    <string name="split_progress">Könyvek szétválasztása...</string>
+    <string name="merge_progress">Könyvek egyesítése…</string>
+    <string name="split_progress">Könyvek szétválasztása…</string>
     <string name="merge_split">Szétválasztás</string>
     <string name="new_title">Új cím</string>
     <string name="merge_delete_after_merging">Ezen könyvek törlése egyesítés után</string>
@@ -574,7 +574,7 @@ háttérből</string>
     </string-array>
     <string name="viewer_ask_cover">Szeretné beállítani ezt az oldalt a könyv borítójára?</string>
     <string name="image_not_found">A kép nem található</string>
-    <string name="image_streaming">Kép streamelése...</string>
+    <string name="image_streaming">Kép streamelése…</string>
     <string name="book_prefs">Könyv beállítások</string>
     <string name="goto_app_prefs">Alkalmazás beállítások</string>
     <string name="use_app_prefs">Alkalmazás beállításainak használata (<x:g id="app_default" example="Left to right">%s</x:g>)</string>
@@ -646,7 +646,7 @@ háttérből</string>
         <item quantity="other"><x:g id="number" example="2">%d</x:g> duplikátumok detektálva</item>
     </plurals>
     <string name="duplicate_empty_first_use">Semmi sem jeleníthető meg - Új duplikátum keresés futtatása</string>
-    <string name="duplicate_processing">Duplikátumok felderítése...</string>
+    <string name="duplicate_processing">Duplikátumok felderítése…</string>
     <plurals name="duplicate_detail_title">
         <item quantity="one"><x:g id="number" example="1">%d</x:g> duplikátum</item>
         <item quantity="other"><x:g id="number" example="2">%d</x:g> duplikátumok</item>
@@ -662,7 +662,7 @@ háttérből</string>
     <string name="duplicate_alert_similarity">Hasonlóság: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
     <string name="duplicate_alert_download_book">Könyv letöltése</string>
     <string name="duplicate_alert_download_pages">Extra oldalak letöltése</string>
-    <string name="duplicate_wait_index">Indexelés...</string>
+    <string name="duplicate_wait_index">Indexelés…</string>
 <string name="notif_archive_title">Tartalom archiválása</string>
     <string name="notif_delete_title">Tartalom törlése</string>
     <string name="notif_delete_complete">A törlés sikeres</string>
@@ -673,7 +673,7 @@ háttérből</string>
     <string name="notif_delete_fail">A törlés sikertelen</string>
     <string name="notif_delete_fail_details">Legalább egy könyvet nem sikerült törölni</string>
 <string name="title_startup">Indítás</string>
-    <string name="title_startup_progress">Kezdjük...</string>
+    <string name="title_startup_progress">Kezdjük…</string>
     <string name="title_startup_complete">Indítás befejezve</string>
 <string name="group_today">Ma</string>
     <string name="group_7">Az elmúlt 7napban</string>

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers.images;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import me.devsaki.hentoid.parsers.ParseHelper;
 
 class ParseProgress {
@@ -9,6 +11,7 @@ class ParseProgress {
     private int currentStep;
     private int maxSteps;
     private boolean hasStarted = false;
+    private final AtomicBoolean processHalted = new AtomicBoolean(false);
 
     void start(long contentId, long storedId, int maxSteps) {
         this.contentId = contentId;
@@ -21,6 +24,14 @@ class ParseProgress {
 
     boolean hasStarted() {
         return hasStarted;
+    }
+
+    boolean isProcessHalted() {
+        return processHalted.get();
+    }
+
+    void haltProcess() {
+        processHalted.set(true);
     }
 
     void advance() {

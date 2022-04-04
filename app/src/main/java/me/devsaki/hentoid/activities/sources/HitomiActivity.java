@@ -7,11 +7,9 @@ import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 
-import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.images.HitomiParser;
@@ -92,19 +90,20 @@ public class HitomiActivity extends BaseWebActivity {
         protected Content processContent(@NonNull Content content, @NonNull String url, boolean quickDownload) {
             // Wait until the page's resources are all loaded
             if (!quickDownload) {
-                Timber.i(">> not loading");
+                Timber.v(">> not loading");
                 while (!isLoading()) Helper.pause(20);
-                Timber.i(">> loading");
+                Timber.v(">> loading");
                 while (isLoading()) Helper.pause(100);
-                Timber.i(">> done");
+                Timber.v(">> done");
             }
             HitomiParser parser = new HitomiParser();
             try {
-                List<ImageFile> images = parser.parseImageListWithWebview(content, webView);
-                content.setImageFiles(images);
+                /*List<ImageFile> images =*/
+                parser.parseImageListWithWebview(content, webView); // Only fetch them when queue is processed
+                //content.setImageFiles(images);
                 content.setStatus(StatusContent.SAVED);
             } catch (Exception e) {
-                Timber.w(e);
+                Timber.i(e);
                 content.setStatus(StatusContent.IGNORED);
             }
 

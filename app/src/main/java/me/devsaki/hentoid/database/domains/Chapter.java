@@ -25,6 +25,7 @@ public class Chapter {
     @Backlink(to = "chapter")
     private ToMany<ImageFile> imageFiles;
     private String uniqueId = "";
+    private long uploadDate = 0;
 
 
     public Chapter() { // Required by ObjectBox when an alternate constructor exists
@@ -130,6 +131,14 @@ public class Chapter {
 
     public void addImageFile(ImageFile img) {
         if (imageFiles != null) imageFiles.add(img);
+    }
+
+    public long getUploadDate() {
+        return uploadDate;
+    }
+
+    public void setUploadDate(long uploadDate) {
+        this.uploadDate = uploadDate;
     }
 
     @Override

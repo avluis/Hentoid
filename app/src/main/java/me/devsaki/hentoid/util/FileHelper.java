@@ -284,6 +284,7 @@ public class FileHelper {
      * @return New OutputStream opened on the given file
      * @throws IOException In case something horrible happens during I/O
      */
+    @Nullable
     public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final DocumentFile target) throws IOException {
         return context.getContentResolver().openOutputStream(target.getUri(), "rwt"); // Always truncate file to whatever data needs to be written
     }
@@ -695,7 +696,7 @@ public class FileHelper {
     public static void shareFile(final @NonNull Context context, final @NonNull Uri fileUri, final @NonNull String title) {
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
         sharingIntent.setType("text/*");
-        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        if (!title.isEmpty()) sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
         if (fileUri.toString().startsWith("file")) {
             Uri legitUri = FileProvider.getUriForFile(
                     context,

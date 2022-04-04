@@ -4,7 +4,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
 
 import android.annotation.SuppressLint;
@@ -17,14 +17,11 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -111,12 +108,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     // LayoutManager of the recyclerView
     private LinearLayoutManager llm;
 
-    // === SORT TOOLBAR
-    // Sort direction button
-    private ImageView sortDirectionButton;
-    // Sort field button
-    private TextView sortFieldButton;
-
     // === FASTADAPTER COMPONENTS AND HELPERS
     private ItemAdapter<GroupDisplayItem> itemAdapter;
     private FastAdapter<GroupDisplayItem> fastAdapter;
@@ -132,7 +123,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     // TODO doc
     private boolean firstLibraryLoad = true;
     // TODO doc
-    private boolean enabled = true;
+    private boolean enabled = false;
 
 
     public static final DiffCallback<GroupDisplayItem> GROUPITEM_DIFF_CALLBACK = new DiffCallback<GroupDisplayItem>() {
@@ -150,7 +141,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         @Override
         public @org.jetbrains.annotations.Nullable Object getChangePayload(GroupDisplayItem oldItem, int oldPos, GroupDisplayItem newItem, int newPos) {
-            GroupItemBundle.Builder diffBundleBuilder = new GroupItemBundle.Builder();
+            GroupItemBundle diffBundleBuilder = new GroupItemBundle();
 
             if (!newItem.getGroup().coverContent.isNull() && oldItem.getGroup().coverContent.getTargetId() != newItem.getGroup().coverContent.getTargetId()) {
                 diffBundleBuilder.setCoverUri(newItem.getGroup().coverContent.getTarget().getCover().getUsableUri());
@@ -205,12 +196,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         // Trigger a blank search
         // TODO when group is reached from FLAT through the "group by" menu, this triggers a double-load and a screen blink
-        viewModel.setGrouping(
-                Preferences.getGroupingDisplay(),
-                Preferences.getGroupSortField(),
-                Preferences.isGroupSortDesc(),
-                Preferences.getArtistGroupVisibility(),
-                activity.get().isGroupFavsChecked());
+        viewModel.searchGroup();
     }
 
     public void onEnable() {
@@ -230,8 +216,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      */
     private void initUI(@NonNull View rootView) {
         emptyText = requireViewById(rootView, R.id.library_empty_txt);
-        sortDirectionButton = activity.get().getSortDirectionButton();
-        sortFieldButton = activity.get().getSortFieldButton();
 
         // RecyclerView
         recyclerView = requireViewById(rootView, R.id.library_list);
@@ -245,7 +229,6 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         // Pager
         setPagingMethod();
 
-        updateSortControls();
         addCustomBackControl();
     }
 
@@ -260,78 +243,16 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         activity.get().getOnBackPressedDispatcher().addCallback(activity.get(), callback);
     }
 
-    private void updateSortControls() {
-        // Sort controls
-        sortDirectionButton.setImageResource(Preferences.isGroupSortDesc() ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-        sortDirectionButton.setOnClickListener(v -> {
-            boolean sortDesc = !Preferences.isGroupSortDesc();
-            Preferences.setGroupSortDesc(sortDesc);
-            // Update icon
-            sortDirectionButton.setImageResource(sortDesc ? R.drawable.ic_simple_arrow_down : R.drawable.ic_simple_arrow_up);
-            // Run a new search
-            viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), Preferences.getGroupSortField(), sortDesc, Preferences.getArtistGroupVisibility(), activity.get().isGroupFavsChecked());
-            activity.get().sortCommandsAutoHide(true, null);
-        });
-        sortFieldButton.setText(getNameFromFieldCode(Preferences.getGroupSortField()));
-        sortFieldButton.setOnClickListener(v -> {
-            // Load and display the field popup menu
-            PopupMenu popup = new PopupMenu(requireContext(), sortDirectionButton);
-            popup.getMenuInflater()
-                    .inflate(R.menu.library_groups_sort_popup, popup.getMenu());
-            popup.getMenu().findItem(R.id.sort_custom).setVisible(Preferences.getGroupingDisplay().canReorderGroups());
-            popup.setOnMenuItemClickListener(item -> {
-                // Update button text
-                sortFieldButton.setText(item.getTitle());
-                item.setChecked(true);
-                int fieldCode = getFieldCodeFromMenuId(item.getItemId());
-                Preferences.setGroupSortField(fieldCode);
-                // Run a new search
-                viewModel.searchGroup(Preferences.getGroupingDisplay(), activity.get().getQuery(), fieldCode, Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), activity.get().isGroupFavsChecked());
-                activity.get().sortCommandsAutoHide(true, popup);
-                return true;
-            });
-            popup.show(); //showing popup menu
-            activity.get().sortCommandsAutoHide(true, popup);
-        }); //closing the setOnClickListener method
-    }
-
-    private int getFieldCodeFromMenuId(@IdRes int menuId) {
-        switch (menuId) {
-            case (R.id.sort_title):
-                return Preferences.Constant.ORDER_FIELD_TITLE;
-            case (R.id.sort_books):
-                return Preferences.Constant.ORDER_FIELD_CHILDREN;
-            case (R.id.sort_dl_date):
-                return Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE;
-            case (R.id.sort_custom):
-                return Preferences.Constant.ORDER_FIELD_CUSTOM;
-            default:
-                return Preferences.Constant.ORDER_FIELD_NONE;
-        }
-    }
-
-    private int getNameFromFieldCode(int prefFieldCode) {
-        switch (prefFieldCode) {
-            case (Preferences.Constant.ORDER_FIELD_TITLE):
-                return R.string.sort_title;
-            case (Preferences.Constant.ORDER_FIELD_CHILDREN):
-                return R.string.sort_books;
-            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_DATE):
-                return R.string.sort_dl_date;
-            case (Preferences.Constant.ORDER_FIELD_CUSTOM):
-                return R.string.sort_custom;
-            default:
-                return R.string.sort_invalid;
-        }
-    }
-
     private boolean onToolbarItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.action_edit:
-                toggleEditMode();
+                enterEditMode();
+                break;
+            case R.id.action_edit_confirm:
+                confirmEdit();
                 break;
             case R.id.action_edit_cancel:
-                cancelEditMode();
+                cancelEdit();
                 break;
             case R.id.action_group_new:
                 newGroupPrompt();
@@ -369,25 +290,29 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         return true;
     }
 
-    private void toggleEditMode() {
-        activity.get().toggleEditMode();
+    private void enterEditMode() {
+        activity.get().setEditMode(true);
+        setPagingMethod();
+        viewModel.searchGroup();
+    }
 
-        // Leave edit mode by validating => Save new item position
-        if (!activity.get().isEditMode()) {
-            // Set ordering field to custom
-            Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
-            sortFieldButton.setText(getNameFromFieldCode(Preferences.Constant.ORDER_FIELD_CUSTOM));
-            // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
-            Preferences.setGroupSortDesc(false);
-            viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
-        }
-
+    private void cancelEdit() {
+        activity.get().setEditMode(false);
         setPagingMethod();
     }
 
-    private void cancelEditMode() {
+    private void confirmEdit() {
         activity.get().setEditMode(false);
+
+        // == Save new item position
+        // Set ordering field to custom
+        Preferences.setGroupSortField(Preferences.Constant.ORDER_FIELD_CUSTOM);
+        // Set ordering direction to ASC (we just manually ordered stuff; it has to be displayed as is)
+        Preferences.setGroupSortDesc(false);
+        viewModel.saveGroupPositions(Stream.of(itemAdapter.getAdapterItems()).map(GroupDisplayItem::getGroup).withoutNulls().toList());
+
         setPagingMethod();
+        viewModel.searchGroup();
     }
 
     private void newGroupPrompt() {
@@ -488,7 +413,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
                     PrefsBundle prefsBundle = new PrefsBundle();
                     prefsBundle.setStoragePrefs(true);
-                    intent.putExtras(prefsBundle.toBundle());
+                    intent.putExtras(prefsBundle.getBundle());
 
                     requireContext().startActivity(intent);
                 });
@@ -573,13 +498,12 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     public void onActivityEvent(CommunicationEvent event) {
         if (event.getRecipient() != RC_GROUPS) return;
         switch (event.getType()) {
-            case EV_SEARCH:
-                if (event.getMessage() != null) onSubmitSearch(event.getMessage());
-                break;
-            case EV_UPDATE_SORT:
-                updateSortControls();
+            case EV_UPDATE_TOOLBAR:
                 addCustomBackControl();
                 activity.get().initFragmentToolbars(selectExtension, this::onToolbarItemClicked, this::onSelectionToolbarItemClicked);
+                break;
+            case EV_SEARCH:
+                if (event.getMessage() != null) onSubmitSearch(event.getMessage());
                 break;
             case EV_ENABLE:
                 onEnable();
@@ -610,14 +534,11 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
         if (!activity.get().collapseSearchMenu() && !activity.get().closeLeftDrawer()) {
             // If none of the above and a search filter is on => clear search filter
-            if (activity.get().isSearchQueryActive()) {
-                activity.get().setQuery("");
-                activity.get().setMetadata(Collections.emptyList());
-                activity.get().hideSearchSortBar(false);
-                viewModel.searchContent(activity.get().getQuery(), activity.get().getMetadata());
+            if (activity.get().isFilterActive()) {
+                viewModel.clearGroupFilters();
             }
             // If none of the above, user is asking to leave => use double-tap
-            if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
+            else if (backButtonPressed + 2000 > SystemClock.elapsedRealtime()) {
                 callback.remove();
                 requireActivity().onBackPressed();
             } else {
@@ -632,9 +553,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     /**
      * Initialize the paging method of the screen
      */
-    private void setPagingMethod(/*boolean isEditMode*/) {
-        viewModel.setPagingMethod(true);
-
+    private void setPagingMethod() {
         itemAdapter = new ItemAdapter<>();
         fastAdapter = FastAdapter.with(itemAdapter);
         if (!fastAdapter.hasObservers()) fastAdapter.setHasStableIds(true);
@@ -710,6 +629,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         List<GroupDisplayItem> groups = Stream.of(result).map(g -> new GroupDisplayItem(g, touchHelper, viewType)).withoutNulls().distinct().toList();
         FastAdapterDiffUtil.INSTANCE.set(itemAdapter, groups, GROUPITEM_DIFF_CALLBACK);
 
+        // Update visibility of search bar
+        activity.get().updateSearchBarOnResults(!result.isEmpty());
+
         // Reset library load indicator
         firstLibraryLoad = true;
     }
@@ -738,12 +660,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         // Refresh groups (new content -> updated book count or new groups)
         // TODO do we really want to do that, especially when deleting content ?
         if (!firstLibraryLoad)
-            viewModel.setGrouping(
-                    Preferences.getGroupingDisplay(),
-                    Preferences.getGroupSortField(),
-                    Preferences.isGroupSortDesc(),
-                    Preferences.getArtistGroupVisibility(),
-                    activity.get().isGroupFavsChecked());
+            viewModel.searchGroup();
         else {
             Timber.i(">>Library changed (groups) : ignored");
             firstLibraryLoad = false;
@@ -761,12 +678,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             else
                 ContentHelper.launchBrowserFor(requireContext(), query);
         } else {
-            viewModel.searchGroup(
-                    Preferences.getGroupingDisplay(),
-                    query, Preferences.getGroupSortField(),
-                    Preferences.isGroupSortDesc(),
-                    Preferences.getArtistGroupVisibility(),
-                    activity.get().isGroupFavsChecked());
+            viewModel.setGroupQuery(query);
         }
     }
 

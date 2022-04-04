@@ -163,15 +163,16 @@ public class QueueActivity extends BaseActivity {
     }
 
     private void processIntent(@NonNull Bundle extras) {
-        QueueActivityBundle.Parser parser = new QueueActivityBundle.Parser(extras);
-        long contentHash = parser.contentHash();
+        QueueActivityBundle parser = new QueueActivityBundle(extras);
+        long contentHash = parser.getContentHash();
         if (contentHash != 0) {
             if (parser.isErrorsTab()) viewPager.setCurrentItem(1);
             viewModel.setContentToShowFirst(contentHash);
         }
-        Site revivedSite = parser.getRevivedSite();
-        String oldCookie = parser.getOldCookie();
-        if (revivedSite != null && !oldCookie.isEmpty()) reviveDownload(revivedSite, oldCookie);
+        Site revivedSite = Site.searchByCode(parser.getReviveDownloadForSiteCode());
+        String oldCookie = parser.getReviveOldCookie();
+        if (!revivedSite.equals(Site.NONE) && !oldCookie.isEmpty())
+            reviveDownload(revivedSite, oldCookie);
     }
 
     @Override

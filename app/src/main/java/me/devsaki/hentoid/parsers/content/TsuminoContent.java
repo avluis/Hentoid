@@ -16,6 +16,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -26,6 +27,8 @@ public class TsuminoContent extends BaseContentParser {
     private Element cover;
     @Selector(value = "div#Title", defValue = "")
     private String title;
+    @Selector(value = "div#Uploaded", defValue = "")
+    private String uploadDate;
     @Selector(value = "div#Pages", defValue = "")
     private String pages;
     @Selector(value = "div#Artist a")
@@ -52,6 +55,8 @@ public class TsuminoContent extends BaseContentParser {
         if (!coverUrl.startsWith("http")) coverUrl = TSUMINO.getUrl() + coverUrl;
         content.setCoverImageUrl(coverUrl);
         content.setTitle(StringHelper.removeNonPrintableChars(title));
+
+        content.setUploadDate(Helper.parseDateToEpoch(uploadDate, "yyyy MMMM dd")); // e.g. 2021 December 13
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, false, TSUMINO);

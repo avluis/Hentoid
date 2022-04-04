@@ -1,0 +1,25 @@
+New
+
+The app is now available in Ukrainian on devices where default language is Ukrainian
+Library screen : Brand new UI for sorting, filtering and switching groups !
+Library screen : "Back to groups" navigation button when viewing books within a group
+"Upload date" sorting field is now available
+NB : Existing books won't have that date filled out. It will only appear for new downloads.
+Changed
+
+Hitomi : Only add image URLs when processing the queue to reduce URL obsolescence
+E-hentai / ExHentai : Faster "preparing download" phase when using the multipage viewer
+Queue screen : Progress display of redownloads from scratch has been improved
+Library screen : "Download date" sorting field has evolved into two different fields
+"Download date (processed)" : First time when a download is completed, regardless of the outcome (same as the old "Download date" you've been using until now)
+"Download date (completed)" : When a download is completed successfuly (i.e. with 100% of its pages)
+Viewer : Sharing a picture doesn't automatically add a "Share picture" label anymore
+Fixes
+
+E-Hentai/ExHentai : Fix "empty result" error on some devices where books couldn't be downloaded
+NHentai : Prevent 'This content cannot be downloaded. Sorry' from appearing on screen when using the site's viewer
+Downloader : Correctly set download mode when putting a book with blocked tags into the error queue
+Library screen : Performance improvements when using random sorting on very large libraries
+Library screen : Groups and books search filters are now both remembered correctly
+Library screen : Automatically reattach group covers after reimporting old groups with no defined covers
+Library screen : Prevent the Ungrouped custom group from appearing empty

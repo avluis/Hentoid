@@ -10,7 +10,6 @@ import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
 import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -106,27 +105,6 @@ public class JsonHelper {
     }
 
     /**
-     * Serialize and save the object contents to the given existing file using the JSON format
-     *
-     * @param context Context to be used
-     * @param object  Object to serialize
-     * @param type    Type of the output JSON structure to use
-     * @param file    File to write to
-     * @param <K>     Type of the given object
-     * @throws IOException If anything happens during file I/O
-     */
-    static <K> void updateJson(@NonNull final Context context, K object, Type type, @Nonnull DocumentFile file) throws IOException {
-        if (!file.exists()) return;
-
-        try (OutputStream output = FileHelper.getOutputStream(context, file)) {
-            if (output != null) updateJson(object, type, output);
-            else Timber.w("JSON file creation failed for %s", file.getUri());
-        } catch (FileNotFoundException e) {
-            Timber.e(e);
-        }
-    }
-
-    /**
      * Serialize and save the object contents to the given OutputStream using the JSON format
      *
      * @param object Object to serialize
@@ -135,7 +113,7 @@ public class JsonHelper {
      * @param <K>    Type of the given object
      * @throws IOException If anything happens during file I/O
      */
-    private static <K> void updateJson(K object, Type type, @Nonnull OutputStream output) throws IOException {
+    public static <K> void updateJson(K object, Type type, @Nonnull OutputStream output) throws IOException {
         byte[] bytes = serializeToJson(object, type).getBytes();
         output.write(bytes);
         if (output instanceof FileOutputStream) FileHelper.sync((FileOutputStream) output);

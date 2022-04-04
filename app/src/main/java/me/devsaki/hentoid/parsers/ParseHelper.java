@@ -9,6 +9,8 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
 
@@ -33,6 +35,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
@@ -373,28 +376,45 @@ public class ParseHelper {
      * @return Chapters detected from the given list of links, associated with the given Content ID
      */
     public static List<Chapter> getChaptersFromLinks(@NonNull List<Element> chapterLinks, long contentId) {
+        return getChaptersFromLinks(chapterLinks, contentId, null, null);
+    }
+
+    public static List<Chapter> getChaptersFromLinks(
+            @NonNull List<Element> chapterLinks,
+            long contentId,
+            String dateCssQuery,
+            String datePattern) {
         List<Chapter> result = new ArrayList<>();
         Set<String> urls = new HashSet<>();
 
         // First extract data and filter URL duplicates
-        List<Pair<String, String>> chapterData = new ArrayList<>();
+        List<Triple<String, String, Long>> chapterData = new ArrayList<>();
         for (Element e : chapterLinks) {
             String url = e.attr("href").trim();
             String name = e.attr("title").trim();
             if (name.isEmpty())
                 name = StringHelper.removeNonPrintableChars(e.ownText()).trim();
+            long epoch = 0;
+            if (dateCssQuery != null && !dateCssQuery.isEmpty()) {
+                Element dateElement = e.selectFirst(dateCssQuery);
+                if (dateElement != null) {
+                    String[] dateStr = dateElement.text().split("-");
+                    if (dateStr.length > 1) epoch = Helper.parseDateToEpoch(dateStr[1], datePattern);
+                }
+            }
             // Make sure we're not adding duplicates
             if (!urls.contains(url)) {
                 urls.add(url);
-                chapterData.add(new Pair<>(url, name));
+                chapterData.add(new ImmutableTriple<>(url, name, epoch));
             }
         }
         Collections.reverse(chapterData); // Put unique results in their chronological order
 
         int order = 0;
         // Build the final list
-        for (Pair<String, String> chapter : chapterData) {
-            Chapter chp = new Chapter(order++, chapter.first, chapter.second);
+        for (Triple<String, String, Long> chapter : chapterData) {
+            Chapter chp = new Chapter(order++, chapter.getLeft(), chapter.getMiddle());
+            chp.setUploadDate(chapter.getRight());
             chp.setContentId(contentId);
             result.add(chp);
         }

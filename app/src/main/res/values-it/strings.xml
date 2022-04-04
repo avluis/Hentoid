@@ -23,6 +23,7 @@
         <item quantity="one">File</item>
         <item quantity="other">Files</item>
     </plurals>
+    <string name="groups">Gruppi</string>
     <string name="pause">Pausa</string>
     <string name="stop">Ferma</string>
     <string name="resume">Riprendi</string>
@@ -33,6 +34,7 @@
     <string name="open_folder">Apri cartella</string>
     <string name="_default">predefinito</string>
     <string name="empty">vuoto</string>
+    <string name="none">Nessuno</string>
 <string name="title_activity_api29_migration">Migrazione API 29</string>
     <string name="title_activity_downloads">Libreria</string>
     <string name="title_activity_queue">Coda</string>
@@ -55,11 +57,11 @@
     <string name="api29_migration_allow_write">Si prega di consentire il permesso di scrittura</string>
 <string name="menu_search">Cerca</string>
     <string name="menu_fav">Attiva/disattiva filtro preferito</string>
-    <string name="menu_comp">Attiva/disattiva filtro completato</string>
     <string name="menu_mark_fav">Attiva/disattiva preferito</string>
     <string name="menu_group_new">Nuovo gruppo</string>
-    <string name="menu_edit_order">Modifica ordine</string>
-    <string name="menu_edit_name">Modifica nome</string>
+    <string name="menu_edit_order">Riordina</string>
+    <string name="menu_edit_name">Rinomina</string>
+    <string name="menu_edit_confirm">Conferma modifica</string>
     <string name="menu_edit_cancel">Annulla modifica</string>
     <string name="menu_edit_warning_custom">Il nuovo ordine personalizzato che stai per creare sovrascriverà quello precedente.</string>
     <string name="menu_order">Ordina libri</string>
@@ -303,9 +305,6 @@
 <string name="resume_closed">Riprendere a leggere da dove l\'hai lasciato\?</string>
     <string name="open_drawer">Apri il cassetto</string>
     <string name="close_drawer">Chiudi il cassetto</string>
-    <string name="ask_filter_completed">Come vorresti filtrare i libri completati\?</string>
-    <string name="filter_completed">Mostra solo completati</string>
-    <string name="filter_not_completed">Mostra solo i non completati</string>
     <plurals name="ask_delete_multiple">
         <item quantity="one">Cancellare l\'elemento selezionato\?</item>
         <item quantity="other">Cancellare <x:g example="2" id="count">%d</x:g> elementi selezionati\?</item>
@@ -437,13 +436,17 @@ Questo libro sarà ignorato.</item>
     <string name="split_success">Contenuto diviso</string>
 <string name="groups_flat">Tutti i libri</string>
     <string name="groups_by_artist">Per artista</string>
-    <string name="groups_by_dl_date">Per data di download</string>
-    <string name="groups_custom">Personalizzato</string>
+    <string name="groups_by_dl_date">Per data di download (processato)</string>
+    <string name="groups_custom">Gruppi personalizzati</string>
     <string name="no_artist_group_name">[nessun artista]</string>
-<string name="sort_title">Titolo</string>
+<string name="sort_ascending">Ascendente</string>
+    <string name="sort_descending">Discendente</string>
+    <string name="sort_reshuffle">Rimescola</string>
+    <string name="sort_title">Titolo</string>
     <string name="sort_artist">Artista</string>
     <string name="sort_pages">Pagine</string>
-    <string name="sort_dl_date">Data di download</string>
+    <string name="sort_dl_date">Data download (processato) </string>
+    <string name="sort_dl_completion_date">Data download (completato)</string>
     <string name="sort_read_date">Leggi data</string>
     <string name="sort_reads">Legge</string>
     <string name="sort_size">Dimensione</string>
@@ -452,15 +455,21 @@ Questo libro sarà ignorato.</item>
     <string name="sort_custom">Personalizzato</string>
     <string name="sort_invalid">-invalido-</string>
     <string name="sort_books">Libri</string>
+    <string name="sort_uplodad_date">Data di caricamento</string>
+    <string name="library_filters_title">Filtri</string>
+    <string name="library_filter_favourite_help">Attiva/disattiva visualizzazione dei libri preferiti</string>
+    <string name="filter_completed">Mostra solo libri finiti</string>
+    <string name="filter_not_completed">Mostra solo libri non finiti</string>
+<string name="display_groups_title">Mostra gruppi</string>
+    <string name="display">Mostra</string>
+    <string name="display_artists">Artisti</string>
+    <string name="display_groups">Gruppi</string>
 <string name="drag_help">Trascina elemento</string>
     <string name="external_help">Appartiene alla libreria esterna</string>
     <string name="streamed_help">Libro in streaming</string>
     <string name="view_source_help">Visualizza sorgente nel browser</string>
     <string name="fav_help">Segna/deseleziona come preferito</string>
-<string name="show_artists">Mostra artisti</string>
-    <string name="show_groups">Mostra gruppi</string>
-    <string name="show_artists_and_groups">Mostra artisti e gruppi</string>
-    <string name="launchcode_present">Hai già questo libro. Cercare altre fonti\?</string>
+<string name="launchcode_present">Hai già questo libro. Cercare altre fonti\?</string>
 <string name="updates_title">Aggiornamenti</string>
     <string name="tap_to_retry">Toccare per riprovare</string>
     <string name="downloading_update">Download dell\'aggiornamento</string>
@@ -554,7 +563,7 @@ Questo libro sarà ignorato.</item>
     <string name="viewer_order_shuffle_help">Attiva/disattiva il rimescolamento delle pagine</string>
     <string name="viewer_filter_favourite_off">Mostra solo le pagine preferite</string>
     <string name="viewer_filter_favourite_on">Mostra tutte le pagine</string>
-    <string name="viewer_filter_favourite_help">Attiva/disattiva la visualizzazione della pagina preferita</string>
+    <string name="viewer_filter_favourite_help">Attiva/disattiva visualizzazione delle pagine preferite</string>
     <string name="viewer_make_cover">Imposta come copertina</string>
     <string name="viewer_delete_book">Cancella libro</string>
     <string name="copy_download_folder_success">Copiato nella cartella Downloads</string>

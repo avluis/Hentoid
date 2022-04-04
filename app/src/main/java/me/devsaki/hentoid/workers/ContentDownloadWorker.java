@@ -725,12 +725,17 @@ public class ContentDownloadWorker extends BaseWorker {
                 // Compute perceptual hash for the cover picture
                 ContentHelper.computeAndSaveCoverHash(getApplicationContext(), content, dao);
 
-                // Mark content as downloaded
+                // Mark content as downloaded (download processing date; if none set before)
                 if (0 == content.getDownloadDate())
                     content.setDownloadDate(Instant.now().toEpochMilli());
-                content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
-                // Clear download params from content
-                if (0 == pagesKO && !hasError) content.setDownloadParams("");
+
+                if (0 == pagesKO && !hasError) {
+                    content.setDownloadParams("");
+                    content.setDownloadCompletionDate(Instant.now().toEpochMilli());
+                    content.setStatus(StatusContent.DOWNLOADED);
+                } else {
+                    content.setStatus(StatusContent.ERROR);
+                }
                 content.computeSize();
 
                 // Save JSON file

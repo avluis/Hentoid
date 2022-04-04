@@ -38,6 +38,14 @@
                 android:summary="@string/pref_quantity_per_page_summary"
                 android:title="@string/pref_quantity_per_page_title"
                 app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_top_fab_default"
+                android:disableDependentsState="true"
+                android:key="pref_top_fab"
+                android:summaryOff="@string/pref_top_fab_summary_off"
+                android:summaryOn="@string/pref_top_fab_summary_on"
+                android:title="@string/pref_top_fab_title"
+                app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
             android:title="@string/pref_cat_search"

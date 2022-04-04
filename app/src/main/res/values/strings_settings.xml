@@ -12,6 +12,9 @@
     <string name="pref_endless_scroll_summary_on">Scroll away to your heart\'s content</string>
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
     <string name="pref_quantity_per_page_summary">Number of items per page in download list\nCurrently: <x:g id="count" example="10">%s</x:g> items</string>
+    <string name="pref_top_fab_title">Go to Top button</string>
+    <string name="pref_top_fab_summary_off">Button disabled</string>
+    <string name="pref_top_fab_summary_on">Button enabled</string>
     <string name="pref_cat_search">Advanced search</string>
     <string name="pref_attributes_list_order_title">Sorting order of displayed metadata</string>
     <string name="pref_attributes_list_count_title">Count available books</string>
@@ -41,9 +44,9 @@
     <string name="prefs_external_library_detached">External library detached</string>
     <string name="pref_folder_trunc_title">Truncate folder name</string>
     <string name="pref_folder_trunc_summary">Book folder name truncation\nCurrently: <x:g id="chars" example="80 characters">%s</x:g></string>
-    <string name="pref_memory_usage_title">Memory usage</string>
+    <string name="pref_memory_usage_title">Storage usage</string>
     <string name="pref_memory_usage_summary">Current free space: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (tap for details)</string>
-    <string name="pref_memory_alert_title">Alert on low memory</string>
+    <string name="pref_memory_alert_title">Alert on low storage</string>
     <string name="pref_cat_external">External library</string>
     <string name="pref_external_library_title">External library</string>
     <string name="pref_external_library_summary_empty">No external library is set</string>

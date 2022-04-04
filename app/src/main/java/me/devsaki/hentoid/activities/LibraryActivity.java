@@ -6,7 +6,7 @@ import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_DISABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ENABLE;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_SEARCH;
-import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_SORT;
+import static me.devsaki.hentoid.events.CommunicationEvent.EV_UPDATE_TOOLBAR;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_CONTENTS;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_DRAWER;
 import static me.devsaki.hentoid.events.CommunicationEvent.RC_GROUPS;
@@ -21,14 +21,12 @@ import android.os.Looper;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
@@ -52,6 +50,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -63,10 +63,13 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.fragments.library.LibraryBottomGroupsFragment;
+import me.devsaki.hentoid.fragments.library.LibraryBottomSortFilterFragment;
 import me.devsaki.hentoid.fragments.library.LibraryContentFragment;
 import me.devsaki.hentoid.fragments.library.LibraryGroupsFragment;
 import me.devsaki.hentoid.fragments.library.UpdateSuccessDialogFragment;
@@ -75,7 +78,6 @@ import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel;
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
 import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionHelper;
@@ -84,6 +86,8 @@ import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
+import me.devsaki.hentoid.widget.ContentSearchManager;
+import me.devsaki.hentoid.widget.GroupSearchManager;
 import timber.log.Timber;
 
 @SuppressLint("NonConstantResourceId")
@@ -104,19 +108,11 @@ public class LibraryActivity extends BaseActivity {
 
     // ==== Advanced search / sort bar
     // Grey background of the advanced search / sort bar
-    private View searchSortBar;
+    private View searchSubBar;
     // Advanced search text button
     private View advancedSearchButton;
-    // Show artists / groups button
-    private TextView showArtistsGroupsButton;
     // CLEAR button
     private View searchClearButton;
-    // Sort direction button
-    private ImageView sortDirectionButton;
-    // Sort reshuffle button
-    private ImageView sortReshuffleButton;
-    // Sort field button
-    private TextView sortFieldButton;
 
     // === Alert bar
     // Background and text of the alert bar
@@ -130,20 +126,18 @@ public class LibraryActivity extends BaseActivity {
     private Toolbar toolbar;
     // "Search" button on top menu
     private MenuItem searchMenu;
-    // "Edit mode" / "Validate edit" button on top menu
+    // "Display type" button on top menu
+    private MenuItem displayTypeMenu;
+    // "Edit mode" button on top menu
     private MenuItem reorderMenu;
+    // "Confirm edit" button on top menu
+    private MenuItem reorderConfirmMenu;
     // "Cancel edit" button on top menu
     private MenuItem reorderCancelMenu;
     // "Create new group" button on top menu
     private MenuItem newGroupMenu;
-    // "Toggle completed" button on top menu
-    private MenuItem completedFilterMenu;
-    // "Toggle favourites" button on top menu
-    private MenuItem favsMenu;
     // "Sort" button on top menu
     private MenuItem sortMenu;
-    // Alert bars
-    private PopupMenu autoHidePopup;
 
     // === Selection toolbar
     private Toolbar selectionToolbar;
@@ -175,22 +169,22 @@ public class LibraryActivity extends BaseActivity {
     // ======== VARIABLES
     // Used to ignore native calls to onQueryTextChange
     private boolean invalidateNextQueryTextChange = false;
-    // Current text search query
-    private String query = "";
-    // Current metadata search query
-    private List<Attribute> metadata = Collections.emptyList();
+    // Current text search query; one per tab
+    private final List<String> query = Arrays.asList("", "");
+    // Current metadata search query; one per tab
+    private final List<List<Attribute>> metadata = Arrays.asList(new ArrayList<>(), new ArrayList<>());
     // True if item positioning edit mode is on (only available for specific groupings)
     private boolean editMode = false;
-    // True if there's at least one existing custom group; false instead
-    private boolean isCustomGroupingAvailable;
     // Titles of each of the Viewpager2's tabs
     private final Map<Integer, String> titles = new HashMap<>();
     // TODO doc
-    private boolean isGroupFavsChecked = false;
-
-
-    // Used to auto-hide the sort controls bar when no activity is detected
-    private Debouncer<Boolean> sortCommandsAutoHide;
+    private Group group = null;
+    // TODO doc
+    private Grouping grouping = Preferences.getGroupingDisplay();
+    // TODO doc
+    private Bundle contentSearchBundle = null;
+    // TODO doc
+    private Bundle groupSearchBundle = null;
 
 
     // === PUBLIC ACCESSORS (to be used by fragments)
@@ -199,32 +193,20 @@ public class LibraryActivity extends BaseActivity {
         return selectionToolbar;
     }
 
-    public ImageView getSortDirectionButton() {
-        return sortDirectionButton;
-    }
-
-    public View getSortReshuffleButton() {
-        return sortReshuffleButton;
-    }
-
-    public TextView getSortFieldButton() {
-        return sortFieldButton;
-    }
-
     public String getQuery() {
-        return query;
+        return query.get(getCurrentFragmentIndex());
     }
 
     public void setQuery(String query) {
-        this.query = query;
+        this.query.set(getCurrentFragmentIndex(), query);
     }
 
     public List<Attribute> getMetadata() {
-        return metadata;
+        return metadata.get(getCurrentFragmentIndex());
     }
 
     public void setMetadata(List<Attribute> metadata) {
-        this.metadata = metadata;
+        this.metadata.set(getCurrentFragmentIndex(), metadata);
     }
 
     public boolean isEditMode() {
@@ -234,14 +216,6 @@ public class LibraryActivity extends BaseActivity {
     public void setEditMode(boolean editMode) {
         this.editMode = editMode;
         updateToolbar();
-    }
-
-    public void toggleEditMode() {
-        setEditMode(!editMode);
-    }
-
-    public boolean isGroupFavsChecked() {
-        return isGroupFavsChecked;
     }
 
 
@@ -299,7 +273,16 @@ public class LibraryActivity extends BaseActivity {
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
         viewModel = new ViewModelProvider(this, vmFactory).get(LibraryViewModel.class);
-        viewModel.isCustomGroupingAvailable().observe(this, b -> this.isCustomGroupingAvailable = b);
+        viewModel.getContentSearchManagerBundle().observe(this, b -> contentSearchBundle = b);
+        viewModel.getGroup().observe(this, g -> {
+            group = g;
+            updateToolbar();
+        });
+        viewModel.getGroupSearchManagerBundle().observe(this, b -> {
+            groupSearchBundle = b;
+            GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
+            onGroupingChanged(searchBundle.getGroupingId());
+        });
 
         if (!Preferences.getRecentVisibility()) {
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
@@ -315,7 +298,6 @@ public class LibraryActivity extends BaseActivity {
         updateSelectionToolbar(0, 0, 0, 0);
 
         onCreated();
-        sortCommandsAutoHide = new Debouncer<>(this, 3000, this::hideSearchSortBar);
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
     }
@@ -377,7 +359,7 @@ public class LibraryActivity extends BaseActivity {
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, viewModel.getSearchManagerBundle(), false);
+                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, contentSearchBundle, false);
                 } finally {
                     dao.cleanup();
                 }
@@ -399,35 +381,21 @@ public class LibraryActivity extends BaseActivity {
         alertFixBtn = findViewById(R.id.library_alert_fix_btn);
 
         // Search bar
-        searchSortBar = findViewById(R.id.advanced_search_background);
-
-        // "Group by" menu
-        View groupByButton = findViewById(R.id.group_by_btn);
-        groupByButton.setOnClickListener(this::onGroupByButtonClick);
+        searchSubBar = findViewById(R.id.advanced_search_background);
 
         // Link to advanced search
         advancedSearchButton = findViewById(R.id.advanced_search_btn);
         advancedSearchButton.setOnClickListener(v -> onAdvancedSearchButtonClick());
 
-        // "Show artists/groups" menu (group tab only when Grouping.ARTIST is on)
-        showArtistsGroupsButton = findViewById(R.id.groups_visibility_btn);
-        showArtistsGroupsButton.setText(getArtistsGroupsTextFromPrefs());
-        showArtistsGroupsButton.setOnClickListener(this::onGroupsVisibilityButtonClick);
-
         // Clear search
         searchClearButton = findViewById(R.id.search_clear_btn);
         searchClearButton.setOnClickListener(v -> {
-            query = "";
-            metadata.clear();
+            setQuery("");
+            getMetadata().clear();
             actionSearchView.setQuery("", false);
-            hideSearchSortBar(false);
+            hideSearchSubBar();
             signalCurrentFragment(EV_SEARCH, "");
         });
-
-        // Sort controls
-        sortDirectionButton = findViewById(R.id.sort_direction_btn);
-        sortReshuffleButton = findViewById(R.id.sort_reshuffle_btn);
-        sortFieldButton = findViewById(R.id.sort_field_btn);
 
         // Main tabs
         viewPager = findViewById(R.id.library_pager);
@@ -436,42 +404,42 @@ public class LibraryActivity extends BaseActivity {
             @Override
             public void onPageSelected(int position) {
                 enableCurrentFragment();
-                hideSearchSortBar(false);
+                hideSearchSubBar();
                 updateToolbar();
                 updateSelectionToolbar(0, 0, 0, 0);
             }
         });
         viewPager.setAdapter(pagerAdapter);
 
-        updateDisplay();
+        updateDisplay(Preferences.getGroupingDisplay().getId());
     }
 
-    private void updateDisplay() {
+    private void updateDisplay(int targetGroupingId) {
         pagerAdapter.notifyDataSetChanged();
-        if (Preferences.getGroupingDisplay().equals(Grouping.FLAT)) { // Display books right away
+        if (targetGroupingId == Grouping.FLAT.getId()) { // Display books right away
             viewPager.setCurrentItem(1);
+//            viewModel.searchContent();
         }
         enableCurrentFragment();
     }
 
     private void initToolbar() {
         toolbar = findViewById(R.id.library_toolbar);
-        toolbar.setNavigationOnClickListener(v -> openNavigationDrawer());
 
         searchMenu = toolbar.getMenu().findItem(R.id.action_search);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                showSearchSortBar(true, false, null);
+                showSearchSubBar(true, false);
                 invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
-                if (!query.isEmpty())
+                if (!getQuery().isEmpty())
                     // Use of handler allows to set the value _after_ the UI has auto-cleared it
                     // Without that handler the view displays with an empty value
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         invalidateNextQueryTextChange = true;
-                        actionSearchView.setQuery(query, false);
+                        actionSearchView.setQuery(getQuery(), false);
                     }, 100);
 
                 return true;
@@ -480,20 +448,23 @@ public class LibraryActivity extends BaseActivity {
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 if (!isSearchQueryActive()) {
-                    hideSearchSortBar(false);
+                    hideSearchSubBar();
                 }
                 invalidateNextQueryTextChange = true;
                 return true;
             }
         });
-        completedFilterMenu = toolbar.getMenu().findItem(R.id.action_completed_filter);
-        favsMenu = toolbar.getMenu().findItem(R.id.action_favourites);
-        updateFavouriteFilter();
 
+        displayTypeMenu = toolbar.getMenu().findItem(R.id.action_display_type);
+        if (Preferences.Constant.LIBRARY_DISPLAY_LIST == Preferences.getLibraryDisplay())
+            displayTypeMenu.setIcon(R.drawable.ic_view_gallery);
+        else
+            displayTypeMenu.setIcon(R.drawable.ic_view_list);
         reorderMenu = toolbar.getMenu().findItem(R.id.action_edit);
         reorderCancelMenu = toolbar.getMenu().findItem(R.id.action_edit_cancel);
+        reorderConfirmMenu = toolbar.getMenu().findItem(R.id.action_edit_confirm);
         newGroupMenu = toolbar.getMenu().findItem(R.id.action_group_new);
-        sortMenu = toolbar.getMenu().findItem(R.id.action_order);
+        sortMenu = toolbar.getMenu().findItem(R.id.action_sort_filter);
 
         actionSearchView = (SearchView) searchMenu.getActionView();
         actionSearchView.setIconifiedByDefault(true);
@@ -502,8 +473,8 @@ public class LibraryActivity extends BaseActivity {
         actionSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                query = s;
-                signalCurrentFragment(EV_SEARCH, query);
+                setQuery(s);
+                signalCurrentFragment(EV_SEARCH, getQuery());
                 actionSearchView.clearFocus();
 
                 return true;
@@ -514,8 +485,8 @@ public class LibraryActivity extends BaseActivity {
                 if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
                     invalidateNextQueryTextChange = false;
                 } else if (s.isEmpty()) {
-                    query = "";
-                    signalCurrentFragment(EV_SEARCH, query);
+                    setQuery("");
+                    signalCurrentFragment(EV_SEARCH, getQuery());
                     searchClearButton.setVisibility(View.GONE);
                 }
 
@@ -539,16 +510,19 @@ public class LibraryActivity extends BaseActivity {
         }
     }
 
-    public void sortCommandsAutoHide(boolean hideSortOnly, PopupMenu popup) {
-        this.autoHidePopup = popup;
-        sortCommandsAutoHide.submit(hideSortOnly);
-    }
-
     public void updateSearchBarOnResults(boolean nonEmptyResults) {
         if (isSearchQueryActive()) {
-            showSearchSortBar(true, true, false);
-            if (nonEmptyResults) collapseSearchMenu();
+            if (!getQuery().isEmpty()) {
+                actionSearchView.setQuery(getQuery(), false);
+                expandSearchMenu();
+            } else if (nonEmptyResults) {
+                collapseSearchMenu();
+            }
+            showSearchSubBar(!isGroupDisplayed(), true);
         } else {
+            collapseSearchMenu();
+            if (actionSearchView.getQuery().length() > 0)
+                actionSearchView.setQuery("", false);
             searchClearButton.setVisibility(View.GONE);
         }
     }
@@ -561,27 +535,26 @@ public class LibraryActivity extends BaseActivity {
      */
     public boolean toolbarOnItemClicked(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
-            case R.id.action_completed_filter:
-                if (!menuItem.isChecked())
-                    askFilterCompleted();
-                else {
-                    completedFilterMenu.setChecked(!completedFilterMenu.isChecked());
-                    updateCompletedFilter();
-                    viewModel.resetCompletedFilter();
-                }
+            case R.id.action_display_type:
+                int displayType = Preferences.getLibraryDisplay();
+                if (Preferences.Constant.LIBRARY_DISPLAY_LIST == displayType)
+                    displayType = Preferences.Constant.LIBRARY_DISPLAY_GRID;
+                else displayType = Preferences.Constant.LIBRARY_DISPLAY_LIST;
+                Preferences.setLibraryDisplay(displayType);
                 break;
-            case R.id.action_favourites:
-                menuItem.setChecked(!menuItem.isChecked());
-                updateFavouriteFilter();
-                if (isGroupDisplayed()) {
-                    isGroupFavsChecked = menuItem.isChecked();
-                    viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
-                } else
-                    viewModel.setContentFavouriteFilter(menuItem.isChecked());
+            case R.id.action_browse_groups:
+                LibraryBottomGroupsFragment.invoke(
+                        this,
+                        this.getSupportFragmentManager()
+                );
                 break;
-            case R.id.action_order:
-                showSearchSortBar(null, null, true);
-                sortCommandsAutoHide.submit(true);
+            case R.id.action_sort_filter:
+                LibraryBottomSortFilterFragment.invoke(
+                        this,
+                        this.getSupportFragmentManager(),
+                        isGroupDisplayed(),
+                        group != null && group.grouping.equals(Grouping.CUSTOM) && 1 == group.getSubtype()
+                );
                 break;
             default:
                 return false;
@@ -589,59 +562,19 @@ public class LibraryActivity extends BaseActivity {
         return true;
     }
 
-    private void showSearchSortBar(Boolean showAdvancedSearch, Boolean showClear, Boolean showSort) {
-        if (showSort != null && showSort && View.VISIBLE == sortFieldButton.getVisibility()) {
-            hideSearchSortBar(View.GONE != advancedSearchButton.getVisibility());
-            return;
-        }
-
-        searchSortBar.setVisibility(View.VISIBLE);
+    private void showSearchSubBar(Boolean showAdvancedSearch, Boolean showClear) {
+        searchSubBar.setVisibility(View.VISIBLE);
         if (showAdvancedSearch != null)
             advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
 
         if (showClear != null)
             searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
-
-        if (showSort != null) {
-            sortFieldButton.setVisibility(showSort ? View.VISIBLE : View.GONE);
-            if (showSort) {
-                boolean isRandom = (!isGroupDisplayed() && Preferences.Constant.ORDER_FIELD_RANDOM == Preferences.getContentSortField());
-                sortDirectionButton.setVisibility(isRandom ? View.GONE : View.VISIBLE);
-                sortReshuffleButton.setVisibility(isRandom ? View.VISIBLE : View.GONE);
-                searchClearButton.setVisibility(View.GONE);
-            } else {
-                sortDirectionButton.setVisibility(View.GONE);
-                sortReshuffleButton.setVisibility(View.GONE);
-            }
-        }
-
-        if (isGroupDisplayed() && Preferences.getGroupingDisplay().equals(Grouping.ARTIST)) {
-            showArtistsGroupsButton.setVisibility(View.VISIBLE);
-        } else {
-            showArtistsGroupsButton.setVisibility(View.GONE);
-        }
     }
 
-    public void hideSearchSortBar(boolean hideSortOnly) {
-        boolean isSearchVisible = (View.VISIBLE == advancedSearchButton.getVisibility() || View.VISIBLE == searchClearButton.getVisibility());
-
-        if (!hideSortOnly || !isSearchVisible)
-            searchSortBar.setVisibility(View.GONE);
-
-        if (!hideSortOnly) {
-            advancedSearchButton.setVisibility(View.GONE);
-            searchClearButton.setVisibility(View.GONE);
-        }
-
-        sortDirectionButton.setVisibility(View.GONE);
-        sortReshuffleButton.setVisibility(View.GONE);
-        sortFieldButton.setVisibility(View.GONE);
-        showArtistsGroupsButton.setVisibility(View.GONE);
-
-        if (autoHidePopup != null) autoHidePopup.dismiss();
-
-        // Restore CLEAR button if it's needed
-        if (hideSortOnly && isSearchQueryActive()) searchClearButton.setVisibility(View.VISIBLE);
+    public void hideSearchSubBar() {
+        searchSubBar.setVisibility(View.GONE);
+        advancedSearchButton.setVisibility(View.GONE);
+        searchClearButton.setVisibility(View.GONE);
     }
 
     public boolean closeLeftDrawer() {
@@ -658,6 +591,12 @@ public class LibraryActivity extends BaseActivity {
             return true;
         }
         return false;
+    }
+
+    public void expandSearchMenu() {
+        if (searchMenu != null && !searchMenu.isActionViewExpanded()) {
+            searchMenu.expandActionView();
+        }
     }
 
     private void initSelectionToolbar() {
@@ -681,63 +620,6 @@ public class LibraryActivity extends BaseActivity {
         splitMenu = selectionToolbar.getMenu().findItem(R.id.action_split);
     }
 
-    private Grouping getGroupingFromMenuId(@IdRes int menuId) {
-        switch (menuId) {
-            case (R.id.groups_flat):
-                return Grouping.FLAT;
-            case (R.id.groups_by_artist):
-                return Grouping.ARTIST;
-            case (R.id.groups_by_dl_date):
-                return Grouping.DL_DATE;
-            case (R.id.groups_custom):
-                return Grouping.CUSTOM;
-            default:
-                return Grouping.NONE;
-        }
-    }
-
-    private @IdRes
-    int getMenuIdFromGrouping(Grouping grouping) {
-        switch (grouping) {
-            case ARTIST:
-                return R.id.groups_by_artist;
-            case DL_DATE:
-                return R.id.groups_by_dl_date;
-            case CUSTOM:
-                return R.id.groups_custom;
-            case FLAT:
-            case NONE:
-            default:
-                return R.id.groups_flat;
-        }
-    }
-
-    private int getVisibilityCodeFromMenuId(@IdRes int menuId) {
-        switch (menuId) {
-            case (R.id.show_artists):
-                return Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS;
-            case (R.id.show_groups):
-                return Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS;
-            case (R.id.show_artists_and_groups):
-            default:
-                return Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS;
-        }
-    }
-
-    /**
-     * Update completed filter button appearance on the action bar
-     */
-    private void updateCompletedFilter() {
-        completedFilterMenu.setIcon(completedFilterMenu.isChecked() ? R.drawable.ic_completed_filter_on : R.drawable.ic_completed_filter_off);
-    }
-
-    /**
-     * Update favourite filter button appearance on the action bar
-     */
-    private void updateFavouriteFilter() {
-        favsMenu.setIcon(favsMenu.isChecked() ? R.drawable.ic_filter_favs_on : R.drawable.ic_filter_favs_off);
-    }
-
     /**
      * Callback for any change in Preferences
      */
@@ -755,13 +637,8 @@ public class LibraryActivity extends BaseActivity {
                 break;
             case Preferences.Key.SD_STORAGE_URI:
             case Preferences.Key.EXTERNAL_LIBRARY_URI:
-                Preferences.setGroupingDisplay(Grouping.FLAT.getId());
-                viewModel.setGroup(null, true);
-                updateDisplay();
-                break;
-            case Preferences.Key.GROUPING_DISPLAY:
-            case Preferences.Key.ARTIST_GROUP_VISIBILITY:
-                viewModel.setGrouping(Preferences.getGroupingDisplay(), Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
+                updateDisplay(Grouping.FLAT.getId());
+                viewModel.setGrouping(Grouping.FLAT.getId());
                 break;
             default:
                 // Nothing to handle there
@@ -775,92 +652,31 @@ public class LibraryActivity extends BaseActivity {
         signalCurrentFragment(EV_ADVANCED_SEARCH, null);
     }
 
-    /**
-     * Handler for the "Group by" button
-     */
-    private void onGroupByButtonClick(View groupByButton) {
-        // Load and display the field popup menu
-        PopupMenu popup = new PopupMenu(this, groupByButton);
-        popup.getMenuInflater()
-                .inflate(R.menu.library_groups_popup, popup.getMenu());
-
-        popup.getMenu().findItem(R.id.groups_custom).setVisible(isCustomGroupingAvailable);
-
-        // Mark current grouping
-        MenuItem currentItem = popup.getMenu().findItem(getMenuIdFromGrouping(Preferences.getGroupingDisplay()));
-        currentItem.setTitle(currentItem.getTitle() + " <");
-
-        popup.setOnMenuItemClickListener(item -> {
-            Grouping currentGrouping = Preferences.getGroupingDisplay();
-            Grouping selectedGrouping = getGroupingFromMenuId(item.getItemId());
-            // Don't do anything if the current group is selected
-            if (currentGrouping.equals(selectedGrouping)) return false;
-
-            Preferences.setGroupingDisplay(selectedGrouping.getId());
-            isGroupFavsChecked = false;
-            favsMenu.setChecked(false);
-            updateFavouriteFilter();
-
-            if (isGroupDisplayed() && selectedGrouping.equals(Grouping.ARTIST)) {
-                showArtistsGroupsButton.setVisibility(View.VISIBLE);
-            } else {
-                showArtistsGroupsButton.setVisibility(View.GONE);
-            }
-
+    private void onGroupingChanged(int targetGroupingId) {
+        Grouping targetGrouping = Grouping.searchById(targetGroupingId);
+        if (grouping.getId() != targetGroupingId) {
             // Reset custom book ordering if reverting to a grouping where that doesn't apply
-            if (!selectedGrouping.canReorderBooks()
+            if (!targetGrouping.canReorderBooks()
                     && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getContentSortField()) {
                 Preferences.setContentSortField(Preferences.Default.ORDER_CONTENT_FIELD);
             }
             // Reset custom group ordering if reverting to a grouping where that doesn't apply
-            if (!selectedGrouping.canReorderGroups()
+            if (!targetGrouping.canReorderGroups()
                     && Preferences.Constant.ORDER_FIELD_CUSTOM == Preferences.getGroupSortField()) {
                 Preferences.setGroupSortField(Preferences.Default.ORDER_GROUP_FIELD);
             }
 
             // Go back to groups tab if we're not
-            goBackToGroups();
+            if (targetGroupingId != Grouping.FLAT.getId())
+                goBackToGroups();
 
             // Update screen display if needed (flat <-> the rest)
-            if (currentGrouping.equals(Grouping.FLAT) || selectedGrouping.equals(Grouping.FLAT))
-                updateDisplay();
-            sortCommandsAutoHide(true, popup);
-            return true;
-        });
-        popup.show(); //showing popup menu
-        sortCommandsAutoHide(true, popup);
-    }
+            if (grouping.equals(Grouping.FLAT) || targetGroupingId == Grouping.FLAT.getId())
+                updateDisplay(targetGroupingId);
 
-    private String getArtistsGroupsTextFromPrefs() {
-        switch (Preferences.getArtistGroupVisibility()) {
-            case Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS:
-                return getResources().getString(R.string.show_artists);
-            case Preferences.Constant.ARTIST_GROUP_VISIBILITY_GROUPS:
-                return getResources().getString(R.string.show_groups);
-            case Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS:
-                return getResources().getString(R.string.show_artists_and_groups);
-            default:
-                return "";
+            grouping = targetGrouping;
+            updateToolbar();
         }
-    }
-
-    /**
-     * Handler for the "Show artists/groups" button
-     */
-    private void onGroupsVisibilityButtonClick(View groupsVisibilityButton) {
-        // Load and display the visibility popup menu
-        PopupMenu popup = new PopupMenu(this, groupsVisibilityButton);
-        popup.getMenuInflater().inflate(R.menu.library_groups_visibility_popup, popup.getMenu());
-        popup.setOnMenuItemClickListener(item -> {
-            item.setChecked(true);
-            int code = getVisibilityCodeFromMenuId(item.getItemId());
-            Preferences.setArtistGroupVisibility(code);
-            showArtistsGroupsButton.setText(getArtistsGroupsTextFromPrefs());
-            sortCommandsAutoHide(true, popup);
-            return true;
-        });
-        popup.show();
-        sortCommandsAutoHide(true, popup);
     }
 
     /**
@@ -884,7 +700,7 @@ public class LibraryActivity extends BaseActivity {
      * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
     public boolean isSearchQueryActive() {
-        return (!query.isEmpty() || !metadata.isEmpty());
+        return (!getQuery().isEmpty() || !getMetadata().isEmpty());
     }
 
     private void fixPermissions() {
@@ -929,32 +745,62 @@ public class LibraryActivity extends BaseActivity {
         if (isGroupDisplayed()) return;
 
         enableFragment(0);
-        viewModel.searchGroup(Preferences.getGroupingDisplay(), query, Preferences.getGroupSortField(), Preferences.isGroupSortDesc(), Preferences.getArtistGroupVisibility(), isGroupFavsChecked);
+        viewModel.searchGroup();
         viewPager.setCurrentItem(0);
         if (titles.containsKey(0)) toolbar.setTitle(titles.get(0));
+        //toolbar.setNavigationIcon(R.drawable.ic_drawer);
     }
 
-    public void showBooksInGroup(me.devsaki.hentoid.database.domains.Group group) {
+    public void showBooksInGroup(Group group) {
         enableFragment(1);
         viewModel.setGroup(group, true);
         viewPager.setCurrentItem(1);
+        //toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+    }
+
+    public boolean isFilterActive() {
+        if (isSearchQueryActive()) {
+            setQuery("");
+            setMetadata(Collections.emptyList());
+            collapseSearchMenu();
+            hideSearchSubBar();
+        }
+        if (isGroupDisplayed()) {
+            GroupSearchManager.GroupSearchBundle bundle = new GroupSearchManager.GroupSearchBundle(groupSearchBundle);
+            return bundle.isFilterActive();
+        } else {
+            ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle(contentSearchBundle);
+            return bundle.isFilterActive();
+        }
     }
 
     private void updateToolbar() {
         Grouping currentGrouping = Preferences.getGroupingDisplay();
 
+        displayTypeMenu.setVisible(!editMode);
         searchMenu.setVisible(!editMode);
         newGroupMenu.setVisible(!editMode && isGroupDisplayed() && currentGrouping.canReorderGroups()); // Custom groups only
-        favsMenu.setVisible(!editMode);
-        reorderMenu.setIcon(editMode ? R.drawable.ic_check : R.drawable.ic_reorder_lines);
+        reorderConfirmMenu.setVisible(editMode);
         reorderCancelMenu.setVisible(editMode);
         sortMenu.setVisible(!editMode);
-        completedFilterMenu.setVisible(!editMode && !isGroupDisplayed());
 
-        if (isGroupDisplayed()) reorderMenu.setVisible(currentGrouping.canReorderGroups());
-        else reorderMenu.setVisible(currentGrouping.canReorderBooks());
+        boolean isToolbarNavigationDrawer = true;
+        if (isGroupDisplayed()) {
+            reorderMenu.setVisible(currentGrouping.canReorderGroups());
+        } else {
+            reorderMenu.setVisible(currentGrouping.canReorderBooks() && group != null && group.getSubtype() != 1);
+            isToolbarNavigationDrawer = currentGrouping.equals(Grouping.FLAT);
+        }
 
-        signalCurrentFragment(EV_UPDATE_SORT, null);
+        if (isToolbarNavigationDrawer) { // Open the left drawer
+            toolbar.setNavigationIcon(R.drawable.ic_drawer);
+            toolbar.setNavigationOnClickListener(v -> openNavigationDrawer());
+        } else { // Go back to groups
+            toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+            toolbar.setNavigationOnClickListener(v -> goBackToGroups());
+        }
+
+        signalCurrentFragment(EV_UPDATE_TOOLBAR, null);
     }
 
     public void updateSelectionToolbar(
@@ -1003,26 +849,6 @@ public class LibraryActivity extends BaseActivity {
         }
     }
 
-    public void askFilterCompleted() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        String title = getString(R.string.ask_filter_completed);
-        builder.setMessage(title)
-                .setPositiveButton(R.string.filter_not_completed,
-                        (dialog, which) -> {
-                            completedFilterMenu.setChecked(!completedFilterMenu.isChecked());
-                            updateCompletedFilter();
-                            viewModel.toggleNotCompletedFilter();
-                        })
-                .setNegativeButton(R.string.filter_completed,
-                        (dialog, which) -> {
-                            completedFilterMenu.setChecked(!completedFilterMenu.isChecked());
-                            updateCompletedFilter();
-                            viewModel.toggleCompletedFilter();
-                        })
-                .create().show();
-    }
-
-
     /**
      * Display the yes/no dialog to make sure the user really wants to delete selected items
      *
@@ -1030,7 +856,7 @@ public class LibraryActivity extends BaseActivity {
      */
     public void askDeleteItems(
             @NonNull final List<Content> contents,
-            @NonNull final List<me.devsaki.hentoid.database.domains.Group> groups,
+            @NonNull final List<Group> groups,
             @Nullable final Runnable onSuccess,
             @NonNull final SelectExtension<?> selectExtension) {
         // TODO display the number of books and groups that will be deleted
@@ -1119,7 +945,7 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void signalCurrentFragment(int eventType, @Nullable String message) {
-        signalFragment(isGroupDisplayed() ? 0 : 1, eventType, message);
+        signalFragment(getCurrentFragmentIndex(), eventType, message);
     }
 
     private void signalFragment(int fragmentIndex, int eventType, @Nullable String message) {
@@ -1127,13 +953,50 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void enableCurrentFragment() {
-        if (isGroupDisplayed()) enableFragment(0);
-        else enableFragment(1);
+        enableFragment(getCurrentFragmentIndex());
+    }
+
+    private int getCurrentFragmentIndex() {
+        return isGroupDisplayed() ? 0 : 1;
     }
 
     private void enableFragment(int fragmentIndex) {
         EventBus.getDefault().post(new CommunicationEvent(EV_ENABLE, (0 == fragmentIndex) ? RC_GROUPS : RC_CONTENTS, null));
         EventBus.getDefault().post(new CommunicationEvent(EV_DISABLE, (0 == fragmentIndex) ? RC_CONTENTS : RC_GROUPS, null));
+    }
+
+    public static @StringRes
+    int getNameFromFieldCode(int prefFieldCode) {
+        switch (prefFieldCode) {
+            case (Preferences.Constant.ORDER_FIELD_TITLE):
+                return R.string.sort_title;
+            case (Preferences.Constant.ORDER_FIELD_ARTIST):
+                return R.string.sort_artist;
+            case (Preferences.Constant.ORDER_FIELD_NB_PAGES):
+                return R.string.sort_pages;
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE):
+                return R.string.sort_dl_date;
+            case (Preferences.Constant.ORDER_FIELD_DOWNLOAD_COMPLETION_DATE):
+                return R.string.sort_dl_completion_date;
+            case (Preferences.Constant.ORDER_FIELD_UPLOAD_DATE):
+                return R.string.sort_uplodad_date;
+            case (Preferences.Constant.ORDER_FIELD_READ_DATE):
+                return R.string.sort_read_date;
+            case (Preferences.Constant.ORDER_FIELD_READS):
+                return R.string.sort_reads;
+            case (Preferences.Constant.ORDER_FIELD_SIZE):
+                return R.string.sort_size;
+            case (Preferences.Constant.ORDER_FIELD_READ_PROGRESS):
+                return R.string.sort_reading_progress;
+            case (Preferences.Constant.ORDER_FIELD_CUSTOM):
+                return R.string.sort_custom;
+            case (Preferences.Constant.ORDER_FIELD_RANDOM):
+                return R.string.sort_random;
+            case (Preferences.Constant.ORDER_FIELD_CHILDREN):
+                return R.string.sort_books;
+            default:
+                return R.string.sort_invalid;
+        }
     }
 
     /**

@@ -16,6 +16,14 @@ fun Bundle.boolean(default: Boolean) = object : ReadWriteProperty<Any, Boolean> 
         putBoolean(property.name, value)
 }
 
+fun Bundle.bundle() = object : ReadWriteProperty<Any, Bundle?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        getBundle(property.name)
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Bundle?) =
+        putBundle(property.name, value)
+}
+
 fun Bundle.byte(default: Byte) = object : ReadWriteProperty<Any, Byte> {
     override fun getValue(thisRef: Any, property: KProperty<*>) =
         getByte(property.name, default)
@@ -64,11 +72,11 @@ fun Bundle.float(default: Float) = object : ReadWriteProperty<Any, Float> {
         putFloat(property.name, value)
 }
 
-fun Bundle.string(default: String?) = object : ReadWriteProperty<Any, String?> {
+fun Bundle.string(default: String) = object : ReadWriteProperty<Any, String> {
     override fun getValue(thisRef: Any, property: KProperty<*>) =
         getString(property.name, default)
 
-    override fun setValue(thisRef: Any, property: KProperty<*>, value: String?) =
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: String) =
         putString(property.name, value)
 }
 
@@ -118,4 +126,117 @@ fun Bundle.intArrayList() = object : ReadWriteProperty<Any, ArrayList<Int>?> {
 
     override fun setValue(thisRef: Any, property: KProperty<*>, value: ArrayList<Int>?) =
         putIntegerArrayList(property.name, value)
+}
+
+fun Bundle.boolean() = object : ReadWriteProperty<Any, Boolean?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        if (containsKey(property.name))
+            getBoolean(property.name)
+        else
+            null
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Boolean?) {
+        if (value == null)
+            remove(property.name)
+        else
+            putBoolean(property.name, value)
+    }
+}
+
+fun Bundle.byte() = object : ReadWriteProperty<Any, Byte?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        if (containsKey(property.name))
+            getByte(property.name)
+        else
+            null
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Byte?) =
+        if (value == null)
+            remove(property.name)
+        else
+            putByte(property.name, value)
+}
+
+fun Bundle.char() = object : ReadWriteProperty<Any, Char?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        if (containsKey(property.name))
+            getChar(property.name)
+        else
+            null
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Char?) =
+        if (value == null)
+            remove(property.name)
+        else
+            putChar(property.name, value)
+}
+
+fun Bundle.short() = object : ReadWriteProperty<Any, Short?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        if (containsKey(property.name))
+            getShort(property.name)
+        else
+            null
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Short?) =
+        if (value == null)
+            remove(property.name)
+        else
+            putShort(property.name, value)
+}
+
+fun Bundle.int() = object : ReadWriteProperty<Any, Int?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        if (containsKey(property.name))
+            getInt(property.name)
+        else
+            null
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Int?) =
+        if (value == null)
+            remove(property.name)
+        else
+            putInt(property.name, value)
+}
+
+fun Bundle.long() = object : ReadWriteProperty<Any, Long?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        if (containsKey(property.name))
+            getLong(property.name)
+        else
+            null
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Long?) =
+        if (value == null)
+            remove(property.name)
+        else
+            putLong(property.name, value)
+}
+
+fun Bundle.float() = object : ReadWriteProperty<Any, Float?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        if (containsKey(property.name))
+            getFloat(property.name)
+        else
+            null
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: Float?) =
+        if (value == null)
+            remove(property.name)
+        else
+            putFloat(property.name, value)
+}
+
+fun Bundle.string() = object : ReadWriteProperty<Any, String?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        if (containsKey(property.name))
+            getString(property.name)
+        else
+            null
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: String?) =
+        if (value == null)
+            remove(property.name)
+        else
+            putString(property.name, value)
 }

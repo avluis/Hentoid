@@ -314,7 +314,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             // Payloads are set when the content stays the same but some properties alone change
             if (!payloads.isEmpty()) {
                 Bundle bundle = (Bundle) payloads.get(0);
-                ContentItemBundle.Parser bundleParser = new ContentItemBundle.Parser(bundle);
+                ContentItemBundle bundleParser = new ContentItemBundle(bundle);
 
                 Boolean boolValue = bundleParser.isBeingDeleted();
                 if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
@@ -324,8 +324,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (boolValue != null) item.content.setCompleted(boolValue);
                 Long longValue = bundleParser.getReads();
                 if (longValue != null) item.content.setReads(longValue);
-                longValue = bundleParser.getReadPagesCount();
-                if (longValue != null) item.content.setReadPagesCount(longValue.intValue());
+                Integer intValue = bundleParser.getReadPagesCount();
+                if (intValue != null) item.content.setReadPagesCount(intValue);
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) item.content.getCover().setFileUri(stringValue);
                 stringValue = bundleParser.getTitle();

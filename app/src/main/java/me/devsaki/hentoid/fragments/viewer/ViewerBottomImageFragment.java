@@ -58,10 +58,6 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
     private ImageViewerViewModel viewModel;
 
-    private int imageIndex = -1;
-    private float scale = -1;
-    private ImageFile image = null;
-
     // UI
     private View rootView;
     private ImageView imgThumb;
@@ -72,6 +68,11 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
     private ImageView copyButton;
     private ImageView shareButton;
     private ImageView deleteButton;
+
+    // Variables
+    private int imageIndex = -1;
+    private float scale = -1;
+    private ImageFile image = null;
 
 
     static {
@@ -89,7 +90,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
     }
 
     public static void invoke(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
-        ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
+        ImageViewerActivityBundle builder = new ImageViewerActivityBundle();
 
         builder.setImageIndex(imageIndex);
         builder.setScale(currentScale);
@@ -106,7 +107,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
         Bundle bundle = getArguments();
         if (bundle != null) {
-            ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(bundle);
+            ImageViewerActivityBundle parser = new ImageViewerActivityBundle(bundle);
             imageIndex = parser.getImageIndex();
             if (-1 == imageIndex) throw new IllegalArgumentException("Initialization failed");
             scale = parser.getScale();
@@ -118,7 +119,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.include_viewer_image_info, container, false);
+        rootView = inflater.inflate(R.layout.include_viewer_image_bottom_panel, container, false);
 
         imgThumb = requireViewById(rootView, R.id.ivThumb);
         imgPath = requireViewById(rootView, R.id.image_path);
@@ -263,7 +264,7 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
     private void onShareClick() {
         Uri fileUri = Uri.parse(image.getFileUri());
         if (FileHelper.fileExists(requireContext(), fileUri))
-            FileHelper.shareFile(requireContext(), fileUri, "Share picture");
+            FileHelper.shareFile(requireContext(), fileUri, "");
     }
 
     /**

@@ -412,7 +412,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
         bundle.setUrl(webView.getUrl());
-        outState.putAll(bundle.toBundle());
+        outState.putAll(bundle.getBundle());
     }
 
     @Override
@@ -972,6 +972,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 List<ErrorRecord> errors = new ArrayList<>();
                 errors.add(new ErrorRecord(ErrorType.BLOCKED, currentContent.getUrl(), "tags", "blocked tags : " + TextUtils.join(", ", blockedTagsLocal), Instant.now()));
                 currentContent.setErrorLog(errors);
+                currentContent.setDownloadMode(Preferences.getBrowserDlAction());
                 currentContent.setStatus(StatusContent.ERROR);
                 dao.insertContent(currentContent);
                 ToastHelper.toast(R.string.blocked_tag_queued, blockedTagsLocal.get(0));
@@ -1004,9 +1005,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         Intent intent = new Intent(this, QueueActivity.class);
 
         if (currentContent != null) {
-            QueueActivityBundle.Builder builder = new QueueActivityBundle.Builder();
+            QueueActivityBundle builder = new QueueActivityBundle();
             builder.setContentHash(currentContent.uniqueHash());
-            builder.setIsErrorsTab(currentContent.getStatus().equals(StatusContent.ERROR));
+            builder.setErrorsTab(currentContent.getStatus().equals(StatusContent.ERROR));
             intent.putExtras(builder.getBundle());
         }
 
@@ -1068,7 +1069,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     downloadParams.put(HttpHelper.HEADER_COOKIE_KEY, HttpHelper.getCookies(onlineContent.getCoverImageUrl()));
                     downloadParams.put(HttpHelper.HEADER_REFERER_KEY, onlineContent.getSite().getUrl());
 
-                    Response onlineCover = HttpHelper.getOnlineResource(
+                    Response onlineCover = HttpHelper.getOnlineResourceFast(
                             HttpHelper.fixUrl(onlineContent.getCoverImageUrl(), getStartUrl()),
                             requestHeadersList,
                             getStartSite().useMobileAgent(),
@@ -1349,7 +1350,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         PrefsBundle prefsBundle = new PrefsBundle();
         prefsBundle.setBrowserPrefs(true);
-        intent.putExtras(prefsBundle.toBundle());
+        intent.putExtras(prefsBundle.getBundle());
 
         startActivity(intent);
     }
