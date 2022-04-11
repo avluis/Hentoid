@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.Completable;
 import io.reactivex.disposables.CompositeDisposable;
@@ -60,7 +60,7 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
     private final Queue<Long> previousRequestsTimestamps = new LinkedList<>();
 
     // True if the queue is being initialized
-    private final AtomicBoolean isInit = new AtomicBoolean(false);
+    private final AtomicInteger ignorableErrors = new AtomicInteger(0);
 
 
     private RequestQueueManager(Context context) {
@@ -111,24 +111,22 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
      * @param resetOkHttp      If true, also reset the underlying OkHttp connections
      */
     private void init(Context ctx, int nbDlThreads, int connectTimeoutMs, int ioTimeoutMs, boolean cancelQueue, boolean resetOkHttp) {
-        isInit.set(true);
         Timber.d("Init using %d Dl threads", nbDlThreads);
-        try {
-            if (mRequestQueue != null) {
-                mRequestQueue.removeRequestEventListener(this);
-                if (cancelQueue) cancelQueue();
-                mRequestQueue.stop();
-                mRequestQueue = null;
-            }
-
-            if (resetOkHttp) OkHttpClientSingleton.reset();
-
-            mRequestQueue = createRequestQueue(ctx, nbDlThreads, connectTimeoutMs, ioTimeoutMs);
-            mRequestQueue.addRequestEventListener(this);
-            mRequestQueue.start();
-        } finally {
-            isInit.set(false);
+        if (mRequestQueue != null) {
+            mRequestQueue.removeRequestEventListener(this);
+            if (cancelQueue) cancelQueue();
+            mRequestQueue.stop();
+            mRequestQueue = null;
         }
+
+        if (resetOkHttp) {
+            ignorableErrors.set(getNbActiveRequests());
+            OkHttpClientSingleton.reset();
+        }
+
+        mRequestQueue = createRequestQueue(ctx, nbDlThreads, connectTimeoutMs, ioTimeoutMs);
+        mRequestQueue.addRequestEventListener(this);
+        mRequestQueue.start();
     }
 
     /**
@@ -234,6 +232,7 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         synchronized (currentRequests) {
             currentRequests.clear();
         }
+        ignorableErrors.set(0);
         waitDisposable.clear();
         Timber.d("RequestQueue ::: canceled");
     }
@@ -371,19 +370,23 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
 
     /**
      * Generic handler called when a request is completed
-     * NB : This method is run on the app's main thread
+     * NB1 : This method is run on the app's main thread
+     * NB2 : This method is run _after_ the Request's onError handler
      *
      * @param request Completed request
      */
     public void onRequestFinished(Request<?> request) {
-        if (request.hasHadResponseDelivered()) {
+        // No lost requests when force-restarting the queue
+        if (!popIgnorableErrors()) {
             synchronized (currentRequests) {
+                // Tag _is_ the original RequestOrder
                 //noinspection SuspiciousMethodCalls
-                currentRequests.remove(request.getTag()); // tag _is_ the original RequestOrder
+                currentRequests.remove(request.getTag());
+                Timber.v("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), getNbActiveRequests());
             }
+        } else {
+            Timber.v("Global requests queue ::: no request removed for host %s due to ignorable errors - current total %s", Uri.parse(request.getUrl()).getHost(), getNbActiveRequests());
         }
-
-        Timber.v("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), getNbActiveRequests());
 
         if (!waitingRequestQueue.isEmpty()) {
             refill();
@@ -406,8 +409,15 @@ public class RequestQueueManager implements RequestQueue.RequestEventListener {
         }
     }
 
-    public boolean isInit() {
-        return isInit.get();
+    public boolean hasRemainingIgnorableErrors() {
+        return ignorableErrors.get() > 0;
+    }
+
+    private boolean popIgnorableErrors() {
+        if (ignorableErrors.get() > 0) {
+            ignorableErrors.getAndDecrement();
+            return true;
+        } else return false;
     }
 
     @Override

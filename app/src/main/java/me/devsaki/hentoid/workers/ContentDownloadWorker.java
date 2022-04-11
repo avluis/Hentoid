@@ -904,7 +904,7 @@ public class ContentDownloadWorker extends BaseWorker {
             @NonNull Map<String, String> requestHeaders) {
 
         // If the queue is being reset, ignore the error
-        if (requestQueueManager.isInit()) return;
+        if (requestQueueManager.hasRemainingIgnorableErrors()) return;
 
         // Try with the backup URL, if it exists and if the current image isn't a backup itself
         if (!img.isBackup() && !backupUrl.isEmpty()) {
