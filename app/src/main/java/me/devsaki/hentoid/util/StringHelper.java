@@ -22,6 +22,7 @@ public final class StringHelper {
     }
 
     private static final Pattern NUMERIC_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?");
+    private static final Pattern STRING_CLEANUP_INVALID_CHARS_PATTERN = Pattern.compile("[(\\[\\-+?!_~/,:;|.#\"'’=&)\\]]");
 
 
     /**
@@ -157,7 +158,8 @@ public final class StringHelper {
             else if (!openBracket) result.append(c);
         }
         String resStr = result.toString().trim();
-        if (resStr.isEmpty()) return formattedS.replaceAll("[(\\[\\-+?!_~/,:;|.#\"'’=&)\\]]", "");
+        if (resStr.isEmpty())
+            return STRING_CLEANUP_INVALID_CHARS_PATTERN.matcher(formattedS).replaceAll("");
         else return /*cleanMultipleSpaces(*/resStr/*)*/;
     }
 
