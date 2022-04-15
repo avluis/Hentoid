@@ -317,7 +317,7 @@ public class QueueViewModel extends AndroidViewModel {
                                 if (reparseImages) purgeItem(content);
                                 okCount.incrementAndGet();
                                 dao.addContentToQueue(
-                                        content, targetImageStatus, position,
+                                        content, targetImageStatus, position, -1,
                                         ContentQueueManager.getInstance().isQueueActive(getApplication()));
                             } else {
                                 // As we're in the download queue, an item whose content is unreachable should directly get to the error queue

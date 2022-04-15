@@ -213,13 +213,14 @@ public interface CollectionDAO {
 
     List<QueueRecord> selectQueue();
 
-    List<QueueRecord> selectQueue(String query);
+    @Nullable
+    QueueRecord selectQueue(long contentId);
 
     LiveData<List<QueueRecord>> selectQueueLive();
 
     LiveData<List<QueueRecord>> selectQueueLive(String query);
 
-    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, @ContentHelper.QueuePosition int position, boolean isQueueActive);
+    void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, @ContentHelper.QueuePosition int position, long replacedContentId, boolean isQueueActive);
 
     void updateQueue(@NonNull List<QueueRecord> queue);
 

@@ -81,6 +81,7 @@ import me.devsaki.hentoid.util.download.RequestOrder;
 import me.devsaki.hentoid.util.download.RequestQueueManager;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.exception.CaptchaException;
+import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
@@ -179,11 +180,12 @@ public class ContentDownloadWorker extends BaseWorker {
 
     /**
      * Start the download of the 1st book of the download queue
-     * <p>
      * NB : This method is not only called the 1st time the queue is awakened,
      * but also after every book has finished downloading
      *
-     * @return 1st book of the download queue; null if no book is available to download
+     * @return Pair containing
+     * - Left : Result of the processing
+     * - Right : 1st book of the download queue; null if no book is available to download
      */
     @SuppressLint({"TimberExceptionLogging", "TimberArgCount"})
     @NonNull
@@ -665,6 +667,8 @@ public class ContentDownloadWorker extends BaseWorker {
             return;
         }
 
+        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.COMPLETE_DOWNLOAD));
+
         if (!downloadInterrupted.get()) {
             List<ImageFile> images = content.getImageFiles();
             if (null == images) images = Collections.emptyList();
@@ -733,6 +737,16 @@ public class ContentDownloadWorker extends BaseWorker {
                     content.setDownloadParams("");
                     content.setDownloadCompletionDate(Instant.now().toEpochMilli());
                     content.setStatus(StatusContent.DOWNLOADED);
+
+                    // Delete the duplicate book that was meant to be replaced
+                    if (!content.getContentToReplace().isNull()) {
+                        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.REMOVE_DUPLICATE));
+                        try {
+                            ContentHelper.removeContent(getApplicationContext(), dao, content.getContentToReplace().getTarget());
+                        } catch (ContentNotProcessedException e) {
+                            Timber.w(e);
+                        }
+                    }
                 } else {
                     content.setStatus(StatusContent.ERROR);
                 }

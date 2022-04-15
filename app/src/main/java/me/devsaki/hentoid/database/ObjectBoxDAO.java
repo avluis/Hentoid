@@ -682,12 +682,13 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectExternalMemoryUsagePerSource();
     }
 
-    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, boolean isQueueActive) {
+    public void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, int position, long replacedContentId, boolean isQueueActive) {
         if (targetImageStatus != null)
             db.updateImageContentStatus(content.getId(), null, targetImageStatus);
 
         content.setStatus(StatusContent.DOWNLOADING);
         content.setIsBeingDeleted(false); // Remove any UI animation
+        if (replacedContentId > -1) content.setContentIdToReplace(replacedContentId);
         db.insertContent(content);
 
         if (!db.isContentInQueue(content)) {
@@ -703,11 +704,13 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     private void insertQueueAndRenumber(long contentId, int order) {
         List<QueueRecord> queue = db.selectQueueRecordsQ(null).find();
+        QueueRecord newRecord = new QueueRecord(contentId, order);
+
         // Put in the right place
-        if (order > queue.size()) queue.add(new QueueRecord(contentId, order));
+        if (order > queue.size()) queue.add(newRecord);
         else {
             int newOrder = Math.min(queue.size() + 1, order);
-            queue.add(newOrder - 1, new QueueRecord(contentId, newOrder));
+            queue.add(newOrder - 1, newRecord);
         }
         // Renumber everything and save
         int index = 1;
@@ -790,9 +793,9 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectQueueRecordsQ(null).find();
     }
 
-    @Override
-    public List<QueueRecord> selectQueue(String query) {
-        return db.selectQueueRecordsQ(query).find();
+    @Nullable
+    public QueueRecord selectQueue(long contentId) {
+        return db.selectQueueRecordFromContentId(contentId);
     }
 
     public void updateQueue(@NonNull List<QueueRecord> queue) {

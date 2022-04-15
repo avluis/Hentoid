@@ -1131,7 +1131,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .doOnNext(c -> {
                             if (c.right.isEmpty()) throw new EmptyResultException();
                             dao.addContentToQueue(
-                                    c.right.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP,
+                                    c.right.get(), StatusContent.SAVED, ContentHelper.QueuePosition.TOP, -1,
                                     ContentQueueManager.getInstance().isQueueActive(getApplication()));
                         })
                         .observeOn(AndroidSchedulers.mainThread())

@@ -345,6 +345,13 @@ public class ObjectBoxDB {
         return result;
     }
 
+    @Nullable
+    QueueRecord selectQueueRecordFromContentId(long contentId) {
+        QueryBuilder<QueueRecord> qb = store.boxFor(QueueRecord.class).query();
+        qb.equal(QueueRecord_.contentId, contentId);
+        return qb.build().findFirst();
+    }
+
     Query<QueueRecord> selectQueueRecordsQ(String query) {
         QueryBuilder<QueueRecord> qb = store.boxFor(QueueRecord.class).query();
         // Universal search inside contents
@@ -371,10 +378,6 @@ public class ObjectBoxDB {
 
     long selectMaxQueueOrder() {
         return store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.rank).max();
-    }
-
-    void insertQueueRecord(@NonNull final QueueRecord qr) {
-        store.boxFor(QueueRecord.class).put(qr);
     }
 
     void insertQueue(long contentId, int order) {

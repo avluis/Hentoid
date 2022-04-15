@@ -32,6 +32,7 @@ import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.converter.PropertyConverter;
 import io.objectbox.relation.ToMany;
+import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.sources.AllPornComicActivity;
 import me.devsaki.hentoid.activities.sources.BaseWebActivity;
@@ -123,6 +124,7 @@ public class Content implements Serializable {
 
     private @DownloadMode
     int downloadMode;
+    private ToOne<Content> contentToReplace;
 
     // Aggregated data redundant with the sum of individual data contained in ImageFile
     // ObjectBox can't do the sum in a single Query, so here it is !
@@ -896,6 +898,14 @@ public class Content implements Serializable {
 
     public void setUpdatedProperties(boolean updatedProperties) {
         this.updatedProperties = updatedProperties;
+    }
+
+    public ToOne<Content> getContentToReplace() {
+        return contentToReplace;
+    }
+
+    public void setContentIdToReplace(long contentIdToReplace) {
+        this.contentToReplace.setTargetId(contentIdToReplace);
     }
 
     public static class StringMapConverter implements PropertyConverter<Map<String, String>, String> {

@@ -482,7 +482,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 // TODO if the purge is extremely long, that worker might still be working while downloads are happening on these same books
                                 if (reparseImages) purgeItem(content, false);
                                 dao.addContentToQueue(
-                                        content, targetImageStatus, position,
+                                        content, targetImageStatus, position, -1,
                                         ContentQueueManager.getInstance().isQueueActive(getApplication()));
                             } else {
                                 errorCount.incrementAndGet();
@@ -530,7 +530,7 @@ public class LibraryViewModel extends AndroidViewModel {
                             if (c.isPresent()) {
                                 c.get().setDownloadMode(Content.DownloadMode.DOWNLOAD);
                                 dao.addContentToQueue(
-                                        c.get(), StatusContent.SAVED, position,
+                                        c.get(), StatusContent.SAVED, position, -1,
                                         ContentQueueManager.getInstance().isQueueActive(getApplication()));
                             } else {
                                 nbErrors.incrementAndGet();

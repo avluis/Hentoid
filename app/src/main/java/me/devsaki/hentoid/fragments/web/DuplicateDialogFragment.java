@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -27,6 +28,9 @@ import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 
 import org.greenrobot.eventbus.EventBus;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
@@ -47,6 +51,17 @@ public final class DuplicateDialogFragment extends DialogFragment {
     private static final String KEY_CONTENT_SIMILARITY = "similarity";
     private static final String KEY_IS_DOWNLOAD_PLUS = "downloadPlus";
     private DialogWebDuplicateBinding binding = null;
+
+    @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.REPLACE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ActionMode {
+        // Download book
+        int DOWNLOAD = 0;
+        // Download new pages
+        int DOWNLOAD_PLUS = 1;
+        // Replace existing book
+        int REPLACE = 2;
+    }
 
     private static final RequestOptions glideRequestOptions;
 
@@ -177,9 +192,10 @@ public final class DuplicateDialogFragment extends DialogFragment {
         binding.tvScore.setText(context.getString(R.string.duplicate_alert_similarity, similarity * 100));
 
 
-        binding.cancelBtn.setOnClickListener(v -> submit(false, false));
-        binding.downloadBtn.setOnClickListener(v -> submit(true, false));
-        binding.downloadPlusBtn.setOnClickListener(v -> submit(false, true));
+        binding.cancelBtn.setOnClickListener(v -> dismissAllowingStateLoss());
+        binding.replaceBtn.setOnClickListener(v -> submit(ActionMode.REPLACE));
+        binding.downloadBtn.setOnClickListener(v -> submit(ActionMode.DOWNLOAD));
+        binding.downloadPlusBtn.setOnClickListener(v -> submit(ActionMode.DOWNLOAD_PLUS));
     }
 
     @Nullable
@@ -192,19 +208,17 @@ public final class DuplicateDialogFragment extends DialogFragment {
         }
     }
 
-    private void submit(boolean downloadBook, boolean downloadExtraPages) {
-        if (downloadBook || downloadExtraPages) {
-            if (binding.chAlwaysDownload.isChecked())
-                Preferences.setDownloadDuplicateAsk(false);
-            if (binding.chNeverExtraOnDupes.isChecked())
-                Preferences.setDownloadDuplicateTry(false);
-            parent.onDownloadDuplicate(downloadExtraPages);
-        }
+    private void submit(@ActionMode int actionMode) {
+        if (binding.chAlwaysDownload.isChecked())
+            Preferences.setDownloadDuplicateAsk(false);
+        if (binding.chNeverExtraOnDupes.isChecked())
+            Preferences.setDownloadDuplicateTry(false);
+        parent.onDownloadDuplicate(actionMode);
         dismissAllowingStateLoss();
     }
 
 
     public interface Parent {
-        void onDownloadDuplicate(boolean isDownloadPlus);
+        void onDownloadDuplicate(@ActionMode int actionMode);
     }
 }

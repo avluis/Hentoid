@@ -793,12 +793,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             case ActionMode.DOWNLOAD:
                 if (needsDuplicateAlert)
                     DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, false);
-                else processDownload(false, false);
+                else processDownload(false, false, false);
                 break;
             case ActionMode.DOWNLOAD_PLUS:
                 if (needsDuplicateAlert)
                     DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, true);
-                else processDownload(false, true);
+                else processDownload(false, true, false);
                 break;
             case ActionMode.VIEW_QUEUE:
                 goToQueue();
@@ -859,7 +859,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * @param quickDownload True if the action has been triggered by a quick download
      *                      (which means we're not on a book gallery page but on the book list page)
      */
-    void processDownload(boolean quickDownload, boolean isDownloadPlus) {
+    // TODO update doc
+    void processDownload(boolean quickDownload, boolean isDownloadPlus, boolean isReplaceDuplicate) {
         if (null == currentContent) return;
 
         if (currentContent.getId() > 0)
@@ -936,6 +937,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 currentContent.setErrorLog(errors);
                 currentContent.setDownloadMode(Preferences.getBrowserDlAction());
                 currentContent.setStatus(StatusContent.ERROR);
+                if (isReplaceDuplicate) currentContent.setContentIdToReplace(duplicateId);
                 dao.insertContent(currentContent);
                 ToastHelper.toast(R.string.blocked_tag_queued, blockedTagsLocal.get(0));
                 setActionMode(ActionMode.VIEW_QUEUE);
@@ -945,17 +947,33 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // No reason to block or ignore -> actually add to the queue
         if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK)
-            AddQueueMenu.show(this, webView, this, (position, item) -> addToQueue((0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM, Preferences.getBrowserDlAction()));
+            AddQueueMenu.show(
+                    this,
+                    webView,
+                    this,
+                    (position, item) -> addToQueue(
+                            (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM,
+                            Preferences.getBrowserDlAction(),
+                            isReplaceDuplicate
+                    )
+            );
         else
-            addToQueue(Preferences.getQueueNewDownloadPosition(), Preferences.getBrowserDlAction());
+            addToQueue(Preferences.getQueueNewDownloadPosition(), Preferences.getBrowserDlAction(), isReplaceDuplicate);
     }
 
-    private void addToQueue(int position, int downloadMode) {
+    // TODO doc
+    private void addToQueue(int position, int downloadMode, boolean isReplaceDuplicate) {
         animatedCheck.setVisibility(View.VISIBLE);
         ((Animatable) animatedCheck.getDrawable()).start();
         new Handler(getMainLooper()).postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
         currentContent.setDownloadMode(downloadMode);
-        dao.addContentToQueue(currentContent, null, position, ContentQueueManager.getInstance().isQueueActive(this));
+        dao.addContentToQueue(
+                currentContent,
+                null,
+                position,
+                (isReplaceDuplicate) ? duplicateId : -1,
+                ContentQueueManager.getInstance().isQueueActive(this)
+        );
         if (Preferences.isQueueAutostart()) ContentQueueManager.getInstance().resumeQueue(this);
         setActionMode(ActionMode.VIEW_QUEUE);
     }
@@ -1111,7 +1129,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     if (duplicateId > -1 && Preferences.isDownloadDuplicateAsk())
                         DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, false);
                     else
-                        processDownload(true, false);
+                        processDownload(true, false, false);
                 } else setActionMode(ActionMode.DOWNLOAD);
                 break;
             case ContentStatus.IN_COLLECTION:
@@ -1256,8 +1274,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @Override
-    public void onDownloadDuplicate(boolean isDownloadPlus) {
-        processDownload(false, isDownloadPlus);
+    public void onDownloadDuplicate(@DuplicateDialogFragment.ActionMode int actionMode) {
+        processDownload(false, actionMode == DuplicateDialogFragment.ActionMode.DOWNLOAD_PLUS, actionMode == DuplicateDialogFragment.ActionMode.REPLACE);
     }
 
 

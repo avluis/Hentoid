@@ -174,17 +174,29 @@
         app:layout_constraintTop_toBottomOf="@id/barrier" />
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/download_btn"
+        android:id="@+id/replace_btn"
         style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:text="@string/duplicate_alert_replace_existing"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_cache"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/download_btn"
+        style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="@string/duplicate_alert_download_book"
         android:textSize="@dimen/text_body_1"
         app:icon="@drawable/ic_action_download"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/divider" />
+        app:layout_constraintTop_toBottomOf="@id/replace_btn" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/download_plus_btn"

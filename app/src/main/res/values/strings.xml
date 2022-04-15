@@ -138,6 +138,8 @@
     <string name="step_save_queue">Saving queue</string>
     <string name="step_wait_purge">Waiting for purge to complete</string>
     <string name="step_start_download">Download chain started!</string>
+    <string name="step_complete_download">Completing download</string>
+    <string name="step_remove_duplicate">Replacing duplicate</string>
     <string name="help_swipe_cancel">You can cancel downloads by swiping them to the left</string>
     <string name="redownloaded_error">An issue happened while redownloading - canceled</string>
     <plurals name="redownloaded_scratch">
@@ -746,6 +748,7 @@
     <string name="duplicate_alert_always_download">Always download and don\'t ask me again</string>
     <string name="duplicate_alert_never_extra_on_dupes">Never add pages from potential duplicates again</string>
     <string name="duplicate_alert_similarity">Similarity: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_alert_replace_existing">Replace existing book</string>
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
     <string name="duplicate_wait_index">Indexing…</string>
