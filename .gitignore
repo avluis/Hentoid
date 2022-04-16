@@ -62,24 +62,6 @@ signing.gradle
 /*.hprof
 
 # Irrelevant and potentially harmful Smartcat artifacts
-/app/src/main/res/values-es/array_url_blacklist.xml
-/app/src/main/res/values-es/array_url_whitelist.xml
-/app/src/main/res/values-es/donottranslate.xml
-/app/src/main/res/values-fr/array_url_blacklist.xml
-/app/src/main/res/values-fr/array_url_whitelist.xml
-/app/src/main/res/values-fr/donottranslate.xml
-/app/src/main/res/values-hu/array_url_blacklist.xml
-/app/src/main/res/values-hu/array_url_whitelist.xml
-/app/src/main/res/values-hu/donottranslate.xml
-/app/src/main/res/values-it/array_url_blacklist.xml
-/app/src/main/res/values-it/array_url_whitelist.xml
-/app/src/main/res/values-it/donottranslate.xml
-/app/src/main/res/values-nb-rNO/array_url_blacklist.xml
-/app/src/main/res/values-nb-rNO/array_url_whitelist.xml
-/app/src/main/res/values-nb-rNO/donottranslate.xml
-/app/src/main/res/values-pt-rBR/array_url_blacklist.xml
-/app/src/main/res/values-pt-rBR/array_url_whitelist.xml
-/app/src/main/res/values-pt-rBR/donottranslate.xml
-/app/src/main/res/values-ru/array_url_blacklist.xml
-/app/src/main/res/values-ru/array_url_whitelist.xml
-/app/src/main/res/values-ru/donottranslate.xml
+/app/src/main/res/values-*/array_url_blacklist.xml
+/app/src/main/res/values-*/array_url_whitelist.xml
+/app/src/main/res/values-*/donottranslate.xml
