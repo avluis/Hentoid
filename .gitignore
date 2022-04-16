@@ -30,9 +30,6 @@ Thumbs.db
 # OSX files
 .DS_Store
 
-# Legacy Signing files (remove this rule after 29/05/2019)
-.signing/
-
 # Signing files
 signing.gradle
 
