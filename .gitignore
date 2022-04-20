@@ -30,9 +30,6 @@ Thumbs.db
 # OSX files
 .DS_Store
 
-# Legacy Signing files (remove this rule after 29/05/2019)
-.signing/
-
 # Signing files
 signing.gradle
 
@@ -63,3 +60,8 @@ signing.gradle
 /objectbox-jni-windows-x64.dll
 /*.trace
 /*.hprof
+
+# Irrelevant and potentially harmful Smartcat artifacts
+/app/src/main/res/values-*/array_url_blacklist.xml
+/app/src/main/res/values-*/array_url_whitelist.xml
+/app/src/main/res/values-*/donottranslate.xml

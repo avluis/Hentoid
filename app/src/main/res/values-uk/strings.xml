@@ -146,6 +146,8 @@
     <string name="step_save_queue">Збереження черги</string>
     <string name="step_wait_purge">Очищення у процесі…</string>
     <string name="step_start_download">Розпочато ланцюжок завантажень!</string>
+    <string name="step_complete_download">Майже завантажено</string>
+    <string name="step_remove_duplicate">Замінюється дублікат</string>
     <string name="help_swipe_cancel">Ви можете скасовувати завантаження свайпом вліво</string>
     <string name="redownloaded_error">Виникла проблема при повторному завантаженні — скасовано</string>
     <plurals name="redownloaded_scratch">
@@ -791,6 +793,7 @@
     <string name="duplicate_alert_always_download">Завжди завантажувати і більше не питати</string>
     <string name="duplicate_alert_never_extra_on_dupes">Ніколи більше не додавати сторінки з потенційних дублікатів</string>
     <string name="duplicate_alert_similarity">Схожість: <x:g id="similarity_percentage" example="50%">%.0f%%</x:g></string>
+    <string name="duplicate_alert_replace_existing">Замінити книгу</string>
     <string name="duplicate_alert_download_book">Завантажити книгу</string>
     <string name="duplicate_alert_download_pages">Завантажити додаткові сторінки</string>
     <string name="duplicate_wait_index">Зачекайте, будь ласка — йде індексування</string>
