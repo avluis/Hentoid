@@ -157,10 +157,23 @@ public class FileHelper {
             Method getVolumeList = mStorageManager.getClass().getMethod("getVolumeList");
             Method getUuid = storageVolumeClazz.getMethod("getUuid");
             Method isPrimary = storageVolumeClazz.getMethod("isPrimary");
-            Object result = getVolumeList.invoke(mStorageManager);
-            if (null == result) return null;
+
+            Object vlResult = getVolumeList.invoke(mStorageManager);
+            if (null == vlResult) vlResult = Collections.emptyList();
+            Object result = vlResult;
+
+            // getRecentStorageVolumes (API30+) can detect USB storage on certain devices where getVolumeList can't
+            if (Build.VERSION.SDK_INT >= 30) {
+                Method getRecentVolumeList = mStorageManager.getClass().getMethod("getRecentStorageVolumes");
+                Object rvlResult = getRecentVolumeList.invoke(mStorageManager);
+                if (null == rvlResult) rvlResult = Collections.emptyList();
+
+                result = (Array.getLength(vlResult) > Array.getLength(rvlResult)) ? vlResult : rvlResult;
+            }
 
             final int length = Array.getLength(result);
+            if (0 == length) return null;
+
             for (int i = 0; i < length; i++) {
                 Object storageVolumeElement = Array.get(result, i);
                 if (storageVolumeElement != null) {
