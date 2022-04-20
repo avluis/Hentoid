@@ -824,10 +824,10 @@ public class LibraryActivity extends BaseActivity {
             coverMenu.setVisible(false);
             mergeMenu.setVisible(false);
             splitMenu.setVisible(false);
-        } else {
+        } else { // Flat view
             editNameMenu.setVisible(!isMultipleSelection);
             deleteMenu.setVisible(
-                    (selectedLocalCount > 0 || selectedStreamedCount > 0) && (0 == selectedExternalCount || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary()))
+                    ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0 == selectedExternalCount) || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary())
             );
             completedMenu.setVisible(true);
             shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
