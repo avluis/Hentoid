@@ -53,7 +53,6 @@ import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileExplorer;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -162,10 +161,6 @@ public class ImportWorker extends BaseWorker {
         List<DocumentFile> bookFolders = new ArrayList<>();
         CollectionDAO dao = new ObjectBoxDAO(context);
 
-        LogHelper.LogInfo log_tmp = new LogHelper.LogInfo("folder_scan");
-        log_tmp.addEntry("Starting");
-        LogHelper.writeLog(getApplicationContext(), log_tmp);
-
         try (FileExplorer explorer = new FileExplorer(context, Uri.parse(Preferences.getStorageUri()))) {
             // 1st pass : Import groups JSON
 
@@ -176,24 +171,11 @@ public class ImportWorker extends BaseWorker {
             if (groupsFile != null) importGroups(context, groupsFile, dao, log);
             else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
 
-            log_tmp.addEntry("Groups OK");
-            LogHelper.writeLog(getApplicationContext(), log_tmp);
-
             // 2nd pass : count subfolders of every site folder
             List<DocumentFile> siteFolders = explorer.listFolders(context, rootFolder);
             int foldersProcessed = 1;
             for (DocumentFile f : siteFolders) {
-                log_tmp.addEntry("Folder %s", StringHelper.protect(f.getName()));
-                LogHelper.writeLog(getApplicationContext(), log_tmp);
-                try {
-                    List<DocumentFile> folders = explorer.listFolders(context, f);
-                    bookFolders.addAll(folders);
-                    log_tmp.addEntry("Found %d books", folders.size());
-                    LogHelper.writeLog(getApplicationContext(), log_tmp);
-                } catch (Exception e) {
-                    log_tmp.addEntry("Exception 1 %s / %s", e.getMessage(), Helper.getStackTraceString(e));
-                    LogHelper.writeLog(getApplicationContext(), log_tmp);
-                }
+                bookFolders.addAll(explorer.listFolders(context, f));
                 eventProgress(STEP_2_BOOK_FOLDERS, siteFolders.size(), foldersProcessed++, 0);
             }
             eventComplete(STEP_2_BOOK_FOLDERS, siteFolders.size(), siteFolders.size(), 0, null);
@@ -235,10 +217,6 @@ public class ImportWorker extends BaseWorker {
             else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No bookmarks file found");
         } catch (IOException | InterruptedException e) {
             Timber.w(e);
-
-            log_tmp.addEntry("Exception 2 %s / %s", e.getMessage(), Helper.getStackTraceString(e));
-            LogHelper.writeLog(getApplicationContext(), log_tmp);
-
             // Restore interrupted state
             Thread.currentThread().interrupt();
         } finally {

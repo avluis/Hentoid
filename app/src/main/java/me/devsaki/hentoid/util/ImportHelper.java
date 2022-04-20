@@ -214,7 +214,7 @@ public class ImportHelper {
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
 
-        // Persist I/O permissions
+        // Persist I/O permissions; keep existing ones if present
         Uri externalUri = null;
         if (!Preferences.getExternalLibraryUri().isEmpty())
             externalUri = Uri.parse(Preferences.getExternalLibraryUri());
@@ -279,7 +279,7 @@ public class ImportHelper {
             @NonNull final Context context,
             @NonNull final Uri treeUri) {
 
-        // Persist I/O permissions
+        // Persist I/O permissions; keep existing ones if present
         Uri hentoidUri = null;
         if (!Preferences.getStorageUri().isEmpty())
             hentoidUri = Uri.parse(Preferences.getStorageUri());
