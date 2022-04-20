@@ -149,7 +149,7 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem changeGroupMenu;
     private MenuItem folderMenu;
     private MenuItem redownloadMenu;
-    private MenuItem downloadMenu;
+    private MenuItem downloadStreamedMenu;
     private MenuItem streamMenu;
     private MenuItem coverMenu;
     private MenuItem mergeMenu;
@@ -611,7 +611,7 @@ public class LibraryActivity extends BaseActivity {
         changeGroupMenu = selectionToolbar.getMenu().findItem(R.id.action_change_group);
         folderMenu = selectionToolbar.getMenu().findItem(R.id.action_open_folder);
         redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
-        downloadMenu = selectionToolbar.getMenu().findItem(R.id.action_download);
+        downloadStreamedMenu = selectionToolbar.getMenu().findItem(R.id.action_download);
         streamMenu = selectionToolbar.getMenu().findItem(R.id.action_stream);
         coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
         mergeMenu = selectionToolbar.getMenu().findItem(R.id.action_merge);
@@ -819,7 +819,7 @@ public class LibraryActivity extends BaseActivity {
             changeGroupMenu.setVisible(false);
             folderMenu.setVisible(false);
             redownloadMenu.setVisible(false);
-            downloadMenu.setVisible(false);
+            downloadStreamedMenu.setVisible(false);
             streamMenu.setVisible(false);
             coverMenu.setVisible(false);
             mergeMenu.setVisible(false);
@@ -835,7 +835,7 @@ public class LibraryActivity extends BaseActivity {
             changeGroupMenu.setVisible(true);
             folderMenu.setVisible(!isMultipleSelection);
             redownloadMenu.setVisible(selectedDownloadedCount > 0);
-            downloadMenu.setVisible(selectedStreamedCount > 0);
+            downloadStreamedMenu.setVisible(selectedStreamedCount > 0);
             streamMenu.setVisible(selectedDownloadedCount > 0);
             coverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
             mergeMenu.setVisible(
