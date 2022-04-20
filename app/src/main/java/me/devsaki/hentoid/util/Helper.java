@@ -40,6 +40,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -485,5 +487,15 @@ public final class Helper {
             return false;
         }
         return true;
+    }
+
+    public static String getStackTraceString(Throwable t) {
+        // Don't replace this with Log.getStackTraceString() - it hides
+        // UnknownHostException, which is not what we want.
+        StringWriter sw = new StringWriter(256);
+        PrintWriter pw = new PrintWriter(sw, false);
+        t.printStackTrace(pw);
+        pw.flush();
+        return sw.toString();
     }
 }
