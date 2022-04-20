@@ -76,7 +76,7 @@ public class ImportHelper {
         int KO_OTHER = 3; // Any other issue
     }
 
-    @IntDef({ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_OTHER})
+    @IntDef({ProcessFolderResult.OK_EMPTY_FOLDER, ProcessFolderResult.OK_LIBRARY_DETECTED, ProcessFolderResult.OK_LIBRARY_DETECTED_ASK, ProcessFolderResult.KO_INVALID_FOLDER, ProcessFolderResult.KO_DOWNLOAD_FOLDER, ProcessFolderResult.KO_APP_FOLDER, ProcessFolderResult.KO_CREATE_FAIL, ProcessFolderResult.KO_ALREADY_RUNNING, ProcessFolderResult.KO_OTHER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ProcessFolderResult {
         int OK_EMPTY_FOLDER = 1; // OK - Existing, empty Hentoid folder
@@ -86,7 +86,8 @@ public class ImportHelper {
         int KO_APP_FOLDER = 6; // Selected folder is the app folder and can't be used as an external folder
         int KO_DOWNLOAD_FOLDER = 7; // Selected folder is the device's download folder and can't be used as a primary folder (downloads visibility + storage calculation issues)
         int KO_CREATE_FAIL = 8; // Hentoid folder could not be created
-        int KO_OTHER = 9; // Any other issue
+        int KO_ALREADY_RUNNING = 9; // Import is already running
+        int KO_OTHER = 99; // Any other issue
     }
 
     private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_PRIMARY_FOLDER)
@@ -299,8 +300,8 @@ public class ImportHelper {
         Preferences.setExternalLibraryUri(folderUri);
 
         // Start the import
-        runExternalImport(context);
-        return ProcessFolderResult.OK_LIBRARY_DETECTED;
+        if (runExternalImport(context)) return ProcessFolderResult.OK_LIBRARY_DETECTED;
+        else return ProcessFolderResult.KO_ALREADY_RUNNING;
     }
 
     /**
@@ -431,13 +432,10 @@ public class ImportHelper {
      *
      * @param context Context to use
      */
-    private static void runExternalImport(
+    private static boolean runExternalImport(
             @NonNull final Context context
     ) {
-        if (ExternalImportWorker.isRunning(context)) {
-            ToastHelper.toast(R.string.service_running);
-            return;
-        }
+        if (ExternalImportWorker.isRunning(context)) return false;
 
         ImportNotificationChannel.init(context);
 
@@ -446,6 +444,8 @@ public class ImportHelper {
                 Integer.toString(R.id.external_import_service),
                 ExistingWorkPolicy.KEEP,
                 new OneTimeWorkRequest.Builder(ExternalImportWorker.class).addTag(WORK_CLOSEABLE).build());
+
+        return true;
     }
 
     /**

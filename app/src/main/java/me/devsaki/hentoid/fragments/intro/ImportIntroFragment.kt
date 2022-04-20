@@ -182,6 +182,11 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 R.string.import_create_fail,
                 BaseTransientBottomBar.LENGTH_LONG
             ).show()
+            ImportHelper.ProcessFolderResult.KO_ALREADY_RUNNING -> Snackbar.make(
+                binding.root,
+                R.string.service_running,
+                BaseTransientBottomBar.LENGTH_LONG
+            ).show()
             ImportHelper.ProcessFolderResult.KO_OTHER -> Snackbar.make(
                 binding.root,
                 R.string.import_other,

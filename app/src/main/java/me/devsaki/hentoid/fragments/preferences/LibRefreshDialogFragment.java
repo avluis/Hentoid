@@ -167,7 +167,12 @@ public class LibRefreshDialogFragment extends DialogFragment {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             res -> {
-                                if (ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER == res || ImportHelper.ProcessFolderResult.KO_CREATE_FAIL == res || ImportHelper.ProcessFolderResult.KO_APP_FOLDER == res || ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER == res)
+                                if (ImportHelper.ProcessFolderResult.KO_INVALID_FOLDER == res
+                                        || ImportHelper.ProcessFolderResult.KO_CREATE_FAIL == res
+                                        || ImportHelper.ProcessFolderResult.KO_APP_FOLDER == res
+                                        || ImportHelper.ProcessFolderResult.KO_DOWNLOAD_FOLDER == res
+                                        || ImportHelper.ProcessFolderResult.KO_ALREADY_RUNNING == res
+                                )
                                     dismissAllowingStateLoss();
                             },
                             Timber::w
@@ -262,7 +267,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         }
     }
 
-    private void onScanHentoidFolderResult(Integer resultCode) {
+    private void onScanHentoidFolderResult(@ImportHelper.ProcessFolderResult int resultCode) {
         importDisposable.dispose();
         switch (resultCode) {
             case ImportHelper.ProcessFolderResult.OK_EMPTY_FOLDER:
@@ -291,6 +296,10 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 break;
             case ImportHelper.ProcessFolderResult.KO_CREATE_FAIL:
                 Snackbar.make(rootView, R.string.import_create_fail, BaseTransientBottomBar.LENGTH_LONG).show();
+                setCancelable(true);
+                break;
+            case ImportHelper.ProcessFolderResult.KO_ALREADY_RUNNING:
+                Snackbar.make(rootView, R.string.service_running, BaseTransientBottomBar.LENGTH_LONG).show();
                 setCancelable(true);
                 break;
             case ImportHelper.ProcessFolderResult.KO_OTHER:
