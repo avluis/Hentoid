@@ -4,10 +4,12 @@ import me.devsaki.hentoid.enums.Site;
 
 public class ToonilyActivity extends BaseWebActivity {
 
+    public static final String GALLERY_PATTERN = "//toonily.com/[\\w\\-]+/[\\w\\-]+[/]{0,1}$";
+
     private static final String DOMAIN_FILTER = "toonily.com";
-    private static final String[] GALLERY_FILTER = {"//toonily.com/[\\w\\-]+/[\\w\\-]+[/]{0,1}$"};
+    private static final String[] GALLERY_FILTER = {GALLERY_PATTERN, GALLERY_PATTERN.replace("$", "") + "ch[%\\w]+-[0-9]+/$"};
     private static final String[] DIRTY_ELEMENTS = {".c-ads"};
-    private static final String[] JS_CONTENT_BLACKLIST = {"'iframe'","'adsdomain'","'closead'"};
+    private static final String[] JS_CONTENT_BLACKLIST = {"'iframe'", "'adsdomain'", "'closead'"};
     private static final String[] BLOCKED_CONTENT = {".cloudfront.net"};
 
     Site getStartSite() {

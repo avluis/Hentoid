@@ -2,14 +2,18 @@ package me.devsaki.hentoid.parsers.content;
 
 import androidx.annotation.NonNull;
 
+import com.annimon.stream.Stream;
+
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.activities.sources.ToonilyActivity;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -24,6 +28,9 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 import timber.log.Timber;
 
 public class ToonilyContent extends BaseContentParser {
+
+    private static final Pattern GALLERY_PATTERN = Pattern.compile(ToonilyActivity.GALLERY_PATTERN);
+
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
     @Selector(value = ".breadcrumb a")
@@ -35,12 +42,42 @@ public class ToonilyContent extends BaseContentParser {
     @Selector(value = ".artist-content a")
     private List<Element> artist;
 
+    @Selector(value = "#chapter-heading")
+    private Element chapterTitle;
+    @Selector(value = ".reading-content img")
+    private List<Element> chapterImgs;
+
 
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.TOONILY);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
-
         content.setUrl(url.replace(Site.TOONILY.getUrl(), ""));
+
+        if (GALLERY_PATTERN.matcher(url).find()) return updateGallery(content, url, updateImages);
+        else return updateSingleChapter(content, url, updateImages);
+    }
+
+    public Content updateSingleChapter(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+        String title = StringHelper.removeNonPrintableChars(chapterTitle.text());
+        content.setTitle(title);
+        String[] urlParts = url.split("/");
+        if (urlParts.length > 1)
+            content.setUniqueSiteId(urlParts[urlParts.length - 2]);
+        else
+            content.setUniqueSiteId(urlParts[0]);
+
+        if (updateImages) {
+            List<String> imgUrls = Stream.of(chapterImgs).map(ParseHelper::getImgSrc).toList();
+            String coverUrl = "";
+            if (!imgUrls.isEmpty()) coverUrl = imgUrls.get(0);
+            content.setImageFiles(ParseHelper.urlsToImageFiles(imgUrls, coverUrl, StatusContent.SAVED));
+            content.setQtyPages(imgUrls.size());
+        }
+
+        return content;
+    }
+
+    public Content updateGallery(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setCoverImageUrl(coverUrl);
         String title = NO_TITLE;
         if (breadcrumbs != null && !breadcrumbs.isEmpty()) {
