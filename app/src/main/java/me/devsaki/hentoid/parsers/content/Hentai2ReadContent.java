@@ -1,24 +1,36 @@
 package me.devsaki.hentoid.parsers.content;
 
+import static me.devsaki.hentoid.parsers.images.Hentai2ReadParser.IMAGE_PATH;
+
 import androidx.annotation.NonNull;
+
+import com.annimon.stream.Stream;
 
 import org.jsoup.nodes.Element;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
+import me.devsaki.hentoid.parsers.images.Hentai2ReadParser;
 import me.devsaki.hentoid.util.StringHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
+import timber.log.Timber;
 
 public class Hentai2ReadContent extends BaseContentParser {
+
+    private static final Pattern GALLERY_PATTERN = Pattern.compile(Hentai2ReadActivity.GALLERY_PATTERN);
+
     @Selector(value = "div.img-container img[src*=cover]")
     private Element cover;
     @Selector(value = "span[property^=name]")
@@ -28,12 +40,48 @@ public class Hentai2ReadContent extends BaseContentParser {
     @Selector(value = "li.dropdown a[data-mid]", attr = "data-mid", defValue = "")
     private String uniqueId;
 
+    @Selector(value = "script")
+    private List<Element> scripts;
+
 
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.HENTAI2READ);
-        if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
-
+        if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
         content.setUrl(url.replace(Site.HENTAI2READ.getUrl(), ""));
+
+        if (GALLERY_PATTERN.matcher(url).find()) return updateGallery(content, url, updateImages);
+        else return updateSingleChapter(content, url, updateImages);
+    }
+
+    public Content updateSingleChapter(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
+        String[] urlParts = url.split("/");
+        if (urlParts.length > 1)
+            content.setUniqueSiteId(urlParts[urlParts.length - 2]);
+        else
+            content.setUniqueSiteId(urlParts[0]);
+
+        try {
+            Hentai2ReadParser.H2RInfo info = Hentai2ReadParser.getDataFromScripts(scripts);
+            if (info != null) {
+                String title = StringHelper.removeNonPrintableChars(info.title);
+                content.setTitle(title);
+
+                List<String> chapterImgs = Stream.of(info.images).map(s -> IMAGE_PATH + s).toList();
+                if (updateImages && !chapterImgs.isEmpty()) {
+                    String coverUrl = "";
+                    coverUrl = chapterImgs.get(0);
+                    content.setImageFiles(ParseHelper.urlsToImageFiles(chapterImgs, coverUrl, StatusContent.SAVED));
+                    content.setQtyPages(chapterImgs.size());
+                }
+            }
+        } catch (IOException ioe) {
+            Timber.w(ioe);
+        }
+
+        return content;
+    }
+
+    public Content updateGallery(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         if (cover != null)
             content.setCoverImageUrl(ParseHelper.getImgSrc(cover));
         if (!title.isEmpty()) {

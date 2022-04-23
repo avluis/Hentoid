@@ -12,6 +12,7 @@ import com.annimon.stream.Stream;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,10 +32,11 @@ import timber.log.Timber;
  */
 public class Hentai2ReadParser extends BaseImageListParser {
 
-    private static final String IMAGE_PATH = "https://static.hentaicdn.com/hentai";
+    public static final String IMAGE_PATH = "https://static.hentaicdn.com/hentai";
 
     public static class H2RInfo {
-        List<String> images;
+        public String title;
+        public List<String> images;
     }
 
     @Override
@@ -78,18 +80,12 @@ public class Hentai2ReadParser extends BaseImageListParser {
             doc = getOnlineDocument(chp.getUrl(), headers, Site.HENTAI2READ.useHentoidAgent(), Site.HENTAI2READ.useWebviewAgent());
             if (doc != null) {
                 List<Element> scripts = doc.select("script");
-                List<String> imageUrls = new ArrayList<>();
-                for (Element e : scripts) {
-                    if (e.childNodeSize() > 0 && e.childNode(0).toString().contains("'images' :")) {
-                        String jsonStr = e.childNode(0).toString().replace("\n", "").trim().replace("var gData = ", "").replace("};", "}");
-                        H2RInfo info = JsonHelper.jsonToObject(jsonStr, H2RInfo.class);
-                        for (String img : info.images) imageUrls.add(IMAGE_PATH + img);
-                        break;
-                    }
-                }
-                if (!imageUrls.isEmpty())
-                    result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, 1000, chp));
-                else
+                H2RInfo info = getDataFromScripts(scripts);
+                if (info != null) {
+                    List<String> imageUrls = Stream.of(info.images).map(s -> IMAGE_PATH + s).toList();
+                    if (!imageUrls.isEmpty())
+                        result.addAll(ParseHelper.urlsToImageFiles(imageUrls, imgOffset + result.size() + 1, StatusContent.SAVED, 1000, chp));
+                } else
                     Timber.i("Chapter parsing failed for %s : no pictures found", chp.getUrl());
             } else {
                 Timber.i("Chapter parsing failed for %s : no response", chp.getUrl());
@@ -102,6 +98,16 @@ public class Hentai2ReadParser extends BaseImageListParser {
         if (processHalted.get()) throw new PreparationInterruptedException();
 
         return result;
+    }
+
+    public static H2RInfo getDataFromScripts(List<Element> scripts) throws IOException {
+        for (Element e : scripts) {
+            if (e.childNodeSize() > 0 && e.childNode(0).toString().contains("'images' :")) {
+                String jsonStr = e.childNode(0).toString().replace("\n", "").trim().replace("var gData = ", "").replace("};", "}");
+                return JsonHelper.jsonToObject(jsonStr, H2RInfo.class);
+            }
+        }
+        return null;
     }
 
     @Override
