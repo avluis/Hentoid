@@ -303,6 +303,7 @@
     <string name="import_app_folder">Ви не можете вибрати папку додатка як зовнішню — будь ласка, виберіть іншу</string>
     <string name="import_download_folder">Ви не маєте вибирати папку з усіма завантаженнями цього пристрою — будь ласка, створіть чи виберіть іншу</string>
     <string name="import_create_fail">Не вдалося створити папку Hentoid — будь ласка, виберіть інше розташування</string>
+    <string name="import_invalid_uri">Папка не розпізнана — будь ласка, виберіть її знову</string>
     <string name="import_other">Імпорт зупинено</string>
     <string name="import_unexpected">Імпорт був несподівано зупинено</string>
     <string name="task_done">Завдання завершено — дивіться логи для подробиць</string>
