@@ -304,6 +304,7 @@
     <string name="import_app_folder">Вы не можете выбрать папку приложения как внешнюю — пожалуйста, выберите другую</string>
     <string name="import_download_folder">Вы не должны выбирать папку со всеми загрузками этого устройства — пожалуйста, создайте или выберите другую</string>
     <string name="import_create_fail">Не удалось создать папку Hentoid — пожалуйста, выберите другое расположение</string>
+    <string name="import_invalid_uri">Папка не распознана — пожалуйста, выберите её снова</string>
     <string name="import_other">Импорт остановлен</string>
     <string name="import_unexpected">Импорт был неожиданно остановлен</string>
     <string name="task_done">Задание завершено — смотрите логи для подробностей</string>
