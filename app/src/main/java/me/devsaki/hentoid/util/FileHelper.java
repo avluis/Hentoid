@@ -43,8 +43,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -147,6 +148,7 @@ public class FileHelper {
      * @param volumeId Volume ID to get the path from
      * @return Human-readable access path of the given volume ID
      */
+    @SuppressWarnings("unchecked")
     @Nullable
     private static String getVolumePath(@NonNull Context context, final String volumeId) {
         try {
@@ -158,31 +160,27 @@ public class FileHelper {
             Method getUuid = storageVolumeClazz.getMethod("getUuid");
             Method isPrimary = storageVolumeClazz.getMethod("isPrimary");
 
-            Object vlResult = getVolumeList.invoke(mStorageManager);
-            if (null == vlResult) vlResult = Collections.emptyList();
-            Object result = vlResult;
+            List<StorageVolume> result;
+            Object resTmp = getVolumeList.invoke(mStorageManager);
+            if (null == resTmp) result = Collections.emptyList();
+            else result = Arrays.asList((StorageVolume[]) resTmp);
 
             // getRecentStorageVolumes (API30+) can detect USB storage on certain devices where getVolumeList can't
             if (Build.VERSION.SDK_INT >= 30) {
                 Method getRecentVolumeList = mStorageManager.getClass().getMethod("getRecentStorageVolumes");
-                Object rvlResult = getRecentVolumeList.invoke(mStorageManager);
+                List<StorageVolume> rvlResult = (ArrayList<StorageVolume>) getRecentVolumeList.invoke(mStorageManager);
                 if (null == rvlResult) rvlResult = Collections.emptyList();
 
-                result = (Array.getLength(vlResult) > Array.getLength(rvlResult)) ? vlResult : rvlResult;
+                result = (result.size() > rvlResult.size()) ? result : rvlResult;
             }
 
-            final int length = Array.getLength(result);
-            if (0 == length) return null;
-
-            for (int i = 0; i < length; i++) {
-                Object storageVolumeElement = Array.get(result, i);
-                if (storageVolumeElement != null) {
-                    String uuid = StringHelper.protect((String) getUuid.invoke(storageVolumeElement));
-                    Boolean primary = (Boolean) isPrimary.invoke(storageVolumeElement);
+            for (StorageVolume volume : result) {
+                if (volume != null) {
+                    String uuid = StringHelper.protect((String) getUuid.invoke(volume));
+                    Boolean primary = (Boolean) isPrimary.invoke(volume);
                     if (null == primary) primary = false;
 
-                    if (volumeIdMatch(uuid, primary, volumeId))
-                        return getVolumePath(storageVolumeElement);
+                    if (volumeIdMatch(uuid, primary, volumeId)) return getVolumePath(volume);
                 }
             }
             // not found.
