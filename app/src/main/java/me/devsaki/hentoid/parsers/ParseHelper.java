@@ -234,7 +234,8 @@ public class ParseHelper {
             @Nonnull List<String> imgUrls,
             int initialOrder,
             @NonNull final StatusContent status,
-            int totalBookPages, final Chapter chapter
+            int totalBookPages,
+            final Chapter chapter
     ) {
         List<ImageFile> result = new ArrayList<>();
 
