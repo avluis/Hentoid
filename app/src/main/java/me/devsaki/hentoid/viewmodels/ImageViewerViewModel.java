@@ -320,6 +320,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         );
     }
 
+    /*
     private synchronized void processArchiveImages(
             @NonNull Content theContent,
             @NonNull List<ImageFile> newImages,
@@ -386,6 +387,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             emitter.onComplete();
         }
     }
+     */
 
     /**
      * Map the given file Uri to its corresponding ImageFile in the given list, using their display name
@@ -394,17 +396,19 @@ public class ImageViewerViewModel extends AndroidViewModel {
      * @param uri        File Uri to map to one of the elements of the given list
      * @return Matched ImageFile with the valued Uri if found; empty ImageFile if not found
      */
-    private ImageFile mapUriToImageFile(@NonNull final List<ImageFile> imageFiles, @NonNull final Uri uri) {
+    private Optional<Pair<Integer, ImageFile>> mapUriToImageFile(long contentId, @NonNull final List<ImageFile> imageFiles, @NonNull final Uri uri) {
         String path = uri.getPath();
-        if (null == path) return new ImageFile();
+        if (null == path) return Optional.empty();
 
         // Feed the Uri's of unzipped files back into the corresponding images for viewing
+        int index = 0;
         for (ImageFile img : imageFiles) {
-            if (FileHelper.getFileNameWithoutExtension(img.getFileUri()).equalsIgnoreCase(ArchiveHelper.extractFileNameFromCacheName(path))) {
-                return img.setFileUri(uri.toString());
+            if (FileHelper.getFileNameWithoutExtension(uri.getPath()).endsWith(contentId + "." + index)) {
+                return Optional.of(new Pair<>(index, img));
             }
+            index++;
         }
-        return new ImageFile();
+        return Optional.empty();
     }
 
     private void initViewer(@NonNull Content theContent, int pageNumber, @NonNull List<ImageFile> imageFiles) {
@@ -1012,6 +1016,80 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (!downloadsInProgress.isEmpty()) return;
         downloadsInProgress.addAll(indexesToLoad);
 
+        Content theContent = getContent().getValue();
+        if (null == theContent) return;
+
+        List<String> sourceFileUris = new ArrayList<>();
+        List<String> targetFileNames = new ArrayList<>();
+        for (Integer index : indexesToLoad) {
+            if (index < 0 || index >= viewerImagesInternal.size()) continue;
+            ImageFile img = viewerImagesInternal.get(index);
+            if (!img.getFileUri().isEmpty()) continue;
+
+            sourceFileUris.add(img.getUrl().replace(theContent.getStorageUri() + File.separator, ""));
+            targetFileNames.add(theContent.getId() + "." + index);
+        }
+
+        Timber.d("Unarchiving %d files", sourceFileUris.size());
+
+        Observable<Uri> observable = Observable.create(emitter ->
+                ArchiveHelper.extractArchiveEntries(
+                        getApplication(),
+                        archiveFile.getUri(),
+                        sourceFileUris,
+                        cachePicFolder,
+                        targetFileNames,
+                        interruptArchiveLoad,
+                        emitter)
+        );
+
+        AtomicInteger nbProcessed = new AtomicInteger();
+        imageLoadDisposable = observable
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .doOnComplete(
+                        // Called this way to properly run on io thread
+                        () -> cacheJson(getApplication().getApplicationContext(), theContent)
+                )
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        uri -> {
+                            nbProcessed.getAndIncrement();
+//                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
+                            Optional<Pair<Integer, ImageFile>> img = mapUriToImageFile(theContent.getId(), viewerImagesInternal, uri);
+                            if (img.isPresent()) {
+                                downloadsInProgress.remove(img.get().first);
+                                synchronized (viewerImagesInternal) {
+                                    // Instanciate a new ImageFile not to modify the one used by the UI
+                                    ImageFile extractedPic = new ImageFile(img.get().second);
+                                    extractedPic.setFileUri(uri.toString());
+                                    extractedPic.setMimeType(getMimeTypeFromUri(uri));
+
+                                    viewerImagesInternal.remove(img.get().first.intValue());
+                                    viewerImagesInternal.add(img.get().first, extractedPic);
+                                    Timber.v("Unarchiving : replacing index %d - order %d -> %s", img.get().first, extractedPic.getOrder(), extractedPic.getFileUri());
+
+                                    // Instanciate a new list to trigger an actual Adapter UI refresh
+                                    viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
+                                    imageLocationCache.put(extractedPic.getOrder(), extractedPic.getFileUri());
+                                }
+                            }
+                        },
+                        t -> {
+                            downloadsInProgress.clear();
+                            Timber.e(t);
+                            //                          EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
+                        },
+                        () -> {
+                            Timber.d("Unarchived %d files successfuly", sourceFileUris.size());
+//                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
+                            downloadsInProgress.clear();
+                            imageLoadDisposable.dispose();
+                        }
+                );
+
+/*
+
         Single<List<ImmutableTriple<Integer, String, String>>> single = Single.fromCallable(() -> extractPics(archiveFile, indexesToLoad, cachePicFolder, interruptArchiveLoad));
 
         imageDownloadDisposable.add(
@@ -1050,6 +1128,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                 Timber::w
                         )
         );
+ */
     }
 
     /**
@@ -1238,16 +1317,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
             List<ImmutableTriple<Integer, String, String>> result = new ArrayList<>();
             // Read unarchived files to know their mime-type
-            byte[] buffer = new byte[12];
             for (Integer index : pageIndexes) {
-                String mimeType = ImageHelper.MIME_IMAGE_GENERIC;
                 for (File f : existingFiles) {
                     if (ArchiveHelper.extractFileNameFromCacheName(f.getName()).equals(theContent.getId() + "." + index)) {
-                        try (InputStream is = FileHelper.getInputStream(getApplication().getApplicationContext(), Uri.fromFile(f))) {
-                            if (buffer.length == is.read(buffer))
-                                mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
-                        }
-                        result.add(new ImmutableTriple<>(index, Uri.fromFile(f).toString(), mimeType));
+                        result.add(new ImmutableTriple<>(index, Uri.fromFile(f).toString(), getMimeTypeFromUri(Uri.fromFile(f))));
                         break;
                     }
                 }
@@ -1257,6 +1330,19 @@ public class ImageViewerViewModel extends AndroidViewModel {
             Timber.w(e);
         }
         return Collections.emptyList();
+    }
+
+    // TODO CLEAN ALL THAT MESS UP
+    private String getMimeTypeFromUri(@NonNull Uri uri) {
+        String result = ImageHelper.MIME_IMAGE_GENERIC;
+        byte[] buffer = new byte[12];
+        try (InputStream is = FileHelper.getInputStream(getApplication().getApplicationContext(), uri)) {
+            if (buffer.length == is.read(buffer))
+                result = ImageHelper.getMimeTypeFromPictureBinary(buffer);
+        } catch (IOException e) {
+            Timber.w(e);
+        }
+        return result;
     }
 
     /**
