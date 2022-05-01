@@ -14,6 +14,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.annimon.stream.Collectors;
 import com.annimon.stream.IntStream;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
@@ -25,6 +26,7 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -94,6 +96,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Number of concurrent image downloads
     private static final int CONCURRENT_DOWNLOADS = 3;
+    private static final int UNARCHIVAL_RANGE = 35;
 
     private static Pattern VANILLA_CHAPTERNAME_PATTERN = null;
 
@@ -227,11 +230,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
-        if (imageLocationCache.isEmpty() || newImages.size() != imageLocationCache.size()) {
-            if (theContent.isArchive())
-                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptArchiveLoad, emitter));
-            else
-                observable = Observable.create(emitter -> processDiskImages(theContent, newImages, emitter));
+        if (!theContent.isArchive() && (imageLocationCache.isEmpty() || newImages.size() != imageLocationCache.size())) {
+            //if (theContent.isArchive())
+//                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptArchiveLoad, emitter));
+//            else
+            observable = Observable.create(emitter -> processDiskImages(theContent, newImages, emitter)); // TODO simplify; no need for an observer to directly load from storage
 
             AtomicInteger nbProcessed = new AtomicInteger();
             imageLoadDisposable = observable
@@ -886,86 +889,167 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public synchronized void setCurrentPage(int pageIndex, int direction) {
         if (viewerImagesInternal.size() <= pageIndex) return;
+        Content theContent = getContent().getValue();
+        if (null == theContent) return;
 
+        boolean isArchive = theContent.isArchive();
+        Set<Integer> picturesLeftToProcess = Stream.range(0, viewerImagesInternal.size()).filter(i -> isPictureNeedsProcessing(i, viewerImagesInternal, isArchive)).collect(Collectors.toSet());
+        if (null == picturesLeftToProcess) return;
+
+        // Identify pages to be loaded
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
-        if (isPictureDownloadable(pageIndex, viewerImagesInternal))
-            indexesToLoad.add(pageIndex);
-        if (isPictureDownloadable(pageIndex + increment, viewerImagesInternal))
-            indexesToLoad.add(pageIndex + increment);
-        if (isPictureDownloadable(pageIndex + 2 * increment, viewerImagesInternal))
-            indexesToLoad.add(pageIndex + 2 * increment);
+        int quantity = isArchive ? UNARCHIVAL_RANGE : CONCURRENT_DOWNLOADS;
+        for (int i = 0; i < quantity; i++)
+            if (picturesLeftToProcess.contains(pageIndex + (increment * i)))
+                indexesToLoad.add(pageIndex + (increment * i));
 
-        if (indexesToLoad.isEmpty()) return;
+        // Prevent pictures from being loaded in the wrong order
+        indexesToLoad = Stream.of(indexesToLoad).sorted(Integer::compareTo).toList();
 
-        File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
-        if (cachePicFolder != null) {
-            for (int index : indexesToLoad) {
-                if (downloadsInProgress.contains(index)) continue;
-                downloadsInProgress.add(index);
-
-                // Adjust the current queue
-                while (downloadsQueue.size() >= CONCURRENT_DOWNLOADS) {
-                    AtomicBoolean stopDownload = downloadsQueue.poll();
-                    if (stopDownload != null) stopDownload.set(true);
-                    Timber.d("Aborting a download");
-                }
-                // Schedule a new download
-                AtomicBoolean stopDownload = new AtomicBoolean(false);
-                downloadsQueue.add(stopDownload);
-
-                imageDownloadDisposable.add(
-                        Single.fromCallable(() -> downloadPic(index, cachePicFolder, stopDownload))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(Schedulers.computation())
-                                .subscribe(
-                                        resultOpt -> {
-                                            if (resultOpt.isEmpty()) { // Nothing to download
-                                                Timber.d("NO IMAGE FOUND AT INDEX %d", index);
-                                                downloadsInProgress.remove(index);
-                                                notifyDownloadProgress(-1, index);
-                                                return;
-                                            }
-
-                                            int downloadedPageIndex = resultOpt.get().left;
-
-                                            synchronized (viewerImagesInternal) {
-                                                if (viewerImagesInternal.size() <= downloadedPageIndex)
-                                                    return;
-
-                                                // Instanciate a new ImageFile not to modify the one used by the UI
-                                                ImageFile downloadedPic = new ImageFile(viewerImagesInternal.get(downloadedPageIndex));
-                                                downloadedPic.setFileUri(resultOpt.get().middle);
-                                                downloadedPic.setMimeType(resultOpt.get().right);
-
-                                                viewerImagesInternal.remove(downloadedPageIndex);
-                                                viewerImagesInternal.add(downloadedPageIndex, downloadedPic);
-                                                Timber.d("REPLACING INDEX %d - ORDER %d -> %s", downloadedPageIndex, downloadedPic.getOrder(), downloadedPic.getFileUri());
-
-                                                // Instanciate a new list to trigger an actual Adapter UI refresh
-                                                viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
-                                                imageLocationCache.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
-                                            }
-                                        },
-                                        Timber::w
-                                )
-                );
+        // Don't unarchive for nothing
+        boolean greenlight = true;
+        if (isArchive) {
+            greenlight = indexesToLoad.size() >= UNARCHIVAL_RANGE * 0.33;
+            if (!greenlight) {
+                int from = (increment > 0) ? pageIndex : 0;
+                int to = (increment > 0) ? viewerImagesInternal.size() : pageIndex;
+                long leftToProcessDirection = Stream.range(from, to).filter(picturesLeftToProcess::contains).count();
+                greenlight = indexesToLoad.size() == leftToProcessDirection;
             }
         }
+        if (indexesToLoad.isEmpty() || !greenlight) return;
+
+        DocumentFile archiveFile = isArchive ? FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri()) : null;
+        if (isArchive && null == archiveFile) return;
+
+        File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
+        if (null == cachePicFolder) return;
+
+        if (isArchive) unarchivePics(indexesToLoad, archiveFile, cachePicFolder);
+        else downloadPics(indexesToLoad, cachePicFolder);
     }
 
     /**
-     * Indicate if the given page index is a downloadable picture in the given list
+     * Indicate if the picture at the given page index in the given list needs processing
+     * (i.e. downloading o extracting)
      *
      * @param pageIndex Index to test
      * @param images    List of pictures to test against
-     * @return True if the given index is a downloadable picture; false if not
+     * @param isArchive True if the current content is an archive
+     * @return True if the picture at the given index needs processing; false if not
      */
-    private boolean isPictureDownloadable(int pageIndex, @NonNull List<ImageFile> images) {
-        return pageIndex > -1
-                && images.size() > pageIndex
-                && images.get(pageIndex).getStatus().equals(StatusContent.ONLINE)
-                && images.get(pageIndex).getFileUri().isEmpty();
+    private boolean isPictureNeedsProcessing(int pageIndex, @NonNull List<ImageFile> images, boolean isArchive) {
+        if (pageIndex < 0 || images.size() <= pageIndex) return false;
+        ImageFile img = images.get(pageIndex);
+        return (img.getStatus().equals(StatusContent.ONLINE) && img.getFileUri().isEmpty()) // Image has to be downloaded
+                || (isArchive && (img.getFileUri().isEmpty() || img.getUrl().equals(img.getFileUri()))); // Image has to be extracted from an archive
+    }
+
+    private void downloadPics(
+            @NonNull List<Integer> indexesToLoad,
+            @NonNull File cachePicFolder
+    ) {
+        for (int index : indexesToLoad) {
+            if (downloadsInProgress.contains(index)) continue;
+            downloadsInProgress.add(index);
+
+            // Adjust the current queue
+            while (downloadsQueue.size() >= CONCURRENT_DOWNLOADS) {
+                AtomicBoolean stopDownload = downloadsQueue.poll();
+                if (stopDownload != null) stopDownload.set(true);
+                Timber.d("Aborting a download");
+            }
+            // Schedule a new download
+            AtomicBoolean stopDownload = new AtomicBoolean(false);
+            downloadsQueue.add(stopDownload);
+
+            Single<Optional<ImmutableTriple<Integer, String, String>>> single = Single.fromCallable(() -> downloadPic(index, cachePicFolder, stopDownload));
+
+            imageDownloadDisposable.add(
+                    single.subscribeOn(Schedulers.io())
+                            .observeOn(Schedulers.computation())
+                            .subscribe(
+                                    resultOpt -> {
+                                        if (resultOpt.isEmpty()) { // Nothing to download
+                                            Timber.d("NO IMAGE FOUND AT INDEX %d", index);
+                                            downloadsInProgress.remove(index);
+                                            notifyDownloadProgress(-1, index);
+                                            return;
+                                        }
+
+                                        int downloadedPageIndex = resultOpt.get().left;
+
+                                        synchronized (viewerImagesInternal) {
+                                            if (viewerImagesInternal.size() <= downloadedPageIndex)
+                                                return;
+
+                                            // Instanciate a new ImageFile not to modify the one used by the UI
+                                            ImageFile downloadedPic = new ImageFile(viewerImagesInternal.get(downloadedPageIndex));
+                                            downloadedPic.setFileUri(resultOpt.get().middle);
+                                            downloadedPic.setMimeType(resultOpt.get().right);
+
+                                            viewerImagesInternal.remove(downloadedPageIndex);
+                                            viewerImagesInternal.add(downloadedPageIndex, downloadedPic);
+                                            Timber.d("REPLACING INDEX %d - ORDER %d -> %s", downloadedPageIndex, downloadedPic.getOrder(), downloadedPic.getFileUri());
+
+                                            // Instanciate a new list to trigger an actual Adapter UI refresh
+                                            viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
+                                            imageLocationCache.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
+                                        }
+                                    },
+                                    Timber::w
+                            )
+            );
+        }
+    }
+
+    private void unarchivePics(
+            @NonNull List<Integer> indexesToLoad,
+            @NonNull DocumentFile archiveFile,
+            @NonNull File cachePicFolder
+    ) {
+        if (!downloadsInProgress.isEmpty()) return;
+        downloadsInProgress.addAll(indexesToLoad);
+
+        Single<List<ImmutableTriple<Integer, String, String>>> single = Single.fromCallable(() -> extractPics(archiveFile, indexesToLoad, cachePicFolder, interruptArchiveLoad));
+
+        imageDownloadDisposable.add(
+                single.subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.computation())
+                        .subscribe(
+                                result -> {
+                                    downloadsInProgress.clear();
+
+                                    if (result.isEmpty()) { // Nothing to download
+                                        Timber.d("NO IMAGE FOUND");
+//                                        notifyDownloadProgress(-1, index);
+                                        return;
+                                    }
+
+                                    synchronized (viewerImagesInternal) {
+                                        for (ImmutableTriple<Integer, String, String> unarchivedItem : result) {
+                                            if (viewerImagesInternal.size() <= unarchivedItem.left)
+                                                continue;
+
+                                            // Instanciate a new ImageFile not to modify the one used by the UI
+                                            ImageFile downloadedPic = new ImageFile(viewerImagesInternal.get(unarchivedItem.left));
+                                            downloadedPic.setFileUri(unarchivedItem.middle);
+                                            downloadedPic.setMimeType(unarchivedItem.right);
+
+                                            viewerImagesInternal.remove(unarchivedItem.left.intValue());
+                                            viewerImagesInternal.add(unarchivedItem.left, downloadedPic);
+                                            Timber.d("REPLACING INDEX %d - ORDER %d -> %s", unarchivedItem.left, downloadedPic.getOrder(), downloadedPic.getFileUri());
+
+                                            // Instanciate a new list to trigger an actual Adapter UI refresh
+                                            viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
+                                            imageLocationCache.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
+                                        }
+                                    }
+                                },
+                                Timber::w
+                        )
+        );
     }
 
     /**
@@ -1113,6 +1197,66 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 interruptDownload,
                 f -> notifyDownloadProgress(f, pageIndex)
         );
+    }
+
+    private List<ImmutableTriple<Integer, String, String>> extractPics(
+            @NonNull DocumentFile archiveFile,
+            List<Integer> pageIndexes,
+            @NonNull File targetFolder,
+            @NonNull final AtomicBoolean interrupt) {
+        Content theContent = getContent().getValue();
+        if (null == theContent) return Collections.emptyList();
+
+        List<String> sourceFileUris = new ArrayList<>();
+        List<String> targetFileNames = new ArrayList<>();
+        for (Integer index : pageIndexes) {
+            if (index < 0 || index >= viewerImagesInternal.size()) continue;
+            ImageFile img = viewerImagesInternal.get(index);
+            if (!img.getFileUri().isEmpty()) continue;
+
+            sourceFileUris.add(img.getUrl().replace(theContent.getStorageUri() + File.separator, ""));
+            targetFileNames.add(theContent.getId() + "." + index);
+        }
+
+        Timber.d("Unarchiving %d files", sourceFileUris.size());
+
+        try {
+            ArchiveHelper.extractArchiveEntries(
+                    getApplication(),
+                    archiveFile.getUri(),
+                    sourceFileUris,
+                    targetFolder,
+                    targetFileNames,
+                    interrupt,
+                    null);
+
+            Timber.d("Unarchived %d files successfuly", sourceFileUris.size());
+
+            // Read extracted files to get their Mime-type
+            File[] existingFiles = targetFolder.listFiles((dir, name) -> targetFileNames.contains(ArchiveHelper.extractFileNameFromCacheName(name)));
+            if (null == existingFiles || 0 == existingFiles.length) return Collections.emptyList();
+
+            List<ImmutableTriple<Integer, String, String>> result = new ArrayList<>();
+            // Read unarchived files to know their mime-type
+            byte[] buffer = new byte[12];
+            for (Integer index : pageIndexes) {
+                String mimeType = ImageHelper.MIME_IMAGE_GENERIC;
+                for (File f : existingFiles) {
+                    if (ArchiveHelper.extractFileNameFromCacheName(f.getName()).equals(theContent.getId() + "." + index)) {
+                        try (InputStream is = FileHelper.getInputStream(getApplication().getApplicationContext(), Uri.fromFile(f))) {
+                            if (buffer.length == is.read(buffer))
+                                mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
+                        }
+                        result.add(new ImmutableTriple<>(index, Uri.fromFile(f).toString(), mimeType));
+                        break;
+                    }
+                }
+            }
+            return result;
+        } catch (IOException e) {
+            Timber.w(e);
+        }
+        return Collections.emptyList();
     }
 
     /**

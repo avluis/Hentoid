@@ -920,7 +920,7 @@ public final class ContentHelper {
         List<ArchiveHelper.ArchiveEntry> fileList = Stream.of(files).withoutNulls().sorted(new InnerNameNumberArchiveComparator()).toList();
         for (ArchiveHelper.ArchiveEntry f : fileList) {
             String name = namePrefix + f.path;
-            String path = archiveFileUri.toString() + File.separator + f.path;
+            String path = archiveFileUri + File.separator + f.path;
             ImageFile img = new ImageFile();
             if (name.startsWith(Consts.THUMB_FILE_NAME)) img.setIsCover(true);
             else order++;
