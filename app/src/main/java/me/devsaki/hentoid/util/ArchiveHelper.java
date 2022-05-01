@@ -247,6 +247,7 @@ public class ArchiveHelper {
             inArchive.extract(indexes, false, callback);
         } catch (SevenZipException e) {
             Timber.w(e);
+            throw new IOException(e);
         }
     }
 
@@ -458,6 +459,7 @@ public class ArchiveHelper {
         private int nbProcessed;
         private ExtractAskMode extractAskMode;
         private SequentialOutStream stream;
+        private Uri uri;
 
         public ArchiveExtractCallback(
                 @NonNull final File targetFolder,
@@ -496,7 +498,8 @@ public class ArchiveHelper {
                     } else {
                         targetFile = existing[0];
                     }
-                    if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
+                    //if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
+                    uri = Uri.fromFile(targetFile);
 
                     stream = new SequentialOutStream(FileHelper.getOutputStream(targetFile));
                     return stream;
@@ -521,11 +524,6 @@ public class ArchiveHelper {
         public void setOperationResult(ExtractOperationResult extractOperationResult) throws SevenZipException {
             Timber.v("Extract archive, %s completed with: %s", extractAskMode, extractOperationResult);
 
-            if (extractAskMode != null && extractAskMode.equals(ExtractAskMode.EXTRACT)) {
-                nbProcessed++;
-                if (nbProcessed == fileNames.size() && emitter != null) emitter.onComplete();
-            }
-
             try {
                 if (stream != null) stream.close();
                 stream = null;
@@ -535,17 +533,24 @@ public class ArchiveHelper {
 
             if (extractOperationResult != ExtractOperationResult.OK) {
                 throw new SevenZipException(extractOperationResult.toString());
+            } else {
+                if (emitter != null) emitter.onNext(uri);
+            }
+
+            if (extractAskMode != null && extractAskMode.equals(ExtractAskMode.EXTRACT)) {
+                nbProcessed++;
+                if (nbProcessed == fileNames.size() && emitter != null) emitter.onComplete();
             }
         }
 
         @Override
         public void setTotal(long total) {
-            Timber.v("Extract archive, work planned: %s", total);
+            Timber.v("Extract archive, bytes planned: %s", total);
         }
 
         @Override
         public void setCompleted(long complete) {
-            Timber.v("Extract archive, work completed: %s", complete);
+            Timber.v("Extract archive, bytes processed: %s", complete);
         }
     }
 
