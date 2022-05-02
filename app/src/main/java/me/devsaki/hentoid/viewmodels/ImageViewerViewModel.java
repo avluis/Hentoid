@@ -96,7 +96,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Number of concurrent image downloads
     private static final int CONCURRENT_DOWNLOADS = 3;
-    private static final int UNARCHIVAL_RANGE = 35;
+    private static final int EXTRACT_RANGE = 35;
 
     private static Pattern VANILLA_CHAPTERNAME_PATTERN = null;
 
@@ -125,8 +125,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Cache for image locations according to their order
     private final Map<Integer, String> imageLocationCache = new HashMap<>();
-    // Switch to interrupt unarchiving when leaving the activity
-    private final AtomicBoolean interruptArchiveLoad = new AtomicBoolean(false);
+    // Switch to interrupt extracting when leaving the activity
+    private final AtomicBoolean interruptArchiveExtract = new AtomicBoolean(false);
     // Page indexes that are being downloaded
     private final Set<Integer> indexProcessInProgress = Collections.synchronizedSet(new HashSet<>());
     // FIFO switches to interrupt downloads when browsing the book
@@ -137,7 +137,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private final CompositeDisposable imageDownloadDisposable = new CompositeDisposable();
     private final CompositeDisposable notificationDisposables = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
-    private Disposable unarchiveDisposable = Disposables.empty();
+    private Disposable archiveExtractDisposable = Disposables.empty();
     private Disposable imageLoadDisposable = Disposables.empty();
     private Disposable leaveDisposable = Disposables.empty();
     private Disposable emptyCacheDisposable = Disposables.empty();
@@ -466,13 +466,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
             Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
 
         // Stop any ongoing picture loading
-        unarchiveDisposable.dispose();
+        archiveExtractDisposable.dispose();
         imageLoadDisposable.dispose();
         // Clear the composite disposables so that they can be reused
         imageDownloadDisposable.clear();
         notificationDisposables.clear();
         indexProcessInProgress.clear();
-        interruptArchiveLoad.set(true);
+        interruptArchiveExtract.set(true);
 
         // Don't do anything if the Content hasn't even been loaded
         if (-1 == loadedContentId) return;
@@ -833,17 +833,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Identify pages to be loaded
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
-        int quantity = isArchive ? UNARCHIVAL_RANGE : CONCURRENT_DOWNLOADS;
-        // pageIndex is the center of the range to unarchive/download -> determine its bound
+        int quantity = isArchive ? EXTRACT_RANGE : CONCURRENT_DOWNLOADS;
+        // pageIndex is the center of the range to extract/download -> determine its bound
         int initialIndex = (int) Math.floor(Helper.coerceIn(pageIndex - (quantity * increment / 2f), 0, viewerImagesInternal.size() - 1));
         for (int i = 0; i < quantity; i++)
             if (picturesLeftToProcess.contains(initialIndex + (increment * i)))
                 indexesToLoad.add(initialIndex + (increment * i));
 
-        // Don't unarchive for nothing
+        // Don't extract for nothing
         boolean greenlight = true;
         if (isArchive) {
-            greenlight = indexesToLoad.size() >= UNARCHIVAL_RANGE * 0.33;
+            greenlight = indexesToLoad.size() >= EXTRACT_RANGE * 0.33;
             if (!greenlight) {
                 int from = (increment > 0) ? initialIndex : 0;
                 int to = (increment > 0) ? viewerImagesInternal.size() : initialIndex;
@@ -861,7 +861,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         Timber.d("Processing %d files starting around %d from index %s", indexesToLoad.size(), pageIndex, initialIndex);
 
-        if (isArchive) unarchivePics(indexesToLoad, archiveFile, cachePicFolder);
+        if (isArchive) extractPics(indexesToLoad, archiveFile, cachePicFolder);
         else downloadPics(indexesToLoad, cachePicFolder);
     }
 
@@ -939,16 +939,16 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    private void unarchivePics(
+    private void extractPics(
             @NonNull List<Integer> indexesToLoad,
             @NonNull DocumentFile archiveFile,
             @NonNull File cachePicFolder
     ) {
-        // Reset current unarchiving process, if any
+        // Reset current extracting process, if any
         synchronized (indexProcessInProgress) {
             if (!indexProcessInProgress.isEmpty()) {
                 indexProcessInProgress.clear();
-                interruptArchiveLoad.set(true);
+                interruptArchiveExtract.set(true);
             }
             indexProcessInProgress.addAll(indexesToLoad);
         }
@@ -965,7 +965,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             extractInstructions.add(new Pair<>(img.getUrl().replace(theContent.getStorageUri() + File.separator, ""), theContent.getId() + "." + index));
         }
 
-        Timber.d("Unarchiving %d files starting from index %s", extractInstructions.size(), indexesToLoad.get(0));
+        Timber.d("Extracting %d files starting from index %s", extractInstructions.size(), indexesToLoad.get(0));
 
         Observable<Uri> observable = Observable.create(emitter ->
                 ArchiveHelper.extractArchiveEntries(
@@ -973,12 +973,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         archiveFile.getUri(),
                         cachePicFolder,
                         extractInstructions,
-                        interruptArchiveLoad,
+                        interruptArchiveExtract,
                         emitter)
         );
 
         AtomicInteger nbProcessed = new AtomicInteger();
-        unarchiveDisposable = observable
+        archiveExtractDisposable = observable
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .doOnComplete(
@@ -1002,7 +1002,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                 synchronized (viewerImagesInternal) {
                                     viewerImagesInternal.remove(img.get().first.intValue());
                                     viewerImagesInternal.add(img.get().first, extractedPic);
-                                    Timber.v("Unarchiving : replacing index %d - order %d -> %s (%s)", img.get().first, extractedPic.getOrder(), extractedPic.getFileUri(), extractedPic.getMimeType());
+                                    Timber.v("Extracting : replacing index %d - order %d -> %s (%s)", img.get().first, extractedPic.getOrder(), extractedPic.getFileUri(), extractedPic.getMimeType());
 
                                     // Instanciate a new list to trigger an actual Adapter UI refresh every 4 iterations
                                     if (0 == nbProcessed.get() % 4 || nbProcessed.get() == extractInstructions.size())
@@ -1015,15 +1015,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             Timber.e(t);
                             indexProcessInProgress.clear();
                             //                          EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
-                            interruptArchiveLoad.set(false);
-                            unarchiveDisposable.dispose();
+                            interruptArchiveExtract.set(false);
+                            archiveExtractDisposable.dispose();
                         },
                         () -> {
-                            Timber.d("Unarchived %d files successfuly", extractInstructions.size());
+                            Timber.d("Extracted %d files successfuly", extractInstructions.size());
 //                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
                             indexProcessInProgress.clear();
-                            interruptArchiveLoad.set(false);
-                            unarchiveDisposable.dispose();
+                            interruptArchiveExtract.set(false);
+                            archiveExtractDisposable.dispose();
                         }
                 );
     }
