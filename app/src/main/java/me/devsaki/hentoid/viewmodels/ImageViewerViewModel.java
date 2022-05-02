@@ -128,7 +128,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     // Switch to interrupt unarchiving when leaving the activity
     private final AtomicBoolean interruptArchiveLoad = new AtomicBoolean(false);
     // Page indexes that are being downloaded
-    private final Set<Integer> downloadsInProgress = Collections.synchronizedSet(new HashSet<>());
+    private final Set<Integer> indexProcessInProgress = Collections.synchronizedSet(new HashSet<>());
     // FIFO switches to interrupt downloads when browsing the book
     private final Queue<AtomicBoolean> downloadsQueue = new ConcurrentLinkedQueue<>();
 
@@ -141,7 +141,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private Disposable imageLoadDisposable = Disposables.empty();
     private Disposable leaveDisposable = Disposables.empty();
     private Disposable emptyCacheDisposable = Disposables.empty();
-    private boolean isArchiveExtracting = false;
 
 
     public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
@@ -321,75 +320,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         );
     }
 
-    /*
-    private synchronized void processArchiveImages(
-            @NonNull Content theContent,
-            @NonNull List<ImageFile> newImages,
-            @NonNull AtomicBoolean interrupt,
-            @NonNull final ObservableEmitter<ImageFile> emitter) throws IOException {
-        if (!theContent.isArchive())
-            throw new IllegalArgumentException("Content must be an archive");
-
-        if (isArchiveExtracting) return;
-
-        List<ImageFile> newImageFiles = new ArrayList<>(newImages);
-        List<ImageFile> currentImages = databaseImages.getValue();
-        if ((!newImages.isEmpty() && loadedContentId != newImages.get(0).getContent().getTargetId()) || null == currentImages) { // Load a new book
-            // TODO create a smarter cache that works with a window of a given size
-            File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
-            if (cachePicFolder != null) {
-                // Empty the cache folder where previous cached images might be
-                File[] files = cachePicFolder.listFiles();
-                if (files != null)
-                    for (File f : files)
-                        if (!f.delete()) Timber.w("Unable to delete file %s", f.getAbsolutePath());
-
-                // Extract the images if they are contained within an archive
-                // Unzip the archive in the app's cache folder
-                DocumentFile archiveFile = FileHelper.getFileFromSingleUriString(getApplication(), theContent.getStorageUri());
-                // TODO replace that with a proper on-demand loading - see #706
-                if (archiveFile != null) {
-                    interrupt.set(false);
-                    isArchiveExtracting = true;
-                    unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
-                            getApplication(),
-                            archiveFile,
-                            Stream.of(newImageFiles).filter(i -> i.getFileUri().startsWith(theContent.getStorageUri())).map(i -> i.getFileUri().replace(theContent.getStorageUri() + File.separator, "")).toList(),
-                            cachePicFolder,
-                            null,
-                            interrupt)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(Schedulers.computation())
-                            .subscribe(
-                                    uri -> emitter.onNext(mapUriToImageFile(newImages, uri)),
-                                    t -> {
-                                        Timber.e(t);
-                                        isArchiveExtracting = false;
-                                    },
-                                    () -> {
-                                        isArchiveExtracting = false;
-                                        emitter.onComplete();
-                                        unarchiveDisposable.dispose();
-                                    }
-                            );
-                }
-            }
-        } else { // Refresh current book with new data
-            for (int i = 0; i < newImageFiles.size(); i++) {
-                ImageFile newImg = newImageFiles.get(i);
-                String location = imageLocationCache.get(newImg.getOrder());
-                newImg.setFileUri(location);
-            }
-
-            // Replace initial images with updated images
-            newImages.clear();
-            newImages.addAll(newImageFiles);
-
-            emitter.onComplete();
-        }
-    }
-     */
-
     /**
      * Map the given file Uri to its corresponding ImageFile in the given list, using their display name
      *
@@ -541,8 +471,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Clear the composite disposables so that they can be reused
         imageDownloadDisposable.clear();
         notificationDisposables.clear();
-        downloadsInProgress.clear();
-        isArchiveExtracting = false;
+        indexProcessInProgress.clear();
         interruptArchiveLoad.set(true);
 
         // Don't do anything if the Content hasn't even been loaded
@@ -958,8 +887,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull File cachePicFolder
     ) {
         for (int index : indexesToLoad) {
-            if (downloadsInProgress.contains(index)) continue;
-            downloadsInProgress.add(index);
+            if (indexProcessInProgress.contains(index)) continue;
+            indexProcessInProgress.add(index);
 
             // Adjust the current queue
             while (downloadsQueue.size() >= CONCURRENT_DOWNLOADS) {
@@ -980,7 +909,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                     resultOpt -> {
                                         if (resultOpt.isEmpty()) { // Nothing to download
                                             Timber.d("NO IMAGE FOUND AT INDEX %d", index);
-                                            downloadsInProgress.remove(index);
+                                            indexProcessInProgress.remove(index);
                                             notifyDownloadProgress(-1, index);
                                             return;
                                         }
@@ -1016,8 +945,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull DocumentFile archiveFile,
             @NonNull File cachePicFolder
     ) {
-        if (!downloadsInProgress.isEmpty()) return;
-        downloadsInProgress.addAll(indexesToLoad);
+        if (!indexProcessInProgress.isEmpty()) return;
+        indexProcessInProgress.addAll(indexesToLoad);
 
         Content theContent = getContent().getValue();
         if (null == theContent) return;
@@ -1061,7 +990,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 //                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
                             Optional<Pair<Integer, ImageFile>> img = mapUriToImageFile(theContent.getId(), viewerImagesInternal, uri);
                             if (img.isPresent()) {
-                                downloadsInProgress.remove(img.get().first);
+                                indexProcessInProgress.remove(img.get().first);
 
                                 // Instanciate a new ImageFile not to modify the one used by the UI
                                 ImageFile extractedPic = new ImageFile(img.get().second);
@@ -1080,7 +1009,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             }
                         },
                         t -> {
-                            downloadsInProgress.clear();
+                            indexProcessInProgress.clear();
                             Timber.e(t);
                             //                          EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
                             unarchiveDisposable.dispose();
@@ -1088,7 +1017,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         () -> {
                             Timber.d("Unarchived %d files successfuly", sourceFileUris.size());
 //                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
-                            downloadsInProgress.clear();
+                            indexProcessInProgress.clear();
                             unarchiveDisposable.dispose();
                         }
                 );
@@ -1241,61 +1170,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private List<ImmutableTriple<Integer, String, String>> extractPics(
-            @NonNull DocumentFile archiveFile,
-            List<Integer> pageIndexes,
-            @NonNull File targetFolder,
-            @NonNull final AtomicBoolean interrupt) {
-        Content theContent = getContent().getValue();
-        if (null == theContent) return Collections.emptyList();
-
-        List<String> sourceFileUris = new ArrayList<>();
-        List<String> targetFileNames = new ArrayList<>();
-        for (Integer index : pageIndexes) {
-            if (index < 0 || index >= viewerImagesInternal.size()) continue;
-            ImageFile img = viewerImagesInternal.get(index);
-            if (!img.getFileUri().isEmpty()) continue;
-
-            sourceFileUris.add(img.getUrl().replace(theContent.getStorageUri() + File.separator, ""));
-            targetFileNames.add(theContent.getId() + "." + index);
-        }
-
-        Timber.d("Unarchiving %d files", sourceFileUris.size());
-
-        try {
-            ArchiveHelper.extractArchiveEntries(
-                    getApplication(),
-                    archiveFile.getUri(),
-                    sourceFileUris,
-                    targetFolder,
-                    targetFileNames,
-                    interrupt,
-                    null);
-
-            Timber.d("Unarchived %d files successfuly", sourceFileUris.size());
-
-            // Read extracted files to get their Mime-type
-            File[] existingFiles = targetFolder.listFiles((dir, name) -> targetFileNames.contains(ArchiveHelper.extractFileNameFromCacheName(name)));
-            if (null == existingFiles || 0 == existingFiles.length) return Collections.emptyList();
-
-            List<ImmutableTriple<Integer, String, String>> result = new ArrayList<>();
-            // Read unarchived files to know their mime-type
-            for (Integer index : pageIndexes) {
-                for (File f : existingFiles) {
-                    if (ArchiveHelper.extractFileNameFromCacheName(f.getName()).equals(theContent.getId() + "." + index)) {
-                        result.add(new ImmutableTriple<>(index, Uri.fromFile(f).toString(), getMimeTypeFromUri(Uri.fromFile(f))));
-                        break;
-                    }
-                }
-            }
-            return result;
-        } catch (IOException e) {
-            Timber.w(e);
-        }
-        return Collections.emptyList();
-    }
-
-    // TODO CLEAN ALL THAT MESS UP
     private String getMimeTypeFromUri(@NonNull Uri uri) {
         String result = ImageHelper.MIME_IMAGE_GENERIC;
         byte[] buffer = new byte[12];
