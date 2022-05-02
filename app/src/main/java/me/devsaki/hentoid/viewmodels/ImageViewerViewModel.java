@@ -822,7 +822,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public synchronized void setCurrentPage(int pageIndex, int direction) {
-        Timber.d("setCurrentPage %d, %d", pageIndex, direction);
         if (viewerImagesInternal.size() <= pageIndex) return;
         Content theContent = getContent().getValue();
         if (null == theContent) return;
@@ -835,17 +834,19 @@ public class ImageViewerViewModel extends AndroidViewModel {
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
         int quantity = isArchive ? UNARCHIVAL_RANGE : CONCURRENT_DOWNLOADS;
+        // pageIndex is the center of the range to unarchive/download -> determine its bound
+        int initialIndex = (int) Math.floor(Helper.coerceIn(pageIndex - (quantity * increment / 2f), 0, viewerImagesInternal.size() - 1));
         for (int i = 0; i < quantity; i++)
-            if (picturesLeftToProcess.contains(pageIndex + (increment * i)))
-                indexesToLoad.add(pageIndex + (increment * i));
+            if (picturesLeftToProcess.contains(initialIndex + (increment * i)))
+                indexesToLoad.add(initialIndex + (increment * i));
 
         // Don't unarchive for nothing
         boolean greenlight = true;
         if (isArchive) {
             greenlight = indexesToLoad.size() >= UNARCHIVAL_RANGE * 0.33;
             if (!greenlight) {
-                int from = (increment > 0) ? pageIndex : 0;
-                int to = (increment > 0) ? viewerImagesInternal.size() : pageIndex;
+                int from = (increment > 0) ? initialIndex : 0;
+                int to = (increment > 0) ? viewerImagesInternal.size() : initialIndex;
                 long leftToProcessDirection = Stream.range(from, to).filter(picturesLeftToProcess::contains).count();
                 greenlight = indexesToLoad.size() == leftToProcessDirection;
             }
@@ -858,7 +859,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
         if (null == cachePicFolder) return;
 
-        Timber.d("Processing %d files starting from index %s", indexesToLoad.size(), indexesToLoad.get(0));
+        Timber.d("Processing %d files starting around %d from index %s", indexesToLoad.size(), pageIndex, initialIndex);
 
         if (isArchive) unarchivePics(indexesToLoad, archiveFile, cachePicFolder);
         else downloadPics(indexesToLoad, cachePicFolder);
@@ -943,8 +944,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull DocumentFile archiveFile,
             @NonNull File cachePicFolder
     ) {
-        if (!indexProcessInProgress.isEmpty()) return;
-        indexProcessInProgress.addAll(indexesToLoad);
+        // Reset current unarchiving process, if any
+        synchronized (indexProcessInProgress) {
+            if (!indexProcessInProgress.isEmpty()) {
+                indexProcessInProgress.clear();
+                interruptArchiveLoad.set(true);
+            }
+            indexProcessInProgress.addAll(indexesToLoad);
+        }
 
         Content theContent = getContent().getValue();
         if (null == theContent) return;
@@ -995,24 +1002,27 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                 synchronized (viewerImagesInternal) {
                                     viewerImagesInternal.remove(img.get().first.intValue());
                                     viewerImagesInternal.add(img.get().first, extractedPic);
-                                    Timber.v("Unarchiving : replacing index %d - order %d -> %s", img.get().first, extractedPic.getOrder(), extractedPic.getFileUri());
+                                    Timber.v("Unarchiving : replacing index %d - order %d -> %s (%s)", img.get().first, extractedPic.getOrder(), extractedPic.getFileUri(), extractedPic.getMimeType());
 
-                                    // Instanciate a new list to trigger an actual Adapter UI refresh
-                                    viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
+                                    // Instanciate a new list to trigger an actual Adapter UI refresh every 4 iterations
+                                    if (0 == nbProcessed.get() % 4 || nbProcessed.get() == extractInstructions.size())
+                                        viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
                                 }
                                 imageLocationCache.put(extractedPic.getOrder(), extractedPic.getFileUri());
                             }
                         },
                         t -> {
-                            indexProcessInProgress.clear();
                             Timber.e(t);
+                            indexProcessInProgress.clear();
                             //                          EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
+                            interruptArchiveLoad.set(false);
                             unarchiveDisposable.dispose();
                         },
                         () -> {
                             Timber.d("Unarchived %d files successfuly", extractInstructions.size());
 //                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
                             indexProcessInProgress.clear();
+                            interruptArchiveLoad.set(false);
                             unarchiveDisposable.dispose();
                         }
                 );
