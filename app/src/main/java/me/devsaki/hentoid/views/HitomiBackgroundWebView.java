@@ -2,7 +2,7 @@ package me.devsaki.hentoid.views;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Pair;
+import androidx.core.util.Pair;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;

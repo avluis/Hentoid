@@ -7,12 +7,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Pair;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Optional;
@@ -460,12 +460,14 @@ public final class ContentHelper {
             DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
             if (archive != null) {
                 try {
+                    List<Pair<String, String>> extractInstructions = new ArrayList<>();
+                    extractInstructions.add(new Pair<>(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, ""), newContentId+""));
+
                     Disposable unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
                             context,
                             archive,
-                            Stream.of(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, "")).toList(),
                             context.getFilesDir(),
-                            Stream.of(newContentId + "").toList(),
+                            extractInstructions,
                             null)
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())

@@ -1,8 +1,7 @@
 package me.devsaki.hentoid.util.download;
 
-import android.util.Pair;
-
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.function.Consumer;
 

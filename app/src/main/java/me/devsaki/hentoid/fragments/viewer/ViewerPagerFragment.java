@@ -55,6 +55,8 @@ import com.skydoves.powermenu.PowerMenuItem;
 import com.skydoves.submarine.SubmarineItem;
 import com.skydoves.submarine.SubmarineView;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -128,6 +130,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private boolean isContentFavourite; // True if current content is favourited
 
     private Debouncer<Integer> indexRefreshDebouncer;
+    private Debouncer<Pair<Integer, Integer>> processPositionDebouncer;
 
     // Starting index management
     private boolean isComputingImageList = false;
@@ -158,6 +161,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         indexRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::applyStartingIndexInternal);
         slideshowSliderDebouncer = new Debouncer<>(requireContext(), 2500, this::onSlideShowSliderChosen);
+        processPositionDebouncer = new Debouncer<>(requireContext(), 500, pair -> viewModel.setCurrentPage(pair.getLeft(), pair.getRight()));
 
         Preferences.registerPrefsChangedListener(listener);
 
@@ -785,8 +789,14 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (currentImage != null) {
             Preferences.setViewerCurrentPageNum(currentImage.getOrder());
             viewModel.markPageAsRead(currentImage.getOrder());
-            if (scrollDirection != 0 && !isFastBrowsing)
-                viewModel.setCurrentPage(imageIndex, scrollDirection);
+            if (scrollDirection != 0) {
+                if (isFastBrowsing) {
+                    // Remember the last relevant movement and schedule it for execution
+                    processPositionDebouncer.submit(new ImmutablePair<>(imageIndex, scrollDirection));
+                } else {
+                    viewModel.setCurrentPage(imageIndex, scrollDirection);
+                }
+            }
             isPageFavourite = currentImage.isFavourite();
         }
 

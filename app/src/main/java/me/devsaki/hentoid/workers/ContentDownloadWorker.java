@@ -3,10 +3,10 @@ package me.devsaki.hentoid.workers;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
-import android.util.Pair;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.work.Data;
 import androidx.work.WorkerParameters;
@@ -1036,9 +1036,8 @@ public class ContentDownloadWorker extends BaseWorker {
                 ArchiveHelper.extractArchiveEntries(
                         getApplicationContext(),
                         Uri.fromFile(result.left),
-                        null, // Extract everything
                         ugoiraCacheFolder,
-                        null,
+                        null, // Extract everything; keep original names
                         downloadInterrupted,
                         null
                 );

@@ -11,7 +11,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Pair;
+import androidx.core.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;

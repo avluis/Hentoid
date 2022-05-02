@@ -1,10 +1,10 @@
 package me.devsaki.hentoid.parsers.images;
 
-import android.util.Pair;
 import android.webkit.URLUtil;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.Optional;
 

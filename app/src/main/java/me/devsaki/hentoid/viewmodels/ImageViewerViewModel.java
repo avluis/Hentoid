@@ -4,10 +4,10 @@ import android.app.Application;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -822,6 +822,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public synchronized void setCurrentPage(int pageIndex, int direction) {
+        Timber.d("setCurrentPage %d, %d", pageIndex, direction);
         if (viewerImagesInternal.size() <= pageIndex) return;
         Content theContent = getContent().getValue();
         if (null == theContent) return;
@@ -837,9 +838,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         for (int i = 0; i < quantity; i++)
             if (picturesLeftToProcess.contains(pageIndex + (increment * i)))
                 indexesToLoad.add(pageIndex + (increment * i));
-
-        // Prevent pictures from being loaded in the wrong order
-        indexesToLoad = Stream.of(indexesToLoad).sorted(Integer::compareTo).toList();
 
         // Don't unarchive for nothing
         boolean greenlight = true;
@@ -951,26 +949,23 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Content theContent = getContent().getValue();
         if (null == theContent) return;
 
-        List<String> sourceFileUris = new ArrayList<>();
-        List<String> targetFileNames = new ArrayList<>();
+        List<Pair<String, String>> extractInstructions = new ArrayList<>();
         for (Integer index : indexesToLoad) {
             if (index < 0 || index >= viewerImagesInternal.size()) continue;
             ImageFile img = viewerImagesInternal.get(index);
             if (!img.getFileUri().isEmpty()) continue;
 
-            sourceFileUris.add(img.getUrl().replace(theContent.getStorageUri() + File.separator, ""));
-            targetFileNames.add(theContent.getId() + "." + index);
+            extractInstructions.add(new Pair<>(img.getUrl().replace(theContent.getStorageUri() + File.separator, ""), theContent.getId() + "." + index));
         }
 
-        Timber.d("Unarchiving %d files starting from index %s", sourceFileUris.size(), indexesToLoad.get(0));
+        Timber.d("Unarchiving %d files starting from index %s", extractInstructions.size(), indexesToLoad.get(0));
 
         Observable<Uri> observable = Observable.create(emitter ->
                 ArchiveHelper.extractArchiveEntries(
                         getApplication(),
                         archiveFile.getUri(),
-                        sourceFileUris,
                         cachePicFolder,
-                        targetFileNames,
+                        extractInstructions,
                         interruptArchiveLoad,
                         emitter)
         );
@@ -1015,7 +1010,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             unarchiveDisposable.dispose();
                         },
                         () -> {
-                            Timber.d("Unarchived %d files successfuly", sourceFileUris.size());
+                            Timber.d("Unarchived %d files successfuly", extractInstructions.size());
 //                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
                             indexProcessInProgress.clear();
                             unarchiveDisposable.dispose();

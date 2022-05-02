@@ -2,7 +2,7 @@ package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-import android.util.Pair;
+import androidx.core.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

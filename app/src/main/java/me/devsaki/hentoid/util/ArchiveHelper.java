@@ -7,9 +7,8 @@ import android.os.ParcelFileDescriptor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
-
-import com.annimon.stream.Stream;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;
 import net.sf.sevenzipjbinding.ExtractAskMode;
@@ -170,22 +169,21 @@ public class ArchiveHelper {
      * @param file             Archive file to extract from
      * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
      * @param targetFolder     Target folder to create the archives into
-     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @param entriesToExtract List of entries to extract (left = relative paths to the archive root / right = names of the target files - set to blank to keep original name); null to extract everything
      * @return Observable that follows the extraction of each entry
      * @throws IOException If something horrible happens during I/O
      */
     public static Observable<Uri> extractArchiveEntriesRx(
             @NonNull final Context context,
             @NonNull final DocumentFile file,
-            @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames,
+            @Nullable final List<Pair<String, String>> entriesToExtract,
             @Nullable final AtomicBoolean interrupt) throws IOException {
         Helper.assertNonUiThread();
 
         if (entriesToExtract != null && entriesToExtract.isEmpty()) return Observable.empty();
 
-        return Observable.create(emitter -> extractArchiveEntries(context, file.getUri(), entriesToExtract, targetFolder, targetNames, interrupt, emitter));
+        return Observable.create(emitter -> extractArchiveEntries(context, file.getUri(), targetFolder, entriesToExtract, interrupt, emitter));
     }
 
     /**
@@ -193,22 +191,19 @@ public class ArchiveHelper {
      *
      * @param context          Context to be used
      * @param uri              Uri of the archive file to extract from
-     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
      * @param targetFolder     Target folder to create the archives into
-     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @param entriesToExtract List of entries to extract (left = relative paths to the archive root / right = names of the target files - set to blank to keep original name); null to extract everything
      * @param emitter          Optional emitter to be used when the method is used with RxJava
      * @throws IOException If something horrible happens during I/O
      */
     public static void extractArchiveEntries(
             @NonNull final Context context,
             @NonNull final Uri uri,
-            @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames,
+            @Nullable final List<Pair<String, String>> entriesToExtract,
             @Nullable final AtomicBoolean interrupt,
             @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         Helper.assertNonUiThread();
-        int targetIndex = 0;
 
         ArchiveFormat format;
         try (InputStream fi = FileHelper.getInputStream(context, uri)) {
@@ -223,22 +218,27 @@ public class ArchiveHelper {
         // TODO handle the case where the extracted elements would saturate disk space
         try (DocumentFileRandomInStream stream = new DocumentFileRandomInStream(context, uri); IInArchive inArchive = SevenZip.openInArchive(format, stream)) {
             int itemCount = inArchive.getNumberOfItems();
-            for (int index = 0; index < itemCount; index++) {
-                String fileName = inArchive.getStringProperty(index, PropID.PATH);
-                final String fileNameFinal1 = fileName;
-                if (null == entriesToExtract || Stream.of(entriesToExtract).anyMatch(e -> e.equalsIgnoreCase(fileNameFinal1))) {
-                    // TL;DR - We don't care about folders
-                    // If we were coding an all-purpose extractor we would have to create folders
-                    // But Hentoid just wants to extract a bunch of files in one single place !
+            for (int archiveIndex = 0; archiveIndex < itemCount; archiveIndex++) {
+                String fileName = inArchive.getStringProperty(archiveIndex, PropID.PATH);
 
-                    if (null == targetNames) {
-                        int lastSeparator = fileName.lastIndexOf(File.separator);
-                        if (lastSeparator > -1) fileName = fileName.substring(lastSeparator + 1);
-                    } else {
-                        fileName = targetNames.get(targetIndex++) + "." + FileHelper.getExtension(fileName);
+                if (entriesToExtract != null) {
+                    for (Pair<String, String> entry : entriesToExtract) {
+                        if (entry.first.equalsIgnoreCase(fileName)) {
+                            // TL;DR - We don't care about folders
+                            // If we were coding an all-purpose extractor we would have to create folders
+                            // But Hentoid just wants to extract a bunch of files in one single place !
+
+                            if (entry.second.isEmpty()) {
+                                int lastSeparator = fileName.lastIndexOf(File.separator);
+                                if (lastSeparator > -1)
+                                    fileName = fileName.substring(lastSeparator + 1);
+                            } else {
+                                fileName = entry.second + "." + FileHelper.getExtension(fileName);
+                            }
+                            fileNames.put(archiveIndex, fileName);
+                            break;
+                        }
                     }
-
-                    fileNames.put(index, fileName);
                 }
             }
 
