@@ -401,7 +401,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 (oldIndex, oldItem, newIndex, newItem) -> {
                     List<ImageFile> imgs = chapters.get(newIndex).getImageFiles();
                     if (imgs != null && !imgs.isEmpty()) {
-                        viewModel.setReaderStartingIndex(imgs.get(0).getOrder() - 1);
+                        viewModel.setViewerStartingIndex(imgs.get(0).getOrder() - 1);
                         moveToIndex(imgs.get(0).getOrder() - 1, true);
                     }
                     chaptersSelector.dismiss();
@@ -544,7 +544,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         ImageFile img = item.getImage();
         if (img != null) {
             if (editMode == EditMode.NONE) { // View image in gallery
-                viewModel.setReaderStartingIndex(img.getDisplayOrder());
+                viewModel.setViewerStartingIndex(img.getDisplayOrder());
                 if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
                     getParentFragmentManager()
                             .beginTransaction()
@@ -565,7 +565,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
     private boolean onNestedItemClick(INestedItem<?> item) {
         if (item.getLevel() > 0) {
             ImageFile img = ((ImageFileItem) item).getImage();
-            viewModel.setReaderStartingIndex(img.getDisplayOrder());
+            viewModel.setViewerStartingIndex(img.getDisplayOrder());
             if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
                 getParentFragmentManager()
                         .beginTransaction()

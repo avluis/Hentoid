@@ -64,8 +64,8 @@ public class ImageViewerActivity extends BaseActivity {
         if (null == viewModel.getContent().getValue()) { // ViewModel hasn't loaded anything yet (fresh start)
             Bundle searchParams = parser.getSearchParams();
             if (searchParams != null)
-                viewModel.loadFromSearchParams(contentId, pageNumber, searchParams);
-            else viewModel.loadFromContent(contentId, pageNumber);
+                viewModel.loadContentFromSearchParams(contentId, pageNumber, searchParams);
+            else viewModel.loadContentFromId(contentId, pageNumber);
         }
 
         if (!PermissionHelper.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION)) {

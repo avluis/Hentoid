@@ -26,7 +26,6 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -75,7 +74,6 @@ import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.download.DownloadHelper;
-import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
@@ -191,25 +189,44 @@ public class ImageViewerViewModel extends AndroidViewModel {
         });
     }
 
-    public void loadFromContent(long contentId, int pageNumber) {
+    /**
+     * Load the given Content at the given page number
+     *
+     * @param contentId  ID of the Content to load
+     * @param pageNumber Page number to start with
+     */
+    public void loadContentFromId(long contentId, int pageNumber) {
         if (contentId > 0) {
             Content loadedContent = dao.selectContent(contentId);
             if (loadedContent != null)
-                processContent(loadedContent, pageNumber);
+                loadContent(loadedContent, pageNumber);
         }
     }
 
-    public void loadFromSearchParams(long contentId, int pageNumber, @NonNull Bundle bundle) {
+    /**
+     * Load the given Content at the given page number + preload all content IDs corresponding to the given search params
+     *
+     * @param contentId  ID of the Content to load
+     * @param pageNumber Page number to start with
+     * @param bundle     ContentSearchBundle with the current filters and search criteria
+     */
+    public void loadContentFromSearchParams(long contentId, int pageNumber, @NonNull Bundle bundle) {
         searchManager.loadFromBundle(bundle);
-        applySearchParams(contentId, pageNumber);
+        loadContentFromSearchParams(contentId, pageNumber);
     }
 
-    private void applySearchParams(long contentId, int pageNumber) {
+    /**
+     * Load the given Content at the given page number using the current state of SearchManager
+     *
+     * @param contentId  ID of the Content to load
+     * @param pageNumber Page number to start with
+     */
+    private void loadContentFromSearchParams(long contentId, int pageNumber) {
         searchDisposable.dispose();
         searchDisposable = searchManager.searchLibraryForId().subscribe(
                 list -> {
                     contentIds = list;
-                    loadFromContent(contentId, pageNumber);
+                    loadContentFromId(contentId, pageNumber);
                 },
                 throwable -> {
                     Timber.w(throwable);
@@ -218,11 +235,23 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    public void setReaderStartingIndex(int index) {
+    /**
+     * Set the given index as the picture viewer's starting index
+     *
+     * @param index Page index to set
+     */
+    public void setViewerStartingIndex(int index) {
         startingIndex.postValue(index);
     }
 
-    private void setImages(@NonNull Content theContent, int pageNumber, @NonNull List<ImageFile> newImages) {
+    /**
+     * Process the given raw ImageFile entries to populate the viewer
+     *
+     * @param theContent Content to use
+     * @param pageNumber Page number to start with
+     * @param newImages  Images to process
+     */
+    private void loadImages(@NonNull Content theContent, int pageNumber, @NonNull List<ImageFile> newImages) {
         Observable<ImageFile> observable;
 
         databaseImages.postValue(newImages);
@@ -233,7 +262,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             //if (theContent.isArchive())
 //                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptArchiveLoad, emitter));
 //            else
-            observable = Observable.create(emitter -> processDiskImages(theContent, newImages, emitter)); // TODO simplify; no need for an observer to directly load from storage
+            observable = Observable.create(emitter -> processStorageImages(theContent, newImages, emitter)); // TODO simplify; no need for an observer to directly load from storage
 
             AtomicInteger nbProcessed = new AtomicInteger();
             imageLoadDisposable = observable
@@ -258,7 +287,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                 EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
                                 for (ImageFile img : newImages)
                                     imageLocationCache.put(img.getOrder(), img.getFileUri());
-                                initViewer(theContent, -1, newImages);
+                                processImages(theContent, -1, newImages);
                                 imageLoadDisposable.dispose();
                             }
                     );
@@ -270,11 +299,18 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 newImg.setFileUri(location);
             }
 
-            initViewer(theContent, pageNumber, newImages);
+            processImages(theContent, pageNumber, newImages);
         }
     }
 
-    private void processDiskImages(
+    /**
+     * Process the given raw ImageFile entries to populate the viewer, loading the images directly from the device's storage
+     *
+     * @param theContent Content to use
+     * @param newImages  Images to process
+     * @param emitter    Emitter to call anytime an image has been loaded
+     */
+    private void processStorageImages(
             @NonNull Content theContent,
             @NonNull List<ImageFile> newImages,
             @NonNull final ObservableEmitter<ImageFile> emitter) {
@@ -305,6 +341,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         emitter.onComplete();
     }
 
+    /**
+     * Callback to run when the activity is on the verge of being destroyed
+     */
     public void onActivityLeave() {
         // Dispose the composite disposables for good
         imageDownloadDisposable.dispose();
@@ -323,6 +362,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     /**
      * Map the given file Uri to its corresponding ImageFile in the given list, using their display name
      *
+     * @param contentId  ID of the current Content
      * @param imageFiles List of ImageFiles to map the given Uri to
      * @param uri        File Uri to map to one of the elements of the given list
      * @return Matched ImageFile with the valued Uri if found; empty ImageFile if not found
@@ -342,7 +382,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return Optional.empty();
     }
 
-    private void initViewer(@NonNull Content theContent, int pageNumber, @NonNull List<ImageFile> imageFiles) {
+    /**
+     * Initialize the picture viewer using the given parameters
+     *
+     * @param theContent Content to use
+     * @param pageNumber Page number to start with
+     * @param imageFiles Pictures to process
+     */
+    private void processImages(@NonNull Content theContent, int pageNumber, @NonNull List<ImageFile> imageFiles) {
         Boolean shuffledVal = getShuffled().getValue();
         sortAndSetViewerImages(imageFiles, null != shuffledVal && shuffledVal);
 
@@ -376,7 +423,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             if (thumbIndex == startingIndex) startingIndex += 1;
             else if (thumbIndex > startingIndex) thumbIndex = 0; // Ignore if it doesn't intervene
 
-            setReaderStartingIndex(startingIndex - thumbIndex - 1);
+            setViewerStartingIndex(startingIndex - thumbIndex - 1);
 
             // Init the read pages write cache
             readPageNumbers.clear();
@@ -398,6 +445,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         loadedContentId = theContent.getId();
     }
 
+    /**
+     * Toggle the shuffle mode
+     */
     public void toggleShuffle() {
         Boolean shuffledVal = getShuffled().getValue();
         boolean isShuffled = null != shuffledVal && shuffledVal;
@@ -409,6 +459,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (imgs != null) sortAndSetViewerImages(imgs, isShuffled);
     }
 
+    /**
+     * Sort and set the given images for the viewer
+     *
+     * @param imgs    Images to process
+     * @param shuffle Trye if shuffle mode is on; false if not
+     */
     private void sortAndSetViewerImages(@NonNull List<ImageFile> imgs, boolean shuffle) {
         Stream<ImageFile> imgStream;
         if (shuffle) {
@@ -461,7 +517,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
-    public void onLeaveBook(int readerIndex) {
+    /**
+     * Callback to run whenever a book is left (e.g. using previous/next or leaving activity)
+     *
+     * @param viewerIndex Viewer index of the active page when the user left the book
+     */
+    public void onLeaveBook(int viewerIndex) {
         if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
             Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
 
@@ -497,7 +558,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             default:
                 readThresholdPosition = 1;
         }
-        int collectionIndex = readerIndex + thumbIndex + 1;
+        int collectionIndex = viewerIndex + thumbIndex + 1;
         boolean updateReads = (readPageNumbers.size() >= readThresholdPosition || theContent.getReads() > 0);
 
         // Reset the memorized page index if it represents the last page
@@ -513,6 +574,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         );
     }
 
+    /**
+     * Perform the I/O operations to persist book information upon leaving
+     *
+     * @param contentId   ID of the Content to save
+     * @param indexToSet  DB page index to set as the last read page
+     * @param updateReads True if number of reads have to be updated; false if not
+     */
     private void doLeaveBook(final long contentId, int indexToSet, boolean updateReads) {
         Helper.assertNonUiThread();
 
@@ -542,20 +610,37 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
+    /**
+     * Set the filter for favourite pages to the target state
+     *
+     * @param targetState Target state of the favourite pages filter
+     */
     public void filterFavouriteImages(boolean targetState) {
         if (loadedContentId > -1) {
             showFavouritesOnly.postValue(targetState);
             if (searchManager != null) searchManager.setFilterPageFavourites(targetState);
-            applySearchParams(loadedContentId, -1);
+            loadContentFromSearchParams(loadedContentId, -1);
         }
     }
 
+    /**
+     * Toggle the favourite status of the page at the given viewer index
+     *
+     * @param viewerIndex     Viewer index of the page whose status to toggle
+     * @param successCallback Callback to be called on success
+     */
     public void toggleImageFavourite(int viewerIndex, @NonNull Consumer<Boolean> successCallback) {
         ImageFile file = viewerImagesInternal.get(viewerIndex);
         boolean newState = !file.isFavourite();
         toggleImageFavourite(Stream.of(file).toList(), () -> successCallback.accept(newState));
     }
 
+    /**
+     * Toggle the favourite status of the given pages
+     *
+     * @param images          Pages whose status to toggle
+     * @param successCallback Callback to be called on success
+     */
     public void toggleImageFavourite(List<ImageFile> images, @NonNull Runnable successCallback) {
         compositeDisposable.add(
                 Completable.fromRunnable(() -> doToggleImageFavourite(images))
@@ -602,6 +687,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
         else ContentHelper.createContentJson(context, theContent);
     }
 
+    /**
+     * Toggle the favourite flag of the given Content
+     *
+     * @param successCallback Callback to be called on success
+     */
     public void toggleContentFavourite(@NonNull Consumer<Boolean> successCallback) {
         Content c = getContent().getValue();
         if (null == c) return;
@@ -619,7 +709,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     /**
-     * Toggles content favourite flag in DB and in the content JSON
+     * Toggle the favourite flag of the given Content in DB and in the content JSON
      *
      * @param content content whose flag to toggle
      */
@@ -638,7 +728,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         else ContentHelper.createContentJson(context, content);
     }
 
-    public void deleteBook(Consumer<Throwable> onError) {
+    /**
+     * Delete the current Content
+     *
+     * @param onError Callback to call in case an error occurs
+     */
+    public void deleteContent(Consumer<Throwable> onError) {
         Content targetContent = dao.selectContent(loadedContentId);
         if (null == targetContent) return;
 
@@ -646,7 +741,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
 
         compositeDisposable.add(
-                Completable.fromAction(() -> doDeleteBook(targetContent))
+                Completable.fromAction(() -> ContentHelper.removeQueuedContent(getApplication(), dao, targetContent, true))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -658,7 +753,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                         if (currentContentIndex >= contentIds.size() && currentContentIndex > 0)
                                             currentContentIndex--;
                                         if (contentIds.size() > currentContentIndex)
-                                            loadFromContent(contentIds.get(currentContentIndex), -1);
+                                            loadContentFromId(contentIds.get(currentContentIndex), -1);
                                     } else { // Close the viewer if the list is empty (single book)
                                         content.postValue(null);
                                     }
@@ -666,26 +761,33 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                 e -> {
                                     onError.accept(e);
                                     // Restore image source listener on error
-                                    databaseImages.addSource(currentImageSource, imgs -> setImages(targetContent, -1, imgs));
+                                    databaseImages.addSource(currentImageSource, imgs -> loadImages(targetContent, -1, imgs));
                                 }
                         )
         );
     }
 
-    private void doDeleteBook(@NonNull Content targetContent) throws ContentNotProcessedException {
-        Helper.assertNonUiThread();
-        ContentHelper.removeQueuedContent(getApplication(), dao, targetContent, true);
-    }
-
+    /**
+     * Delete the page at the given viewer index
+     *
+     * @param pageViewerIndex Viewer index of the page to delete
+     * @param onError         Callback to run in case of error
+     */
     public void deletePage(int pageViewerIndex, Consumer<Throwable> onError) {
         List<ImageFile> imageFiles = viewerImagesInternal;
         if (imageFiles.size() > pageViewerIndex && pageViewerIndex > -1)
             deletePages(Stream.of(imageFiles.get(pageViewerIndex)).toList(), onError);
     }
 
+    /**
+     * Delete the given pages
+     *
+     * @param pages   Pages to delete
+     * @param onError Callback to run in case of error
+     */
     public void deletePages(List<ImageFile> pages, Consumer<Throwable> onError) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doDeletePages(pages))
+                Completable.fromRunnable(() -> ContentHelper.removePages(pages, dao, getApplication()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -699,14 +801,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doDeletePages(@NonNull List<ImageFile> pages) {
-        Helper.assertNonUiThread();
-        ContentHelper.removePages(pages, dao, getApplication());
-    }
-
+    /**
+     * Set the given image as the current Content's cover
+     *
+     * @param page Page to set as the current Content's cover
+     */
     public void setCover(ImageFile page) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doSetCover(page))
+                Completable.fromRunnable(() -> ContentHelper.setContentCover(page, dao, getApplication()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -717,32 +819,43 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private void doSetCover(@NonNull ImageFile page) {
-        Helper.assertNonUiThread();
-        ContentHelper.setContentCover(page, dao, getApplication());
-    }
-
-    public void loadNextContent(int readerIndex) {
+    /**
+     * Load the next Content according to the current filter & search criteria
+     *
+     * @param viewerIndex Page viewer index the current Content has been left on
+     */
+    public void loadNextContent(int viewerIndex) {
         if (currentContentIndex < contentIds.size() - 1) {
             currentContentIndex++;
             if (!contentIds.isEmpty()) {
-                onLeaveBook(readerIndex);
-                loadFromContent(contentIds.get(currentContentIndex), -1);
+                onLeaveBook(viewerIndex);
+                loadContentFromId(contentIds.get(currentContentIndex), -1);
             }
         }
     }
 
-    public void loadPreviousContent(int readerIndex) {
+    /**
+     * Load the previous Content according to the current filter & search criteria
+     *
+     * @param viewerIndex Page viewer index the current Content has been left on
+     */
+    public void loadPreviousContent(int viewerIndex) {
         if (currentContentIndex > 0) {
             currentContentIndex--;
             if (!contentIds.isEmpty()) {
-                onLeaveBook(readerIndex);
-                loadFromContent(contentIds.get(currentContentIndex), -1);
+                onLeaveBook(viewerIndex);
+                loadContentFromId(contentIds.get(currentContentIndex), -1);
             }
         }
     }
 
-    private void processContent(@NonNull Content theContent, int pageNumber) {
+    /**
+     * Load the given content at the given page number
+     *
+     * @param theContent Content to load
+     * @param pageNumber Page number to start with
+     */
+    private void loadContent(@NonNull Content theContent, int pageNumber) {
         Preferences.setViewerCurrentContent(theContent.getId());
         currentContentIndex = contentIds.indexOf(theContent.getId());
         if (-1 == currentContentIndex) currentContentIndex = 0;
@@ -752,17 +865,28 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (contentIds.size() > currentContentIndex && loadedContentId != contentIds.get(currentContentIndex))
             imageLocationCache.clear();
         content.postValue(theContent);
-        processImages(theContent, pageNumber);
+        loadDatabaseImages(theContent, pageNumber);
     }
 
-    private void processImages(@NonNull Content theContent, int pageNumber) {
+    /**
+     * Load the given Content's pictures from the database and process them, initializing the viewer to start at the given page number
+     *
+     * @param theContent Content to load the pictures for
+     * @param pageNumber Page number to start with
+     */
+    private void loadDatabaseImages(@NonNull Content theContent, int pageNumber) {
         // Observe the content's images
         // NB : It has to be dynamic to be updated when viewing a book from the queue screen
         if (currentImageSource != null) databaseImages.removeSource(currentImageSource);
         currentImageSource = dao.selectDownloadedImagesFromContentLive(theContent.getId());
-        databaseImages.addSource(currentImageSource, imgs -> setImages(theContent, pageNumber, imgs));
+        databaseImages.addSource(currentImageSource, imgs -> loadImages(theContent, pageNumber, imgs));
     }
 
+    /**
+     * Update local preferences for the current Content
+     *
+     * @param newPrefs Preferences to replace the current Content's local preferences
+     */
     public void updateContentPreferences(@NonNull final Map<String, String> newPrefs) {
         compositeDisposable.add(
                 Single.fromCallable(() -> doUpdateContentPreferences(getApplication().getApplicationContext(), loadedContentId, newPrefs))
@@ -775,6 +899,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
+    /**
+     * Update local preferences for the given Content
+     *
+     * @param context   Context to use
+     * @param contentId ID of the Content whose local preferences will be replaced
+     * @param newPrefs  Preferences to replace the current Content's local preferences
+     * @return Updated Content
+     */
     private Content doUpdateContentPreferences(@NonNull final Context context, long contentId,
                                                @NonNull final Map<String, String> newPrefs) {
         Helper.assertNonUiThread();
@@ -794,7 +926,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return theContent;
     }
 
-    // Cache JSON URI in the database to speed up favouriting
+    /**
+     * Cache the JSON URI of the given Content in the database to speed up favouriting
+     *
+     * @param context Context to use
+     * @param content Content to cache the JSON URI for
+     */
     private void cacheJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
         if (!content.getJsonUri().isEmpty() || content.isArchive()) return;
@@ -813,16 +950,30 @@ public class ImageViewerViewModel extends AndroidViewModel {
         dao.insertContent(content);
     }
 
+    /**
+     * Mark the given page number as read
+     *
+     * @param pageNumber Page number to mark as read
+     */
     public void markPageAsRead(int pageNumber) {
         readPageNumbers.add(pageNumber);
     }
 
+    /**
+     * Force all images to be reposted
+     */
     public void repostImages() {
         viewerImages.postValue(viewerImages.getValue());
     }
 
-    public synchronized void setCurrentPage(int pageIndex, int direction) {
-        if (viewerImagesInternal.size() <= pageIndex) return;
+    /**
+     * Handler to call when changing page
+     *
+     * @param viewerIndex Viewer index of the page that has just been displayed
+     * @param direction   Direction the viewer is going to (1 : forward; -1 : backward; 0 : no movement)
+     */
+    public synchronized void onPageChange(int viewerIndex, int direction) {
+        if (viewerImagesInternal.size() <= viewerIndex) return;
         Content theContent = getContent().getValue();
         if (null == theContent) return;
 
@@ -835,7 +986,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         int increment = (direction > 0) ? 1 : -1;
         int quantity = isArchive ? EXTRACT_RANGE : CONCURRENT_DOWNLOADS;
         // pageIndex is the center of the range to extract/download -> determine its bound
-        int initialIndex = (int) Math.floor(Helper.coerceIn(pageIndex - (quantity * increment / 2f), 0, viewerImagesInternal.size() - 1));
+        int initialIndex = (int) Math.floor(Helper.coerceIn(viewerIndex - (quantity * increment / 2f), 0, viewerImagesInternal.size() - 1));
         for (int i = 0; i < quantity; i++)
             if (picturesLeftToProcess.contains(initialIndex + (increment * i)))
                 indexesToLoad.add(initialIndex + (increment * i));
@@ -859,7 +1010,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
         if (null == cachePicFolder) return;
 
-        Timber.d("Processing %d files starting around %d from index %s", indexesToLoad.size(), pageIndex, initialIndex);
+        Timber.d("Processing %d files starting around %d from index %s", indexesToLoad.size(), viewerIndex, initialIndex);
 
         if (isArchive) extractPics(indexesToLoad, archiveFile, cachePicFolder);
         else downloadPics(indexesToLoad, cachePicFolder);
@@ -881,9 +1032,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 || (isArchive && (img.getFileUri().isEmpty() || img.getUrl().equals(img.getFileUri()))); // Image has to be extracted from an archive
     }
 
+    /**
+     * Download the pictures at the given indexes to the given folder
+     *
+     * @param indexesToLoad DB indexes of the pictures to download
+     * @param targetFolder  Target folder to download the pictures to
+     */
     private void downloadPics(
             @NonNull List<Integer> indexesToLoad,
-            @NonNull File cachePicFolder
+            @NonNull File targetFolder
     ) {
         for (int index : indexesToLoad) {
             if (indexProcessInProgress.contains(index)) continue;
@@ -899,7 +1056,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             AtomicBoolean stopDownload = new AtomicBoolean(false);
             downloadsQueue.add(stopDownload);
 
-            Single<Optional<ImmutableTriple<Integer, String, String>>> single = Single.fromCallable(() -> downloadPic(index, cachePicFolder, stopDownload));
+            Single<Optional<ImmutableTriple<Integer, String, String>>> single = Single.fromCallable(() -> downloadPic(index, targetFolder, stopDownload));
 
             imageDownloadDisposable.add(
                     single.subscribeOn(Schedulers.io())
@@ -939,10 +1096,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
     }
 
+    /**
+     * Extract the picture files at the given indexes from the given archive to the given folder
+     *
+     * @param indexesToLoad DB indexes of the pictures to download
+     * @param archiveFile   Archive file to extract from
+     * @param targetFolder  Folder to extract the files to
+     */
     private void extractPics(
             @NonNull List<Integer> indexesToLoad,
             @NonNull DocumentFile archiveFile,
-            @NonNull File cachePicFolder
+            @NonNull File targetFolder
     ) {
         // Reset current extracting process, if any
         synchronized (indexProcessInProgress) {
@@ -971,7 +1135,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 ArchiveHelper.extractArchiveEntries(
                         getApplication(),
                         archiveFile.getUri(),
-                        cachePicFolder,
+                        targetFolder,
                         extractInstructions,
                         interruptArchiveExtract,
                         emitter)
@@ -997,7 +1161,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                                 // Instanciate a new ImageFile not to modify the one used by the UI
                                 ImageFile extractedPic = new ImageFile(img.get().second);
                                 extractedPic.setFileUri(uri.toString());
-                                extractedPic.setMimeType(getMimeTypeFromUri(uri));
+                                extractedPic.setMimeType(ImageHelper.getMimeTypeFromUri(getApplication().getApplicationContext(), uri));
 
                                 synchronized (viewerImagesInternal) {
                                     viewerImagesInternal.remove(img.get().first.intValue());
@@ -1175,18 +1339,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
     }
 
-    private String getMimeTypeFromUri(@NonNull Uri uri) {
-        String result = ImageHelper.MIME_IMAGE_GENERIC;
-        byte[] buffer = new byte[12];
-        try (InputStream is = FileHelper.getInputStream(getApplication().getApplicationContext(), uri)) {
-            if (buffer.length == is.read(buffer))
-                result = ImageHelper.getMimeTypeFromPictureBinary(buffer);
-        } catch (IOException e) {
-            Timber.w(e);
-        }
-        return result;
-    }
-
     /**
      * Send the current book to the queue to be reparsed from scratch
      *
@@ -1264,7 +1416,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> processImages(theContent, -1), // Force reload images
+                                () -> loadDatabaseImages(theContent, -1), // Force reload images
                                 e -> {
                                     Timber.e(e);
                                     onError.accept(e);
@@ -1290,7 +1442,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> processImages(theContent, -1), // Force reload images
+                                () -> loadDatabaseImages(theContent, -1), // Force reload images
                                 e -> {
                                     Timber.e(e);
                                     onError.accept(e);
@@ -1460,7 +1612,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         .subscribe(
                                 () -> { // Force reload the whole Content
                                     Content updatedContent = dao.selectContent(theContent.getId());
-                                    if (updatedContent != null) processContent(updatedContent, -1);
+                                    if (updatedContent != null) loadContent(updatedContent, -1);
                                 },
                                 e -> {
                                     Timber.e(e);

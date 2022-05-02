@@ -161,7 +161,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         indexRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::applyStartingIndexInternal);
         slideshowSliderDebouncer = new Debouncer<>(requireContext(), 2500, this::onSlideShowSliderChosen);
-        processPositionDebouncer = new Debouncer<>(requireContext(), 500, pair -> viewModel.setCurrentPage(pair.getLeft(), pair.getRight()));
+        processPositionDebouncer = new Debouncer<>(requireContext(), 500, pair -> viewModel.onPageChange(pair.getLeft(), pair.getRight()));
 
         Preferences.registerPrefsChangedListener(listener);
 
@@ -249,7 +249,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         outState.putBoolean(KEY_SLIDESHOW_ON, (slideshowTimer != null));
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         if (viewModel != null) {
-            viewModel.setReaderStartingIndex(imageIndex); // Memorize the current page
+            viewModel.setViewerStartingIndex(imageIndex); // Memorize the current page
 //            viewModel.onSaveState(outState);
         }
     }
@@ -738,7 +738,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (deletePage)
             viewModel.deletePage(imageIndex, this::onDeleteError);
         else
-            viewModel.deleteBook(this::onDeleteError);
+            viewModel.deleteContent(this::onDeleteError);
     }
 
 
@@ -794,7 +794,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     // Remember the last relevant movement and schedule it for execution
                     processPositionDebouncer.submit(new ImmutablePair<>(imageIndex, scrollDirection));
                 } else {
-                    viewModel.setCurrentPage(imageIndex, scrollDirection);
+                    viewModel.onPageChange(imageIndex, scrollDirection);
                 }
             }
             isPageFavourite = currentImage.isFavourite();
@@ -998,7 +998,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         powerMenu.setOnMenuItemClickListener((position, item) -> {
             int tag = (Integer) item.getTag();
             if (0 == tag) {
-                viewModel.setCurrentPage(imageIndex, 0);
+                viewModel.onPageChange(imageIndex, 0);
             } else if (1 == tag) {
                 viewModel.reparseBook(
                         t -> {
@@ -1246,7 +1246,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void displayGallery() {
         hasGalleryBeenShown = true;
-        viewModel.setReaderStartingIndex(imageIndex); // Memorize the current page
+        viewModel.setViewerStartingIndex(imageIndex); // Memorize the current page
 
         if (getParentFragmentManager().getBackStackEntryCount() > 0) { // Gallery mode (Library -> gallery -> pager)
             getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack
