@@ -904,7 +904,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      * Callback for any change in Preferences
      */
     private void onSharedPreferenceChanged(String key) {
-        Timber.i("Prefs change detected : %s", key);
+        Timber.v("Prefs change detected : %s", key);
         switch (key) {
             case Preferences.Key.TOP_FAB:
                 topFab.setVisibility(Preferences.isTopFabEnabled() ? View.VISIBLE : View.GONE);

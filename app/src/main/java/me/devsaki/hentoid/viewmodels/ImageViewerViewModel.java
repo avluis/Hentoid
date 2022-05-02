@@ -253,6 +253,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             t -> {
                                 Timber.e(t);
                                 EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
+                                imageLoadDisposable.dispose();
                             },
                             () -> {
                                 EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
@@ -930,6 +931,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
         File cachePicFolder = FileHelper.getOrCreateCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER);
         if (null == cachePicFolder) return;
 
+        Timber.d("Processing %d files starting from index %s", indexesToLoad.size(), indexesToLoad.get(0));
+
         if (isArchive) unarchivePics(indexesToLoad, archiveFile, cachePicFolder);
         else downloadPics(indexesToLoad, cachePicFolder);
     }
@@ -1030,7 +1033,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             targetFileNames.add(theContent.getId() + "." + index);
         }
 
-        Timber.d("Unarchiving %d files", sourceFileUris.size());
+        Timber.d("Unarchiving %d files starting from index %s", sourceFileUris.size(), indexesToLoad.get(0));
 
         Observable<Uri> observable = Observable.create(emitter ->
                 ArchiveHelper.extractArchiveEntries(
@@ -1044,7 +1047,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         );
 
         AtomicInteger nbProcessed = new AtomicInteger();
-        imageLoadDisposable = observable
+        unarchiveDisposable = observable
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
                 .doOnComplete(
@@ -1059,76 +1062,36 @@ public class ImageViewerViewModel extends AndroidViewModel {
                             Optional<Pair<Integer, ImageFile>> img = mapUriToImageFile(theContent.getId(), viewerImagesInternal, uri);
                             if (img.isPresent()) {
                                 downloadsInProgress.remove(img.get().first);
-                                synchronized (viewerImagesInternal) {
-                                    // Instanciate a new ImageFile not to modify the one used by the UI
-                                    ImageFile extractedPic = new ImageFile(img.get().second);
-                                    extractedPic.setFileUri(uri.toString());
-                                    extractedPic.setMimeType(getMimeTypeFromUri(uri));
 
+                                // Instanciate a new ImageFile not to modify the one used by the UI
+                                ImageFile extractedPic = new ImageFile(img.get().second);
+                                extractedPic.setFileUri(uri.toString());
+                                extractedPic.setMimeType(getMimeTypeFromUri(uri));
+
+                                synchronized (viewerImagesInternal) {
                                     viewerImagesInternal.remove(img.get().first.intValue());
                                     viewerImagesInternal.add(img.get().first, extractedPic);
                                     Timber.v("Unarchiving : replacing index %d - order %d -> %s", img.get().first, extractedPic.getOrder(), extractedPic.getFileUri());
 
                                     // Instanciate a new list to trigger an actual Adapter UI refresh
                                     viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
-                                    imageLocationCache.put(extractedPic.getOrder(), extractedPic.getFileUri());
                                 }
+                                imageLocationCache.put(extractedPic.getOrder(), extractedPic.getFileUri());
                             }
                         },
                         t -> {
                             downloadsInProgress.clear();
                             Timber.e(t);
                             //                          EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
+                            unarchiveDisposable.dispose();
                         },
                         () -> {
                             Timber.d("Unarchived %d files successfuly", sourceFileUris.size());
 //                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
                             downloadsInProgress.clear();
-                            imageLoadDisposable.dispose();
+                            unarchiveDisposable.dispose();
                         }
                 );
-
-/*
-
-        Single<List<ImmutableTriple<Integer, String, String>>> single = Single.fromCallable(() -> extractPics(archiveFile, indexesToLoad, cachePicFolder, interruptArchiveLoad));
-
-        imageDownloadDisposable.add(
-                single.subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.computation())
-                        .subscribe(
-                                result -> {
-                                    downloadsInProgress.clear();
-
-                                    if (result.isEmpty()) { // Nothing to download
-                                        Timber.d("NO IMAGE FOUND");
-//                                        notifyDownloadProgress(-1, index);
-                                        return;
-                                    }
-
-                                    synchronized (viewerImagesInternal) {
-                                        for (ImmutableTriple<Integer, String, String> unarchivedItem : result) {
-                                            if (viewerImagesInternal.size() <= unarchivedItem.left)
-                                                continue;
-
-                                            // Instanciate a new ImageFile not to modify the one used by the UI
-                                            ImageFile downloadedPic = new ImageFile(viewerImagesInternal.get(unarchivedItem.left));
-                                            downloadedPic.setFileUri(unarchivedItem.middle);
-                                            downloadedPic.setMimeType(unarchivedItem.right);
-
-                                            viewerImagesInternal.remove(unarchivedItem.left.intValue());
-                                            viewerImagesInternal.add(unarchivedItem.left, downloadedPic);
-                                            Timber.d("REPLACING INDEX %d - ORDER %d -> %s", unarchivedItem.left, downloadedPic.getOrder(), downloadedPic.getFileUri());
-
-                                            // Instanciate a new list to trigger an actual Adapter UI refresh
-                                            viewerImages.postValue(new ArrayList<>(viewerImagesInternal));
-                                            imageLocationCache.put(downloadedPic.getOrder(), downloadedPic.getFileUri());
-                                        }
-                                    }
-                                },
-                                Timber::w
-                        )
-        );
- */
     }
 
     /**
