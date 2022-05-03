@@ -44,7 +44,6 @@ import java.util.regex.Pattern;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -252,39 +251,21 @@ public class ImageViewerViewModel extends AndroidViewModel {
      * @param newImages  Images to process
      */
     private void loadImages(@NonNull Content theContent, int pageNumber, @NonNull List<ImageFile> newImages) {
-        Observable<ImageFile> observable;
-
         databaseImages.postValue(newImages);
 
         // Don't reload from disk / archive again if the image list hasn't changed
         // e.g. page favourited
         if (!theContent.isArchive() && (imageLocationCache.isEmpty() || newImages.size() != imageLocationCache.size())) {
-            //if (theContent.isArchive())
-//                observable = Observable.create(emitter -> processArchiveImages(theContent, newImages, interruptArchiveLoad, emitter));
-//            else
-            observable = Observable.create(emitter -> processStorageImages(theContent, newImages, emitter)); // TODO simplify; no need for an observer to directly load from storage
-
-            AtomicInteger nbProcessed = new AtomicInteger();
-            imageLoadDisposable = observable
+            imageLoadDisposable = Completable.fromRunnable(() -> processStorageImages(theContent, newImages))
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io())
                     .doOnComplete(
-                            // Called this way to properly run on io thread
+                            // Called this way to properly run on I/O thread
                             () -> cacheJson(getApplication().getApplicationContext(), theContent)
                     )
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            imageFile -> {
-                                nbProcessed.getAndIncrement();
-                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
-                            },
-                            t -> {
-                                Timber.e(t);
-                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
-                                imageLoadDisposable.dispose();
-                            },
                             () -> {
-                                EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, newImages.size()));
                                 for (ImageFile img : newImages)
                                     imageLocationCache.put(img.getOrder(), img.getFileUri());
                                 processImages(theContent, -1, newImages);
@@ -308,12 +289,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
      *
      * @param theContent Content to use
      * @param newImages  Images to process
-     * @param emitter    Emitter to call anytime an image has been loaded
      */
     private void processStorageImages(
             @NonNull Content theContent,
-            @NonNull List<ImageFile> newImages,
-            @NonNull final ObservableEmitter<ImageFile> emitter) {
+            @NonNull List<ImageFile> newImages) {
         if (theContent.isArchive())
             throw new IllegalArgumentException("Content must not be an archive");
         boolean missingUris = Stream.of(newImages).filter(img -> img.getFileUri().isEmpty()).count() > 0;
@@ -337,8 +316,6 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Replace initial images with updated images
         newImages.clear();
         newImages.addAll(newImageFiles);
-
-        emitter.onComplete();
     }
 
     /**
