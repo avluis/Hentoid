@@ -61,7 +61,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -110,6 +109,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private final RequestOptions glideRequestOptions = new RequestOptions()
             .optionalTransform(centerInside)
             .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside));
+
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
@@ -315,33 +315,34 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
         if (null == binding) return;
-        if (event.processId != R.id.viewer_load && event.processId != R.id.page_download) return;
-        if (event.processId == R.id.page_download && event.step != imageIndex) return;
+        if (event.processId != R.id.viewer_load && event.processId != R.id.viewer_page_download)
+            return;
+        if (event.processId == R.id.viewer_page_download && event.step != imageIndex) return;
 
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             @StringRes int msgResource = R.string.loading_image;
             if (event.processId == R.id.viewer_load) { // Archive unpacking
-                // Empty display until loading is complete
-                if (adapter.getItemCount() > 0) adapter.submitList(Collections.emptyList());
-
-                // Prevent switching books when archive extraction is in progress (may trigger multiple extractions at the same time)
-                // TODO make that possible in the future when unarchival is done on demand
-                binding.controlsOverlay.viewerPrevBookBtn.setEnabled(false);
-                binding.controlsOverlay.viewerNextBookBtn.setEnabled(false);
                 msgResource = R.string.loading_archive;
             }
 
             binding.viewerFixBtn.setVisibility(View.GONE);
             binding.viewerLoadingTxt.setText(getResources().getString(msgResource, event.elementsKO + event.elementsOK, event.elementsTotal));
             binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
+
+            binding.progressBar.setMax(event.elementsTotal);
+            binding.controlsOverlay.progressBar.setMax(event.elementsTotal);
+            binding.progressBar.setProgress(event.elementsKO + event.elementsOK);
+            binding.controlsOverlay.progressBar.setProgress(event.elementsKO + event.elementsOK);
+            binding.progressBar.setVisibility(View.VISIBLE);
+            binding.controlsOverlay.progressBar.setVisibility(View.VISIBLE);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             binding.viewerLoadingTxt.setVisibility(View.GONE);
-            if (event.processId == R.id.viewer_load) {
-                binding.controlsOverlay.viewerPrevBookBtn.setEnabled(true);
-                binding.controlsOverlay.viewerNextBookBtn.setEnabled(true);
-            }
+            binding.progressBar.setVisibility(View.GONE);
+            binding.controlsOverlay.progressBar.setVisibility(View.GONE);
         } else if (ProcessEvent.EventType.FAILURE == event.eventType) {
             binding.viewerLoadingTxt.setVisibility(View.GONE);
+            binding.progressBar.setVisibility(View.GONE);
+            binding.controlsOverlay.progressBar.setVisibility(View.GONE);
             binding.viewerFixBtn.setVisibility(View.VISIBLE);
         }
     }

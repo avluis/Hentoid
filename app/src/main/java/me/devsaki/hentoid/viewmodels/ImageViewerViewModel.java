@@ -962,16 +962,17 @@ public class ImageViewerViewModel extends AndroidViewModel {
         List<Integer> indexesToLoad = new ArrayList<>();
         int increment = (direction > 0) ? 1 : -1;
         int quantity = isArchive ? EXTRACT_RANGE : CONCURRENT_DOWNLOADS;
-        // pageIndex is the center of the range to extract/download -> determine its bound
-        int initialIndex = (int) Math.floor(Helper.coerceIn(viewerIndex - (quantity * increment / 2f), 0, viewerImagesInternal.size() - 1));
+        // pageIndex at 1/3rd of the range to extract/download -> determine its bound
+        int initialIndex = (int) Math.floor(Helper.coerceIn(viewerIndex - (quantity * increment / 3f), 0, viewerImagesInternal.size() - 1));
         for (int i = 0; i < quantity; i++)
             if (picturesLeftToProcess.contains(initialIndex + (increment * i)))
                 indexesToLoad.add(initialIndex + (increment * i));
 
-        // Don't extract for nothing
+        // Only run extraction when there's at least 1/3rd of the extract range to fetch
+        // (prevents calling extraction for one single picture at every page turn)
         boolean greenlight = true;
         if (isArchive) {
-            greenlight = indexesToLoad.size() >= EXTRACT_RANGE * 0.33;
+            greenlight = indexesToLoad.size() >= EXTRACT_RANGE / 3f;
             if (!greenlight) {
                 int from = (increment > 0) ? initialIndex : 0;
                 int to = (increment > 0) ? viewerImagesInternal.size() : initialIndex;
@@ -1130,7 +1131,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 .subscribe(
                         uri -> {
                             nbProcessed.getAndIncrement();
-//                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.viewer_load, 0, nbProcessed.get(), 0, indexesToLoad.size()));
                             Optional<Pair<Integer, ImageFile>> img = mapUriToImageFile(theContent.getId(), viewerImagesInternal, uri);
                             if (img.isPresent()) {
                                 indexProcessInProgress.remove(img.get().first);
@@ -1155,13 +1156,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         t -> {
                             Timber.e(t);
                             indexProcessInProgress.clear();
-                            //                          EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, indexesToLoad.size()));
                             interruptArchiveExtract.set(false);
                             archiveExtractDisposable.dispose();
                         },
                         () -> {
                             Timber.d("Extracted %d files successfuly", extractInstructions.size());
-//                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, sourceFileUris.size()));
+                            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, indexesToLoad.size()));
                             indexProcessInProgress.clear();
                             interruptArchiveExtract.set(false);
                             archiveExtractDisposable.dispose();
@@ -1370,11 +1371,11 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private void doNotifyDownloadProgress(float progressPc, int pageIndex) {
         int progress = (int) Math.floor(progressPc);
         if (progress < 0) { // Error
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.FAILURE, R.id.page_download, pageIndex, 0, 100, 100));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.FAILURE, R.id.viewer_page_download, pageIndex, 0, 100, 100));
         } else if (progress < 100) {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.page_download, pageIndex, progress, 0, 100));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.viewer_page_download, pageIndex, progress, 0, 100));
         } else {
-            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.page_download, pageIndex, progress, 0, 100));
+            EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_page_download, pageIndex, progress, 0, 100));
         }
     }
 
