@@ -791,13 +791,11 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (currentImage != null) {
             Preferences.setViewerCurrentPageNum(currentImage.getOrder());
             viewModel.markPageAsRead(currentImage.getOrder());
-            if (scrollDirection != 0) {
-                if (isFastBrowsing) {
-                    // Remember the last relevant movement and schedule it for execution
-                    processPositionDebouncer.submit(new ImmutablePair<>(imageIndex, scrollDirection));
-                } else {
-                    viewModel.onPageChange(imageIndex, scrollDirection);
-                }
+            if (isFastBrowsing) {
+                // Remember the last relevant movement and schedule it for execution
+                processPositionDebouncer.submit(new ImmutablePair<>(imageIndex, scrollDirection));
+            } else {
+                viewModel.onPageChange(imageIndex, scrollDirection);
             }
             isPageFavourite = currentImage.isFavourite();
         }

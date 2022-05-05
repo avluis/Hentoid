@@ -325,6 +325,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Dispose the composite disposables for good
         imageDownloadDisposable.dispose();
         notificationDisposables.dispose();
+        archiveExtractDisposable.dispose();
         // Empty cache
         emptyCacheDisposable =
                 Completable.fromRunnable(() -> FileHelper.emptyCacheFolder(getApplication(), Consts.PICTURE_CACHE_FOLDER))
@@ -503,14 +504,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (Preferences.Constant.VIEWER_DELETE_ASK_BOOK == Preferences.getViewerDeleteAskMode())
             Preferences.setViewerDeleteAskMode(Preferences.Constant.VIEWER_DELETE_ASK_AGAIN);
 
+        indexProcessInProgress.clear();
+        interruptArchiveExtract.set(true);
+
         // Stop any ongoing picture loading
-        archiveExtractDisposable.dispose();
         imageLoadDisposable.dispose();
         // Clear the composite disposables so that they can be reused
         imageDownloadDisposable.clear();
         notificationDisposables.clear();
-        indexProcessInProgress.clear();
-        interruptArchiveExtract.set(true);
 
         // Don't do anything if the Content hasn't even been loaded
         if (-1 == loadedContentId) return;
@@ -960,7 +961,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Identify pages to be loaded
         List<Integer> indexesToLoad = new ArrayList<>();
-        int increment = (direction > 0) ? 1 : -1;
+        int increment = (direction >= 0) ? 1 : -1;
         int quantity = isArchive ? EXTRACT_RANGE : CONCURRENT_DOWNLOADS;
         // pageIndex at 1/3rd of the range to extract/download -> determine its bound
         int initialIndex = (int) Math.floor(Helper.coerceIn(viewerIndex - (quantity * increment / 3f), 0, viewerImagesInternal.size() - 1));
@@ -975,7 +976,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
             greenlight = indexesToLoad.size() >= EXTRACT_RANGE / 3f;
             if (!greenlight) {
                 int from = (increment > 0) ? initialIndex : 0;
-                int to = (increment > 0) ? viewerImagesInternal.size() : initialIndex;
+                int to = (increment > 0) ? viewerImagesInternal.size() : initialIndex + 1;
                 long leftToProcessDirection = Stream.range(from, to).filter(picturesLeftToProcess::contains).count();
                 greenlight = indexesToLoad.size() == leftToProcessDirection;
             }
@@ -1086,7 +1087,10 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull DocumentFile archiveFile,
             @NonNull File targetFolder
     ) {
-        // Reset current extracting process, if any
+        // Reset interrupt state
+        interruptArchiveExtract.set(false);
+
+        // Interrupt current extracting process, if any
         synchronized (indexProcessInProgress) {
             if (!indexProcessInProgress.isEmpty()) {
                 indexProcessInProgress.clear();
