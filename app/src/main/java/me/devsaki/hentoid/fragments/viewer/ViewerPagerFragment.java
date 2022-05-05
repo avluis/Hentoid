@@ -212,6 +212,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     public void onDestroyView() {
         indexRefreshDebouncer.clear();
         slideshowSliderDebouncer.clear();
+        processPositionDebouncer.clear();
         binding.recyclerView.setAdapter(null);
         binding = null;
         super.onDestroyView();
