@@ -6,6 +6,25 @@
     android:layout_height="match_parent"
     tools:context=".activities.ImageViewerActivity">
 
+    <me.devsaki.hentoid.views.ZoomableFrame
+        android:id="@+id/zoom_frame"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <me.devsaki.hentoid.views.ZoomableRecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?android:windowBackground"
+            android:orientation="horizontal"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_viewer_image" />
+    </me.devsaki.hentoid.views.ZoomableFrame>
+
     <TextView
         android:id="@+id/viewer_no_img_txt"
         android:layout_width="wrap_content"
@@ -61,26 +80,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="fix" />
-
-    <me.devsaki.hentoid.views.ZoomableFrame
-        android:id="@+id/zoom_frame"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <me.devsaki.hentoid.views.ZoomableRecyclerView
-            android:id="@+id/recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="?android:windowBackground"
-            android:orientation="horizontal"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_viewer_image" />
-
-    </me.devsaki.hentoid.views.ZoomableFrame>
 
     <TextView
         android:id="@+id/viewer_pagenumber_text"
