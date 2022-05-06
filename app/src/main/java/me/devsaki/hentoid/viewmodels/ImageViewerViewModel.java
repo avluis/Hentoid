@@ -1087,14 +1087,14 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull DocumentFile archiveFile,
             @NonNull File targetFolder
     ) {
-        // Reset interrupt state
-        interruptArchiveExtract.set(false);
-
         // Interrupt current extracting process, if any
         synchronized (indexProcessInProgress) {
             if (!indexProcessInProgress.isEmpty()) {
                 indexProcessInProgress.clear();
                 interruptArchiveExtract.set(true);
+            } else {
+                // Reset interrupt state
+                interruptArchiveExtract.set(false);
             }
             indexProcessInProgress.addAll(indexesToLoad);
         }
