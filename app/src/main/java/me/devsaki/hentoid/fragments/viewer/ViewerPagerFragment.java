@@ -328,7 +328,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
             binding.viewerFixBtn.setVisibility(View.GONE);
             binding.viewerLoadingTxt.setText(getResources().getString(msgResource, event.elementsKO + event.elementsOK, event.elementsTotal));
-            binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
+            if (event.elementsOK + event.elementsKO < 5)
+                binding.viewerLoadingTxt.setVisibility(View.VISIBLE); // Just show it for the first iterations to allow the UI to hide it when it wants
 
             binding.progressBar.setMax(event.elementsTotal);
             binding.controlsOverlay.progressBar.setMax(event.elementsTotal);
@@ -642,6 +643,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             isPageFavourite = images.get(imageIndex).isFavourite();
             updateFavouriteButtonIcon();
             binding.viewerNoImgTxt.setVisibility(View.GONE);
+            binding.viewerLoadingTxt.setVisibility(View.GONE);
         }
     }
 
