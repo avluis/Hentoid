@@ -167,7 +167,6 @@ public class ArchiveHelper {
      *
      * @param context          Context to be used
      * @param file             Archive file to extract from
-     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
      * @param targetFolder     Target folder to create the archives into
      * @param entriesToExtract List of entries to extract (left = relative paths to the archive root / right = names of the target files - set to blank to keep original name); null to extract everything
      * @return Observable that follows the extraction of each entry
