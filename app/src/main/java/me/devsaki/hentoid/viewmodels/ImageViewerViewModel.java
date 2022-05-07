@@ -1112,6 +1112,9 @@ public class ImageViewerViewModel extends AndroidViewModel {
         }
         indexProcessInProgress.addAll(indexesToLoad);
 
+        // Reset interrupt state to make sure extraction runs
+        interruptArchiveExtract.set(false);
+
         Content theContent = getContent().getValue();
         if (null == theContent) return;
 
