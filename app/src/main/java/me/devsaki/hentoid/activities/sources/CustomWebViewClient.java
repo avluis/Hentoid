@@ -127,6 +127,10 @@ class CustomWebViewClient extends WebViewClient {
     // List of elements (CSS selector) to be hidden by inline CSS
     private List<String> hideableElements;
 
+    // List of blacklisted Javascript strings : if any of these is found inside
+    // an inline script tag, the entire tag is removed from the HTML
+    private List<String> jsContentBlacklist;
+
 
     CustomWebViewClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
         this.site = site;
@@ -171,6 +175,16 @@ class CustomWebViewClient extends WebViewClient {
     protected void addHideableElements(String... elements) {
         if (null == hideableElements) hideableElements = new ArrayList<>();
         Collections.addAll(hideableElements, elements);
+    }
+
+    /**
+     * Add a Javascript blacklisted element filter to current site
+     *
+     * @param elements Elements (string) to addAll to page cleaner
+     */
+    protected void addJavascriptBlacklist(String... elements) {
+        if (null == jsContentBlacklist) jsContentBlacklist = new ArrayList<>();
+        Collections.addAll(jsContentBlacklist, elements);
     }
 
 
@@ -402,7 +416,7 @@ class CustomWebViewClient extends WebViewClient {
 
             // If we're here to remove "dirty elements" or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((removableElements != null || hideableElements != null || isMarkDownloaded() || !activity.getCustomCss().isEmpty())
+            if ((removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || !activity.getCustomCss().isEmpty())
                     && (HttpHelper.getExtensionFromUri(url).isEmpty() || HttpHelper.getExtensionFromUri(url).equalsIgnoreCase("html"))) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
@@ -534,8 +548,8 @@ class CustomWebViewClient extends WebViewClient {
 
                 // Remove dirty elements from HTML resources
                 String customCss = activity.getCustomCss();
-                if (removableElements != null || hideableElements != null || isMarkDownloaded() || !customCss.isEmpty()) {
-                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, hideableElements, activity.getAllSiteUrls());
+                if (removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || !customCss.isEmpty()) {
+                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, hideableElements, jsContentBlacklist, activity.getAllSiteUrls());
                     if (null == browserStream) return null;
                 }
 
@@ -639,11 +653,12 @@ class CustomWebViewClient extends WebViewClient {
      * - If set, remove nodes using the given list of CSS selectors to identify them
      * - If set, mark book covers or links matching the given list of Urls
      *
-     * @param stream            Stream containing the HTML document to process; will be closed during the process
-     * @param baseUri           Base URI if the document
-     * @param removableElements CSS selectors of the nodes to remove
-     * @param hideableElements  CSS selectors of the nodes to hide
-     * @param siteUrls          Urls of the covers or links to mark
+     * @param stream             Stream containing the HTML document to process; will be closed during the process
+     * @param baseUri            Base URI if the document
+     * @param removableElements  CSS selectors of the nodes to remove
+     * @param hideableElements   CSS selectors of the nodes to hide
+     * @param jsContentBlacklist Blacklisted elements to detect script tags to remove
+     * @param siteUrls           Urls of the covers or links to mark
      * @return Stream containing the HTML document stripped from the elements to remove
      */
     @Nullable
@@ -653,6 +668,7 @@ class CustomWebViewClient extends WebViewClient {
             @Nullable String customCss,
             @Nullable List<String> removableElements,
             @Nullable List<String> hideableElements,
+            @Nullable List<String> jsContentBlacklist,
             @Nullable List<String> siteUrls) {
         try {
             Document doc = Jsoup.parse(stream, null, baseUri);
@@ -679,6 +695,20 @@ class CustomWebViewClient extends WebViewClient {
                             e.attr("style", "min-height:0px;height:0%;");
                         }
                     }
+            }
+
+            // Remove scripts
+            if (jsContentBlacklist != null) {
+                for (Element e : doc.select("script")) {
+                    String scriptContent = e.toString().toLowerCase();
+                    for (String s : jsContentBlacklist) {
+                        if (scriptContent.contains(s.toLowerCase())) {
+                            Timber.d("[%s] Removing script %s", baseUri, e.toString());
+                            e.remove();
+                            break;
+                        }
+                    }
+                }
             }
 
             // Mark downloaded books
