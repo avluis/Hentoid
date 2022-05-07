@@ -3,12 +3,12 @@ package me.devsaki.hentoid.util.network;
 import android.content.Context;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Pair;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;

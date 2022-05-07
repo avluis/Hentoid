@@ -55,11 +55,12 @@ import com.skydoves.powermenu.PowerMenuItem;
 import com.skydoves.submarine.SubmarineItem;
 import com.skydoves.submarine.SubmarineView;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -108,6 +109,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private final RequestOptions glideRequestOptions = new RequestOptions()
             .optionalTransform(centerInside)
             .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside));
+
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
@@ -127,6 +129,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private boolean isContentFavourite; // True if current content is favourited
 
     private Debouncer<Integer> indexRefreshDebouncer;
+    private Debouncer<Pair<Integer, Integer>> processPositionDebouncer;
 
     // Starting index management
     private boolean isComputingImageList = false;
@@ -157,6 +160,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         indexRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::applyStartingIndexInternal);
         slideshowSliderDebouncer = new Debouncer<>(requireContext(), 2500, this::onSlideShowSliderChosen);
+        processPositionDebouncer = new Debouncer<>(requireContext(), 500, pair -> viewModel.onPageChange(pair.getLeft(), pair.getRight()));
 
         Preferences.registerPrefsChangedListener(listener);
 
@@ -207,6 +211,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     public void onDestroyView() {
         indexRefreshDebouncer.clear();
         slideshowSliderDebouncer.clear();
+        processPositionDebouncer.clear();
         binding.recyclerView.setAdapter(null);
         binding = null;
         super.onDestroyView();
@@ -244,7 +249,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         outState.putBoolean(KEY_SLIDESHOW_ON, (slideshowTimer != null));
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
         if (viewModel != null) {
-            viewModel.setReaderStartingIndex(imageIndex); // Memorize the current page
+            viewModel.setViewerStartingIndex(imageIndex); // Memorize the current page
 //            viewModel.onSaveState(outState);
         }
     }
@@ -310,33 +315,35 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onProcessEvent(ProcessEvent event) {
         if (null == binding) return;
-        if (event.processId != R.id.viewer_load && event.processId != R.id.page_download) return;
-        if (event.processId == R.id.page_download && event.step != imageIndex) return;
+        if (event.processId != R.id.viewer_load && event.processId != R.id.viewer_page_download)
+            return;
+        if (event.processId == R.id.viewer_page_download && event.step != imageIndex) return;
 
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             @StringRes int msgResource = R.string.loading_image;
             if (event.processId == R.id.viewer_load) { // Archive unpacking
-                // Empty display until loading is complete
-                if (adapter.getItemCount() > 0) adapter.submitList(Collections.emptyList());
-
-                // Prevent switching books when archive extraction is in progress (may trigger multiple extractions at the same time)
-                // TODO make that possible in the future when unarchival is done on demand
-                binding.controlsOverlay.viewerPrevBookBtn.setEnabled(false);
-                binding.controlsOverlay.viewerNextBookBtn.setEnabled(false);
                 msgResource = R.string.loading_archive;
             }
 
             binding.viewerFixBtn.setVisibility(View.GONE);
             binding.viewerLoadingTxt.setText(getResources().getString(msgResource, event.elementsKO + event.elementsOK, event.elementsTotal));
-            binding.viewerLoadingTxt.setVisibility(View.VISIBLE);
+            if (event.elementsOK + event.elementsKO < 5)
+                binding.viewerLoadingTxt.setVisibility(View.VISIBLE); // Just show it for the first iterations to allow the UI to hide it when it wants
+
+            binding.progressBar.setMax(event.elementsTotal);
+            binding.controlsOverlay.progressBar.setMax(event.elementsTotal);
+            binding.progressBar.setProgress(event.elementsKO + event.elementsOK);
+            binding.controlsOverlay.progressBar.setProgress(event.elementsKO + event.elementsOK);
+            binding.progressBar.setVisibility(View.VISIBLE);
+            binding.controlsOverlay.progressBar.setVisibility(View.VISIBLE);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             binding.viewerLoadingTxt.setVisibility(View.GONE);
-            if (event.processId == R.id.viewer_load) {
-                binding.controlsOverlay.viewerPrevBookBtn.setEnabled(true);
-                binding.controlsOverlay.viewerNextBookBtn.setEnabled(true);
-            }
+            binding.progressBar.setVisibility(View.GONE);
+            binding.controlsOverlay.progressBar.setVisibility(View.GONE);
         } else if (ProcessEvent.EventType.FAILURE == event.eventType) {
             binding.viewerLoadingTxt.setVisibility(View.GONE);
+            binding.progressBar.setVisibility(View.GONE);
+            binding.controlsOverlay.progressBar.setVisibility(View.GONE);
             binding.viewerFixBtn.setVisibility(View.VISIBLE);
         }
     }
@@ -618,9 +625,9 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onImagesChanged(List<ImageFile> images) {
         if (BuildConfig.DEBUG) {
-            Timber.d("IMAGES CHANGED");
+            Timber.v("IMAGES CHANGED");
             List<String> imageUris = Stream.of(images).filterNot(img -> img.getFileUri().isEmpty()).map(img -> "[" + img.getOrder() + "] " + img.getFileUri()).toList();
-            for (String imageUri : imageUris) Timber.d("    %s", imageUri);
+            for (String imageUri : imageUris) Timber.v("    %s", imageUri);
         }
 
         isComputingImageList = true;
@@ -633,6 +640,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             isPageFavourite = images.get(imageIndex).isFavourite();
             updateFavouriteButtonIcon();
             binding.viewerNoImgTxt.setVisibility(View.GONE);
+            binding.viewerLoadingTxt.setVisibility(View.GONE);
         }
     }
 
@@ -731,7 +739,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (deletePage)
             viewModel.deletePage(imageIndex, this::onDeleteError);
         else
-            viewModel.deleteBook(this::onDeleteError);
+            viewModel.deleteContent(this::onDeleteError);
     }
 
 
@@ -782,7 +790,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (currentImage != null) {
             Preferences.setViewerCurrentPageNum(currentImage.getOrder());
             viewModel.markPageAsRead(currentImage.getOrder());
-            viewModel.setCurrentPage(imageIndex, scrollDirection);
+            // Remember the last relevant movement and schedule it for execution
+            processPositionDebouncer.submit(new ImmutablePair<>(imageIndex, scrollDirection));
             isPageFavourite = currentImage.isFavourite();
         }
 
@@ -984,7 +993,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         powerMenu.setOnMenuItemClickListener((position, item) -> {
             int tag = (Integer) item.getTag();
             if (0 == tag) {
-                viewModel.setCurrentPage(imageIndex, 0);
+                viewModel.onPageChange(imageIndex, 0);
             } else if (1 == tag) {
                 viewModel.reparseBook(
                         t -> {
@@ -1232,7 +1241,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void displayGallery() {
         hasGalleryBeenShown = true;
-        viewModel.setReaderStartingIndex(imageIndex); // Memorize the current page
+        viewModel.setViewerStartingIndex(imageIndex); // Memorize the current page
 
         if (getParentFragmentManager().getBackStackEntryCount() > 0) { // Gallery mode (Library -> gallery -> pager)
             getParentFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // Leave only the latest element in the back stack

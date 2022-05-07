@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.parsers;
 
-import android.util.Pair;
+import androidx.core.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

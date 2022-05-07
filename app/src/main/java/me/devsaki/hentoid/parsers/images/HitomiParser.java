@@ -2,7 +2,7 @@ package me.devsaki.hentoid.parsers.images;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Pair;
+import androidx.core.util.Pair;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;

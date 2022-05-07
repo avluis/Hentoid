@@ -7,9 +7,8 @@ import android.os.ParcelFileDescriptor;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
-
-import com.annimon.stream.Stream;
 
 import net.sf.sevenzipjbinding.ArchiveFormat;
 import net.sf.sevenzipjbinding.ExtractAskMode;
@@ -168,24 +167,22 @@ public class ArchiveHelper {
      *
      * @param context          Context to be used
      * @param file             Archive file to extract from
-     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
      * @param targetFolder     Target folder to create the archives into
-     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @param entriesToExtract List of entries to extract (left = relative paths to the archive root / right = names of the target files - set to blank to keep original name); null to extract everything
      * @return Observable that follows the extraction of each entry
      * @throws IOException If something horrible happens during I/O
      */
     public static Observable<Uri> extractArchiveEntriesRx(
             @NonNull final Context context,
             @NonNull final DocumentFile file,
-            @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames,
+            @Nullable final List<Pair<String, String>> entriesToExtract,
             @Nullable final AtomicBoolean interrupt) throws IOException {
         Helper.assertNonUiThread();
 
         if (entriesToExtract != null && entriesToExtract.isEmpty()) return Observable.empty();
 
-        return Observable.create(emitter -> extractArchiveEntries(context, file.getUri(), entriesToExtract, targetFolder, targetNames, interrupt, emitter));
+        return Observable.create(emitter -> extractArchiveEntries(context, file.getUri(), targetFolder, entriesToExtract, interrupt, emitter));
     }
 
     /**
@@ -193,22 +190,19 @@ public class ArchiveHelper {
      *
      * @param context          Context to be used
      * @param uri              Uri of the archive file to extract from
-     * @param entriesToExtract List of entries to extract (relative paths to the archive root); null to extract everything
      * @param targetFolder     Target folder to create the archives into
-     * @param targetNames      List of names of the target files (as many entries as the entriesToExtract argument)
+     * @param entriesToExtract List of entries to extract (left = relative paths to the archive root / right = names of the target files - set to blank to keep original name); null to extract everything
      * @param emitter          Optional emitter to be used when the method is used with RxJava
      * @throws IOException If something horrible happens during I/O
      */
     public static void extractArchiveEntries(
             @NonNull final Context context,
             @NonNull final Uri uri,
-            @Nullable final List<String> entriesToExtract,
             @NonNull final File targetFolder, // We either extract on the app's persistent files folder or the app's cache folder - either way we have to deal without SAF :scream:
-            @Nullable final List<String> targetNames,
+            @Nullable final List<Pair<String, String>> entriesToExtract,
             @Nullable final AtomicBoolean interrupt,
             @Nullable final ObservableEmitter<Uri> emitter) throws IOException {
         Helper.assertNonUiThread();
-        int targetIndex = 0;
 
         ArchiveFormat format;
         try (InputStream fi = FileHelper.getInputStream(context, uri)) {
@@ -223,22 +217,27 @@ public class ArchiveHelper {
         // TODO handle the case where the extracted elements would saturate disk space
         try (DocumentFileRandomInStream stream = new DocumentFileRandomInStream(context, uri); IInArchive inArchive = SevenZip.openInArchive(format, stream)) {
             int itemCount = inArchive.getNumberOfItems();
-            for (int index = 0; index < itemCount; index++) {
-                String fileName = inArchive.getStringProperty(index, PropID.PATH);
-                final String fileNameFinal1 = fileName;
-                if (null == entriesToExtract || Stream.of(entriesToExtract).anyMatch(e -> e.equalsIgnoreCase(fileNameFinal1))) {
-                    // TL;DR - We don't care about folders
-                    // If we were coding an all-purpose extractor we would have to create folders
-                    // But Hentoid just wants to extract a bunch of files in one single place !
+            for (int archiveIndex = 0; archiveIndex < itemCount; archiveIndex++) {
+                String fileName = inArchive.getStringProperty(archiveIndex, PropID.PATH);
 
-                    if (null == targetNames) {
-                        int lastSeparator = fileName.lastIndexOf(File.separator);
-                        if (lastSeparator > -1) fileName = fileName.substring(lastSeparator + 1);
-                    } else {
-                        fileName = targetNames.get(targetIndex++) + "." + FileHelper.getExtension(fileName);
+                if (entriesToExtract != null) {
+                    for (Pair<String, String> entry : entriesToExtract) {
+                        if (entry.first.equalsIgnoreCase(fileName)) {
+                            // TL;DR - We don't care about folders
+                            // If we were coding an all-purpose extractor we would have to create folders
+                            // But Hentoid just wants to extract a bunch of files in one single place !
+
+                            if (entry.second.isEmpty()) {
+                                int lastSeparator = fileName.lastIndexOf(File.separator);
+                                if (lastSeparator > -1)
+                                    fileName = fileName.substring(lastSeparator + 1);
+                            } else {
+                                fileName = entry.second + "." + FileHelper.getExtension(fileName);
+                            }
+                            fileNames.put(archiveIndex, fileName);
+                            break;
+                        }
                     }
-
-                    fileNames.put(index, fileName);
                 }
             }
 
@@ -247,6 +246,7 @@ public class ArchiveHelper {
             inArchive.extract(indexes, false, callback);
         } catch (SevenZipException e) {
             Timber.w(e);
+            throw new IOException(e);
         }
     }
 
@@ -458,6 +458,7 @@ public class ArchiveHelper {
         private int nbProcessed;
         private ExtractAskMode extractAskMode;
         private SequentialOutStream stream;
+        private Uri uri;
 
         public ArchiveExtractCallback(
                 @NonNull final File targetFolder,
@@ -496,7 +497,8 @@ public class ArchiveHelper {
                     } else {
                         targetFile = existing[0];
                     }
-                    if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
+                    //if (emitter != null) emitter.onNext(Uri.fromFile(targetFile));
+                    uri = Uri.fromFile(targetFile);
 
                     stream = new SequentialOutStream(FileHelper.getOutputStream(targetFile));
                     return stream;
@@ -521,11 +523,6 @@ public class ArchiveHelper {
         public void setOperationResult(ExtractOperationResult extractOperationResult) throws SevenZipException {
             Timber.v("Extract archive, %s completed with: %s", extractAskMode, extractOperationResult);
 
-            if (extractAskMode != null && extractAskMode.equals(ExtractAskMode.EXTRACT)) {
-                nbProcessed++;
-                if (nbProcessed == fileNames.size() && emitter != null) emitter.onComplete();
-            }
-
             try {
                 if (stream != null) stream.close();
                 stream = null;
@@ -535,17 +532,24 @@ public class ArchiveHelper {
 
             if (extractOperationResult != ExtractOperationResult.OK) {
                 throw new SevenZipException(extractOperationResult.toString());
+            } else {
+                if (emitter != null) emitter.onNext(uri);
+            }
+
+            if (extractAskMode != null && extractAskMode.equals(ExtractAskMode.EXTRACT)) {
+                nbProcessed++;
+                if (nbProcessed == fileNames.size() && emitter != null) emitter.onComplete();
             }
         }
 
         @Override
         public void setTotal(long total) {
-            Timber.v("Extract archive, work planned: %s", total);
+            Timber.v("Extract archive, bytes planned: %s", total);
         }
 
         @Override
         public void setCompleted(long complete) {
-            Timber.v("Extract archive, work completed: %s", complete);
+            Timber.v("Extract archive, bytes processed: %s", complete);
         }
     }
 

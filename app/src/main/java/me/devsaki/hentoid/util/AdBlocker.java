@@ -1,10 +1,10 @@
 package me.devsaki.hentoid.util;
 
 import android.os.Looper;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import java.io.IOException;
 import java.util.Arrays;

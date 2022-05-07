@@ -29,6 +29,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Generic utility class
  */
@@ -111,21 +113,45 @@ public final class ImageHelper {
         else return MIME_IMAGE_GENERIC;
     }
 
-    // If format is supported by Android, true if animated (animated GIF, APNG, animated WEBP); false if not
-    // TODO complete doc
-    boolean isImageAnimated(byte[] binary) {
-        if (binary.length < 400) return false;
+    /**
+     * Analyze the given binary picture header to try and detect if the picture is animated.
+     * If the format is supported by the app, returns true if animated (animated GIF, APNG, animated WEBP); false if not
+     *
+     * @param data Binary picture file header (400 bytes minimum)
+     * @return True if the format is animated and supported by the app
+     */
+    boolean isImageAnimated(byte[] data) {
+        if (data.length < 400) return false;
 
-        switch (getMimeTypeFromPictureBinary(binary)) {
+        switch (getMimeTypeFromPictureBinary(data)) {
             case MIME_IMAGE_APNG:
                 return true;
             case MIME_IMAGE_GIF:
-                return FileHelper.findSequencePosition(binary, 0, "NETSCAPE".getBytes(CHARSET_LATIN_1), 400) > -1;
+                return FileHelper.findSequencePosition(data, 0, "NETSCAPE".getBytes(CHARSET_LATIN_1), 400) > -1;
             case MIME_IMAGE_WEBP:
-                return FileHelper.findSequencePosition(binary, 0, "ANIM".getBytes(CHARSET_LATIN_1), 400) > -1;
+                return FileHelper.findSequencePosition(data, 0, "ANIM".getBytes(CHARSET_LATIN_1), 400) > -1;
             default:
                 return false;
         }
+    }
+
+    /**
+     * Try to detect the mime-type of the picture file at the given URI
+     *
+     * @param context Context to use
+     * @param uri     URI of the picture file to detect the mime-type for
+     * @return Mime-type of the picture file at the given URI; MIME_IMAGE_GENERIC if no Mime-type detected
+     */
+    public static String getMimeTypeFromUri(@NonNull Context context, @NonNull Uri uri) {
+        String result = MIME_IMAGE_GENERIC;
+        byte[] buffer = new byte[12];
+        try (InputStream is = FileHelper.getInputStream(context, uri)) {
+            if (buffer.length == is.read(buffer))
+                result = getMimeTypeFromPictureBinary(buffer);
+        } catch (IOException e) {
+            Timber.w(e);
+        }
+        return result;
     }
 
     /**

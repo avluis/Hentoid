@@ -40,9 +40,9 @@ data class DuplicateEntry(
         // Try to fetch pre-calculated score, if present
         if (totalScore > -1) return totalScore
         // Calculate
-        val operands = ArrayList<android.util.Pair<Float, Float>>()
-        if (titleScore > -1) operands.add(android.util.Pair<Float, Float>(titleScore, 1f))
-        if (coverScore > -1) operands.add(android.util.Pair<Float, Float>(coverScore, 1f))
+        val operands = ArrayList<androidx.core.util.Pair<Float, Float>>()
+        if (titleScore > -1) operands.add(androidx.core.util.Pair(titleScore, 1f))
+        if (coverScore > -1) operands.add(androidx.core.util.Pair(coverScore, 1f))
         return Helper.weightedAverage(operands) * (if (artistScore > -1) artistScore else 1f)
     }
 
