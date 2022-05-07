@@ -131,7 +131,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Technical
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private final CompositeDisposable imageDownloadDisposable = new CompositeDisposable();
+    private final CompositeDisposable imageDownloadDisposables = new CompositeDisposable();
     private final CompositeDisposable notificationDisposables = new CompositeDisposable();
     private Disposable searchDisposable = Disposables.empty();
     private Disposable archiveExtractDisposable = Disposables.empty();
@@ -323,7 +323,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
      */
     public void onActivityLeave() {
         // Dispose the composite disposables for good
-        imageDownloadDisposable.dispose();
+        imageDownloadDisposables.dispose();
         notificationDisposables.dispose();
         archiveExtractDisposable.dispose();
         // Empty cache
@@ -510,7 +510,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         // Stop any ongoing picture loading
         imageLoadDisposable.dispose();
         // Clear the composite disposables so that they can be reused
-        imageDownloadDisposable.clear();
+        imageDownloadDisposables.clear();
         notificationDisposables.clear();
 
         // Don't do anything if the Content hasn't even been loaded
@@ -1037,7 +1037,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
             Single<Optional<ImmutableTriple<Integer, String, String>>> single = Single.fromCallable(() -> downloadPic(index, targetFolder, stopDownload));
 
-            imageDownloadDisposable.add(
+            imageDownloadDisposables.add(
                     single.subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .subscribe(
@@ -1087,17 +1087,30 @@ public class ImageViewerViewModel extends AndroidViewModel {
             @NonNull DocumentFile archiveFile,
             @NonNull File targetFolder
     ) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doExtractPics(indexesToLoad, archiveFile, targetFolder))
+                        .subscribeOn(Schedulers.computation())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe()
+        );
+    }
+
+    private void doExtractPics(
+            @NonNull List<Integer> indexesToLoad,
+            @NonNull DocumentFile archiveFile,
+            @NonNull File targetFolder
+    ) {
         // Interrupt current extracting process, if any
-        synchronized (indexProcessInProgress) {
-            if (!indexProcessInProgress.isEmpty()) {
-                indexProcessInProgress.clear();
-                interruptArchiveExtract.set(true);
-            } else {
-                // Reset interrupt state
-                interruptArchiveExtract.set(false);
-            }
-            indexProcessInProgress.addAll(indexesToLoad);
+        if (!indexProcessInProgress.isEmpty()) {
+            interruptArchiveExtract.set(true);
+            // Wait until extraction has actually stopped
+            int remainingIterations = 15; // Timeout
+            do {
+                Helper.pause(500);
+            } while (!indexProcessInProgress.isEmpty() && remainingIterations-- > 0);
+            if (!indexProcessInProgress.isEmpty()) return;
         }
+        indexProcessInProgress.addAll(indexesToLoad);
 
         Content theContent = getContent().getValue();
         if (null == theContent) return;
@@ -1159,8 +1172,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
                         },
                         t -> {
                             Timber.e(t);
-                            indexProcessInProgress.clear();
                             EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.viewer_load, 0, nbProcessed.get(), 0, indexesToLoad.size()));
+                            indexProcessInProgress.clear();
                             interruptArchiveExtract.set(false);
                             archiveExtractDisposable.dispose();
                         },

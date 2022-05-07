@@ -121,7 +121,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private boolean hasGalleryBeenShown = false;
     private final ScrollPositionListener scrollListener = new ScrollPositionListener(this::onScrollPositionChange);
     private Disposable slideshowTimer = null;
-    private boolean isFastBrowsing = false; // True if user is fast-browsing using the scroll bar
 
     // Properties
     private Map<String, String> bookPreferences; // Preferences of current book; to feed the book prefs dialog
@@ -445,7 +444,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         binding.controlsOverlay.pageSlider.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
                                                                         @Override
                                                                         public void onStartTrackingTouch(@NonNull Slider slider) {
-                                                                            isFastBrowsing = true;
                                                                             binding.controlsOverlay.imagePreviewLeft.setVisibility(View.VISIBLE);
                                                                             binding.controlsOverlay.imagePreviewCenter.setVisibility(View.VISIBLE);
                                                                             binding.controlsOverlay.imagePreviewRight.setVisibility(View.VISIBLE);
@@ -454,7 +452,6 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
                                                                         @Override
                                                                         public void onStopTrackingTouch(@NonNull Slider slider) {
-                                                                            isFastBrowsing = false;
                                                                             binding.controlsOverlay.imagePreviewLeft.setVisibility(View.INVISIBLE);
                                                                             binding.controlsOverlay.imagePreviewCenter.setVisibility(View.INVISIBLE);
                                                                             binding.controlsOverlay.imagePreviewRight.setVisibility(View.INVISIBLE);
@@ -793,12 +790,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (currentImage != null) {
             Preferences.setViewerCurrentPageNum(currentImage.getOrder());
             viewModel.markPageAsRead(currentImage.getOrder());
-            if (isFastBrowsing) {
-                // Remember the last relevant movement and schedule it for execution
-                processPositionDebouncer.submit(new ImmutablePair<>(imageIndex, scrollDirection));
-            } else {
-                viewModel.onPageChange(imageIndex, scrollDirection);
-            }
+            // Remember the last relevant movement and schedule it for execution
+            processPositionDebouncer.submit(new ImmutablePair<>(imageIndex, scrollDirection));
             isPageFavourite = currentImage.isFavourite();
         }
 
