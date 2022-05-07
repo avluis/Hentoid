@@ -226,11 +226,13 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         ImageFile img = getImageAt(position);
         if (img != null && !img.getFileUri().isEmpty()) holder.setImage(img);
         else imageAvailable = false;
-        boolean isStreaming = (img != null && img.getStatus().equals(StatusContent.ONLINE) && !imageAvailable);
+        boolean isStreaming = (img != null && !imageAvailable && img.getStatus().equals(StatusContent.ONLINE));
+        boolean isExtracting = (img != null && !imageAvailable && !img.getUrl().startsWith("http"));
 
         if (holder.noImgTxt != null) {
             @StringRes int text = R.string.image_not_found;
             if (isStreaming) text = R.string.image_streaming;
+            else if (isExtracting) text = R.string.image_extracting;
             holder.noImgTxt.setText(text);
             holder.noImgTxt.setVisibility(!imageAvailable ? View.VISIBLE : View.GONE);
         }
