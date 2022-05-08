@@ -34,8 +34,8 @@
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.SplashActivity"
-            android:noHistory="true"
-            android:exported="true">
+            android:exported="true"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -111,6 +111,9 @@
             android:name=".activities.sources.Manhwa18Activity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.MultpornActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -183,8 +186,8 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activities.IntentActivity"
-            android:theme="@style/Theme.Invisible"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.Invisible">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -504,6 +507,17 @@
                 <data
                     android:host="manhwa18.com"
                     android:pathPattern="/manga/..*/..*"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="multporn.net"
+                    android:pathPattern="/..*/..*"
                     android:scheme="https" />
             </intent-filter>
         </activity>

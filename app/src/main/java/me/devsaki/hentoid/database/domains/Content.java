@@ -48,6 +48,7 @@ import me.devsaki.hentoid.activities.sources.LusciousActivity;
 import me.devsaki.hentoid.activities.sources.Manhwa18Activity;
 import me.devsaki.hentoid.activities.sources.ManhwaActivity;
 import me.devsaki.hentoid.activities.sources.MrmActivity;
+import me.devsaki.hentoid.activities.sources.MultpornActivity;
 import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
 import me.devsaki.hentoid.activities.sources.PixivActivity;
@@ -273,6 +274,7 @@ public class Content implements Serializable {
             case TOONILY:
             case IMHENTAI:
             case ALLPORNCOMIC:
+            case MULTPORN:
                 paths = url.split("/");
                 return paths[paths.length - 1];
             case DOUJINS:
@@ -369,6 +371,8 @@ public class Content implements Serializable {
                 return PixivActivity.class;
             case MANHWA18:
                 return Manhwa18Activity.class;
+            case MULTPORN:
+                return MultpornActivity.class;
             default:
                 return BaseWebActivity.class;
         }
