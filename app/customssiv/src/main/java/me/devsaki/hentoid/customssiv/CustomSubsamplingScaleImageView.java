@@ -266,11 +266,12 @@ public class CustomSubsamplingScaleImageView extends View {
 
     // Initial scale, according to panLimit and minimumScaleType
     private float initialScale = -1;
-    // Current scale
+    // Current scale = "zoom level" applied by SSIV
     private float scale;
     // Scale at start of zoom (transitional)
     private float scaleStart;
-    // Virtual scale
+    // Virtual scale = "zoom level" applied externally without the help of SSIV
+    // Used to tell the picture resizer which is the actual scale to take into account
     private float virtualScale;
 
     // Screen coordinate of top-left corner of source image (image offset relative to screen)
