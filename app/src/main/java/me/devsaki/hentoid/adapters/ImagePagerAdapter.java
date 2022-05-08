@@ -391,7 +391,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
         private float getScale() {
             if (!isImageView) {
-                return ssiv.getScale();
+                return ssiv.getVirtualScale();
             } else { // ImageView
                 return imageView.getScaleX(); // TODO doesn't work for Glide as it doesn't use ImageView's scaling
             }
