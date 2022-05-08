@@ -130,6 +130,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     private Debouncer<Integer> indexRefreshDebouncer;
     private Debouncer<Pair<Integer, Integer>> processPositionDebouncer;
+    private Debouncer<Float> rescaleDebouncer;
 
     // Starting index management
     private boolean isComputingImageList = false;
@@ -161,6 +162,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         indexRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::applyStartingIndexInternal);
         slideshowSliderDebouncer = new Debouncer<>(requireContext(), 2500, this::onSlideShowSliderChosen);
         processPositionDebouncer = new Debouncer<>(requireContext(), 500, pair -> viewModel.onPageChange(pair.getLeft(), pair.getRight()));
+        rescaleDebouncer = new Debouncer<>(requireContext(), 100, scale -> adapter.multiplyScale(scale));
 
         Preferences.registerPrefsChangedListener(listener);
 
@@ -212,6 +214,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         indexRefreshDebouncer.clear();
         slideshowSliderDebouncer.clear();
         processPositionDebouncer.clear();
+        rescaleDebouncer.clear();
         binding.recyclerView.setAdapter(null);
         binding = null;
         super.onDestroyView();
@@ -363,6 +366,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                 else if (1.0 != scale && pageSnapWidget.isPageSnapEnabled())
                     pageSnapWidget.setPageSnapEnabled(false);
             }
+            if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
+                rescaleDebouncer.submit((float) scale);
         });
         binding.recyclerView.setLongTapListener(ev -> false);
 

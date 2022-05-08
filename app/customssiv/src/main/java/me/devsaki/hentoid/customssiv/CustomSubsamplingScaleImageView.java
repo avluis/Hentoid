@@ -270,6 +270,8 @@ public class CustomSubsamplingScaleImageView extends View {
     private float scale;
     // Scale at start of zoom (transitional)
     private float scaleStart;
+    // Virtual scale
+    private float virtualScale;
 
     // Screen coordinate of top-left corner of source image (image offset relative to screen)
     private PointF vTranslate;
@@ -540,10 +542,8 @@ public class CustomSubsamplingScaleImageView extends View {
      */
     public final void setImage(@NonNull ImageSource imageSource, @Nullable ImageSource previewSource, @Nullable ImageViewState state) {
         reset(true);
-        if (state != null) {
-            restoreState(state);
-        }
-        float targetScale = (null == state) ? 1 : state.getScale();
+        if (state != null) restoreState(state);
+        float targetScale = (null == state) ? 1 : getVirtualScale();
 
         if (previewSource != null) {
             if (imageSource.getBitmap() != null) {
@@ -627,6 +627,7 @@ public class CustomSubsamplingScaleImageView extends View {
         debug("reset newImage=" + newImage);
         initialScale = -1;
         scale = 0f;
+        virtualScale = -1;
         scaleStart = 0f;
         vTranslate = null;
         vTranslateStart = null;
@@ -1574,7 +1575,7 @@ public class CustomSubsamplingScaleImageView extends View {
                     Single.fromCallable(() -> loadBitmap(getContext(), bitmapDecoderFactory, uri))
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
-                            .map(b -> processBitmap(uri, getContext(), b, this, scale))
+                            .map(b -> processBitmap(uri, getContext(), b, this, getVirtualScale()))
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
                                     p -> onImageLoaded(p.bitmap, p.orientation, false, p.scale),
@@ -2199,6 +2200,7 @@ public class CustomSubsamplingScaleImageView extends View {
         if (state != null && VALID_ORIENTATIONS.contains(state.getOrientation())) {
             this.orientation = state.getOrientation();
             this.pendingScale = state.getScale();
+            this.virtualScale = state.getVirtualScale();
             this.sPendingCenter = state.getCenter();
             invalidate();
         }
@@ -2877,8 +2879,21 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     public final void resetScale() {
-        this.anim = null;
-        this.pendingScale = limitedScale(0);
+        anim = null;
+        pendingScale = limitedScale(0);
+        invalidate();
+    }
+
+    public final float getVirtualScale() {
+        return (-1 == virtualScale) ? scale : virtualScale;
+    }
+
+    public final void setVirtualScale(float targetScale) {
+        anim = null;
+        virtualScale = limitedScale(targetScale);
+        // No change to actual parameters
+        pendingScale = scale;
+        sPendingCenter = getCenter();
         invalidate();
     }
 
@@ -2972,7 +2987,7 @@ public class CustomSubsamplingScaleImageView extends View {
     public final ImageViewState getState() {
         PointF center = getCenter();
         if (vTranslate != null && sWidth > 0 && sHeight > 0) {
-            return new ImageViewState(getScale(), center, getOrientation());
+            return new ImageViewState(scale, virtualScale, center, orientation);
         }
         return null;
     }

@@ -13,15 +13,14 @@ import java.io.Serializable;
 public class ImageViewState implements Serializable {
 
     private final float scale;
-
+    private final float virtualScale;
     private final float centerX;
-
     private final float centerY;
-
     private final int orientation;
 
-    public ImageViewState(float scale, @NonNull PointF center, int orientation) {
+    public ImageViewState(float scale, float virtualScale, @NonNull PointF center, int orientation) {
         this.scale = scale;
+        this.virtualScale = virtualScale;
         this.centerX = center.x;
         this.centerY = center.y;
         this.orientation = orientation;
@@ -29,6 +28,10 @@ public class ImageViewState implements Serializable {
 
     public float getScale() {
         return scale;
+    }
+
+    public float getVirtualScale() {
+        return virtualScale;
     }
 
     @NonNull

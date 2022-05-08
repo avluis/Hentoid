@@ -25,6 +25,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener.Listener;
+import timber.log.Timber;
 
 /**
  * Zoomable RecyclerView that supports gestures
@@ -262,6 +263,8 @@ public class ZoomableRecyclerView extends RecyclerView {
     void onScale(float scaleFactor) {
         scale *= scaleFactor;
         scale = Helper.coerceIn(scale, DEFAULT_SCALE, MAX_SCALE);
+
+        Timber.i(">> scale %s -> %s", scaleFactor, scale);
 
         setScaleRate(scale);
 
