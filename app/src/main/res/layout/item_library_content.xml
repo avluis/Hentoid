@@ -105,7 +105,7 @@
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
             android:padding="8dp"
-            android:src="@drawable/ic_external_library"
+            android:src="@drawable/ic_folder_full"
             android:tooltipText="@string/external_help"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/queue_site_button"

@@ -140,7 +140,7 @@
             android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:padding="8dp"
-            android:src="@drawable/ic_external_library"
+            android:src="@drawable/ic_folder_full"
             android:tooltipText="@string/external_help"
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
