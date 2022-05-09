@@ -46,9 +46,9 @@ android {
         buildConfigField 'String', 'GITHUB_API_URL', '"https://api.github.com/repos/avluis/Hentoid/"'
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        resConfigs 'en', 'ru', 'it', 'uk'
 
         // Only include complete translations
-        resConfigs 'en', 'ru', 'it', 'uk'
 
         renderscriptTargetApi 21
         renderscriptSupportModeEnabled false
@@ -92,6 +92,7 @@ android {
         informational 'MissingTranslation'
         informational 'ExtraTranslation'
     }
+    namespace 'me.devsaki.hentoid'
 }
 
 dependencies {
