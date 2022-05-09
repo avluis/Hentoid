@@ -299,7 +299,8 @@ class CustomWebViewClient extends WebViewClient {
             @NonNull final WebView view,
             @NonNull final String url,
             @Nullable final Map<String, String> requestHeaders) {
-        if (adBlocker.isBlocked(url, requestHeaders) || !url.startsWith("http")) return true;
+        if ((Preferences.isBrowserAugmented() && adBlocker.isBlocked(url, requestHeaders)) || !url.startsWith("http"))
+            return true;
 
         // Download and open the torrent file
         // NB : Opening the URL itself won't work when the tracker is private
@@ -406,7 +407,7 @@ class CustomWebViewClient extends WebViewClient {
     @Nullable
     private WebResourceResponse shouldInterceptRequestInternal(@NonNull final String url,
                                                                @Nullable final Map<String, String> headers) {
-        if (adBlocker.isBlocked(url, headers) || !url.startsWith("http")) {
+        if ((Preferences.isBrowserAugmented() && adBlocker.isBlocked(url, headers)) || !url.startsWith("http")) {
             return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(nothing));
         } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {
             return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(checkmark));
