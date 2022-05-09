@@ -698,6 +698,7 @@
     <string name="viewer_ask_cover">Встановити цю сторінку як обкладинку книги\?</string>
     <string name="image_not_found">Зображення не знайдено</string>
     <string name="image_streaming">Стрімлю зображення…</string>
+    <string name="image_extracting">Витягую зображення…</string>
     <string name="book_prefs">Налаштування книги</string>
     <string name="goto_app_prefs">Налаштування додатка</string>
     <string name="use_app_prefs">Використовувати налаштування додатка (<x:g id="app_default" example="Зверху вниз">%s</x:g>)</string>
