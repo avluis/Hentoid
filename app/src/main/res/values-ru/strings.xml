@@ -304,6 +304,7 @@
     <string name="import_app_folder">Вы не можете выбрать папку приложения как внешнюю — пожалуйста, выберите другую</string>
     <string name="import_download_folder">Вы не должны выбирать папку со всеми загрузками этого устройства — пожалуйста, создайте или выберите другую</string>
     <string name="import_create_fail">Не удалось создать папку Hentoid — пожалуйста, выберите другое расположение</string>
+    <string name="import_invalid_uri">Папка не распознана — пожалуйста, выберите её снова</string>
     <string name="import_other">Импорт остановлен</string>
     <string name="import_unexpected">Импорт был неожиданно остановлен</string>
     <string name="task_done">Задание завершено — смотрите логи для подробностей</string>
@@ -698,6 +699,7 @@
     <string name="viewer_ask_cover">Установить эту страницу как обложку книги\?</string>
     <string name="image_not_found">Изображение не найдено</string>
     <string name="image_streaming">Стримлю изображение…</string>
+    <string name="image_extracting">Извлекаю изображение…</string>
     <string name="book_prefs">Настройки книги</string>
     <string name="goto_app_prefs">Настройки приложения</string>
     <string name="use_app_prefs">Использовать настройки приложения (<x:g id="app_default" example="Сверху вниз">%s</x:g>)</string>
