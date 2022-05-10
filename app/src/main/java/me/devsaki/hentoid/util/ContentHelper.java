@@ -461,14 +461,14 @@ public final class ContentHelper {
             if (archive != null) {
                 try {
                     List<Pair<String, String>> extractInstructions = new ArrayList<>();
-                    extractInstructions.add(new Pair<>(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, ""), newContentId+""));
+                    extractInstructions.add(new Pair<>(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, ""), newContentId + ""));
 
                     Disposable unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
-                            context,
-                            archive,
-                            context.getFilesDir(),
-                            extractInstructions,
-                            null)
+                                    context,
+                                    archive,
+                                    context.getFilesDir(),
+                                    extractInstructions,
+                                    null)
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.computation())
                             .subscribe(
@@ -1163,6 +1163,25 @@ public final class ContentHelper {
                 if (resId != 0) return resId;
             }
         return 0;
+    }
+
+    // TODO doc
+    public static @DrawableRes
+    int getRatingResourceId(int rating) {
+        switch (rating) {
+            case 1:
+                return R.drawable.ic_star_1;
+            case 2:
+                return R.drawable.ic_star_2;
+            case 3:
+                return R.drawable.ic_star_3;
+            case 4:
+                return R.drawable.ic_star_4;
+            case 5:
+                return R.drawable.ic_star_5;
+            default:
+                return R.drawable.ic_star_empty;
+        }
     }
 
     /**
