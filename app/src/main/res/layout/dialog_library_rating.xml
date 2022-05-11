@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:clipToPadding="false"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/star_1"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_star_empty"
+        android:tooltipText="@string/previous_book_help"
+        app:layout_constraintEnd_toStartOf="@id/star_2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?colorOnPrimary"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
+
+    <ImageView
+        android:id="@+id/star_2"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_star_empty"
+        android:tooltipText="@string/previous_book_help"
+        app:layout_constraintEnd_toStartOf="@id/star_3"
+        app:layout_constraintStart_toEndOf="@id/star_1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?colorOnPrimary"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
+
+    <ImageView
+        android:id="@+id/star_3"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_star_empty"
+        android:tooltipText="@string/previous_book_help"
+        app:layout_constraintEnd_toStartOf="@id/star_4"
+        app:layout_constraintStart_toEndOf="@id/star_2"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?colorOnPrimary"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
+
+    <ImageView
+        android:id="@+id/star_4"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_star_empty"
+        android:tooltipText="@string/previous_book_help"
+        app:layout_constraintEnd_toStartOf="@id/star_5"
+        app:layout_constraintStart_toEndOf="@id/star_3"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?colorOnPrimary"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
+
+    <ImageView
+        android:id="@+id/star_5"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_star_empty"
+        android:tooltipText="@string/previous_book_help"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/star_4"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?colorOnPrimary"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/clear_rating_btn"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="?android:attr/actionBarSize"
+        android:text="@string/clear_rating"
+        android:textColor="@color/secondary_color_selector"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_cancel"
+        app:iconTint="@color/secondary_color_selector"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/star_1"
+        app:strokeColor="@color/secondary_color_selector" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -659,10 +659,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
         // Persist new values in JSON
         theContent.setImageFiles(dbImages);
-        Context context = getApplication().getApplicationContext();
-        if (!theContent.getJsonUri().isEmpty())
-            ContentHelper.updateContentJson(context, theContent);
-        else ContentHelper.createContentJson(context, theContent);
+        ContentHelper.persistJson(getApplication().getApplicationContext(), theContent);
     }
 
     /**
@@ -700,10 +697,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         dao.insertContent(content);
 
         // Persist new values in JSON
-        Context context = getApplication().getApplicationContext();
-        if (!content.getJsonUri().isEmpty())
-            ContentHelper.updateContentJson(context, content);
-        else ContentHelper.createContentJson(context, content);
+        ContentHelper.persistJson(getApplication().getApplicationContext(), content);
     }
 
     /**
@@ -897,9 +891,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         dao.insertContent(theContent);
 
         // Persist in JSON
-        if (!theContent.getJsonUri().isEmpty())
-            ContentHelper.updateContentJson(context, theContent);
-        else ContentHelper.createContentJson(context, theContent);
+        ContentHelper.persistJson(context, theContent);
 
         return theContent;
     }

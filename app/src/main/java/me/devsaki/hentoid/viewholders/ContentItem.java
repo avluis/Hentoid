@@ -659,6 +659,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             return ivFavourite;
         }
 
+        public View getRatingButton() {
+            return ivRating;
+        }
+
         public View getSiteButton() {
             return ivSite;
         }

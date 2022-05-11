@@ -171,7 +171,7 @@ public final class ContentHelper {
      * @param context Context to use for the action
      * @param content Content whose JSON file to update
      */
-    public static void updateContentJson(@NonNull Context context, @NonNull Content content) {
+    public static void updateJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
 
         DocumentFile file = FileHelper.getFileFromSingleUriString(context, content.getJsonUri());
@@ -195,7 +195,7 @@ public final class ContentHelper {
      * @return Created JSON file, or null if it couldn't be created
      */
     @Nullable
-    public static DocumentFile createContentJson(@NonNull Context context, @NonNull Content content) {
+    public static DocumentFile createJson(@NonNull Context context, @NonNull Content content) {
         Helper.assertNonUiThread();
         if (content.isArchive())
             return null; // Keep that as is, we can't find the parent folder anyway
@@ -210,6 +210,13 @@ public final class ContentHelper {
             Timber.e(e, "Error while writing to %s", content.getStorageUri());
         }
         return null;
+    }
+
+    // TODO doc
+    public static void persistJson(@NonNull Context context, @NonNull Content content) {
+        if (!content.getJsonUri().isEmpty()) // Having an active Content without JSON file shouldn't be possible after the API29 migration
+            ContentHelper.updateJson(context, content);
+        else ContentHelper.createJson(context, content);
     }
 
     /**
@@ -299,9 +306,7 @@ public final class ContentHelper {
         if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
         dao.replaceImageList(content.getId(), images);
         dao.insertContent(content);
-
-        if (!content.getJsonUri().isEmpty()) updateContentJson(context, content);
-        else createContentJson(context, content);
+        persistJson(context, content);
     }
 
     /**
@@ -515,7 +520,7 @@ public final class ContentHelper {
         for (Long contentId : contents) {
             Content content = dao.selectContent(contentId);
             if (content != null && !content.getJsonUri().isEmpty())
-                updateContentJson(context, content);
+                updateJson(context, content);
         }
     }
 
@@ -554,7 +559,7 @@ public final class ContentHelper {
 
         // Update content JSON if it exists (i.e. if book is not queued)
         if (!content.getJsonUri().isEmpty())
-            updateContentJson(context, content);
+            updateJson(context, content);
     }
 
     /**
@@ -1180,7 +1185,7 @@ public final class ContentHelper {
             case 5:
                 return R.drawable.ic_star_5;
             default:
-                return R.drawable.ic_star_empty;
+                return R.drawable.ic_star_none;
         }
     }
 
@@ -1543,7 +1548,7 @@ public final class ContentHelper {
             mergedContent.setQtyPages(mergedImages.size() - 1);
             mergedContent.computeSize();
 
-            DocumentFile jsonFile = ContentHelper.createContentJson(context, mergedContent);
+            DocumentFile jsonFile = ContentHelper.createJson(context, mergedContent);
             if (jsonFile != null) mergedContent.setJsonUri(jsonFile.getUri().toString());
 
             // Save new content (incl. non-custom group operations)

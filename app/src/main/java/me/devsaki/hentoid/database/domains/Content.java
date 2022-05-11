@@ -949,6 +949,7 @@ public class Content implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
         return isFavourite() == content.isFavourite() &&
+                getRating() == content.getRating() &&
                 isCompleted() == content.isCompleted() &&
                 getDownloadDate() == content.getDownloadDate() && // To differentiate external books that have no URL
                 getSize() == content.getSize() && // To differentiate external books that have no URL
@@ -962,7 +963,7 @@ public class Content implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), isCompleted(), getLastReadDate(), isBeingDeleted(), getTitle());
+        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingDeleted(), getTitle());
     }
 
     public long uniqueHash() {
