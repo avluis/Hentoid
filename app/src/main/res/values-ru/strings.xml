@@ -503,6 +503,7 @@
         <item quantity="many">Удалить группы и книги</item>
     </plurals>
     <string name="group_delete_nothing">Нечего удалять — включите опцию \"Разрешить удалять внешний контент\"</string>
+	<string name="clear_rating">Очистить рейтинг</string>
 
     <!-- Merge & split -->
     <string name="merge_merge">Совместить</string>
@@ -556,6 +557,7 @@
     <!-- Item card tooltips -->
     <string name="drag_help">Переместить элемент</string>
     <string name="external_help">Находится во внешней библиотеке</string>
+	<string name="rating_help">Рейтинг книги</string>
     <string name="streamed_help">Книга передаётся потоком</string>
     <string name="view_source_help">Просмотреть источник в браузере</string>
     <string name="fav_help">Добавить/убрать из избранного</string>
