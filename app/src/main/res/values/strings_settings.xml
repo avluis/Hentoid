@@ -6,12 +6,12 @@
     <string name="pref_drawer_sources_title">Manage sources</string>
     <string name="pref_drawer_sources_summary">Enable, disable and reorganize sources appearing on the left navigation drawer</string>
     <string name="pref_library_display_title">Display type</string>
-    <string name="pref_library_display_summary">Type of display for books and groups\nCurrent: <x:g id="display_type" example="List">%s</x:g></string>
+    <string name="pref_library_display_summary">Type of display for books and groups\nCurrent: <x:g example="List" id="display_type">%s</x:g></string>
     <string name="pref_endless_scroll_title">Endless Scroll</string>
     <string name="pref_endless_scroll_summary_off">Enable endless scrolling in download list\nDisables paging</string>
     <string name="pref_endless_scroll_summary_on">Scroll away to your heart\'s content</string>
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
-    <string name="pref_quantity_per_page_summary">Number of items per page in download list\nCurrently: <x:g id="count" example="10">%s</x:g> items</string>
+    <string name="pref_quantity_per_page_summary">Number of items per page in download list\nCurrently: <x:g example="10" id="count">%s</x:g> items</string>
     <string name="pref_top_fab_title">Go to Top button</string>
     <string name="pref_top_fab_summary_off">Button disabled</string>
     <string name="pref_top_fab_summary_on">Button enabled</string>
@@ -22,7 +22,8 @@
     <string name="pref_attributes_list_count_off">The number of available books is not displayed</string>
     <string name="pref_cat_theme">App theme</string>
     <string name="pref_color_theme_title">Color theme</string>
-    <string name="pref_color_theme_summary">Current theme: <x:g id="theme_name" example="Deep Red">%s</x:g></string>
+    <string name="pref_color_theme_summary">Current theme: <x:g example="Deep Red" id="theme_name">%s</x:g></string>
+    <string name="pref_misc">Miscellaneous</string>
 
     <!-- Storage -->
     <string name="pref_screen_storage">Storage</string>
@@ -33,14 +34,14 @@
     <string name="pref_import_queue_empty_on">Empty books will be added to the queue as errors</string>
     <string name="pref_import_queue_empty_off">Empty books will be added to the library</string>
     <string name="pref_folder_naming_content_title">Folder names</string>
-    <string name="pref_folder_naming_content_summary">Book folder naming convention:\n<x:g id="convention" example="Name - ID">%s</x:g></string>
+    <string name="pref_folder_naming_content_summary">Book folder naming convention:\n<x:g example="Name - ID" id="convention">%s</x:g></string>
     <string name="pref_import_running">Import is already running</string>
     <string name="prefs_ask_detach_external_library">Detach the external library\?</string>
     <string name="prefs_external_library_detached">External library detached</string>
     <string name="pref_folder_trunc_title">Truncate folder name</string>
-    <string name="pref_folder_trunc_summary">Book folder name truncation\nCurrently: <x:g id="chars" example="80 characters">%s</x:g></string>
+    <string name="pref_folder_trunc_summary">Book folder name truncation\nCurrently: <x:g example="80 characters" id="chars">%s</x:g></string>
     <string name="pref_memory_usage_title">Storage usage</string>
-    <string name="pref_memory_usage_summary">Current free space: <x:g id="percentage" example="13.37%">%.2f%%</x:g> (tap for details)</string>
+    <string name="pref_memory_usage_summary">Current free space: <x:g example="13.37%" id="percentage">%.2f%%</x:g> (tap for details)</string>
     <string name="pref_memory_alert_title">Alert on low storage</string>
     <string name="pref_cat_external">External library</string>
     <string name="pref_external_library_title">External library</string>
@@ -56,8 +57,8 @@
     <string name="pref_delete_all_except_favs_title">Delete all books except favourites</string>
     <string name="pref_delete_all_except_favs_summary">Purge the library; keep favourite books only\nNB: Does not apply to the external library</string>
     <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Delete <x:g id="count" example="1">%d</x:g> book\?</item>
-        <item quantity="other">Delete <x:g id="count" example="2">%d</x:g> books\?</item>
+        <item quantity="one">Delete <x:g example="1" id="count">%d</x:g> book\?</item>
+        <item quantity="other">Delete <x:g example="2" id="count">%d</x:g> books\?</item>
     </plurals>
 
     <!-- Browser -->
@@ -73,7 +74,7 @@
     <string name="pref_browser_nhentai_invisible_blacklist_off">Nhentai-blacklisted books are blurred</string>
     <string name="pref_browser_nhentai_invisible_blacklist_on">Nhentai-blacklisted books are invisible</string>
     <string name="pref_browser_quick_dl_threshold_title">Quick download long press threshold</string>
-    <string name="pref_browser_quick_dl_threshold_summary">Hold down for this duration to start quick downloading\nCurrent: <x:g id="time" example="1 s">%s</x:g></string>
+    <string name="pref_browser_quick_dl_threshold_summary">Hold down for this duration to start quick downloading\nCurrent: <x:g example="1 s" id="time">%s</x:g></string>
     <string name="pref_browser_duplicate_ask_title">Duplicates checking</string>
     <string name="pref_browser_duplicate_ask_off">No: always download</string>
     <string name="pref_browser_duplicate_ask_on">Yes: ask before downloading</string>
@@ -91,9 +92,11 @@
     <string name="pref_browser_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below</string>
     <string name="pref_browser_override_overview_summary_on">Tweak the setting below to set your initial zoom level\nNote: Only affects hitomi and e-hentai</string>
     <string name="pref_browser_initial_zoom_title">Initial Zoom Level</string>
-    <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load\nCurrently: <x:g id="percentage" example="20%">%s%%</x:g></string>
-    <string name="pref_browser_dns">Custom DNS</string>
+    <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load\nCurrently: <x:g example="20%" id="percentage">%s%%</x:g></string>
     <string name="pref_browser_dns_title">DNS over HTTPS</string>
+    <string name="pref_browser_clear_cookies">Clear all cookies</string>
+    <string name="pref_browser_clear_cookies_ok">Cookies cleared successfuly</string>
+    <string name="pref_browser_clear_cookies_ko">No cookie to clear</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Downloader</string>
@@ -120,7 +123,7 @@
     <string name="pref_dl_blocked_tags_summary">Block the download of books with specific tags\nTip: separate tags with commas</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Blocking behaviour</string>
     <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
-    <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g id="number" example="5">%s</x:g></string>
+    <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously\nCurrently: <x:g example="5" id="number">%s</x:g></string>
 
     <!-- Privacy -->
     <string name="pref_screen_privacy">Privacy</string>

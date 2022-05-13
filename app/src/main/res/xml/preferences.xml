@@ -265,7 +265,7 @@
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
         <PreferenceCategory
-            android:title="@string/pref_browser_dns"
+            android:title="@string/pref_misc"
             app:iconSpaceReserved="false">
             <ListPreference
                 android:defaultValue="@string/pref_browser_dns_default"
@@ -274,6 +274,10 @@
                 android:key="pref_browser_dns_over_https"
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_browser_dns_title"
+                app:iconSpaceReserved="false" />
+            <Preference
+                android:key="pref_browser_clear_cookies"
+                android:title="@string/pref_browser_clear_cookies"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
     </PreferenceScreen>
