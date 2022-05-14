@@ -21,7 +21,7 @@ aboutLibraries {
 }
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 32
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -32,8 +32,7 @@ android {
     defaultConfig {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 21
-        //noinspection ExpiringTargetSdkVersion
-        targetSdkVersion 31
+        targetSdkVersion 32
         versionCode 130 // is updated automatically by BitRise; only used when building locally
         versionName '1.16.1'
 
