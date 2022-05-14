@@ -547,6 +547,7 @@
     <string name="library_filter_favourite_help">Отображение избранных книг</string>
     <string name="filter_completed">Показывать только завершённое</string>
     <string name="filter_not_completed">Показывать не только завершённое</string>
+    <string name="filter_rating">Фильтровать по рейтингу</string>
 
     <!-- Groups bottom panel -->
     <string name="display_groups_title">Показать группы</string>

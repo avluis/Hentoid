@@ -24,6 +24,7 @@
     <string name="pref_cat_theme">Тема додатка</string>
     <string name="pref_color_theme_title">Схема кольорів</string>
     <string name="pref_color_theme_summary">Поточна тема: <x:g id="theme_name" example="Темно-червона">%s</x:g></string>
+    <string name="pref_misc">Інше</string>
 
     <!-- Storage -->
     <string name="pref_screen_storage">Сховище</string>
@@ -94,8 +95,10 @@
     <string name="pref_browser_override_overview_summary_on">Скористайтеся налаштуванням внизу для визначення бажаного рівня масштабу за замовчуванням\nПримітка: Працює лише на hitomi та e-hentai</string>
     <string name="pref_browser_initial_zoom_title">Масштаб за замовчуванням</string>
     <string name="pref_browser_initial_zoom_summary">Рівень масштабу під час завантаження сторінки\nЗараз: <x:g id="percentage" example="20%">%s%%</x:g></string>
-    <string name="pref_browser_dns">Сторонній DNS</string>
     <string name="pref_browser_dns_title">DNS через HTTPS</string>
+    <string name="pref_browser_clear_cookies">Очистити cookies браузера</string>
+    <string name="pref_browser_clear_cookies_ok">Cookies видалені успішно</string>
+    <string name="pref_browser_clear_cookies_ko">Нічого видаляти</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Завантажувач</string>

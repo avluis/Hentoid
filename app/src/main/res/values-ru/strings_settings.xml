@@ -24,6 +24,7 @@
     <string name="pref_cat_theme">Тема приложения</string>
     <string name="pref_color_theme_title">Цветовая схема</string>
     <string name="pref_color_theme_summary">Текущая тема: <x:g id="theme_name" example="Тёмно-красная">%s</x:g></string>
+    <string name="pref_misc">Прочее</string>
 
     <!-- Storage -->
     <string name="pref_screen_storage">Хранилище</string>
@@ -94,8 +95,10 @@
     <string name="pref_browser_override_overview_summary_on">Воспользуйтесь настройкой внизу для определения предпочитаемого уровня масштаба по умолчанию\nПримечание: Работает только на hitomi и e-hentai</string>
     <string name="pref_browser_initial_zoom_title">Масштаб по умолчанию</string>
     <string name="pref_browser_initial_zoom_summary">Уровень масштаба при загрузке страницы\nСейчас: <x:g id="percentage" example="20%">%s%%</x:g></string>
-    <string name="pref_browser_dns">Сторонний DNS</string>
     <string name="pref_browser_dns_title">DNS через HTTPS</string>
+    <string name="pref_browser_clear_cookies">Очистить cookies браузера</string>
+    <string name="pref_browser_clear_cookies_ok">Cookies удалены успешно</string>
+    <string name="pref_browser_clear_cookies_ko">Нечего удалять</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Загрузчик</string>
