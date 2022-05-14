@@ -322,11 +322,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
                 boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.content.setFavourite(boolValue);
+                Integer intValue = bundleParser.getRating();
+                if (intValue != null) item.content.setRating(intValue);
                 boolValue = bundleParser.isCompleted();
                 if (boolValue != null) item.content.setCompleted(boolValue);
                 Long longValue = bundleParser.getReads();
                 if (longValue != null) item.content.setReads(longValue);
-                Integer intValue = bundleParser.getReadPagesCount();
+                intValue = bundleParser.getReadPagesCount();
                 if (intValue != null) item.content.setReadPagesCount(intValue);
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) item.content.getCover().setFileUri(stringValue);

@@ -449,7 +449,6 @@ public class LibraryViewModel extends AndroidViewModel {
             theContent.setFavourite(!theContent.isFavourite());
             ContentHelper.persistJson(getApplication(), theContent);
             dao.insertContent(theContent);
-
             return theContent;
         }
 
@@ -461,16 +460,16 @@ public class LibraryViewModel extends AndroidViewModel {
      *
      * @param contentIds   Content IDs to set the rating for
      * @param targetRating Rating to set
+     * @param onSuccess    Runnable to call if the operation succeeds
      */
-    public void rateContents(@NonNull final List<Long> contentIds, int targetRating) {
+    public void rateContents(@NonNull final List<Long> contentIds, int targetRating, @NonNull final Runnable onSuccess) {
         compositeDisposable.add(
                 Observable.fromIterable(contentIds)
                         .observeOn(Schedulers.io())
                         .map(id -> doRateContent(id, targetRating))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                v -> { // Nothing; feedback is done through LiveData
-                                },
+                                v -> onSuccess.run(),
                                 Timber::w
                         )
         );
