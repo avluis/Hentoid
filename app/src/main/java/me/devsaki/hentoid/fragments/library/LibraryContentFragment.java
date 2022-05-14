@@ -557,7 +557,11 @@ public class LibraryContentFragment extends Fragment implements
     // TODO doc
     public void leaveSelectionMode() {
         selectExtension.setSelectOnLongClick(true);
-        selectExtension.deselect(selectExtension.getSelections());
+        // Warning : next line makes FastAdapter cycle through all items,
+        // which has a side effect of calling TiledPageList.onPagePlaceholderInserted,
+        // flagging the end of the list as being the last displayed position
+        Set<Integer> selection = selectExtension.getSelections();
+        if (!selection.isEmpty()) selectExtension.deselect(selection);
         activity.get().getSelectionToolbar().setVisibility(View.GONE);
     }
 
@@ -1378,9 +1382,9 @@ public class LibraryContentFragment extends Fragment implements
     }
 
     // TODO
-    public void rateBook(@NonNull long[] contentList, int newRating) {
-        leaveSelectionMode();
+    public void rateBooks(@NonNull long[] contentList, int newRating) {
         viewModel.rateContents(Helper.getListFromPrimitiveArray(contentList), newRating, this::refreshIfNeeded);
+        //leaveSelectionMode();
     }
 
     /**

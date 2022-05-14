@@ -81,7 +81,7 @@ public class RatingDialogFragment extends DialogFragment {
         setRating(initialRating, false);
 
         closeDebouncer = new Debouncer<>(stars[0].getContext(), 150, i -> {
-            parent.rateBook(contentIds, i);
+            parent.rateBooks(contentIds, i);
             dismissAllowingStateLoss();
         });
     }
@@ -107,7 +107,7 @@ public class RatingDialogFragment extends DialogFragment {
     }
 
     public interface Parent {
-        void rateBook(@NonNull long[] contentList, int newRating);
+        void rateBooks(@NonNull long[] contentList, int newRating);
 
         void leaveSelectionMode();
     }

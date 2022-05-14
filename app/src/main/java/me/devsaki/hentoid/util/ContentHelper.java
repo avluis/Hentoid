@@ -1427,6 +1427,7 @@ public final class ContentHelper {
         mergedContent.setDownloadDate(Instant.now().toEpochMilli());
         mergedContent.setStatus(firstContent.getStatus());
         mergedContent.setFavourite(firstContent.isFavourite());
+        mergedContent.setRating(firstContent.getRating());
         mergedContent.setBookPreferences(firstContent.getBookPreferences());
         mergedContent.setManuallyMerged(true);
 
