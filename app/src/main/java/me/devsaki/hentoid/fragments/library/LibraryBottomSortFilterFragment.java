@@ -198,7 +198,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             stars[i].setOnClickListener(v -> setRating(rating + 1, false));
             stars[i].setVisibility(isGroupsDisplayed ? View.GONE : View.VISIBLE);
         }
-        setRating(ratingFilter, true);
     }
 
     private void updateSortDirection() {
@@ -226,6 +225,8 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
 
         binding.filterCompletedBtn.setColorFilter(completedFilter ? selectedColor : greyColor);
         binding.filterNotCompletedBtn.setColorFilter(notCompletedFilter ? selectedColor : greyColor);
+
+        setRating(ratingFilter, true);
     }
 
     private List<TextItem<Integer>> getSortFields() {
@@ -273,7 +274,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
         }
 
         ratingFilter = clear ? 0 : rating;
-        viewModel.setContentRatingFilter(ratingFilter);
+        if (!init) viewModel.setContentRatingFilter(ratingFilter);
     }
 
     /**
