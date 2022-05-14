@@ -67,6 +67,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
 public class ObjectBoxDB {
@@ -356,17 +357,10 @@ public class ObjectBoxDB {
         QueryBuilder<QueueRecord> qb = store.boxFor(QueueRecord.class).query();
         // Universal search inside contents
         if (query != null && !query.isEmpty()) {
-            long[] contentIds = selectContentUniversalId(
-                    query,
-                    -1,
-                    false,
-                    false,
-                    Preferences.Constant.ORDER_FIELD_NONE,
-                    false,
-                    false,
-                    false,
-                    ContentHelper.getQueueTabStatuses()
-            );
+            ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle();
+            bundle.setQuery(query);
+            bundle.setSortField(Preferences.Constant.ORDER_FIELD_NONE);
+            long[] contentIds = selectContentUniversalId(bundle, ContentHelper.getQueueTabStatuses());
             qb.in(QueueRecord_.contentId, contentIds);
         }
         return qb.order(QueueRecord_.rank).build();
@@ -409,7 +403,9 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectVisibleContentQ() {
-        return selectContentSearchContentQ("", -1, Collections.emptyList(), false, false, Preferences.Constant.ORDER_FIELD_NONE, false, false, false);
+        ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle();
+        bundle.setSortField(Preferences.Constant.ORDER_FIELD_NONE);
+        return selectContentSearchContentQ(bundle, Collections.emptyList());
     }
 
     @Nullable
@@ -448,7 +444,7 @@ public class ObjectBoxDB {
         if (attrs.isEmpty()) return new long[0];
 
         if (attrs.get(0).isExcluded()) {
-            long[] filteredBooks = selectFilteredContent(attrs, false, false, false);
+            long[] filteredBooks = selectFilteredContent(attrs);
 
             // Find all content positively matching the given attributes
             // TODO... but the attrs are already negative ^^"
@@ -538,23 +534,16 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectContentSearchContentQ(
-            String title,
-            long groupId,
-            List<Attribute> metadata,
-            boolean filterBookFavourites,
-            boolean filterPageFavourites,
-            int orderField,
-            boolean orderDesc,
-            boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly) {
-        if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField)
+            ContentSearchManager.ContentSearchBundle searchBundle,
+            List<Attribute> metadata) {
+        if (Preferences.Constant.ORDER_FIELD_CUSTOM == searchBundle.getSortField())
             return store.boxFor(Content.class).query().build();
 
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.addAll(metadata);
 
-        boolean hasTitleFilter = (title != null && title.length() > 0);
-        boolean hasGroupFilter = (groupId > 0);
+        boolean hasTitleFilter = (!searchBundle.getQuery().isEmpty());
+        boolean hasGroupFilter = (searchBundle.getGroupId() > 0);
         List<Attribute> sources = metadataMap.get(AttributeType.SOURCE);
         boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE)
                 && (sources != null)
@@ -566,54 +555,52 @@ public class ObjectBoxDB {
 
         if (hasSiteFilter)
             query.in(Content_.site, getIdsFromAttributes(sources));
-        if (filterBookFavourites) query.equal(Content_.favourite, true);
+        if (searchBundle.getFilterBookFavourites()) query.equal(Content_.favourite, true);
 
-        if (bookCompletedOnly) query.equal(Content_.completed, true);
-        else if (bookNotCompletedOnly) query.equal(Content_.completed, false);
+        if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
+        else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
+
+        if (searchBundle.getFilterBookRating() > 0)
+            query.equal(Content_.rating, searchBundle.getFilterBookRating());
 
         if (hasTitleFilter)
-            query.contains(Content_.title, title, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+            query.contains(Content_.title, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (hasTagFilter) {
             for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
                 AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty()) {
-                        query.in(Content_.id, selectFilteredContent(attrs, false, false, false));
+                        query.in(Content_.id, selectFilteredContent(attrs));
                     }
                 }
             }
         }
-        if (filterPageFavourites) filterWithPageFavs(query);
+        if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
         if (hasGroupFilter) {
-            Group group = store.boxFor(Group.class).get(groupId);
+            Group group = store.boxFor(Group.class).get(searchBundle.getGroupId());
             if (group != null && group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
                 applyDownloadDateFilter(query, group.propertyMin, group.propertyMax);
             else if (group != null && group.grouping.equals(Grouping.CUSTOM) && 1 == group.subtype) // Books with no CUSTOM group attached
                 applyUngroupedFilter(query);
             else // Direct link to group
-                query.in(Content_.id, selectFilteredContent(groupId));
+                query.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
         }
-        applySortOrder(query, orderField, orderDesc);
+        applySortOrder(query, searchBundle.getSortField(), searchBundle.getSortDesc());
         return query.build();
     }
 
     long[] selectContentSearchContentByGroupItem(
-            String title,
-            long groupId,
-            List<Attribute> metadata,
-            boolean filterFavourites,
-            int orderField,
-            boolean orderDesc,
-            boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly) {
-        if (orderField != Preferences.Constant.ORDER_FIELD_CUSTOM) return new long[]{};
+            ContentSearchManager.ContentSearchBundle searchBundle,
+            List<Attribute> metadata) {
+        if (searchBundle.getSortField() != Preferences.Constant.ORDER_FIELD_CUSTOM)
+            return new long[]{};
 
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.addAll(metadata);
 
-        boolean hasTitleFilter = (title != null && title.length() > 0);
-        boolean hasGroupFilter = (groupId > 0);
+        boolean hasTitleFilter = (!searchBundle.getQuery().isEmpty());
+        boolean hasGroupFilter = (searchBundle.getGroupId() > 0);
         List<Attribute> sources = metadataMap.get(AttributeType.SOURCE);
         boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE)
                 && (sources != null)
@@ -622,30 +609,33 @@ public class ObjectBoxDB {
 
         // Pre-filter and order on GroupItem
         QueryBuilder<GroupItem> query = store.boxFor(GroupItem.class).query();
-        if (hasGroupFilter) query.equal(GroupItem_.groupId, groupId);
+        if (hasGroupFilter) query.equal(GroupItem_.groupId, searchBundle.getGroupId());
 
-        if (orderDesc) query.orderDesc(GroupItem_.order);
+        if (searchBundle.getSortDesc()) query.orderDesc(GroupItem_.order);
         else query.order(GroupItem_.order);
 
         // Get linked Content
         QueryBuilder<Content> contentQuery = query.link(GroupItem_.content);
         if (hasSiteFilter)
             contentQuery.in(Content_.site, getIdsFromAttributes(sources));
-        if (filterFavourites) contentQuery.equal(Content_.favourite, true);
+        if (searchBundle.getFilterBookFavourites()) contentQuery.equal(Content_.favourite, true);
 
-        if (bookCompletedOnly) contentQuery.equal(Content_.completed, true);
-        else if (bookNotCompletedOnly) contentQuery.equal(Content_.completed, false);
+        if (searchBundle.getFilterBookCompleted()) contentQuery.equal(Content_.completed, true);
+        else if (searchBundle.getFilterBookNotCompleted())
+            contentQuery.equal(Content_.completed, false);
 
+        if (searchBundle.getFilterBookRating() > 0)
+            contentQuery.equal(Content_.rating, searchBundle.getFilterBookRating());
 
         if (hasTitleFilter)
-            contentQuery.contains(Content_.title, title, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+            contentQuery.contains(Content_.title, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (hasTagFilter) {
             for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
                 AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty()) {
-                        contentQuery.in(Content_.id, selectFilteredContent(attrs, false, false, false));
+                        contentQuery.in(Content_.id, selectFilteredContent(attrs));
                     }
                 }
             }
@@ -654,137 +644,115 @@ public class ObjectBoxDB {
     }
 
     private Query<Content> selectContentUniversalAttributesQ(
-            String queryStr,
-            long groupId,
-            boolean filterBookFavourites,
-            boolean filterPageFavourites,
-            boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly,
+            ContentSearchManager.ContentSearchBundle searchBundle,
             int[] statuses) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, statuses);
 
-        if (filterBookFavourites) query.equal(Content_.favourite, true);
+        if (searchBundle.getFilterBookFavourites()) query.equal(Content_.favourite, true);
 
-        if (bookCompletedOnly) query.equal(Content_.completed, true);
-        else if (bookNotCompletedOnly) query.equal(Content_.completed, false);
+        if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
+        else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
 
+        if (searchBundle.getFilterBookRating() > 0)
+            query.equal(Content_.rating, searchBundle.getFilterBookRating());
 
-        if (filterPageFavourites) filterWithPageFavs(query);
-        query.link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
+        query.link(Content_.attributes).contains(Attribute_.name, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
-        if (groupId > 0) query.in(Content_.id, selectFilteredContent(groupId));
+        if (searchBundle.getGroupId() > 0)
+            query.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
 
         return query.build();
     }
 
     private Query<Content> selectContentUniversalContentQ(
-            String queryStr,
-            long groupId,
-            boolean filterBookFavourites,
-            boolean filterPageFavourites,
+            ContentSearchManager.ContentSearchBundle searchBundle,
             long[] additionalIds,
-            int orderField,
-            boolean orderDesc,
-            boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly,
             int[] statuses) {
-        if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField)
+        if (Preferences.Constant.ORDER_FIELD_CUSTOM == searchBundle.getSortField())
             return store.boxFor(Content.class).query().build();
 
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, statuses);
 
-        if (filterBookFavourites) query.equal(Content_.favourite, true);
+        if (searchBundle.getFilterBookFavourites()) query.equal(Content_.favourite, true);
 
-        if (bookCompletedOnly) query.equal(Content_.completed, true);
-        else if (bookNotCompletedOnly) query.equal(Content_.completed, false);
+        if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
+        else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
 
+        if (searchBundle.getFilterBookRating() > 0)
+            query.equal(Content_.rating, searchBundle.getFilterBookRating());
 
-        if (filterPageFavourites) filterWithPageFavs(query);
+        if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
 
-        query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        query.or().equal(Content_.uniqueSiteId, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        query.contains(Content_.title, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        query.or().equal(Content_.uniqueSiteId, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
         //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         query.or().in(Content_.id, additionalIds);
 
-        if (groupId > 0) {
-            Group group = store.boxFor(Group.class).get(groupId);
+        if (searchBundle.getGroupId() > 0) {
+            Group group = store.boxFor(Group.class).get(searchBundle.getGroupId());
             if (group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
                 applyDownloadDateFilter(query, group.propertyMin, group.propertyMax);
             else // Direct link to group
-                query.in(Content_.id, selectFilteredContent(groupId));
+                query.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
         }
 
-        applySortOrder(query, orderField, orderDesc);
+        applySortOrder(query, searchBundle.getSortField(), searchBundle.getSortDesc());
 
         return query.build();
     }
 
     private long[] selectContentUniversalContentByGroupItem(
-            String queryStr,
-            long groupId,
-            boolean filterFavourites,
-            long[] additionalIds,
-            int orderField,
-            boolean orderDesc,
-            boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly) {
-        if (orderField != Preferences.Constant.ORDER_FIELD_CUSTOM) return new long[]{};
+            ContentSearchManager.ContentSearchBundle searchBundle,
+            long[] additionalIds) {
+        if (searchBundle.getSortField() != Preferences.Constant.ORDER_FIELD_CUSTOM)
+            return new long[]{};
 
         // Pre-filter and order on GroupItem
         QueryBuilder<GroupItem> query = store.boxFor(GroupItem.class).query();
-        if (groupId > 0) query.equal(GroupItem_.groupId, groupId);
-        if (orderDesc) query.orderDesc(GroupItem_.order);
+        if (searchBundle.getGroupId() > 0)
+            query.equal(GroupItem_.groupId, searchBundle.getGroupId());
+        if (searchBundle.getSortDesc()) query.orderDesc(GroupItem_.order);
         else query.order(GroupItem_.order);
 
         // Get linked content
         QueryBuilder<Content> contentQuery = query.link(GroupItem_.content);
         contentQuery.in(Content_.status, libraryStatus);
 
-        if (filterFavourites) contentQuery.equal(Content_.favourite, true);
+        if (searchBundle.getFilterBookFavourites()) contentQuery.equal(Content_.favourite, true);
 
-        if (bookCompletedOnly) contentQuery.equal(Content_.completed, true);
-        else if (bookNotCompletedOnly) contentQuery.equal(Content_.completed, false);
+        if (searchBundle.getFilterBookCompleted()) contentQuery.equal(Content_.completed, true);
+        else if (searchBundle.getFilterBookNotCompleted())
+            contentQuery.equal(Content_.completed, false);
+
+        if (searchBundle.getFilterBookRating() > 0)
+            contentQuery.equal(Content_.rating, searchBundle.getFilterBookRating());
 
 
-        contentQuery.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        contentQuery.or().equal(Content_.uniqueSiteId, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        contentQuery.contains(Content_.title, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        contentQuery.or().equal(Content_.uniqueSiteId, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
         //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         contentQuery.or().in(Content_.id, additionalIds);
-        if (groupId > 0) contentQuery.in(Content_.id, selectFilteredContent(groupId));
+        if (searchBundle.getGroupId() > 0)
+            contentQuery.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
 
         return Helper.getPrimitiveArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
     }
 
-    Query<Content> selectContentUniversalQ(
-            String queryStr,
-            long groupId,
-            boolean filterBookFavourites,
-            boolean filterPageFavourites,
-            int orderField,
-            boolean orderDesc,
-            boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly) {
+    Query<Content> selectContentUniversalQ(ContentSearchManager.ContentSearchBundle searchBundle) {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, bookCompletedOnly, bookNotCompletedOnly, libraryStatus);
-        return selectContentUniversalContentQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly, libraryStatus);
+        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(searchBundle, libraryStatus);
+        return selectContentUniversalContentQ(searchBundle, contentAttrSubQuery.findIds(), libraryStatus);
     }
 
-    long[] selectContentUniversalByGroupItem(
-            String queryStr,
-            long groupId,
-            boolean filterBookFavourites,
-            boolean filterPageFavourites,
-            int orderField,
-            boolean orderDesc,
-            boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly) {
+    long[] selectContentUniversalByGroupItem(ContentSearchManager.ContentSearchBundle searchBundle) {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, bookCompletedOnly, bookNotCompletedOnly, libraryStatus);
-        return selectContentUniversalContentByGroupItem(queryStr, groupId, filterBookFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
+        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(searchBundle, libraryStatus);
+        return selectContentUniversalContentByGroupItem(searchBundle, contentAttrSubQuery.findIds());
     }
 
     List<Long> getShuffledIds() {
@@ -819,11 +787,11 @@ public class ObjectBoxDB {
         return Helper.getPrimitiveArrayFromList(Stream.of(shuffledSet).toList());
     }
 
-    long[] selectContentSearchId(String title, long groupId, List<Attribute> tags, boolean filterBookFavourites, boolean filterPageFavourites, int orderField, boolean orderDesc, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
+    long[] selectContentSearchId(ContentSearchManager.ContentSearchBundle searchBundle, List<Attribute> metadata) {
         long[] result;
-        Query<Content> query = selectContentSearchContentQ(title, groupId, tags, filterBookFavourites, filterPageFavourites, orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly);
+        Query<Content> query = selectContentSearchContentQ(searchBundle, metadata);
 
-        if (orderField != Preferences.Constant.ORDER_FIELD_RANDOM) {
+        if (searchBundle.getSortField() != Preferences.Constant.ORDER_FIELD_RANDOM) {
             result = query.findIds();
         } else {
             result = shuffleRandomSortId(query);
@@ -832,22 +800,15 @@ public class ObjectBoxDB {
     }
 
     long[] selectContentUniversalId(
-            String queryStr,
-            long groupId,
-            boolean filterBookFavourites,
-            boolean filterPageFavourites,
-            int orderField,
-            boolean orderDesc,
-            boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly,
+            ContentSearchManager.ContentSearchBundle searchBundle,
             int[] statuses) {
         long[] result;
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, bookCompletedOnly, bookNotCompletedOnly, statuses);
-        Query<Content> query = selectContentUniversalContentQ(queryStr, groupId, filterBookFavourites, filterPageFavourites, contentAttrSubQuery.findIds(), orderField, orderDesc, bookCompletedOnly, bookNotCompletedOnly, statuses);
+        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(searchBundle, statuses);
+        Query<Content> query = selectContentUniversalContentQ(searchBundle, contentAttrSubQuery.findIds(), statuses);
 
-        if (orderField != Preferences.Constant.ORDER_FIELD_RANDOM) {
+        if (searchBundle.getSortField() != Preferences.Constant.ORDER_FIELD_RANDOM) {
             result = query.findIds();
         } else {
             result = shuffleRandomSortId(query);
@@ -872,16 +833,16 @@ public class ObjectBoxDB {
          */
     }
 
-    private long[] selectFilteredContent(List<Attribute> attrs, boolean filterFavourites, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
+    private long[] selectFilteredContent(List<Attribute> attrs) {
         if (null == attrs || attrs.isEmpty()) return new long[0];
 
         // Pre-build queries to reuse them efficiently within the loops
 
         // Content from attribute
         final Query<Content> contentFromAttributesQuery;
-        if (!filterFavourites && !bookCompletedOnly && !bookNotCompletedOnly) { // Standard cached query
-            contentFromAttributesQuery = contentFromAttributesSearchQ;
-        } else { // On-demand query
+        //if (!filterFavourites && !bookCompletedOnly && !bookNotCompletedOnly) { // Standard cached query
+        contentFromAttributesQuery = contentFromAttributesSearchQ;
+        /*} else { // On-demand query
             final QueryBuilder<Content> contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
             contentFromAttributesQueryBuilder.in(Content_.status, libraryStatus);
             if (filterFavourites) contentFromAttributesQueryBuilder.equal(Content_.favourite, true);
@@ -896,13 +857,14 @@ public class ObjectBoxDB {
                     .equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
             contentFromAttributesQuery = contentFromAttributesQueryBuilder.build();
         }
+         */
 
 
         // Content from source (distinct query as source is not an actual Attribute of the data model)
         final Query<Content> contentFromSourceQuery;
-        if (!filterFavourites && !bookCompletedOnly && !bookNotCompletedOnly) { // Standard cached query
-            contentFromSourceQuery = contentFromSourceSearchQ;
-        } else { // On-demand query
+        //if (!filterFavourites && !bookCompletedOnly && !bookNotCompletedOnly) { // Standard cached query
+        contentFromSourceQuery = contentFromSourceSearchQ;
+        /*} else { // On-demand query
             final QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
             contentFromSourceQueryBuilder.in(Content_.status, libraryStatus);
             contentFromSourceQueryBuilder.equal(Content_.site, 1);
@@ -914,6 +876,7 @@ public class ObjectBoxDB {
 
             contentFromSourceQuery = contentFromSourceQueryBuilder.build();
         }
+         */
 
 
         // Prepare first iteration for exclusion mode
@@ -922,8 +885,10 @@ public class ObjectBoxDB {
         if (attrs.get(0).isExcluded()) {
             final QueryBuilder<Content> contentFromAttributesQueryBuilder1 = store.boxFor(Content.class).query();
             contentFromAttributesQueryBuilder1.in(Content_.status, libraryStatus);
+            /*
             if (filterFavourites)
                 contentFromAttributesQueryBuilder1.equal(Content_.favourite, true);
+             */
             idsFull = Helper.getListFromPrimitiveArray(contentFromAttributesQueryBuilder1.build().findIds());
         }
 
@@ -988,7 +953,7 @@ public class ObjectBoxDB {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
                     if (attrs != null && !attrs.isEmpty())
-                        query.in(Content_.id, selectFilteredContent(attrs, false, false, false));
+                        query.in(Content_.id, selectFilteredContent(attrs));
                 }
             }
 
@@ -1051,8 +1016,8 @@ public class ObjectBoxDB {
     }
 
     long countAvailableAttributes(AttributeType
-                                          type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, boolean bookCompletedOnly, boolean bookNotCompletedOnly) {
-        return queryAvailableAttributes(type, filter, selectFilteredContent(attributeFilter, filterFavourites, bookCompletedOnly, bookNotCompletedOnly)).count();
+                                          type, List<Attribute> attributeFilter, String filter) {
+        return queryAvailableAttributes(type, filter, selectFilteredContent(attributeFilter)).count();
     }
 
     @SuppressWarnings("squid:S2184")
@@ -1061,13 +1026,10 @@ public class ObjectBoxDB {
             @NonNull AttributeType type,
             List<Attribute> attributeFilter,
             String filter,
-            boolean filterFavourites,
             int sortOrder,
             int page,
-            int itemsPerPage,
-            boolean bookCompletedOnly,
-            boolean bookNotCompletedOnly) {
-        long[] filteredContent = selectFilteredContent(attributeFilter, filterFavourites, bookCompletedOnly, bookNotCompletedOnly);
+            int itemsPerPage) {
+        long[] filteredContent = selectFilteredContent(attributeFilter);
         if (filteredContent.length == 0 && attributeFilter != null && !attributeFilter.isEmpty())
             return Collections.emptyList();
         Set<Long> filteredContentAsSet = Helper.getSetFromPrimitiveArray(filteredContent);
@@ -1109,7 +1071,7 @@ public class ObjectBoxDB {
 
     SparseIntArray countAvailableAttributesPerType(List<Attribute> attributeFilter) {
         // Get Content filtered by current selection
-        long[] filteredContent = selectFilteredContent(attributeFilter, false, false, false);
+        long[] filteredContent = selectFilteredContent(attributeFilter);
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
 

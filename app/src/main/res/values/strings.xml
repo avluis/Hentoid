@@ -502,6 +502,7 @@
     <string name="library_filter_favourite_help">Toggle display of favourite books</string>
     <string name="filter_completed">Show completed books only</string>
     <string name="filter_not_completed">Show not completed books only</string>
+    <string name="filter_rating">Filter by rating</string>
 
     <!-- Groups bottom panel -->
     <string name="display_groups_title">Display groups</string>

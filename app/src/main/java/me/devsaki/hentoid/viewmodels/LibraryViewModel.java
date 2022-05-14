@@ -306,6 +306,16 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchGroup();
     }
 
+    /**
+     * Toggle the books rating filter
+     */
+    public void setContentRatingFilter(int value) {
+        contentSearchManager.setFilterBookRating(value);
+        newContentSearch.setValue(true);
+        doSearchContent();
+    }
+
+
     public void setGroupQuery(String value) {
         groupSearchManager.setQuery(value);
         doSearchGroup();
@@ -952,13 +962,6 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Timber::e
                         )
         );
-    }
-
-    public void resetCompletedFilter() {
-        if (contentSearchManager.isFilterBookCompleted())
-            toggleCompletedFilter();
-        else if (contentSearchManager.isFilterBookNotCompleted())
-            toggleNotCompletedFilter();
     }
 
     public void shuffleContent() {
