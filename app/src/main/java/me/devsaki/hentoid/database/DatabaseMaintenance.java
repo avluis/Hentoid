@@ -374,7 +374,7 @@ public class DatabaseMaintenance {
                 if (0 == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping);
 
             // Test the existence of the "Ungrouped" custom group
-            List<Group> ungroupedCustomGroup = db.selectGroupsQ(Grouping.CUSTOM.getId(), null, -1, false, 1, false).find();
+            List<Group> ungroupedCustomGroup = db.selectGroupsQ(Grouping.CUSTOM.getId(), null, -1, false, 1, false, 0).find();
             if (ungroupedCustomGroup.isEmpty()) groupingsToProcess.add(Grouping.CUSTOM);
 
             Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());

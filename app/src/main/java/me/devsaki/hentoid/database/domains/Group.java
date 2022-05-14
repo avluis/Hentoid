@@ -40,7 +40,8 @@ public class Group {
     public boolean hasCustomBookOrder = false;
     public int propertyMin;
     public int propertyMax;
-    public boolean favourite = false;
+    private boolean favourite = false;
+    private int rating = 0;
 
     // Needs to be in the DB to keep the information when deletion takes a long time
     // and user navigates away; no need to save that into JSON
@@ -114,6 +115,15 @@ public class Group {
 
     public Group setFavourite(boolean favourite) {
         this.favourite = favourite;
+        return this;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public Group setRating(int rating) {
+        this.rating = rating;
         return this;
     }
 

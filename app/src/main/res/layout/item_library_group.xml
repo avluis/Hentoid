@@ -62,6 +62,22 @@
         tools:text="@string/book_title" />
 
     <ImageView
+        android:id="@+id/iv_rating"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_star_5"
+        android:tooltipText="@string/rating_help"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ivFavourite"
+        app:layout_constraintVertical_bias="1.0"
+        app:tint="?colorSecondary"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
         android:id="@+id/ivFavourite"
         android:layout_width="48dp"
         android:layout_height="48dp"

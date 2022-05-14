@@ -54,8 +54,8 @@ class ContentSearchManager(val dao: CollectionDAO) {
         return values.filterBookNotCompleted
     }
 
-    fun setFilterBookRating(value: Int) {
-        values.filterBookRating = value
+    fun setFilterRating(value: Int) {
+        values.filterRating = value
     }
 
     fun setFilterPageFavourites(value: Boolean) {
@@ -99,7 +99,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
         setFilterBookCompleted(false)
         setFilterBookNotCompleted(false)
         setFilterPageFavourites(false)
-        setFilterBookRating(0)
+        setFilterRating(0)
     }
 
     fun getLibrary(): LiveData<PagedList<Content>> {
@@ -149,7 +149,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
         var filterBookNotCompleted by bundle.boolean(default = false)
 
-        var filterBookRating by bundle.int(default = 0)
+        var filterRating by bundle.int(default = 0)
 
         var query by bundle.string(default = "")
 
@@ -169,7 +169,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
                     || filterBookFavourites
                     || filterBookCompleted
                     || filterBookNotCompleted
-                    || filterBookRating > 0
+                    || filterRating > 0
                     || filterPageFavourites
         }
     }

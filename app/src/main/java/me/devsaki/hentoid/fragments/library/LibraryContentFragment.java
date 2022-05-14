@@ -1382,8 +1382,8 @@ public class LibraryContentFragment extends Fragment implements
     }
 
     // TODO
-    public void rateBooks(@NonNull long[] contentList, int newRating) {
-        viewModel.rateContents(Helper.getListFromPrimitiveArray(contentList), newRating, this::refreshIfNeeded);
+    public void rateItems(@NonNull long[] itemIds, int newRating) {
+        viewModel.rateContents(Helper.getListFromPrimitiveArray(itemIds), newRating, this::refreshIfNeeded);
         //leaveSelectionMode();
     }
 

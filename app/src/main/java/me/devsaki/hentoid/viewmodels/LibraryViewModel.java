@@ -310,9 +310,17 @@ public class LibraryViewModel extends AndroidViewModel {
      * Toggle the books rating filter
      */
     public void setContentRatingFilter(int value) {
-        contentSearchManager.setFilterBookRating(value);
+        contentSearchManager.setFilterRating(value);
         newContentSearch.setValue(true);
         doSearchContent();
+    }
+
+    /**
+     * Toggle the groups rating filter
+     */
+    public void setGroupRatingFilter(int value) {
+        groupSearchManager.setFilterRating(value);
+        doSearchGroup();
     }
 
 
@@ -924,6 +932,53 @@ public class LibraryViewModel extends AndroidViewModel {
         if (theGroup != null) {
             theGroup.setFavourite(!theGroup.isFavourite());
 
+            // Persist in it JSON
+            GroupHelper.updateGroupsJson(getApplication(), dao);
+
+            // Persist in it DB
+            dao.insertGroup(theGroup);
+
+            return theGroup;
+        }
+
+        throw new InvalidParameterException("Invalid GroupId : " + groupId);
+    }
+
+    /**
+     * Set the rating to the given value for the given group IDs
+     *
+     * @param groupIds     Group IDs to set the rating for
+     * @param targetRating Rating to set
+     */
+    public void rateGroups(@NonNull final List<Long> groupIds, int targetRating) {
+        compositeDisposable.add(
+                Observable.fromIterable(groupIds)
+                        .observeOn(Schedulers.io())
+                        .map(id -> doRateGroup(id, targetRating))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                    // Updated through LiveData
+                                },
+                                Timber::w
+                        )
+        );
+    }
+
+    /**
+     * Set the rating to the given value for the given group ID
+     *
+     * @param groupId      Group ID to set the rating for
+     * @param targetRating Rating to set
+     */
+    private Group doRateGroup(long groupId, int targetRating) {
+        Helper.assertNonUiThread();
+
+        // Check if given content still exists in DB
+        Group theGroup = dao.selectGroup(groupId);
+
+        if (theGroup != null && !theGroup.isBeingDeleted()) {
+            theGroup.setRating(targetRating);
             // Persist in it JSON
             GroupHelper.updateGroupsJson(getApplication(), dao);
 

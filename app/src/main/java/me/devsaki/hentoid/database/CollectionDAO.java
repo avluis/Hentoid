@@ -112,7 +112,7 @@ public interface CollectionDAO {
 
     List<Group> selectGroups(long[] groupIds);
 
-    LiveData<List<Group>> selectGroupsLive(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly);
+    LiveData<List<Group>> selectGroupsLive(int grouping, @Nullable String query, int orderField, boolean orderDesc, int artistGroupVisibility, boolean groupFavouritesOnly, int filterRating);
 
     List<Group> selectGroups(int grouping, int subType);
 

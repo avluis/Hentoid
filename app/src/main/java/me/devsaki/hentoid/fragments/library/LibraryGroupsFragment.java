@@ -74,6 +74,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.fragments.RatingDialogFragment;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -90,7 +91,7 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 @SuppressLint("NonConstantResourceId")
-public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback {
+public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback, SimpleSwipeCallback.ItemSwipeCallback, RatingDialogFragment.Parent {
 
     // ======== COMMUNICATION
     private OnBackPressedCallback callback;
@@ -136,6 +137,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         public boolean areContentsTheSame(GroupDisplayItem oldItem, GroupDisplayItem newItem) {
             return oldItem.getGroup().coverContent.getTargetId() == newItem.getGroup().coverContent.getTargetId()
                     && oldItem.getGroup().isFavourite() == newItem.getGroup().isFavourite()
+                    && oldItem.getGroup().getRating() == newItem.getGroup().getRating()
                     && oldItem.getGroup().items.size() == newItem.getGroup().items.size();
         }
 
@@ -148,6 +150,9 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             }
             if (oldItem.getGroup().isFavourite() != newItem.getGroup().isFavourite()) {
                 diffBundleBuilder.setFavourite(newItem.getGroup().isFavourite());
+            }
+            if (oldItem.getGroup().getRating() != newItem.getGroup().getRating()) {
+                diffBundleBuilder.setRating(newItem.getGroup().getRating());
             }
 
             if (diffBundleBuilder.isEmpty()) return null;
@@ -334,6 +339,15 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     }
 
     /**
+     * Callback for the "rating" button of the group holder
+     *
+     * @param group Group whose "rating" button has been clicked on
+     */
+    private void onGroupRatingClick(@NonNull Group group) {
+        RatingDialogFragment.invoke(this, new long[]{group.getId()}, group.getRating());
+    }
+
+    /**
      * Callback for the "delete item" action button
      */
     private void deleteSelectedItems() {
@@ -362,7 +376,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
             if (!selectedContent.isEmpty() || !selectedGroups.isEmpty()) {
                 PowerMenu.Builder powerMenuBuilder = new PowerMenu.Builder(requireContext())
-                        .setOnDismissListener(() -> selectExtension.deselect(selectExtension.getSelections()))
+                        .setOnDismissListener(this::leaveSelectionMode)
                         .setWidth(getResources().getDimensionPixelSize(R.dimen.dialog_width))
                         .setAnimation(MenuAnimation.SHOW_UP_CENTER)
                         .setMenuRadius(10f)
@@ -399,7 +413,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                     } else if (2 == tag) { // Delete groups and books
                         viewModel.deleteItems(finalContent, finalGroups, false, null);
                     } else {
-                        selectExtension.deselect(selectExtension.getSelections()); // Cancel button
+                        leaveSelectionMode(); // Cancel button
                     }
                 });
 
@@ -419,7 +433,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
                 });
                 snackbar.show();
 
-                selectExtension.deselect(selectExtension.getSelections());
+                leaveSelectionMode();
             }
         }
     }
@@ -455,8 +469,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         Set<GroupDisplayItem> selectedItems = selectExtension.getSelectedItems();
         Group g = Stream.of(selectedItems).map(GroupDisplayItem::getGroup).withoutNulls().findFirst().get();
 
-        InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, g.name,
-                this::onEditName, () -> selectExtension.deselect(selectExtension.getSelections()));
+        InputDialog.invokeInputDialog(requireActivity(), R.string.group_edit_name, g.name, this::onEditName, this::leaveSelectionMode);
     }
 
     private void onEditName(@NonNull final String newName) {
@@ -524,8 +537,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private void customBackPress() {
         // If content is selected, deselect it
         if (!selectExtension.getSelections().isEmpty()) {
-            selectExtension.deselect(selectExtension.getSelections());
-            activity.get().getSelectionToolbar().setVisibility(View.GONE);
+            leaveSelectionMode();
             backButtonPressed = 0;
             return;
         }
@@ -598,6 +610,23 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
                 if (viewHolder instanceof GroupDisplayItem.GroupViewHolder) {
                     return ((GroupDisplayItem.GroupViewHolder) viewHolder).getFavouriteButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
+        // Rating button click listener
+        fastAdapter.addEventHook(new ClickEventHook<GroupDisplayItem>() {
+            @Override
+            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<GroupDisplayItem> fastAdapter, @NotNull GroupDisplayItem item) {
+                if (item.getGroup() != null) onGroupRatingClick(item.getGroup());
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof GroupDisplayItem.GroupViewHolder) {
+                    return ((GroupDisplayItem.GroupViewHolder) viewHolder).getRatingButton();
                 }
                 return super.onBind(viewHolder);
             }
@@ -751,5 +780,21 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     @Override
     public void itemTouchStopDrag(RecyclerView.@NotNull ViewHolder viewHolder) {
         // Nothing
+    }
+
+    @Override
+    public void rateItems(@NonNull long[] itemIds, int newRating) {
+        viewModel.rateGroups(Helper.getListFromPrimitiveArray(itemIds), newRating);
+    }
+
+    @Override
+    public void leaveSelectionMode() {
+        selectExtension.setSelectOnLongClick(true);
+        // Warning : next line makes FastAdapter cycle through all items,
+        // which has a side effect of calling TiledPageList.onPagePlaceholderInserted,
+        // flagging the end of the list as being the last displayed position
+        Set<Integer> selection = selectExtension.getSelections();
+        if (!selection.isEmpty()) selectExtension.deselect(selection);
+        activity.get().getSelectionToolbar().setVisibility(View.GONE);
     }
 }

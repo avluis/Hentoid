@@ -384,12 +384,12 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public List<Group> selectGroups(int grouping) {
-        return db.selectGroupsQ(grouping, null, 0, false, -1, false).find();
+        return db.selectGroupsQ(grouping, null, 0, false, -1, false, 0).find();
     }
 
     @Override
     public List<Group> selectGroups(int grouping, int subType) {
-        return db.selectGroupsQ(grouping, null, 0, false, subType, false).find();
+        return db.selectGroupsQ(grouping, null, 0, false, subType, false, 0).find();
     }
 
     @Override
@@ -399,11 +399,12 @@ public class ObjectBoxDAO implements CollectionDAO {
             int orderField,
             boolean orderDesc,
             int artistGroupVisibility,
-            boolean groupFavouritesOnly) {
+            boolean groupFavouritesOnly,
+            int filterRating) {
         // Artist / group visibility filter is only relevant when the selected grouping is "By Artist"
         int subType = (grouping == Grouping.ARTIST.getId()) ? artistGroupVisibility : -1;
 
-        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc, subType, groupFavouritesOnly));
+        LiveData<List<Group>> livedata = new ObjectBoxLiveData<>(db.selectGroupsQ(grouping, query, orderField, orderDesc, subType, groupFavouritesOnly, filterRating));
         LiveData<List<Group>> workingData = livedata;
 
         // Download date grouping : groups are empty as they are dynamically populated

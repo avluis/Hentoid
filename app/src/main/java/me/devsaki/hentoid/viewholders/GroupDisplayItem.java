@@ -46,6 +46,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
 
@@ -150,6 +151,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
         private final View baseLayout;
         private final TextView title;
         private final ImageView ivFavourite;
+        private final ImageView ivRating;
         private ImageView ivCover;
         private View ivReorder;
 
@@ -160,6 +162,7 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             baseLayout = requireViewById(view, R.id.item);
             title = requireViewById(view, R.id.tvTitle);
             ivFavourite = requireViewById(view, R.id.ivFavourite);
+            ivRating = requireViewById(view, R.id.iv_rating);
 
             if (viewType == ViewType.LIBRARY_EDIT) {
                 ivReorder = requireViewById(view, R.id.ivReorder);
@@ -182,6 +185,9 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
                 Boolean boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.group.setFavourite(boolValue);
+
+                Integer intValue = bundleParser.getRating();
+                if (intValue != null) item.group.setRating(intValue);
             }
 
             baseLayout.setVisibility(item.isEmpty ? View.GONE : View.VISIBLE);
@@ -216,6 +222,15 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
             } else {
                 ivFavourite.setImageResource(R.drawable.ic_fav_empty);
             }
+
+            if (item.group.isFavourite()) {
+                ivFavourite.setImageResource(R.drawable.ic_fav_full);
+            } else {
+                ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+            }
+
+            if (ivRating != null)
+                ivRating.setImageResource(ContentHelper.getRatingResourceId(item.group.getRating()));
         }
 
         private void attachCover(@NonNull ImageFile cover) {
@@ -241,6 +256,10 @@ public class GroupDisplayItem extends AbstractItem<GroupDisplayItem.GroupViewHol
 
         public View getFavouriteButton() {
             return ivFavourite;
+        }
+
+        public View getRatingButton() {
+            return ivRating;
         }
 
         @Override

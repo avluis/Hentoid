@@ -23,7 +23,7 @@ import me.devsaki.hentoid.util.Debouncer;
 public class RatingDialogFragment extends DialogFragment {
 
     private static final String RATING = "RATING";
-    private static final String CONTENT_IDS = "CONTENT_IDS";
+    private static final String ITEM_IDS = "ITEM_IDS";
 
     // === UI
     private final ImageView[] stars = new ImageView[5];
@@ -31,14 +31,14 @@ public class RatingDialogFragment extends DialogFragment {
     // === VARIABLES
     private Parent parent;
     private int initialRating;
-    private long[] contentIds;
+    private long[] itemIds;
     private Debouncer<Integer> closeDebouncer;
 
 
-    public static void invoke(@NonNull final Fragment parent, long[] contentIds, int initialRating) {
+    public static void invoke(@NonNull final Fragment parent, long[] itemIds, int initialRating) {
         Bundle args = new Bundle();
         args.putInt(RATING, initialRating);
-        args.putLongArray(CONTENT_IDS, contentIds);
+        args.putLongArray(ITEM_IDS, itemIds);
 
         RatingDialogFragment dialogFragment = new RatingDialogFragment();
         dialogFragment.setArguments(args);
@@ -51,7 +51,7 @@ public class RatingDialogFragment extends DialogFragment {
 
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
         initialRating = getArguments().getInt(RATING);
-        contentIds = getArguments().getLongArray(CONTENT_IDS);
+        itemIds = getArguments().getLongArray(ITEM_IDS);
 
         parent = (Parent) getParentFragment();
     }
@@ -81,7 +81,7 @@ public class RatingDialogFragment extends DialogFragment {
         setRating(initialRating, false);
 
         closeDebouncer = new Debouncer<>(stars[0].getContext(), 150, i -> {
-            parent.rateBooks(contentIds, i);
+            parent.rateItems(itemIds, i);
             dismissAllowingStateLoss();
         });
     }
@@ -107,7 +107,7 @@ public class RatingDialogFragment extends DialogFragment {
     }
 
     public interface Parent {
-        void rateBooks(@NonNull long[] contentList, int newRating);
+        void rateItems(@NonNull long[] itemIds, int newRating);
 
         void leaveSelectionMode();
     }

@@ -102,13 +102,14 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             favouriteFilter = searchBundle.getFilterBookFavourites();
             completedFilter = searchBundle.getFilterBookCompleted();
             notCompletedFilter = searchBundle.getFilterBookNotCompleted();
-            ratingFilter = searchBundle.getFilterBookRating();
+            ratingFilter = searchBundle.getFilterRating();
             updateFilters();
         });
         viewModel.getGroupSearchManagerBundle().observe(this, b -> {
             if (!isGroupsDisplayed) return;
             GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
             favouriteFilter = searchBundle.getFilterFavourites();
+            ratingFilter = searchBundle.getFilterRating();
             updateFilters();
         });
 
@@ -196,7 +197,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
         for (int i = 0; i < 5; i++) {
             final int rating = i;
             stars[i].setOnClickListener(v -> setRating(rating + 1, false));
-            stars[i].setVisibility(isGroupsDisplayed ? View.GONE : View.VISIBLE);
         }
     }
 
@@ -274,7 +274,12 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
         }
 
         ratingFilter = clear ? 0 : rating;
-        if (!init) viewModel.setContentRatingFilter(ratingFilter);
+        if (!init) {
+            if (isGroupsDisplayed)
+                viewModel.setGroupRatingFilter(ratingFilter);
+            else
+                viewModel.setContentRatingFilter(ratingFilter);
+        }
     }
 
     /**
