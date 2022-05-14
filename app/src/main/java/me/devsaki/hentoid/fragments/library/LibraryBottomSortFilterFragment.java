@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -42,6 +43,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
 
     // UI
     private IncludeLibrarySortFilterBottomPanelBinding binding = null;
+    private final ImageView[] stars = new ImageView[5];
 
     // RecyclerView controls
     private final ItemAdapter<TextItem<Integer>> itemAdapter = new ItemAdapter<>();
@@ -54,6 +56,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
     private boolean favouriteFilter;
     private boolean completedFilter;
     private boolean notCompletedFilter;
+    private int ratingFilter;
     private @ColorInt
     int greyColor;
     private @ColorInt
@@ -99,13 +102,15 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             favouriteFilter = searchBundle.getFilterBookFavourites();
             completedFilter = searchBundle.getFilterBookCompleted();
             notCompletedFilter = searchBundle.getFilterBookNotCompleted();
-            updateFilterTab();
+            ratingFilter = searchBundle.getFilterRating();
+            updateFilters();
         });
         viewModel.getGroupSearchManagerBundle().observe(this, b -> {
             if (!isGroupsDisplayed) return;
             GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
             favouriteFilter = searchBundle.getFilterFavourites();
-            updateFilterTab();
+            ratingFilter = searchBundle.getFilterRating();
+            updateFilters();
         });
 
         greyColor = ContextCompat.getColor(context, R.color.medium_gray);
@@ -126,7 +131,6 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        // SORT TAB
         // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
         selectExtension = fastAdapter.getOrCreateExtension(SelectExtension.class);
         if (selectExtension != null) {
@@ -162,7 +166,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
         binding.filterFavsBtn.setOnClickListener(
                 v -> {
                     favouriteFilter = !favouriteFilter;
-                    updateFilterTab();
+                    updateFilters();
                     if (isGroupsDisplayed)
                         viewModel.setGroupFavouriteFilter(favouriteFilter);
                     else
@@ -172,17 +176,28 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
         binding.filterCompletedBtn.setOnClickListener(
                 v -> {
                     completedFilter = !completedFilter;
-                    updateFilterTab();
+                    updateFilters();
                     viewModel.toggleCompletedFilter();
                 }
         );
         binding.filterNotCompletedBtn.setOnClickListener(
                 v -> {
                     notCompletedFilter = !notCompletedFilter;
-                    updateFilterTab();
+                    updateFilters();
                     viewModel.toggleNotCompletedFilter();
                 }
         );
+
+        stars[0] = binding.filterRating1;
+        stars[1] = binding.filterRating2;
+        stars[2] = binding.filterRating3;
+        stars[3] = binding.filterRating4;
+        stars[4] = binding.filterRating5;
+
+        for (int i = 0; i < 5; i++) {
+            final int rating = i;
+            stars[i].setOnClickListener(v -> setRating(rating + 1, false));
+        }
     }
 
     private void updateSortDirection() {
@@ -201,7 +216,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
         }
     }
 
-    private void updateFilterTab() {
+    private void updateFilters() {
         binding.filterFavsBtn.setColorFilter(favouriteFilter ? selectedColor : greyColor);
 
         int completeFiltersVisibility = isGroupsDisplayed ? View.GONE : View.VISIBLE;
@@ -210,6 +225,8 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
 
         binding.filterCompletedBtn.setColorFilter(completedFilter ? selectedColor : greyColor);
         binding.filterNotCompletedBtn.setColorFilter(notCompletedFilter ? selectedColor : greyColor);
+
+        setRating(ratingFilter, true);
     }
 
     private List<TextItem<Integer>> getSortFields() {
@@ -244,6 +261,25 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
                 sortFieldCode,
                 true,
                 currentPrefFieldCode == sortFieldCode);
+    }
+
+    private void setRating(int rating, boolean init) {
+        // Tap current rating -> clear
+        boolean clear = !init && rating == ratingFilter;
+
+        for (int i = 5; i > 0; i--) {
+            boolean activated = i <= rating && !clear;
+            stars[i - 1].setImageResource(activated ? R.drawable.ic_star_full : R.drawable.ic_star_empty);
+            stars[i - 1].setColorFilter(activated ? selectedColor : greyColor);
+        }
+
+        ratingFilter = clear ? 0 : rating;
+        if (!init) {
+            if (isGroupsDisplayed)
+                viewModel.setGroupRatingFilter(ratingFilter);
+            else
+                viewModel.setContentRatingFilter(ratingFilter);
+        }
     }
 
     /**

@@ -16,6 +16,8 @@ class ContentItemBundle(val bundle: Bundle = Bundle()) {
 
     var isFavourite by bundle.boolean()
 
+    var rating by bundle.int()
+
     var isCompleted by bundle.boolean()
 
     var reads by bundle.long()

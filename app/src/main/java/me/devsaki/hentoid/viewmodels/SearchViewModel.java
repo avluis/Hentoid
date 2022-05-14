@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.viewmodels;
 
+import static java.util.Objects.requireNonNull;
+
 import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
@@ -16,8 +18,6 @@ import io.reactivex.disposables.Disposables;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * ViewModel for the advanced search screen
@@ -36,7 +36,6 @@ public class SearchViewModel extends ViewModel {
 
     // Selected attributes (passed between SearchBottomSheetFragment and SearchActivity as LiveData via the ViewModel)
     private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
-
 
 
     // Currently active attribute types
@@ -123,9 +122,6 @@ public class SearchViewModel extends ViewModel {
                         attributeTypes,
                         query,
                         selectedAttributes.getValue(),
-                        false,
-                        false,
-                        false,
                         pageNum,
                         itemsPerPage,
                         attributeSortOrder
@@ -188,7 +184,7 @@ public class SearchViewModel extends ViewModel {
                         for (Attribute a : selectedAttrs) {
                             // if attribute is excluded already, there's no need to reduce attrPerType value,
                             // since attr is no longer amongst results
-                            if(!a.isExcluded()) {
+                            if (!a.isExcluded()) {
                                 int countForType = results.get(a.getType().getCode());
                                 if (countForType > 0)
                                     results.put(a.getType().getCode(), --countForType);
@@ -206,7 +202,7 @@ public class SearchViewModel extends ViewModel {
     private void updateSelectionResult() {
         if (currentSelectedContentCountInternal != null)
             selectedContentCount.removeSource(currentSelectedContentCountInternal);
-        currentSelectedContentCountInternal = collectionDAO.countBooks("", selectedGroup, selectedAttributes.getValue(), false, false, false);
+        currentSelectedContentCountInternal = collectionDAO.countBooks(selectedGroup, selectedAttributes.getValue());
         selectedContentCount.addSource(currentSelectedContentCountInternal, selectedContentCount::setValue);
     }
 }

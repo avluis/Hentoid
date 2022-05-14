@@ -374,7 +374,7 @@ public class DatabaseMaintenance {
                 if (0 == db.countGroupsFor(grouping)) groupingsToProcess.add(grouping);
 
             // Test the existence of the "Ungrouped" custom group
-            List<Group> ungroupedCustomGroup = db.selectGroupsQ(Grouping.CUSTOM.getId(), null, -1, false, 1, false).find();
+            List<Group> ungroupedCustomGroup = db.selectGroupsQ(Grouping.CUSTOM.getId(), null, -1, false, 1, false, 0).find();
             if (ungroupedCustomGroup.isEmpty()) groupingsToProcess.add(Grouping.CUSTOM);
 
             Timber.i("Create non-existing groupings : %s non-existing groupings detected", groupingsToProcess.size());
@@ -383,8 +383,8 @@ public class DatabaseMaintenance {
             Resources res = context.getResources();
             for (Grouping g : groupingsToProcess) {
                 if (g.equals(Grouping.ARTIST)) {
-                    List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, false, Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC, 0, 0, false, false);
-                    artists.addAll(db.selectAvailableAttributes(AttributeType.CIRCLE, null, null, false, Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC, 0, 0, false, false));
+                    List<Attribute> artists = db.selectAvailableAttributes(AttributeType.ARTIST, null, null, Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC, 0, 0);
+                    artists.addAll(db.selectAvailableAttributes(AttributeType.CIRCLE, null, null, Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC, 0, 0));
                     int order = 1;
                     for (Attribute a : artists) {
                         Group group = new Group(Grouping.ARTIST, a.getName(), order++);

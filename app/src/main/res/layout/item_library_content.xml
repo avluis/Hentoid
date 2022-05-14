@@ -79,6 +79,23 @@
             tools:ignore="ContentDescription" />
 
         <ImageView
+            android:id="@+id/iv_rating"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_star_5"
+            android:tooltipText="@string/rating_help"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/ivFavourite"
+            app:layout_constraintTop_toBottomOf="@id/tvTags"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
             android:id="@+id/queue_site_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -90,46 +107,13 @@
             android:padding="8dp"
             android:tooltipText="@string/view_source_help"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/ivFavourite"
+            app:layout_constraintEnd_toStartOf="@id/iv_rating"
             app:layout_constraintTop_toBottomOf="@id/tvTags"
             app:layout_constraintVertical_bias="1.0"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_hentoid_shape" />
 
-        <ImageView
-            android:id="@+id/ivExternal"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:padding="8dp"
-            android:src="@drawable/ic_folder_full"
-            android:tooltipText="@string/external_help"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/queue_site_button"
-            app:layout_constraintTop_toBottomOf="@id/tvTags"
-            app:layout_constraintVertical_bias="1.0"
-            app:tint="@color/medium_gray"
-            tools:ignore="ContentDescription" />
-
-        <ImageView
-            android:id="@+id/ivOnline"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:padding="8dp"
-            android:src="@drawable/ic_action_download_stream"
-            android:tooltipText="@string/streamed_help"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/ivExternal"
-            app:layout_constraintTop_toBottomOf="@id/tvTags"
-            app:layout_constraintVertical_bias="1.0"
-            app:tint="@color/medium_gray"
-            tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

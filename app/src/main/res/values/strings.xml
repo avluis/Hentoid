@@ -458,6 +458,7 @@
         <item quantity="other">Delete groups + books</item>
     </plurals>
     <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
+    <string name="clear_rating">Clear rating</string>
 
     <!-- Merge & split -->
     <string name="merge_merge">Merge</string>
@@ -501,6 +502,7 @@
     <string name="library_filter_favourite_help">Toggle display of favourite books</string>
     <string name="filter_completed">Show completed books only</string>
     <string name="filter_not_completed">Show not completed books only</string>
+    <string name="filter_rating">Filter by rating</string>
 
     <!-- Groups bottom panel -->
     <string name="display_groups_title">Display groups</string>
@@ -511,6 +513,7 @@
     <!-- Item card tooltips -->
     <string name="drag_help">Drag item</string>
     <string name="external_help">Belongs to the external library</string>
+    <string name="rating_help">Book rating</string>
     <string name="streamed_help">Streamed book</string>
     <string name="view_source_help">View source in browser</string>
     <string name="fav_help">Mark/unmark as favourite</string>

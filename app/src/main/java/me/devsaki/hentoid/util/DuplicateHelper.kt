@@ -154,11 +154,11 @@ class DuplicateHelper {
                 if (content.storageUri.isNotEmpty()) {
                     val folder = FileHelper.getFolderFromTreeUriString(context, content.storageUri)
                     if (folder != null) {
-                        if (content.jsonUri.isNotEmpty()) ContentHelper.updateContentJson(
+                        if (content.jsonUri.isNotEmpty()) ContentHelper.updateJson(
                             context,
                             content
                         )
-                        else ContentHelper.createContentJson(context, content)
+                        else ContentHelper.createJson(context, content)
                     }
                 }
             } catch (e: IOException) {

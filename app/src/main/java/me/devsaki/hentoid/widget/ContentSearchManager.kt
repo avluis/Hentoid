@@ -54,6 +54,10 @@ class ContentSearchManager(val dao: CollectionDAO) {
         return values.filterBookNotCompleted
     }
 
+    fun setFilterRating(value: Int) {
+        values.filterRating = value
+    }
+
     fun setFilterPageFavourites(value: Boolean) {
         values.filterPageFavourites = value
     }
@@ -80,8 +84,8 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
     fun setTags(tags: List<Attribute>?) {
         if (tags != null) {
-            values.searchUri = SearchActivityBundle.buildSearchUri(tags).toString();
-        } else clearSelectedSearchTags();
+            values.searchUri = SearchActivityBundle.buildSearchUri(tags).toString()
+        } else clearSelectedSearchTags()
     }
 
     fun clearSelectedSearchTags() {
@@ -95,40 +99,21 @@ class ContentSearchManager(val dao: CollectionDAO) {
         setFilterBookCompleted(false)
         setFilterBookNotCompleted(false)
         setFilterPageFavourites(false)
+        setFilterRating(0)
     }
 
     fun getLibrary(): LiveData<PagedList<Content>> {
         val tags = parseSearchUri(Uri.parse(values.searchUri))
         return when {
             values.query.isNotEmpty() -> dao.searchBooksUniversal(
-                values.query,
-                values.groupId,
-                values.sortField,
-                values.sortDesc,
-                values.filterBookFavourites,
-                values.loadAll,
-                values.filterBookCompleted,
-                values.filterBookNotCompleted
+                values
             ) // Universal search
             tags.isNotEmpty() -> dao.searchBooks(
-                "",
-                values.groupId,
-                tags,
-                values.sortField,
-                values.sortDesc,
-                values.filterBookFavourites,
-                values.loadAll,
-                values.filterBookCompleted,
-                values.filterBookNotCompleted
+                values,
+                tags
             ) // Advanced search
             else -> dao.selectRecentBooks(
-                values.groupId,
-                values.sortField,
-                values.sortDesc,
-                values.filterBookFavourites,
-                values.loadAll,
-                values.filterBookCompleted,
-                values.filterBookNotCompleted
+                values
             )
         } // Default search (display recent)
     }
@@ -137,34 +122,14 @@ class ContentSearchManager(val dao: CollectionDAO) {
         val tags = parseSearchUri(Uri.parse(values.searchUri))
         return when {
             values.query.isNotEmpty() -> dao.searchBookIdsUniversal(
-                values.query,
-                values.groupId,
-                values.sortField,
-                values.sortDesc,
-                values.filterBookFavourites,
-                values.filterPageFavourites,
-                values.filterBookCompleted,
-                values.filterBookNotCompleted
+                values
             ) // Universal search
             tags.isNotEmpty() -> dao.searchBookIds(
-                "",
-                values.groupId,
-                tags,
-                values.sortField,
-                values.sortDesc,
-                values.filterBookFavourites,
-                values.filterPageFavourites,
-                values.filterBookCompleted,
-                values.filterBookNotCompleted
+                values,
+                tags
             ) // Advanced search
             else -> dao.selectRecentBookIds(
-                values.groupId,
-                values.sortField,
-                values.sortDesc,
-                values.filterBookFavourites,
-                values.filterPageFavourites,
-                values.filterBookCompleted,
-                values.filterBookNotCompleted
+                values
             )
         } // Default search (display recent)
     }
@@ -184,6 +149,8 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
         var filterBookNotCompleted by bundle.boolean(default = false)
 
+        var filterRating by bundle.int(default = 0)
+
         var query by bundle.string(default = "")
 
         var sortField by bundle.int(default = Preferences.getContentSortField())
@@ -196,12 +163,13 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
 
         fun isFilterActive(): Boolean {
-            val tags = SearchActivityBundle.parseSearchUri(Uri.parse(searchUri))
+            val tags = parseSearchUri(Uri.parse(searchUri))
             return query.isNotEmpty()
                     || tags.isNotEmpty()
                     || filterBookFavourites
                     || filterBookCompleted
                     || filterBookNotCompleted
+                    || filterRating > 0
                     || filterPageFavourites
         }
     }

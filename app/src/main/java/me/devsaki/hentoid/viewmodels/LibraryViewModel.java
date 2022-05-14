@@ -306,6 +306,24 @@ public class LibraryViewModel extends AndroidViewModel {
         doSearchGroup();
     }
 
+    /**
+     * Toggle the books rating filter
+     */
+    public void setContentRatingFilter(int value) {
+        contentSearchManager.setFilterRating(value);
+        newContentSearch.setValue(true);
+        doSearchContent();
+    }
+
+    /**
+     * Toggle the groups rating filter
+     */
+    public void setGroupRatingFilter(int value) {
+        groupSearchManager.setFilterRating(value);
+        doSearchGroup();
+    }
+
+
     public void setGroupQuery(String value) {
         groupSearchManager.setQuery(value);
         doSearchGroup();
@@ -396,13 +414,7 @@ public class LibraryViewModel extends AndroidViewModel {
         if (theContent != null) {
             if (theContent.isBeingDeleted()) return;
             theContent.setCompleted(!theContent.isCompleted());
-
-            // Persist in it JSON
-            if (!theContent.getJsonUri().isEmpty()) // Having an active Content without JSON file shouldn't be possible after the API29 migration
-                ContentHelper.updateContentJson(getApplication(), theContent);
-            else ContentHelper.createContentJson(getApplication(), theContent);
-
-            // Persist in it DB
+            ContentHelper.persistJson(getApplication(), theContent);
             dao.insertContent(theContent);
             return;
         }
@@ -443,15 +455,50 @@ public class LibraryViewModel extends AndroidViewModel {
 
         if (theContent != null) {
             theContent.setFavourite(!theContent.isFavourite());
-
-            // Persist in it JSON
-            if (!theContent.getJsonUri().isEmpty()) // Having an active Content without JSON file shouldn't be possible after the API29 migration
-                ContentHelper.updateContentJson(getApplication(), theContent);
-            else ContentHelper.createContentJson(getApplication(), theContent);
-
-            // Persist in it DB
+            ContentHelper.persistJson(getApplication(), theContent);
             dao.insertContent(theContent);
+            return theContent;
+        }
 
+        throw new InvalidParameterException("Invalid ContentId : " + contentId);
+    }
+
+    /**
+     * Set the rating to the given value for the given content IDs
+     *
+     * @param contentIds   Content IDs to set the rating for
+     * @param targetRating Rating to set
+     * @param onSuccess    Runnable to call if the operation succeeds
+     */
+    public void rateContents(@NonNull final List<Long> contentIds, int targetRating, @NonNull final Runnable onSuccess) {
+        compositeDisposable.add(
+                Observable.fromIterable(contentIds)
+                        .observeOn(Schedulers.io())
+                        .map(id -> doRateContent(id, targetRating))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> onSuccess.run(),
+                                Timber::w
+                        )
+        );
+    }
+
+    /**
+     * Set the rating to the given value for the given content ID
+     *
+     * @param contentId    Content ID to set the rating for
+     * @param targetRating Rating to set
+     */
+    private Content doRateContent(long contentId, int targetRating) {
+        Helper.assertNonUiThread();
+
+        // Check if given content still exists in DB
+        Content theContent = dao.selectContent(contentId);
+
+        if (theContent != null) {
+            theContent.setRating(targetRating);
+            ContentHelper.persistJson(getApplication(), theContent);
+            dao.insertContent(theContent);
             return theContent;
         }
 
@@ -604,7 +651,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 dbContent.forceSize(0);
                                 dbContent.setIsBeingDeleted(false);
                                 dao.insertContent(dbContent);
-                                ContentHelper.updateContentJson(getApplication(), dbContent);
+                                ContentHelper.updateJson(getApplication(), dbContent);
                             } else {
                                 onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_canceled)));
                             }
@@ -897,6 +944,53 @@ public class LibraryViewModel extends AndroidViewModel {
         throw new InvalidParameterException("Invalid GroupId : " + groupId);
     }
 
+    /**
+     * Set the rating to the given value for the given group IDs
+     *
+     * @param groupIds     Group IDs to set the rating for
+     * @param targetRating Rating to set
+     */
+    public void rateGroups(@NonNull final List<Long> groupIds, int targetRating) {
+        compositeDisposable.add(
+                Observable.fromIterable(groupIds)
+                        .observeOn(Schedulers.io())
+                        .map(id -> doRateGroup(id, targetRating))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                    // Updated through LiveData
+                                },
+                                Timber::w
+                        )
+        );
+    }
+
+    /**
+     * Set the rating to the given value for the given group ID
+     *
+     * @param groupId      Group ID to set the rating for
+     * @param targetRating Rating to set
+     */
+    private Group doRateGroup(long groupId, int targetRating) {
+        Helper.assertNonUiThread();
+
+        // Check if given content still exists in DB
+        Group theGroup = dao.selectGroup(groupId);
+
+        if (theGroup != null && !theGroup.isBeingDeleted()) {
+            theGroup.setRating(targetRating);
+            // Persist in it JSON
+            GroupHelper.updateGroupsJson(getApplication(), dao);
+
+            // Persist in it DB
+            dao.insertGroup(theGroup);
+
+            return theGroup;
+        }
+
+        throw new InvalidParameterException("Invalid GroupId : " + groupId);
+    }
+
     public void moveContentsToNewCustomGroup(long[] contentIds, String newGroupName,
                                              @NonNull final Runnable onSuccess) {
         Group newGroup = new Group(Grouping.CUSTOM, newGroupName.trim(), -1);
@@ -911,7 +1005,7 @@ public class LibraryViewModel extends AndroidViewModel {
                         .observeOn(Schedulers.io())
                         .map(dao::selectContent)
                         .map(c -> moveContentToCustomGroup(c, group, dao))
-                        .doOnNext(c -> ContentHelper.updateContentJson(getApplication(), c))
+                        .doOnNext(c -> ContentHelper.updateJson(getApplication(), c))
                         .doOnComplete(() -> {
                             refreshCustomGroupingAvailable();
                             GroupHelper.updateGroupsJson(getApplication(), dao);
@@ -922,13 +1016,6 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Timber::e
                         )
         );
-    }
-
-    public void resetCompletedFilter() {
-        if (contentSearchManager.isFilterBookCompleted())
-            toggleCompletedFilter();
-        else if (contentSearchManager.isFilterBookNotCompleted())
-            toggleNotCompletedFilter();
     }
 
     public void shuffleContent() {
@@ -955,10 +1042,7 @@ public class LibraryViewModel extends AndroidViewModel {
         Content dbContent = dao.selectContent(content.getId()); // Instanciate a new Content from DB to avoid updating the UI reference
         if (dbContent != null) {
             dbContent.setTitle(title);
-            // Persist in JSON
-            if (!dbContent.getJsonUri().isEmpty())
-                ContentHelper.updateContentJson(getApplication(), dbContent);
-            else ContentHelper.createContentJson(getApplication(), dbContent);
+            ContentHelper.persistJson(getApplication(), dbContent);
             dao.insertContent(dbContent);
         }
     }
@@ -975,9 +1059,9 @@ public class LibraryViewModel extends AndroidViewModel {
 
         compositeDisposable.add(
                 Single.fromCallable(() -> {
-                    ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
-                    return true;
-                })
+                            ContentHelper.mergeContents(getApplication(), contentList, newTitle, dao);
+                            return true;
+                        })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .map(b -> {
@@ -1003,15 +1087,15 @@ public class LibraryViewModel extends AndroidViewModel {
             @NonNull Runnable onSuccess) {
         compositeDisposable.add(
                 Single.fromCallable(() -> {
-                    boolean result = false;
-                    try {
-                        doSplitContent(content, chapters);
-                        result = true;
-                    } catch (ContentNotProcessedException e) {
-                        Timber.e(e);
-                    }
-                    return result;
-                })
+                            boolean result = false;
+                            try {
+                                doSplitContent(content, chapters);
+                                result = true;
+                            } catch (ContentNotProcessedException e) {
+                                Timber.e(e);
+                            }
+                            return result;
+                        })
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -1066,7 +1150,7 @@ public class LibraryViewModel extends AndroidViewModel {
             }
 
             // Save the JSON for the new book
-            DocumentFile jsonFile = ContentHelper.createContentJson(getApplication(), splitContent);
+            DocumentFile jsonFile = ContentHelper.createJson(getApplication(), splitContent);
             if (jsonFile != null) splitContent.setJsonUri(jsonFile.getUri().toString());
 
             // Save new content (incl. onn-custom group operations)

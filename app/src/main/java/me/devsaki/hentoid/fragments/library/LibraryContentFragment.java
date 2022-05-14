@@ -101,6 +101,7 @@ import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.fragments.ProgressDialogFragment;
+import me.devsaki.hentoid.fragments.RatingDialogFragment;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -124,7 +125,13 @@ import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
 @SuppressLint("NonConstantResourceId")
-public class LibraryContentFragment extends Fragment implements ChangeGroupDialogFragment.Parent, MergeDialogFragment.Parent, SplitDialogFragment.Parent, ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
+public class LibraryContentFragment extends Fragment implements
+        ChangeGroupDialogFragment.Parent,
+        MergeDialogFragment.Parent,
+        SplitDialogFragment.Parent,
+        RatingDialogFragment.Parent,
+        ItemTouchCallback,
+        SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     private static final String KEY_LAST_LIST_POSITION = "last_list_position";
 
@@ -216,6 +223,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setFavourite(newItem.isFavourite());
             }
+            if (oldItem.getRating() != newItem.getRating()) {
+                diffBundleBuilder.setRating(newItem.getRating());
+            }
             if (oldItem.isCompleted() != newItem.isCompleted()) {
                 diffBundleBuilder.setCompleted(newItem.isCompleted());
             }
@@ -261,6 +271,9 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
 
             if (oldItem.isFavourite() != newItem.isFavourite()) {
                 diffBundleBuilder.setFavourite(newItem.isFavourite());
+            }
+            if (oldItem.getRating() != newItem.getRating()) {
+                diffBundleBuilder.setRating(newItem.getRating());
             }
             if (oldItem.isCompleted() != newItem.isCompleted()) {
                 diffBundleBuilder.setCompleted(newItem.isCompleted());
@@ -544,7 +557,11 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
     // TODO doc
     public void leaveSelectionMode() {
         selectExtension.setSelectOnLongClick(true);
-        selectExtension.deselect(selectExtension.getSelections());
+        // Warning : next line makes FastAdapter cycle through all items,
+        // which has a side effect of calling TiledPageList.onPagePlaceholderInserted,
+        // flagging the end of the list as being the last displayed position
+        Set<Integer> selection = selectExtension.getSelections();
+        if (!selection.isEmpty()) selectExtension.deselect(selection);
         activity.get().getSelectionToolbar().setVisibility(View.GONE);
     }
 
@@ -1034,6 +1051,23 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
             }
         });
 
+        // Rating button click listener
+        fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
+            @Override
+            public void onClick(@NotNull View view, int i, @NotNull FastAdapter<ContentItem> fastAdapter, @NotNull ContentItem item) {
+                if (item.getContent() != null) onBookRatingClick(item.getContent());
+            }
+
+            @org.jetbrains.annotations.Nullable
+            @Override
+            public View onBind(RecyclerView.@NotNull ViewHolder viewHolder) {
+                if (viewHolder instanceof ContentItem.ContentViewHolder) {
+                    return ((ContentItem.ContentViewHolder) viewHolder).getRatingButton();
+                }
+                return super.onBind(viewHolder);
+            }
+        });
+
         // Site button click listener
         fastAdapter.addEventHook(new ClickEventHook<ContentItem>() {
             @Override
@@ -1198,7 +1232,7 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
 
             contentItems = Stream.of(iLibrary
-                    .subList(0, iLibrary.size()))
+                            .subList(0, iLibrary.size()))
                     .withoutNulls().map(c ->
                             new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook))
                     .distinct()
@@ -1345,6 +1379,21 @@ public class LibraryContentFragment extends Fragment implements ChangeGroupDialo
      */
     private void onBookFavouriteClick(@NonNull Content content) {
         viewModel.toggleContentFavourite(content, this::refreshIfNeeded);
+    }
+
+    // TODO
+    public void rateItems(@NonNull long[] itemIds, int newRating) {
+        viewModel.rateContents(Helper.getListFromPrimitiveArray(itemIds), newRating, this::refreshIfNeeded);
+        //leaveSelectionMode();
+    }
+
+    /**
+     * Callback for the "rating" button of the book holder
+     *
+     * @param content Content whose "rating" button has been clicked on
+     */
+    private void onBookRatingClick(@NonNull Content content) {
+        RatingDialogFragment.invoke(this, new long[]{content.getId()}, content.getRating());
     }
 
     private void redownloadFromScratch(@NonNull final List<Content> contentList) {

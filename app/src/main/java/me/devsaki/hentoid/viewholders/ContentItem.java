@@ -240,6 +240,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private TextView tvTags;
         private TextView tvSeries;
         private ImageView ivFavourite;
+        private ImageView ivRating;
         private ImageView ivExternal;
         private CircularProgressView readingProgress;
         private ImageView ivCompleted;
@@ -280,6 +281,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (viewType == ViewType.LIBRARY) {
                 ivNew = itemView.findViewById(R.id.lineNew);
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
+                ivRating = itemView.findViewById(R.id.iv_rating);
                 ivExternal = itemView.findViewById(R.id.ivExternal);
                 tvSeries = requireViewById(itemView, R.id.tvSeries);
                 tvTags = requireViewById(itemView, R.id.tvTags);
@@ -320,11 +322,13 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (boolValue != null) item.content.setIsBeingDeleted(boolValue);
                 boolValue = bundleParser.isFavourite();
                 if (boolValue != null) item.content.setFavourite(boolValue);
+                Integer intValue = bundleParser.getRating();
+                if (intValue != null) item.content.setRating(intValue);
                 boolValue = bundleParser.isCompleted();
                 if (boolValue != null) item.content.setCompleted(boolValue);
                 Long longValue = bundleParser.getReads();
                 if (longValue != null) item.content.setReads(longValue);
-                Integer intValue = bundleParser.getReadPagesCount();
+                intValue = bundleParser.getReadPagesCount();
                 if (intValue != null) item.content.setReadPagesCount(intValue);
                 String stringValue = bundleParser.getCoverUri();
                 if (stringValue != null) item.content.getCover().setFileUri(stringValue);
@@ -361,7 +365,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             if (tvPages != null) attachMetrics(item.content, item.viewType);
             if (tvTags != null) attachTags(item.content);
             attachButtons(item);
-
 
             if (progressBar != null)
                 updateProgress(item.content, baseLayout, getAbsoluteAdapterPosition(), false, ContentQueueManager.getInstance().isQueueActive(baseLayout.getContext()));
@@ -526,7 +529,6 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
                 if (tvStorage != null) {
                     int storageVisibility = content.getDownloadMode() == Content.DownloadMode.STREAM ? View.GONE : View.VISIBLE;
-                    ivStorage.setVisibility(storageVisibility);
                     tvStorage.setVisibility(storageVisibility);
                     if (storageVisibility == View.VISIBLE)
                         tvStorage.setText(context.getString(R.string.library_metrics_storage, content.getSize() / (1024.0 * 1024.0)));
@@ -567,7 +569,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 });
             }
 
-            ivOnline.setVisibility(content.getDownloadMode() == Content.DownloadMode.STREAM ? View.VISIBLE : View.GONE);
+            boolean isStreamed = content.getDownloadMode() == Content.DownloadMode.STREAM;
+            if (ivOnline != null) ivOnline.setVisibility(isStreamed ? View.VISIBLE : View.GONE);
 
             if (ViewType.QUEUE == item.viewType || ViewType.LIBRARY_EDIT == item.viewType) {
                 ivTop.setVisibility(View.VISIBLE);
@@ -578,19 +581,32 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 ivError.setVisibility(View.VISIBLE);
             } else if (ViewType.LIBRARY == item.viewType || ViewType.LIBRARY_GRID == item.viewType) {
                 if (content.getStatus().equals(StatusContent.EXTERNAL)) {
-                    if (content.isArchive())
-                        ivExternal.setImageResource(R.drawable.ic_archive);
-                    else
-                        ivExternal.setImageResource(R.drawable.ic_folder_full);
-                    ivExternal.setVisibility(View.VISIBLE);
-                } else
-                    ivExternal.setVisibility(View.GONE);
+                    int resourceId = content.isArchive() ? R.drawable.ic_archive : R.drawable.ic_folder_full;
+                    if (ivExternal != null) {
+                        ivExternal.setImageResource(resourceId);
+                        ivExternal.setVisibility(View.VISIBLE);
+                    } else if (ivStorage != null) {
+                        if (isStreamed)
+                            resourceId = R.drawable.ic_action_download_stream; // External streamed is streamed icon
+                        ivStorage.setImageResource(resourceId);
+                    }
+                } else {
+                    if (ivExternal != null) {
+                        ivExternal.setVisibility(View.GONE);
+                    } else if (ivStorage != null) {
+                        int resourceId = isStreamed ? R.drawable.ic_action_download_stream : R.drawable.ic_storage;
+                        ivStorage.setImageResource(resourceId);
+                    }
+                }
 
                 if (content.isFavourite()) {
                     ivFavourite.setImageResource(R.drawable.ic_fav_full);
                 } else {
                     ivFavourite.setImageResource(R.drawable.ic_fav_empty);
                 }
+
+                if (ivRating != null)
+                    ivRating.setImageResource(ContentHelper.getRatingResourceId(content.getRating()));
             }
         }
 
@@ -643,6 +659,10 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
         public View getFavouriteButton() {
             return ivFavourite;
+        }
+
+        public View getRatingButton() {
+            return ivRating;
         }
 
         public View getSiteButton() {

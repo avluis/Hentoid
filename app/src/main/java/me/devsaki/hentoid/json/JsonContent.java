@@ -37,6 +37,7 @@ public class JsonContent {
     private StatusContent status;
     private Site site;
     private boolean favourite;
+    private int rating;
     private boolean completed;
     private long reads;
     private long lastReadDate;
@@ -85,6 +86,7 @@ public class JsonContent {
         result.status = c.getStatus();
         result.site = c.getSite();
         result.favourite = c.isFavourite();
+        result.rating = c.getRating();
         result.completed = c.isCompleted();
         result.reads = c.getReads();
         result.lastReadDate = c.getLastReadDate();
@@ -134,6 +136,7 @@ public class JsonContent {
         result.setDownloadDate(downloadDate);
         result.setStatus(status);
         result.setFavourite(favourite);
+        result.setRating(rating);
         result.setCompleted(completed);
         result.setReads(reads);
         result.setLastReadDate(lastReadDate);

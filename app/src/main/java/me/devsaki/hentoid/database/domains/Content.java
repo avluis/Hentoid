@@ -115,6 +115,7 @@ public class Content implements Serializable {
     private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
     private String storageUri; // Not exposed because it will vary according to book location -> valued at import
     private boolean favourite = false;
+    private int rating = 0;
     private boolean completed = false;
     private long reads = 0;
     private long lastReadDate;
@@ -714,10 +715,6 @@ public class Content implements Serializable {
         return this;
     }
 
-    public boolean isFavourite() {
-        return favourite;
-    }
-
     public boolean isCompleted() {
         return completed;
     }
@@ -727,9 +724,21 @@ public class Content implements Serializable {
         return this;
     }
 
+    public boolean isFavourite() {
+        return favourite;
+    }
+
     public Content setFavourite(boolean favourite) {
         this.favourite = favourite;
         return this;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 
     public boolean isLast() {
@@ -940,6 +949,7 @@ public class Content implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         Content content = (Content) o;
         return isFavourite() == content.isFavourite() &&
+                getRating() == content.getRating() &&
                 isCompleted() == content.isCompleted() &&
                 getDownloadDate() == content.getDownloadDate() && // To differentiate external books that have no URL
                 getSize() == content.getSize() && // To differentiate external books that have no URL
@@ -953,7 +963,7 @@ public class Content implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), isCompleted(), getLastReadDate(), isBeingDeleted(), getTitle());
+        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingDeleted(), getTitle());
     }
 
     public long uniqueHash() {

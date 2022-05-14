@@ -197,7 +197,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
                 List<Content> containedContentList = dao.selectContent(Helper.getPrimitiveArrayFromList(theGroup.getContentIds()));
                 for (Content c : containedContentList) {
                     Content movedContent = moveContentToCustomGroup(c, null, dao);
-                    ContentHelper.updateContentJson(getApplicationContext(), movedContent);
+                    ContentHelper.updateJson(getApplicationContext(), movedContent);
                 }
                 theGroup = dao.selectGroup(theGroup.id);
             }

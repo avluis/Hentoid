@@ -11,6 +11,7 @@ class JsonCustomGroup {
     private Integer order;
     private Integer subtype;
     private Boolean favourite;
+    private Integer rating;
     private Boolean hasCustomBookOrder;
 
     private JsonCustomGroup() {
@@ -21,7 +22,8 @@ class JsonCustomGroup {
         result.name = g.name;
         result.order = g.order;
         result.subtype = g.subtype;
-        result.favourite = g.favourite;
+        result.favourite = g.isFavourite();
+        result.rating = g.getRating();
         result.hasCustomBookOrder = g.hasCustomBookOrder;
         return result;
     }
@@ -30,6 +32,7 @@ class JsonCustomGroup {
         return new Group(grouping, name, order)
                 .setSubtype((null == subtype) ? 0 : subtype)
                 .setFavourite(null != favourite && favourite)
+                .setRating(null == rating ? 0 : rating)
                 .setHasCustomBookOrder(null != hasCustomBookOrder && hasCustomBookOrder);
     }
 }
