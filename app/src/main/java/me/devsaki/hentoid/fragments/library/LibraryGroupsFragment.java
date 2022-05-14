@@ -652,7 +652,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
      * @param result Current library according to active filters
      */
     private void onLibraryChanged(PagedList<Content> result) {
-        Timber.i(">>Library changed (groups) ! Size=%s", result.size());
+        Timber.i(">> Library changed (groups) ! Size=%s", result.size());
         if (!enabled) return;
 
         // Refresh groups (new content -> updated book count or new groups)
@@ -660,7 +660,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
         if (!firstLibraryLoad)
             viewModel.searchGroup();
         else {
-            Timber.i(">>Library changed (groups) : ignored");
+            Timber.i(">> Library changed (groups) : ignored");
             firstLibraryLoad = false;
         }
     }
