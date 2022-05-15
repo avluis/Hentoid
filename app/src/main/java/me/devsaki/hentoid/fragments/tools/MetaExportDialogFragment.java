@@ -175,6 +175,9 @@ public class MetaExportDialogFragment extends DialogFragment {
                         t -> {
                             Timber.w(t);
                             Helper.logException(t);
+                            Snackbar.make(rootView, R.string.export_failed, LENGTH_LONG).show();
+                            // Dismiss after 3s, for the user to be able to see and use the snackbar
+                            new Handler(Looper.getMainLooper()).postDelayed(this::dismissAllowingStateLoss, 3000);
                         }
                 );
     }

@@ -267,8 +267,10 @@
     <string name="export_warning1">Exporting metadata is meant to create a list of your books in JSON format.\nIt is not meant for moving your collection to your PC or your SD card.\nTap here to learn how to do that.</string>
     <string name="export_warning2">Books are exported without images.\nYou will have to download them again upon restore if the images folder is not present.</string>
     <string name="export_run">RUN EXPORT</string>
+    <string name="export_failed">Export failed</string>
     <string name="import_settings_title">Import settings</string>
     <string name="import_settings_success">Imported</string>
+
 
     <!-- Import Activity -->
     <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
