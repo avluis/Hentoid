@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.workers;
 
 import android.content.Context;
-import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.CheckResult;
@@ -115,8 +114,9 @@ public class ImportWorker extends BaseWorker {
         boolean doRename = data.getRefreshRename();
         boolean doCleanNoJson = data.getRefreshCleanNoJson();
         boolean doCleanNoImages = data.getRefreshCleanNoImages();
+        boolean doImportGroups = data.getImportGroups();
 
-        startImport(doRename, doCleanNoJson, doCleanNoImages);
+        startImport(doRename, doCleanNoJson, doCleanNoImages, doImportGroups);
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -145,8 +145,9 @@ public class ImportWorker extends BaseWorker {
      * @param rename        True if the user has asked for a folder renaming when calling import from Preferences
      * @param cleanNoJSON   True if the user has asked for a cleanup of folders with no JSONs when calling import from Preferences
      * @param cleanNoImages True if the user has asked for a cleanup of folders with no images when calling import from Preferences
+     * @param importGroups  True if the worker has to import groups from the groups JSON; false if existing groups should be kept
      */
-    private void startImport(boolean rename, boolean cleanNoJSON, boolean cleanNoImages) {
+    private void startImport(boolean rename, boolean cleanNoJSON, boolean cleanNoImages, boolean importGroups) {
         booksOK = 0;
         booksKO = 0;
         nbFolders = 0;
@@ -165,17 +166,20 @@ public class ImportWorker extends BaseWorker {
         List<DocumentFile> bookFolders = new ArrayList<>();
         CollectionDAO dao = new ObjectBoxDAO(context);
 
-        try (FileExplorer explorer = new FileExplorer(context, Uri.parse(Preferences.getStorageUri()))) {
+        try (FileExplorer explorer = new FileExplorer(context, rootFolder.getUri())) {
             // 1st pass : Import groups JSON
+            if (importGroups) {
+                trace(Log.INFO, STEP_GROUPS, log, "Importing groups");
+                // Flag existing groups for cleanup
+                dao.flagAllGroups(Grouping.CUSTOM);
 
-            // Flag existing groups for cleanup
-            dao.flagAllGroups(Grouping.CUSTOM);
-
-            DocumentFile groupsFile = explorer.findFile(context, rootFolder, Consts.GROUPS_JSON_FILE_NAME);
-            if (groupsFile != null) importGroups(context, groupsFile, dao, log);
-            else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
+                DocumentFile groupsFile = explorer.findFile(context, rootFolder, Consts.GROUPS_JSON_FILE_NAME);
+                if (groupsFile != null) importGroups(context, groupsFile, dao, log);
+                else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
+            }
 
             // 2nd pass : count subfolders of every site folder
+            eventProgress(STEP_2_BOOK_FOLDERS, 1, 0, 0, context.getString(R.string.api29_migration_step1));
             List<DocumentFile> siteFolders = explorer.listFolders(context, rootFolder);
             int foldersProcessed = 0;
             for (DocumentFile f : siteFolders) {

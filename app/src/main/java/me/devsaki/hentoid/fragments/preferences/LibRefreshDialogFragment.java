@@ -178,6 +178,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
             options.rename = rename;
             options.cleanNoJson = cleanAbsent;
             options.cleanNoImages = cleanNoImages;
+            options.importGroups = false;
 
             Uri rootUri = Uri.parse(Preferences.getStorageUri());
             compositeDisposable.add(Single.fromCallable(() -> ImportHelper.setAndScanHentoidFolder(requireContext(), rootUri, false, options))

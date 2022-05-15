@@ -99,6 +99,7 @@ public class ImportHelper {
         public boolean rename; // If true, rename folders with current naming convention
         public boolean cleanNoJson; // If true, delete folders where no JSON file is found
         public boolean cleanNoImages; // If true, delete folders where no supported images are found
+        public boolean importGroups; // If true, reimport groups from the groups JSON
     }
 
     /**
@@ -415,9 +416,12 @@ public class ImportHelper {
         ImportNotificationChannel.init(context);
 
         ImportData.Builder builder = new ImportData.Builder();
-        builder.setRefreshRename(null != options && options.rename);
-        builder.setRefreshCleanNoJson(null != options && options.cleanNoJson);
-        builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
+        if (options != null) {
+            builder.setRefreshRename(options.rename);
+            builder.setRefreshCleanNoJson(options.cleanNoJson);
+            builder.setRefreshCleanNoImages(options.cleanNoImages);
+            builder.setImportGroups(options.importGroups);
+        }
 
         WorkManager workManager = WorkManager.getInstance(context);
         workManager.enqueueUniqueWork(
