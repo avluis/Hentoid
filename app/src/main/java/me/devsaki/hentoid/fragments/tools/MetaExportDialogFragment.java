@@ -27,8 +27,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -39,7 +37,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.ContextXKt;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.FileHelper;
@@ -193,11 +190,9 @@ public class MetaExportDialogFragment extends DialogFragment {
             boolean exportBookmarks) {
         JsonContentCollection jsonContentCollection = new JsonContentCollection();
 
-        if (exportLibrary) {
-            List<Content> exportedLibrary = new ArrayList<>();
-            dao.streamAllInternalBooks(exportFavsOnly, exportedLibrary::add); // Using streaming here to support large collections
-            jsonContentCollection.setLibrary(exportedLibrary);
-        }
+        if (exportLibrary)
+            dao.streamAllInternalBooks(exportFavsOnly, jsonContentCollection::addToLibrary); // Using streaming here to support large collections
+
         if (exportQueue) jsonContentCollection.setQueue(dao.selectAllQueueBooks());
         if (exportCustomgroups)
             jsonContentCollection.setCustomGroups(dao.selectGroups(Grouping.CUSTOM.getId()));
