@@ -149,7 +149,7 @@
     <string name="pref_check_updates_summary_on">Note: Does not override manual update checks</string>
 
     <!-- Viewer -->
-    <string name="pref_screen_viewer">Image viewer</string>
+    <string name="pref_screen_viewer">Reader</string>
     <string name="pref_viewer_controls">Controls</string>
     <string name="pref_viewer_browse_mode">Browse mode</string>
     <string name="pref_viewer_page_turn">Page turn control</string>
