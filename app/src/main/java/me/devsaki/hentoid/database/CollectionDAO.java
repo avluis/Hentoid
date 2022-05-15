@@ -82,6 +82,8 @@ public interface CollectionDAO {
 
     List<Content> selectAllInternalBooks(boolean favsOnly);
 
+    void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer);
+
     void flagAllInternalBooks();
 
     void deleteAllInternalBooks(boolean resetRemainingImagesStatus);
