@@ -58,6 +58,7 @@ public class MetaExportDialogFragment extends DialogFragment {
     private CheckBox queueChk;
     private CheckBox bookmarksChk;
     private View runBtn;
+    private ProgressBar progressBar;
 
     // Variable used during the import process
     private CollectionDAO dao;
@@ -121,6 +122,8 @@ public class MetaExportDialogFragment extends DialogFragment {
         if (0 == nbLibraryBooks + nbQueueBooks + nbBookmarks) runBtn.setVisibility(View.GONE);
         else
             runBtn.setOnClickListener(v -> runExport(libraryChk.isChecked(), favsChk.isChecked(), groupsChk.isChecked(), queueChk.isChecked(), bookmarksChk.isChecked()));
+
+        progressBar = requireViewById(rootView, R.id.export_progress_bar);
     }
 
     // Gray out run button if no option is selected
@@ -147,7 +150,6 @@ public class MetaExportDialogFragment extends DialogFragment {
         runBtn.setVisibility(View.GONE);
         setCancelable(false);
 
-        ProgressBar progressBar = requireViewById(rootView, R.id.export_progress_bar);
         progressBar.setIndeterminate(true);
         // fixes <= Lollipop progressBar tinting
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M)
@@ -157,11 +159,23 @@ public class MetaExportDialogFragment extends DialogFragment {
         exportDisposable = Single.fromCallable(() -> getExportedCollection(exportLibrary, exportFavsOnly, exportCustomGroups, exportQueue, exportBookmarks))
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .map(c -> JsonHelper.serializeToJson(c, JsonContentCollection.class))
+                .map(c -> {
+                    progressBar.setMax(3);
+                    progressBar.setProgress(1);
+                    progressBar.setIndeterminate(false);
+                    return JsonHelper.serializeToJson(c, JsonContentCollection.class);
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        s -> onJsonSerialized(s, exportLibrary, exportFavsOnly, exportQueue, exportBookmarks),
-                        Timber::w
+                        s -> {
+                            progressBar.setProgress(2);
+                            onJsonSerialized(s, exportLibrary, exportFavsOnly, exportQueue, exportBookmarks);
+                            progressBar.setProgress(3);
+                        },
+                        t -> {
+                            Timber.w(t);
+                            Helper.logException(t);
+                        }
                 );
     }
 

@@ -11,6 +11,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import timber.log.Timber;
@@ -31,14 +32,7 @@ public class EmergencyRestartHandler implements
         // Log the exception
         Timber.i("Logging crash exception");
         try {
-            List<LogHelper.LogEntry> log = new ArrayList<>();
-            log.add(new LogHelper.LogEntry(StringHelper.protect(exception.getMessage())));
-            log.add(new LogHelper.LogEntry(getStackTraceString(exception)));
-
-            LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-            logInfo.setEntries(log);
-            logInfo.setHeaderName("latest-crash");
-            LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
+            Helper.logException(exception);
         } finally {
             // Restart the Activity
             Timber.i("Restart %s", myActivityClass.getSimpleName());
@@ -51,13 +45,5 @@ public class EmergencyRestartHandler implements
         System.exit(0);
     }
 
-    private String getStackTraceString(Throwable t) {
-        // Don't replace this with Log.getStackTraceString() - it hides
-        // UnknownHostException, which is not what we want.
-        StringWriter sw = new StringWriter(256);
-        PrintWriter pw = new PrintWriter(sw, false);
-        t.printStackTrace(pw);
-        pw.flush();
-        return sw.toString();
-    }
+
 }
