@@ -151,7 +151,7 @@
     <string name="pref_check_updates_summary_on">Це не вимикає можливість ручної перевірки оновлень</string>
 
     <!-- Viewer -->
-    <string name="pref_screen_viewer">Перегляд зображень</string>
+    <string name="pref_screen_viewer">Читання</string>
     <string name="pref_viewer_controls">Управління</string>
     <string name="pref_viewer_browse_mode">Режим огляду</string>
     <string name="pref_viewer_page_turn">Режим перегортання сторінок</string>
