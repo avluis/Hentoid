@@ -237,11 +237,11 @@ public class LibRefreshDialogFragment extends DialogFragment {
         switch (resultCode) {
             case ImportHelper.PickerResult.OK:
                 importDisposable = io.reactivex.Single.fromCallable(() -> {
-                    if (externalLibrary)
-                        return ImportHelper.setAndScanExternalFolder(requireContext(), uri);
-                    else
-                        return ImportHelper.setAndScanHentoidFolder(requireContext(), uri, true, null);
-                })
+                            if (externalLibrary)
+                                return ImportHelper.setAndScanExternalFolder(requireContext(), uri);
+                            else
+                                return ImportHelper.setAndScanHentoidFolder(requireContext(), uri, true, null);
+                        })
                         .subscribeOn(io.reactivex.schedulers.Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -343,10 +343,11 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 progressBar.setMax(event.elementsTotal);
                 progressBar.setProgress(event.elementsOK + event.elementsKO);
             } else {
-                step2Txt.setText(event.elementName);
                 progressBar.setIndeterminate(true);
             }
-            if (ImportWorker.STEP_3_BOOKS == event.step) {
+            if (ImportWorker.STEP_2_BOOK_FOLDERS == event.step) {
+                step2Txt.setText(event.elementName);
+            } else if (ImportWorker.STEP_3_BOOKS == event.step) {
                 step2progress.setIndeterminate(false);
                 step2progress.setMax(1);
                 step2progress.setProgress(1);

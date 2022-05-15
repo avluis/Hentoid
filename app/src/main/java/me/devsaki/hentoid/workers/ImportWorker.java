@@ -120,7 +120,11 @@ public class ImportWorker extends BaseWorker {
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary, step, booksOK, booksKO, nbBooks));
+        eventProgress(step, nbBooks, booksOK, booksKO, "");
+    }
+
+    private void eventProgress(int step, int nbBooks, int booksOK, int booksKO, @NonNull String name) {
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary, step, name, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
@@ -173,10 +177,10 @@ public class ImportWorker extends BaseWorker {
 
             // 2nd pass : count subfolders of every site folder
             List<DocumentFile> siteFolders = explorer.listFolders(context, rootFolder);
-            int foldersProcessed = 1;
+            int foldersProcessed = 0;
             for (DocumentFile f : siteFolders) {
+                eventProgress(STEP_2_BOOK_FOLDERS, siteFolders.size(), foldersProcessed++, 0, StringHelper.protect(f.getName()));
                 bookFolders.addAll(explorer.listFolders(context, f));
-                eventProgress(STEP_2_BOOK_FOLDERS, siteFolders.size(), foldersProcessed++, 0);
             }
             eventComplete(STEP_2_BOOK_FOLDERS, siteFolders.size(), siteFolders.size(), 0, null);
             notificationManager.notify(new ImportProgressNotification(context.getResources().getString(R.string.starting_import), 0, 0));
