@@ -293,6 +293,7 @@
     <string name="export_warning1">Экспорт метаданных создаст список ваших книг в формате JSON.\nЭто не способ перемещения вашей коллекции на компьютер или SD-карту.\nНажмите здесь, чтобы узнать, как это сделать.</string>
     <string name="export_warning2">Книги экспортируются без изображений.\nВам придётся загрузить их снова после восстановления, если папка изображений отсутствует.</string>
     <string name="export_run">ЗАПУСТИТЬ ЭКСПОРТ</string>
+	<string name="export_failed">Экспорт не удался</string>
     <string name="import_settings_title">Импорт настроек</string>
     <string name="import_settings_success">Успешно импортировано</string>
 
