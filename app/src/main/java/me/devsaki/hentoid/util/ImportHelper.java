@@ -234,9 +234,6 @@ public class ImportHelper {
             return ProcessFolderResult.KO_INVALID_FOLDER;
         }
 
-        log.addEntry("002");
-        LogHelper.writeLog(context, log);
-
         // Check if the folder is not the device's Download folder
         List<String> pathSegments = treeUri.getPathSegments();
         if (pathSegments.size() > 1) {
@@ -247,9 +244,6 @@ public class ImportHelper {
                 return ProcessFolderResult.KO_DOWNLOAD_FOLDER;
             }
         }
-
-        log.addEntry("003");
-        LogHelper.writeLog(context, log);
 
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
@@ -262,7 +256,7 @@ public class ImportHelper {
         LogHelper.writeLog(context, log);
 
         // Set the folder as the app's downloads folder
-        int result = FileHelper.checkAndSetRootFolder(context, hentoidFolder);
+        int result = FileHelper.checkAndSetRootFolder(context, hentoidFolder, log);
         if (result < 0) {
             log.addEntry("error %d %s", result, hentoidFolder.getUri().toString());
             LogHelper.writeLog(context, log);

@@ -388,9 +388,26 @@ public class FileHelper {
      * @param folder  Folder to check and set
      * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials could not be set
      */
-    public static int checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
-        int result = createNoMedia(context, folder);
+    public static int checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder, LogHelper.LogInfo log) {
+        if (log != null) {
+            log.addEntry("005");
+            LogHelper.writeLog(context, log);
+        }
+
+        int result = createNoMedia(context, folder, log);
+
+        if (log != null) {
+            log.addEntry("010");
+            LogHelper.writeLog(context, log);
+        }
+
         if (0 == result) Preferences.setStorageUri(folder.getUri().toString());
+
+        if (log != null) {
+            log.addEntry("01");
+            LogHelper.writeLog(context, log);
+        }
+
         return result;
     }
 
@@ -401,13 +418,34 @@ public class FileHelper {
      * @param folder  Folder to create the file into
      * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials are insufficient
      */
-    public static int createNoMedia(@NonNull final Context context, @NonNull final DocumentFile folder) {
+    public static int createNoMedia(@NonNull final Context context, @NonNull final DocumentFile folder, LogHelper.LogInfo log) {
+        if (log != null) {
+            log.addEntry("006");
+            LogHelper.writeLog(context, log);
+        }
+
         // Validate folder
         if (!folder.exists() && !folder.isDirectory()) return -1;
 
+        if (log != null) {
+            log.addEntry("007");
+            LogHelper.writeLog(context, log);
+        }
+
         // Remove and add back the nomedia file to test if the user has the I/O rights to the selected folder
         DocumentFile nomedia = findFile(context, folder, NOMEDIA_FILE_NAME);
+
+        if (log != null) {
+            log.addEntry("008");
+            LogHelper.writeLog(context, log);
+        }
+
         if (nomedia != null && !nomedia.delete()) return -2;
+
+        if (log != null) {
+            log.addEntry("009");
+            LogHelper.writeLog(context, log);
+        }
 
         nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
         if (null == nomedia || !nomedia.exists()) return -3;
