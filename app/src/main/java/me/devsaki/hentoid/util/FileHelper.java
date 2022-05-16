@@ -410,7 +410,7 @@ public class FileHelper {
         if (nomedia != null && !nomedia.delete()) return -2;
 
         nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
-        if (null == nomedia || !nomedia.exists()) return -2;
+        if (null == nomedia || !nomedia.exists()) return -3;
 
         return 0;
     }

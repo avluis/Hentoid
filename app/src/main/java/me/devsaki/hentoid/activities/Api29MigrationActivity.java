@@ -155,7 +155,8 @@ public class Api29MigrationActivity extends AppCompatActivity {
         if (result < 0) {
             step1button.setVisibility(View.VISIBLE);
             if (-1 == result) ToastHelper.toast(this, R.string.error_creating_folder);
-            else if (-2 == result) ToastHelper.toast(this, R.string.error_write_permission);
+            else if (-2 == result || -3 == result)
+                ToastHelper.toast(this, R.string.error_write_permission);
             return;
         }
 
