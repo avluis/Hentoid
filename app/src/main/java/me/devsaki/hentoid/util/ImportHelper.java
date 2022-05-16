@@ -250,7 +250,12 @@ public class ImportHelper {
         }
 
         // Scan the folder for an existing library; start the import
-        if (hasBooks(context, hentoidFolder)) {
+        LogHelper.LogInfo log = new LogHelper.LogInfo("test-import");
+        log.addEntry("01");
+        LogHelper.writeLog(context, log);
+        if (hasBooks(context, hentoidFolder, log)) {
+            log.addEntry("end scan");
+            LogHelper.writeLog(context, log);
             if (!askScanExisting) {
                 runPrimaryImport(context, options);
                 return ProcessFolderResult.OK_LIBRARY_DETECTED;
@@ -345,14 +350,19 @@ public class ImportHelper {
      * @param folder  Folder to examine
      * @return True if the current Hentoid folder contains at least one book; false if not
      */
-    private static boolean hasBooks(@NonNull final Context context, @NonNull final DocumentFile folder) {
+    private static boolean hasBooks(@NonNull final Context context, @NonNull final DocumentFile folder, LogHelper.LogInfo log) {
         try (FileExplorer explorer = new FileExplorer(context, folder.getUri())) {
+            log.addEntry("02");
+            LogHelper.writeLog(context, log);
             List<DocumentFile> folders = explorer.listFolders(context, folder);
+            log.addEntry("03 %s", folders.size());
+            LogHelper.writeLog(context, log);
 
             // Filter out download subfolders among listed subfolders
             for (DocumentFile subfolder : folders) {
                 String subfolderName = subfolder.getName();
                 if (subfolderName != null) {
+                    log.addEntry("04 %s", subfolderName);
                     for (Site s : Site.values())
                         if (subfolderName.equalsIgnoreCase(s.getFolder())) {
                             // Search subfolders within identified download folders
