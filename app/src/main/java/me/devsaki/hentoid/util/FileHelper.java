@@ -419,36 +419,51 @@ public class FileHelper {
      * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials are insufficient
      */
     public static int createNoMedia(@NonNull final Context context, @NonNull final DocumentFile folder, LogHelper.LogInfo log) {
+        // Validate folder
+        if (!folder.exists() && !folder.isDirectory()) return -1;
+
+        // Make sure the nomedia file is created
+        DocumentFile nomedia = findFile(context, folder, NOMEDIA_FILE_NAME);
+
         if (log != null) {
             log.addEntry("006");
             LogHelper.writeLog(context, log);
         }
 
-        // Validate folder
-        if (!folder.exists() && !folder.isDirectory()) return -1;
+        if (null == nomedia) {
+            nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
+            if (null == nomedia || !nomedia.exists()) return -3;
+        }
+
+        // Remove and add back a test file to test if the user has the I/O rights to the selected folder
+        DocumentFile testFile = findFile(context, folder, "delete.me");
 
         if (log != null) {
             log.addEntry("007");
             LogHelper.writeLog(context, log);
         }
 
-        // Remove and add back the nomedia file to test if the user has the I/O rights to the selected folder
-        DocumentFile nomedia = findFile(context, folder, NOMEDIA_FILE_NAME);
+        if (testFile != null && !testFile.delete()) return -2;
 
         if (log != null) {
             log.addEntry("008");
             LogHelper.writeLog(context, log);
         }
 
-        if (nomedia != null && !nomedia.delete()) return -2;
+        testFile = folder.createFile("application/octet-steam", "delete.me");
+        if (null == testFile || !testFile.exists()) return -3;
 
         if (log != null) {
-            log.addEntry("009");
+            log.addEntry("009a");
             LogHelper.writeLog(context, log);
         }
 
-        nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
-        if (null == nomedia || !nomedia.exists()) return -3;
+        if (!testFile.delete()) return -2;
+
+        if (log != null) {
+            log.addEntry("009b");
+            LogHelper.writeLog(context, log);
+        }
 
         return 0;
     }
