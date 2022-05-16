@@ -214,11 +214,18 @@ public class ImportHelper {
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
 
+        LogHelper.LogInfo log = new LogHelper.LogInfo("test-import");
+        log.addEntry("000");
+        LogHelper.writeLog(context, log);
+
         // Persist I/O permissions
         Uri externalUri = null;
         if (!Preferences.getExternalLibraryUri().isEmpty())
             externalUri = Uri.parse(Preferences.getExternalLibraryUri());
         FileHelper.persistNewUriPermission(context, treeUri, externalUri);
+
+        log.addEntry("001 %s %s", treeUri, externalUri);
+        LogHelper.writeLog(context, log);
 
         // Check if the folder exists
         DocumentFile docFile = DocumentFile.fromTreeUri(context, treeUri);
@@ -226,6 +233,10 @@ public class ImportHelper {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return ProcessFolderResult.KO_INVALID_FOLDER;
         }
+
+        log.addEntry("002");
+        LogHelper.writeLog(context, log);
+
         // Check if the folder is not the device's Download folder
         List<String> pathSegments = treeUri.getPathSegments();
         if (pathSegments.size() > 1) {
@@ -236,12 +247,20 @@ public class ImportHelper {
                 return ProcessFolderResult.KO_DOWNLOAD_FOLDER;
             }
         }
+
+        log.addEntry("003");
+        LogHelper.writeLog(context, log);
+
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
             Timber.e("Could not create Hentoid folder in folder %s", docFile.getUri().toString());
             return ProcessFolderResult.KO_CREATE_FAIL;
         }
+
+        log.addEntry("004");
+        LogHelper.writeLog(context, log);
+
         // Set the folder as the app's downloads folder
         int result = FileHelper.checkAndSetRootFolder(context, hentoidFolder);
         if (result < 0) {
@@ -250,9 +269,9 @@ public class ImportHelper {
         }
 
         // Scan the folder for an existing library; start the import
-        LogHelper.LogInfo log = new LogHelper.LogInfo("test-import");
         log.addEntry("01");
         LogHelper.writeLog(context, log);
+
         if (hasBooks(context, hentoidFolder, log)) {
             log.addEntry("end scan");
             LogHelper.writeLog(context, log);
