@@ -426,7 +426,7 @@ public class ImportHelper {
         WorkManager workManager = WorkManager.getInstance(context);
         workManager.enqueueUniqueWork(
                 Integer.toString(R.id.import_service),
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,
                 new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
     }
 
@@ -448,7 +448,7 @@ public class ImportHelper {
         WorkManager workManager = WorkManager.getInstance(context);
         workManager.enqueueUniqueWork(
                 Integer.toString(R.id.external_import_service),
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,
                 new OneTimeWorkRequest.Builder(ExternalImportWorker.class).addTag(WORK_CLOSEABLE).build());
     }
 

@@ -231,8 +231,10 @@ public class ImportWorker extends BaseWorker {
             // Write log in root folder
             DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
 
-            dao.deleteAllFlaggedBooks(true);
-            dao.deleteAllFlaggedGroups();
+            if (!isStopped()) { // Should only be done when things have run properly
+                dao.deleteAllFlaggedBooks(true);
+                dao.deleteAllFlaggedGroups();
+            }
             dao.cleanup();
 
             eventComplete(STEP_4_QUEUE_FINAL, bookFolders.size(), booksOK, booksKO, logFile);
