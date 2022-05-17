@@ -164,18 +164,21 @@ public class ImportWorker extends BaseWorker {
         }
 
         List<DocumentFile> bookFolders = new ArrayList<>();
-        CollectionDAO dao = new ObjectBoxDAO(context);
 
         try (FileExplorer explorer = new FileExplorer(context, rootFolder.getUri())) {
             // 1st pass : Import groups JSON
             if (importGroups) {
                 trace(Log.INFO, STEP_GROUPS, log, "Importing groups");
                 // Flag existing groups for cleanup
-                dao.flagAllGroups(Grouping.CUSTOM);
-
-                DocumentFile groupsFile = explorer.findFile(context, rootFolder, Consts.GROUPS_JSON_FILE_NAME);
-                if (groupsFile != null) importGroups(context, groupsFile, dao, log);
-                else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
+                CollectionDAO dao = new ObjectBoxDAO(context);
+                try {
+                    dao.flagAllGroups(Grouping.CUSTOM);
+                    DocumentFile groupsFile = explorer.findFile(context, rootFolder, Consts.GROUPS_JSON_FILE_NAME);
+                    if (groupsFile != null) importGroups(context, groupsFile, dao, log);
+                    else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
+                } finally {
+                    dao.cleanup();
+                }
             }
 
             // 2nd pass : count subfolders of every site folder
@@ -205,24 +208,44 @@ public class ImportWorker extends BaseWorker {
                 duplicatesDAO.cleanup();
             }
             // Flag DB content for cleanup
-            dao.flagAllInternalBooks();
-            dao.flagAllErrorBooksWithJson();
+            CollectionDAO dao = new ObjectBoxDAO(context);
+            try {
+                dao.flagAllInternalBooks();
+                dao.flagAllErrorBooksWithJson();
+            } finally {
+                dao.cleanup();
+            }
 
-            for (int i = 0; i < bookFolders.size(); i++) {
-                if (isStopped()) throw new InterruptedException();
-                importFolder(context, explorer, dao, bookFolders, bookFolders.get(i), log, rename, cleanNoJSON, cleanNoImages);
+            try {
+                dao = new ObjectBoxDAO(context);
+                for (int i = 0; i < bookFolders.size(); i++) {
+                    if (isStopped()) throw new InterruptedException();
+                    importFolder(context, explorer, dao, bookFolders, bookFolders.get(i), log, rename, cleanNoJSON, cleanNoImages);
+                    // Clear the DAO every 2500K iterations to optimize memory
+                    if (0 == i % 2500) {
+                        dao.cleanup();
+                        dao = new ObjectBoxDAO(context);
+                    }
+                }
+            } finally {
+                dao.cleanup();
             }
             trace(Log.INFO, STEP_3_BOOKS, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
             eventComplete(STEP_3_BOOKS, bookFolders.size(), booksOK, booksKO, null);
 
             // 4th pass : Import queue & bookmarks JSON
-            DocumentFile queueFile = explorer.findFile(context, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
-            if (queueFile != null) importQueue(context, queueFile, dao, log);
-            else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
+            dao = new ObjectBoxDAO(context);
+            try {
+                DocumentFile queueFile = explorer.findFile(context, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
+                if (queueFile != null) importQueue(context, queueFile, dao, log);
+                else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
 
-            DocumentFile bookmarksFile = explorer.findFile(context, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
-            if (bookmarksFile != null) importBookmarks(context, bookmarksFile, dao, log);
-            else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No bookmarks file found");
+                DocumentFile bookmarksFile = explorer.findFile(context, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
+                if (bookmarksFile != null) importBookmarks(context, bookmarksFile, dao, log);
+                else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No bookmarks file found");
+            } finally {
+                dao.cleanup();
+            }
         } catch (IOException | InterruptedException e) {
             Timber.w(e);
             // Restore interrupted state
@@ -232,10 +255,14 @@ public class ImportWorker extends BaseWorker {
             DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
 
             if (!isStopped()) { // Should only be done when things have run properly
-                dao.deleteAllFlaggedBooks(true);
-                dao.deleteAllFlaggedGroups();
+                CollectionDAO dao = new ObjectBoxDAO(context);
+                try {
+                    dao.deleteAllFlaggedBooks(true);
+                    dao.deleteAllFlaggedGroups();
+                } finally {
+                    dao.cleanup();
+                }
             }
-            dao.cleanup();
 
             eventComplete(STEP_4_QUEUE_FINAL, bookFolders.size(), booksOK, booksKO, logFile);
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
