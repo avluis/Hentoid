@@ -415,7 +415,7 @@ public class FileHelper {
         // Remove and add back a test file to test if the user has the I/O rights to the selected folder
         String tempFileName = "delete." + Helper.getRandomInt(10000) + ".me";
         DocumentFile testFile = findOrCreateDocumentFile(context, folder, "application/octet-steam", tempFileName);
-        if (null == testFile || !testFile.exists()) return -3;
+        if (null == testFile) return -3;
         if (!testFile.delete()) return -2;
 
         return 0;
