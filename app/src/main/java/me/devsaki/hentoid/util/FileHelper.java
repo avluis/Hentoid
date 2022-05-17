@@ -388,26 +388,9 @@ public class FileHelper {
      * @param folder  Folder to check and set
      * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials could not be set
      */
-    public static int checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder, LogHelper.LogInfo log) {
-        if (log != null) {
-            log.addEntry("005");
-            LogHelper.writeLog(context, log);
-        }
-
-        int result = createNoMedia(context, folder, log);
-
-        if (log != null) {
-            log.addEntry("010");
-            LogHelper.writeLog(context, log);
-        }
-
+    public static int checkAndSetRootFolder(@NonNull final Context context, @NonNull final DocumentFile folder) {
+        int result = createNoMedia(context, folder);
         if (0 == result) Preferences.setStorageUri(folder.getUri().toString());
-
-        if (log != null) {
-            log.addEntry("01");
-            LogHelper.writeLog(context, log);
-        }
-
         return result;
     }
 
@@ -418,18 +401,12 @@ public class FileHelper {
      * @param folder  Folder to create the file into
      * @return 0 if the given folder is valid and has been set; -1 if the given folder is invalid; -2 if write credentials are insufficient
      */
-    public static int createNoMedia(@NonNull final Context context, @NonNull final DocumentFile folder, LogHelper.LogInfo log) {
+    public static int createNoMedia(@NonNull final Context context, @NonNull final DocumentFile folder) {
         // Validate folder
         if (!folder.exists() && !folder.isDirectory()) return -1;
 
         // Make sure the nomedia file is created
         DocumentFile nomedia = findFile(context, folder, NOMEDIA_FILE_NAME);
-
-        if (log != null) {
-            log.addEntry("006");
-            LogHelper.writeLog(context, log);
-        }
-
         if (null == nomedia) {
             nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
             if (null == nomedia || !nomedia.exists()) return -3;
@@ -437,33 +414,10 @@ public class FileHelper {
 
         // Remove and add back a test file to test if the user has the I/O rights to the selected folder
         DocumentFile testFile = findFile(context, folder, "delete.me");
-
-        if (log != null) {
-            log.addEntry("007");
-            LogHelper.writeLog(context, log);
-        }
-
         if (testFile != null && !testFile.delete()) return -2;
-
-        if (log != null) {
-            log.addEntry("008");
-            LogHelper.writeLog(context, log);
-        }
-
         testFile = folder.createFile("application/octet-steam", "delete.me");
         if (null == testFile || !testFile.exists()) return -3;
-
-        if (log != null) {
-            log.addEntry("009a");
-            LogHelper.writeLog(context, log);
-        }
-
         if (!testFile.delete()) return -2;
-
-        if (log != null) {
-            log.addEntry("009b");
-            LogHelper.writeLog(context, log);
-        }
 
         return 0;
     }
