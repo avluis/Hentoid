@@ -91,14 +91,28 @@ public class ImageFile {
 
     public static ImageFile fromImageUrl(int order, String url, StatusContent status, int maxPages) {
         ImageFile result = new ImageFile();
-        init(result, order, status, maxPages);
+        init(result, order, status, maxPages, null);
+        result.url = url;
+        return result;
+    }
+
+    public static ImageFile fromImageUrl(int order, String url, StatusContent status, String name) {
+        ImageFile result = new ImageFile();
+        init(result, order, status, -1, name);
         result.url = url;
         return result;
     }
 
     public static ImageFile fromPageUrl(int order, String url, StatusContent status, int maxPages) {
         ImageFile result = new ImageFile();
-        init(result, order, status, maxPages);
+        init(result, order, status, maxPages, null);
+        result.pageUrl = url;
+        return result;
+    }
+
+    public static ImageFile fromPageUrl(int order, String url, StatusContent status, String name) {
+        ImageFile result = new ImageFile();
+        init(result, order, status, -1, name);
         result.pageUrl = url;
         return result;
     }
@@ -109,11 +123,15 @@ public class ImageFile {
         return result;
     }
 
-    private static void init(ImageFile imgFile, int order, StatusContent status, int maxPages) {
+    private static void init(ImageFile imgFile, int order, StatusContent status, int maxPages, String name) {
         imgFile.order = order;
         imgFile.status = status;
-        int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
-        imgFile.computeName(nbMaxDigits);
+        if (null == name || name.isEmpty()) {
+            int nbMaxDigits = (int) (Math.floor(Math.log10(maxPages)) + 1);
+            imgFile.computeName(nbMaxDigits);
+        } else {
+            imgFile.name = name;
+        }
     }
 
     public long getId() {

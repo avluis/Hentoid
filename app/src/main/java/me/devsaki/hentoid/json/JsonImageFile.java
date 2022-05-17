@@ -46,9 +46,9 @@ class JsonImageFile {
         return result;
     }
 
-    ImageFile toEntity(int maxPages, @NonNull List<Chapter> chapters) {
-        ImageFile result = ImageFile.fromImageUrl(order, url, status, maxPages);
-        if (url.isEmpty()) result = ImageFile.fromPageUrl(order, pageUrl, status, maxPages);
+    ImageFile toEntity(@NonNull List<Chapter> chapters) {
+        ImageFile result = ImageFile.fromImageUrl(order, url, status, name);
+        if (url.isEmpty()) result = ImageFile.fromPageUrl(order, pageUrl, status, name);
         result.setName(name);
         result.setIsCover(isCover);
         result.setFavourite(favourite);

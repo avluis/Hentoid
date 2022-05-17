@@ -36,7 +36,7 @@ public class FileExplorer implements Closeable {
     private static final String DOCPROVIDER_PATH_TREE = "tree";
 
     private static final Map<String, Boolean> providersCache = new HashMap<>();
-    private final Map<String, String> documentIdCache = new HashMap<>();
+    private final MaxSizeHashMap<String, String> documentIdCache = new MaxSizeHashMap<>(2000);
 
     private final ContentProviderClient client;
 
