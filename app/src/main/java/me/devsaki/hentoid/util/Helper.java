@@ -58,6 +58,7 @@ import io.reactivex.functions.Consumer;
 import io.whitfin.siphash.SipHasher;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
+import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.json.JsonContentCollection;
@@ -487,6 +488,17 @@ public final class Helper {
             return false;
         }
         return true;
+    }
+
+    public static void logException(Throwable t) {
+        List<LogHelper.LogEntry> log = new ArrayList<>();
+        log.add(new LogHelper.LogEntry(StringHelper.protect(t.getMessage())));
+        log.add(new LogHelper.LogEntry(Helper.getStackTraceString(t)));
+
+        LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
+        logInfo.setEntries(log);
+        logInfo.setHeaderName("latest-crash");
+        LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
     }
 
     public static String getStackTraceString(Throwable t) {

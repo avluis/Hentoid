@@ -2,6 +2,7 @@ package me.devsaki.hentoid.events;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
 import java.lang.annotation.Retention;
@@ -69,6 +70,28 @@ public class ProcessEvent {
         this.elementsTotal = elementsTotal;
         this.logFile = null;
         this.elementName = "";
+    }
+
+    /**
+     * Use for definite EventType.PROGRESS events
+     *
+     * @param eventType     event type code
+     * @param step          step of the process
+     * @param name          name of the element being processed
+     * @param elementsOK    elements processed successfully so far
+     * @param elementsKO    elements whose processing has failed so far
+     * @param elementsTotal total elements to process
+     */
+    public ProcessEvent(@EventType int eventType, @IdRes int processId, int step, @NonNull String name, int elementsOK, int elementsKO, int elementsTotal) {
+        this.eventType = eventType;
+        this.processId = processId;
+        this.step = step;
+        this.elementsOK = elementsOK;
+        this.elementsOKOther = -1;
+        this.elementsKO = elementsKO;
+        this.elementsTotal = elementsTotal;
+        this.logFile = null;
+        this.elementName = name;
     }
 
     /**

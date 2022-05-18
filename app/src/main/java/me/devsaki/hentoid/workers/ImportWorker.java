@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.workers;
 
 import android.content.Context;
-import android.net.Uri;
 import android.util.Log;
 
 import androidx.annotation.CheckResult;
@@ -115,12 +114,17 @@ public class ImportWorker extends BaseWorker {
         boolean doRename = data.getRefreshRename();
         boolean doCleanNoJson = data.getRefreshCleanNoJson();
         boolean doCleanNoImages = data.getRefreshCleanNoImages();
+        boolean doImportGroups = data.getImportGroups();
 
-        startImport(doRename, doCleanNoJson, doCleanNoImages);
+        startImport(doRename, doCleanNoJson, doCleanNoImages, doImportGroups);
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
-        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary, step, booksOK, booksKO, nbBooks));
+        eventProgress(step, nbBooks, booksOK, booksKO, "");
+    }
+
+    private void eventProgress(int step, int nbBooks, int booksOK, int booksKO, @NonNull String name) {
+        EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_primary, step, name, booksOK, booksKO, nbBooks));
     }
 
     private void eventComplete(int step, int nbBooks, int booksOK, int booksKO, DocumentFile cleanupLogFile) {
@@ -141,8 +145,9 @@ public class ImportWorker extends BaseWorker {
      * @param rename        True if the user has asked for a folder renaming when calling import from Preferences
      * @param cleanNoJSON   True if the user has asked for a cleanup of folders with no JSONs when calling import from Preferences
      * @param cleanNoImages True if the user has asked for a cleanup of folders with no images when calling import from Preferences
+     * @param importGroups  True if the worker has to import groups from the groups JSON; false if existing groups should be kept
      */
-    private void startImport(boolean rename, boolean cleanNoJSON, boolean cleanNoImages) {
+    private void startImport(boolean rename, boolean cleanNoJSON, boolean cleanNoImages, boolean importGroups) {
         booksOK = 0;
         booksKO = 0;
         nbFolders = 0;
@@ -159,24 +164,30 @@ public class ImportWorker extends BaseWorker {
         }
 
         List<DocumentFile> bookFolders = new ArrayList<>();
-        CollectionDAO dao = new ObjectBoxDAO(context);
 
-        try (FileExplorer explorer = new FileExplorer(context, Uri.parse(Preferences.getStorageUri()))) {
+        try (FileExplorer explorer = new FileExplorer(context, rootFolder.getUri())) {
             // 1st pass : Import groups JSON
-
-            // Flag existing groups for cleanup
-            dao.flagAllGroups(Grouping.CUSTOM);
-
-            DocumentFile groupsFile = explorer.findFile(context, rootFolder, Consts.GROUPS_JSON_FILE_NAME);
-            if (groupsFile != null) importGroups(context, groupsFile, dao, log);
-            else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
+            if (importGroups) {
+                trace(Log.INFO, STEP_GROUPS, log, "Importing groups");
+                // Flag existing groups for cleanup
+                CollectionDAO dao = new ObjectBoxDAO(context);
+                try {
+                    dao.flagAllGroups(Grouping.CUSTOM);
+                    DocumentFile groupsFile = explorer.findFile(context, rootFolder, Consts.GROUPS_JSON_FILE_NAME);
+                    if (groupsFile != null) importGroups(context, groupsFile, dao, log);
+                    else trace(Log.INFO, STEP_GROUPS, log, "No groups file found");
+                } finally {
+                    dao.cleanup();
+                }
+            }
 
             // 2nd pass : count subfolders of every site folder
+            eventProgress(STEP_2_BOOK_FOLDERS, 1, 0, 0, context.getString(R.string.api29_migration_step1));
             List<DocumentFile> siteFolders = explorer.listFolders(context, rootFolder);
-            int foldersProcessed = 1;
+            int foldersProcessed = 0;
             for (DocumentFile f : siteFolders) {
+                eventProgress(STEP_2_BOOK_FOLDERS, siteFolders.size(), foldersProcessed++, 0, StringHelper.protect(f.getName()));
                 bookFolders.addAll(explorer.listFolders(context, f));
-                eventProgress(STEP_2_BOOK_FOLDERS, siteFolders.size(), foldersProcessed++, 0);
             }
             eventComplete(STEP_2_BOOK_FOLDERS, siteFolders.size(), siteFolders.size(), 0, null);
             notificationManager.notify(new ImportProgressNotification(context.getResources().getString(R.string.starting_import), 0, 0));
@@ -197,24 +208,44 @@ public class ImportWorker extends BaseWorker {
                 duplicatesDAO.cleanup();
             }
             // Flag DB content for cleanup
-            dao.flagAllInternalBooks();
-            dao.flagAllErrorBooksWithJson();
+            CollectionDAO dao = new ObjectBoxDAO(context);
+            try {
+                dao.flagAllInternalBooks();
+                dao.flagAllErrorBooksWithJson();
+            } finally {
+                dao.cleanup();
+            }
 
-            for (int i = 0; i < bookFolders.size(); i++) {
-                if (isStopped()) throw new InterruptedException();
-                importFolder(context, explorer, dao, bookFolders, bookFolders.get(i), log, rename, cleanNoJSON, cleanNoImages);
+            try {
+                dao = new ObjectBoxDAO(context);
+                for (int i = 0; i < bookFolders.size(); i++) {
+                    if (isStopped()) throw new InterruptedException();
+                    importFolder(context, explorer, dao, bookFolders, bookFolders.get(i), log, rename, cleanNoJSON, cleanNoImages);
+                    // Clear the DAO every 2500K iterations to optimize memory
+                    if (0 == i % 2500) {
+                        dao.cleanup();
+                        dao = new ObjectBoxDAO(context);
+                    }
+                }
+            } finally {
+                dao.cleanup();
             }
             trace(Log.INFO, STEP_3_BOOKS, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
             eventComplete(STEP_3_BOOKS, bookFolders.size(), booksOK, booksKO, null);
 
             // 4th pass : Import queue & bookmarks JSON
-            DocumentFile queueFile = explorer.findFile(context, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
-            if (queueFile != null) importQueue(context, queueFile, dao, log);
-            else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
+            dao = new ObjectBoxDAO(context);
+            try {
+                DocumentFile queueFile = explorer.findFile(context, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
+                if (queueFile != null) importQueue(context, queueFile, dao, log);
+                else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No queue file found");
 
-            DocumentFile bookmarksFile = explorer.findFile(context, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
-            if (bookmarksFile != null) importBookmarks(context, bookmarksFile, dao, log);
-            else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No bookmarks file found");
+                DocumentFile bookmarksFile = explorer.findFile(context, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
+                if (bookmarksFile != null) importBookmarks(context, bookmarksFile, dao, log);
+                else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No bookmarks file found");
+            } finally {
+                dao.cleanup();
+            }
         } catch (IOException | InterruptedException e) {
             Timber.w(e);
             // Restore interrupted state
@@ -223,9 +254,15 @@ public class ImportWorker extends BaseWorker {
             // Write log in root folder
             DocumentFile logFile = LogHelper.writeLog(context, buildLogInfo(rename || cleanNoJSON || cleanNoImages, log));
 
-            dao.deleteAllFlaggedBooks(true);
-            dao.deleteAllFlaggedGroups();
-            dao.cleanup();
+            if (!isStopped()) { // Should only be done when things have run properly
+                CollectionDAO dao = new ObjectBoxDAO(context);
+                try {
+                    dao.deleteAllFlaggedBooks(true);
+                    dao.deleteAllFlaggedGroups();
+                } finally {
+                    dao.cleanup();
+                }
+            }
 
             eventComplete(STEP_4_QUEUE_FINAL, bookFolders.size(), booksOK, booksKO, logFile);
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));

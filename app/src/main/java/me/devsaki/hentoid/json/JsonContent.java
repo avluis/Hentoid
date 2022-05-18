@@ -165,7 +165,7 @@ public class JsonContent {
 
 
         // IMAGES
-        List<ImageFile> imgs = Stream.of(imageFiles).map(i -> i.toEntity(imageFiles.size(), chps)).toList();
+        List<ImageFile> imgs = Stream.of(imageFiles).map(i -> i.toEntity(chps)).toList();
         // Fix empty covers
         Optional<ImageFile> cover = Stream.of(imgs).filter(ImageFile::isCover).findFirst();
         if (cover.isEmpty() || cover.get().getUrl().isEmpty()) ImportHelper.createCover(imgs);

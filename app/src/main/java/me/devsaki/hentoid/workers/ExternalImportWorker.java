@@ -136,6 +136,7 @@ public class ExternalImportWorker extends BaseWorker {
             dao.deleteAllExternalBooks();
 
             for (Content content : library) {
+                if (isStopped()) break;
                 // If the same book folder is already in the DB, that means the user is trying to import
                 // a subfolder of the Hentoid main folder (yes, it has happened) => ignore these books
                 String duplicateOrigin = "folder";

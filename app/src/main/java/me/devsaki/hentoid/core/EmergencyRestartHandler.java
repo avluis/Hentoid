@@ -32,14 +32,7 @@ public class EmergencyRestartHandler implements
         // Log the exception
         Timber.i("Logging crash exception");
         try {
-            List<LogHelper.LogEntry> log = new ArrayList<>();
-            log.add(new LogHelper.LogEntry(StringHelper.protect(exception.getMessage())));
-            log.add(new LogHelper.LogEntry(Helper.getStackTraceString(exception)));
-
-            LogHelper.LogInfo logInfo = new LogHelper.LogInfo();
-            logInfo.setEntries(log);
-            logInfo.setHeaderName("latest-crash");
-            LogHelper.writeLog(HentoidApp.getInstance(), logInfo);
+            Helper.logException(exception);
         } finally {
             // Restart the Activity
             Timber.i("Restart %s", myActivityClass.getSimpleName());

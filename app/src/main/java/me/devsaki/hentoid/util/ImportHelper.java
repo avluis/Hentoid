@@ -100,6 +100,7 @@ public class ImportHelper {
         public boolean rename; // If true, rename folders with current naming convention
         public boolean cleanNoJson; // If true, delete folders where no JSON file is found
         public boolean cleanNoImages; // If true, delete folders where no supported images are found
+        public boolean importGroups; // If true, reimport groups from the groups JSON
     }
 
     /**
@@ -213,7 +214,6 @@ public class ImportHelper {
             @NonNull final Uri treeUri,
             boolean askScanExisting,
             @Nullable final ImportOptions options) {
-
         // Persist I/O permissions; keep existing ones if present
         Uri externalUri = null;
         if (!Preferences.getExternalLibraryUri().isEmpty())
@@ -226,6 +226,7 @@ public class ImportHelper {
             Timber.e("Could not find the selected file %s", treeUri.toString());
             return ProcessFolderResult.KO_INVALID_FOLDER;
         }
+
         // Check if the folder is not the device's Download folder
         List<String> pathSegments = treeUri.getPathSegments();
         if (pathSegments.size() > 1) {
@@ -236,12 +237,14 @@ public class ImportHelper {
                 return ProcessFolderResult.KO_DOWNLOAD_FOLDER;
             }
         }
+
         // Retrieve or create the Hentoid folder
         DocumentFile hentoidFolder = getOrCreateHentoidFolder(context, docFile);
         if (null == hentoidFolder) {
             Timber.e("Could not create Hentoid folder in folder %s", docFile.getUri().toString());
             return ProcessFolderResult.KO_CREATE_FAIL;
         }
+
         // Set the folder as the app's downloads folder
         int result = FileHelper.checkAndSetRootFolder(context, hentoidFolder);
         if (result < 0) {
@@ -416,14 +419,17 @@ public class ImportHelper {
         ImportNotificationChannel.init(context);
 
         ImportData.Builder builder = new ImportData.Builder();
-        builder.setRefreshRename(null != options && options.rename);
-        builder.setRefreshCleanNoJson(null != options && options.cleanNoJson);
-        builder.setRefreshCleanNoImages(null != options && options.cleanNoImages);
+        if (options != null) {
+            builder.setRefreshRename(options.rename);
+            builder.setRefreshCleanNoJson(options.cleanNoJson);
+            builder.setRefreshCleanNoImages(options.cleanNoImages);
+            builder.setImportGroups(options.importGroups);
+        }
 
         WorkManager workManager = WorkManager.getInstance(context);
         workManager.enqueueUniqueWork(
                 Integer.toString(R.id.import_service),
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,
                 new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
     }
 
@@ -442,7 +448,7 @@ public class ImportHelper {
         WorkManager workManager = WorkManager.getInstance(context);
         workManager.enqueueUniqueWork(
                 Integer.toString(R.id.external_import_service),
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,
                 new OneTimeWorkRequest.Builder(ExternalImportWorker.class).addTag(WORK_CLOSEABLE).build());
 
         return true;

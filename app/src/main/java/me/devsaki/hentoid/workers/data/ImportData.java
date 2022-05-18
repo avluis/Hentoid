@@ -11,10 +11,10 @@ import javax.annotation.Nonnull;
  * Use Builder class to set data; use Parser class to get data
  */
 public class ImportData {
-    private static final String KEY_REFRESH = "refresh";
     private static final String KEY_REFRESH_RENAME = "rename";
     private static final String KEY_REFRESH_CLEAN_NO_JSON = "cleanNoJson";
     private static final String KEY_REFRESH_CLEAN_NO_IMAGES = "cleanNoImages";
+    private static final String KEY_IMPORT_GROUPS = "importGroups";
 
     private ImportData() {
         throw new UnsupportedOperationException();
@@ -23,10 +23,6 @@ public class ImportData {
     public static final class Builder {
 
         private final Data.Builder builder = new Data.Builder();
-
-        public void setRefresh(boolean refresh) {
-            builder.putBoolean(KEY_REFRESH, refresh);
-        }
 
         public void setRefreshRename(boolean rename) {
             builder.putBoolean(KEY_REFRESH_RENAME, rename);
@@ -38,6 +34,10 @@ public class ImportData {
 
         public void setRefreshCleanNoImages(boolean refresh) {
             builder.putBoolean(KEY_REFRESH_CLEAN_NO_IMAGES, refresh);
+        }
+
+        public void setImportGroups(boolean value) {
+            builder.putBoolean(KEY_IMPORT_GROUPS, value);
         }
 
         public Data getData() {
@@ -53,10 +53,6 @@ public class ImportData {
             this.data = data;
         }
 
-        public boolean getRefresh() {
-            return data.getBoolean(KEY_REFRESH, false);
-        }
-
         public boolean getRefreshRename() {
             return data.getBoolean(KEY_REFRESH_RENAME, false);
         }
@@ -67,6 +63,10 @@ public class ImportData {
 
         public boolean getRefreshCleanNoImages() {
             return data.getBoolean(KEY_REFRESH_CLEAN_NO_IMAGES, false);
+        }
+
+        public boolean getImportGroups() {
+            return data.getBoolean(KEY_IMPORT_GROUPS, true);
         }
     }
 }

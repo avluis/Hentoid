@@ -34,6 +34,10 @@ public class JsonContentCollection {
         this.library = Stream.of(library).map(c -> JsonContent.fromEntity(c, false)).toList();
     }
 
+    public void addToLibrary(@NonNull Content content) {
+        library.add(JsonContent.fromEntity(content, false));
+    }
+
     public List<Content> getQueue() {
         return Stream.of(queue).map(c -> c.toEntity(null)).toList();
     }
