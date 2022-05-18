@@ -68,6 +68,7 @@ public class FileHelper {
 
     private static final String PRIMARY_VOLUME_NAME = "primary"; // DocumentsContract.PRIMARY_VOLUME_NAME
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
+    private static final String TEST_FILE_NAME = "delete.me";
 
     private static final String ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"; // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
 
@@ -424,8 +425,7 @@ public class FileHelper {
         }
 
         // Remove and add back a test file to test if the user has the I/O rights to the selected folder
-        String tempFileName = "delete." + Helper.getRandomInt(10000) + ".me";
-        DocumentFile testFile = findOrCreateDocumentFile(context, folder, "application/octet-steam", tempFileName);
+        DocumentFile testFile = findOrCreateDocumentFile(context, folder, "application/octet-steam", TEST_FILE_NAME);
         if (null == testFile) return -3;
         if (!testFile.delete()) return -2;
 
