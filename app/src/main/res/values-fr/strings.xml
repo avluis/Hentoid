@@ -305,4 +305,48 @@
 
 
     <string name="duplicate_delete">Supprimer</string>
+    <string name="pref_top_fab_summary_off">Bouton désactivé</string>
+    <string name="pref_top_fab_summary_on">Bouton activé</string>
+    <string name="pref_cat_search">Recherche avancée</string>
+    <string name="pref_cat_advanced">Avancé</string>
+    <string name="pref_select_folder_title">Sélectionnez le dossier des téléchargements</string>
+    <string name="pref_select_folder_summary">Sélectionnez où Hentoid stockera vos téléchargements</string>
+    <string name="u_byte">octets</string>
+    <string name="u_kilobyte">Ko</string>
+    <string name="u_megabyte">Mo</string>
+    <string name="u_gigabyte">Go</string>
+    <string name="u_terabyte">To</string>
+    <string name="u_petabyte">Po</string>
+    <string name="u_exabyte">Eo</string>
+    <string name="lang_en">anglais</string>
+    <string name="lang_zh">chinois</string>
+    <string name="lang_ja">japonais</string>
+    <string name="lang_ko">coréen</string>
+    <string name="lang_es">espagnol</string>
+    <string name="lang_ru">russe</string>
+    <string name="lang_pt">portugais</string>
+    <string name="lang_th">thaï</string>
+    <string name="lang_fr">français</string>
+    <string name="lang_vi">vietnamien</string>
+    <string name="lang_it">ilalien</string>
+    <string name="lang_de">allemand</string>
+    <string name="lang_pl">polonais</string>
+    <string name="lang_id">indonésien</string>
+    <string name="lang_hu">hongrois</string>
+    <string name="lang_tr">turc</string>
+    <string name="lang_cs">tchèque</string>
+    <string name="group_today">Aujourd\'hui</string>
+    <string name="about1"><b>Hentoid</b> est une application d\'archivage de Doujinshi et H-Manga. <b>Hentoid</b> a été créé à l\'origine par Cesar Arasaki.</string>
+    <string name="select_file_manager">Sélectionnez votre gestionnaire de fichiers</string>
+    <string name="groups">Groupes</string>
+    <string name="empty">vide</string>
+    <string name="export_run">EXÉCUTER L\'EXPORTATION</string>
+    <string name="refresh_options_remove_or">ou</string>
+    <string name="pref_screen_browser">Navigateur</string>
+    <string name="information_help">Information</string>
+    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (échelle de <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="updates_title">Mises à jour</string>
+    <string name="masterdata_no_result">Aucun résultat :(</string>
+    <string name="pref_screen_privacy">Confidentialité</string>
+    <string name="pref_browser_dns_title">DNS over HTTPS</string>
 </resources>

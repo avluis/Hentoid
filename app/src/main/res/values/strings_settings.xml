@@ -95,7 +95,7 @@
     <string name="pref_browser_initial_zoom_summary">Zoom level of browser page on initial page load\nCurrently: <x:g example="20%" id="percentage">%s%%</x:g></string>
     <string name="pref_browser_dns_title">DNS over HTTPS</string>
     <string name="pref_browser_clear_cookies">Clear all cookies</string>
-    <string name="pref_browser_clear_cookies_ok">Cookies cleared successfuly</string>
+    <string name="pref_browser_clear_cookies_ok">Cookies cleared successfully</string>
     <string name="pref_browser_clear_cookies_ko">No cookie to clear</string>
 
     <!-- Downloader -->
