@@ -48,6 +48,8 @@ public class Attribute {
     private int externalId = 0;
     @Backlink(to = "attributes") // backed by the to-many relation in Content
     public ToMany<Content> contents;
+    @Transient
+    private String displayName = "";
 
 
     public Attribute() { // Required by ObjectBox when an alternate constructor exists
@@ -90,6 +92,14 @@ public class Attribute {
 
     public void setName(@Nonnull String name) {
         this.name = name;
+    }
+
+    public String getDisplayName() {
+        return displayName.isEmpty() ? name : displayName;
+    }
+
+    public void setDisplayName(@Nonnull String displayname) {
+        this.displayName = displayname;
     }
 
     public AttributeType getType() {
@@ -166,7 +176,7 @@ public class Attribute {
     }
 
     public String formatLabel(@NonNull Resources res, boolean useNamespace) {
-        return String.format("%s%s %s", useNamespace ? res.getString(type.getDisplayName()).toLowerCase() + ":" : "", getName(), getCount() > 0 ? "(" + getCount() + ")" : "");
+        return String.format("%s%s %s", useNamespace ? res.getString(type.getDisplayName()).toLowerCase() + ":" : "", getDisplayName(), getCount() > 0 ? "(" + getCount() + ")" : "");
     }
 
     // Hashcode (and by consequence equals) has to take into account fields that get visually updated on the app UI

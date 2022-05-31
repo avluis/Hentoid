@@ -257,7 +257,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         // Translate language names if present
         if (!results.attributes.isEmpty() && results.attributes.get(0).getType().equals(AttributeType.LANGUAGE)) {
             for (Attribute a : results.attributes)
-                a.setName(LanguageHelper.getLocalNameFromLanguage(requireContext(), a.getName()));
+                a.setDisplayName(LanguageHelper.getLocalNameFromLanguage(requireContext(), a.getName()));
         }
 
         mTotalSelectedCount = (int) results.totalSelectedAttributes/* - selectedAttributes.size()*/;
