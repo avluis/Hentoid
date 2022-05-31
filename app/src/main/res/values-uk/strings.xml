@@ -292,6 +292,7 @@
     <string name="export_warning1">Експорт метаданих створить список ваших книг у форматі JSON.\nЦе не спосіб переміщення вашої колекції на компʼютер чи SD-карту.\nНатисніть тут, щоб дізнатися, як це зробити.</string>
     <string name="export_warning2">Книги експортуються без зображень.\nВам доведеться завантажити їх знову після відновлення, якщо папка зображень відсутня.</string>
     <string name="export_run">ЗАПУСТИТИ ЕКСПОРТ</string>
+	<string name="export_failed">Експорт не вдався</string>
     <string name="import_settings_title">Імпорт налаштувань</string>
     <string name="import_settings_success">Успішно імпортовано</string>
 
@@ -502,6 +503,7 @@
         <item quantity="many">Видалити групи та книги</item>
     </plurals>
     <string name="group_delete_nothing">Нема чого видаляти — увімкніть опцію \"Дозволити видаляти зовнішній контент\"</string>
+	<string name="clear_rating">Очистити рейтинг</string>
 
     <!-- Merge & split -->
     <string name="merge_merge">Поєднати</string>
@@ -545,6 +547,7 @@
     <string name="library_filter_favourite_help">Відображення обраних книг</string>
     <string name="filter_completed">Відображати тільки завершене</string>
     <string name="filter_not_completed">Відображати не тільки завершене</string>
+    <string name="filter_rating">Фільтрувати за рейтингом</string>
 
     <!-- Groups bottom panel -->
     <string name="display_groups_title">Показати групи</string>
@@ -555,6 +558,7 @@
     <!-- Item card tooltips -->
     <string name="drag_help">Перемістити елемент</string>
     <string name="external_help">Знаходиться у зовнішній бібліотеці</string>
+	<string name="rating_help">Рейтинг книги</string>
     <string name="streamed_help">Книга передається потоком</string>
     <string name="view_source_help">Переглянути джерело у браузері</string>
     <string name="fav_help">Додати/видалити з обраного</string>
