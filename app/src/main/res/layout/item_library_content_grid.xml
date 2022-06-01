@@ -114,6 +114,21 @@
             tools:ignore="ContentDescription" />
 
         <ImageView
+            android:id="@+id/iv_rating"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_star_5"
+            android:tooltipText="@string/rating_help"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivFavourite"
+            app:layout_constraintVertical_bias="1.0"
+            app:tint="?colorSecondary"
+            tools:ignore="ContentDescription" />
+
+        <ImageView
             android:id="@+id/queue_site_button"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -124,7 +139,7 @@
             android:padding="8dp"
             android:tooltipText="@string/view_source_help"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivFavourite"
+            app:layout_constraintTop_toBottomOf="@id/iv_rating"
             app:tint="?colorSecondary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_hentoid_shape" />
