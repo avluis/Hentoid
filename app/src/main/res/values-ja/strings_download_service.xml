@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <plurals name="download_completed" tools:ignore="MissingQuantity">
+        <item quantity="one" tools:ignore="ImpliedQuantity">ダウンロードが完了しました</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g>のダウンロードが完了しました</item>
+    </plurals>
+    <string name="download_complete">ダウンロードが完了しました</string>
+    <string name="download_cancelled">ダウンロードがキャンセルされました</string>
+    <string name="download_error">ダウンロードは完了しましたが、エラーが発生しました</string>
+    <plurals name="add_to_queue" tools:ignore="MissingQuantity">
+        <item quantity="one"><x:g example="1" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g>のアイテムがキューに追加されました</item>
+        <item quantity="other"><x:g example="2" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g>キューに追加されたアイテム</item>
+    </plurals>
+    <string name="already_downloaded">既にダウンロード済み</string>
+    <string name="already_queued">既にキューに入れられています</string>
+</resources>

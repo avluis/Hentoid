@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="tools_title">ツール</string>
+<string name="tools_screen_import_export">インポート/エクスポート</string>
+<string name="tools_export_library_title">メタデータをエクスポート</string>
+<string name="tools_export_library_summary">HentoidのブックをJSONファイルへ書き出し</string>
+<string name="tools_import_library_title">メタデータをインポート</string>
+<string name="tools_import_library_summary">エクスポートされたHentoidの書籍をJSONファイルから復元する</string>
+<string name="tools_screen_cat_settings">設定</string>
+<string name="tools_export_settings_title">エクスポートの設定</string>
+<string name="tools_export_settings_summary">設定をJSONファイルに書き出す</string>
+<string name="tools_import_settings_title">インポートの設定</string>
+<string name="tools_import_settings_summary">エクスポートされた設定をJSONファイルから復元する</string>
+<string name="tools_duplicate_detector_title">複製検出器</string>
+<string name="tools_duplicate_detector_summary">重複する書籍の確認と削除</string>
+<string name="tools_screen_cache">キャッシュの管理</string>
+<string name="tools_cache_browser">ブラウザのキャッシュをクリア</string>
+<string name="tools_cache_browser_success">WebViewキャッシュがクリアされました</string>
+<string name="tools_cache_app">アプリのキャッシュをクリア</string>
+<string name="tools_cache_app_success">アプリのキャッシュが正常にクリアされました</string>
+<string name="tools_latest_logs_title">アプリのログ</string>
+<string name="tools_latest_logs_summary">アプリの最新ログを見る</string>
+</resources>
