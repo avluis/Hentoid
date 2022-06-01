@@ -21,6 +21,7 @@ public abstract class Consts {
     public static final String GROUPS_JSON_FILE_NAME = "groups.json";
 
     public static final String THUMB_FILE_NAME = "thumb";
+    public static final String EXT_THUMB_FILE_PREFIX = "ext-thumb-";
     public static final String PICTURE_CACHE_FOLDER = "pictures";
     public static final String UGOIRA_CACHE_FOLDER = "ugoira";
 

@@ -305,4 +305,107 @@ public final class ImageHelper {
 
         return Uri.fromFile(new File(path));
     }
+
+    /**
+     * @param bitmap                the Bitmap to be scaled
+     * @param threshold             the maxium dimension (either width or height) of the scaled bitmap
+     * @param isNecessaryToKeepOrig is it necessary to keep the original bitmap? If not recycle the original bitmap to prevent memory leak.
+     */
+    public static Bitmap getScaledDownBitmap(@NonNull Bitmap bitmap, int threshold, boolean isNecessaryToKeepOrig) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int newWidth = width;
+        int newHeight = height;
+
+        if (width > height && width > threshold) {
+            newWidth = threshold;
+            newHeight = (int) (height * (float) newWidth / width);
+        }
+
+        if (width > height && width <= threshold) {
+            //the bitmap is already smaller than our required dimension, no need to resize it
+            return bitmap;
+        }
+
+        if (width < height && height > threshold) {
+            newHeight = threshold;
+            newWidth = (int) (width * (float) newHeight / height);
+        }
+
+        if (width < height && height <= threshold) {
+            //the bitmap is already smaller than our required dimension, no need to resize it
+            return bitmap;
+        }
+
+        if (width == height && width > threshold) {
+            newWidth = threshold;
+            newHeight = newWidth;
+        }
+
+        if (width == height && width <= threshold) {
+            //the bitmap is already smaller than our required dimension, no need to resize it
+            return bitmap;
+        }
+
+        return getResizedBitmap(bitmap, newWidth, newHeight, isNecessaryToKeepOrig);
+    }
+
+    private static Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight, boolean isNecessaryToKeepOrig) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+
+        Bitmap resizedBitmap = resizeBitmap(bm, Math.min(scaleHeight, scaleWidth));
+
+        if (!isNecessaryToKeepOrig) {
+            bm.recycle();
+        }
+        return resizedBitmap;
+    }
+
+    static Bitmap resizeBitmap(@NonNull final Bitmap src, float targetScale) {
+        ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
+        Timber.d(">> resizing successively to scale %s", resizeParams.right);
+        return successiveResize(src, resizeParams.left);
+    }
+
+    /**
+     * Compute resizing parameters according to the given target scale
+     *
+     * @param targetScale target scale of the image to display (% of the raw dimensions)
+     * @return Pair containing
+     * - First : Number of half-resizes to perform
+     * - Second : Corresponding scale
+     */
+    private static ImmutablePair<Integer, Float> computeResizeParams(final float targetScale) {
+        float resultScale = 1f;
+        int nbResize = 0;
+
+        // Resize when approaching the target scale by 1/3 because there may already be artifacts displayed at that point
+        // (seen with full-res pictures resized to 65% with Android's default bilinear filtering)
+        for (int i = 1; i < 10; i++) if (targetScale < Math.pow(0.5, i) * 1.33) nbResize++;
+        if (nbResize > 0) resultScale = (float) Math.pow(0.5, nbResize);
+
+        return new ImmutablePair<>(nbResize, resultScale);
+    }
+
+    static Bitmap successiveResize(@NonNull final Bitmap src, int resizeNum) {
+        if (0 == resizeNum) return src;
+
+        int srcWidth = src.getWidth();
+        int srcHeight = src.getHeight();
+        Bitmap output = src;
+        for (int i = 0; i < resizeNum; i++) {
+            srcWidth /= 2;
+            srcHeight /= 2;
+            Bitmap temp = Bitmap.createScaledBitmap(output, srcWidth, srcHeight, true);
+            if (i != 0) { // don't recycle the src bitmap
+                output.recycle();
+            }
+            output = temp;
+        }
+
+        return output;
+    }
 }
