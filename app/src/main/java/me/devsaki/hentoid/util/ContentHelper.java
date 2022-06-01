@@ -5,6 +5,7 @@ import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -408,6 +409,21 @@ public final class ContentHelper {
         if (deleteContent) removeContent(context, dao, content);
     }
 
+    public static void removeAllExternalContent(
+            @NonNull final Context context,
+            @NonNull final CollectionDAO dao
+    ) {
+        // Remove all external books from DB
+        // NB : do NOT use ContentHelper.removeContent as it would remove files too
+        // here we just want to remove DB entries without removing files
+        dao.deleteAllExternalBooks();
+
+        // Remove all images stored in the app's persistent folder (archive covers)
+        File appFolder = context.getFilesDir();
+        File[] images = appFolder.listFiles((file, s) -> ImageHelper.isSupportedImage(s));
+        if (images != null) for (File f : images) FileHelper.removeFile(f);
+    }
+
     /**
      * Add new content to the library
      *
@@ -465,17 +481,43 @@ public final class ContentHelper {
             DocumentFile archive = FileHelper.getFileFromSingleUriString(context, content.getStorageUri());
             if (archive != null) {
                 try {
+                    File targetFolder = context.getFilesDir();
                     List<Pair<String, String>> extractInstructions = new ArrayList<>();
                     extractInstructions.add(new Pair<>(content.getCover().getFileUri().replace(content.getStorageUri() + File.separator, ""), newContentId + ""));
 
                     Disposable unarchiveDisposable = ArchiveHelper.extractArchiveEntriesRx(
                                     context,
                                     archive,
-                                    context.getFilesDir(),
+                                    targetFolder,
                                     extractInstructions,
                                     null)
                             .subscribeOn(Schedulers.io())
+                            // Save the pic as low-res JPG
                             .observeOn(Schedulers.computation())
+                            .map(uri -> {
+                                File extractedFile = new File(uri.getPath()); // These are file URI's
+                                try (InputStream is = FileHelper.getInputStream(context, uri)) {
+                                    Bitmap b = BitmapFactory.decodeStream(is);
+                                    String targetFileName = Consts.EXT_THUMB_FILE_PREFIX + extractedFile.getName();
+                                    // Reuse existing file if exists
+                                    File finalFile;
+                                    File[] existingFiles = targetFolder.listFiles((file, s) -> s.equals(targetFileName));
+                                    if (existingFiles != null && existingFiles.length > 0) {
+                                        finalFile = existingFiles[0];
+                                    } else { // Create new file
+                                        finalFile = new File(targetFolder, targetFileName);
+                                    }
+                                    try (OutputStream os = FileHelper.getOutputStream(finalFile)) {
+                                        Bitmap resizedBitmap = ImageHelper.getScaledDownBitmap(b, context.getResources().getDimensionPixelSize(R.dimen.card_grid_width), false);
+                                        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os);
+                                        resizedBitmap.recycle();
+                                    }
+                                    if (!extractedFile.delete())
+                                        Timber.w("Failed deleting file %s", extractedFile.getAbsolutePath());
+                                    return Uri.fromFile(finalFile);
+                                }
+                            })
+                            // Add it as the book's cover
                             .subscribe(
                                     uri -> {
                                         Timber.i(">> Set cover for %s", content.getTitle());
