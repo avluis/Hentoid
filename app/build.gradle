@@ -45,7 +45,7 @@ android {
         buildConfigField 'String', 'GITHUB_API_URL', '"https://api.github.com/repos/avluis/Hentoid/"'
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        resConfigs 'en', 'ru', 'it', 'uk', 'hu'
+        resConfigs 'en', 'ru', 'it', 'uk', 'hu', 'ja'
 
         // Only include complete translations
 
