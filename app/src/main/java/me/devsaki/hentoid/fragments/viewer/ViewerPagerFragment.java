@@ -46,6 +46,7 @@ import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -189,6 +190,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                 case R.id.action_slideshow:
                     int startIndex = convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay());
                     binding.controlsOverlay.slideshowDelaySlider.setValue(startIndex);
+                    binding.controlsOverlay.slideshowDelaySlider.setLabelBehavior(LabelFormatter.LABEL_FLOATING);
                     binding.controlsOverlay.slideshowDelaySlider.setVisibility(View.VISIBLE);
                     slideshowSliderDebouncer.submit(startIndex);
                     break;
@@ -1307,6 +1309,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     private void onSlideShowSliderChosen(int sliderIndex) {
         Preferences.setViewerSlideshowDelay(convertSliderPositionToPrefsDelay(sliderIndex));
+        Helper.removeLabels(binding.controlsOverlay.slideshowDelaySlider);
         binding.controlsOverlay.slideshowDelaySlider.setVisibility(View.GONE);
         startSlideshow(true);
     }
