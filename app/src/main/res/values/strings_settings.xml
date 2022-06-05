@@ -165,6 +165,7 @@
     <string name="pref_viewer_cap_tap_zoom">Cap double &amp; long tap zoom</string>
     <string name="pref_viewer_visuals">Visuals</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
+    <string name="pref_viewer_display_notch">Display around notch area</string>
     <string name="pref_viewer_display_pagenum">Always display page number</string>
     <string name="pref_viewer_tap_transitions">Enable page turn animation</string>
     <string name="pref_viewer_zoom_transitions">Enable zoom animation</string>
