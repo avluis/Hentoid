@@ -79,7 +79,7 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
         List<T> result = new ArrayList<>();
         for (int i = startPosition; i < maxPage; i++) {
             Integer index = idsToQueryListIndexes.get(shuffledList.get(i));
-            if (index != null)
+            if (index != null && index < lazyList.size())
                 result.add(lazyList.get(index));
         }
 
