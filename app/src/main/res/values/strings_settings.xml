@@ -155,7 +155,7 @@
     <string name="pref_viewer_page_turn">Page turn control</string>
     <string name="pref_viewer_page_turn_swipe">Swipe</string>
     <string name="pref_viewer_page_turn_tap">Border tap</string>
-    <string name="pref_viewer_page_turn_tap_2x">Tap zone width x2</string>
+    <string name="pref_viewer_page_turn_tap_2x">Larger tap zone</string>
     <string name="pref_viewer_page_turn_volume">Volume button</string>
     <string name="pref_viewer_page_turn_keyboard">Keyboard left/right</string>
     <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
