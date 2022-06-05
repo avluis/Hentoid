@@ -41,7 +41,7 @@ class AndroidPairAdapterFactory : JsonAdapter.Factory {
         annotations: MutableSet<out Annotation>,
         moshi: Moshi
     ): JsonAdapter<*>? {
-        if (type !is ParameterizedType || android.util.Pair::class.java != type.rawType) return null
+        if (type !is ParameterizedType || androidx.core.util.Pair::class.java != type.rawType) return null
 
         val listType = Types.newParameterizedType(List::class.java, String::class.java)
         val listAdapter = moshi.adapter<List<String>>(listType)
