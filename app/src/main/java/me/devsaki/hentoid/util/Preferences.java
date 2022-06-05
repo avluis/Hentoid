@@ -510,6 +510,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_KEYBOARD, Default.VIEWER_PAGE_TURN_KEYBOARD);
     }
 
+    public static boolean isViewerVolumeToSwitchBooks() {
+        return sharedPreferences.getBoolean(Key.VIEWER_BOOK_SWITCH_VOLUME, Default.VIEWER_BOOK_SWITCH_VOLUME);
+    }
+
     public static boolean isViewerOpenBookInGalleryMode() {
         return sharedPreferences.getBoolean(Key.VIEWER_OPEN_GALLERY, Default.VIEWER_OPEN_GALLERY);
     }
@@ -871,6 +875,7 @@ public final class Preferences {
         static final String VIEWER_PAGE_TURN_TAP_2X = "pref_viewer_page_turn_tap_2x";
         static final String VIEWER_PAGE_TURN_VOLUME = "pref_viewer_page_turn_volume";
         static final String VIEWER_PAGE_TURN_KEYBOARD = "pref_viewer_page_turn_keyboard";
+        static final String VIEWER_BOOK_SWITCH_VOLUME = "pref_viewer_book_switch_volume";
         public static final String VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars";
         static final String VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
         static final String VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
@@ -971,6 +976,7 @@ public final class Preferences {
         static final boolean VIEWER_PAGE_TURN_TAP_2X = false;
         static final boolean VIEWER_PAGE_TURN_VOLUME = true;
         static final boolean VIEWER_PAGE_TURN_KEYBOARD = true;
+        static final boolean VIEWER_BOOK_SWITCH_VOLUME = false;
         static final boolean VIEWER_SWIPE_TO_FLING = false;
         static final boolean VIEWER_INVERT_VOLUME_ROCKER = false;
         static final int VIEWER_SEPARATING_BARS = Constant.VIEWER_SEPARATING_BARS_OFF;

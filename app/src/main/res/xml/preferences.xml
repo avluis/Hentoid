@@ -484,6 +484,15 @@
                     app:iconSpaceReserved="false" />
             </PreferenceCategory>
             <PreferenceCategory
+                android:title="@string/pref_viewer_book_switch"
+                app:iconSpaceReserved="false">
+                <CheckBoxPreference
+                    android:defaultValue="@bool/pref_viewer_book_switch_volume_default"
+                    android:key="pref_viewer_book_switch_volume"
+                    android:title="@string/pref_viewer_book_switch_volume"
+                    app:iconSpaceReserved="false" />
+            </PreferenceCategory>
+            <PreferenceCategory
                 android:title="@string/pref_viewer_zoom"
                 app:iconSpaceReserved="false">
                 <CheckBoxPreference

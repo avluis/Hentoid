@@ -278,12 +278,17 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         ((ImageViewerActivity) requireActivity()).registerKeyListener(
-                new ViewerKeyListener()
-                        .setOnVolumeDownListener(this::previousPage)
-                        .setOnVolumeUpListener(this::nextPage)
-                        .setOnKeyLeftListener(this::onLeftTap)
-                        .setOnKeyRightListener(this::onRightTap)
-                        .setOnBackListener(this::onBackClick)
+                new ViewerKeyListener(requireContext()).setOnVolumeDownListener(b -> {
+                            if (b && Preferences.isViewerVolumeToSwitchBooks()) previousBook();
+                            else previousPage();
+                        })
+                        .setOnVolumeUpListener(b -> {
+                            if (b && Preferences.isViewerVolumeToSwitchBooks()) nextBook();
+                            else nextPage();
+                        })
+                        .setOnKeyLeftListener(b -> onLeftTap())
+                        .setOnKeyRightListener(b -> onRightTap())
+                        .setOnBackListener(b -> onBackClick())
         );
     }
 

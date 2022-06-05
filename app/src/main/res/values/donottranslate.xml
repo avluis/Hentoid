@@ -407,6 +407,7 @@
     <bool name="pref_viewer_page_turn_keyboard_default" translatable="false">true</bool>
     <bool name="pref_viewer_swipe_to_fling_default" translatable="false">false</bool>
     <bool name="pref_viewer_invert_volume_default" translatable="false">false</bool>
+    <bool name="pref_viewer_book_switch_volume_default" translatable="false">false</bool>
     <bool name="pref_viewer_zoom_holding_default" translatable="false">false</bool>
     <string name="pref_viewer_cap_tap_zoom_default" translatable="false">0</string>
     <bool name="pref_viewer_keep_screen_on_default" translatable="false">true</bool>

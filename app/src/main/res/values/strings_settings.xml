@@ -160,7 +160,9 @@
     <string name="pref_viewer_page_turn_keyboard">Keyboard left/right</string>
     <string name="pref_viewer_swipe_to_fling">Swipe to fling</string>
     <string name="pref_viewer_invert_volume">Invert volume buttons</string>
-    <string name="pref_viewer_zoom">Zoom</string>
+    <string name="pref_viewer_book_switch">Book switch control</string>
+    <string name="pref_viewer_book_switch_volume">Volume button (long tap)</string>
+    <string name="pref_viewer_zoom">Zoom control</string>
     <string name="pref_viewer_zoom_holding">Temp zoom while holding</string>
     <string name="pref_viewer_cap_tap_zoom">Cap double &amp; long tap zoom</string>
     <string name="pref_viewer_visuals">Visuals</string>
