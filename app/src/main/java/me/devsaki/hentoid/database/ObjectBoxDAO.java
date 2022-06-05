@@ -302,6 +302,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.insertContent(content);
     }
 
+    public long insertContentCore(@NonNull final Content content) {
+        return db.insertContentCore(content);
+    }
+
     public void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo) {
         db.updateContentStatus(updateFrom, updateTo);
     }

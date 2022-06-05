@@ -105,14 +105,24 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     }
 
     private void removeContentList(long[] ids) {
-        List<Content> contents = dao.selectContent(ids);
+        // Process the list 50 by 50 items
+        int nbPackets = (int) Math.ceil(ids.length / 50f);
 
-        // Flag the content as "being deleted" (triggers blink animation; lock operations)
-        for (Content c : contents) flagContentDelete(c, true);
-        // Delete them
-        for (Content c : contents) {
-            deleteContent(c);
-            if (isStopped()) break;
+        for (int i = 0; i < nbPackets; i++) {
+            int minIndex = i * 50;
+            int maxIndex = Math.min((i + 1) * 50, ids.length);
+            // Flag the content as "being deleted" (triggers blink animation; lock operations)
+            for (long id = minIndex; id < maxIndex; id++) {
+                Content c = dao.selectContent(id);
+                if (c != null) flagContentDelete(c, true);
+                if (isStopped()) break;
+            }
+            // Delete it
+            for (long id = minIndex; id < maxIndex; id++) {
+                Content c = dao.selectContent(id);
+                if (c != null) deleteContent(c);
+                if (isStopped()) break;
+            }
         }
     }
 
@@ -269,6 +279,6 @@ public abstract class BaseDeleteWorker extends BaseWorker {
      */
     public void flagContentDelete(@NonNull final Content content, boolean flag) {
         content.setIsBeingDeleted(flag);
-        dao.insertContent(content);
+        dao.insertContentCore(content);
     }
 }
