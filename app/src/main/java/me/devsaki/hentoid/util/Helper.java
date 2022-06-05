@@ -444,6 +444,7 @@ public final class Helper {
         return 0;
     }
 
+    // https://www.threeten.org/threetenbp/apidocs/org/threeten/bp/format/DateTimeFormatter.html#ofPattern(java.lang.String)
     public static long parseDateToEpoch(@NonNull String date, @NonNull String pattern) {
         final String dateClean = date.trim().replaceAll("(?<=\\d)(st|nd|rd|th)", "");
         final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
