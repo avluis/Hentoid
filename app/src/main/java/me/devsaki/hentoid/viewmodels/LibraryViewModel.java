@@ -415,7 +415,53 @@ public class LibraryViewModel extends AndroidViewModel {
             if (theContent.isBeingDeleted()) return;
             theContent.setCompleted(!theContent.isCompleted());
             ContentHelper.persistJson(getApplication(), theContent);
-            dao.insertContent(theContent);
+            dao.insertContentCore(theContent);
+            return;
+        }
+
+        throw new InvalidParameterException("Invalid ContentId : " + contentId);
+    }
+
+    public void resetReadStats(@NonNull final List<Content> content, @NonNull final Runnable onSuccess) {
+        compositeDisposable.add(
+                Observable.fromIterable(content)
+                        .observeOn(Schedulers.io())
+                        .map(c -> {
+                            doResetReadStats(c.getId());
+                            return c;
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> onSuccess.run(),
+                                Timber::e
+                        )
+        );
+    }
+
+    /**
+     * Reset read stats of the given content
+     *
+     * @param contentId ID of the content whose read stats to reset
+     */
+    private void doResetReadStats(long contentId) {
+        Helper.assertNonUiThread();
+
+        // Check if given content still exists in DB
+        Content theContent = dao.selectContent(contentId);
+
+        if (theContent != null) {
+            if (theContent.isBeingDeleted()) return;
+            theContent.setReads(0);
+            theContent.setReadPagesCount(0);
+            theContent.setLastReadPageIndex(0);
+            theContent.setLastReadDate(0);
+            List<ImageFile> imgs = theContent.getImageFiles();
+            if (imgs != null) {
+                for (ImageFile img : imgs) img.setRead(false);
+                dao.insertImageFiles(imgs);
+            }
+            ContentHelper.persistJson(getApplication(), theContent);
+            dao.insertContentCore(theContent);
             return;
         }
 

@@ -487,6 +487,9 @@ public class LibraryContentFragment extends Fragment implements
             case R.id.action_completed:
                 markSelectedAsCompleted();
                 break;
+            case R.id.action_reset_read:
+                resetSelectedReadStats();
+                break;
             case R.id.action_archive:
                 archiveSelectedItems();
                 break;
@@ -601,6 +604,20 @@ public class LibraryContentFragment extends Fragment implements
             List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
             if (!selectedContent.isEmpty()) {
                 viewModel.toggleContentCompleted(selectedContent, this::refreshIfNeeded);
+                selectExtension.deselect(selectExtension.getSelections());
+            }
+        }
+    }
+
+    /**
+     * Callback for "reset read stats" action button
+     */
+    private void resetSelectedReadStats() {
+        Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
+        if (!selectedItems.isEmpty()) {
+            List<Content> selectedContent = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
+            if (!selectedContent.isEmpty()) {
+                viewModel.resetReadStats(selectedContent, this::refreshIfNeeded);
                 selectExtension.deselect(selectExtension.getSelections());
             }
         }

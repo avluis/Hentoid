@@ -144,6 +144,7 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem editNameMenu;
     private MenuItem deleteMenu;
     private MenuItem completedMenu;
+    private MenuItem resetReadStatsMenu;
     private MenuItem shareMenu;
     private MenuItem archiveMenu;
     private MenuItem changeGroupMenu;
@@ -606,6 +607,7 @@ public class LibraryActivity extends BaseActivity {
         editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
         deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
         completedMenu = selectionToolbar.getMenu().findItem(R.id.action_completed);
+        resetReadStatsMenu = selectionToolbar.getMenu().findItem(R.id.action_reset_read);
         shareMenu = selectionToolbar.getMenu().findItem(R.id.action_share);
         archiveMenu = selectionToolbar.getMenu().findItem(R.id.action_archive);
         changeGroupMenu = selectionToolbar.getMenu().findItem(R.id.action_change_group);
@@ -816,6 +818,7 @@ public class LibraryActivity extends BaseActivity {
             deleteMenu.setVisible(true);
             shareMenu.setVisible(false);
             completedMenu.setVisible(false);
+            resetReadStatsMenu.setVisible(false);
             archiveMenu.setVisible(true);
             changeGroupMenu.setVisible(false);
             folderMenu.setVisible(false);
@@ -831,6 +834,7 @@ public class LibraryActivity extends BaseActivity {
                     ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0 == selectedExternalCount) || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary())
             );
             completedMenu.setVisible(true);
+            resetReadStatsMenu.setVisible(true);
             shareMenu.setVisible(!isMultipleSelection && 1 == selectedLocalCount);
             archiveMenu.setVisible(true);
             changeGroupMenu.setVisible(true);
