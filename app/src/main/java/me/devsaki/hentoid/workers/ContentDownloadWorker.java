@@ -740,11 +740,14 @@ public class ContentDownloadWorker extends BaseWorker {
 
                     // Delete the duplicate book that was meant to be replaced
                     if (!content.getContentToReplace().isNull()) {
-                        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.REMOVE_DUPLICATE));
-                        try {
-                            ContentHelper.removeContent(getApplicationContext(), dao, content.getContentToReplace().getTarget());
-                        } catch (ContentNotProcessedException e) {
-                            Timber.w(e);
+                        Content contentToReplace = content.getContentToReplace().getTarget();
+                        if (contentToReplace != null) {
+                            EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.REMOVE_DUPLICATE));
+                            try {
+                                ContentHelper.removeContent(getApplicationContext(), dao, contentToReplace);
+                            } catch (ContentNotProcessedException e) {
+                                Timber.w(e);
+                            }
                         }
                     }
                 } else {
