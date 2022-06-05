@@ -763,13 +763,14 @@ public class LibraryActivity extends BaseActivity {
             collapseSearchMenu();
             hideSearchSubBar();
         }
-        if (isGroupDisplayed()) {
+        if (isGroupDisplayed() && groupSearchBundle != null) {
             GroupSearchManager.GroupSearchBundle bundle = new GroupSearchManager.GroupSearchBundle(groupSearchBundle);
             return bundle.isFilterActive();
-        } else {
+        } else if (!isGroupDisplayed() && contentSearchBundle != null) {
             ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle(contentSearchBundle);
             return bundle.isFilterActive();
         }
+        return false;
     }
 
     private void updateToolbar() {
