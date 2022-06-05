@@ -32,7 +32,7 @@
     <string name="resume">Resume</string>
     <string name="cancel">Cancel</string>
     <string name="cancel_all">Cancel all</string>
-    <string name="menu_completed_single">Completed</string>
+    <string name="menu_completed_single">Mark as completed</string>
     <string name="service_running">Service is already running</string>
     <string name="open_folder">Open folder</string>
     <string name="_default">default</string>
