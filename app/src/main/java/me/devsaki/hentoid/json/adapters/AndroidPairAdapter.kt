@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.json.adapters
 
-import android.util.Pair
 import com.squareup.moshi.*
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
