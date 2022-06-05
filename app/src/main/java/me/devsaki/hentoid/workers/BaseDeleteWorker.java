@@ -112,14 +112,14 @@ public abstract class BaseDeleteWorker extends BaseWorker {
             int minIndex = i * 50;
             int maxIndex = Math.min((i + 1) * 50, ids.length);
             // Flag the content as "being deleted" (triggers blink animation; lock operations)
-            for (long id = minIndex; id < maxIndex; id++) {
-                Content c = dao.selectContent(id);
+            for (int id = minIndex; id < maxIndex; id++) {
+                Content c = dao.selectContent(ids[id]);
                 if (c != null) flagContentDelete(c, true);
                 if (isStopped()) break;
             }
             // Delete it
-            for (long id = minIndex; id < maxIndex; id++) {
-                Content c = dao.selectContent(id);
+            for (int id = minIndex; id < maxIndex; id++) {
+                Content c = dao.selectContent(ids[id]);
                 if (c != null) deleteContent(c);
                 if (isStopped()) break;
             }
