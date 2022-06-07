@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="slide_01_header">Hentoidにようこそ！</string>
+    <string name="slide_01_header">Hentoidへようこそ！</string>
     <string name="slide_01_text">Hentoidは同人誌\n＆amp; H-Mangaのアーカイブアプリです</string>
     <string name="slide_02_header">権限</string>
     <string name="slide_02_text">続けるにはデバイスにファイルを保存する許可を求める必要があります。</string>
