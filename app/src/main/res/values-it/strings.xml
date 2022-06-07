@@ -127,6 +127,8 @@
     <string name="step_save_queue">Salvataggio della coda</string>
     <string name="step_wait_purge">Aspetta che l\'eleminazione finisca</string>
     <string name="step_start_download">Download della coda iniziato !</string>
+    <string name="step_complete_download">Download completato</string>
+    <string name="step_remove_duplicate">Sostituendo duplicato</string>
     <string name="help_swipe_cancel">Puoi annullare i download scorrendoli verso sinistra</string>
     <string name="redownloaded_error">Si è verificato un problema durante il nuovo download - annullato</string>
     <plurals name="redownloaded_scratch">
@@ -245,7 +247,8 @@
     </plurals>
     <string name="export_warning1">L\'esportazione del metadata ha lo scopo di creare una lista dei tuoi libri in formato JSON. \nNon è pensata per muovere la tua collezione sul tuo Pc o sulla tua scheda SD. \nClicca qui per scoprire come farlo.</string>
     <string name="export_warning2">I libri vengono esportati senza immagini. \nDovrai scaricarli di nuovo al ripristino se la cartella delle immagini non è presente.</string>
-    <string name="export_run">ESEGUI ESPORTAZIONE</string>
+    <string name="export_run">Esegui esportazione</string>
+    <string name="export_failed">Esportazione fallita</string>
     <string name="import_settings_title">Importa impostazioni</string>
     <string name="import_settings_success">Importati</string>
 <string name="permissioncomplaint_snackbar">È necessario concedere i permessi prima di poter continuare</string>
@@ -255,6 +258,7 @@
     <string name="import_app_folder">Non è possibile selezionare la cartella dell\'app come cartella esterna: selezionarne un\'altra</string>
     <string name="import_download_folder">Non dovresti selezionare la cartella di download del tuo dispositivo: crea o selezionane un\'altra</string>
     <string name="import_create_fail">Creazione della cartella Hentoid fallita - seleziona un\'altra posizione</string>
+    <string name="import_invalid_uri">Cartella non riconosciuta - per favore selezionala di nuovo</string>
     <string name="import_other">L\'importazione è stata interrotta</string>
     <string name="import_unexpected">L\'importazione si è fermata inaspettatamente</string>
     <string name="task_done">Attività completata: vedi i dettagli nel registro</string>
@@ -350,7 +354,7 @@
     <string name="downloads_loading">Caricamento in corso~</string>
     <string name="masterdata_no_result">Nessun risultato :(</string>
     <string name="search_entry_not_found">Non è qui, vai a scaricarlo.</string>
-    <string name="search_bookid_label">Cerca <x:g example="4567" id="launchcode">\'%s\'</x:g> in…</string>
+    <string name="search_bookid_label">Cerca <x:g example="4567" id="launchcode">\'%s\'</x:g> in...</string>
     <string name="book_launchcode">Codice di lancio: <x:g example="4567" id="launchcode">%s</x:g></string>
     <plurals name="number_of_items">
         <item quantity="one"><x:g example="1" id="count">%d</x:g> elemento</item>
@@ -423,6 +427,7 @@ Questo libro sarà ignorato.</item>
         <item quantity="other">Elimina gruppi + libri</item>
     </plurals>
     <string name="group_delete_nothing">Niente da eliminare - seleziona Consenti l\'eleminazione di contenuti esterni per cambiarlo</string>
+    <string name="clear_rating">Rimuovi voto</string>
 <string name="merge_merge">Unisci</string>
     <string name="merge_progress">Unendo i libri…</string>
     <string name="split_progress">Dividendo il libro…</string>
@@ -460,12 +465,14 @@ Questo libro sarà ignorato.</item>
     <string name="library_filter_favourite_help">Attiva/disattiva visualizzazione dei libri preferiti</string>
     <string name="filter_completed">Mostra solo libri finiti</string>
     <string name="filter_not_completed">Mostra solo libri non finiti</string>
+    <string name="filter_rating">Filtra da voti</string>
 <string name="display_groups_title">Mostra gruppi</string>
     <string name="display">Mostra</string>
     <string name="display_artists">Artisti</string>
     <string name="display_groups">Gruppi</string>
 <string name="drag_help">Trascina elemento</string>
     <string name="external_help">Appartiene alla libreria esterna</string>
+    <string name="rating_help">Voto libro</string>
     <string name="streamed_help">Libro in streaming</string>
     <string name="view_source_help">Visualizza sorgente nel browser</string>
     <string name="fav_help">Segna/deseleziona come preferito</string>
@@ -591,6 +598,7 @@ Questo libro sarà ignorato.</item>
     <string name="viewer_ask_cover">Impostare questa pagina come copertina del libro?</string>
     <string name="image_not_found">Immagine non trovata</string>
     <string name="image_streaming">Immagine in streaming…</string>
+    <string name="image_extracting">Estraendo immagine...</string>
     <string name="book_prefs">Impostazioni libro</string>
     <string name="goto_app_prefs">Impostazioni app</string>
     <string name="use_app_prefs">Utilizza impostazioni app (<x:g example="Left to right" id="app_default">%s</x:g>)</string>
@@ -676,6 +684,7 @@ Questo libro sarà ignorato.</item>
     <string name="duplicate_alert_always_download">Scarica sempre e non chiederlo più</string>
     <string name="duplicate_alert_never_extra_on_dupes">Non aggiungere mai più pagine da potenziali duplicati</string>
     <string name="duplicate_alert_similarity">Similitudine: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_alert_replace_existing">Sostituendo libro esistente</string>
     <string name="duplicate_alert_download_book">Scarica libro</string>
     <string name="duplicate_alert_download_pages">Scarica pagine extra</string>
     <string name="duplicate_wait_index">Indicizzazione…</string>

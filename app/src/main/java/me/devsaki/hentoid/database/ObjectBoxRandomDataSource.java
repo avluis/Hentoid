@@ -29,7 +29,8 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
     private ObjectBoxRandomDataSource(Query<T> query, List<Long> shuffleIds) {
         this.query = query;
 
-        Set<Long> queryIds = Helper.getSetFromPrimitiveArray(query.findIds());
+        long[] queryIds = query.findIds();
+        Set<Long> queryIdSet = Helper.getSetFromPrimitiveArray(queryIds);
         int idx = 0;
         for (Long id : queryIds) idsToQueryListIndexes.put(id, idx++);
 
@@ -37,12 +38,12 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
         shuffledSet.addAll(shuffleIds);
 
         // Keep common IDs (intersect)
-        shuffledSet.retainAll(queryIds);
+        shuffledSet.retainAll(queryIdSet);
 
         // Isolate new IDs that have never been shuffled and append them at the end
-        if (shuffledSet.size() < queryIds.size()) {
-            queryIds.removeAll(shuffledSet);
-            shuffledSet.addAll(queryIds);
+        if (shuffledSet.size() < queryIdSet.size()) {
+            queryIdSet.removeAll(shuffledSet);
+            shuffledSet.addAll(queryIdSet);
         }
         shuffledList = Stream.of(shuffledSet).toList();
 
@@ -78,7 +79,7 @@ class ObjectBoxRandomDataSource<T> extends PositionalDataSource<T> {
         List<T> result = new ArrayList<>();
         for (int i = startPosition; i < maxPage; i++) {
             Integer index = idsToQueryListIndexes.get(shuffledList.get(i));
-            if (index != null)
+            if (index != null && index < lazyList.size())
                 result.add(lazyList.get(index));
         }
 

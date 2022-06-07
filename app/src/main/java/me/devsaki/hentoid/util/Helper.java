@@ -11,7 +11,6 @@ import android.content.res.Configuration;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Handler;
 import android.os.Looper;
-import androidx.core.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,12 +18,15 @@ import android.view.View;
 import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
+import com.google.android.material.slider.LabelFormatter;
+import com.google.android.material.slider.Slider;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import org.threeten.bp.Instant;
@@ -42,6 +44,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -441,6 +444,7 @@ public final class Helper {
         return 0;
     }
 
+    // https://www.threeten.org/threetenbp/apidocs/org/threeten/bp/format/DateTimeFormatter.html#ofPattern(java.lang.String)
     public static long parseDateToEpoch(@NonNull String date, @NonNull String pattern) {
         final String dateClean = date.trim().replaceAll("(?<=\\d)(st|nd|rd|th)", "");
         final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
@@ -509,5 +513,18 @@ public final class Helper {
         t.printStackTrace(pw);
         pw.flush();
         return sw.toString();
+    }
+
+    // Hack waiting for https://github.com/material-components/material-components-android/issues/2726
+    public static void removeLabels(@NonNull Slider slider) {
+        slider.setLabelBehavior(LabelFormatter.LABEL_GONE);
+        try {
+            @SuppressWarnings("ConstantConditions")
+            Method ensureLabelsRemoved = slider.getClass().getSuperclass().getDeclaredMethod("ensureLabelsRemoved");
+            ensureLabelsRemoved.setAccessible(true);
+            ensureLabelsRemoved.invoke(slider);
+        } catch (Exception e) {
+            Timber.w(e);
+        }
     }
 }

@@ -294,6 +294,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             } else if (viewType == ViewType.LIBRARY_GRID) {
                 ivNew = itemView.findViewById(R.id.lineNew);
                 ivFavourite = itemView.findViewById(R.id.ivFavourite);
+                ivRating = itemView.findViewById(R.id.iv_rating);
                 ivExternal = itemView.findViewById(R.id.ivExternal);
             } else if (viewType == ViewType.QUEUE || viewType == ViewType.LIBRARY_EDIT) {
                 if (viewType == ViewType.QUEUE)

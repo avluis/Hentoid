@@ -48,7 +48,7 @@ public class DoujinsContent extends BaseContentParser {
             for (Element e : contentInfo) {
                 if (e.text().toLowerCase().contains("•")) { // e.g. March 16th, 2022 • 25 images
                     String[] parts = e.text().split("•");
-                    content.setUploadDate(Helper.parseDateToEpoch(parts[0], "MMMM dd',' yyyy"));
+                    content.setUploadDate(Helper.parseDateToEpoch(parts[0], "MMMM d',' yyyy"));
                     break;
                 }
             }

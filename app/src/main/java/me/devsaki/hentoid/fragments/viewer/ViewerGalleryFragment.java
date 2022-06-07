@@ -258,7 +258,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
     public void onStart() {
         super.onStart();
         ((ImageViewerActivity) requireActivity()).registerKeyListener(
-                new ViewerKeyListener().setOnBackListener(this::onBackClick)
+                new ViewerKeyListener(requireContext()).setOnBackListener(b -> onBackClick())
         );
     }
 

@@ -24,6 +24,12 @@
         android:tooltipText="@string/menu_completed_single"
         app:showAsAction="always" />
     <item
+        android:id="@+id/action_reset_read"
+        android:icon="@drawable/ic_close"
+        android:title="@string/menu_reset_read"
+        android:tooltipText="@string/menu_reset_read"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_archive"
         android:icon="@drawable/ic_archive"
         android:title="@string/menu_archive"

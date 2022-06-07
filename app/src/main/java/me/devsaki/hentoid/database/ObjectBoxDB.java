@@ -189,6 +189,10 @@ public class ObjectBoxDB {
         });
     }
 
+    long insertContentCore(@NonNull Content content) {
+        return store.boxFor(Content.class).put(content);
+    }
+
     // Faster alternative to insertContent when Content fields only need to be updated
     void updateContentObject(Content content) {
         store.boxFor(Content.class).put(content);

@@ -413,6 +413,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.VIEWER_KEEP_SCREEN_ON, Default.VIEWER_KEEP_SCREEN_ON);
     }
 
+    public static boolean isViewerDisplayAroundNotch() {
+        return sharedPreferences.getBoolean(Key.VIEWER_DISPLAY_AROUND_NOTCH, Default.VIEWER_DISPLAY_AROUND_NOTCH);
+    }
+
     public static int getContentDisplayMode(final Map<String, String> bookPrefs) {
         if (Constant.VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(bookPrefs))
             return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_IMAGE_DISPLAY, Integer.toString(Default.VIEWER_IMAGE_DISPLAY)) + "");
@@ -504,6 +508,10 @@ public final class Preferences {
 
     public static boolean isViewerKeyboardToTurn() {
         return sharedPreferences.getBoolean(Key.VIEWER_PAGE_TURN_KEYBOARD, Default.VIEWER_PAGE_TURN_KEYBOARD);
+    }
+
+    public static boolean isViewerVolumeToSwitchBooks() {
+        return sharedPreferences.getBoolean(Key.VIEWER_BOOK_SWITCH_VOLUME, Default.VIEWER_BOOK_SWITCH_VOLUME);
     }
 
     public static boolean isViewerOpenBookInGalleryMode() {
@@ -851,6 +859,7 @@ public final class Preferences {
         static final String FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
         public static final String VIEWER_KEEP_SCREEN_ON = "pref_viewer_keep_screen_on";
+        public static final String VIEWER_DISPLAY_AROUND_NOTCH = "pref_viewer_display_notch";
         public static final String VIEWER_IMAGE_DISPLAY = "pref_viewer_image_display";
         public static final String VIEWER_RENDERING = "pref_viewer_rendering";
         public static final String VIEWER_BROWSE_MODE = "pref_viewer_browse_mode";
@@ -866,6 +875,7 @@ public final class Preferences {
         static final String VIEWER_PAGE_TURN_TAP_2X = "pref_viewer_page_turn_tap_2x";
         static final String VIEWER_PAGE_TURN_VOLUME = "pref_viewer_page_turn_volume";
         static final String VIEWER_PAGE_TURN_KEYBOARD = "pref_viewer_page_turn_keyboard";
+        static final String VIEWER_BOOK_SWITCH_VOLUME = "pref_viewer_book_switch_volume";
         public static final String VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars";
         static final String VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
         static final String VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
@@ -952,6 +962,7 @@ public final class Preferences {
         static final int FOLDER_TRUNCATION = Constant.TRUNCATE_FOLDER_100;
         static final boolean VIEWER_RESUME_LAST_LEFT = true;
         static final boolean VIEWER_KEEP_SCREEN_ON = true;
+        static final boolean VIEWER_DISPLAY_AROUND_NOTCH = true;
         static final int VIEWER_IMAGE_DISPLAY = Constant.VIEWER_DISPLAY_FIT;
         static final int VIEWER_RENDERING = Constant.VIEWER_RENDERING_SHARP;
         static final int VIEWER_BROWSE_MODE = Constant.VIEWER_BROWSE_NONE;
@@ -965,6 +976,7 @@ public final class Preferences {
         static final boolean VIEWER_PAGE_TURN_TAP_2X = false;
         static final boolean VIEWER_PAGE_TURN_VOLUME = true;
         static final boolean VIEWER_PAGE_TURN_KEYBOARD = true;
+        static final boolean VIEWER_BOOK_SWITCH_VOLUME = false;
         static final boolean VIEWER_SWIPE_TO_FLING = false;
         static final boolean VIEWER_INVERT_VOLUME_ROCKER = false;
         static final int VIEWER_SEPARATING_BARS = Constant.VIEWER_SEPARATING_BARS_OFF;

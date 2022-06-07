@@ -60,6 +60,8 @@ public interface CollectionDAO {
 
     long insertContent(@NonNull final Content content);
 
+    long insertContentCore(@NonNull final Content content);
+
     void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo);
 
     void deleteContent(@NonNull final Content content);

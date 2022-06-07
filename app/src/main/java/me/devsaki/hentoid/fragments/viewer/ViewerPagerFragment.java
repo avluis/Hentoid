@@ -46,6 +46,7 @@ import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.android.material.slider.LabelFormatter;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -189,6 +190,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                 case R.id.action_slideshow:
                     int startIndex = convertPrefsDelayToSliderPosition(Preferences.getViewerSlideshowDelay());
                     binding.controlsOverlay.slideshowDelaySlider.setValue(startIndex);
+                    binding.controlsOverlay.slideshowDelaySlider.setLabelBehavior(LabelFormatter.LABEL_FLOATING);
                     binding.controlsOverlay.slideshowDelaySlider.setVisibility(View.VISIBLE);
                     slideshowSliderDebouncer.submit(startIndex);
                     break;
@@ -276,12 +278,17 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
         ((ImageViewerActivity) requireActivity()).registerKeyListener(
-                new ViewerKeyListener()
-                        .setOnVolumeDownListener(this::previousPage)
-                        .setOnVolumeUpListener(this::nextPage)
-                        .setOnKeyLeftListener(this::onLeftTap)
-                        .setOnKeyRightListener(this::onRightTap)
-                        .setOnBackListener(this::onBackClick)
+                new ViewerKeyListener(requireContext()).setOnVolumeDownListener(b -> {
+                            if (b && Preferences.isViewerVolumeToSwitchBooks()) previousBook();
+                            else previousPage();
+                        })
+                        .setOnVolumeUpListener(b -> {
+                            if (b && Preferences.isViewerVolumeToSwitchBooks()) nextBook();
+                            else nextPage();
+                        })
+                        .setOnKeyLeftListener(b -> onLeftTap())
+                        .setOnKeyRightListener(b -> onRightTap())
+                        .setOnBackListener(b -> onBackClick())
         );
     }
 
@@ -1274,7 +1281,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
             uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            // Revert to default regarding notch area
+            // Revert to default regarding notch area display
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT;
             }
@@ -1288,8 +1295,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     // Hide the nav bar and status bar
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_FULLSCREEN;
-            // Always display around the notch area
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // Display around the notch area
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && Preferences.isViewerDisplayAroundNotch()) {
                 params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
             }
         }
@@ -1307,6 +1314,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
     private void onSlideShowSliderChosen(int sliderIndex) {
         Preferences.setViewerSlideshowDelay(convertSliderPositionToPrefsDelay(sliderIndex));
+        Helper.removeLabels(binding.controlsOverlay.slideshowDelaySlider);
         binding.controlsOverlay.slideshowDelaySlider.setVisibility(View.GONE);
         startSlideshow(true);
     }
