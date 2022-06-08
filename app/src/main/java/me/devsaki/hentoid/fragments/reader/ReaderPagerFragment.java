@@ -36,8 +36,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.LinearSmoothScroller;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
@@ -94,6 +92,7 @@ import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.PageSnapWidget;
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
 import me.devsaki.hentoid.widget.ReaderKeyListener;
+import me.devsaki.hentoid.widget.ReaderSmoothScroller;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
 import timber.log.Timber;
 
@@ -141,7 +140,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
     // == UI ==
     private FragmentReaderPagerBinding binding = null;
-    private RecyclerView.SmoothScroller smoothScroller;
+    private ReaderSmoothScroller smoothScroller;
 
     // Top menu items
     private MenuItem showFavoritePagesButton;
@@ -399,12 +398,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         pageSnapWidget = new PageSnapWidget(binding.recyclerView);
 
-        smoothScroller = new LinearSmoothScroller(requireContext()) {
-            @Override
-            protected int getVerticalSnapPreference() {
-                return LinearSmoothScroller.SNAP_TO_START;
-            }
-        };
+        smoothScroller = new ReaderSmoothScroller(requireContext());
 
         scrollListener.setOnStartOutOfBoundScrollListener(() -> {
             if (Preferences.isViewerContinuous()) previousBook();
@@ -1325,45 +1319,56 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         // Compute slideshow delay
         int delayPref = Preferences.getViewerSlideshowDelay();
-        int delayMs;
+        float factor;
 
         switch (delayPref) {
             case VIEWER_SLIDESHOW_DELAY_05:
-                delayMs = 500;
+                factor = 0.5f;
                 break;
             case VIEWER_SLIDESHOW_DELAY_1:
-                delayMs = 1000;
+                factor = 1;
                 break;
             case VIEWER_SLIDESHOW_DELAY_4:
-                delayMs = 4 * 1000;
+                factor = 4;
                 break;
             case VIEWER_SLIDESHOW_DELAY_8:
-                delayMs = 8 * 1000;
+                factor = 8;
                 break;
             case VIEWER_SLIDESHOW_DELAY_16:
-                delayMs = 16 * 1000;
+                factor = 16;
                 break;
             default:
-                delayMs = 2 * 1000;
+                factor = 2;
         }
 
         if (showToast)
-            ToastHelper.toast(R.string.slideshow_start, delayMs / 1000f);
+            ToastHelper.toast(R.string.slideshow_start, factor);
         scrollListener.disableScroll();
 
-        slideshowTimer = Observable.timer(delayMs, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.computation())
-                .repeat()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(v -> nextPage());
+        if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) {
+            smoothScroller = new ReaderSmoothScroller(requireContext()); // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
+            smoothScroller.setTargetPosition(adapter.getItemCount() - 1);
+            smoothScroller.setSpeed(900f / (factor / 4f));
+            llm.startSmoothScroll(smoothScroller);
+        } else {
+            slideshowTimer = Observable.timer((int) factor * 1000, TimeUnit.MILLISECONDS)
+                    .subscribeOn(Schedulers.computation())
+                    .repeat()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(v -> nextPage());
+        }
     }
 
     private void stopSlideshow() {
         if (slideshowTimer != null) {
             slideshowTimer.dispose();
             slideshowTimer = null;
-            scrollListener.enableScroll();
-            ToastHelper.toast(R.string.slideshow_stop);
+        } else {
+            binding.recyclerView.smoothScrollBy(0, 0);
+            smoothScroller.resetSpeed();
         }
+
+        scrollListener.enableScroll();
+        ToastHelper.toast(R.string.slideshow_stop);
     }
 }
