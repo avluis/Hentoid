@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.viewer;
+package me.devsaki.hentoid.fragments.reader;
 
 import static java.lang.String.format;
 import static me.devsaki.hentoid.util.Preferences.Constant;
@@ -74,12 +74,12 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.ImageViewerActivity;
+import me.devsaki.hentoid.activities.ReaderActivity;
 import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.databinding.FragmentViewerPagerBinding;
+import me.devsaki.hentoid.databinding.FragmentReaderPagerBinding;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.Debouncer;
@@ -88,19 +88,19 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
-import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.viewmodels.ReaderViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.PageSnapWidget;
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
+import me.devsaki.hentoid.widget.ReaderKeyListener;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
-import me.devsaki.hentoid.widget.ViewerKeyListener;
 import timber.log.Timber;
 
 // TODO : better document and/or encapsulate the difference between
 //   - paper roll mode (currently used for vertical display)
 //   - independent page mode (currently used for horizontal display)
-public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDialogFragment.Parent, ViewerPrefsDialogFragment.Parent, ViewerDeleteDialogFragment.Parent {
+public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDialogFragment.Parent, ReaderPrefsDialogFragment.Parent, ReaderDeleteDialogFragment.Parent {
 
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
@@ -115,7 +115,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
-    private ImageViewerViewModel viewModel;
+    private ReaderViewModel viewModel;
     private int imageIndex = -1; // 0-based image index
     private int maxPosition; // For navigation
     private int maxPageNumber; // For display; when pages are missing, maxPosition < maxPageNumber
@@ -140,7 +140,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     private long contentId = -1;
 
     // == UI ==
-    private FragmentViewerPagerBinding binding = null;
+    private FragmentReaderPagerBinding binding = null;
     private RecyclerView.SmoothScroller smoothScroller;
 
     // Top menu items
@@ -158,7 +158,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
     @SuppressLint("NonConstantResourceId")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentViewerPagerBinding.inflate(inflater, container, false);
+        binding = FragmentReaderPagerBinding.inflate(inflater, container, false);
 
         indexRefreshDebouncer = new Debouncer<>(requireContext(), 75, this::applyStartingIndexInternal);
         slideshowSliderDebouncer = new Debouncer<>(requireContext(), 2500, this::onSlideShowSliderChosen);
@@ -196,7 +196,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
                     break;
                 case R.id.action_delete_book:
                     if (Constant.VIEWER_DELETE_ASK_AGAIN == Preferences.getViewerDeleteAskMode())
-                        ViewerDeleteDialogFragment.invoke(this, !isContentArchive);
+                        ReaderDeleteDialogFragment.invoke(this, !isContentArchive);
                     else // We already know what to delete
                         onDeleteElement(Constant.VIEWER_DELETE_TARGET_PAGE == Preferences.getViewerDeleteTarget());
                     break;
@@ -227,7 +227,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         super.onViewCreated(view, savedInstanceState);
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ReaderViewModel.class);
 
 //        viewModel.onRestoreState(savedInstanceState);
 
@@ -277,8 +277,8 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
 
-        ((ImageViewerActivity) requireActivity()).registerKeyListener(
-                new ViewerKeyListener(requireContext()).setOnVolumeDownListener(b -> {
+        ((ReaderActivity) requireActivity()).registerKeyListener(
+                new ReaderKeyListener(requireContext()).setOnVolumeDownListener(b -> {
                             if (b && Preferences.isViewerVolumeToSwitchBooks()) previousBook();
                             else previousPage();
                         })
@@ -298,7 +298,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
 
         setSystemBarsVisible(binding.controlsOverlay.getRoot().getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
         if (Preferences.Constant.VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
-            ViewerBrowseModeDialogFragment.invoke(this);
+            ReaderBrowseModeDialogFragment.invoke(this);
         updatePageControls();
     }
 
@@ -308,7 +308,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
         viewModel.onLeaveBook(imageIndex);
         if (slideshowTimer != null) slideshowTimer.dispose();
-        ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
+        ((ReaderActivity) requireActivity()).unregisterKeyListener();
         super.onStop();
     }
 
@@ -525,7 +525,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      * Show the book viewer settings dialog
      */
     private void onBookSettingsClick() {
-        ViewerPrefsDialogFragment.invoke(this, bookPreferences);
+        ReaderPrefsDialogFragment.invoke(this, bookPreferences);
     }
 
     /**
@@ -564,10 +564,10 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
      */
     private void onInfoMicroMenuClick(int position) {
         if (0 == position) { // Content
-            ViewerBottomContentFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager());
+            ReaderBottomContentFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager());
         } else { // Image
             float currentScale = adapter.getScaleAtPosition(imageIndex);
-            ViewerBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+            ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
         }
         binding.controlsOverlay.informationMicroMenu.dips();
     }
@@ -1260,7 +1260,7 @@ public class ViewerPagerFragment extends Fragment implements ViewerBrowseModeDia
         } else { // Pager mode (Library -> pager -> gallery -> pager)
             getParentFragmentManager()
                     .beginTransaction()
-                    .replace(android.R.id.content, ViewerGalleryFragment.newInstance())
+                    .replace(android.R.id.content, ReaderGalleryFragment.newInstance())
                     .addToBackStack(null)
                     .commit();
         }

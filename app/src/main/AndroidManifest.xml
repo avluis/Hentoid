@@ -522,7 +522,7 @@
         </activity>
 
         <activity
-            android:name=".activities.ImageViewerActivity"
+            android:name=".activities.ReaderActivity"
             android:label="Image Viewer"
             android:launchMode="singleTask"
             android:theme="@style/Theme.Light.Monochrome">

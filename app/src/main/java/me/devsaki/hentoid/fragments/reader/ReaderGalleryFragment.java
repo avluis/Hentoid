@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.viewer;
+package me.devsaki.hentoid.fragments.reader;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
@@ -50,7 +50,7 @@ import java.util.List;
 import java.util.Set;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.ImageViewerActivity;
+import me.devsaki.hentoid.activities.ReaderActivity;
 import me.devsaki.hentoid.activities.bundles.ImageItemBundle;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
@@ -62,15 +62,15 @@ import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.viewholders.INestedItem;
 import me.devsaki.hentoid.viewholders.ImageFileItem;
 import me.devsaki.hentoid.viewholders.SubExpandableItem;
-import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.viewmodels.ReaderViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.widget.DragSelectTouchListener;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
-import me.devsaki.hentoid.widget.ViewerKeyListener;
+import me.devsaki.hentoid.widget.ReaderKeyListener;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
 
-public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback {
+public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback {
 
     @IntDef({EditMode.NONE, EditMode.EDIT_CHAPTERS, EditMode.ADD_CHAPTER})
     @Retention(RetentionPolicy.SOURCE)
@@ -82,9 +82,9 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     // ======== COMMUNICATION
     // Viewmodel
-    private ImageViewerViewModel viewModel;
+    private ReaderViewModel viewModel;
     // Activity
-    private WeakReference<ImageViewerActivity> activity;
+    private WeakReference<ReaderActivity> activity;
 
     // === UI
     private Toolbar toolbar;
@@ -158,21 +158,21 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         }
     };
 
-    static ViewerGalleryFragment newInstance() {
-        return new ViewerGalleryFragment();
+    static ReaderGalleryFragment newInstance() {
+        return new ReaderGalleryFragment();
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (!(requireActivity() instanceof ImageViewerActivity))
+        if (!(requireActivity() instanceof ReaderActivity))
             throw new IllegalStateException("Parent activity has to be a LibraryActivity");
-        activity = new WeakReference<>((ImageViewerActivity) requireActivity());
+        activity = new WeakReference<>((ReaderActivity) requireActivity());
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_reader_gallery, container, false);
 
         setHasOptionsMenu(true);
 
@@ -233,7 +233,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
         super.onViewCreated(view, savedInstanceState);
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ReaderViewModel.class);
 
         viewModel.getStartingIndex().observe(getViewLifecycleOwner(), this::onStartingIndexChanged);
         viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
@@ -257,8 +257,8 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
     @Override
     public void onStart() {
         super.onStart();
-        ((ImageViewerActivity) requireActivity()).registerKeyListener(
-                new ViewerKeyListener(requireContext()).setOnBackListener(b -> onBackClick())
+        ((ReaderActivity) requireActivity()).registerKeyListener(
+                new ReaderKeyListener(requireContext()).setOnBackListener(b -> onBackClick())
         );
     }
 
@@ -273,7 +273,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
 
     @Override
     public void onStop() {
-        ((ImageViewerActivity) requireActivity()).unregisterKeyListener();
+        ((ReaderActivity) requireActivity()).unregisterKeyListener();
         super.onStop();
     }
 
@@ -548,7 +548,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
                 if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
                     getParentFragmentManager()
                             .beginTransaction()
-                            .replace(android.R.id.content, new ViewerPagerFragment())
+                            .replace(android.R.id.content, new ReaderPagerFragment())
                             .addToBackStack(null)
                             .commit();
                 } else { // Pager mode (Library -> pager -> gallery -> pager)
@@ -569,7 +569,7 @@ public class ViewerGalleryFragment extends Fragment implements ItemTouchCallback
             if (0 == getParentFragmentManager().getBackStackEntryCount()) { // Gallery mode (Library -> gallery -> pager)
                 getParentFragmentManager()
                         .beginTransaction()
-                        .replace(android.R.id.content, new ViewerPagerFragment())
+                        .replace(android.R.id.content, new ReaderPagerFragment())
                         .addToBackStack(null)
                         .commit();
             } else { // Pager mode (Library -> pager -> gallery -> pager)

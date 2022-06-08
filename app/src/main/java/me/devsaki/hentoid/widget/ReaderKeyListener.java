@@ -10,7 +10,7 @@ import com.annimon.stream.function.Consumer;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Preferences;
 
-public final class ViewerKeyListener implements View.OnKeyListener {
+public final class ReaderKeyListener implements View.OnKeyListener {
 
     private Consumer<Boolean> onVolumeDownListener;
 
@@ -32,31 +32,31 @@ public final class ViewerKeyListener implements View.OnKeyListener {
     private final Debouncer<Consumer<Boolean>> simpleTapDebouncer;
 
 
-    public ViewerKeyListener(Context context) {
+    public ReaderKeyListener(Context context) {
         simpleTapDebouncer = new Debouncer<>(context, LONG_PRESS_TIMEOUT, consumer -> consumer.accept(false));
     }
 
-    public ViewerKeyListener setOnVolumeDownListener(Consumer<Boolean> onVolumeDownListener) {
+    public ReaderKeyListener setOnVolumeDownListener(Consumer<Boolean> onVolumeDownListener) {
         this.onVolumeDownListener = onVolumeDownListener;
         return this;
     }
 
-    public ViewerKeyListener setOnVolumeUpListener(Consumer<Boolean> onVolumeUpListener) {
+    public ReaderKeyListener setOnVolumeUpListener(Consumer<Boolean> onVolumeUpListener) {
         this.onVolumeUpListener = onVolumeUpListener;
         return this;
     }
 
-    public ViewerKeyListener setOnKeyLeftListener(Consumer<Boolean> onKeyLeftListener) {
+    public ReaderKeyListener setOnKeyLeftListener(Consumer<Boolean> onKeyLeftListener) {
         this.onKeyLeftListener = onKeyLeftListener;
         return this;
     }
 
-    public ViewerKeyListener setOnKeyRightListener(Consumer<Boolean> onKeyRightListener) {
+    public ReaderKeyListener setOnKeyRightListener(Consumer<Boolean> onKeyRightListener) {
         this.onKeyRightListener = onKeyRightListener;
         return this;
     }
 
-    public ViewerKeyListener setOnBackListener(Consumer<Boolean> onBackListener) {
+    public ReaderKeyListener setOnBackListener(Consumer<Boolean> onBackListener) {
         this.onBackListener = onBackListener;
         return this;
     }

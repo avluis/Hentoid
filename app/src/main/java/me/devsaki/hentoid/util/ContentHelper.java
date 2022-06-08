@@ -46,10 +46,10 @@ import javax.annotation.Nonnull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.ImageViewerActivity;
+import me.devsaki.hentoid.activities.ReaderActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
+import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -276,13 +276,13 @@ public final class ContentHelper {
 
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageUri());
 
-        ImageViewerActivityBundle builder = new ImageViewerActivityBundle();
+        ReaderActivityBundle builder = new ReaderActivityBundle();
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
         if (pageNumber > -1) builder.setPageNumber(pageNumber);
         builder.setForceShowGallery(forceShowGallery);
 
-        Intent viewer = new Intent(context, ImageViewerActivity.class);
+        Intent viewer = new Intent(context, ReaderActivity.class);
         viewer.putExtras(builder.getBundle());
 
         context.startActivity(viewer);

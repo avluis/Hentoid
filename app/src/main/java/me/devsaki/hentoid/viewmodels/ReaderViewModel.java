@@ -89,7 +89,7 @@ import timber.log.Timber;
  * 2. Images
  * 3. Starting index
  */
-public class ImageViewerViewModel extends AndroidViewModel {
+public class ReaderViewModel extends AndroidViewModel {
 
     // Number of concurrent image downloads
     private static final int CONCURRENT_DOWNLOADS = 3;
@@ -140,7 +140,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     private Disposable emptyCacheDisposable = Disposables.empty();
 
 
-    public ImageViewerViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
+    public ReaderViewModel(@NonNull Application application, @NonNull CollectionDAO collectionDAO) {
         super(application);
         dao = collectionDAO;
         searchManager = new ContentSearchManager(dao);

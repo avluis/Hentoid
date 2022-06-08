@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.viewer;
+package me.devsaki.hentoid.fragments.reader;
 
 import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_BROWSE_MODE;
 import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_RENDERING;
@@ -29,7 +29,7 @@ import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.util.Preferences;
 
-public final class ViewerPrefsDialogFragment extends DialogFragment {
+public final class ReaderPrefsDialogFragment extends DialogFragment {
 
     private static final String RENDERING_MODE = "render_mode";
     private static final String BROWSE_MODE = "browse_mode";
@@ -40,7 +40,7 @@ public final class ViewerPrefsDialogFragment extends DialogFragment {
 
 
     public static void invoke(Fragment parent, Map<String, String> bookPrefs) {
-        ViewerPrefsDialogFragment fragment = new ViewerPrefsDialogFragment();
+        ReaderPrefsDialogFragment fragment = new ReaderPrefsDialogFragment();
 
         Bundle args = new Bundle();
         if (bookPrefs != null) {
@@ -73,7 +73,7 @@ public final class ViewerPrefsDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_viewer_book_prefs, container, false);
+        return inflater.inflate(R.layout.dialog_reader_book_prefs, container, false);
     }
 
     @Override
