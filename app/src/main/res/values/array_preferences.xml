@@ -72,13 +72,20 @@
     <string name="pref_viewer_read_threshold_entries_2">2 pages</string>
     <string name="pref_viewer_read_threshold_entries_3">5 pages</string>
     <string name="pref_viewer_read_threshold_entries_4">All pages</string>
-    <!-- Choice for "Slideshow delay" setting -->
+    <!-- Choice for "Slideshow delay" setting for horizontal mode -->
     <string name="pref_viewer_slideshow_delay_entries_1" tools:ignore="MissingTranslation">500 ms</string>
     <string name="pref_viewer_slideshow_delay_entries_2" tools:ignore="MissingTranslation">1 s</string>
     <string name="pref_viewer_slideshow_delay_entries_3">2 s (default)</string>
     <string name="pref_viewer_slideshow_delay_entries_4" tools:ignore="MissingTranslation">4 s</string>
     <string name="pref_viewer_slideshow_delay_entries_5" tools:ignore="MissingTranslation">8 s</string>
     <string name="pref_viewer_slideshow_delay_entries_6" tools:ignore="MissingTranslation">16 s</string>
+    <!-- Choice for "Slideshow delay" setting for vertical mode -->
+    <string name="pref_viewer_slideshow_delay_entries_vertical_1">Super slow</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_2">Slow</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_3">Normal (default)</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_4">Quick</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_5">Fast</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_6">Super fast</string>
     <!-- Choice for "Display mode" setting -->
     <string name="pref_viewer_display_mode_entries_1">Fit to screen (default)</string>
     <string name="pref_viewer_display_mode_entries_2">Fill screen (proportionate)</string>

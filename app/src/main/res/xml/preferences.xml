@@ -620,6 +620,14 @@
                 android:summary="@string/pref_generic_summary"
                 android:title="@string/pref_viewer_slideshow_delay"
                 app:iconSpaceReserved="false" />
+            <ListPreference
+                android:defaultValue="@string/pref_viewer_slideshow_delay_vertical_default"
+                android:entries="@array/pref_viewer_slideshow_delay_entries_vertical"
+                android:entryValues="@array/pref_viewer_slideshow_delay_values"
+                android:key="pref_viewer_slideshow_delay_vertical"
+                android:summary="@string/pref_generic_summary"
+                android:title="@string/pref_viewer_slideshow_delay_vertical"
+                app:iconSpaceReserved="false" />
         </PreferenceScreen>
 
     </PreferenceScreen>

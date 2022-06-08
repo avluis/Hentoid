@@ -268,6 +268,14 @@
         <item>@string/pref_viewer_slideshow_delay_entries_5</item>
         <item>@string/pref_viewer_slideshow_delay_entries_6</item>
     </string-array>
+    <string-array name="pref_viewer_slideshow_delay_entries_vertical" translatable="false">
+        <item>@string/pref_viewer_slideshow_delay_entries_vertical_1</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_vertical_2</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_vertical_3</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_vertical_4</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_vertical_5</item>
+        <item>@string/pref_viewer_slideshow_delay_entries_vertical_6</item>
+    </string-array>
     <string-array name="pref_viewer_slideshow_delay_values" translatable="false">
         <item>5</item>
         <item>4</item>
@@ -323,7 +331,7 @@
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>
     <string name="error" translatable="false">Error</string>
-    <string name="empty_string" translatable="false"/>
+    <string name="empty_string" translatable="false" />
     <!-- Strings: Main: TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <!-- Strings: Main: Export metadata -->
@@ -333,7 +341,7 @@
     <string name="enabled" translatable="false">ENABLED</string>
     <string name="disabled" translatable="false">DISABLED</string>
     <!-- Strings: Main: Logs -->
-    <string name="error_log_header" translatable="false">Error log for <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>@<x:g id="site_name">%3$s</x:g>]: <x:g id="error_count" example="2">%4$d</x:g> errors</string>
+    <string name="error_log_header" translatable="false">Error log for <x:g id="title">%1$s</x:g> [<x:g id="site_id">%2$s</x:g>@<x:g id="site_name">%3$s</x:g>]: <x:g example="2" id="error_count">%4$d</x:g> errors</string>
     <string name="error_log_header_queue" translatable="false">Error log for queue</string>
     <!-- Strings: Main: Library fragment -->
     <string name="book_title" translatable="false">This is a rather long title, just because we need it to be.</string>
@@ -425,4 +433,5 @@
     <bool name="pref_viewer_continuous_default" translatable="false">false</bool>
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
+    <string name="pref_viewer_slideshow_delay_vertical_default" translatable="false">0</string>
 </resources>

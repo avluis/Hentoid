@@ -8,8 +8,7 @@ import androidx.recyclerview.widget.LinearSmoothScroller;
 import timber.log.Timber;
 
 public class ReaderSmoothScroller extends LinearSmoothScroller {
-    private static final float DEFAULT_SPEED = 25f; // LinearSmoothScroller.MILLISECONDS_PER_INCH
-    private float speed = DEFAULT_SPEED;
+    private float speed = 25f;// LinearSmoothScroller.MILLISECONDS_PER_INCH
 
     public ReaderSmoothScroller(Context context) {
         super(context);
@@ -28,9 +27,5 @@ public class ReaderSmoothScroller extends LinearSmoothScroller {
     public void setSpeed(float speed) {
         Timber.i("SPEED : %s", speed);
         this.speed = speed;
-    }
-
-    public void resetSpeed() {
-        speed = DEFAULT_SPEED;
     }
 }
