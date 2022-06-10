@@ -29,7 +29,7 @@
     <string name="resume">Riprendi</string>
     <string name="cancel">Annulla</string>
     <string name="cancel_all">Annulla tutto</string>
-    <string name="menu_completed_single">Completato</string>
+
     <string name="service_running">Il servizio è già in esecuzione</string>
     <string name="open_folder">Apri cartella</string>
     <string name="_default">predefinito</string>

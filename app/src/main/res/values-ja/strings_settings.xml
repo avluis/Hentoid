@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+<string name="pref_screen_interface">インターフェース＆amp; ナビゲーション</string>
+    <string name="pref_cat_library">ライブラリー</string>
+    <string name="pref_drawer_sources_title">ソースを管理する</string>
+    <string name="pref_drawer_sources_summary">左側のナビゲーションドロワーに表示されるソースを有効化、無効化、および再編成します</string>
+    <string name="pref_library_display_title">画面タイプ</string>
+    <string name="pref_library_display_summary">書籍やグループの表示の種類\n現在：<x:g example="List" id="display_type">%s</x:g></string>
+    <string name="pref_endless_scroll_title">エンドレススクロール</string>
+    <string name="pref_endless_scroll_summary_off">ダウンロードリストで無限スクロールを有効にする\nページングを無効にする</string>
+    <string name="pref_endless_scroll_summary_on">心ゆくまでスクロールしてください</string>
+
+    <string name="pref_top_fab_title">トップボタンに移動</string>
+    <string name="pref_top_fab_summary_off">ボタンが無効</string>
+    <string name="pref_top_fab_summary_on">ボタンが有効</string>
+    <string name="pref_cat_search">高度な検索</string>
+    <string name="pref_attributes_list_order_title">表示されたメタデータの並べ替え</string>
+    <string name="pref_attributes_list_count_title">利用可能な本を数える</string>
+    <string name="pref_attributes_list_count_on">利用可能な本の数がすべての属性の横に表示されます</string>
+    <string name="pref_attributes_list_count_off">利用可能な本の数は表示されません</string>
+    <string name="pref_cat_theme">アプリのテーマ</string>
+    <string name="pref_color_theme_title">カラーテーマ</string>
+
+<string name="pref_screen_storage">ストレージ</string>
+<string name="pref_screen_downloader">ダウンローダー</string>
+</resources>

@@ -61,6 +61,11 @@
     <string name="pref_viewer_slideshow_delay_entries_4" tools:ignore="MissingTranslation">4秒</string>
     <string name="pref_viewer_slideshow_delay_entries_5" tools:ignore="MissingTranslation">8秒</string>
     <string name="pref_viewer_slideshow_delay_entries_6" tools:ignore="MissingTranslation">16秒</string>
+
+
+
+
+
 <string name="pref_viewer_display_mode_entries_1">画面に合わせる（デフォルト）</string>
     <string name="pref_viewer_display_mode_entries_2">塗りつぶし画面（比例）</string>
     <string name="pref_viewer_display_mode_entries_3">画面いっぱい（ストレッチ）</string>
