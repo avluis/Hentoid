@@ -3,9 +3,9 @@
 <string name="pref_library_display_entries_1">Elenco (predefinito)</string>
     <string name="pref_library_display_entries_2">Griglia</string>
 <string name="pref_memory_alert_entries_1">Nessun avviso</string>
-    <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">su 90%% pieno</string>
-    <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">su 95%% pieno</string>
-    <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">su 98%% pieno</string>
+    <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">su 90% pieno</string>
+    <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">su 95% pieno</string>
+    <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">su 98% pieno</string>
 <string name="pref_browser_quick_dl_threshold_entries_1">500 ms (predefinito)</string>
     <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 sec</string>
     <string name="pref_browser_quick_dl_threshold_entries_3" tools:ignore="MissingTranslation">1.5 sec</string>
@@ -61,11 +61,12 @@
     <string name="pref_viewer_slideshow_delay_entries_4" tools:ignore="MissingTranslation">4 sec</string>
     <string name="pref_viewer_slideshow_delay_entries_5" tools:ignore="MissingTranslation">8 sec</string>
     <string name="pref_viewer_slideshow_delay_entries_6" tools:ignore="MissingTranslation">16 sec</string>
-
-
-
-
-
+<string name="pref_viewer_slideshow_delay_entries_vertical_1">Super lento</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_2">Lento</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_3">Normale (predefinito)</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_4">Rapido</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_5">Veloce</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_6">Super veloce</string>
 <string name="pref_viewer_display_mode_entries_1">Adatta allo schermo (predefinito)</string>
     <string name="pref_viewer_display_mode_entries_2">Riempi lo schermo (proporzionato)</string>
     <string name="pref_viewer_display_mode_entries_3">Riempi lo schermo (allunga)</string>
