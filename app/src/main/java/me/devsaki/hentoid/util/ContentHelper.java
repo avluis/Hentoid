@@ -512,9 +512,10 @@ public final class ContentHelper {
                                         resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os);
                                         resizedBitmap.recycle();
                                     }
+                                    return Uri.fromFile(finalFile);
+                                } finally {
                                     if (!extractedFile.delete())
                                         Timber.w("Failed deleting file %s", extractedFile.getAbsolutePath());
-                                    return Uri.fromFile(finalFile);
                                 }
                             })
                             // Add it as the book's cover
