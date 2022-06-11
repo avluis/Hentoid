@@ -13,21 +13,21 @@
     <plurals name="book" tools:ignore="ImpliedQuantity">
         <item quantity="one">livre</item>
         <item quantity="other">livres</item>
+        <item quantity="many">livres</item>
     </plurals>
     <plurals name="file" tools:ignore="ImpliedQuantity">
         <item quantity="one">fichier</item>
         <item quantity="other">fichiers</item>
+        <item quantity="many">fichiers</item>
     </plurals>
-
     <string name="stop">Arrêter</string>
     <string name="resume">Reprendre</string>
     <string name="cancel">Annuler</string>
     <string name="cancel_all">Tout annuler</string>
-
+    <string name="menu_completed_single">Terminé</string>
     <string name="service_running">Le service est déjà en exécution</string>
     <string name="open_folder">Ouvrir le dossier</string>
     <string name="_default">par défaut</string>
-    <string name="none">Aucun</string>
 <string name="title_activity_api29_migration">Migration vers l\'API 29</string>
     <string name="title_activity_downloads">Bibliothèque</string>
     <string name="title_activity_queue">File d\'attente</string>
@@ -37,21 +37,24 @@
     <string name="title_activity_search">Recherche avancée</string>
 <string name="api29_migration_title">Hentoid v12 \nMise à jour de la gestion des fichiers</string>
     <string name="api29_migration_subtitle">Hentoid est en train de mettre à jour votre collection. \nCeci peut prendre quelques minutes.</string>
+    <string name="api29_migration_location">Emplacement actuel du dossier Hentoid \n%s</string>
     <string name="api29_migration_step1">Dossier Hentoid</string>
     <string name="api29_migration_step1_external">Dossier externe</string>
     <string name="api29_migration_step1_select">Sélectionnez le dossier Hentoid</string>
     <string name="api29_migration_step1_select_external">Sélectionner un dossier externe</string>
     <string name="api29_migration_step2">Analyser des dossiers du site</string>
     <string name="api29_migration_step3_init">Scan de la bibliothèque…</string>
+    <string name="api29_migration_step3">Scan de la bibliothèque (<x:g id="number" example="1">%1$d</x:g> / <x:g id="total" example="7">%2$d</x:g>)</string>
     <string name="api29_migration_step4_init">Importation de la file d\'attente…</string>
     <string name="api29_migration_select_folder">Veuillez sélectionner un dossier Hentoid existant. Son emplacement est affiché à l\'écran.</string>
     <string name="api29_migration_allow_write">Veuillez autoriser l\'écriture</string>
 <string name="menu_search">Recherche</string>
     <string name="menu_fav">Basculer le filtre favori</string>
+    <string name="menu_comp">Basculer le filtre complété</string>
     <string name="menu_mark_fav">Basculer le favori</string>
     <string name="menu_group_new">Nouveau groupe</string>
-
-
+    <string name="menu_edit_order">Modifier l\'ordre</string>
+    <string name="menu_edit_name">Modifier le nom</string>
     <string name="menu_edit_cancel">Annuler la modification</string>
     <string name="menu_edit_warning_custom">Le nouvel ordre personnalisé que vous êtes sur le point de créer écrasera le précédent.</string>
     <string name="menu_order">Ordonner les livres</string>
@@ -74,6 +77,7 @@
     <string name="app_settings">Paramètres de l\'application</string>
     <string name="book_settings">Paramètres des livres</string>
     <string name="permissions_lost">Les autorisations fichiers ont été perdues</string>
+    <string name="low_memory">Votre appareil n\'a plus de mémoire !</string>
     <string name="fix_permissions">Corriger</string>
     <string name="view_queue">Voir la file d\'attente</string>
 <string name="downloader_title">Téléchargeur</string>
@@ -82,6 +86,7 @@
     <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
         <item quantity="one">Êtes-vous sûr·e de vouloir annuler l\'élément sélectionné \?</item>
         <item quantity="other">Êtes-vous sûr·e de vouloir annuler les élément sélectionnés \?</item>
+        <item quantity="many">Êtes-vous sûr·e de vouloir annuler les élément sélectionnés \?</item>
     </plurals>
     <string name="invert_queue">Inverser la file d\'attente</string>
     <string name="redownload_all">Tout retélécharger</string>
@@ -93,7 +98,24 @@
     <string name="paused_no_internet">Impossible de télécharger ; pas d\'internet</string>
     <string name="paused_no_wifi">Impossible de télécharger ; pas de Wi-Fi</string>
 
+    <string name="download_notif_speed" tools:ignore="MissingTranslation">%1$d%2$s Mo @ %3$d ko/s</string>
     <string name="download_notif_failed">Attention : échec du téléchargement</string>
+    <plurals name="work_pages_library">
+        <item quantity="one">%1$d page / %2$.1f Mo</item>
+        <item quantity="other">%1$d pages / %2$.1f Mo</item>
+        <item quantity="many">%1$d pages / %2$.1f Mo</item>
+    </plurals>
+    <string name="library_metrics_storage">%.0f Mo</string>
+
+
+
+
+
+
+
+
+
+
 
 <string name="refresh_title">Actualiser la bibliothèque</string>
 
@@ -104,7 +126,16 @@
 
 
     <string name="import_run">EXÉCUTER L\'IMPORTATION</string>
-
+    <plurals name="import_result_books">
+        <item quantity="one">%d livre importé avec succès</item>
+        <item quantity="other">%d livres importés avec succès</item>
+        <item quantity="many">%d livres importés avec succès</item>
+    </plurals>
+    <plurals name="import_result_bookmarks">
+        <item quantity="one">%d marque-page importé</item>
+        <item quantity="other">%d marque-pages importés</item>
+        <item quantity="many">%d marque-pages importés</item>
+    </plurals>
     <string name="dialog_prompt">Autoriser l\'écriture</string>
 <string name="export_title">Exporter les métadonnées</string>
 
@@ -112,7 +143,15 @@
     <string name="import_settings_title">Paramètres d\'importation</string>
 
 
+
     <string name="import_canceled">Importation annulée</string>
+
+<string name="memory_title">Utilisation de la mémoire</string>
+
+
+
+
+
 
     <string name="memory_details_books">Livres</string>
     <string name="memory_details_size">Taille</string>
@@ -128,8 +167,12 @@
 
 
 
-
-
+    <string name="search_bookid_label">Rechercher « %s » dans…</string>
+    <plurals name="number_of_items">
+        <item quantity="one">%d élément</item>
+        <item quantity="other">%d éléments</item>
+        <item quantity="many">%d éléments</item>
+    </plurals>
 
 
 
@@ -158,17 +201,11 @@
 
 
 
-
-
-
-
     <string name="sort_size">Taille</string>
 
 
 
     <string name="sort_books">Livres</string>
-
-
 
 
 
@@ -261,8 +298,55 @@
 
 
 
+
+
+
 <string name="title_activity_duplicate_detector">Détecteur de doublons</string>
 
 
     <string name="duplicate_delete">Supprimer</string>
+    <string name="pref_top_fab_summary_off">Bouton désactivé</string>
+    <string name="pref_top_fab_summary_on">Bouton activé</string>
+    <string name="pref_cat_search">Recherche avancée</string>
+    <string name="pref_cat_advanced">Avancé</string>
+    <string name="pref_select_folder_title">Sélectionnez le dossier des téléchargements</string>
+    <string name="pref_select_folder_summary">Sélectionnez où Hentoid stockera vos téléchargements</string>
+    <string name="u_byte">octets</string>
+    <string name="u_kilobyte">Ko</string>
+    <string name="u_megabyte">Mo</string>
+    <string name="u_gigabyte">Go</string>
+    <string name="u_terabyte">To</string>
+    <string name="u_petabyte">Po</string>
+    <string name="u_exabyte">Eo</string>
+    <string name="lang_en">anglais</string>
+    <string name="lang_zh">chinois</string>
+    <string name="lang_ja">japonais</string>
+    <string name="lang_ko">coréen</string>
+    <string name="lang_es">espagnol</string>
+    <string name="lang_ru">russe</string>
+    <string name="lang_pt">portugais</string>
+    <string name="lang_th">thaï</string>
+    <string name="lang_fr">français</string>
+    <string name="lang_vi">vietnamien</string>
+    <string name="lang_it">ilalien</string>
+    <string name="lang_de">allemand</string>
+    <string name="lang_pl">polonais</string>
+    <string name="lang_id">indonésien</string>
+    <string name="lang_hu">hongrois</string>
+    <string name="lang_tr">turc</string>
+    <string name="lang_cs">tchèque</string>
+    <string name="group_today">Aujourd\'hui</string>
+    <string name="about1"><b>Hentoid</b> est une application d\'archivage de Doujinshi et H-Manga. <b>Hentoid</b> a été créé à l\'origine par Cesar Arasaki.</string>
+    <string name="select_file_manager">Sélectionnez votre gestionnaire de fichiers</string>
+    <string name="groups">Groupes</string>
+    <string name="empty">vide</string>
+    <string name="export_run">EXÉCUTER L\'EXPORTATION</string>
+    <string name="refresh_options_remove_or">ou</string>
+    <string name="pref_screen_browser">Navigateur</string>
+    <string name="information_help">Information</string>
+    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (échelle de <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="updates_title">Mises à jour</string>
+    <string name="masterdata_no_result">Aucun résultat :(</string>
+    <string name="pref_screen_privacy">Confidentialité</string>
+    <string name="pref_browser_dns_title">DNS over HTTPS</string>
 </resources>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-<string name="app_intro">Bienvenido</string>
-<string name="yes">Si</string>
-<string name="no">No</string>
+    <string name="app_intro">Bienvenido</string>
+    <string name="yes">Si</string>
+    <string name="no">No</string>
     <string name="ok" tools:ignore="MissingTranslation">Ok</string>
     <string name="on">Encendido</string>
     <string name="off">Apagado</string>
@@ -24,7 +24,7 @@
     <string name="_default">predeterminado</string>
     <string name="empty">vacío</string>
     <string name="none">Ninguno</string>
-<string name="title_activity_api29_migration">Migración de API 29</string>
+    <string name="title_activity_api29_migration">Migración de API 29</string>
     <string name="title_activity_downloads">Librería</string>
     <string name="title_activity_queue">Cola de descarga</string>
     <string name="title_activity_preferences">Preferencias</string>
@@ -43,19 +43,9 @@
     <string name="api29_migration_step4_init">Importando la cola de descarga...</string>
     <string name="api29_migration_select_folder">Por favor seleccionar una carpeta existente de Hentoid. La ubicación de esta se muestra en la pantalla.</string>
     <string name="api29_migration_allow_write">Por favor autoriza el permiso de escritura</string>
-<string name="menu_search">Búsqueda</string>
+    <string name="menu_search">Búsqueda</string>
 
     <string name="menu_group_new">Nuevo grupo</string>
-
-
-
-
-
-
-
-
-
-
 
 
     <string name="menu_select_all">Seleccionar todo</string>
@@ -67,45 +57,75 @@
     <string name="send_to">Compartir con:</string>
 
 
+    <string name="import_title">Importar metadatos</string>
 
 
-
-
-
-
-<string name="import_title">Importar metadatos</string>
-
-
-
-
-
-<string name="export_title">Exportar metadatos</string>
+    <string name="export_title">Exportar metadatos</string>
 
 
     <string name="import_settings_title">Importar ajustes</string>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    <string name="pref_viewer_read_threshold_entries_2">2 páginas</string>
+    <string name="pref_viewer_read_threshold_entries_3">5 páginas</string>
+    <string name="pref_viewer_read_threshold_entries_4">Todas las páginas</string>
+    <string name="pref_folder_trunc_content_entries_2">60 caracteres</string>
+    <string name="pref_folder_trunc_content_entries_3">80 caracteres</string>
+    <string name="pref_folder_trunc_content_entries_4">100 caracteres</string>
+    <string name="pref_folder_trunc_content_entries_5">120 caracteres</string>
+    <string name="pref_top_fab_summary_off">Botón deshabilitado</string>
+    <string name="pref_top_fab_summary_on">Botón habilitado</string>
+    <string name="pref_cat_search">Búsqueda avanzada</string>
+    <string name="pref_cat_theme">Tema de la aplicación</string>
+    <string name="pref_select_folder_title">Seleccione la carpeta de descargas</string>
+    <string name="pref_select_folder_summary">Seleccione dónde Hentoid almacenará sus descargas</string>
+    <string name="lang_en">inglés</string>
+    <string name="lang_zh">chino</string>
+    <string name="lang_ja">japonés</string>
+    <string name="lang_ko">coreano</string>
+    <string name="lang_es">español</string>
+    <string name="lang_ru">ruso</string>
+    <string name="lang_pt">portugués</string>
+    <string name="lang_th">tailandés</string>
+    <string name="lang_fr">francés</string>
+    <string name="lang_vi">vietnamita</string>
+    <string name="lang_it">italiano</string>
+    <string name="lang_de">alemán</string>
+    <string name="lang_pl">polaco</string>
+    <string name="lang_id">indonesio</string>
+    <string name="lang_hu">húngaro</string>
+    <string name="lang_tr">turco</string>
+    <string name="lang_cs">checo</string>
+    <string name="group_today">Hoy</string>
+    <string name="about1"><b>Hentoid</b> es una aplicación para archivar Doujinshi y H-Manga. <b>Hentoid</b> fue creada originalmente por Cesar Arasaki.</string>
+    <string name="groups">Grupos</string>
+    <string name="export_run">EJECUTAR LA EXPORTACIÓN</string>
+    <string name="import_run">EJECUTAR LA IMPORTACIÓN</string>
+    <string name="refresh_options_remove_or">o</string>
+    <string name="pref_screen_browser">Navegador</string>
+    <string name="pref_browser_behaviour">Funcionamiento</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_deep_red">Rojo intenso</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="duplicate_delete">Borrar</string>
+    <string name="duplicate_keep">Guardar</string>
+    <string name="duplicate_use_sensitivity">Sensibilidad</string>
+    <string name="duplicate_use_title">Título</string>
+    <string name="duplicate_use_cover">Cubierta</string>
+    <string name="duplicate_use_artist">Artista</string>
+    <string name="information_help">Información</string>
+    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (<x:g example="100%" id="scale_percentage">%3$.0f%%</x:g> escala) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="updates_title">Actualizaciones</string>
+    <string name="masterdata_no_result">Ningún resultado :(</string>
+    <string name="memory_details_books">Libros</string>
+    <string name="memory_details_size">Tamaño</string>
+    <string name="memory_details_source">Fuente</string>
+    <string name="pref_screen_privacy">Privacidad</string>
+    <string name="pref_browser_dns_title">DNS mediante HTTPS</string>
 
 
     <string name="viewer_direction_ltr">De derecha a izquierda</string>
     <string name="viewer_direction_rtl">De izquierda a derecha</string>
     <string name="viewer_direction_ttb">De arriba a abajo</string>
-<string name="title_activity_duplicate_detector">Detector de duplicados</string>
+    <string name="title_activity_duplicate_detector">Detector de duplicados</string>
 </resources>
