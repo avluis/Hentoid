@@ -9,7 +9,9 @@
     <string name="pref_endless_scroll_summary_off">Skru på uendelig rulling i nedlastingslisten. \nDette skrur av sideinndeling.</string>
     <string name="pref_endless_scroll_summary_on">Rull så mye du vil</string>
     <string name="pref_quantity_per_page_title">Mengde per side</string>
-    <string name="pref_quantity_per_page_summary">Antall elementer per side i nedlastingslisten. \nNå: %s elementer</string>
+
+
+
     <string name="pref_cat_search">Avansert søk</string>
     <string name="pref_attributes_list_order_title">Sorteringsrekkefølge for vist metadata</string>
     <string name="pref_attributes_list_count_title">Tell tilgjengelige bøker</string>
@@ -17,7 +19,7 @@
     <string name="pref_attributes_list_count_off">Antall tilgjengelige bøker vises ikke</string>
     <string name="pref_cat_theme">Programdrakt</string>
     <string name="pref_color_theme_title">Fargedrakt</string>
-    <string name="pref_color_theme_summary">Nåværende drakt: %s</string>
+
 <string name="pref_screen_storage">Lagring</string>
     <string name="pref_cat_downloads_folder">Hentoid-bibliotek</string>
     <string name="pref_select_folder_title">Velg nedlastingsmappe</string>
@@ -26,15 +28,13 @@
     <string name="pref_import_queue_empty_on">Tomme bøker vil bli lagt til i køen som feil</string>
     <string name="pref_import_queue_empty_off">Tomme bøker vil bli lagt til i biblioteket</string>
     <string name="pref_folder_naming_content_title">Mappenavn</string>
-    <string name="pref_folder_naming_content_summary">Navngivningssystem for bøker: \n%s</string>
     <string name="pref_import_running">Import kjører allerede</string>
     <string name="prefs_ask_detach_external_library">Koble fra det eksterne biblioteket\?</string>
     <string name="prefs_external_library_detached">Eksternt bibliotek frakoblet</string>
     <string name="pref_folder_trunc_title">Forkort mappenavn</string>
-    <string name="pref_folder_trunc_summary">Forkortelse av bokmappenavn. \nNå: %s.</string>
-    <string name="pref_memory_usage_title">Minnebruk</string>
-    <string name="pref_memory_usage_summary">Nåværende ledig plass: %.2f%% (trykk for detaljer)</string>
-    <string name="pref_memory_alert_title">Varsel ved lavt minne</string>
+
+
+
     <string name="pref_cat_external">Eksternt bibliotek</string>
     <string name="pref_external_library_title">Eksternt bibliotek</string>
     <string name="pref_external_library_summary_empty">Eksternt bibliotek er ikke satt</string>
@@ -47,10 +47,6 @@
     <string name="pref_refresh_library_title">Gjenoppfrisk bibliotek</string>
     <string name="pref_refresh_library_summary">Gjenoppfrisk biblioteksinnhold manuelt</string>
     <string name="pref_delete_all_except_favs_title">Slett alle bøker unntatt favoritter</string>
-    <plurals name="pref_ask_delete_all_except_favs">
-        <item quantity="one">Slett %d bok\?</item>
-        <item quantity="other">Slett %d bøker\?</item>
-    </plurals>
 <string name="pref_screen_browser">Nettleser</string>
     <string name="pref_browser_behaviour">Oppførsel</string>
     <string name="pref_browser_resume_last_title">Fortsett fra sist viste side</string>
@@ -76,7 +72,10 @@
     <string name="pref_browser_override_overview_title">Skru av sideoversikt</string>
 
     <string name="pref_browser_initial_zoom_title">Opprinnelig forstørrelsesnivå</string>
-    <string name="pref_browser_dns">Egendefinert DNS</string>
+
+
+
+
 <string name="pref_screen_downloader">Nedlaster</string>
 
 
@@ -96,9 +95,6 @@
     <string name="tag_blocking_screen_title">Etikett-blokkering</string>
     <string name="pref_dl_blocked_tags_title">Blokkerte etiketter</string>
     <string name="pref_dl_blocked_tags_behaviour_title">Blokkeringsoppførsel</string>
-    <string name="pref_dl_hitomi_webp_title">Foretrekk nedlasting av WebP</string>
-    <string name="pref_dl_hitomi_webp_summary_off">Last ned andre typer bilder (PNG, JPG)</string>
-    <string name="pref_dl_hitomi_webp_summary_on">Last ned WebP-bilder når de er tilgjengelige</string>
     <string name="pref_dl_threads_quantity_title">Antall parallelle nedlastinger</string>
 <string name="pref_screen_privacy">Personvern</string>
 
@@ -115,7 +111,7 @@
     <string name="pref_check_updates_manual_no_new">Fant ingen oppdateringer. Bruker allerede siste versjon.</string>
     <string name="pref_check_updates_title">Automatiske oppdateringer</string>
 
-<string name="pref_screen_viewer">Bildeviser</string>
+
     <string name="pref_viewer_controls">Kontroller</string>
     <string name="pref_viewer_browse_mode">Utforskningsmodus</string>
 
@@ -123,7 +119,9 @@
     <string name="pref_viewer_page_turn_volume">Lydstyrkeknapp</string>
 
     <string name="pref_viewer_invert_volume">Inverter lydstyrkeknapper</string>
-    <string name="pref_viewer_zoom">Forstørr</string>
+
+
+
 
     <string name="pref_viewer_visuals">Utseende</string>
     <string name="pref_viewer_keep_screen_on">Behold skjermen påslått</string>

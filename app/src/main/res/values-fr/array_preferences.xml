@@ -34,7 +34,6 @@
     <string name="pref_folder_trunc_content_entries_4">100 caractères</string>
     <string name="pref_folder_trunc_content_entries_5">120 caractères</string>
 <string name="pref_viewer_dl_action_entries_1">Télécharger toutes les pages</string>
-    <string name="pref_viewer_dl_action_entries_2">Diffuser les pages lors de la lecture</string>
 <string name="pref_attribute_list_order_entries_1">Alphabétique</string>
     <string name="pref_attribute_list_order_entries_2">Nombre d\'éléments (les plus utilisés en premier)</string>
 <string name="pref_dl_retries_mem_limit_entries_4">Aucun</string>
@@ -52,6 +51,12 @@
     <string name="pref_viewer_read_threshold_entries_4">Toutes les pages</string>
 
     <string name="pref_viewer_slideshow_delay_entries_3">2 s (par défaut)</string>
+
+
+
+
+
+
 
 
 <string name="pref_viewer_display_mode_entries_1">Ajuster à l\'écran (par défaut)</string>
