@@ -1,16 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-<string name="pref_screen_interface">Interfaz y Navegación</string>
+<resources>
+    <string name="pref_screen_interface">Interfaz y Navegación</string>
     <string name="pref_cat_library">Librería</string>
-
-
-
-
-
-
-
-
-
 
 
     <string name="pref_cat_search">Búsqueda avanzada</string>

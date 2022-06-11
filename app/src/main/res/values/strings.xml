@@ -97,6 +97,7 @@
     <string name="low_memory">Your device is low on storage!</string>
     <string name="fix_permissions">Fix</string>
     <string name="view_queue">View queue</string>
+    <string name="clear_search_history">Clear search history</string>
 
     <!-- Queue / Downloader -->
     <string name="downloader_title">Downloader</string>

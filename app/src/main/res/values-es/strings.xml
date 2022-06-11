@@ -66,16 +66,8 @@
     <string name="import_settings_title">Importar ajustes</string>
 
 
-    <string name="pref_viewer_read_threshold_entries_2">2 páginas</string>
-    <string name="pref_viewer_read_threshold_entries_3">5 páginas</string>
-    <string name="pref_viewer_read_threshold_entries_4">Todas las páginas</string>
-    <string name="pref_folder_trunc_content_entries_2">60 caracteres</string>
-    <string name="pref_folder_trunc_content_entries_3">80 caracteres</string>
-    <string name="pref_folder_trunc_content_entries_4">100 caracteres</string>
-    <string name="pref_folder_trunc_content_entries_5">120 caracteres</string>
     <string name="pref_top_fab_summary_off">Botón deshabilitado</string>
     <string name="pref_top_fab_summary_on">Botón habilitado</string>
-    <string name="pref_cat_search">Búsqueda avanzada</string>
     <string name="pref_cat_theme">Tema de la aplicación</string>
     <string name="pref_select_folder_title">Seleccione la carpeta de descargas</string>
     <string name="pref_select_folder_summary">Seleccione dónde Hentoid almacenará sus descargas</string>
