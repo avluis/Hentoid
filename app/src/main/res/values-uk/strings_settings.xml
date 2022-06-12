@@ -162,11 +162,14 @@
     <string name="pref_viewer_page_turn_keyboard">Стрілки вліво/вправо на клавіатурі</string>
     <string name="pref_viewer_swipe_to_fling">Перегортати кілька сторінок одним свайпом</string>
     <string name="pref_viewer_invert_volume">Інвертувати кнопки гучності</string>
+    <string name="pref_viewer_book_switch">Перемикання книг</string>
+    <string name="pref_viewer_book_switch_volume">Кнопки гучності (довге натискання)</string>
     <string name="pref_viewer_zoom">Збільшення</string>
     <string name="pref_viewer_zoom_holding">Тимчасово збільшувати при утриманні пальця</string>
     <string name="pref_viewer_cap_tap_zoom">Обмежити зум за подвійним або довгим натисканням</string>
     <string name="pref_viewer_visuals">Зовнішній вигляд</string>
     <string name="pref_viewer_keep_screen_on">Не вимикати екран</string>
+    <string name="pref_viewer_display_notch">Показувати біля "чубчика"</string>
     <string name="pref_viewer_display_pagenum">Завжди показувати номер сторінки</string>
     <string name="pref_viewer_tap_transitions">Увімкнути анімацію зміни сторінок</string>
     <string name="pref_viewer_zoom_transitions">Увімкнути анімацію зуму</string>
@@ -188,5 +191,6 @@
     <string name="pref_viewer_continuous_summary_on">З останньої сторінки книги можна піти на наступну книгу</string>
     <string name="pref_viewer_read_threshold">Вважати книгу прочитаною після N сторінок</string>
     <string name="pref_viewer_slideshow_delay">Слайдшоу / Час показу кожної сторінки</string>
+    <string name="pref_viewer_slideshow_delay_vertical">Слайдшоу / Швидкість вертикального перегортання</string>
     <string name="doh_warning">Деякі сайти погано працюють з DNS через HTTPS. Скористайтеся стороннім додатком для DNS, якщо ви маєте проблеми при навігації (наприклад: порожні сторінки або помилки під час авторизації)</string>
 </resources>

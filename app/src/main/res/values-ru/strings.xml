@@ -37,6 +37,7 @@
     <string name="cancel">Отменить</string>
     <string name="cancel_all">Отменить всё</string>
     <string name="menu_completed_single">Завершено</string>
+    <string name="menu_reset_read">Пометить непрочитанным</string>
     <string name="service_running">Сервис уже запущен</string>
     <string name="open_folder">Открыть папку</string>
     <string name="_default">по умолчанию</string>
@@ -100,6 +101,7 @@
     <string name="low_memory">Заканчивается память на устройстве!</string>
     <string name="fix_permissions">Исправить</string>
     <string name="view_queue">Просмотреть очередь</string>
+    <string name="clear_search_history">Очистить историю поиска</string>
 
     <!-- Queue / Downloader -->
     <string name="downloader_title">Загрузчик</string>
@@ -733,6 +735,7 @@
     <string name="chapters_remove_failed">Не удалось удалить главы</string>
     <string name="chapter_move_failed">Не удалось переместить главу</string>
     <string name="slideshow_start">Начало слайдшоу (задержка в <x:g id="time" example="0.5">%.1f</x:g> с)</string>
+    <string name="slideshow_start_vertical">Начало слайдшоу (<x:g example="быстро" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Слайдшоу остановлено</string>
     <string name="ask_clear_chapters">Удалить все главы?</string>
 

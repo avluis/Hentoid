@@ -36,6 +36,7 @@
     <string name="cancel">Скасувати</string>
     <string name="cancel_all">Скасувати все</string>
     <string name="menu_completed_single">Завершено</string>
+    <string name="menu_reset_read">Позначити непрочитаним</string>
     <string name="service_running">Сервіс вже запущений</string>
     <string name="open_folder">Відкрити папку</string>
     <string name="_default">за замовчуванням</string>
@@ -99,6 +100,7 @@
     <string name="low_memory">Закінчується пам\'ять на пристрої!</string>
     <string name="fix_permissions">Виправити</string>
     <string name="view_queue">Переглянути чергу</string>
+    <string name="clear_search_history">Очистити історію пошуку</string>
 
     <!-- Queue / Downloader -->
     <string name="downloader_title">Завантажувач</string>
@@ -732,6 +734,7 @@
     <string name="chapters_remove_failed">Не вдалося видалити глави</string>
     <string name="chapter_move_failed">Не вдалося перемістити главу</string>
     <string name="slideshow_start">Початок слайдшоу (затримка в <x:g id="time" example="0.5">%.1f</x:g> с)</string>
+    <string name="slideshow_start_vertical">Початок слайдшоу (<x:g example="швидко" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Слайдшоу зупинено</string>
     <string name="ask_clear_chapters">Видалити всі глави?</string>
 
