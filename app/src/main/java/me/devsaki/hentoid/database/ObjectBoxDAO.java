@@ -161,7 +161,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectErrorContentQ().find();
     }
 
-    public LiveData<Integer> countAllBooks() {
+    public LiveData<Integer> countAllBooksLive() {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
         // See https://github.com/objectbox/objectbox-java/issues/776

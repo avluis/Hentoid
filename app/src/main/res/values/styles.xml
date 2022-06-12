@@ -1,4 +1,4 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <style name="TextButton">
         <item name="android:padding">16dp</item>
@@ -42,6 +42,16 @@
 
     <style name="Chip.Choice">
         <item name="android:paddingEnd">12dp</item>
+    </style>
+
+    <style name="Badge">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingStart">2dp</item>
+        <item name="android:paddingEnd">2dp</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:background">@drawable/bg_badge</item>
+        <item name="android:textColor">@color/black_opacity_87</item>
     </style>
 
     <style name="PinPlaceholder">

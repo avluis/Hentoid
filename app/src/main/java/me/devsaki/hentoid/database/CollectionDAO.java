@@ -183,7 +183,7 @@ public interface CollectionDAO {
 
     LiveData<Integer> countBooks(long groupId, List<Attribute> metadata);
 
-    LiveData<Integer> countAllBooks();
+    LiveData<Integer> countAllBooksLive();
 
 
     // IMAGEFILES
