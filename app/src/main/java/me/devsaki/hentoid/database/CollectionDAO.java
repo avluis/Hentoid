@@ -26,6 +26,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -83,8 +84,6 @@ public interface CollectionDAO {
 
     long countAllInternalBooks(boolean favsOnly);
 
-    List<Content> selectAllInternalBooks(boolean favsOnly);
-
     void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer);
 
     void flagAllInternalBooks();
@@ -96,6 +95,8 @@ public interface CollectionDAO {
     void flagAllErrorBooksWithJson();
 
     long countAllQueueBooks();
+
+    LiveData<Integer> countAllQueueBooksLive();
 
     List<Content> selectAllQueueBooks();
 
@@ -149,8 +150,6 @@ public interface CollectionDAO {
 
     // High-level queries (internal and external locations)
 
-    List<Content> selectStoredContent(boolean nonFavouriteOnly, boolean includeQueued, int orderField, boolean orderDesc);
-
     List<Long> selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc);
 
     long countStoredContent(boolean nonFavouriteOnly, boolean includeQueued);
@@ -184,7 +183,7 @@ public interface CollectionDAO {
 
     LiveData<Integer> countBooks(long groupId, List<Attribute> metadata);
 
-    LiveData<Integer> countAllBooks();
+    LiveData<Integer> countAllBooksLive();
 
 
     // IMAGEFILES
@@ -217,9 +216,6 @@ public interface CollectionDAO {
     // QUEUE
 
     List<QueueRecord> selectQueue();
-
-    @Nullable
-    QueueRecord selectQueue(long contentId);
 
     LiveData<List<QueueRecord>> selectQueueLive();
 
@@ -283,6 +279,15 @@ public interface CollectionDAO {
     void deleteBookmark(long bookmarkId);
 
     void deleteAllBookmarks();
+
+
+    // SEARCH HISTORY
+
+    LiveData<List<SearchRecord>> selectSearchRecordsLive();
+
+    void insertSearchRecord(@NonNull SearchRecord record, int limit);
+
+    void deleteAllSearchRecords();
 
 
     // RESOURCES

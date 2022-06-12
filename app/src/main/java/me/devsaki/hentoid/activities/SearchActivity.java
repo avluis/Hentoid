@@ -61,7 +61,7 @@ public class SearchActivity extends BaseActivity {
         super.onSaveInstanceState(outState);
 
         SearchActivityBundle builder = new SearchActivityBundle();
-        builder.setUri(SearchActivityBundle.Companion.buildSearchUri(viewModel.getSelectedAttributesData().getValue()).toString());
+        builder.setUri(SearchActivityBundle.Companion.buildSearchUri(viewModel.getSelectedAttributesData().getValue(),"").toString());
         outState.putAll(builder.getBundle());
         outState.putBoolean("exclude", excludeClicked);
     }
@@ -246,7 +246,7 @@ public class SearchActivity extends BaseActivity {
      * Transmit the search query to the library screen and close the advanced search screen
      */
     private void searchBooks() {
-        Uri searchUri = SearchActivityBundle.Companion.buildSearchUri(viewModel.getSelectedAttributesData().getValue());
+        Uri searchUri = SearchActivityBundle.Companion.buildSearchUri(viewModel.getSelectedAttributesData().getValue(),"");
         Timber.d("URI :%s", searchUri);
 
         SearchActivityBundle builder = new SearchActivityBundle();

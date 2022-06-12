@@ -4,10 +4,10 @@ import android.os.Bundle
 import me.devsaki.hentoid.util.*
 
 /**
- * Helper class to transfer data from any Activity to [me.devsaki.hentoid.activities.ImageViewerActivity]
+ * Helper class to transfer data from any Activity to [me.devsaki.hentoid.activities.ReaderActivity]
  * through a Bundle
  */
-class ImageViewerActivityBundle(val bundle: Bundle = Bundle()) {
+class ReaderActivityBundle(val bundle: Bundle = Bundle()) {
 
     var contentId by bundle.long(default = 0)
 

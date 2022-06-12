@@ -1,5 +1,562 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_intro">Bem vindo</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="ok" tools:ignore="MissingTranslation">OK</string>
+    <string name="on">Ligado</string>
+    <string name="off">Desligado</string>
+    <string name="select_all">Selecionar tudo</string>
+    <string name="select_none">Selecione nenhum</string>
+    <string name="goto_page">Vá para página…</string>
+    <string name="confirm">Confirme</string>
+    <string name="please_wait">Por favor, aguarde…</string>
+    <plurals name="book" tools:ignore="ImpliedQuantity">
+        <item quantity="one">livro</item>
+        <item quantity="other">livros</item>
+    </plurals>
+    <plurals name="page" tools:ignore="ImpliedQuantity">
+        <item quantity="one">página</item>
+        <item quantity="other">páginas</item>
+    </plurals>
+    <plurals name="file" tools:ignore="ImpliedQuantity">
+        <item quantity="one">arquivo</item>
+        <item quantity="other">arquivos</item>
+    </plurals>
+    <string name="pause">Pause</string>
+    <string name="stop">Pare</string>
+    <string name="resume">Retomar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="cancel_all">Cancelar tudo</string>
+
+    <string name="service_running">O serviço já está em execução</string>
+    <string name="_default">padrão </string>
+    <string name="empty">vazio</string>
+    <string name="none">Nenhum</string>
+    <string name="title_activity_api29_migration">Migração da API 29</string>
+    <string name="title_activity_downloads">Biblioteca</string>
+    <string name="title_activity_queue">Fila</string>
+    <string name="title_activity_preferences">Preferências</string>
+    <string name="title_activity_about">Sobre</string>
+    <string name="title_activity_app_lock">Bloqueio do aplicativo</string>
+    <string name="title_activity_search">Busca Avançada</string>
+    <string name="api29_migration_subtitle">O Hentoid está atualizando sua coleção.\nIsso pode levar alguns minutos.</string>
+    <string name="api29_migration_location">Localização atual da pasta Hentoid \n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
+    <string name="api29_migration_step1">Pasta Hentoid</string>
+    <string name="api29_migration_step1_external">Pasta externa</string>
+    <string name="api29_migration_step1_select">Selecione a pasta Hentoid</string>
+    <string name="api29_migration_step1_select_external">Selecione a pasta externa</string>
+    <string name="api29_migration_step2">Verificar pastas do site</string>
+    <string name="api29_migration_step3_init">Digitalizando biblioteca…</string>
+    <string name="api29_migration_step4_init">Importando fila…</string>
+    <string name="api29_migration_select_folder">Selecione uma pasta Hentoid existente. Sua localização é exibida na tela.</string>
+    <string name="api29_migration_allow_write">Por favor, permita permissão de gravação</string>
+    <string name="menu_fav">Alternar filtro favorito</string>
+    <string name="menu_mark_fav">Alternar favorito</string>
+    <string name="menu_group_new">Novo grupo</string>
+
+
+    <string name="menu_edit_cancel">Cancelar edição</string>
+    <string name="menu_edit_warning_custom">O novo pedido personalizado substituirá o anterior.</string>
+    <string name="menu_delete_single">Excluir</string>
+    <string name="menu_change_group">Mover para o grupo…</string>
+    <string name="menu_open_folder">Abrir pasta contendo</string>
+    <string name="menu_redownload">Redownload</string>
+    <string name="menu_redownload_scratch">Baixe novamente do zero</string>
+    <string name="menu_stream">Mudar para streaming</string>
+    <string name="menu_download_streamed">Download</string>
+    <string name="menu_select_all">Selecionar tudo</string>
+    <string name="menu_share_help">Compartilhe a URL e o título do livro usando outro aplicativo</string>
+    <string name="menu_archive">Arquivar</string>
+    <string name="menu_archive_help">Arquivar o livro em um arquivo ZIP</string>
+    <string name="search_hint">Título, artista, etiqueta ou ID do livro</string>
+    <string name="send_to">Compartilhar com:</string>
+    <string name="open_settings">Abrir configurações</string>
+    <string name="app_settings">Configurações do aplicativo</string>
+    <string name="book_settings">Configurações do livro</string>
+    <string name="permissions_lost">Permissões de arquivo foram perdidas</string>
+
+    <string name="view_queue">Ver fila</string>
+    <string name="queue_queue_tab">Em andamento</string>
+    <string name="queue_errors_tab">Erros</string>
+    <plurals name="ask_cancel_multiple" tools:ignore="impliedQuantity">
+        <item quantity="one">Cancelar o item selecionado\?</item>
+        <item quantity="other">Cancelar os itens selecionados\?</item>
+    </plurals>
+    <string name="invert_queue">Inverter fila</string>
+    <string name="redownload_all">Baixar novamente todos</string>
+    <string name="cancel_all_errors">Cancelar todos os erros</string>
+    <string name="move_top">Mover para cima</string>
+    <string name="move_bottom">Mover para baixo</string>
+    <string name="queue_paused">Fila pausada</string>
+    <string name="queue_preparing">Preparando o download</string>
+    <string name="queue_dl">Baixando<x:g example="Cool H-Manga" id="book_name">%s</x:g></string>
+    <string name="err_stats_title">Estatísticas de erro</string>
+    <string name="err_stats_help">Mostrar estatísticas detalhadas sobre erros de download atuais</string>
+    <string name="err_no_content">O livro ainda não existe</string>
+    <string name="confirm_cancel_all">Cancelar toda a fila\?</string>
+    <plurals name="confirm_cancel_all_errors" tools:ignore="MissingQuantity">
+        <item quantity="other">Cancelar todos os <x:g example="42" id="count">%d</x:g> livros com erros\?</item>
+    </plurals>
+    <plurals name="confirm_redownload_all" tools:ignore="MissingQuantity">
+        <item quantity="other">Baixar novamente <x:g example="42" id="count">%d</x:g> itens\?</item>
+    </plurals>
+    <string name="paused_no_internet">Não é possível baixar - Sem Internet</string>
+    <string name="paused_no_wifi">Não é possível baixar - Sem Wi-Fi</string>
+    <string name="paused_no_storage">Não é possível fazer o download - Pouco armazenamento (<x:g example="0 bytes" id="size_left_bytes">%s</x:g>deixou). Espaço livre ou alterar o local da pasta de download</string>
+    <string name="paused_no_dl_folder">Não é possível baixar - Não há pasta de download. Use as configurações do aplicativo para selecionar uma</string>
+    <string name="paused_dl_folder_not_found">Não é possível baixar - Pasta de download não encontrada. Use as configurações do aplicativo para selecionar uma</string>
+    <string name="paused_dl_folder_credentials">Não é possível baixar - Credenciais insuficientes na pasta de download. Use as configurações do aplicativo para seleciona-la novamente</string>
+    <string name="paused_dl_stale_online_credentials">Não é possível baixar - Cookies ou credenciais obsoletas. Use a notificação para regenerá-los</string>
+    <string name="step_init">Inicializando</string>
+    <string name="step_prepare_img">Preparando imagens</string>
+    <string name="step_fetch_img">Buscando imagens</string>
+    <string name="step_prepare_folder">Preparando a pasta de download</string>
+    <string name="step_prepare_download">Preparando a cadeia de download</string>
+    <string name="step_save_queue">Salvando fila</string>
+    <string name="step_wait_purge">Aguardando a conclusão da limpeza</string>
+    <string name="step_start_download">Cadeia de downloads iniciada!</string>
+
+    <string name="help_swipe_cancel">Você pode cancelar downloads deslizando-os para a esquerda</string>
+    <string name="redownloaded_error">Ocorreu um problema ao tentar baixar novamente - cancelado</string>
+    <plurals name="redownloaded_scratch">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g>item liberado para download novamente</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> itens liberados para download novamente</item>
+    </plurals>
+    <string name="queue_add_top">Adicionar no topo</string>
+    <string name="queue_add_bottom">Adicionar ao fundo</string>
+    <string name="notification_user_action_title">Ações do usuário</string>
+    <string name="notification_user_action_needed">Ação do usuário necessária</string>
+    <string name="notification_action_dl_revive">Toque aqui para reativar seu download</string>
+    <string name="revive_wait">Por favor, fique nesta tela enquanto seu download está sendo revivido</string>
+    <string name="queue_json_saved">JSON da fila salvo</string>
+    <string name="queue_json_failed">Não foi possível salvar o JSON da fila</string>
+    <string name="queue_content_size_estimate">estimado <x:g example="13.37" id="size_mbytes">%.1f</x:g> MB</string>
+    <string name="queue_bottom_bar_processed"><x:g example="3" id="processed">%1$s</x:g>/<x:g example="7" id="total">%2$d</x:g>processado</string>
+    <plurals name="queue_bottom_bar_errors">
+        <item quantity="one">(<x:g example="1" id="errors">%d</x:g> erro)</item>
+        <item quantity="other">(<x:g example="2" id="errors">%d</x:g> erros)</item>
+    </plurals>
+
+    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g>MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
+    <string name="download_notif_failed">Falha no Download</string>
+    <string name="download_notif_failed_details">Não é possível baixar <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: não foi possível criar a pasta <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Verifique sua pasta Hentoid e tente baixar novamente usando o botão \'!\'.</string>
+    <string name="work_series">Series: <x:g example="original" id="series">%s</x:g></string>
+    <string name="work_artist">Artista: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>
+    <plurals name="work_pages_missing">
+        <item quantity="one">(<x:g example="1" id="number">%d</x:g> ausente)</item>
+    </plurals>
+    <string name="work_pages_queue">Páginas:%1$s%2$s</string>
+    <plurals name="work_pages_library">
+        <item quantity="one"><x:g example="1" id="pages_count">%1$d</x:g> página /<x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
+        <item quantity="other"><x:g example="2" id="pages_count">%1$d</x:g> páginas /<x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
+    </plurals>
+    <string name="library_metrics_storage"><x:g example="3.88" id="size_mb">%.0f</x:g> MB</string>
+    <string name="redownload_queue_progress">Baixando novamente os livros selecionados</string>
+    <string name="errortype_parsing">Análise</string>
+    <string name="errortype_networking">Rede</string>
+    <string name="errortype_io">I/O</string>
+    <string name="errortype_captcha">Captcha</string>
+    <string name="errortype_img_processing">Processamento de imagem</string>
+    <string name="errortype_site_limit">Limite de downloads/largura de banda atingido</string>
+    <string name="errortype_account">Sem conta ou credenciais insuficientes</string>
+    <string name="errortype_import">Nenhum arquivo local encontrado após a importação</string>
+    <string name="errortype_wifi">Livro ignorado devido a limitações de tamanho de download de Wi-Fi</string>
+    <string name="errortype_blocked">O livro contém uma etiqueta bloqueada</string>
+    <string name="errortype_undefined">Indefinido</string>
+    <string name="refresh_title">Atualizar biblioteca</string>
+    <string name="refresh_caption">Atualize automaticamente os dados da biblioteca redigitalizando arquivos e pastas.</string>
+    <string name="refresh_options">Opções de limpeza</string>
+    <string name="refresh_location_internal">Biblioteca Hentoid</string>
+    <string name="refresh_location_external">Biblioteca externa</string>
+    <string name="refresh_options_rename">Renomeie todas as pastas de acordo com a nomenclatura atual e a preferência de comprimento máximo</string>
+    <string name="refresh_options_remove">Remova as pastas onde…</string>
+    <string name="refresh_options_remove_1">O arquivo JSON está ausente (recomendado)</string>
+    <string name="refresh_options_remove_2">Nenhuma imagem foi baixada</string>
+    <string name="refresh_options_remove_or">ou</string>
+    <string name="delete_title">Excluir todos, exceto favoritos</string>
+    <string name="generic_progress" tools:ignore="MissingTranslation"><x:g example="7" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g><x:g example="books" id="type">%3$s</x:g></string>
+    <plurals name="book_progress">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g>livro</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> livros</item>
+    </plurals>
+    <plurals name="group_progress">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> grupo</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="42" id="total">%2$d</x:g> grupos</item>
+    </plurals>
+    <string name="import_title">Importar metadados</string>
+    <string name="import_mode_add">Adicionar itens importados</string>
+    <string name="import_mode_replace">Substituir por itens importados</string>
+    <string name="import_select_file">Selecione o arquivo para importar</string>
+    <string name="import_file_invalid">O arquivo <x:g example="metadata.json" id="filename">%s</x:g> é inválido</string>
+    <plurals name="import_file_library">
+        <item quantity="one">Importar biblioteca (<x:g example="1" id="number">%d</x:g> livro)</item>
+        <item quantity="other">Importar biblioteca (<x:g example="2" id="number">%d</x:g> livros)</item>
+    </plurals>
+    <plurals name="import_file_queue">
+        <item quantity="one">Importar fila(<x:g example="1" id="number">%d</x:g> livro)</item>
+        <item quantity="other">Importar fila(<x:g example="2" id="number">%d</x:g> livros)</item>
+    </plurals>
+    <plurals name="import_file_groups">
+        <item quantity="one">Importar grupo personalizado(<x:g example="1" id="number">%d</x:g> grupo)</item>
+        <item quantity="other">Importar grupos personalizado (<x:g example="2" id="number">%d</x:g> grupos)</item>
+    </plurals>
+    <plurals name="import_file_bookmarks">
+        <item quantity="one">Importar marcador(<x:g example="1" id="number">%d</x:g> ítem)</item>
+        <item quantity="other">Importar marcadores(<x:g example="2" id="number">%d</x:g> itens)</item>
+    </plurals>
+    <string name="import_warning">Se nenhuma pasta de imagens for detectada, os livros importados aparecerão como downloads vazios.\nVocê terá que baixá-los usando Fila &gt; Erros.</string>
+    <string name="import_run">EXECUTAR IMPORTAÇÃO</string>
+    <plurals name="import_result_books">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> livro importado com sucesso</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> livros importados com sucesso</item>
+    </plurals>
+    <plurals name="import_result_bookmarks">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> favorito importado com sucesso</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> favoritos importados com sucesso</item>
+    </plurals>
+    <string name="dialog_prompt">Escolha uma pasta</string>
+    <string name="export_title">Exportar metadados</string>
+    <string name="export_favs_only">Exportar apenas favoritos</string>
+    <string name="export_groups">Exportar grupos personalizados</string>
+
+    <string name="export_warning1">A exportação de metadados destina-se a criar uma lista de seus livros no formato JSON.\nNão se destina a mover sua coleção para seu PC ou cartão SD.\nToque aqui para saber como fazer isso.</string>
+    <string name="export_warning2">Os livros são exportados sem imagens.\nVocê terá que baixá-los novamente após a restauração se a pasta de imagens não estiver presente.</string>
+    <string name="export_run">EXECUTAR EXPORTAÇÃO</string>
+    <string name="import_settings_title">Importar configurações</string>
+    <string name="import_settings_success">Importado</string>
+    <string name="permissioncomplaint_snackbar">Você deve conceder permissões antes de continuar</string>
+    <string name="permissioncomplaint_snackbar_manual">Você deve conceder permissões manualmente antes de continuar</string>
+    <string name="import_canceled">Importação cancelada</string>
+    <string name="import_invalid">Pasta inválida selecionada - selecione outra</string>
+    <string name="import_app_folder">Você não pode selecionar a pasta do aplicativo como uma pasta externa - selecione outra</string>
+    <string name="import_download_folder">Você não deve selecionar a pasta de download do seu dispositivo - crie ou selecione outra</string>
+    <string name="import_create_fail">Falha na criação da pasta Hentoid - selecione outro local</string>
+    <string name="import_other">A importação parou</string>
+    <string name="import_unexpected">Importação parou inesperadamente</string>
+    <string name="task_done">Tarefa concluída - veja detalhes no log</string>
+    <string name="content_not_found">Erro - conteúdo não encontrado</string>
+    <string name="contents_detected">Hentoid reconheceu uma biblioteca existente neste local.\n Deseja importar esta biblioteca\?</string>
+    <string name="library_imports_title">Importações de biblioteca</string>
+    <string name="starting_import">Iniciando importação…</string>
+    <string name="importing_library">Importando Biblioteca</string>
+    <string name="import_complete">Importação concluída</string>
+
+    <string name="memory_total">Total:<x:g example="100 MB" id="total">%s</x:g></string>
+    <string name="memory_free">Livre:<x:g example="50 MB" id="total">%s</x:g></string>
+    <string name="memory_hentoid_main">Hentoid (primária):<x:g example="2 MB" id="total">%s</x:g></string>
+    <string name="memory_hentoid_ext">Hentoid (externa):<x:g example="3 MB" id="total">%s</x:g></string>
+    <string name="memory_database">Banco de dados: <x:g example="1.52 MB" id="size_mb">%1$s</x:g>(<x:g example="40%" id="percentage">%2$.1f%%</x:g>completo)</string>
+    <string name="memory_details">Ver detalhes (principal)</string>
+    <string name="memory_details_source">Fonte</string>
+    <string name="memory_details_books">Livros</string>
+    <string name="memory_details_size">Tamanho</string>
+    <string name="logs_title">Últimos log</string>
+    <string name="logs_open">Abrir log</string>
+    <string name="read_log">Ler log</string>
+    <string name="logs_share">Compartilhar log</string>
+    <string name="no_error_detected">Nenhum erro detectado.</string>
+    <string name="log_import_external">Importação/atualização de biblioteca externa</string>
+    <string name="log_import">Importação/atualização da biblioteca principal</string>
+    <string name="log_cleanup">Limpeza da biblioteca primária</string>
+    <string name="log_api29_migration">Migração de biblioteca do Hentoid v1.11</string>
+    <string name="error_write_permission">Você não tem permissão para escrever nessa pasta, tente outra pasta.</string>
+    <string name="error_creating_folder">A pasta não é válida.</string>
+    <string name="error_open">Erro ao abrir o arquivo: nenhum aplicativo relevante encontrado</string>
+    <string name="error_browser">Erro ao abrir o link: nenhum navegador encontrado</string>
+    <string name="redownload_dialog_title">Tente baixar novamente\?</string>
+    <string name="redownload_dialog_message">Total de imagens em download:<x:g example="10" id="total_imgs">%1$d</x:g>\nImagens sem erros:<x:g example="8" id="fine_imgs">%2$d</x:g>\nImagens com erros:<x:g example="2" id="failed_imgs">%3$d</x:g></string>
+    <string name="redownload_first_error">Primeiro erro: <x:g id="errortype">%s</x:g></string>
+    <string name="redownload_action">REDOWNLOAD</string>
+    <string name="redownload_open_log">Abrir log de erros</string>
+    <string name="redownload_share_log">Compartilhar log de erros</string>
+    <string name="redownload_generating_log_file">Gerando arquivo de log…</string>
+    <string name="resume_closed">Retomar a leitura de onde você parou\?</string>
+    <string name="open_drawer">Abrir gaveta</string>
+    <string name="close_drawer">Fechar gaveta</string>
+
+    <string name="new_group_name">Nome do novo grupo\?</string>
+    <string name="group_edit_name">Editar nome do grupo</string>
+    <string name="book_edit_title">Editar título do livro</string>
+    <string name="delete_progress">Excluindo livros</string>
+    <string name="purge_progress">Limpando livros</string>
+    <string name="cancel_queue_progress">Cancelando itens da fila</string>
+
+    <string name="delete_success">Excluído</string>
+    <string name="archive_progress">Arquivar livros</string>
+    <string name="archive_progress_subtitle">Feito: <x:g example="42" id="count">%s</x:g></string>
+    <string name="notif_archive_complete">Arquivamento completo</string>
+    <string name="notif_archive_fail">Falha no arquivamento</string>
+    <string name="notif_archive_fail_details">Pelo menos um livro não foi arquivado</string>
+    <string name="stream_canceled">Transmissão cancelada - livro indisponível online</string>
+    <string name="download_canceled">Download cancelado - livro indisponível online</string>
+    <string name="press_back_again">Pressione de volta duas vezes (rapidamente) para sair.</string>
+    <string name="queue_empty">Por que estou vazio\?</string>
+    <string name="errors_empty">Nenhum erro detectado entre os downloads</string>
+    <string name="downloads_empty_library">Vá em frente, baixe algo.</string>
+    <string name="downloads_loading">Carregando~</string>
+    <string name="masterdata_no_result">Sem resultados :(</string>
+    <string name="search_entry_not_found">Isso não está aqui, vá baixá-lo.</string>
+    <string name="search_bookid_label">Pesquise <x:g example="4567" id="launchcode">\'%s\'</x:g> em…</string>
+    <string name="book_launchcode">Código de lançamento: <x:g example="4567" id="launchcode">%s</x:g></string>
+
+    <string name="restart_needed">\"As alterações serão aplicadas após a reinicialização do Hentoid\"</string>
+
+
+    <string name="help_search">Pesquise qualquer coisa: título, artista, tag\ne código de lançamento também!</string>
+    <string name="help_page_slider">Você pode navegar mais rápido deslizando pelos números das páginas</string>
+    <string name="folder_undefined">Erro - contendo pasta indefinida</string>
+    <string name="malformed_url">Erro - URL malformado</string>
+    <string name="unsupported_site">Erro - o site não é compatível</string>
+    <string name="group_make_cover">Definir como capa do grupo</string>
+    <string name="group_make_cover_ask">Definir a capa deste livro como a capa do grupo atual\?</string>
+    <string name="group_change">Mover para grupo personalizado</string>
+    <string name="group_existing">Grupo existente</string>
+    <string name="group_new">Crie um novo</string>
+    <string name="group_new_name">Novo nome de grupo personalizado</string>
+    <string name="group_remove">Desvincular do grupo atual</string>
+    <string name="group_name_exists">Já existe um grupo com esse nome.</string>
+    <string name="group_rename_forbidden">Renomear esse grupo é proibido!</string>
+    <string name="group_name_empty">O nome do grupo está vazio!</string>
+    <string name="group_not_selected">O grupo não foi selecionado!</string>
+
+
+    <string name="group_delete_nothing">Nada para excluir - marque \"Permitir exclusão de conteúdo externo\" para alterar isso</string>
+    <string name="merge_merge">Unir</string>
+    <string name="merge_progress">Unindo livros...</string>
+    <string name="split_progress">Dividindo livro…</string>
+    <string name="merge_split">Dividir</string>
+    <string name="new_title">Novo título</string>
+    <string name="merge_delete_after_merging">Excluir estes livros após a mesclagem</string>
+    <string name="split_select_help">Segure e arraste para selecionar\nCada capítulo selecionado cria um novo livro</string>
+    <string name="split_no_chapters">Nenhum capítulo criado ainda :-(</string>
+    <string name="split_create_chapters">Criar capítulos</string>
+    <string name="merge_success">Conteúdo mesclado</string>
+    <string name="split_success">Divisão de conteúdo</string>
+    <string name="groups_flat">Todos os livros</string>
+    <string name="groups_by_artist">Por artista</string>
+
+    <string name="no_artist_group_name">[sem artista]</string>
+
+
+    <string name="sort_title">Título</string>
+    <string name="sort_artist">Artista</string>
+    <string name="sort_pages">Páginas</string>
+
+
+    <string name="sort_size">Tamanho</string>
+    <string name="sort_reading_progress">Progresso da leitura</string>
+    <string name="sort_random">Aleatório</string>
+    <string name="sort_custom">Personalizado</string>
+    <string name="sort_invalid">-inválido-</string>
+    <string name="sort_books">Livros</string>
+
+
+    <string name="drag_help">Arrastar item</string>
+    <string name="external_help">Pertence à biblioteca externa</string>
+    <string name="streamed_help">Livro transmitido</string>
+    <string name="view_source_help">Ver fonte no navegador</string>
+    <string name="fav_help">Marcar/desmarcar como favorito</string>
+    <string name="launchcode_present">Você já tem este livro. Pesquisar outras fontes\?</string>
+    <string name="updates_title">Atualizações</string>
+    <string name="checking_updates">Verificando atualizações</string>
+    <string name="update_available">Uma atualização está disponível!</string>
+    <string name="tap_to_download">Toque para baixar</string>
+    <string name="update_download_failed">Falha no download da atualização</string>
+    <string name="tap_to_retry">Toque para tentar novamente</string>
+    <string name="downloading_update">Download da atualização</string>
+    <string name="update_ready">A atualização está pronta!</string>
+    <string name="tap_to_install">Toque para instalar</string>
+    <string name="alert_orange">Esteja ciente de que os downloads podem falhar neste site.</string>
+    <string name="alert_red">O botão de download está quebrado para este site.</string>
+    <string name="alert_grey">Este site tem atualmente sérios problemas de estabilidade. O aplicativo não tem nada a ver com isso. Por favor, tente novamente mais tarde.</string>
+    <string name="alert_black">Este site está indisponível no momento. O aplicativo não tem nada a ver com isso. Por favor, tente novamente mais tarde.</string>
+    <string name="alert_wip">A equipe de desenvolvimento do Hentoid está trabalhando em uma correção. Você será notificado pelo aplicativo quando uma nova versão estiver pronta.</string>
+    <string name="alert_fix_available">Uma correção está disponível na versão mais recente do aplicativo. Por favor atualize.</string>
+    <string name="app_lock_pin">Entrar com PIN</string>
+    <string name="app_lock_enable">Bloqueio do aplicativo ativado</string>
+    <string name="app_lock_disabled">Bloqueio do aplicativo desativado</string>
+    <string name="pin_reset">Redefinir PIN</string>
+    <string name="pin_reset_success">Redefinição de PIN</string>
+    <string name="pin_current">Digite o PIN atual</string>
+    <string name="pin_new">Digite o novo PIN</string>
+    <string name="pin_new_confirm">Confirmar novo PIN</string>
+    <string name="pin_explanation">O bloqueio do aplicativo impede o uso não autorizado deste aplicativo exigindo um PIN de 4 dígitos quando iniciado</string>
+    <string name="pin_lock_on_restore">Bloquear quando restaurado\nem segundo plano</string>
+    <string name="about1"><b>Hentoid</b> é um aplicativo de arquivamento Doujinshi &amp; H-Manga. Hentoid foi originalmente criado por <b>Cesar Arasaki</b>.</string>
+    <string name="personalDataStatement1"><b>DECLARAÇÃO DE PRIVACIDADE DE DADOS PESSOAIS</b>\n\nO Hentoid é um software gratuito e de código aberto mantido pela Comunidade Hentoid (junte-se a nós no Discord - veja o link acima)</string>
+    <string name="personalDataStatement2">A Hentoid coleta os seguintes dados pessoais e os envia ao Google para processamento por meio da biblioteca do Firebase:\n - ID da sessão\n - endereço IP</string>
+    <string name="personalDataStatement3">Os dados mencionados acima são removidos do sistema ao vivo e de backup do Firebase em 180 dias (consulte https://firebase.google.com/support/privacy/ para mais detalhes)\n\nNenhum outro dado pessoal é coletado nem enviado a qualquer outra parte.</string>
+    <string name="about_licenses">Licenças de exibição</string>
+    <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
+    <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g></string>
+    <string name="web_gallery">Voltar para a página da galeria mais recente</string>
+    <string name="web_home">Voltar para a biblioteca</string>
+    <string name="web_back">Voltar</string>
+    <string name="web_forward">Avançar</string>
+    <string name="web_bookmarks">Favoritos</string>
+    <string name="web_refresh_stop">Atualizar/parar</string>
+    <string name="web_copy_url">Copie o URL atual para a área de transferência</string>
+    <string name="web_download">Download</string>
+    <string name="web_unparsable">Este conteúdo não pode ser baixado. Desculpe~</string>
+    <string name="web_url_clipboard">URL copiado para a área de transferência</string>
+    <string name="help_web_download">Você chegou à página de um livro.\nHora de fazer o download com a barra inferior!</string>
+    <string name="blocked_tag">O livro tem uma tag bloqueada (<x:g example="bad" id="tag">%s</x:g>)\nDownload cancelado</string>
+    <string name="blocked_tag_queued">O livro tem uma tag bloqueada (<x:g example="bad" id="tag">%s</x:g>)\nEnfileirado como um erro</string>
+    <string name="bookmark_current">Marcar página atual</string>
+    <string name="unbookmark_current">Remover marcador na página atual</string>
+    <string name="bookmark_copy_url">Copie o URL do marcador para a área de transferência</string>
+    <string name="bookmark_toggle_welcome">Alternar URL do marcador como página de boas-vindas</string>
+    <string name="alert_unwanted_tags">Este livro está marcado com<x:g example="bad" id="tag">%s</x:g></string>
+    <string name="bookmark_homepage">Pagina inicial</string>
+    <string name="torrent_dl_fail">Falha no download do torrent:<x:g id="torrent">%s</x:g></string>
+    <string name="web_storage_permission_denied">Permissão de armazenamento negada - não é possível usar o downloader</string>
+    <string name="help_web_exh_account">Por favor, use ou crie uma conta exHentai</string>
+    <string name="help_web_invalid_exh_credentials">Credenciais inválidas, faça login novamente</string>
+    <string name="help_web_incomplete_exh_credentials">Credenciais incompletas, faça login novamente. Se o problema persistir, considere acessar o site de outro país ou criar uma nova conta.</string>
+    <string name="category_any">Algum</string>
+    <string name="exclude">Excluir</string>
+    <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> pesquisar</string>
+    <string name="search_prompt">Pesquisar <x:g id="search_prompt">%s</x:g></string>
+    <string name="category_artist">Artista (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_tag">Etiqueta (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_character">Caractere (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_series">Série (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_language">Idioma (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_source">Fonte (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="object_artist">Artista</string>
+    <string name="object_tag">Etiqueta</string>
+    <string name="object_character">Personagem</string>
+    <string name="object_series">Série</string>
+    <string name="object_language">Idioma</string>
+    <string name="object_source">Fonte</string>
+    <string name="object_uploader">Uploader</string>
+    <string name="object_circle">Círculo</string>
+    <string name="object_category">Categoria</string>
+    <string name="object_translator">Tradutor</string>
+    <string name="object_publisher">Editora</string>
+    <string name="search_select_a_filter">Selecione um filtro</string>
+
+    <string name="no_images">Não foi possível carregar o livro: Nenhuma imagem encontrada</string>
+    <string name="loading_archive">Carregando: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
+    <string name="loading_image">Carregando imagem: <x:g example="50%" id="percentage">%d%%</x:g></string>
+    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (escala <x:g example="100%" id="scale_percentage">%3$.0f%%</x:g>) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="viewer_choose_direction">Escolha sua direção de leitura</string>
+    <string name="viewer_direction_ltr">Esquerda para a direita</string>
+    <string name="viewer_direction_rtl">Direita para esquerda</string>
+    <string name="viewer_direction_ttb">De cima para baixo</string>
+    <string name="viewer_slideshow">Apresentação de slides</string>
+    <string name="viewer_slideshow_help">Modo de apresentação de slides</string>
+    <string name="viewer_order_shuffle">Embaralhar páginas</string>
+    <string name="viewer_order_123">Reordenar páginas</string>
+    <string name="viewer_order_shuffle_help">Alternar o embaralhamento de páginas</string>
+    <string name="viewer_filter_favourite_off">Mostrar apenas páginas favoritas</string>
+    <string name="viewer_filter_favourite_on">Mostrar todas as páginas</string>
+    <string name="viewer_make_cover">Definir como capa</string>
+    <string name="viewer_delete_book">Excluir livro</string>
+    <string name="copy_download_folder_success">Copiado para a pasta Downloads</string>
+    <string name="copy_download_folder_fail">Não foi possível gravar na pasta Downloads</string>
+    <string name="viewer_ask_delete_page">Delete essa página\?</string>
+    <string name="information_help">Informação</string>
+    <string name="previous_book_help">Livro anterior</string>
+    <string name="next_book_help">Próximo livro</string>
+    <string name="gallery_help">Galeria de livros</string>
+    <string name="page_fav_help">Marcar/desmarcar página como favorita</string>
+    <string name="page_copy_help">Copie a página para a pasta de Downloads do Android</string>
+    <string name="page_share_help">Compartilhar página usando outro aplicativo</string>
+    <string name="page_delete_help">Excluir página</string>
+    <string name="viewer_ask_cover">Definir esta página como capa do livro?</string>
+    <string name="image_not_found">Imagem não encontrada</string>
+    <string name="image_streaming">Transmitindo imagem…</string>
+    <string name="book_prefs">Configurações do livro</string>
+    <string name="goto_app_prefs">Configurações do aplicativo</string>
+    <string name="use_app_prefs">Use as configurações do aplicativo (<x:g example="Left to right" id="app_default">%s</x:g>)</string>
+    <string name="page_favourite_success">Página favoritada</string>
+    <string name="page_unfavourite_success">Página infavoritada</string>
+    <string name="book_favourite_success">Livro favoritado</string>
+    <string name="book_unfavourite_success">Livro infavoritado</string>
+    <string name="viewer_fix">Corrigir erro de download</string>
+    <string name="viewer_reload_page">Recarregar página</string>
+    <string name="viewer_reparse_book">Reanalisar livro</string>
+    <string name="menu_edit_chapters">Editar capítulos</string>
+    <string name="gallery_title">Galeria</string>
+    <string name="gallery_chapter_prefix">Capítulo</string>
+    <string name="gallery_edit_chapters_help">Para criar ou remover um capítulo, toque na primeira página</string>
+    <string name="gallery_clear_chapters">Limpar todos os capítulos</string>
+    <string name="gallery_add_remove_chapters">Adicionar &amp; remover capítulos</string>
+    <string name="gallery_display_page"><x:g example="&gt;" id="startMarker">%1$s</x:g> Página <x:g example="2" id="number">%2$d</x:g><x:g example="♥" id="isFavourite">%3$s</x:g> <x:g example="&lt;" id="endMarker">%4$s</x:g></string>
+    <string name="gallery_display_chapter">Cap <x:g example="2" id="number">%d</x:g></string>
+    <string name="gallery_no_chapter">Nenhum capítulo</string>
+    <string name="renaming_progress">Renomeando arquivos…</string>
+    <string name="content_removal_failed">Falha na remoção do conteúdo</string>
+    <string name="page_removal_failed">Falha na remoção da página</string>
+    <string name="file_removal_failed">Falha na remoção do arquivo</string>
+    <string name="storage_permission_denied">Permissão de armazenamento negada - não é possível abrir o visualizador</string>
+    <string name="book_list_loading_failed">Falha no carregamento da lista de livros</string>
+    <string name="chapter_toggle_failed">Não foi possível alternar o capítulo na página<x:g example="2" id="number">%d</x:g></string>
+    <string name="chapters_remove_failed">Não foi possível remover os capítulos</string>
+    <string name="chapter_move_failed">Não foi possível mover o capítulo</string>
+    <string name="slideshow_start">Iniciar apresentação de slides (atraso<x:g example="0.5" id="time">%.1f</x:g>s)</string>
+    <string name="slideshow_stop">Apresentação de slides interrompida</string>
+    <string name="ask_clear_chapters">Limpar todos os capítulos?</string>
+    <string name="view_changelog">Visualizar registro de alteração</string>
+    <string name="view_changelog_flagged">Visualizar registro de alteração*</string>
+    <string name="changelog">Registro de alterações</string>
+    <string name="get_latest">Obtenha a última versão (<x:g example="1.18.1" id="version">%1$s</x:g>)</string>
+    <string name="update_success">Atualização bem sucedida!</string>
+    <string name="starting_download">Iniciando o download</string>
+    <string name="title_activity_drawer_edit">Editar menu</string>
+    <string name="title_activity_duplicate_detector">Detector de duplicata</string>
+    <string name="duplicate_use_title">Título</string>
+    <string name="duplicate_use_cover">Cover</string>
+    <string name="duplicate_use_artist">Artista</string>
+    <string name="duplicate_use_same_language">Mesmo idioma apenas</string>
+    <string name="duplicate_ignore_chapters">Ignorar capítulos e sequências</string>
+    <string name="duplicate_use_sensitivity">Sensibilidade</string>
+    <string name="duplicate_find_action">Encontrar duplicatas</string>
+    <string name="duplicate_index_covers">Indexação de fotos de capa</string>
+    <string name="duplicate_find">Detectando livros duplicados</string>
+    <string name="duplicate_title_score">Título: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_title_score_nodata">Título: sem dados</string>
+    <string name="duplicate_cover_score">Cover: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_cover_score_nodata">Cover: sem dados</string>
+    <string name="duplicate_artist_score">Artista: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_artist_score_nodata">Artista: sem dados</string>
+    <string name="apply_final">Aplicar opções</string>
+    <string name="duplicate_notif_start">Iniciando detecção de duplicatas</string>
+    <string name="duplicate_notif_complete_title">Detecção de duplicados concluída</string>
+    <string name="duplicate_empty_first_use">Nada para exibir - Execute uma nova pesquisa duplicada</string>
+    <string name="duplicate_processing">Detectando duplicatas…</string>
+    <string name="duplicate_empty_no_result">Nenhuma duplicata encontrada</string>
+    <string name="duplicate_keep">Guarda</string>
+    <string name="duplicate_delete">Excluir</string>
+    <string name="duplicate_alert">Alerta duplicado!</string>
+    <string name="duplicate_alert_subtitle_book">O livro que você está prestes a baixar pode ser uma duplicata de um livro que você já possui.</string>
+    <string name="duplicate_alert_subtitle_pages">O livro do qual você está prestes a baixar as páginas pode não ser aquele que você já possui.</string>
+    <string name="duplicate_alert_always_download">Baixe sempre e não me pergunte novamente</string>
+    <string name="duplicate_alert_never_extra_on_dupes">Nunca adicione páginas de possíveis duplicatas novamente</string>
+    <string name="duplicate_alert_similarity">Similaridade: <x:g example="50%" id="similarity_percentage">%.0f%%</x:g></string>
+    <string name="duplicate_alert_download_book">Baixar livro</string>
+    <string name="duplicate_alert_download_pages">Baixar páginas extras</string>
+    <string name="duplicate_wait_index">Indexando…</string>
+    <string name="notif_archive_title">Arquivamento de conteúdo</string>
+    <string name="notif_delete_title">Exclusão de conteúdo</string>
+    <string name="notif_delete_complete">Exclusão concluída</string>
+    <string name="notif_delete_fail">Falha na exclusão</string>
+    <string name="notif_delete_fail_details">Falha ao excluir pelo menos um livro</string>
+    <string name="title_startup">Comece</string>
+    <string name="title_startup_progress">Iniciando…</string>
+    <string name="title_startup_complete">Inicialização concluída</string>
+    <string name="group_today">Hoje</string>
+    <string name="group_7">Últimos 7 dias</string>
+    <string name="group_30">Últimos 30 dias</string>
+    <string name="group_60">Últimos 60 dias</string>
+    <string name="group_year">Ano passado</string>
+    <string name="group_long">A muito tempo atrás</string>
+    <string name="group_no_group">Desagrupado</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_deep_red">Vermelho escuro</string>
+    <string name="theme_dark">Escuro</string>
     <string name="lang_en">inglês</string>
     <string name="lang_zh">chinês</string>
     <string name="lang_ja">japonês</string>
@@ -17,23 +574,12 @@
     <string name="lang_hu">húngaro</string>
     <string name="lang_tr">turco</string>
     <string name="lang_cs">tcheco</string>
-    <string name="group_today">Hoje</string>
-    <string name="app_intro">Bem-vindo</string>
-    <string name="yes">Sim</string>
-    <string name="no">Não</string>
-    <string name="groups">Grupos</string>
-    <string name="empty">vazio</string>
-    <string name="title_activity_preferences">Configurações</string>
-    <string name="refresh_options_remove_or">ou</string>
-    <string name="pref_cat_library">Biblioteca</string>
-    <string name="pref_screen_interface">Interface e navegação</string>
-    <string name="pref_screen_browser">Navegador</string>
-    <string name="information_help">Informação</string>
-    <string name="updates_title">Atualizações</string>
-    <string name="masterdata_no_result">Nenhum resultado :(</string>
-    <string name="memory_details_size">Tamanho</string>
-    <string name="memory_details_books">Livros</string>
-    <string name="memory_details_source">Fonte</string>
-    <string name="pref_screen_privacy">Privacidade</string>
-    <string name="pref_browser_dns_title">DNS sobre HTTPS</string>
+    <string name="select_file_manager">Selecione seu gerenciador de arquivos</string>
+    <string name="u_byte" tools:ignore="MissingTranslation">bytes</string>
+    <string name="u_kilobyte" tools:ignore="MissingTranslation">KB</string>
+    <string name="u_megabyte" tools:ignore="MissingTranslation">MB</string>
+    <string name="u_gigabyte" tools:ignore="MissingTranslation">GB</string>
+    <string name="u_terabyte" tools:ignore="MissingTranslation">TB</string>
+    <string name="u_petabyte" tools:ignore="MissingTranslation">PB</string>
+    <string name="u_exabyte" tools:ignore="MissingTranslation">EB</string>
 </resources>

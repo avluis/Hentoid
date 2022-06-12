@@ -97,6 +97,7 @@
     <string name="low_memory">Your device is low on storage!</string>
     <string name="fix_permissions">Fix</string>
     <string name="view_queue">View queue</string>
+    <string name="clear_search_history">Clear search history</string>
 
     <!-- Queue / Downloader -->
     <string name="downloader_title">Downloader</string>
@@ -692,6 +693,7 @@
     <string name="chapters_remove_failed">Couldn\'t remove chapters</string>
     <string name="chapter_move_failed">Couldn\'t move chapter</string>
     <string name="slideshow_start">Starting slideshow (delay <x:g example="0.5" id="time">%.1f</x:g>s)</string>
+    <string name="slideshow_start_vertical">Starting slideshow (<x:g example="fast" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Slideshow stopped</string>
     <string name="ask_clear_chapters">Clear all chapters?</string>
 

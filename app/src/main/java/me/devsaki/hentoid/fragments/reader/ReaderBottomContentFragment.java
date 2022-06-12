@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.viewer;
+package me.devsaki.hentoid.fragments.reader;
 
 import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
 
@@ -30,20 +30,20 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.databinding.IncludeViewerContentBottomPanelBinding;
+import me.devsaki.hentoid.databinding.IncludeReaderContentBottomPanelBinding;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
-import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.viewmodels.ReaderViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 
-public class ViewerBottomContentFragment extends BottomSheetDialogFragment {
+public class ReaderBottomContentFragment extends BottomSheetDialogFragment {
 
     private static final RequestOptions glideRequestOptions;
 
-    private ImageViewerViewModel viewModel;
+    private ReaderViewModel viewModel;
 
     // UI
-    private IncludeViewerContentBottomPanelBinding binding = null;
+    private IncludeReaderContentBottomPanelBinding binding = null;
 
 
     static {
@@ -61,7 +61,7 @@ public class ViewerBottomContentFragment extends BottomSheetDialogFragment {
     }
 
     public static void invoke(Context context, FragmentManager fragmentManager) {
-        ViewerBottomContentFragment imageBottomSheetFragment = new ViewerBottomContentFragment();
+        ReaderBottomContentFragment imageBottomSheetFragment = new ReaderBottomContentFragment();
         ThemeHelper.setStyle(context, imageBottomSheetFragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         imageBottomSheetFragment.show(fragmentManager, "imageBottomSheetFragment");
     }
@@ -71,12 +71,12 @@ public class ViewerBottomContentFragment extends BottomSheetDialogFragment {
         super.onAttach(context);
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ReaderViewModel.class);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = IncludeViewerContentBottomPanelBinding.inflate(inflater, container, false);
+        binding = IncludeReaderContentBottomPanelBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

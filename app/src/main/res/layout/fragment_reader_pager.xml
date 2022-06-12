@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.ImageViewerActivity">
+    tools:context=".activities.ReaderActivity">
 
     <me.devsaki.hentoid.views.ZoomableFrame
         android:id="@+id/zoom_frame"
@@ -22,7 +22,7 @@
             android:background="?android:windowBackground"
             android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_viewer_image" />
+            tools:listitem="@layout/item_reader_image" />
     </me.devsaki.hentoid.views.ZoomableFrame>
 
     <TextView
@@ -113,7 +113,7 @@
 
     <include
         android:id="@+id/controls_overlay"
-        layout="@layout/include_viewer_controls_overlay"
+        layout="@layout/include_reader_controls_overlay"
         android:clickable="true"
         android:focusable="true"
         android:visibility="invisible" />

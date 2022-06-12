@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activities.ImageViewerActivity">
+    tools:context=".activities.ReaderActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/viewer_gallery_toolbar"
@@ -64,7 +64,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/chapter_selector"
         app:spanCount="4"
-        tools:listitem="@layout/item_viewer_gallery_image" />
+        tools:listitem="@layout/item_reader_gallery_image" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/chapter_edit_help_banner"

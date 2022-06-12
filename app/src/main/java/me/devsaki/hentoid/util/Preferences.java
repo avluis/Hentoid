@@ -536,6 +536,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getViewerSlideshowDelayVertical() {
+        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Integer.toString(Default.VIEWER_SLIDESHOW_DELAY_VERTICAL)) + "");
+    }
+
+    public static void setViewerSlideshowDelayVertical(int value) {
+        sharedPreferences.edit()
+                .putString(Key.VIEWER_SLIDESHOW_DELAY_VERTICAL, Integer.toString(value))
+                .apply();
+    }
+
     public static int getViewerSeparatingBars() {
         return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_SEPARATING_BARS, Integer.toString(Default.VIEWER_SEPARATING_BARS)) + "");
     }
@@ -879,6 +889,7 @@ public final class Preferences {
         public static final String VIEWER_SEPARATING_BARS = "pref_viewer_separating_bars";
         static final String VIEWER_READ_THRESHOLD = "pref_viewer_read_threshold";
         static final String VIEWER_SLIDESHOW_DELAY = "pref_viewer_slideshow_delay";
+        static final String VIEWER_SLIDESHOW_DELAY_VERTICAL = "pref_viewer_slideshow_delay_vertical";
         public static final String VIEWER_HOLD_TO_ZOOM = "pref_viewer_zoom_holding";
         public static final String VIEWER_CAP_TAP_ZOOM = "pref_viewer_cap_tap_zoom";
         public static final String VIEWER_AUTO_ROTATE = "pref_viewer_auto_rotate";
@@ -982,6 +993,7 @@ public final class Preferences {
         static final int VIEWER_SEPARATING_BARS = Constant.VIEWER_SEPARATING_BARS_OFF;
         static final int VIEWER_READ_THRESHOLD = Constant.VIEWER_READ_THRESHOLD_1;
         public static final int VIEWER_SLIDESHOW_DELAY = Constant.VIEWER_SLIDESHOW_DELAY_2;
+        public static final int VIEWER_SLIDESHOW_DELAY_VERTICAL = Constant.VIEWER_SLIDESHOW_DELAY_2;
         static final boolean VIEWER_HOLD_TO_ZOOM = false;
         static final int VIEWER_CAP_TAP_ZOOM = Constant.VIEWER_CAP_TAP_ZOOM_NONE;
         static final boolean VIEWER_AUTO_ROTATE = false;

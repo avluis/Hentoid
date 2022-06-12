@@ -169,7 +169,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     @Override
     public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
-        View view = inflater.inflate(R.layout.item_viewer_image, viewGroup, false);
+        View view = inflater.inflate(R.layout.item_reader_image, viewGroup, false);
         if (ViewType.DEFAULT == viewType) {
             // ImageView shouldn't react to click events when in vertical mode (controlled by ZoomableFrame / ZoomableRecyclerView)
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {

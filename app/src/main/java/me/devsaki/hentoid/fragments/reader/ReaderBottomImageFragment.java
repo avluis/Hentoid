@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.viewer;
+package me.devsaki.hentoid.fragments.reader;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
@@ -41,22 +41,22 @@ import java.io.OutputStream;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
+import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
-import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.viewmodels.ReaderViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
 
-public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
+public class ReaderBottomImageFragment extends BottomSheetDialogFragment {
 
     private static final RequestOptions glideRequestOptions;
 
-    private ImageViewerViewModel viewModel;
+    private ReaderViewModel viewModel;
 
     // UI
     private View rootView;
@@ -90,12 +90,12 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
     }
 
     public static void invoke(Context context, FragmentManager fragmentManager, int imageIndex, float currentScale) {
-        ImageViewerActivityBundle builder = new ImageViewerActivityBundle();
+        ReaderActivityBundle builder = new ReaderActivityBundle();
 
         builder.setImageIndex(imageIndex);
         builder.setScale(currentScale);
 
-        ViewerBottomImageFragment imageBottomSheetFragment = new ViewerBottomImageFragment();
+        ReaderBottomImageFragment imageBottomSheetFragment = new ReaderBottomImageFragment();
         imageBottomSheetFragment.setArguments(builder.getBundle());
         ThemeHelper.setStyle(context, imageBottomSheetFragment, STYLE_NORMAL, R.style.Theme_Light_BottomSheetDialog);
         imageBottomSheetFragment.show(fragmentManager, "imageBottomSheetFragment");
@@ -107,19 +107,19 @@ public class ViewerBottomImageFragment extends BottomSheetDialogFragment {
 
         Bundle bundle = getArguments();
         if (bundle != null) {
-            ImageViewerActivityBundle parser = new ImageViewerActivityBundle(bundle);
+            ReaderActivityBundle parser = new ReaderActivityBundle(bundle);
             imageIndex = parser.getImageIndex();
             if (-1 == imageIndex) throw new IllegalArgumentException("Initialization failed");
             scale = parser.getScale();
         }
 
         ViewModelFactory vmFactory = new ViewModelFactory(requireActivity().getApplication());
-        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ImageViewerViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), vmFactory).get(ReaderViewModel.class);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.include_viewer_image_bottom_panel, container, false);
+        rootView = inflater.inflate(R.layout.include_reader_image_bottom_panel, container, false);
 
         imgThumb = requireViewById(rootView, R.id.ivThumb);
         imgPath = requireViewById(rootView, R.id.image_path);

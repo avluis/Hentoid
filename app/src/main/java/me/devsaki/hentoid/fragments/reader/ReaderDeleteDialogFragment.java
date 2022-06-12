@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.viewer;
+package me.devsaki.hentoid.fragments.reader;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,7 +16,7 @@ import com.skydoves.powerspinner.PowerSpinnerView;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
 
-public final class ViewerDeleteDialogFragment extends DialogFragment {
+public final class ReaderDeleteDialogFragment extends DialogFragment {
 
     private static final String KEY_DELETE_PAGE_ALLOWED = "delete_page_allowed";
 
@@ -25,7 +25,7 @@ public final class ViewerDeleteDialogFragment extends DialogFragment {
 
 
     public static void invoke(Fragment parent, boolean isDeletePageAllowed) {
-        ViewerDeleteDialogFragment fragment = new ViewerDeleteDialogFragment();
+        ReaderDeleteDialogFragment fragment = new ReaderDeleteDialogFragment();
 
         Bundle args = new Bundle();
         args.putBoolean(KEY_DELETE_PAGE_ALLOWED, isDeletePageAllowed);
@@ -53,7 +53,7 @@ public final class ViewerDeleteDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_viewer_delete, container, false);
+        return inflater.inflate(R.layout.dialog_reader_delete, container, false);
     }
 
     @Override

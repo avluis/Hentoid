@@ -142,12 +142,12 @@
     <string name="pref_viewer_page_turn">Controllo sfoglia pagina</string>
     <string name="pref_viewer_page_turn_swipe">Scorri</string>
     <string name="pref_viewer_page_turn_tap">Tocco bordo</string>
-    <string name="pref_viewer_page_turn_tap_2x">Larghezza zona di tocco x2</string>
     <string name="pref_viewer_page_turn_volume">Pulsante volume</string>
     <string name="pref_viewer_page_turn_keyboard">Tastiera sinistra/destra</string>
     <string name="pref_viewer_swipe_to_fling">Scorri per lanciare</string>
     <string name="pref_viewer_invert_volume">Invertire i pulsanti del volume</string>
-    <string name="pref_viewer_zoom">Ingrandisci</string>
+
+
     <string name="pref_viewer_zoom_holding">Zoom temporaneo mentre si tiene premuto</string>
     <string name="pref_viewer_cap_tap_zoom">Limita doppio e tocco lungo zoom</string>
     <string name="pref_viewer_visuals">Visualizzazione</string>
@@ -172,6 +172,6 @@
     <string name="pref_viewer_continuous_summary_off">L\'uso della pagina successiva nell\'ultima pagina non ha effetto</string>
     <string name="pref_viewer_continuous_summary_on">L\'utilizzo della pagina successiva nell\'ultima pagina carica il libro successivo</string>
     <string name="pref_viewer_read_threshold">Segna il libro come letto dopo N pagine</string>
-    <string name="pref_viewer_slideshow_delay">Presentazione / Ritardo tra ogni pagina</string>
+
     <string name="doh_warning">Alcuni siti web non funzionano bene con DNS su HTTPS. Utilizzate un\'applicazione DNS esterna se riscontrate problemi durante la navigazione (ad esempio pagine bianche, moduli di login che non rispondono).</string>
 </resources>

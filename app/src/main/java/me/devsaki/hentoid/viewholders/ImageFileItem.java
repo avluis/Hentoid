@@ -90,7 +90,7 @@ public class ImageFileItem extends AbstractItem<ImageFileItem.ImageViewHolder> i
 
     @Override
     public int getLayoutRes() {
-        return R.layout.item_viewer_gallery_image;
+        return R.layout.item_reader_gallery_image;
     }
 
     @Override

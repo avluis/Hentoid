@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments.viewer;
+package me.devsaki.hentoid.fragments.reader;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,10 +18,10 @@ import static androidx.core.view.ViewCompat.requireViewById;
 /**
  * First-time use dialog for the choice of default app browse mode
  */
-public class ViewerBrowseModeDialogFragment extends DialogFragment {
+public class ReaderBrowseModeDialogFragment extends DialogFragment {
 
     public static void invoke(Fragment parent) {
-        ViewerBrowseModeDialogFragment fragment = new ViewerBrowseModeDialogFragment();
+        ReaderBrowseModeDialogFragment fragment = new ReaderBrowseModeDialogFragment();
         fragment.setCancelable(false);
         fragment.show(parent.getChildFragmentManager(), null);
     }
@@ -29,7 +29,7 @@ public class ViewerBrowseModeDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_viewer_browse_mode_chooser, container, false);
+        return inflater.inflate(R.layout.dialog_reader_browse_mode_chooser, container, false);
     }
 
     @Override

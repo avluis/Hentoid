@@ -46,10 +46,10 @@ import javax.annotation.Nonnull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.ImageViewerActivity;
+import me.devsaki.hentoid.activities.ReaderActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
-import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
+import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -276,13 +276,13 @@ public final class ContentHelper {
 
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageUri());
 
-        ImageViewerActivityBundle builder = new ImageViewerActivityBundle();
+        ReaderActivityBundle builder = new ReaderActivityBundle();
         builder.setContentId(content.getId());
         if (searchParams != null) builder.setSearchParams(searchParams);
         if (pageNumber > -1) builder.setPageNumber(pageNumber);
         builder.setForceShowGallery(forceShowGallery);
 
-        Intent viewer = new Intent(context, ImageViewerActivity.class);
+        Intent viewer = new Intent(context, ReaderActivity.class);
         viewer.putExtras(builder.getBundle());
 
         context.startActivity(viewer);
@@ -512,9 +512,10 @@ public final class ContentHelper {
                                         resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 85, os);
                                         resizedBitmap.recycle();
                                     }
+                                    return Uri.fromFile(finalFile);
+                                } finally {
                                     if (!extractedFile.delete())
                                         Timber.w("Failed deleting file %s", extractedFile.getAbsolutePath());
-                                    return Uri.fromFile(finalFile);
                                 }
                             })
                             // Add it as the book's cover
@@ -693,6 +694,7 @@ public final class ContentHelper {
      */
     @SuppressWarnings("squid:S2676") // Math.abs is used for formatting purposes only
     public static String formatBookId(@NonNull final Content content) {
+        content.populateUniqueSiteId();
         String id = content.getUniqueSiteId();
         // For certain sources (8muses, fakku), unique IDs are strings that may be very long
         // => shorten them by using their hashCode

@@ -976,7 +976,7 @@ public class LibraryContentFragment extends Fragment implements
         SearchActivityBundle builder = new SearchActivityBundle();
 
         if (!getMetadata().isEmpty())
-            builder.setUri(SearchActivityBundle.Companion.buildSearchUri(getMetadata()).toString());
+            builder.setUri(SearchActivityBundle.Companion.buildSearchUri(getMetadata(), "").toString());
 
         if (group != null)
             builder.setGroupId(group.id);
@@ -1001,7 +1001,7 @@ public class LibraryContentFragment extends Fragment implements
                 excludeClicked = parser.getExcludeMode();
                 setQuery(searchUri.getPath());
                 setMetadata(SearchActivityBundle.Companion.parseSearchUri(searchUri));
-                viewModel.searchContent(getQuery(), getMetadata());
+                viewModel.searchContent(getQuery(), getMetadata(), searchUri);
             }
         }
     }

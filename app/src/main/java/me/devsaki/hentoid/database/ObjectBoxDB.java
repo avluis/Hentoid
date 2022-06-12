@@ -54,6 +54,7 @@ import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
+import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.ShuffleRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteBookmark_;
@@ -247,12 +248,12 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.isBeingDeleted, true).build();
     }
 
-    void flagContents(List<Content> contentList, boolean flag) {
+    void flagContentsForDeletion(List<Content> contentList, boolean flag) {
         for (Content c : contentList) c.setFlaggedForDeletion(flag);
         store.boxFor(Content.class).put(contentList);
     }
 
-    void markContents(List<Content> contentList, boolean flag) {
+    void markContentsAsBeingDeleted(List<Content> contentList, boolean flag) {
         for (Content c : contentList) c.setIsBeingDeleted(flag);
         store.boxFor(Content.class).put(contentList);
     }
@@ -348,13 +349,6 @@ public class ObjectBoxDB {
         List<QueueRecord> queueRecords = selectQueueRecordsQ(null).find();
         for (QueueRecord q : queueRecords) result.add(q.getContent().getTarget());
         return result;
-    }
-
-    @Nullable
-    QueueRecord selectQueueRecordFromContentId(long contentId) {
-        QueryBuilder<QueueRecord> qb = store.boxFor(QueueRecord.class).query();
-        qb.equal(QueueRecord_.contentId, contentId);
-        return qb.build().findFirst();
     }
 
     Query<QueueRecord> selectQueueRecordsQ(String query) {
@@ -1274,6 +1268,8 @@ public class ObjectBoxDB {
         return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
     }
 
+    // BOOKMARKS
+
     Query<SiteBookmark> selectBookmarksQ(@Nullable Site s) {
         QueryBuilder<SiteBookmark> qb = store.boxFor(SiteBookmark.class).query();
         if (s != null) qb.equal(SiteBookmark_.site, s.getCode());
@@ -1321,6 +1317,23 @@ public class ObjectBoxDB {
         return query.build();
     }
 
+    // SEARCH RECORDS
+
+    Query<SearchRecord> selectSearchRecordsQ() {
+        QueryBuilder<SearchRecord> qb = store.boxFor(SearchRecord.class).query();
+        return qb.build();
+    }
+
+    void deleteSearchRecord(long id) {
+        store.boxFor(SearchRecord.class).remove(id);
+    }
+
+    void insertSearchRecords(@NonNull List<SearchRecord> records) {
+        store.boxFor(SearchRecord.class).put(records);
+    }
+
+    // GROUPS
+
     long insertGroup(Group group) {
         return store.boxFor(Group.class).put(group);
     }
@@ -1337,10 +1350,6 @@ public class ObjectBoxDB {
         QueryBuilder<GroupItem> qb = store.boxFor(GroupItem.class).query().equal(GroupItem_.contentId, contentId);
         qb.link(GroupItem_.group).equal(Group_.grouping, groupingId);
         return qb.build().find();
-    }
-
-    void deleteGroupItem(long groupItemId) {
-        store.boxFor(GroupItem.class).remove(groupItemId);
     }
 
     void deleteGroupItems(long[] groupItemIds) {
@@ -1424,7 +1433,7 @@ public class ObjectBoxDB {
         return store.boxFor(Group.class).query().equal(Group_.isFlaggedForDeletion, true).build();
     }
 
-    void flagGroups(List<Group> groupList, boolean flag) {
+    void flagGroupsForDeletion(List<Group> groupList, boolean flag) {
         for (Group g : groupList) g.setFlaggedForDeletion(flag);
         store.boxFor(Group.class).put(groupList);
     }

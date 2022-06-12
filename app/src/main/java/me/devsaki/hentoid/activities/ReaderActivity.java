@@ -11,23 +11,23 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
-import me.devsaki.hentoid.fragments.viewer.ViewerGalleryFragment;
-import me.devsaki.hentoid.fragments.viewer.ViewerPagerFragment;
+import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle;
+import me.devsaki.hentoid.fragments.reader.ReaderGalleryFragment;
+import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
-import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.viewmodels.ReaderViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
-import me.devsaki.hentoid.widget.ViewerKeyListener;
+import me.devsaki.hentoid.widget.ReaderKeyListener;
 
 
-public class ImageViewerActivity extends BaseActivity {
+public class ReaderActivity extends BaseActivity {
 
     private static boolean isRunning = false;
 
-    private ViewerKeyListener viewerKeyListener = null;
-    private ImageViewerViewModel viewModel = null;
+    private ReaderKeyListener readerKeyListener = null;
+    private ReaderViewModel viewModel = null;
 
 
     private static synchronized void setRunning(boolean value) {
@@ -50,14 +50,14 @@ public class ImageViewerActivity extends BaseActivity {
         if (null == intent || null == intent.getExtras())
             throw new IllegalArgumentException("Required init arguments not found");
 
-        ImageViewerActivityBundle parser = new ImageViewerActivityBundle(intent.getExtras());
+        ReaderActivityBundle parser = new ReaderActivityBundle(intent.getExtras());
         long contentId = parser.getContentId();
         if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
         int pageNumber = parser.getPageNumber();
 
 
         ViewModelFactory vmFactory = new ViewModelFactory(getApplication());
-        viewModel = new ViewModelProvider(this, vmFactory).get(ImageViewerViewModel.class);
+        viewModel = new ViewModelProvider(this, vmFactory).get(ReaderViewModel.class);
 
         viewModel.observeDbImages(this);
 
@@ -80,8 +80,8 @@ public class ImageViewerActivity extends BaseActivity {
         if (null == savedInstanceState) {
             Fragment fragment;
             if (Preferences.isViewerOpenBookInGalleryMode() || parser.isForceShowGallery())
-                fragment = new ViewerGalleryFragment();
-            else fragment = new ViewerPagerFragment();
+                fragment = new ReaderGalleryFragment();
+            else fragment = new ReaderPagerFragment();
 
             getSupportFragmentManager()
                     .beginTransaction()
@@ -97,7 +97,7 @@ public class ImageViewerActivity extends BaseActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (viewerKeyListener != null) return viewerKeyListener.onKey(null, keyCode, event);
+        if (readerKeyListener != null) return readerKeyListener.onKey(null, keyCode, event);
         else return super.onKeyDown(keyCode, event);
     }
 
@@ -113,13 +113,13 @@ public class ImageViewerActivity extends BaseActivity {
         super.onStop();
     }
 
-    public void registerKeyListener(ViewerKeyListener listener) {
+    public void registerKeyListener(ReaderKeyListener listener) {
         takeKeyEvents(true);
-        this.viewerKeyListener = listener;
+        this.readerKeyListener = listener;
     }
 
     public void unregisterKeyListener() {
-        if (viewerKeyListener != null) viewerKeyListener.clear();
-        viewerKeyListener = null;
+        if (readerKeyListener != null) readerKeyListener.clear();
+        readerKeyListener = null;
     }
 }
