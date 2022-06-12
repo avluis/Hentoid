@@ -3,8 +3,10 @@ package me.devsaki.hentoid.viewmodels;
 import static me.devsaki.hentoid.util.GroupHelper.moveContentToCustomGroup;
 
 import android.app.Application;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,6 +49,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -55,6 +58,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -105,8 +109,10 @@ public class LibraryViewModel extends AndroidViewModel {
     private final MediatorLiveData<Integer> currentGroupTotal = new MediatorLiveData<>();
     private final MutableLiveData<Boolean> isCustomGroupingAvailable = new MutableLiveData<>();     // True if there's at least one existing custom group; false instead
     private final MutableLiveData<Bundle> groupSearchBundle = new MutableLiveData<>();
+    // Other data
+    private final LiveData<List<SearchRecord>> searchRecords;
 
-    // Updated whenever a new COntentsearch is performed
+    // Updated whenever a new Contentsearch is performed
     private final MediatorLiveData<Boolean> newContentSearch = new MediatorLiveData<>();
 
 
@@ -116,6 +122,7 @@ public class LibraryViewModel extends AndroidViewModel {
         contentSearchManager = new ContentSearchManager(dao);
         groupSearchManager = new GroupSearchManager(dao);
         totalContent = dao.countAllBooks();
+        searchRecords = dao.selectSearchRecordsLive();
         refreshCustomGroupingAvailable();
     }
 
@@ -187,6 +194,11 @@ public class LibraryViewModel extends AndroidViewModel {
         return groupSearchBundle;
     }
 
+    @NonNull
+    public LiveData<List<SearchRecord>> getSearchRecords() {
+        return searchRecords;
+    }
+
     // =========================
     // ========= LIBRARY ACTIONS
     // =========================
@@ -217,6 +229,10 @@ public class LibraryViewModel extends AndroidViewModel {
         contentSearchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
         contentSearchManager.setQuery(query);
         newContentSearch.setValue(true);
+        if (!query.isEmpty()) {
+            Uri searchUri = SearchActivityBundle.Companion.buildSearchUri(null, query);
+            dao.insertSearchRecord(SearchRecord.fromContentUniversalSearch(searchUri), 10);
+        }
         doSearchContent();
     }
 
@@ -226,11 +242,25 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param query    Query to use for the search
      * @param metadata Metadata to use for the search
      */
-    public void searchContent(@NonNull String query, @NonNull List<Attribute> metadata) {
+    public void searchContent(@NonNull String query, @NonNull List<Attribute> metadata, @NonNull Uri searchUri) {
         contentSearchManager.setQuery(query);
         contentSearchManager.setTags(metadata);
         newContentSearch.setValue(true);
+
+        if (!metadata.isEmpty()) {
+            String label = TextUtils.join("|", Stream.of(metadata).map(a -> formatAttribute(a, getApplication().getResources())).toList());
+            if (label.length() > 50) label = label.substring(0, 50) + "…";
+            dao.insertSearchRecord(SearchRecord.fromContentAdvancedSearch(searchUri, label), 10);
+        }
         doSearchContent();
+    }
+
+    private String formatAttribute(@NonNull Attribute a, @NonNull Resources res) {
+        return String.format("%s%s:%s",
+                a.isExcluded() ? "[x]" : "",
+                res.getString(a.getType().getDisplayName()),
+                a.getDisplayName()
+        );
     }
 
     public void clearContent() {
@@ -1268,5 +1298,9 @@ public class LibraryViewModel extends AndroidViewModel {
         splitContent.addAttributes(splitAttributes);
 
         return splitContent;
+    }
+
+    public void clearSearchHistory() {
+        dao.deleteAllSearchRecords();
     }
 }

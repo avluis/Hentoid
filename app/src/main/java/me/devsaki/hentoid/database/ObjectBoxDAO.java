@@ -39,6 +39,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -802,6 +803,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.insertSiteHistory(site, url);
     }
 
+    // BOOKMARKS
+
     public long countAllBookmarks() {
         return db.selectBookmarksQ(null).count();
     }
@@ -837,6 +840,33 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteBookmark(long bookmarkId) {
         db.deleteBookmark(bookmarkId);
+    }
+
+
+    // SEARCH HISTORY
+
+    public LiveData<List<SearchRecord>> selectSearchRecordsLive() {
+        return new ObjectBoxLiveData<>(db.selectSearchRecordsQ());
+    }
+
+    private List<SearchRecord> selectSearchRecords() {
+        return db.selectSearchRecordsQ().find();
+    }
+
+    public void insertSearchRecord(@NonNull SearchRecord record, int limit) {
+        List<SearchRecord> records = selectSearchRecords();
+        if (records.contains(record)) return;
+
+        while (records.size() >= limit) {
+            db.deleteSearchRecord(records.get(0).id);
+            records.remove(0);
+        }
+        records.add(record);
+        db.insertSearchRecords(records);
+    }
+
+    public void deleteAllSearchRecords() {
+        db.selectSearchRecordsQ().remove();
     }
 
 

@@ -15,6 +15,8 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -29,6 +31,7 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.customview.widget.ViewDragHelper;
 import androidx.documentfile.provider.DocumentFile;
@@ -44,6 +47,9 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.select.SelectExtension;
 import com.skydoves.balloon.ArrowOrientation;
+import com.skydoves.powermenu.MenuAnimation;
+import com.skydoves.powermenu.PowerMenu;
+import com.skydoves.powermenu.PowerMenuItem;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -59,11 +65,13 @@ import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
@@ -166,8 +174,10 @@ public class LibraryActivity extends BaseActivity {
     private int archiveProgress;
     private int archiveMax;
 
+    // ======== DATA SYNC
+    private final List<SearchRecord> searchRecords = new ArrayList<>();
 
-    // ======== VARIABLES
+    // ======== INNER VARIABLES
     // Used to ignore native calls to onQueryTextChange
     private boolean invalidateNextQueryTextChange = false;
     // Current text search query; one per tab
@@ -283,6 +293,10 @@ public class LibraryActivity extends BaseActivity {
             groupSearchBundle = b;
             GroupSearchManager.GroupSearchBundle searchBundle = new GroupSearchManager.GroupSearchBundle(b);
             onGroupingChanged(searchBundle.getGroupingId());
+        });
+        viewModel.getSearchRecords().observe(this, records -> {
+            searchRecords.clear();
+            searchRecords.addAll(records);
         });
 
         if (!Preferences.getRecentVisibility()) {
@@ -429,7 +443,7 @@ public class LibraryActivity extends BaseActivity {
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                showSearchSubBar(true, false);
+                showSearchSubBar(true, null);
                 invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
@@ -561,13 +575,49 @@ public class LibraryActivity extends BaseActivity {
         return true;
     }
 
-    private void showSearchSubBar(Boolean showAdvancedSearch, Boolean showClear) {
+    private void showSearchSubBar(boolean showAdvancedSearch, Boolean showClear) {
         searchSubBar.setVisibility(View.VISIBLE);
-        if (showAdvancedSearch != null)
-            advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
-
+        advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
         if (showClear != null)
             searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
+
+        if (!searchRecords.isEmpty()) {
+            PowerMenu.Builder powerMenuBuilder = new PowerMenu.Builder(this)
+                    .setAnimation(MenuAnimation.DROP_DOWN)
+                    .setLifecycleOwner(this)
+                    .setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87))
+                    .setTextTypeface(Typeface.DEFAULT)
+                    .setShowBackground(false)
+                    .setWidth((int) getResources().getDimension(R.dimen.dialog_width))
+                    .setMenuColor(ContextCompat.getColor(this, R.color.medium_gray))
+                    .setTextSize(Helper.dimensAsDp(this, R.dimen.text_subtitle_2))
+                    .setAutoDismiss(true);
+
+            for (int i = searchRecords.size() - 1; i >= 0; i--)
+                powerMenuBuilder.addItem(new PowerMenuItem(searchRecords.get(i).getLabel(), R.drawable.ic_clock, false, searchRecords.get(i)));
+            powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.clear_search_history), false));
+
+            PowerMenu powerMenu = powerMenuBuilder.build();
+            powerMenu.setOnMenuItemClickListener((position, item) -> {
+                if (item.getTag() != null) { // Tap on search record
+                    SearchRecord record = (SearchRecord) item.getTag();
+                    Uri searchUri = Uri.parse(record.getSearchString());
+                    setQuery(searchUri.getPath());
+                    setMetadata(SearchActivityBundle.Companion.parseSearchUri(searchUri));
+                    if (getMetadata().isEmpty()) { // Universal search
+                        if (!getQuery().isEmpty()) viewModel.searchContentUniversal(getQuery());
+                    } else { // Advanced search
+                        viewModel.searchContent(getQuery(), getMetadata(), searchUri);
+                    }
+                } else { // Clear history
+                    viewModel.clearSearchHistory();
+//                    powerMenu.dismiss();
+                }
+            });
+
+            powerMenu.setIconColor(ContextCompat.getColor(this, R.color.white_opacity_87));
+            powerMenu.showAsDropDown(searchSubBar);
+        }
     }
 
     public void hideSearchSubBar() {

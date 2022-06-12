@@ -54,6 +54,7 @@ import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
+import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.ShuffleRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteBookmark_;
@@ -1274,6 +1275,8 @@ public class ObjectBoxDB {
         return store.boxFor(SiteHistory.class).query().equal(SiteHistory_.site, s.getCode()).build().findFirst();
     }
 
+    // BOOKMARKS
+
     Query<SiteBookmark> selectBookmarksQ(@Nullable Site s) {
         QueryBuilder<SiteBookmark> qb = store.boxFor(SiteBookmark.class).query();
         if (s != null) qb.equal(SiteBookmark_.site, s.getCode());
@@ -1320,6 +1323,23 @@ public class ObjectBoxDB {
 
         return query.build();
     }
+
+    // SEARCH RECORDS
+
+    Query<SearchRecord> selectSearchRecordsQ() {
+        QueryBuilder<SearchRecord> qb = store.boxFor(SearchRecord.class).query();
+        return qb.build();
+    }
+
+    void deleteSearchRecord(long id) {
+        store.boxFor(SearchRecord.class).remove(id);
+    }
+
+    void insertSearchRecords(@NonNull List<SearchRecord> records) {
+        store.boxFor(SearchRecord.class).put(records);
+    }
+
+    // GROUPS
 
     long insertGroup(Group group) {
         return store.boxFor(Group.class).put(group);

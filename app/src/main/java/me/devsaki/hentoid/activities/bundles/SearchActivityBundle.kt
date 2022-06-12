@@ -25,12 +25,15 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
 
     // Helper methods
     companion object {
-        fun buildSearchUri(attributes: List<Attribute>?): Uri {
+        fun buildSearchUri(attributes: List<Attribute>?, query: String = ""): Uri {
             val metadataMap = AttributeMap()
             if (attributes != null) metadataMap.addAll(attributes)
             val searchUri = Uri.Builder()
                 .scheme("search")
                 .authority("hentoid")
+
+            if (query.isNotEmpty()) searchUri.path(query)
+
             for ((attrType, attrs) in metadataMap) {
                 if (attrs != null) for (attr in attrs) searchUri.appendQueryParameter(
                     attrType.name,

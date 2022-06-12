@@ -26,6 +26,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -283,6 +284,15 @@ public interface CollectionDAO {
     void deleteBookmark(long bookmarkId);
 
     void deleteAllBookmarks();
+
+
+    // SEARCH HISTORY
+
+    LiveData<List<SearchRecord>> selectSearchRecordsLive();
+
+    void insertSearchRecord(@NonNull SearchRecord record, int limit);
+
+    void deleteAllSearchRecords();
 
 
     // RESOURCES
