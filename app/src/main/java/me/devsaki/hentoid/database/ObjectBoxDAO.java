@@ -80,11 +80,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public List<Content> selectStoredContent(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
-        return db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc).build().find();
-    }
-
-    @Override
     public List<Long> selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc) {
         return Helper.getListFromPrimitiveArray(db.selectStoredContentQ(nonFavouritesOnly, includeQueued, orderField, orderDesc).build().findIds());
     }
@@ -372,6 +367,17 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectAllQueueBooksQ().count();
     }
 
+    public LiveData<Integer> countAllQueueBooksLive() {
+        // This is not optimal because it fetches all the content and returns its size only
+        // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
+        // See https://github.com/objectbox/objectbox-java/issues/776
+        ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.selectAllQueueBooksQ());
+
+        MediatorLiveData<Integer> result = new MediatorLiveData<>();
+        result.addSource(livedata, v -> result.setValue(v.size()));
+        return result;
+    }
+
     public void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer) {
         Query<Content> query = db.selectAllInternalBooksQ(favsOnly);
         query.forEach(consumer::accept);
@@ -520,7 +526,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void flagAllGroups(Grouping grouping) {
-        db.flagGroups(db.selectGroupsByGroupingQ(grouping.getId()).find(), true);
+        db.flagGroupsForDeletion(db.selectGroupsByGroupingQ(grouping.getId()).find(), true);
     }
 
     public void deleteAllFlaggedGroups() {
@@ -575,7 +581,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void flagAllInternalBooks() {
-        db.flagContents(db.selectAllInternalBooksQ(false).find(), true);
+        db.flagContentsForDeletion(db.selectAllInternalBooksQ(false).find(), true);
     }
 
     public void deleteAllInternalBooks(boolean resetRemainingImagesStatus) {
@@ -601,7 +607,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void flagAllErrorBooksWithJson() {
-        db.flagContents(db.selectAllErrorJsonBooksQ().find(), true);
+        db.flagContentsForDeletion(db.selectAllErrorJsonBooksQ().find(), true);
     }
 
     public void deleteAllQueuedBooks() {
@@ -772,11 +778,6 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Override
     public List<QueueRecord> selectQueue() {
         return db.selectQueueRecordsQ(null).find();
-    }
-
-    @Nullable
-    public QueueRecord selectQueue(long contentId) {
-        return db.selectQueueRecordFromContentId(contentId);
     }
 
     public void updateQueue(@NonNull List<QueueRecord> queue) {

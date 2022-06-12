@@ -96,6 +96,8 @@ public interface CollectionDAO {
 
     long countAllQueueBooks();
 
+    LiveData<Integer> countAllQueueBooksLive();
+
     List<Content> selectAllQueueBooks();
 
     void deleteAllQueuedBooks();
@@ -147,8 +149,6 @@ public interface CollectionDAO {
 
 
     // High-level queries (internal and external locations)
-
-    List<Content> selectStoredContent(boolean nonFavouriteOnly, boolean includeQueued, int orderField, boolean orderDesc);
 
     List<Long> selectStoredContentIds(boolean nonFavouritesOnly, boolean includeQueued, int orderField, boolean orderDesc);
 
@@ -217,14 +217,9 @@ public interface CollectionDAO {
 
     List<QueueRecord> selectQueue();
 
-    @Nullable
-    QueueRecord selectQueue(long contentId);
-
     LiveData<List<QueueRecord>> selectQueueLive();
 
     LiveData<List<QueueRecord>> selectQueueLive(String query);
-
-    LiveData<Integer> countQueueLive();
 
     void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, @ContentHelper.QueuePosition int position, long replacedContentId, boolean isQueueActive);
 

@@ -248,12 +248,12 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().equal(Content_.isBeingDeleted, true).build();
     }
 
-    void flagContents(List<Content> contentList, boolean flag) {
+    void flagContentsForDeletion(List<Content> contentList, boolean flag) {
         for (Content c : contentList) c.setFlaggedForDeletion(flag);
         store.boxFor(Content.class).put(contentList);
     }
 
-    void markContents(List<Content> contentList, boolean flag) {
+    void markContentsAsBeingDeleted(List<Content> contentList, boolean flag) {
         for (Content c : contentList) c.setIsBeingDeleted(flag);
         store.boxFor(Content.class).put(contentList);
     }
@@ -349,13 +349,6 @@ public class ObjectBoxDB {
         List<QueueRecord> queueRecords = selectQueueRecordsQ(null).find();
         for (QueueRecord q : queueRecords) result.add(q.getContent().getTarget());
         return result;
-    }
-
-    @Nullable
-    QueueRecord selectQueueRecordFromContentId(long contentId) {
-        QueryBuilder<QueueRecord> qb = store.boxFor(QueueRecord.class).query();
-        qb.equal(QueueRecord_.contentId, contentId);
-        return qb.build().findFirst();
     }
 
     Query<QueueRecord> selectQueueRecordsQ(String query) {
@@ -1359,10 +1352,6 @@ public class ObjectBoxDB {
         return qb.build().find();
     }
 
-    void deleteGroupItem(long groupItemId) {
-        store.boxFor(GroupItem.class).remove(groupItemId);
-    }
-
     void deleteGroupItems(long[] groupItemIds) {
         store.boxFor(GroupItem.class).remove(groupItemIds);
     }
@@ -1444,7 +1433,7 @@ public class ObjectBoxDB {
         return store.boxFor(Group.class).query().equal(Group_.isFlaggedForDeletion, true).build();
     }
 
-    void flagGroups(List<Group> groupList, boolean flag) {
+    void flagGroupsForDeletion(List<Group> groupList, boolean flag) {
         for (Group g : groupList) g.setFlaggedForDeletion(flag);
         store.boxFor(Group.class).put(groupList);
     }
