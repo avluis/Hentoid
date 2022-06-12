@@ -372,10 +372,6 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectAllQueueBooksQ().count();
     }
 
-    public List<Content> selectAllInternalBooks(boolean favsOnly) {
-        return db.selectAllInternalBooksQ(favsOnly).find();
-    }
-
     public void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer) {
         Query<Content> query = db.selectAllInternalBooksQ(favsOnly);
         query.forEach(consumer::accept);

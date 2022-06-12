@@ -84,8 +84,6 @@ public interface CollectionDAO {
 
     long countAllInternalBooks(boolean favsOnly);
 
-    List<Content> selectAllInternalBooks(boolean favsOnly);
-
     void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer);
 
     void flagAllInternalBooks();
@@ -225,6 +223,8 @@ public interface CollectionDAO {
     LiveData<List<QueueRecord>> selectQueueLive();
 
     LiveData<List<QueueRecord>> selectQueueLive(String query);
+
+    LiveData<Integer> countQueueLive();
 
     void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, @ContentHelper.QueuePosition int position, long replacedContentId, boolean isQueueActive);
 
