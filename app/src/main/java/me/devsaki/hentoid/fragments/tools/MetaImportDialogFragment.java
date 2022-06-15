@@ -299,7 +299,16 @@ public class MetaImportDialogFragment extends DialogFragment {
         // Folder names can be formatted in many ways _but_ they always contain the book unique ID !
         if (null == siteFoldersCache) siteFoldersCache = getSiteFolders();
         DocumentFile siteFolder = siteFoldersCache.get(c.getSite());
-        if (siteFolder != null) mapToContent(c, siteFolder);
+        if (siteFolder != null) {
+            boolean mappedToFiles = mapFilesToContent(c, siteFolder);
+            // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
+            if (!mappedToFiles) {
+                if (!ContentHelper.isInQueue(c.getStatus())) c.setStatus(StatusContent.ERROR);
+                List<ErrorRecord> errors = new ArrayList<>();
+                errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
+                c.setErrorLog(errors);
+            }
+        }
         Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), "");
         if (null == duplicate) {
             long newContentId = ContentHelper.addContent(requireContext(), dao, c);
@@ -312,7 +321,7 @@ public class MetaImportDialogFragment extends DialogFragment {
         }
     }
 
-    private void mapToContent(@NonNull final Content c, @NonNull final DocumentFile siteFolder) {
+    private boolean mapFilesToContent(@NonNull final Content c, @NonNull final DocumentFile siteFolder) {
         List<DocumentFile> bookfolders;
         if (bookFoldersCache.containsKey(c.getSite()))
             bookfolders = bookFoldersCache.get(c.getSite());
@@ -337,13 +346,7 @@ public class MetaImportDialogFragment extends DialogFragment {
                     break;
                 }
         }
-        // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
-        if (!filesFound) {
-            if (!ContentHelper.isInQueue(c.getStatus())) c.setStatus(StatusContent.ERROR);
-            List<ErrorRecord> errors = new ArrayList<>();
-            errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
-            c.setErrorLog(errors);
-        }
+        return filesFound;
     }
 
     private Map<Site, DocumentFile> getSiteFolders() {
