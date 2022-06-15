@@ -30,9 +30,9 @@
     <string name="pref_cat_downloads_folder">Hentoid library</string>
     <string name="pref_select_folder_title">Select Downloads Folder</string>
     <string name="pref_select_folder_summary">Select where Hentoid will store your downloads</string>
-    <string name="pref_import_queue_empty_title">Queue empty books as errors</string>
-    <string name="pref_import_queue_empty_on">Empty books will be added to the queue as errors</string>
-    <string name="pref_import_queue_empty_off">Empty books will be added to the library</string>
+    <string name="pref_import_queue_empty_title">Queue empty imported books as errors</string>
+    <string name="pref_import_queue_empty_on">Empty imported books will be added to the queue as errors</string>
+    <string name="pref_import_queue_empty_off">Empty imported books will be added to the library</string>
     <string name="pref_folder_naming_content_title">Folder names</string>
     <string name="pref_folder_naming_content_summary">Book folder naming convention:\n<x:g example="Name - ID" id="convention">%s</x:g></string>
     <string name="pref_import_running">Import is already running</string>
