@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.tools;
 
-import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 
 import android.net.Uri;
@@ -10,10 +9,6 @@ import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ProgressBar;
-import android.widget.RadioButton;
-import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
@@ -48,6 +43,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.databinding.DialogPrefsMetaImportBinding;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
@@ -68,15 +64,7 @@ import timber.log.Timber;
 public class MetaImportDialogFragment extends DialogFragment {
 
     // UI
-    private ViewGroup rootView;
-    private View selectFileBtn;
-    private TextView progressTxt;
-    private ProgressBar progressBar;
-    private CheckBox libraryChk;
-    private CheckBox queueChk;
-    private CheckBox groupsChk;
-    private CheckBox bookmarksChk;
-    private View runBtn;
+    private DialogPrefsMetaImportBinding binding = null;
 
     // Variable used during the import process
     private CollectionDAO dao;
@@ -105,20 +93,20 @@ public class MetaImportDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_prefs_meta_import, container, false);
+        binding = DialogPrefsMetaImportBinding.inflate(inflater, container, false);
+        return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     @Override
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
-
-        if (rootView instanceof ViewGroup) this.rootView = (ViewGroup) rootView;
-
-        progressTxt = requireViewById(rootView, R.id.import_progress_text);
-        progressBar = requireViewById(rootView, R.id.import_progress_bar);
-
-        selectFileBtn = requireViewById(rootView, R.id.import_select_file_btn);
-        selectFileBtn.setOnClickListener(v -> pickFile.launch(0));
+        binding.importSelectFileBtn.setOnClickListener(v -> pickFile.launch(0));
     }
 
     private void onFilePickerResult(Integer resultCode, Uri uri) {
@@ -127,17 +115,17 @@ public class MetaImportDialogFragment extends DialogFragment {
                 // File selected
                 DocumentFile doc = DocumentFile.fromSingleUri(requireContext(), uri);
                 if (null == doc) return;
-                selectFileBtn.setVisibility(View.GONE);
+                binding.importSelectFileBtn.setVisibility(View.GONE);
                 checkFile(doc);
                 break;
             case ImportHelper.PickerResult.KO_CANCELED:
-                Snackbar.make(rootView, R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show();
+                Snackbar.make(binding.getRoot(), R.string.import_canceled, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
             case ImportHelper.PickerResult.KO_NO_URI:
-                Snackbar.make(rootView, R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
+                Snackbar.make(binding.getRoot(), R.string.import_invalid, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
             case ImportHelper.PickerResult.KO_OTHER:
-                Snackbar.make(rootView, R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
+                Snackbar.make(binding.getRoot(), R.string.import_other, BaseTransientBottomBar.LENGTH_LONG).show();
                 break;
             default:
                 // Nothing should happen here
@@ -158,57 +146,55 @@ public class MetaImportDialogFragment extends DialogFragment {
     private void onFileDeserialized(Optional<JsonContentCollection> collectionOptional, DocumentFile jsonFile) {
         importDisposable.dispose();
 
-        TextView errorTxt = requireViewById(rootView, R.id.import_file_invalid_text);
         if (collectionOptional.isEmpty() || collectionOptional.get().isEmpty()) {
-            errorTxt.setText(getResources().getString(R.string.import_file_invalid, jsonFile.getName()));
-            errorTxt.setVisibility(View.VISIBLE);
+            binding.importFileInvalidText.setText(getResources().getString(R.string.import_file_invalid, jsonFile.getName()));
+            binding.importFileInvalidText.setVisibility(View.VISIBLE);
         } else {
-            selectFileBtn.setVisibility(View.GONE);
-            errorTxt.setVisibility(View.GONE);
+            binding.importSelectFileBtn.setVisibility(View.GONE);
+            binding.importFileInvalidText.setVisibility(View.GONE);
 
             JsonContentCollection collection = collectionOptional.get();
-            libraryChk = requireViewById(rootView, R.id.import_file_library_chk);
             int librarySize = collection.getLibrary(null).size(); // Don't link the groups, just count the books
             if (librarySize > 0) {
-                libraryChk.setText(getResources().getQuantityString(R.plurals.import_file_library, librarySize, librarySize));
-                libraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
-                libraryChk.setVisibility(View.VISIBLE);
+                binding.importFileLibraryChk.setText(getResources().getQuantityString(R.plurals.import_file_library, librarySize, librarySize));
+                binding.importFileLibraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+                binding.importFileLibraryChk.setVisibility(View.VISIBLE);
             }
-            queueChk = requireViewById(rootView, R.id.import_file_queue_chk);
             int mQueueSize = collection.getQueue().size();
             if (mQueueSize > 0) {
-                queueChk.setText(getResources().getQuantityString(R.plurals.import_file_queue, mQueueSize, mQueueSize));
-                queueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
-                queueChk.setVisibility(View.VISIBLE);
+                binding.importFileQueueChk.setText(getResources().getQuantityString(R.plurals.import_file_queue, mQueueSize, mQueueSize));
+                binding.importFileQueueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+                binding.importFileQueueChk.setVisibility(View.VISIBLE);
             }
-            groupsChk = requireViewById(rootView, R.id.import_file_groups_chk);
             int mGroupsSize = collection.getCustomGroups().size();
             if (mGroupsSize > 0) {
-                groupsChk.setText(getResources().getQuantityString(R.plurals.import_file_groups, mGroupsSize, mGroupsSize));
-                groupsChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
-                groupsChk.setVisibility(View.VISIBLE);
+                binding.importFileGroupsChk.setText(getResources().getQuantityString(R.plurals.import_file_groups, mGroupsSize, mGroupsSize));
+                binding.importFileGroupsChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+                binding.importFileGroupsChk.setVisibility(View.VISIBLE);
             }
-            bookmarksChk = requireViewById(rootView, R.id.import_file_bookmarks_chk);
             int bookmarksSize = collection.getBookmarks().size();
             if (bookmarksSize > 0) {
-                bookmarksChk.setText(getResources().getQuantityString(R.plurals.import_file_bookmarks, bookmarksSize, bookmarksSize));
-                bookmarksChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
-                bookmarksChk.setVisibility(View.VISIBLE);
+                binding.importFileBookmarksChk.setText(getResources().getQuantityString(R.plurals.import_file_bookmarks, bookmarksSize, bookmarksSize));
+                binding.importFileBookmarksChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
+                binding.importFileBookmarksChk.setVisibility(View.VISIBLE);
             }
-            requireViewById(rootView, R.id.import_warning_img).setVisibility(View.VISIBLE);
-            requireViewById(rootView, R.id.import_file_help_text).setVisibility(View.VISIBLE);
-            runBtn = requireViewById(rootView, R.id.import_run_btn);
-            runBtn.setVisibility(View.VISIBLE);
-            runBtn.setEnabled(false);
+            binding.importRunBtn.setVisibility(View.VISIBLE);
+            binding.importRunBtn.setEnabled(false);
 
-            RadioButton addChk = requireViewById(rootView, R.id.import_mode_add);
-            runBtn.setOnClickListener(v -> runImport(collection, addChk.isChecked(), libraryChk.isChecked(), queueChk.isChecked(), groupsChk.isChecked(), bookmarksChk.isChecked()));
+            binding.importRunBtn.setOnClickListener(v -> runImport(
+                    collection,
+                    binding.importModeAdd.isChecked(),
+                    binding.importFileLibraryChk.isChecked(),
+                    binding.importFileQueueChk.isChecked(),
+                    binding.importFileGroupsChk.isChecked(),
+                    binding.importFileBookmarksChk.isChecked())
+            );
         }
     }
 
     // Gray out run button if no option is selected
     private void refreshDisplay() {
-        runBtn.setEnabled(queueChk.isChecked() || libraryChk.isChecked() || bookmarksChk.isChecked());
+        binding.importRunBtn.setEnabled(binding.importFileQueueChk.isChecked() || binding.importFileLibraryChk.isChecked() || binding.importFileBookmarksChk.isChecked());
     }
 
     private Optional<JsonContentCollection> deserialiseJson(@NonNull DocumentFile jsonFile) {
@@ -229,12 +215,12 @@ public class MetaImportDialogFragment extends DialogFragment {
             boolean importQueue,
             boolean importCustomGroups,
             boolean importBookmarks) {
-        requireViewById(rootView, R.id.import_mode).setEnabled(false);
-        libraryChk.setEnabled(false);
-        queueChk.setEnabled(false);
-        groupsChk.setEnabled(false);
-        bookmarksChk.setEnabled(false);
-        runBtn.setVisibility(View.GONE);
+        binding.importMode.setEnabled(false);
+        binding.importFileLibraryChk.setEnabled(false);
+        binding.importFileQueueChk.setEnabled(false);
+        binding.importFileGroupsChk.setEnabled(false);
+        binding.importFileBookmarksChk.setEnabled(false);
+        binding.importRunBtn.setVisibility(View.GONE);
         setCancelable(false);
 
         dao = new ObjectBoxDAO(requireContext());
@@ -272,7 +258,7 @@ public class MetaImportDialogFragment extends DialogFragment {
         totalItems = items.size();
         currentProgress = 0;
         nbSuccess = 0;
-        progressBar.setMax(totalItems);
+        binding.importProgressBar.setMax(totalItems);
 
         importDisposable = Observable.fromIterable(items)
                 .observeOn(Schedulers.io())
@@ -388,19 +374,19 @@ public class MetaImportDialogFragment extends DialogFragment {
 
     private void updateProgress(boolean isGroup) {
         currentProgress++;
-        progressTxt.setText(getResources().getQuantityString(isGroup ? R.plurals.group_progress : R.plurals.book_progress, currentProgress, currentProgress, totalItems));
-        progressBar.setProgress(currentProgress);
-        progressTxt.setVisibility(View.VISIBLE);
-        progressBar.setVisibility(View.VISIBLE);
+        binding.importProgressText.setText(getResources().getQuantityString(isGroup ? R.plurals.group_progress : R.plurals.book_progress, currentProgress, currentProgress, totalItems));
+        binding.importProgressBar.setProgress(currentProgress);
+        binding.importProgressText.setVisibility(View.VISIBLE);
+        binding.importProgressBar.setVisibility(View.VISIBLE);
     }
 
     private void finish() {
         importDisposable.dispose();
         if (dao != null) dao.cleanup();
         if (nbSuccess > 0)
-            Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result_books, nbSuccess, nbSuccess), LENGTH_LONG).show();
+            Snackbar.make(binding.getRoot(), getResources().getQuantityString(R.plurals.import_result_books, nbSuccess, nbSuccess), LENGTH_LONG).show();
         else if (nbBookmarksSuccess > 0)
-            Snackbar.make(rootView, getResources().getQuantityString(R.plurals.import_result_bookmarks, nbBookmarksSuccess, nbBookmarksSuccess), LENGTH_LONG).show();
+            Snackbar.make(binding.getRoot(), getResources().getQuantityString(R.plurals.import_result_bookmarks, nbBookmarksSuccess, nbBookmarksSuccess), LENGTH_LONG).show();
 
         // Dismiss after 3s, for the user to be able to see the snackbar
         new Handler(Looper.getMainLooper()).postDelayed(this::dismissAllowingStateLoss, 3000);
