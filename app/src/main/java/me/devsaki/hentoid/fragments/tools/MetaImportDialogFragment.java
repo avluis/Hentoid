@@ -18,6 +18,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -25,6 +26,8 @@ import org.threeten.bp.Instant;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +45,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.databinding.DialogPrefsMetaImportBinding;
 import me.devsaki.hentoid.enums.ErrorType;
@@ -62,6 +66,12 @@ import timber.log.Timber;
  * Dialog for the library metadata import feature
  */
 public class MetaImportDialogFragment extends DialogFragment {
+
+    // Empty files import options
+    private static final int DONT_IMPORT = 0;
+    private static final int IMPORT_AS_EMPTY = 1;
+    private static final int IMPORT_AS_STREAMED = 2;
+    private static final int IMPORT_AS_ERROR = 3;
 
     // UI
     private DialogPrefsMetaImportBinding binding = null;
@@ -106,6 +116,13 @@ public class MetaImportDialogFragment extends DialogFragment {
     @Override
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
+
+        String[] browseModes = getResources().getStringArray(R.array.tools_import_empty_books_entries);
+        List<String> browseItems = new ArrayList<>(Arrays.asList(browseModes));
+
+        binding.importEmptyBooksOptions.setItems(browseItems);
+        binding.importEmptyBooksOptions.setOnSpinnerItemSelectedListener((i, o, i1, t1) -> refreshDisplay());
+
         binding.importSelectFileBtn.setOnClickListener(v -> pickFile.launch(0));
     }
 
@@ -185,6 +202,7 @@ public class MetaImportDialogFragment extends DialogFragment {
                     collection,
                     binding.importModeAdd.isChecked(),
                     binding.importFileLibraryChk.isChecked(),
+                    binding.importEmptyBooksOptions.getSelectedIndex(),
                     binding.importFileQueueChk.isChecked(),
                     binding.importFileGroupsChk.isChecked(),
                     binding.importFileBookmarksChk.isChecked())
@@ -194,7 +212,14 @@ public class MetaImportDialogFragment extends DialogFragment {
 
     // Gray out run button if no option is selected
     private void refreshDisplay() {
-        binding.importRunBtn.setEnabled(binding.importFileQueueChk.isChecked() || binding.importFileLibraryChk.isChecked() || binding.importFileBookmarksChk.isChecked());
+        binding.importEmptyBooksLabel.setVisibility(binding.importFileLibraryChk.isChecked() ? View.VISIBLE : View.GONE);
+        binding.importEmptyBooksOptions.setVisibility(binding.importFileLibraryChk.isChecked() ? View.VISIBLE : View.GONE);
+
+        binding.importRunBtn.setEnabled(
+                (binding.importFileLibraryChk.isChecked() && binding.importEmptyBooksOptions.getSelectedIndex() > -1)
+                        || binding.importFileQueueChk.isChecked()
+                        || binding.importFileBookmarksChk.isChecked()
+        );
     }
 
     private Optional<JsonContentCollection> deserialiseJson(@NonNull DocumentFile jsonFile) {
@@ -212,6 +237,7 @@ public class MetaImportDialogFragment extends DialogFragment {
             @NonNull final JsonContentCollection collection,
             boolean add,
             boolean importLibrary,
+            int emptyBooksOption,
             boolean importQueue,
             boolean importCustomGroups,
             boolean importBookmarks) {
@@ -245,15 +271,17 @@ public class MetaImportDialogFragment extends DialogFragment {
                     collection.getCustomGroups(),
                     dao,
                     true,
-                    () -> runImportItems(contentToImport, dao, false, this::finish)
+                    emptyBooksOption,
+                    () -> runImportItems(contentToImport, dao, false, emptyBooksOption, this::finish)
             );
         else // Run content import alone
-            runImportItems(contentToImport, dao, false, this::finish);
+            runImportItems(contentToImport, dao, false, emptyBooksOption, this::finish);
     }
 
     private void runImportItems(@NonNull final List<?> items,
                                 @NonNull final CollectionDAO dao,
                                 boolean isGroup,
+                                Integer emptyBooksOption,
                                 @NonNull final Runnable onFinish) {
         totalItems = items.size();
         currentProgress = 0;
@@ -262,7 +290,7 @@ public class MetaImportDialogFragment extends DialogFragment {
 
         importDisposable = Observable.fromIterable(items)
                 .observeOn(Schedulers.io())
-                .map(c -> importItem(c, dao))
+                .map(c -> importItem(c, emptyBooksOption, dao))
                 .doOnComplete(() -> {
                     if (isGroup) GroupHelper.updateGroupsJson(requireContext(), dao);
                 })
@@ -274,13 +302,13 @@ public class MetaImportDialogFragment extends DialogFragment {
                 );
     }
 
-    private boolean importItem(@NonNull final Object o, @NonNull final CollectionDAO dao) {
-        if (o instanceof Content) importContent((Content) o, dao);
+    private boolean importItem(@NonNull final Object o, int emptyBooksOption, @NonNull final CollectionDAO dao) {
+        if (o instanceof Content) importContent((Content) o, emptyBooksOption, dao);
         else if (o instanceof Group) importGroup((Group) o, dao);
         return true;
     }
 
-    private void importContent(@NonNull final Content c, @NonNull final CollectionDAO dao) {
+    private void importContent(@NonNull final Content c, int emptyBooksOption, @NonNull final CollectionDAO dao) {
         // Try to map the imported content to an existing book in the downloads folder
         // Folder names can be formatted in many ways _but_ they always contain the book unique ID !
         if (null == siteFoldersCache) siteFoldersCache = getSiteFolders();
@@ -289,21 +317,53 @@ public class MetaImportDialogFragment extends DialogFragment {
             boolean mappedToFiles = mapFilesToContent(c, siteFolder);
             // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
             if (!mappedToFiles) {
-                if (!ContentHelper.isInQueue(c.getStatus())) c.setStatus(StatusContent.ERROR);
-                List<ErrorRecord> errors = new ArrayList<>();
-                errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
-                c.setErrorLog(errors);
+                switch (emptyBooksOption) {
+                    case IMPORT_AS_STREAMED:
+                        // Greenlighted if images exist and are available online
+                        if (c.getImageFiles() != null && c.getImageFiles().size() > 0 && ContentHelper.isDownloadable(c)) {
+                            c.setDownloadMode(Content.DownloadMode.STREAM);
+                            List<ImageFile> imgs = c.getImageFiles();
+                            if (imgs != null) {
+                                List<ImageFile> newImages = Stream.of(imgs).map(i -> ImageFile.fromImageUrl(i.getOrder(), i.getUrl(), StatusContent.ONLINE, imgs.size())).toList();
+                                c.setImageFiles(newImages);
+                            }
+                            c.forceSize(0);
+                            break;
+                        }
+                        // no break here - import as empty if content unavailable online
+                    case IMPORT_AS_EMPTY:
+                        c.setImageFiles(Collections.emptyList());
+                        c.clearChapters();
+                        c.setStatus(StatusContent.PLACEHOLDER);
+                        DocumentFile bookFolder = ContentHelper.getOrCreateContentDownloadDir(requireContext(), c);
+                        if (bookFolder != null) {
+                            c.setStorageUri(bookFolder.getUri().toString());
+                            ContentHelper.persistJson(requireContext(), c);
+                        }
+                        break;
+                    case IMPORT_AS_ERROR:
+                        if (!ContentHelper.isInQueue(c.getStatus()))
+                            c.setStatus(StatusContent.ERROR);
+                        List<ErrorRecord> errors = new ArrayList<>();
+                        errors.add(new ErrorRecord(ErrorType.IMPORT, "", getResources().getQuantityString(R.plurals.book, 1), "No local images found when importing - Please redownload", Instant.now()));
+                        c.setErrorLog(errors);
+                        break;
+                    default:
+                    case DONT_IMPORT:
+                        return;
+                }
             }
         }
         Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), "");
-        if (null == duplicate) {
-            long newContentId = ContentHelper.addContent(requireContext(), dao, c);
-            // Insert queued content into the queue
-            if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
-                List<QueueRecord> lst = new ArrayList<>();
-                lst.add(new QueueRecord(newContentId, queueSize++));
-                dao.updateQueue(lst);
-            }
+        if (duplicate != null) return;
+
+        // All checks successful => create the content
+        long newContentId = ContentHelper.addContent(requireContext(), dao, c);
+        // Insert queued content into the queue
+        if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
+            List<QueueRecord> lst = new ArrayList<>();
+            lst.add(new QueueRecord(newContentId, queueSize++));
+            dao.updateQueue(lst);
         }
     }
 

@@ -369,7 +369,7 @@ public class ImportWorker extends BaseWorker {
                     if (!ContentHelper.isInQueue(content.getStatus()))
                         content.setStatus(StatusContent.ERROR);
                     List<ErrorRecord> errors = new ArrayList<>();
-                    errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
+                    errors.add(new ErrorRecord(ErrorType.IMPORT, "", getApplicationContext().getResources().getQuantityString(R.plurals.book, 1), "No local images found when importing - Please redownload", Instant.now()));
                     content.setErrorLog(errors);
                 }
 

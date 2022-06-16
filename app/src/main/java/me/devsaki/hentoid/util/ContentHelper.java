@@ -101,7 +101,7 @@ public final class ContentHelper {
     public static final String KEY_DL_PARAMS_UGOIRA_FRAMES = "ugo_frames";
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
-    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
+    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode(), StatusContent.PLACEHOLDER.getCode()};
     private static final int[] queueStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode()};
     private static final int[] queueTabStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode()};
 
@@ -273,6 +273,7 @@ public final class ContentHelper {
             boolean forceShowGallery) {
         // Check if the book has at least its own folder
         if (content.getStorageUri().isEmpty()) return false;
+        if (content.getStatus().equals(StatusContent.PLACEHOLDER)) return false;
 
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageUri());
 

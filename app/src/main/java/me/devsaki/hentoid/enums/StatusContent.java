@@ -19,7 +19,8 @@ public enum StatusContent {
     UNHANDLED_ERROR(7, "Unhandled Error"), // Default status for image files
     CANCELED(8, "Canceled"), // Unused value; kept for retrocompatibility
     ONLINE(9, "Online"), // Used for ImageFiles only : image can be viewed on-demand (streamed content; undownloaded covers)
-    EXTERNAL(10, "External"); // Content is accessible in the external library
+    EXTERNAL(10, "External"), // Content is accessible in the external library
+    PLACEHOLDER(11, "Placeholder"); // Content has been imported as an empty placeholder (couldn't be streamed)
 
     private final int code;
     private final String description;
