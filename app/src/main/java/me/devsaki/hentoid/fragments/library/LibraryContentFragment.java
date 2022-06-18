@@ -1365,7 +1365,7 @@ public class LibraryContentFragment extends Fragment implements
      * @param item ContentItem that has been clicked on
      */
     private boolean onItemClick(int position, @NonNull ContentItem item) {
-        if (selectExtension.getSelections().isEmpty()) {
+        if (/*selectExtension.getSelections().isEmpty()*/selectExtension.getSelectOnLongClick()) {
             if (item.getContent() != null && !item.getContent().isBeingDeleted()) {
                 readBook(item.getContent(), false);
             }
