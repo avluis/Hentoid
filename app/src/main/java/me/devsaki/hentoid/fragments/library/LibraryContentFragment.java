@@ -1033,7 +1033,8 @@ public class LibraryContentFragment extends Fragment implements
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook));
+            ContentItem dummy = new ContentItem(viewType);
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> dummy, c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
 
             ContentItem item = new ContentItem(viewType);
