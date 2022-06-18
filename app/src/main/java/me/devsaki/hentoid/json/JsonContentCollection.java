@@ -30,6 +30,10 @@ public class JsonContentCollection {
         return Stream.of(library).map(c -> c.toEntity(dao)).toList();
     }
 
+    public List<JsonContent> getJsonLibrary() {
+        return library;
+    }
+
     public void setLibrary(@NonNull List<Content> library) {
         this.library = Stream.of(library).map(c -> JsonContent.fromEntity(c, false)).toList();
     }
@@ -40,6 +44,10 @@ public class JsonContentCollection {
 
     public List<Content> getQueue() {
         return Stream.of(queue).map(c -> c.toEntity(null)).toList();
+    }
+
+    public List<JsonContent> getJsonQueue() {
+        return queue;
     }
 
     public void setQueue(@NonNull List<Content> queue) {

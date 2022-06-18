@@ -52,6 +52,7 @@ import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.FileHelper;
@@ -171,13 +172,13 @@ public class MetaImportDialogFragment extends DialogFragment {
             binding.importFileInvalidText.setVisibility(View.GONE);
 
             JsonContentCollection collection = collectionOptional.get();
-            int librarySize = collection.getLibrary(null).size(); // Don't link the groups, just count the books
+            int librarySize = collection.getJsonLibrary().size(); // Don't link the groups, just count the books
             if (librarySize > 0) {
                 binding.importFileLibraryChk.setText(getResources().getQuantityString(R.plurals.import_file_library, librarySize, librarySize));
                 binding.importFileLibraryChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
                 binding.importFileLibraryChk.setVisibility(View.VISIBLE);
             }
-            int mQueueSize = collection.getQueue().size();
+            int mQueueSize = collection.getJsonQueue().size();
             if (mQueueSize > 0) {
                 binding.importFileQueueChk.setText(getResources().getQuantityString(R.plurals.import_file_queue, mQueueSize, mQueueSize));
                 binding.importFileQueueChk.setOnCheckedChangeListener((buttonView, isChecked) -> refreshDisplay());
@@ -264,9 +265,9 @@ public class MetaImportDialogFragment extends DialogFragment {
         if (importBookmarks)
             nbBookmarksSuccess = ImportHelper.importBookmarks(dao, collection.getBookmarks());
 
-        List<Content> contentToImport = new ArrayList<>();
-        if (importLibrary) contentToImport.addAll(collection.getLibrary(dao));
-        if (importQueue) contentToImport.addAll(collection.getQueue());
+        List<JsonContent> contentToImport = new ArrayList<>();
+        if (importLibrary) contentToImport.addAll(collection.getJsonLibrary());
+        if (importQueue) contentToImport.addAll(collection.getJsonQueue());
         queueSize = (int) dao.countAllQueueBooks();
 
         if (importCustomGroups)
@@ -307,15 +308,16 @@ public class MetaImportDialogFragment extends DialogFragment {
     }
 
     private boolean importItem(@NonNull final Object o, int emptyBooksOption, @NonNull final CollectionDAO dao) {
-        if (o instanceof Content) importContent((Content) o, emptyBooksOption, dao);
+        if (o instanceof JsonContent) importContent((JsonContent) o, emptyBooksOption, dao);
         else if (o instanceof Group) importGroup((Group) o, dao);
         return true;
     }
 
-    private void importContent(@NonNull final Content c, int emptyBooksOption, @NonNull final CollectionDAO dao) {
+    private void importContent(@NonNull final JsonContent jsonContent, int emptyBooksOption, @NonNull final CollectionDAO dao) {
         // Try to map the imported content to an existing book in the downloads folder
         // Folder names can be formatted in many ways _but_ they always contain the book unique ID !
         if (null == siteFoldersCache) siteFoldersCache = getSiteFolders();
+        Content c = jsonContent.toEntity(dao);
         DocumentFile siteFolder = siteFoldersCache.get(c.getSite());
         if (null == siteFolder) {
             siteFolder = ContentHelper.getOrCreateSiteDownloadDir(requireContext(), null, c.getSite());
