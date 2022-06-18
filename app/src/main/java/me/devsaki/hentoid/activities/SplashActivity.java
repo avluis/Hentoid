@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.CookieManager;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -40,12 +41,16 @@ public class SplashActivity extends BaseActivity {
 
         Timber.d("Splash / Init");
 
-        new AppStartup().initApp(
-                this,
-                this::displayMainProgress,
-                this::displaySecondaryProgress,
-                this::followStartupFlow
-        );
+        if (!isWebViewInstalled())
+            startActivity(new Intent(this, MissingWebViewActivity.class));
+        else {
+            new AppStartup().initApp(
+                    this,
+                    this::displayMainProgress,
+                    this::displaySecondaryProgress,
+                    this::followStartupFlow
+            );
+        }
     }
 
     private void displayMainProgress(Float progress) {
@@ -117,5 +122,20 @@ public class SplashActivity extends BaseActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent = UnlockActivity.wrapIntent(this, intent);
         goToActivity(intent);
+    }
+
+    /**
+     * Checks whether WebView is available and ready to use. (as opposed to `getPackageManager().
+     * hasSystemFeature(..)`, which falsely returns true if it's disabled)
+     *
+     * @return true if WebView is installed and enabled, false otherwise.
+     */
+    private boolean isWebViewInstalled() {
+        try {
+            CookieManager.getInstance();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

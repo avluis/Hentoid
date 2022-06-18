@@ -134,8 +134,12 @@ public class HentoidApp extends Application {
 
         // Init user agents (must be done here as some users seem not to complete AppStartup properly)
         Timber.i("Init user agents : start");
-        HttpHelper.initUserAgents(this);
-        Timber.i("Init user agents : done");
+        try {
+            HttpHelper.initUserAgents(this);
+            Timber.i("Init user agents : done");
+        } catch (Exception MissingWebViewPackageException) {
+            Timber.e("Failed to init user agents: No WebView installed");
+        }
     }
 
     public static boolean isInForeground() {

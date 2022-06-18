@@ -824,6 +824,11 @@
     <string name="title_startup_progress">Запускається…</string>
     <string name="title_startup_complete">Запуск завершено</string>
 
+    <!-- Missing WebView -->
+    <string name="missing_web_view_title">WebView не встановлено або вимкнено</string>
+    <string name="missing_web_view">Hentoid не виявив вбудований спеціальний браузер Android.\nНа жаль, додаток не може працювати без нього.\n\nШвидше за все, він насправді встановлений у вас, просто відключений: будь ласка, перейдіть в <b>Налаштування</b> &gt; <b>Додатки</b> &gt; <b>Відключені</b> та включіть <b>Android System WebView</b>.\n\nЯкщо ви не можете знайти такий додаток, будь ласка, встановіть його з <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Маркета</a></b>.</string>
+    <string name="missing_web_view_close">Закрити Hentoid</string>
+
     <!-- Group names -->
     <string name="group_today">Сьогодні</string>
     <string name="group_7">На тижні</string>
