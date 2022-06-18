@@ -614,8 +614,10 @@ public final class ContentHelper {
      * @return Created directory
      */
     @Nullable
-    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content) {
-        DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
+    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content, @Nullable DocumentFile siteDlDir) {
+        DocumentFile siteDownloadDir = siteDlDir;
+        if (null == siteDownloadDir)
+            siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
         if (null == siteDownloadDir) return null;
 
         ImmutablePair<String, String> bookFolderName = formatBookFolderName(content);
@@ -729,7 +731,7 @@ public final class ContentHelper {
      * @return Download directory of the given Site
      */
     @Nullable
-    static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @Nullable FileExplorer explorer, @NonNull Site site) {
+    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @Nullable FileExplorer explorer, @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri();
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for the app");
@@ -1502,7 +1504,7 @@ public final class ContentHelper {
                 }
             }
         } else { // Hentoid download folder for non-external content
-            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent);
+            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, null);
         }
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");

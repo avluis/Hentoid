@@ -242,10 +242,14 @@ public class MetaImportDialogFragment extends DialogFragment {
             boolean importCustomGroups,
             boolean importBookmarks) {
         binding.importMode.setEnabled(false);
+        binding.importModeAdd.setEnabled(false);
+        binding.importModeReplace.setEnabled(false);
         binding.importFileLibraryChk.setEnabled(false);
         binding.importFileQueueChk.setEnabled(false);
         binding.importFileGroupsChk.setEnabled(false);
         binding.importFileBookmarksChk.setEnabled(false);
+        binding.importEmptyBooksOptions.setEnabled(false);
+
         binding.importRunBtn.setVisibility(View.GONE);
         setCancelable(false);
 
@@ -313,6 +317,10 @@ public class MetaImportDialogFragment extends DialogFragment {
         // Folder names can be formatted in many ways _but_ they always contain the book unique ID !
         if (null == siteFoldersCache) siteFoldersCache = getSiteFolders();
         DocumentFile siteFolder = siteFoldersCache.get(c.getSite());
+        if (null == siteFolder) {
+            siteFolder = ContentHelper.getOrCreateSiteDownloadDir(requireContext(), null, c.getSite());
+            if (siteFolder != null) siteFoldersCache.put(c.getSite(), siteFolder);
+        }
         if (siteFolder != null) {
             boolean mappedToFiles = mapFilesToContent(c, siteFolder);
             // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
@@ -335,7 +343,7 @@ public class MetaImportDialogFragment extends DialogFragment {
                         c.setImageFiles(Collections.emptyList());
                         c.clearChapters();
                         c.setStatus(StatusContent.PLACEHOLDER);
-                        DocumentFile bookFolder = ContentHelper.getOrCreateContentDownloadDir(requireContext(), c);
+                        DocumentFile bookFolder = ContentHelper.getOrCreateContentDownloadDir(requireContext(), c, siteFolder);
                         if (bookFolder != null) {
                             c.setStorageUri(bookFolder.getUri().toString());
                             ContentHelper.persistJson(requireContext(), c);
