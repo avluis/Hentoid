@@ -20,4 +20,9 @@
 <string name="tools_cache_app_success">Кэш приложения успешно очищен</string>
 <string name="tools_latest_logs_title">Логи приложения</string>
 <string name="tools_latest_logs_summary">Просмотреть последние логи приложения</string>
+    <string name="tools_import_empty_books_intro">Если не обнаружено папки с изображениями…</string>
+    <string name="tools_import_empty_books_entries_1">Не импортировать</string>
+    <string name="tools_import_empty_books_entries_2">Импортировать как пустую книгу</string>
+    <string name="tools_import_empty_books_entries_3">Импортировать для стриминга, если возможно</string>
+    <string name="tools_import_empty_books_entries_4">Добавить в очередь ошибок</string>
 </resources>
