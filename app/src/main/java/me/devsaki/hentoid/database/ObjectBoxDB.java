@@ -558,7 +558,7 @@ public class ObjectBoxDB {
         if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
         else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
 
-        if (searchBundle.getFilterRating() > 0)
+        if (searchBundle.getFilterRating() > -1)
             query.equal(Content_.rating, searchBundle.getFilterRating());
 
         if (hasTitleFilter)
@@ -622,7 +622,7 @@ public class ObjectBoxDB {
         else if (searchBundle.getFilterBookNotCompleted())
             contentQuery.equal(Content_.completed, false);
 
-        if (searchBundle.getFilterRating() > 0)
+        if (searchBundle.getFilterRating() > -1)
             contentQuery.equal(Content_.rating, searchBundle.getFilterRating());
 
         if (hasTitleFilter)
@@ -652,7 +652,7 @@ public class ObjectBoxDB {
         if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
         else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
 
-        if (searchBundle.getFilterRating() > 0)
+        if (searchBundle.getFilterRating() > -1)
             query.equal(Content_.rating, searchBundle.getFilterRating());
 
         if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
@@ -679,7 +679,7 @@ public class ObjectBoxDB {
         if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
         else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
 
-        if (searchBundle.getFilterRating() > 0)
+        if (searchBundle.getFilterRating() > -1)
             query.equal(Content_.rating, searchBundle.getFilterRating());
 
         if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
@@ -725,7 +725,7 @@ public class ObjectBoxDB {
         else if (searchBundle.getFilterBookNotCompleted())
             contentQuery.equal(Content_.completed, false);
 
-        if (searchBundle.getFilterRating() > 0)
+        if (searchBundle.getFilterRating() > -1)
             contentQuery.equal(Content_.rating, searchBundle.getFilterRating());
 
 
@@ -1393,7 +1393,7 @@ public class ObjectBoxDB {
 
         if (groupFavouritesOnly) qb.equal(Group_.favourite, true);
 
-        if (filterRating > 0) qb.equal(Group_.rating, filterRating);
+        if (filterRating > -1) qb.equal(Group_.rating, filterRating);
 
         Property<Group> property = Group_.name;
         if (Preferences.Constant.ORDER_FIELD_CUSTOM == orderField || grouping == Grouping.DL_DATE.getId())

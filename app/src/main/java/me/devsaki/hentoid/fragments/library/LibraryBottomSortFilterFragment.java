@@ -47,7 +47,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
 
     // UI
     private IncludeLibrarySortFilterBottomPanelBinding binding = null;
-    private final ImageView[] stars = new ImageView[5];
+    private final ImageView[] stars = new ImageView[6];
 
     // RecyclerView controls
     private final ItemAdapter<TextItem<Integer>> itemAdapter = new ItemAdapter<>();
@@ -60,7 +60,7 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
     private boolean favouriteFilter;
     private boolean completedFilter;
     private boolean notCompletedFilter;
-    private int ratingFilter;
+    private int ratingFilter = -1;
     private @ColorInt
     int greyColor;
     private @ColorInt
@@ -209,15 +209,16 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
                 }
         );
 
-        stars[0] = binding.filterRating1;
-        stars[1] = binding.filterRating2;
-        stars[2] = binding.filterRating3;
-        stars[3] = binding.filterRating4;
-        stars[4] = binding.filterRating5;
+        stars[0] = binding.filterRatingNone;
+        stars[1] = binding.filterRating1;
+        stars[2] = binding.filterRating2;
+        stars[3] = binding.filterRating3;
+        stars[4] = binding.filterRating4;
+        stars[5] = binding.filterRating5;
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 6; i++) {
             final int rating = i;
-            stars[i].setOnClickListener(v -> setRating(rating + 1, false));
+            stars[i].setOnClickListener(v -> setRating(rating, false));
         }
     }
 
@@ -288,13 +289,14 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
         // Tap current rating -> clear
         boolean clear = !init && rating == ratingFilter;
 
-        for (int i = 5; i > 0; i--) {
+        for (int i = 5; i >= 0; i--) {
             boolean activated = i <= rating && !clear;
-            stars[i - 1].setImageResource(activated ? R.drawable.ic_star_full : R.drawable.ic_star_empty);
-            stars[i - 1].setColorFilter(activated ? selectedColor : greyColor);
+            if (i > 0)
+                stars[i].setImageResource(activated ? R.drawable.ic_star_full : R.drawable.ic_star_empty);
+            stars[i].setColorFilter(activated ? selectedColor : greyColor);
         }
 
-        ratingFilter = clear ? 0 : rating;
+        ratingFilter = clear ? -1 : rating;
         if (!init) {
             if (isGroupsDisplayed)
                 viewModel.setGroupRatingFilter(ratingFilter);
