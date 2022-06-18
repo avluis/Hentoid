@@ -779,6 +779,11 @@
     <string name="title_startup_progress">Starting…</string>
     <string name="title_startup_complete">Startup complete</string>
 
+    <!-- Missing WebView -->
+    <string name="missing_web_view_title">WebView is not installed or disabled</string>
+    <string name="missing_web_view">Hentoid has been unable to find Android\'s Web Viewer.\nUnfortunately, the app cannot function without it.\n\nIt is most likely that it\'s actually installed on your system, but disabled: please go to <b>Settings</b> &gt; <b>Apps</b> &gt; <b>Disabled apps</b> and enable <b>Android System WebView</b>.\n\nIf you can\'t find the app, please install it from the <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Store</a></b>.</string>
+    <string name="missing_web_view_close">Close Hentoid</string>
+
     <!-- Group names -->
     <string name="group_today">Today</string>
     <string name="group_7">Last 7 days</string>

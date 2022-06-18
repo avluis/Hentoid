@@ -71,13 +71,20 @@
     <string name="pref_viewer_read_threshold_entries_2">2 страницы</string>
     <string name="pref_viewer_read_threshold_entries_3">5 страниц</string>
     <string name="pref_viewer_read_threshold_entries_4">Все страницы</string>
-    <!-- Choice for "Slideshow delay" setting -->
+    <!-- Choice for "Slideshow delay" setting for horizontal mode -->
     <string name="pref_viewer_slideshow_delay_entries_1">500 мс</string>
     <string name="pref_viewer_slideshow_delay_entries_2">1 с</string>
     <string name="pref_viewer_slideshow_delay_entries_3">2 с (по умолчанию)</string>
     <string name="pref_viewer_slideshow_delay_entries_4">4 с</string>
     <string name="pref_viewer_slideshow_delay_entries_5">8 с</string>
     <string name="pref_viewer_slideshow_delay_entries_6">16 с</string>
+    <!-- Choice for "Slideshow delay" setting for vertical mode -->
+    <string name="pref_viewer_slideshow_delay_entries_vertical_1">Очень медленная</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_2">Медленная</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_3">Обычная (по умолчанию)</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_4">Быстрая</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_5">Ещё быстрее</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_6">Очень быстрая</string>
     <!-- Choice for "Display mode" setting -->
     <string name="pref_viewer_display_mode_entries_1">По размеру экрана (по умолчанию)</string>
     <string name="pref_viewer_display_mode_entries_2">Заполнить экран</string>

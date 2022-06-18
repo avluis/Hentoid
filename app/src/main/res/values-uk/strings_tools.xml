@@ -44,4 +44,9 @@
     <string name="tools_latest_logs_title">Логи додатка</string>
     <!-- Menu item description -->
     <string name="tools_latest_logs_summary">Переглянути останні логи додатка</string>
+    <string name="tools_import_empty_books_intro">Якщо не виявлено папки із зображеннями…</string>
+    <string name="tools_import_empty_books_entries_1">Не імпортувати</string>
+    <string name="tools_import_empty_books_entries_2">Імпортувати як порожню книгу</string>
+    <string name="tools_import_empty_books_entries_3">Імпортувати для стримінґу, якщо можливо</string>
+    <string name="tools_import_empty_books_entries_4">Додати до черги помилок</string>
 </resources>
