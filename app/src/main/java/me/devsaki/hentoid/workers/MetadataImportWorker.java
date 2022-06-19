@@ -21,6 +21,9 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Completable;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
@@ -68,6 +71,8 @@ public class MetadataImportWorker extends BaseWorker {
     private Map<Site, DocumentFile> siteFoldersCache = null;
     private final Map<Site, List<DocumentFile>> bookFoldersCache = new EnumMap<>(Site.class);
 
+    private final CompositeDisposable notificationDisposables = new CompositeDisposable();
+
 
     public MetadataImportWorker(
             @NonNull Context context,
@@ -86,12 +91,13 @@ public class MetadataImportWorker extends BaseWorker {
 
     @Override
     void onInterrupt() {
-        // Nothing
+        notificationDisposables.clear();
     }
 
     @Override
     void onClear() {
-        // Nothing
+        notificationDisposables.clear();
+        if (dao != null) dao.cleanup();
     }
 
     @Override
@@ -156,14 +162,15 @@ public class MetadataImportWorker extends BaseWorker {
         if (importQueue) contentToImport.addAll(collection.getJsonQueue());
         queueSize = (int) dao.countAllQueueBooks();
 
-        totalItems += contentToImport.size() + queueSize;
+        totalItems += contentToImport.size();
 
         if (importCustomGroups) {
-            totalItems += collection.getCustomGroups().size();
+            List<Group> customGroups = collection.getCustomGroups();
+            totalItems += customGroups.size();
             // Chain group import followed by content import
             runImportItems(
                     context,
-                    collection.getCustomGroups(),
+                    customGroups,
                     dao,
                     true,
                     emptyBooksOption,
@@ -189,7 +196,7 @@ public class MetadataImportWorker extends BaseWorker {
                 nextKO(context, e);
             }
         }
-        onFinish.run();
+        if (!isStopped()) onFinish.run();
     }
 
     private void importItem(@NonNull Context context, @NonNull final Object o, int emptyBooksOption, @NonNull final CollectionDAO dao) {
@@ -221,6 +228,7 @@ public class MetadataImportWorker extends BaseWorker {
                         // Greenlighted if images exist and are available online
                         if (c.getImageFiles() != null && c.getImageFiles().size() > 0 && ContentHelper.isDownloadable(c)) {
                             c.setDownloadMode(Content.DownloadMode.STREAM);
+                            c.setStatus(StatusContent.DOWNLOADED);
                             List<ImageFile> imgs = c.getImageFiles();
                             if (imgs != null) {
                                 List<ImageFile> newImages = Stream.of(imgs).map(i -> ImageFile.fromImageUrl(i.getOrder(), i.getUrl(), StatusContent.ONLINE, imgs.size())).toList();
@@ -333,22 +341,30 @@ public class MetadataImportWorker extends BaseWorker {
 
     private void nextOK(@NonNull Context context) {
         nbOK++;
-        updateProgress(context);
+        notifyProcessProgress(context);
     }
 
     private void nextKO(@NonNull Context context, Throwable e) {
         nbKO++;
         Timber.w(e);
-        updateProgress(context);
+        notifyProcessProgress(context);
     }
 
-    private void updateProgress(@NonNull Context context) {
+    private void notifyProcessProgress(@NonNull Context context) {
+        notificationDisposables.add(Completable.fromRunnable(() -> doNotifyProcessProgress(context))
+                .subscribeOn(Schedulers.computation())
+                .subscribe(
+                        notificationDisposables::clear
+                )
+        );
+    }
+
+    private void doNotifyProcessProgress(@NonNull Context context) {
         notificationManager.notify(new ImportProgressNotification(context.getResources().getString(R.string.importing_metadata), nbOK + nbKO, totalItems));
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.PROGRESS, R.id.import_metadata, 0, nbOK, nbKO, totalItems));
     }
 
     private void finish() {
-        if (dao != null) dao.cleanup();
         notificationManager.notify(new ImportCompleteNotification(nbOK, nbKO));
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_metadata, 0, nbOK, nbKO, totalItems));
     }
