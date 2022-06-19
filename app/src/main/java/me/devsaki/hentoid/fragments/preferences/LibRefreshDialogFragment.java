@@ -43,7 +43,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
-import me.devsaki.hentoid.workers.ImportWorker;
+import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import timber.log.Timber;
 
 /**
@@ -372,10 +372,10 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
         ProgressBar progressBar;
         switch (event.step) {
-            case (ImportWorker.STEP_2_BOOK_FOLDERS):
+            case (PrimaryImportWorker.STEP_2_BOOK_FOLDERS):
                 progressBar = step2progress;
                 break;
-            case (ImportWorker.STEP_3_BOOKS):
+            case (PrimaryImportWorker.STEP_3_BOOKS):
                 progressBar = step3progress;
                 break;
             default:
@@ -390,9 +390,9 @@ public class LibRefreshDialogFragment extends DialogFragment {
             } else {
                 progressBar.setIndeterminate(true);
             }
-            if (ImportWorker.STEP_2_BOOK_FOLDERS == event.step) {
+            if (PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step) {
                 step2Txt.setText(event.elementName);
-            } else if (ImportWorker.STEP_3_BOOKS == event.step) {
+            } else if (PrimaryImportWorker.STEP_3_BOOKS == event.step) {
                 step2progress.setIndeterminate(false);
                 step2progress.setMax(1);
                 step2progress.setProgress(1);
@@ -400,23 +400,23 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
-            } else if (ImportWorker.STEP_4_QUEUE_FINAL == event.step) {
+            } else if (PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step) {
                 step3check.setVisibility(View.VISIBLE);
                 step4block.setVisibility(View.VISIBLE);
             }
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
-            if (ImportWorker.STEP_2_BOOK_FOLDERS == event.step) {
+            if (PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step) {
                 step2progress.setIndeterminate(false);
                 step2progress.setMax(1);
                 step2progress.setProgress(1);
                 step2Txt.setVisibility(View.GONE);
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
-            } else if (ImportWorker.STEP_3_BOOKS == event.step) {
+            } else if (PrimaryImportWorker.STEP_3_BOOKS == event.step) {
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
                 step3check.setVisibility(View.VISIBLE);
                 step4block.setVisibility(View.VISIBLE);
-            } else if (ImportWorker.STEP_4_QUEUE_FINAL == event.step) {
+            } else if (PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step) {
                 step4check.setVisibility(View.VISIBLE);
                 isServiceGracefulClose = true;
                 dismissAllowingStateLoss();

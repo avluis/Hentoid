@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.tools;
 
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
+import static me.devsaki.hentoid.core.Consts.WORK_CLOSEABLE;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,51 +17,38 @@ import androidx.annotation.Nullable;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.annimon.stream.Optional;
-import com.annimon.stream.Stream;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 
-import org.threeten.bp.Instant;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.core.Consts;
-import me.devsaki.hentoid.database.CollectionDAO;
-import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ErrorRecord;
-import me.devsaki.hentoid.database.domains.Group;
-import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.databinding.DialogPrefsMetaImportBinding;
-import me.devsaki.hentoid.enums.ErrorType;
-import me.devsaki.hentoid.enums.Grouping;
-import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.json.JsonContent;
+import me.devsaki.hentoid.events.ProcessEvent;
+import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.JsonContentCollection;
-import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.GroupHelper;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.workers.MetadataImportWorker;
+import me.devsaki.hentoid.workers.data.MetadataImportData;
 import timber.log.Timber;
 
 /**
@@ -69,26 +57,19 @@ import timber.log.Timber;
 public class MetaImportDialogFragment extends DialogFragment {
 
     // Empty files import options
-    private static final int DONT_IMPORT = 0;
-    private static final int IMPORT_AS_EMPTY = 1;
-    private static final int IMPORT_AS_STREAMED = 2;
-    private static final int IMPORT_AS_ERROR = 3;
+    public static final int DONT_IMPORT = 0;
+    public static final int IMPORT_AS_EMPTY = 1;
+    public static final int IMPORT_AS_STREAMED = 2;
+    public static final int IMPORT_AS_ERROR = 3;
 
     // UI
     private DialogPrefsMetaImportBinding binding = null;
 
-    // Variable used during the import process
-    private CollectionDAO dao;
-    private int totalItems;
-    private int currentProgress;
-    private int nbSuccess;
-    private int queueSize;
-    private int nbBookmarksSuccess = 0;
-    private Map<Site, DocumentFile> siteFoldersCache = null;
-    private final Map<Site, List<DocumentFile>> bookFoldersCache = new EnumMap<>(Site.class);
+    private boolean isServiceGracefulClose = false;
 
     // Disposable for RxJava
     private Disposable importDisposable = Disposables.empty();
+
 
     private final ActivityResultLauncher<Integer> pickFile = registerForActivityResult(
             new ImportHelper.PickFileContract(),
@@ -105,12 +86,14 @@ public class MetaImportDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         binding = DialogPrefsMetaImportBinding.inflate(inflater, container, false);
+        EventBus.getDefault().register(this);
         return binding.getRoot();
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        EventBus.getDefault().unregister(this);
         binding = null;
     }
 
@@ -200,7 +183,7 @@ public class MetaImportDialogFragment extends DialogFragment {
             binding.importRunBtn.setEnabled(false);
 
             binding.importRunBtn.setOnClickListener(v -> runImport(
-                    collection,
+                    jsonFile.getUri().toString(),
                     binding.importModeAdd.isChecked(),
                     binding.importFileLibraryChk.isChecked(),
                     binding.importEmptyBooksOptions.getSelectedIndex(),
@@ -235,7 +218,7 @@ public class MetaImportDialogFragment extends DialogFragment {
     }
 
     private void runImport(
-            @NonNull final JsonContentCollection collection,
+            @NonNull final String jsonUri,
             boolean add,
             boolean importLibrary,
             int emptyBooksOption,
@@ -254,213 +237,58 @@ public class MetaImportDialogFragment extends DialogFragment {
         binding.importRunBtn.setVisibility(View.GONE);
         setCancelable(false);
 
-        dao = new ObjectBoxDAO(requireContext());
-        if (!add) {
-            if (importLibrary) dao.deleteAllInternalBooks(false);
-            if (importQueue) dao.deleteAllQueuedBooks();
-            if (importCustomGroups) dao.deleteAllGroups(Grouping.CUSTOM);
-            if (importBookmarks) dao.deleteAllBookmarks();
-        }
+        MetadataImportData.Builder builder = new MetadataImportData.Builder();
+        builder.setJsonUri(jsonUri);
+        builder.setIsAdd(add);
+        builder.setIsImportLibrary(importLibrary);
+        builder.setEmptyBooksOption(emptyBooksOption);
+        builder.setIsImportQueue(importQueue);
+        builder.setIsImportCustomGroups(importCustomGroups);
+        builder.setIsImportBookmarks(importBookmarks);
 
-        if (importBookmarks)
-            nbBookmarksSuccess = ImportHelper.importBookmarks(dao, collection.getBookmarks());
+        ImportNotificationChannel.init(requireContext());
 
-        List<JsonContent> contentToImport = new ArrayList<>();
-        if (importLibrary) contentToImport.addAll(collection.getJsonLibrary());
-        if (importQueue) contentToImport.addAll(collection.getJsonQueue());
-        queueSize = (int) dao.countAllQueueBooks();
-
-        if (importCustomGroups)
-            // Chain group import followed by content import
-            runImportItems(
-                    collection.getCustomGroups(),
-                    dao,
-                    true,
-                    emptyBooksOption,
-                    () -> runImportItems(contentToImport, dao, false, emptyBooksOption, this::finish)
-            );
-        else // Run content import alone
-            runImportItems(contentToImport, dao, false, emptyBooksOption, this::finish);
+        WorkManager workManager = WorkManager.getInstance(requireContext());
+        workManager.enqueueUniqueWork(Integer.toString(R.id.metadata_import_service),
+                ExistingWorkPolicy.APPEND_OR_REPLACE,
+                new OneTimeWorkRequest.Builder(MetadataImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
     }
 
-    private void runImportItems(@NonNull final List<?> items,
-                                @NonNull final CollectionDAO dao,
-                                boolean isGroup,
-                                Integer emptyBooksOption,
-                                @NonNull final Runnable onFinish) {
-        totalItems = items.size();
-        currentProgress = 0;
-        nbSuccess = 0;
-        binding.importProgressBar.setMax(totalItems);
 
-        importDisposable = Observable.fromIterable(items)
-                .observeOn(Schedulers.io())
-                .map(c -> importItem(c, emptyBooksOption, dao))
-                .doOnComplete(() -> {
-                    if (isGroup) GroupHelper.updateGroupsJson(requireContext(), dao);
-                })
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        b -> nextOK(isGroup),
-                        e -> nextKO(e, isGroup),
-                        onFinish::run
-                );
-    }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onImportEvent(ProcessEvent event) {
+        if (event.processId != R.id.import_metadata)
+            return;
 
-    private boolean importItem(@NonNull final Object o, int emptyBooksOption, @NonNull final CollectionDAO dao) {
-        if (o instanceof JsonContent) importContent((JsonContent) o, emptyBooksOption, dao);
-        else if (o instanceof Group) importGroup((Group) o, dao);
-        return true;
-    }
+        if (ProcessEvent.EventType.PROGRESS == event.eventType) {
+            int progress = event.elementsOK + event.elementsKO;
+            String itemTxt = getResources().getQuantityString(R.plurals.item, progress);
+            binding.importProgressText.setText(getResources().getString(R.string.generic_progress, progress, event.elementsTotal, itemTxt));
+            binding.importProgressBar.setMax(event.elementsTotal);
+            binding.importProgressBar.setProgress(progress);
+            binding.importProgressText.setVisibility(View.VISIBLE);
+            binding.importProgressBar.setVisibility(View.VISIBLE);
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
+            importDisposable.dispose();
+            isServiceGracefulClose = true;
+            Snackbar.make(binding.getRoot(), getResources().getQuantityString(R.plurals.import_result, event.elementsOK, event.elementsTotal), LENGTH_LONG).show();
 
-    private void importContent(@NonNull final JsonContent jsonContent, int emptyBooksOption, @NonNull final CollectionDAO dao) {
-        // Try to map the imported content to an existing book in the downloads folder
-        // Folder names can be formatted in many ways _but_ they always contain the book unique ID !
-        if (null == siteFoldersCache) siteFoldersCache = getSiteFolders();
-        Content c = jsonContent.toEntity(dao);
-
-        Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), "");
-        if (duplicate != null) return;
-
-        DocumentFile siteFolder = siteFoldersCache.get(c.getSite());
-        if (null == siteFolder) {
-            siteFolder = ContentHelper.getOrCreateSiteDownloadDir(requireContext(), null, c.getSite());
-            if (siteFolder != null) siteFoldersCache.put(c.getSite(), siteFolder);
-        }
-        if (siteFolder != null) {
-            boolean mappedToFiles = mapFilesToContent(c, siteFolder);
-            // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
-            if (!mappedToFiles) {
-                switch (emptyBooksOption) {
-                    case IMPORT_AS_STREAMED:
-                        // Greenlighted if images exist and are available online
-                        if (c.getImageFiles() != null && c.getImageFiles().size() > 0 && ContentHelper.isDownloadable(c)) {
-                            c.setDownloadMode(Content.DownloadMode.STREAM);
-                            List<ImageFile> imgs = c.getImageFiles();
-                            if (imgs != null) {
-                                List<ImageFile> newImages = Stream.of(imgs).map(i -> ImageFile.fromImageUrl(i.getOrder(), i.getUrl(), StatusContent.ONLINE, imgs.size())).toList();
-                                c.setImageFiles(newImages);
-                            }
-                            c.forceSize(0);
-                            break;
-                        }
-                        // no break here - import as empty if content unavailable online
-                    case IMPORT_AS_EMPTY:
-                        c.setImageFiles(Collections.emptyList());
-                        c.clearChapters();
-                        c.setStatus(StatusContent.PLACEHOLDER);
-                        DocumentFile bookFolder = ContentHelper.getOrCreateContentDownloadDir(requireContext(), c, siteFolder);
-                        if (bookFolder != null) {
-                            c.setStorageUri(bookFolder.getUri().toString());
-                            ContentHelper.persistJson(requireContext(), c);
-                        }
-                        break;
-                    case IMPORT_AS_ERROR:
-                        if (!ContentHelper.isInQueue(c.getStatus()))
-                            c.setStatus(StatusContent.ERROR);
-                        List<ErrorRecord> errors = new ArrayList<>();
-                        errors.add(new ErrorRecord(ErrorType.IMPORT, "", getResources().getQuantityString(R.plurals.book, 1), "No local images found when importing - Please redownload", Instant.now()));
-                        c.setErrorLog(errors);
-                        break;
-                    default:
-                    case DONT_IMPORT:
-                        return;
-                }
-            }
-        }
-
-        // All checks successful => create the content
-        long newContentId = ContentHelper.addContent(requireContext(), dao, c);
-        // Insert queued content into the queue
-        if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
-            List<QueueRecord> lst = new ArrayList<>();
-            lst.add(new QueueRecord(newContentId, queueSize++));
-            dao.updateQueue(lst);
+            // Dismiss after 3s, for the user to be able to see the snackbar
+            new Handler(Looper.getMainLooper()).postDelayed(this::dismissAllowingStateLoss, 3000);
         }
     }
 
-    private boolean mapFilesToContent(@NonNull final Content c, @NonNull final DocumentFile siteFolder) {
-        List<DocumentFile> bookfolders;
-        if (bookFoldersCache.containsKey(c.getSite()))
-            bookfolders = bookFoldersCache.get(c.getSite());
-        else {
-            bookfolders = FileHelper.listFolders(requireContext(), siteFolder);
-            bookFoldersCache.put(c.getSite(), bookfolders);
+    /**
+     * Service destroyed event handler
+     *
+     * @param event Broadcasted event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServiceDestroyed(ServiceDestroyedEvent event) {
+        if (event.service != R.id.metadata_import_service) return;
+        if (!isServiceGracefulClose) {
+            Snackbar.make(binding.getRoot(), R.string.import_unexpected, BaseTransientBottomBar.LENGTH_LONG).show();
+            new Handler(Looper.getMainLooper()).postDelayed(this::dismissAllowingStateLoss, 3000);
         }
-        boolean filesFound = false;
-        if (bookfolders != null) {
-            // Look for the book ID
-            c.populateUniqueSiteId();
-            for (DocumentFile f : bookfolders)
-                if (f.getName() != null && f.getName().contains(ContentHelper.formatBookId(c))) {
-                    // Cache folder Uri
-                    c.setStorageUri(f.getUri().toString());
-                    // Cache JSON Uri
-                    DocumentFile json = FileHelper.findFile(requireContext(), f, Consts.JSON_FILE_NAME_V2);
-                    if (json != null) c.setJsonUri(json.getUri().toString());
-                    // Create the images from detected files
-                    c.setImageFiles(ContentHelper.createImageListFromFolder(requireContext(), f));
-                    filesFound = true;
-                    break;
-                }
-        }
-        return filesFound;
-    }
-
-    private Map<Site, DocumentFile> getSiteFolders() {
-        Helper.assertNonUiThread();
-        Map<Site, DocumentFile> result = new EnumMap<>(Site.class);
-
-        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(requireActivity(), Preferences.getStorageUri());
-        if (null != rootFolder) {
-            List<DocumentFile> subfolders = FileHelper.listFolders(requireContext(), rootFolder);
-            String folderName;
-            for (DocumentFile f : subfolders)
-                if (f.getName() != null) {
-                    folderName = f.getName().toLowerCase();
-                    for (Site s : Site.values()) {
-                        if (folderName.equalsIgnoreCase(s.getFolder())) {
-                            result.put(s, f);
-                            break;
-                        }
-                    }
-                }
-        }
-        return result;
-    }
-
-    private void importGroup(@NonNull final Group group, @NonNull final CollectionDAO dao) {
-        if (null == dao.selectGroupByName(Grouping.CUSTOM.getId(), group.name))
-            dao.insertGroup(group);
-    }
-
-    private void nextOK(boolean isGroup) {
-        nbSuccess++;
-        updateProgress(isGroup);
-    }
-
-    private void nextKO(Throwable e, boolean isGroup) {
-        Timber.w(e);
-        updateProgress(isGroup);
-    }
-
-    private void updateProgress(boolean isGroup) {
-        currentProgress++;
-        binding.importProgressText.setText(getResources().getQuantityString(isGroup ? R.plurals.group_progress : R.plurals.book_progress, currentProgress, currentProgress, totalItems));
-        binding.importProgressBar.setProgress(currentProgress);
-        binding.importProgressText.setVisibility(View.VISIBLE);
-        binding.importProgressBar.setVisibility(View.VISIBLE);
-    }
-
-    private void finish() {
-        importDisposable.dispose();
-        if (dao != null) dao.cleanup();
-        if (nbSuccess > 0)
-            Snackbar.make(binding.getRoot(), getResources().getQuantityString(R.plurals.import_result_books, nbSuccess, nbSuccess), LENGTH_LONG).show();
-        else if (nbBookmarksSuccess > 0)
-            Snackbar.make(binding.getRoot(), getResources().getQuantityString(R.plurals.import_result_bookmarks, nbBookmarksSuccess, nbBookmarksSuccess), LENGTH_LONG).show();
-
-        // Dismiss after 3s, for the user to be able to see the snackbar
-        new Handler(Looper.getMainLooper()).postDelayed(this::dismissAllowingStateLoss, 3000);
     }
 }

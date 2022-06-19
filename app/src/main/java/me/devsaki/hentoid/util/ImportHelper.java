@@ -54,8 +54,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.workers.ExternalImportWorker;
-import me.devsaki.hentoid.workers.ImportWorker;
-import me.devsaki.hentoid.workers.data.ImportData;
+import me.devsaki.hentoid.workers.PrimaryImportWorker;
+import me.devsaki.hentoid.workers.data.PrimaryImportData;
 import timber.log.Timber;
 
 public class ImportHelper {
@@ -418,7 +418,7 @@ public class ImportHelper {
     ) {
         ImportNotificationChannel.init(context);
 
-        ImportData.Builder builder = new ImportData.Builder();
+        PrimaryImportData.Builder builder = new PrimaryImportData.Builder();
         if (options != null) {
             builder.setRefreshRename(options.rename);
             builder.setRefreshCleanNoJson(options.cleanNoJson);
@@ -430,7 +430,7 @@ public class ImportHelper {
         workManager.enqueueUniqueWork(
                 Integer.toString(R.id.import_service),
                 ExistingWorkPolicy.REPLACE,
-                new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
+                new OneTimeWorkRequest.Builder(PrimaryImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
     }
 
     /**

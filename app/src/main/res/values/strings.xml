@@ -26,6 +26,10 @@
         <item quantity="one">file</item>
         <item quantity="other">files</item>
     </plurals>
+    <plurals name="item" tools:ignore="ImpliedQuantity">
+        <item quantity="one">item</item>
+        <item quantity="other">items</item>
+    </plurals>
     <string name="groups">Groups</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
@@ -249,7 +253,12 @@
         <item quantity="one"><x:g example="1" id="number">%d</x:g> bookmark imported successfully</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> bookmarks imported successfully</item>
     </plurals>
+    <plurals name="import_result">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="2" id="number">%2$d</x:g> item imported successfully</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="2" id="number">%2$d</x:g> items imported successfully</item>
+    </plurals>
     <string name="dialog_prompt">Choose a Folder</string>
+    <string name="importing_metadata">Importing metadata…</string>
 
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>

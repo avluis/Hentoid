@@ -60,14 +60,14 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.notification.Notification;
-import me.devsaki.hentoid.workers.data.ImportData;
+import me.devsaki.hentoid.workers.data.PrimaryImportData;
 import timber.log.Timber;
 
 
 /**
  * Worker responsible for importing an existing Hentoid library.
  */
-public class ImportWorker extends BaseWorker {
+public class PrimaryImportWorker extends BaseWorker {
 
     public static final int STEP_GROUPS = 0;
     public static final int STEP_1 = 1;
@@ -83,7 +83,7 @@ public class ImportWorker extends BaseWorker {
     int nbFolders;                      // Number of folders found with no content but subfolders
 
 
-    public ImportWorker(
+    public PrimaryImportWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
         super(context, parameters, R.id.import_service, null);
@@ -110,7 +110,7 @@ public class ImportWorker extends BaseWorker {
 
     @Override
     void getToWork(@NonNull Data input) {
-        ImportData.Parser data = new ImportData.Parser(getInputData());
+        PrimaryImportData.Parser data = new PrimaryImportData.Parser(getInputData());
         boolean doRename = data.getRefreshRename();
         boolean doCleanNoJson = data.getRefreshCleanNoJson();
         boolean doCleanNoImages = data.getRefreshCleanNoImages();
