@@ -643,7 +643,6 @@ public class CustomSubsamplingScaleImageView extends View {
         debug("reset newImage=" + newImage);
         initialScale = -1;
         scale = 0f;
-        signalScaleChange(scale);
         virtualScale = -1;
         scaleStart = 0f;
         vTranslate = null;
@@ -2858,24 +2857,24 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     /**
-     * Returns the current scale value.
+     * Returns the current absolute scale value.
      *
      * @return the current scale as a source/view pixels ratio.
      */
-    public final float getScale() {
+    public final float getAbsoluteScale() {
         return scale;
     }
 
     /**
-     * Externally change the scale and translation of the source image. This may be used with getCenter() and getScale()
+     * Externally change the absolute scale and translation of the source image. This may be used with getCenter() and getScale()
      * to restore the scale and zoom after a screen rotate.
      *
-     * @param scale   New scale to set.
-     * @param sCenter New source image coordinate to center on the screen, subject to boundaries.
+     * @param absoluteScale New scale to set.
+     * @param sCenter       New source image coordinate to center on the screen, subject to boundaries.
      */
-    public final void setScaleAndCenter(float scale, @Nullable PointF sCenter) {
+    public final void setScaleAndCenter(float absoluteScale, @Nullable PointF sCenter) {
         this.anim = null;
-        this.pendingScale = scale;
+        this.pendingScale = absoluteScale;
         if (sCenter != null) {
             this.sPendingCenter = sCenter;
             this.sRequestedCenter = sCenter;

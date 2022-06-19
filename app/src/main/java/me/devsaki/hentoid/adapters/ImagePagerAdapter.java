@@ -78,7 +78,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     private View.OnTouchListener itemTouchListener;
     private RecyclerView recyclerView;
-    private final Map<Integer, Float> scales = new HashMap<>();
+    private final Map<Integer, Float> initialAbsoluteScales = new HashMap<>();
+    private final Map<Integer, Float> absoluteScales = new HashMap<>();
 
     // To preload images before they appear on screen with CustomSubsamplingScaleImageView
     private int maxBitmapWidth = -1;
@@ -213,7 +214,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             if (!Preferences.isViewerZoomTransitions())
                 holder.ssiv.setDoubleTapZoomDuration(10);
             holder.ssiv.setOffsetLeftSide(isScrollLTR);
-            holder.ssiv.setScaleListener(s -> onScaleChanged(position, s));
+            holder.ssiv.setScaleListener(s -> onAbsoluteScaleChanged(position, s));
         }
 
         int layoutStyle = (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
@@ -269,18 +270,39 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if (rs != null) rs.destroy();
     }
 
-    public float getScaleAtPosition(int position) {
-        if (scales.containsKey(position)) {
-            Float result = scales.get(position);
+    public void reset() {
+        absoluteScales.clear();
+        initialAbsoluteScales.clear();
+    }
+
+    public float getAbsoluteScaleAtPosition(int position) {
+        if (absoluteScales.containsKey(position)) {
+            Float result = absoluteScales.get(position);
             if (result != null) return result;
+        } else if (recyclerView != null) {
+            ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+            if (holder != null) return holder.getAbsoluteScale();
         }
         return 0f;
     }
 
-    public void setScaleAtPosition(int position, float targetScale) {
+    public float getRelativeScaleAtPosition(int position) {
+        if (absoluteScales.containsKey(position)) {
+            Float resultInitial = initialAbsoluteScales.get(position);
+            Float result = absoluteScales.get(position);
+            if (result != null && resultInitial != null) return result / resultInitial;
+        }
+        return 0f;
+    }
+
+    public void setRelativeScaleAtPosition(int position, float targetRelativeScale) {
         if (recyclerView != null) {
             ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
-            if (holder != null) holder.setScale(targetScale);
+            if (holder != null && initialAbsoluteScales.containsKey(position)) {
+                Float initialScale = initialAbsoluteScales.get(position);
+                if (initialScale != null)
+                    holder.setAbsoluteScale(targetRelativeScale * initialScale);
+            }
         }
     }
 
@@ -300,9 +322,11 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
     }
 
-    private void onScaleChanged(int position, double scale) {
+    private void onAbsoluteScaleChanged(int position, double scale) {
         Timber.d(">> position %d -> scale %s", position, scale);
-        scales.put(position, (float) scale);
+        if (!initialAbsoluteScales.containsKey(position))
+            initialAbsoluteScales.put(position, (float) scale);
+        absoluteScales.put(position, (float) scale);
     }
 
     public void setMaxDimensions(int maxWidth, int maxHeight) {
@@ -405,7 +429,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             }
         }
 
-        private float getScale() {
+        private float getAbsoluteScale() {
             if (!isImageView) {
                 return ssiv.getVirtualScale();
             } else { // ImageView
@@ -413,7 +437,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             }
         }
 
-        private void setScale(float targetScale) {
+        private void setAbsoluteScale(float targetScale) {
             if (!isImageView) {
                 ssiv.setScaleAndCenter(targetScale, null);
             } else { // ImageView
@@ -495,7 +519,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         public void onReady() {
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
                 CustomSubsamplingScaleImageView scaleView = (CustomSubsamplingScaleImageView) imgView;
-                adjustHeight(0, (int) (scaleView.getScale() * scaleView.getSHeight()), false);
+                adjustHeight(0, (int) (scaleView.getAbsoluteScale() * scaleView.getSHeight()), false);
             }
         }
 

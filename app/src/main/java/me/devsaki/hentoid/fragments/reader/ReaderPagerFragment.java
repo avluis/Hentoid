@@ -577,7 +577,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (0 == position) { // Content
             ReaderBottomContentFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager());
         } else { // Image
-            float currentScale = adapter.getScaleAtPosition(imageIndex);
+            float currentScale = adapter.getAbsoluteScaleAtPosition(imageIndex);
             ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
         }
         binding.controlsOverlay.informationMicroMenu.dips();
@@ -654,6 +654,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         }
 
         isComputingImageList = true;
+        adapter.reset();
         adapter.submitList(images, this::differEndCallback);
 
         if (images.isEmpty()) {
@@ -801,9 +802,10 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             // Manage scaling reset / stability if we're using horizontal (independent pages) mode
             if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences)) {
                 if (Preferences.isViewerMaintainHorizontalZoom() && imageIndex > -1) {
-                    float previousScale = adapter.getScaleAtPosition(imageIndex);
+                    float previousScale = adapter.getRelativeScaleAtPosition(imageIndex);
+                    Timber.d(">> relative scale : %s", previousScale);
                     if (previousScale > 0)
-                        adapter.setScaleAtPosition(scrollPosition, previousScale);
+                        adapter.setRelativeScaleAtPosition(scrollPosition, previousScale);
                 } else {
                     adapter.resetScaleAtPosition(scrollPosition);
                 }
