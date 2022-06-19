@@ -47,6 +47,7 @@ import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.workers.MetadataImportWorker;
 import me.devsaki.hentoid.workers.data.MetadataImportData;
 import timber.log.Timber;
@@ -134,18 +135,30 @@ public class MetaImportDialogFragment extends DialogFragment {
     }
 
     private void checkFile(@NonNull DocumentFile jsonFile) {
-        // TODO display an indefinite progress bar just in case ?
+        // Display indeterminate progress bar while file is being deserialized
+        binding.importProgressText.setText(R.string.checking_file);
+        binding.importProgressBar.setIndeterminate(true);
+        binding.importProgressText.setVisibility(View.VISIBLE);
+        binding.importProgressBar.setVisibility(View.VISIBLE);
+
         importDisposable = Single.fromCallable(() -> deserialiseJson(jsonFile))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
                         c -> onFileDeserialized(c, jsonFile),
-                        Timber::w
+                        t -> {
+                            Timber.w(t);
+                            String fileName = StringHelper.protect(jsonFile.getName());
+                            binding.importProgressText.setText(getResources().getString(R.string.import_file_invalid, fileName));
+                            binding.importProgressBar.setVisibility(View.INVISIBLE);
+                        }
                 );
     }
 
     private void onFileDeserialized(Optional<JsonContentCollection> collectionOptional, DocumentFile jsonFile) {
         importDisposable.dispose();
+        binding.importProgressText.setVisibility(View.GONE);
+        binding.importProgressBar.setVisibility(View.GONE);
 
         if (collectionOptional.isEmpty() || collectionOptional.get().isEmpty()) {
             binding.importFileInvalidText.setText(getResources().getString(R.string.import_file_invalid, jsonFile.getName()));
@@ -248,6 +261,11 @@ public class MetaImportDialogFragment extends DialogFragment {
 
         ImportNotificationChannel.init(requireContext());
 
+        binding.importProgressText.setText(R.string.starting_import);
+        binding.importProgressBar.setIndeterminate(true);
+        binding.importProgressText.setVisibility(View.VISIBLE);
+        binding.importProgressBar.setVisibility(View.VISIBLE);
+
         WorkManager workManager = WorkManager.getInstance(requireContext());
         workManager.enqueueUniqueWork(Integer.toString(R.id.metadata_import_service),
                 ExistingWorkPolicy.APPEND_OR_REPLACE,
@@ -266,8 +284,7 @@ public class MetaImportDialogFragment extends DialogFragment {
             binding.importProgressText.setText(getResources().getString(R.string.generic_progress, progress, event.elementsTotal, itemTxt));
             binding.importProgressBar.setMax(event.elementsTotal);
             binding.importProgressBar.setProgress(progress);
-            binding.importProgressText.setVisibility(View.VISIBLE);
-            binding.importProgressBar.setVisibility(View.VISIBLE);
+            binding.importProgressBar.setIndeterminate(false);
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             importDisposable.dispose();
             isServiceGracefulClose = true;

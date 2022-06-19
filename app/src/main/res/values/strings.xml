@@ -227,6 +227,7 @@
     <string name="import_mode_add">Add imported items</string>
     <string name="import_mode_replace">Replace with imported items</string>
     <string name="import_select_file">Select file to import</string>
+    <string name="checking_file">Checking file…</string>
     <string name="import_file_invalid">File <x:g example="metadata.json" id="filename">%s</x:g> is invalid</string>
     <plurals name="import_file_library">
         <item quantity="one">Import library (<x:g example="1" id="number">%d</x:g> book)</item>
