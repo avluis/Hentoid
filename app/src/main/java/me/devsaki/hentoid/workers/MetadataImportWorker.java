@@ -21,8 +21,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import io.reactivex.disposables.Disposable;
-import io.reactivex.disposables.Disposables;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
@@ -32,6 +30,7 @@ import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
@@ -60,12 +59,9 @@ import timber.log.Timber;
  */
 public class MetadataImportWorker extends BaseWorker {
 
-    // Disposable for RxJava
-    private Disposable importDisposable = Disposables.empty();
-
     // Variable used during the import process
     private CollectionDAO dao;
-    private int totalItems;
+    private int totalItems = 0;
     private int nbOK = 0;
     private int nbKO = 0;
     private int queueSize;
@@ -147,16 +143,23 @@ public class MetadataImportWorker extends BaseWorker {
             if (importBookmarks) dao.deleteAllBookmarks();
         }
 
-        int nbBookmarksSuccess = 0;
-        if (importBookmarks)
-            nbBookmarksSuccess = ImportHelper.importBookmarks(dao, collection.getBookmarks());
+        // Done in one shot
+        if (importBookmarks) {
+            List<SiteBookmark> bookmarks = collection.getBookmarks();
+            totalItems += bookmarks.size();
+            ImportHelper.importBookmarks(dao, bookmarks);
+            nbOK += bookmarks.size();
+        }
 
         List<JsonContent> contentToImport = new ArrayList<>();
         if (importLibrary) contentToImport.addAll(collection.getJsonLibrary());
         if (importQueue) contentToImport.addAll(collection.getJsonQueue());
         queueSize = (int) dao.countAllQueueBooks();
 
-        if (importCustomGroups)
+        totalItems += contentToImport.size() + queueSize;
+
+        if (importCustomGroups) {
+            totalItems += collection.getCustomGroups().size();
             // Chain group import followed by content import
             runImportItems(
                     context,
@@ -166,7 +169,7 @@ public class MetadataImportWorker extends BaseWorker {
                     emptyBooksOption,
                     () -> runImportItems(context, contentToImport, dao, false, emptyBooksOption, this::finish)
             );
-        else // Run content import alone
+        } else // Run content import alone
             runImportItems(context, contentToImport, dao, false, emptyBooksOption, this::finish);
     }
 
@@ -176,8 +179,6 @@ public class MetadataImportWorker extends BaseWorker {
                                 boolean isGroup,
                                 Integer emptyBooksOption,
                                 @NonNull final Runnable onFinish) {
-        totalItems = items.size();
-
         for (Object c : items) {
             if (isStopped()) break;
             try {
@@ -350,7 +351,6 @@ public class MetadataImportWorker extends BaseWorker {
     }
 
     private void finish() {
-        importDisposable.dispose();
         if (dao != null) dao.cleanup();
         notificationManager.notify(new ImportCompleteNotification(nbOK, nbKO));
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.import_metadata, 0, nbOK, nbKO, totalItems));
