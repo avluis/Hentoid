@@ -236,13 +236,13 @@ public final class ContentHelper {
         List<Content> queuedContent = Stream.of(queue).map(qr -> qr.getContent().getTarget()).withoutNulls().toList();
         if (errors != null) queuedContent.addAll(errors);
 
-        JsonContentCollection contentCollection = new JsonContentCollection();
-        contentCollection.setQueue(queuedContent);
-
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) return false;
 
         try {
+            JsonContentCollection contentCollection = new JsonContentCollection();
+            contentCollection.setQueue(queuedContent);
+
             JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
         } catch (IOException | IllegalArgumentException e) {
             // NB : IllegalArgumentException might happen for an unknown reason on certain devices
