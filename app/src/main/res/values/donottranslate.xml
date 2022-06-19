@@ -429,6 +429,7 @@
     <bool name="pref_viewer_display_pagenum_default" translatable="false">false</bool>
     <bool name="pref_viewer_tap_transitions_default" translatable="false">true</bool>
     <bool name="pref_viewer_zoom_transitions_default" translatable="false">true</bool>
+    <bool name="pref_viewer_maintain_horizontal_zoom_default" translatable="false">false</bool>
     <string name="pref_viewer_separating_bars_default" translatable="false">0</string>
     <string name="pref_viewer_display_mode_default" translatable="false">0</string>
     <string name="pref_viewer_rendering_default" translatable="false">0</string>

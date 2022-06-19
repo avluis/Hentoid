@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
-import me.devsaki.hentoid.customssiv.Helper;
-import me.devsaki.hentoid.customssiv.ImageHelper;
+import me.devsaki.hentoid.customssiv.util.Helper;
+import me.devsaki.hentoid.customssiv.util.ImageHelper;
 
 /**
  * Default implementation of {@link ImageDecoder}

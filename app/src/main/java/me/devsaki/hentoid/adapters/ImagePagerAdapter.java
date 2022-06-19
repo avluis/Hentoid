@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -77,6 +78,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     private View.OnTouchListener itemTouchListener;
     private RecyclerView recyclerView;
+    private final Map<Integer, Float> scales = new HashMap<>();
 
     // To preload images before they appear on screen with CustomSubsamplingScaleImageView
     private int maxBitmapWidth = -1;
@@ -95,6 +97,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private boolean autoRotate;
     private boolean isSmoothRendering;
     private float doubleTapZoomCap;
+
 
     public ImagePagerAdapter(Context context) {
         super(IMAGE_DIFF_CALLBACK);
@@ -210,6 +213,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             if (!Preferences.isViewerZoomTransitions())
                 holder.ssiv.setDoubleTapZoomDuration(10);
             holder.ssiv.setOffsetLeftSide(isScrollLTR);
+            holder.ssiv.setScaleListener(s -> onScaleChanged(position, s));
         }
 
         int layoutStyle = (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
@@ -251,7 +255,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         // Free the SSIV's resources
-        if (!holder.isImageView) holder.ssiv.recycle();
+        if (!holder.isImageView) holder.ssiv.clear();
 
         super.onViewRecycled(holder);
     }
@@ -266,11 +270,18 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     public float getScaleAtPosition(int position) {
-        if (recyclerView != null) {
-            ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
-            if (holder != null) return holder.getScale();
+        if (scales.containsKey(position)) {
+            Float result = scales.get(position);
+            if (result != null) return result;
         }
         return 0f;
+    }
+
+    public void setScaleAtPosition(int position, float targetScale) {
+        if (recyclerView != null) {
+            ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+            if (holder != null) holder.setScale(targetScale);
+        }
     }
 
     public void resetScaleAtPosition(int position) {
@@ -287,6 +298,11 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 if (holder != null) holder.multiplyVirtualScale(multiplier);
             }
         }
+    }
+
+    private void onScaleChanged(int position, double scale) {
+        Timber.d(">> position %d -> scale %s", position, scale);
+        scales.put(position, (float) scale);
     }
 
     public void setMaxDimensions(int maxWidth, int maxHeight) {
@@ -394,6 +410,14 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 return ssiv.getVirtualScale();
             } else { // ImageView
                 return imageView.getScaleX(); // TODO doesn't work for Glide as it doesn't use ImageView's scaling
+            }
+        }
+
+        private void setScale(float targetScale) {
+            if (!isImageView) {
+                ssiv.setScaleAndCenter(targetScale, null);
+            } else { // ImageView
+                imageView.setScaleX(targetScale);
             }
         }
 

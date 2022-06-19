@@ -558,6 +558,10 @@ public final class Preferences {
         return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_CAP_TAP_ZOOM, Integer.toString(Default.VIEWER_CAP_TAP_ZOOM)) + "");
     }
 
+    public static boolean isViewerMaintainHorizontalZoom() {
+        return sharedPreferences.getBoolean(Key.VIEWER_MAINTAIN_HORIZONTAL_ZOOM, Default.VIEWER_MAINTAIN_HORIZONTAL_ZOOM);
+    }
+
     public static boolean isViewerAutoRotate() {
         return sharedPreferences.getBoolean(Key.VIEWER_AUTO_ROTATE, Default.VIEWER_AUTO_ROTATE);
     }
@@ -892,6 +896,7 @@ public final class Preferences {
         static final String VIEWER_SLIDESHOW_DELAY_VERTICAL = "pref_viewer_slideshow_delay_vertical";
         public static final String VIEWER_HOLD_TO_ZOOM = "pref_viewer_zoom_holding";
         public static final String VIEWER_CAP_TAP_ZOOM = "pref_viewer_cap_tap_zoom";
+        public static final String VIEWER_MAINTAIN_HORIZONTAL_ZOOM = "pref_viewer_maintain_horizontal_zoom";
         public static final String VIEWER_AUTO_ROTATE = "pref_viewer_auto_rotate";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
         public static final String COLOR_THEME = "pref_color_theme";
@@ -996,6 +1001,7 @@ public final class Preferences {
         public static final int VIEWER_SLIDESHOW_DELAY_VERTICAL = Constant.VIEWER_SLIDESHOW_DELAY_2;
         static final boolean VIEWER_HOLD_TO_ZOOM = false;
         static final int VIEWER_CAP_TAP_ZOOM = Constant.VIEWER_CAP_TAP_ZOOM_NONE;
+        static final boolean VIEWER_MAINTAIN_HORIZONTAL_ZOOM = false;
         static final boolean VIEWER_AUTO_ROTATE = false;
         public static final int COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean QUEUE_AUTOSTART = true;

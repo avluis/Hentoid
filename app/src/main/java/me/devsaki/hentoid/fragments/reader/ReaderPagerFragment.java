@@ -798,9 +798,16 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             adapter.setScrollLTR(isScrollLTR);
             hidePendingMicroMenus();
 
-            // Resets zoom if we're using horizontal (independent pages) mode
-            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
-                adapter.resetScaleAtPosition(scrollPosition);
+            // Manage scaling reset / stability if we're using horizontal (independent pages) mode
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences)) {
+                if (Preferences.isViewerMaintainHorizontalZoom() && imageIndex > -1) {
+                    float previousScale = adapter.getScaleAtPosition(imageIndex);
+                    if (previousScale > 0)
+                        adapter.setScaleAtPosition(scrollPosition, previousScale);
+                } else {
+                    adapter.resetScaleAtPosition(scrollPosition);
+                }
+            }
 
             // Don't show loading progress from previous image
             binding.viewerLoadingTxt.setVisibility(View.GONE);

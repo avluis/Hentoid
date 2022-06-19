@@ -166,11 +166,14 @@
     <string name="pref_viewer_zoom_holding">Temp zoom while holding</string>
     <string name="pref_viewer_cap_tap_zoom">Cap double &amp; long tap zoom</string>
     <string name="pref_viewer_visuals">Visuals</string>
+    <string name="pref_viewer_horizontal_reader">Horizontal reader</string>
+    <string name="pref_viewer_vertical_reader">Vertical reader</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
     <string name="pref_viewer_display_notch">Display around notch area</string>
     <string name="pref_viewer_display_pagenum">Always display page number</string>
     <string name="pref_viewer_tap_transitions">Enable page turn animation</string>
     <string name="pref_viewer_zoom_transitions">Enable zoom animation</string>
+    <string name="pref_viewer_maintain_horizontal_zoom">Maintain zoom level between pages</string>
     <string name="pref_viewer_separating_bars">Separating bars in vertical mode</string>
     <string name="pref_viewer_display_mode">Display mode for horizontal viewing</string>
     <string name="pref_viewer_rendering">Rendering mode</string>
