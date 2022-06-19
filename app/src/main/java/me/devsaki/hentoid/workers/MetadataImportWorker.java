@@ -242,11 +242,13 @@ public class MetadataImportWorker extends BaseWorker {
                         c.setImageFiles(Collections.emptyList());
                         c.clearChapters();
                         c.setStatus(StatusContent.PLACEHOLDER);
+                        /*
                         DocumentFile bookFolder = ContentHelper.getOrCreateContentDownloadDir(context, c, siteFolder);
                         if (bookFolder != null) {
                             c.setStorageUri(bookFolder.getUri().toString());
                             ContentHelper.persistJson(context, c);
                         }
+                         */
                         break;
                     case MetaImportDialogFragment.IMPORT_AS_ERROR:
                         if (!ContentHelper.isInQueue(c.getStatus()))
