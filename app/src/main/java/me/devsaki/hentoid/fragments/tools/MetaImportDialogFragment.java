@@ -318,6 +318,10 @@ public class MetaImportDialogFragment extends DialogFragment {
         // Folder names can be formatted in many ways _but_ they always contain the book unique ID !
         if (null == siteFoldersCache) siteFoldersCache = getSiteFolders();
         Content c = jsonContent.toEntity(dao);
+
+        Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), "");
+        if (duplicate != null) return;
+
         DocumentFile siteFolder = siteFoldersCache.get(c.getSite());
         if (null == siteFolder) {
             siteFolder = ContentHelper.getOrCreateSiteDownloadDir(requireContext(), null, c.getSite());
@@ -364,8 +368,6 @@ public class MetaImportDialogFragment extends DialogFragment {
                 }
             }
         }
-        Content duplicate = dao.selectContentBySourceAndUrl(c.getSite(), c.getUrl(), "");
-        if (duplicate != null) return;
 
         // All checks successful => create the content
         long newContentId = ContentHelper.addContent(requireContext(), dao, c);
