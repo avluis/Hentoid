@@ -271,7 +271,7 @@ public class MetaImportDialogFragment extends DialogFragment {
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             importDisposable.dispose();
             isServiceGracefulClose = true;
-            Snackbar.make(binding.getRoot(), getResources().getQuantityString(R.plurals.import_result, event.elementsOK, event.elementsTotal), LENGTH_LONG).show();
+            Snackbar.make(binding.getRoot(), getResources().getQuantityString(R.plurals.import_result, event.elementsOK, event.elementsOK, event.elementsTotal), LENGTH_LONG).show();
 
             // Dismiss after 3s, for the user to be able to see the snackbar
             new Handler(Looper.getMainLooper()).postDelayed(this::dismissAllowingStateLoss, 3000);
