@@ -218,6 +218,7 @@ public class ObjectBoxDB {
         // and EXTERNAL because we only want to manage internal books here
         int[] storedContentStatus = new int[]{
                 StatusContent.DOWNLOADED.getCode(),
+                StatusContent.PLACEHOLDER.getCode(),
                 StatusContent.MIGRATED.getCode(),
                 StatusContent.IGNORED.getCode(),
                 StatusContent.UNHANDLED_ERROR.getCode(),
@@ -1248,7 +1249,7 @@ public class ObjectBoxDB {
     Query<ImageFile> selectDownloadedImagesFromContentQ(long id) {
         QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
         builder.equal(ImageFile_.contentId, id);
-        builder.in(ImageFile_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.EXTERNAL.getCode(), StatusContent.ONLINE.getCode()});
+        builder.in(ImageFile_.status, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.EXTERNAL.getCode(), StatusContent.ONLINE.getCode(), StatusContent.PLACEHOLDER.getCode()});
         builder.order(ImageFile_.order);
         return builder.build();
     }

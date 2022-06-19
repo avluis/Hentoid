@@ -227,6 +227,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
         private final ImageView ivCover;
         private final ImageView ivFlag;
         private final TextView tvArtist;
+        private final ImageView ivPages;
         private final TextView tvPages;
         private final ImageView ivSite;
         private final ImageView ivError;
@@ -271,6 +272,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             ivFlag = requireViewById(itemView, R.id.ivFlag);
             ivSite = requireViewById(itemView, R.id.queue_site_button);
             tvArtist = itemView.findViewById(R.id.tvArtist);
+            ivPages = itemView.findViewById(R.id.ivPages);
             tvPages = itemView.findViewById(R.id.tvPages);
             ivError = itemView.findViewById(R.id.ivError);
             ivOnline = itemView.findViewById(R.id.ivOnline);
@@ -513,11 +515,16 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                     template = context.getResources().getString(R.string.work_pages_queue, nbPages, "");
                 tvPages.setText(template);
             } else { // Library
+                boolean isPlaceholder = content.getStatus().equals(StatusContent.PLACEHOLDER);
+                int phVisibility = isPlaceholder ? View.GONE : View.VISIBLE;
+                ivPages.setVisibility(phVisibility);
+                tvPages.setVisibility(phVisibility);
+
                 tvPages.setText(String.format(Locale.ENGLISH, "%d", content.getNbDownloadedPages()));
 
                 if (tvChapters != null) {
                     List<Chapter> chapters = content.getChapters();
-                    int chapterVisibility = (null == chapters || chapters.isEmpty()) ? View.GONE : View.VISIBLE;
+                    int chapterVisibility = (isPlaceholder || null == chapters || chapters.isEmpty()) ? View.GONE : View.VISIBLE;
                     ivChapters.setVisibility(chapterVisibility);
                     tvChapters.setVisibility(chapterVisibility);
                     if (chapterVisibility == View.VISIBLE) {
@@ -529,7 +536,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 }
 
                 if (tvStorage != null) {
-                    int storageVisibility = content.getDownloadMode() == Content.DownloadMode.STREAM ? View.GONE : View.VISIBLE;
+                    int storageVisibility = (isPlaceholder || content.getDownloadMode() == Content.DownloadMode.STREAM) ? View.GONE : View.VISIBLE;
+                    ivStorage.setVisibility(storageVisibility);
                     tvStorage.setVisibility(storageVisibility);
                     if (storageVisibility == View.VISIBLE)
                         tvStorage.setText(context.getString(R.string.library_metrics_storage, content.getSize() / (1024.0 * 1024.0)));

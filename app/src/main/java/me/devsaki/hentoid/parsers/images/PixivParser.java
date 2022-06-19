@@ -32,6 +32,7 @@ import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import timber.log.Timber;
 
 public class PixivParser extends BaseImageListParser {
 
@@ -72,6 +73,7 @@ public class PixivParser extends BaseImageListParser {
             else if (onlineContent.getUrl().contains("users/"))
                 return parseUser(onlineContent, storedContent, cookieStr);
         } catch (Exception e) {
+            Timber.d(e);
             throw new EmptyResultException(StringHelper.protect(e.getMessage()));
         }
         return Collections.emptyList();

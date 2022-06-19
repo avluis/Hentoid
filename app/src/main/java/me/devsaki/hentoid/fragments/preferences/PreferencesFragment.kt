@@ -44,7 +44,7 @@ import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ExternalImportWorker
-import me.devsaki.hentoid.workers.ImportWorker
+import me.devsaki.hentoid.workers.PrimaryImportWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
 
 
@@ -155,7 +155,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
             Preferences.Key.REFRESH_LIBRARY -> {
-                if (ImportWorker.isRunning(requireContext())) {
+                if (PrimaryImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
                     LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
@@ -172,7 +172,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
             Preferences.Key.SETTINGS_FOLDER -> {
-                if (ImportWorker.isRunning(requireContext())) {
+                if (PrimaryImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
                     LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, false)

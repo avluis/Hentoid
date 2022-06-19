@@ -226,7 +226,6 @@ public class ArchiveHelper {
                             // TL;DR - We don't care about folders
                             // If we were coding an all-purpose extractor we would have to create folders
                             // But Hentoid just wants to extract a bunch of files in one single place !
-
                             if (entry.second.isEmpty()) {
                                 int lastSeparator = fileName.lastIndexOf(File.separator);
                                 if (lastSeparator > -1)
@@ -238,6 +237,11 @@ public class ArchiveHelper {
                             break;
                         }
                     }
+                } else {
+                    int lastSeparator = fileName.lastIndexOf(File.separator);
+                    if (lastSeparator > -1)
+                        fileName = fileName.substring(lastSeparator + 1);
+                    fileNames.put(archiveIndex, fileName);
                 }
             }
 

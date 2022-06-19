@@ -1033,7 +1033,8 @@ public class LibraryContentFragment extends Fragment implements
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
 
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook));
+            ContentItem dummy = new ContentItem(viewType);
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> dummy, c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
 
             ContentItem item = new ContentItem(viewType);
@@ -1365,7 +1366,7 @@ public class LibraryContentFragment extends Fragment implements
      * @param item ContentItem that has been clicked on
      */
     private boolean onItemClick(int position, @NonNull ContentItem item) {
-        if (selectExtension.getSelections().isEmpty()) {
+        if (/*selectExtension.getSelections().isEmpty()*/selectExtension.getSelectOnLongClick()) {
             if (item.getContent() != null && !item.getContent().isBeingDeleted()) {
                 readBook(item.getContent(), false);
             }

@@ -443,7 +443,7 @@ public class LibraryActivity extends BaseActivity {
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                showSearchSubBar(true, null);
+                showSearchSubBar(true, null, true);
                 invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
@@ -531,7 +531,7 @@ public class LibraryActivity extends BaseActivity {
             } else if (nonEmptyResults) {
                 collapseSearchMenu();
             }
-            showSearchSubBar(!isGroupDisplayed(), true);
+            showSearchSubBar(!isGroupDisplayed(), true, false);
         } else {
             collapseSearchMenu();
             if (actionSearchView.getQuery().length() > 0)
@@ -575,13 +575,13 @@ public class LibraryActivity extends BaseActivity {
         return true;
     }
 
-    private void showSearchSubBar(boolean showAdvancedSearch, Boolean showClear) {
+    private void showSearchSubBar(boolean showAdvancedSearch, Boolean showClear, boolean showSearchHistory) {
         searchSubBar.setVisibility(View.VISIBLE);
         advancedSearchButton.setVisibility(showAdvancedSearch && !isGroupDisplayed() ? View.VISIBLE : View.GONE);
         if (showClear != null)
             searchClearButton.setVisibility(showClear ? View.VISIBLE : View.GONE);
 
-        if (!searchRecords.isEmpty()) {
+        if (showSearchHistory && !searchRecords.isEmpty()) {
             PowerMenu.Builder powerMenuBuilder = new PowerMenu.Builder(this)
                     .setAnimation(MenuAnimation.DROP_DOWN)
                     .setLifecycleOwner(this)

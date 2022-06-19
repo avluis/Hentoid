@@ -368,10 +368,8 @@ public final class Helper {
      * @return Generated ID
      */
     public static long generateIdForPlaceholder() {
-        long result = rand.nextLong();
         // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
-        while (result < 1e6) result = rand.nextLong();
-        return result;
+        return (long) 1e6 + rand.nextLong();
     }
 
     /**

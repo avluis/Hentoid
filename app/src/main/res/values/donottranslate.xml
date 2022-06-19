@@ -327,6 +327,12 @@
         <item>@string/pref_lock_timer_entries_4</item>
         <item>@string/pref_lock_timer_entries_5</item>
     </string-array>
+    <string-array name="tools_import_empty_books_entries" translatable="false">
+        <item>@string/tools_import_empty_books_entries_1</item>
+        <item>@string/tools_import_empty_books_entries_2</item>
+        <item>@string/tools_import_empty_books_entries_3</item>
+        <item>@string/tools_import_empty_books_entries_4</item>
+    </string-array>
 
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>
