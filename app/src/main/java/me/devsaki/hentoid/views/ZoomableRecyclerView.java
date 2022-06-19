@@ -169,8 +169,8 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     private void zoom(
-            float fromRate,
-            float toRate,
+            float fromScale,
+            float toScale,
             float fromX,
             float toX,
             float fromY,
@@ -185,7 +185,7 @@ public class ZoomableRecyclerView extends RecyclerView {
         ValueAnimator translationYAnimator = ValueAnimator.ofFloat(fromY, toY);
         translationYAnimator.addUpdateListener(animation -> setY((float) animation.getAnimatedValue()));
 
-        ValueAnimator scaleAnimator = ValueAnimator.ofFloat(fromRate, toRate);
+        ValueAnimator scaleAnimator = ValueAnimator.ofFloat(fromScale, toScale);
         scaleAnimator.addUpdateListener(animation -> setScaleRate((float) animation.getAnimatedValue()));
 
         animatorSet.playTogether(translationXAnimator, translationYAnimator, scaleAnimator);
@@ -201,7 +201,7 @@ public class ZoomableRecyclerView extends RecyclerView {
             @Override
             public void onAnimationEnd(Animator animation) {
                 isZooming = false;
-                scale = toRate;
+                scale = toScale;
                 if (scaleListener != null) scaleListener.accept(scale);
             }
 
