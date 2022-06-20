@@ -85,6 +85,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private int maxBitmapWidth = -1;
     private int maxBitmapHeight = -1;
 
+    // Direction user is curently reading the book with
     private boolean isScrollLTR = true;
 
     // Single instance of RenderScript
