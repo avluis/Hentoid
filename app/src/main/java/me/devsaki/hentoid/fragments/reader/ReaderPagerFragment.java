@@ -382,17 +382,22 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
                 rescaleDebouncer.submit((float) scale);
         });
-        binding.recyclerView.setLongTapListener(ev -> false);
+        binding.recyclerView.setLongTapListener(ev -> {
+            onLongTap();
+            return false;
+        });
 
         int tapZoneScale = Preferences.isViewerTapToTurn2x() ? 2 : 1;
 
         OnZoneTapListener onHorizontalZoneTapListener = new OnZoneTapListener(binding.recyclerView, tapZoneScale)
                 .setOnLeftZoneTapListener(this::onLeftTap)
                 .setOnRightZoneTapListener(this::onRightTap)
-                .setOnMiddleZoneTapListener(this::onMiddleTap);
+                .setOnMiddleZoneTapListener(this::onMiddleTap)
+                .setOnLongTapListener(this::onLongTap);
 
         OnZoneTapListener onVerticalZoneTapListener = new OnZoneTapListener(binding.recyclerView, 1)
-                .setOnMiddleZoneTapListener(this::onMiddleTap);
+                .setOnMiddleZoneTapListener(this::onMiddleTap)
+                .setOnLongTapListener(this::onLongTap);
 
         binding.recyclerView.setTapListener(onVerticalZoneTapListener);       // For paper roll mode (vertical)
         adapter.setItemTouchListener(onHorizontalZoneTapListener);    // For independent images mode (horizontal)
@@ -1232,6 +1237,16 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             hideControlsOverlay();
         else
             showControlsOverlay();
+    }
+
+    /**
+     * Handler for long-tapping the screen
+     */
+    private void onLongTap() {
+        if (!Preferences.isViewerHoldToZoom()) {
+            float currentScale = adapter.getAbsoluteScaleAtPosition(imageIndex);
+            ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+        }
     }
 
     private void showControlsOverlay() {
