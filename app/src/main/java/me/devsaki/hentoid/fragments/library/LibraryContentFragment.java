@@ -35,6 +35,7 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.OptIn;
 import androidx.annotation.StringRes;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
@@ -1011,6 +1012,7 @@ public class LibraryContentFragment extends Fragment implements
      *
      * @param isEndless True if endless mode has to be set; false if paged mode has to be set
      */
+    @OptIn(markerClass = com.mikepenz.fastadapter.paged.ExperimentalPagedSupport.class)
     private void setPagingMethod(boolean isEndless, boolean isEditMode) {
         // Editing will always be done in Endless mode
         viewModel.setContentPagingMethod(isEndless || isEditMode);
@@ -1033,8 +1035,7 @@ public class LibraryContentFragment extends Fragment implements
             else
                 viewType = ContentItem.ViewType.LIBRARY_GRID;
 
-            ContentItem dummy = new ContentItem(viewType);
-            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> dummy, c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook));
+            pagedItemAdapter = new PagedModelAdapter<>(asyncDifferConfig, i -> new ContentItem(viewType), c -> new ContentItem(c, touchHelper, viewType, this::onDeleteSwipedBook));
             fastAdapter = FastAdapter.with(pagedItemAdapter);
 
             ContentItem item = new ContentItem(viewType);
