@@ -15,6 +15,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.threeten.bp.Instant;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
@@ -213,18 +214,18 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.status, statusCodes).build().find();
     }
 
-    Query<Content> selectAllInternalBooksQ(boolean favsOnly) {
+    Query<Content> selectAllInternalBooksQ(boolean favsOnly, boolean includePlaceholders) {
         // All statuses except SAVED, DOWNLOADING, PAUSED and ERROR that imply the book is in the download queue
         // and EXTERNAL because we only want to manage internal books here
-        int[] storedContentStatus = new int[]{
+        List<Integer> storedContentStatus = Arrays.asList(
                 StatusContent.DOWNLOADED.getCode(),
-                StatusContent.PLACEHOLDER.getCode(),
                 StatusContent.MIGRATED.getCode(),
                 StatusContent.IGNORED.getCode(),
                 StatusContent.UNHANDLED_ERROR.getCode(),
                 StatusContent.CANCELED.getCode()
-        };
-        QueryBuilder<Content> query = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus);
+        );
+        if (includePlaceholders) storedContentStatus.add(StatusContent.PLACEHOLDER.getCode());
+        QueryBuilder<Content> query = store.boxFor(Content.class).query().in(Content_.status, Helper.getPrimitiveArrayFromListInt(storedContentStatus));
         if (favsOnly) query.equal(Content_.favourite, true);
         return query.build();
     }

@@ -112,11 +112,12 @@ public class PrimaryImportWorker extends BaseWorker {
     void getToWork(@NonNull Data input) {
         PrimaryImportData.Parser data = new PrimaryImportData.Parser(getInputData());
         boolean doRename = data.getRefreshRename();
+        boolean doRemovePlaceholders = data.getRefreshRemovePlaceholders();
         boolean doCleanNoJson = data.getRefreshCleanNoJson();
         boolean doCleanNoImages = data.getRefreshCleanNoImages();
         boolean doImportGroups = data.getImportGroups();
 
-        startImport(doRename, doCleanNoJson, doCleanNoImages, doImportGroups);
+        startImport(doRename, doRemovePlaceholders, doCleanNoJson, doCleanNoImages, doImportGroups);
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -142,12 +143,13 @@ public class PrimaryImportWorker extends BaseWorker {
     /**
      * Import books from known source folders
      *
-     * @param rename        True if the user has asked for a folder renaming when calling import from Preferences
-     * @param cleanNoJSON   True if the user has asked for a cleanup of folders with no JSONs when calling import from Preferences
-     * @param cleanNoImages True if the user has asked for a cleanup of folders with no images when calling import from Preferences
-     * @param importGroups  True if the worker has to import groups from the groups JSON; false if existing groups should be kept
+     * @param rename             True if the user has asked for a folder renaming when calling import from Preferences
+     * @param removePlaceholders True if the user has asked for a removal of all books with the status PLACEHOLDER (that do not exist on storage)
+     * @param cleanNoJSON        True if the user has asked for a cleanup of folders with no JSONs when calling import from Preferences
+     * @param cleanNoImages      True if the user has asked for a cleanup of folders with no images when calling import from Preferences
+     * @param importGroups       True if the worker has to import groups from the groups JSON; false if existing groups should be kept
      */
-    private void startImport(boolean rename, boolean cleanNoJSON, boolean cleanNoImages, boolean importGroups) {
+    private void startImport(boolean rename, boolean removePlaceholders, boolean cleanNoJSON, boolean cleanNoImages, boolean importGroups) {
         booksOK = 0;
         booksKO = 0;
         nbFolders = 0;
@@ -210,7 +212,7 @@ public class PrimaryImportWorker extends BaseWorker {
             // Flag DB content for cleanup
             CollectionDAO dao = new ObjectBoxDAO(context);
             try {
-                dao.flagAllInternalBooks();
+                dao.flagAllInternalBooks(removePlaceholders);
                 dao.flagAllErrorBooksWithJson();
             } finally {
                 dao.cleanup();

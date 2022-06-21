@@ -132,6 +132,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
         if (showOptions) { // Show option screen first
             CheckBox renameChk = requireViewById(rootView, R.id.refresh_options_rename);
+            CheckBox removePlaceholdersChk = requireViewById(rootView, R.id.refresh_options_remove_placeholders);
             CheckBox cleanAbsentChk = requireViewById(rootView, R.id.refresh_options_remove_1);
             CheckBox cleanNoImagesChk = requireViewById(rootView, R.id.refresh_options_remove_2);
             RadioButton externalChk = requireViewById(rootView, R.id.refresh_location_external);
@@ -145,7 +146,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
                 locationGroup.setVisibility(View.VISIBLE);
 
             View okBtn = requireViewById(rootView, R.id.refresh_ok);
-            okBtn.setOnClickListener(v -> launchRefreshImport(externalChk.isChecked(), renameChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked()));
+            okBtn.setOnClickListener(v -> launchRefreshImport(externalChk.isChecked(), renameChk.isChecked(), removePlaceholdersChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked()));
         } else { // Show import progress layout immediately
             showImportProgressLayout(chooseFolder, externalLibrary);
         }
@@ -157,7 +158,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         else optionsGroup.setVisibility(View.VISIBLE);
     }
 
-    private void launchRefreshImport(boolean isExternal, boolean rename, boolean cleanAbsent, boolean cleanNoImages) {
+    private void launchRefreshImport(boolean isExternal, boolean rename, boolean removePlaceholders, boolean cleanAbsent, boolean cleanNoImages) {
         showImportProgressLayout(false, isExternal);
         setCancelable(false);
 
@@ -189,6 +190,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         } else {
             ImportHelper.ImportOptions options = new ImportHelper.ImportOptions();
             options.rename = rename;
+            options.removePlaceholders = removePlaceholders;
             options.cleanNoJson = cleanAbsent;
             options.cleanNoImages = cleanNoImages;
             options.importGroups = false;

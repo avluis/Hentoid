@@ -98,6 +98,7 @@ public class ImportHelper {
      */
     public static class ImportOptions {
         public boolean rename; // If true, rename folders with current naming convention
+        public boolean removePlaceholders; // If true, books & folders with status PLACEHOLDER will be removed
         public boolean cleanNoJson; // If true, delete folders where no JSON file is found
         public boolean cleanNoImages; // If true, delete folders where no supported images are found
         public boolean importGroups; // If true, reimport groups from the groups JSON
@@ -421,6 +422,7 @@ public class ImportHelper {
         PrimaryImportData.Builder builder = new PrimaryImportData.Builder();
         if (options != null) {
             builder.setRefreshRename(options.rename);
+            builder.setRefreshRemovePlaceholders(options.removePlaceholders);
             builder.setRefreshCleanNoJson(options.cleanNoJson);
             builder.setRefreshCleanNoImages(options.cleanNoImages);
             builder.setImportGroups(options.importGroups);
