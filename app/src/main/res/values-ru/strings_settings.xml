@@ -168,11 +168,14 @@
     <string name="pref_viewer_zoom_holding">Временно увеличивать при удержании пальца</string>
     <string name="pref_viewer_cap_tap_zoom">Ограничить зум по двойному или долгому нажатию</string>
     <string name="pref_viewer_visuals">Внешний вид</string>
+    <string name="pref_viewer_horizontal_reader">Чтение по горизонтали</string>
+    <string name="pref_viewer_vertical_reader">Чтение по вертикали</string>
     <string name="pref_viewer_keep_screen_on">Не выключать экран</string>
     <string name="pref_viewer_display_notch">Показывать возле "чёлки"</string>
     <string name="pref_viewer_display_pagenum">Всегда показывать номер страницы</string>
     <string name="pref_viewer_tap_transitions">Включить анимацию смены страниц</string>
     <string name="pref_viewer_zoom_transitions">Включить анимацию зума</string>
+    <string name="pref_viewer_maintain_horizontal_zoom">Сохранять значение зума между страницами</string>
     <string name="pref_viewer_separating_bars">Разделяющие полосы в вертикальном режиме</string>
     <string name="pref_viewer_display_mode">Режим отображения для горизонтального просмотра</string>
     <string name="pref_viewer_rendering">Режим отрисовки</string>
