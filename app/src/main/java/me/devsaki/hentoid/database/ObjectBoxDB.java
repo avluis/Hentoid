@@ -332,7 +332,7 @@ public class ObjectBoxDB {
         attrQuery.forEach(
                 attr -> {
                     if (attr.contents.isEmpty()) {
-                        Timber.i(">> Found empty attr : %s", attr.getName());
+                        Timber.v(">> Found empty attr : %s", attr.getName());
                         attrsToClean.add(attr);
                     }
                 }
