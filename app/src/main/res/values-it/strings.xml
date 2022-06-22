@@ -20,8 +20,12 @@
         <item quantity="other">pagine</item>
     </plurals>
     <plurals name="file" tools:ignore="ImpliedQuantity">
-        <item quantity="one">File</item>
-        <item quantity="other">Files</item>
+        <item quantity="one">file</item>
+        <item quantity="other">files</item>
+    </plurals>
+    <plurals name="item" tools:ignore="ImpliedQuantity">
+        <item quantity="one">elemento</item>
+        <item quantity="other">elementi</item>
     </plurals>
     <string name="groups">Gruppi</string>
     <string name="pause">Pausa</string>
@@ -29,7 +33,8 @@
     <string name="resume">Riprendi</string>
     <string name="cancel">Annulla</string>
     <string name="cancel_all">Annulla tutto</string>
-
+    <string name="menu_completed_single">Segna come completato</string>
+    <string name="menu_reset_read">Segna come da leggere</string>
     <string name="service_running">Il servizio è già in esecuzione</string>
     <string name="open_folder">Apri cartella</string>
     <string name="_default">predefinito</string>
@@ -87,6 +92,7 @@
     <string name="low_memory">Il tuo dispositivo ha poca memoria!</string>
     <string name="fix_permissions">Aggiusta</string>
     <string name="view_queue">Visualizza coda</string>
+    <string name="clear_search_history">Pulisci cronologia ricerca</string>
 <string name="downloader_title">Downloader</string>
     <string name="queue_queue_tab">In corso</string>
     <string name="queue_errors_tab">Errori</string>
@@ -174,7 +180,7 @@
     <string name="errortype_img_processing">Processando immagine</string>
     <string name="errortype_site_limit">Limite downloads/connessione raggiunto</string>
     <string name="errortype_account">Nessun account o credenziali insufficienti</string>
-    <string name="errortype_import">Nessun file locale trovato dopo l\'importazione</string>
+    <string name="errortype_import">Nessun file locale trovato durante l\'importazione</string>
     <string name="errortype_wifi">Libro saltato per limite della grandezza di download in Wi-Fi</string>
     <string name="errortype_blocked">Libro contiene un tag bloccato</string>
     <string name="errortype_undefined">Indefinito</string>
@@ -184,6 +190,7 @@
     <string name="refresh_location_internal">Libreria Hentoid</string>
     <string name="refresh_location_external">Libreria esterna</string>
     <string name="refresh_options_rename">Rinomina tutte le cartelle in base alla denominazione corrente e alla preferenza di lunghezza massima</string>
+    <string name="refresh_options_remove_placeholders">Rimuovi segnalibri dei libri importati dal metadata</string>
     <string name="refresh_options_remove">Rimuovi le cartelle in cui…</string>
     <string name="refresh_options_remove_1">Il file JSON è assente (raccomandato)</string>
     <string name="refresh_options_remove_2">Nessuna immagine è stata scaricata</string>
@@ -202,6 +209,7 @@
     <string name="import_mode_add">Aggiungi elementi importati</string>
     <string name="import_mode_replace">Sostituisci con elementi importati</string>
     <string name="import_select_file">Seleziona il file da importare</string>
+    <string name="checking_file">Controllando file...</string>
     <string name="import_file_invalid">File <x:g example="metadata.json" id="filename">%s</x:g> è invalido</string>
     <plurals name="import_file_library">
         <item quantity="one">Importa libreria (<x:g example="1" id="number">%d</x:g> libro)</item>
@@ -219,7 +227,6 @@
         <item quantity="one">Importa segnalibro (<x:g example="1" id="number">%d</x:g> elemento)</item>
         <item quantity="other">Importa segnalibri (<x:g example="2" id="number">%d</x:g> elementi)</item>
     </plurals>
-    <string name="import_warning">Se nessuna immagine è rilevata, i libri importati apprariranno come download vuoti. \nDovrai scaricarli usando Coda &gt; Errori.</string>
     <string name="import_run">ESEGUI IMPORTAZIONE</string>
     <plurals name="import_result_books">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> libro importato correttamente</item>
@@ -229,7 +236,12 @@
         <item quantity="one"><x:g example="1" id="number">%d</x:g> segnalibro importato correttamente</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> segnalibri importati correttamente</item>
     </plurals>
+    <plurals name="import_result">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="2" id="number">%2$d</x:g> elemento importato correttamente</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="2" id="number">%2$d</x:g> elementi importati correttamente</item>
+    </plurals>
     <string name="dialog_prompt">Scegli una cartella</string>
+    <string name="importing_metadata">Importando metadata...</string>
 <string name="export_title">Esporta metadata</string>
     <plurals name="export_file_library">
         <item quantity="one">Esporta libreria (<x:g example="1" id="number">%d</x:g> libro)</item>
@@ -386,8 +398,7 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> libri selezionati sono già scaricati\nSaranno ignorati.</item>
     </plurals>
     <plurals name="stream_external_streamed_content">
-        <item quantity="one">Uno dei libri selezionati sta già venendo letto o è aperto in una libreria esterna
-Questo libro sarà ignorato.</item>
+        <item quantity="one">Uno dei libri selezionati sta già venendo letto o è aperto in una libreria esterna Questo libro sarà ignorato.</item>
         <item quantity="other"><x:g example="2" id="count">%d</x:g> libri selezionati stanno già venendo letti o sono aperti in una libreria esterna\nSaranno ignorati.</item>
     </plurals>
     <string name="help_search">Cerca qualsiasi cosa: titolo, autore, tag \ne anche codici di lancio!</string>
@@ -450,7 +461,7 @@ Questo libro sarà ignorato.</item>
     <string name="sort_title">Titolo</string>
     <string name="sort_artist">Artista</string>
     <string name="sort_pages">Pagine</string>
-    <string name="sort_dl_date">Data download (processato) </string>
+    <string name="sort_dl_date">Data download (processato)</string>
     <string name="sort_dl_completion_date">Data download (completato)</string>
     <string name="sort_read_date">Leggi data</string>
     <string name="sort_reads">Legge</string>
@@ -519,8 +530,7 @@ Questo libro sarà ignorato.</item>
     <string name="web_download">Scarica</string>
     <string name="web_unparsable">Questo contenuto non può essere scaricato. Scusa~</string>
     <string name="web_url_clipboard">URL copiato negli appunti</string>
-    <string name="help_web_download">Hai raggiunto la pagina di un libro.
-È ora di scaricare con la barra in basso!</string>
+    <string name="help_web_download">Hai raggiunto la pagina di un libro. È ora di scaricare con la barra in basso!</string>
     <string name="blocked_tag">Libro ha un tag bloccato (<x:g example="bad" id="tag">%s</x:g>)\nDownload cancellato</string>
     <string name="blocked_tag_queued">Libro ha un tag bloccato (<x:g example="bad" id="tag">%s</x:g>)\nMesso in coda come errore</string>
     <string name="bookmark_current">Aggiungi la pagina ai segnalibri</string>
@@ -628,6 +638,7 @@ Questo libro sarà ignorato.</item>
     <string name="chapters_remove_failed">Impossibile rimuovere i capitoli</string>
     <string name="chapter_move_failed">Impossibile spostare il capitolo</string>
     <string name="slideshow_start">Inizio presentazione (ritardo <x:g example="0.5" id="time">%.1f</x:g> sec)</string>
+    <string name="slideshow_start_vertical">Inizio presentazione (<x:g example="fast" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Presentazione interrotta</string>
     <string name="ask_clear_chapters">Cancellare tutti i capitoli?</string>
 <string name="view_changelog">Visualizza il registro modifiche</string>
@@ -700,6 +711,9 @@ Questo libro sarà ignorato.</item>
 <string name="title_startup">Avvio</string>
     <string name="title_startup_progress">Avviando…</string>
     <string name="title_startup_complete">Avvio completato</string>
+<string name="missing_web_view_title">WebView non installata o disabilitata</string>
+    <string name="missing_web_view">Hentoid non è in grado di trovare Android Web Viewer.\nSfortunatamente, l\'applicazione non può funzionare senza.\n\nÈ probabile che sia installata, ma disabilitata: perfavore vai in <b>Impostazioni</b> &gt; <b>Applicazioni</b> &gt; <b>Applicazioni disabilitate</b> e abilita <b>Android System WebView</b>.\n\nSe non riesci a trovare l\'app, perfavore installala da <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Store</a></b>.</string>
+    <string name="missing_web_view_close">Chiudi Hentoid</string>
 <string name="group_today">Oggi</string>
     <string name="group_7">Ultimi 7 giorni</string>
     <string name="group_30">Ultimi 30 giorni</string>
