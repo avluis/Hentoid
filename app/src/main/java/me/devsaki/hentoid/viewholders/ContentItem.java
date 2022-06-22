@@ -427,12 +427,12 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                         .addHeader(HttpHelper.HEADER_REFERER_KEY, referer)
                         .addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
 
-                GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
+                GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build()); // From URL
                 Glide.with(ivCover)
                         .load(glideUrl)
                         .apply(glideRequestOptions)
                         .into(ivCover);
-            } else
+            } else // From stored picture
                 Glide.with(ivCover)
                         .load(Uri.parse(thumbLocation))
                         .apply(glideRequestOptions)
