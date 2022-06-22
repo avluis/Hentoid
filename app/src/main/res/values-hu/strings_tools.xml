@@ -20,4 +20,9 @@
 <string name="tools_cache_app_success">Alkalmazás gyorsítótára sikeresen törölve</string>
 <string name="tools_latest_logs_title">Alkalmazás naplók</string>
 <string name="tools_latest_logs_summary">Alkalmazás legfrissebb naplóinak megtekintése</string>
+<string name="tools_import_empty_books_intro">Ha nem észlelhető képekkel teli mappa</string>
+    <string name="tools_import_empty_books_entries_1">Ne importáld</string>
+    <string name="tools_import_empty_books_entries_2">Importálás üres könyvként</string>
+    <string name="tools_import_empty_books_entries_3">Importálás streamelt könyvként, ha lehetséges</string>
+    <string name="tools_import_empty_books_entries_4">Hozzáadás a hibás sorhoz</string>
 </resources>

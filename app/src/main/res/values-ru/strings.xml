@@ -30,6 +30,12 @@
         <item quantity="few">файла</item>
         <item quantity="many">файлов</item>
     </plurals>
+    <plurals name="item" tools:ignore="ImpliedQuantity">
+        <item quantity="one">элемент</item>
+        <item quantity="few">элемента</item>
+        <item quantity="many">элементов</item>
+        <item quantity="other">элементов</item>
+    </plurals>
     <string name="groups">Группы</string>
     <string name="pause">Приостановить</string>
     <string name="stop">Остановить</string>
@@ -214,6 +220,7 @@
     <string name="refresh_location_internal">Библиотека Hentoid</string>
     <string name="refresh_location_external">Внешняя библиотека</string>
     <string name="refresh_options_rename">Переименовать все папки согласно текущим настройкам названий и максимальной длины</string>
+    <string name="refresh_options_remove_placeholders">Удалить пустые книги (импортированы только метаданные)</string>
     <string name="refresh_options_remove">Удалить папки, в которых…</string>
     <string name="refresh_options_remove_1">Отсутствует JSON-файл (рекомендуется)</string>
     <string name="refresh_options_remove_2">Отсутствуют изображения</string>
@@ -238,6 +245,7 @@
     <string name="import_mode_add">Добавить импортированные элементы</string>
     <string name="import_mode_replace">Заменить импортированными элементами</string>
     <string name="import_select_file">Выбор файла для импорта</string>
+    <string name="checking_file">Проверяю файл…</string>
     <string name="import_file_invalid">Невозможно обработать файл <x:g id="filename" example="metadata.json">%s</x:g></string>
     <plurals name="import_file_library">
         <item quantity="one">Импорт библиотеки (<x:g id="number" example="1">%d</x:g> книга)</item>
@@ -271,7 +279,14 @@
         <item quantity="few"><x:g id="number" example="2">%d</x:g> закладки успешно импортированы</item>
         <item quantity="many"><x:g id="number" example="5">%d</x:g> закладок успешно импортировано</item>
     </plurals>
+    <plurals name="import_result">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> элемент из <x:g example="2" id="number">%2$d</x:g> успешно импортирован</item>
+        <item quantity="few"><x:g example="2" id="number">%1$d</x:g> элемента из <x:g example="2" id="number">%2$d</x:g> успешно импортировано</item>
+        <item quantity="many"><x:g example="5" id="number">%1$d</x:g> элементов из <x:g example="2" id="number">%2$d</x:g> успешно импортировано</item>
+        <item quantity="other"><x:g example="5" id="number">%1$d</x:g> элементов из <x:g example="2" id="number">%2$d</x:g> успешно импортировано</item>
+    </plurals>
     <string name="dialog_prompt">Выберите папку</string>
+    <string name="importing_metadata">Импортирую метаданные…</string>
 
     <!-- Export metadata -->
     <string name="export_title">Экспорт метаданных</string>
