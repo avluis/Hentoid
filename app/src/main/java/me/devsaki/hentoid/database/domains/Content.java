@@ -150,6 +150,8 @@ public class Content implements Serializable {
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
+    private long uniqueHash = 0;    // cached value of uniqueHash
+    @Transient
     private long progress;          // number of downloaded pages; used to display the progress bar on the queue screen
     @Transient
     private long downloadedBytes = 0;// Number of downloaded bytes; used to display the size estimate on the queue screen
@@ -968,6 +970,7 @@ public class Content implements Serializable {
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + uniqueSiteId).getBytes());
+        if (0 == uniqueHash) uniqueHash = Helper.hash64((id + "." + uniqueSiteId).getBytes());
+        return uniqueHash;
     }
 }
