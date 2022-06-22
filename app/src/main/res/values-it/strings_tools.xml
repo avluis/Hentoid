@@ -20,4 +20,9 @@
 <string name="tools_cache_app_success">Cache dell\'app cancellata con successo</string>
 <string name="tools_latest_logs_title">Logs dell\'app</string>
 <string name="tools_latest_logs_summary">Visualizza gli ultimi log dell\'app</string>
+<string name="tools_import_empty_books_intro">Se nessuna cartella delle immagini è rilevata...</string>
+    <string name="tools_import_empty_books_entries_1">Non importare</string>
+    <string name="tools_import_empty_books_entries_2">Importa come libro vuoto</string>
+    <string name="tools_import_empty_books_entries_3">Improta come libro da streaming se possibile</string>
+    <string name="tools_import_empty_books_entries_4">Aggiungilo alla coda errori</string>
 </resources>
