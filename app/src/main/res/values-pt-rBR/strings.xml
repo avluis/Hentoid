@@ -418,12 +418,17 @@
     <string name="exclude">Excluir</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> pesquisar</string>
     <string name="search_prompt">Pesquisar <x:g id="search_prompt">%s</x:g></string>
-    <string name="category_artist">Artista (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_tag">Etiqueta (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_character">Caractere (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_series">Série (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_language">Idioma (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_source">Fonte (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_artist">Artista</string>
+    <string name="category_tag">Etiqueta</string>
+    <string name="category_character">Caractere</string>
+    <string name="category_series">Série</string>
+    <string name="category_language">Idioma</string>
+    <string name="category_source">Fonte</string>
+    <string name="category_uploader">Uploader</string>
+    <string name="category_circle">Círculo</string>
+    <string name="category_category">Categoria</string>
+    <string name="category_translator">Tradutor</string>
+    <string name="category_publisher">Editora</string>
     <string name="object_artist">Artista</string>
     <string name="object_tag">Etiqueta</string>
     <string name="object_character">Personagem</string>

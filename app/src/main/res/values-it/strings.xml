@@ -548,12 +548,17 @@
     <string name="exclude">Escludi</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> cerca</string>
     <string name="search_prompt">Cerca <x:g id="search_prompt">%s</x:g></string>
-<string name="category_artist">Artista (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_tag">Tag (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_character">Personaggio (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_series">Serie (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_language">Lingua (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_source">Fonte (<x:g example="2" id="count">%1$d</x:g>)</string>
+<string name="category_artist">Artista</string>
+    <string name="category_tag">Tag</string>
+    <string name="category_character">Personaggio</string>
+    <string name="category_series">Serie</string>
+    <string name="category_language">Lingua</string>
+    <string name="category_source">Fonte</string>
+    <string name="category_uploader">Uploader</string>
+    <string name="category_circle">Cerchio</string>
+    <string name="category_category">Categoria</string>
+    <string name="category_translator">Traduttore</string>
+    <string name="category_publisher">Editore</string>
 <string name="object_artist">Artista</string>
     <string name="object_tag">Tag</string>
     <string name="object_character">Personaggio</string>

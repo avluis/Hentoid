@@ -609,12 +609,17 @@
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> search</string>
     <string name="search_prompt">Search <x:g id="search_prompt">%s</x:g></string>
     <!-- Used as a category on the search screen -->
-    <string name="category_artist">Artist (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_tag">Tag (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_character">Character (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_series">Series (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_language">Language (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_source">Source (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_artist">Artist</string>
+    <string name="category_tag">Tag</string>
+    <string name="category_character">Character</string>
+    <string name="category_series">Series</string>
+    <string name="category_language">Language</string>
+    <string name="category_source">Source</string>
+    <string name="category_uploader">Uploader</string>
+    <string name="category_circle">Circle</string>
+    <string name="category_category">Category</string>
+    <string name="category_translator">Translator</string>
+    <string name="category_publisher">Publisher</string>
     <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_artist">Artist</string>
     <string name="object_tag">Tag</string>
