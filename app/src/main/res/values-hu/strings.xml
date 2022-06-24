@@ -548,12 +548,17 @@
     <string name="exclude">Kizárás</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> keresés</string>
     <string name="search_prompt">Keresés <x:g id="search_prompt">%s</x:g></string>
-<string name="category_artist">Szerző (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_tag">Tag (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_character">Karakter (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_series">Sorozat (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_language">Nyelv (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_source">Forrás (<x:g example="2" id="count">%1$d</x:g>)</string>
+<string name="category_artist">Szerző</string>
+    <string name="category_tag">Tag</string>
+    <string name="category_character">Karakter</string>
+    <string name="category_series">Sorozat</string>
+    <string name="category_language">Nyelv</string>
+    <string name="category_source">Forrás</string>
+    <string name="category_uploader">Felöltő</string>
+    <string name="category_circle">Kör</string>
+    <string name="category_category">Kategória</string>
+    <string name="category_translator">Fordító</string>
+    <string name="category_publisher">Feltöltő</string>
 <string name="object_artist">Szerző</string>
     <string name="object_tag">Tag</string>
     <string name="object_character">Karakter</string>

@@ -657,12 +657,17 @@
     <string name="search_category">Ищем <x:g id="search_category" example="язык">%s</x:g></string>
     <string name="search_prompt">Искать <x:g id="search_prompt">%s</x:g></string>
     <!-- Used as a category on the search screen -->
-    <string name="category_artist">Художник (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_tag">Тэг (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_character">Персонаж (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_series">Сеттинг (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_language">Язык (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_source">Источник (<x:g id="count" example="2">%1$d</x:g>)</string>
+    <string name="category_artist">Художник</string>
+    <string name="category_tag">Тэг</string>
+    <string name="category_character">Персонаж</string>
+    <string name="category_series">Сеттинг</string>
+    <string name="category_language">Язык</string>
+    <string name="category_source">Источник</string>
+    <string name="category_uploader">Загрузчик</string>
+    <string name="category_circle">Круг</string>
+    <string name="category_category">Категория</string>
+    <string name="category_translator">Переводчик</string>
+    <string name="category_publisher">Издатель</string>
     <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_artist">художника</string>
     <string name="object_tag">тэг</string>
