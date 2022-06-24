@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-<string name="audio_plug1">yametee~~♡</string>
     <string name="audio_plug2">pare, esse é… o buraco errado~</string>
-    <string name="audio_plug3">ughhh~</string>
-    <string name="audio_plug4">ewww ♡ ♡</string>
+
     <string name="audio_plug5">não aqui~~♡</string>
     <string name="audio_plug6">mau, menino mau~~</string>
     <string name="audio_plug7">muito... apertado... ♡</string>
 <string name="power_plug1">Eu gosto de lá~~</string>
     <string name="power_plug2">empurre-o ainda mais ~~~♡</string>
-    <string name="power_plug3">ikuuuu~~</string>
-    <string name="power_plug4">ahh ♡</string>
-    <string name="power_plug5">ohhh~</string>
+
+
     <string name="power_plug6">me dê mais ♡</string>
 </resources>
