@@ -83,13 +83,46 @@
         tools:text="Import library (235 books)"
         tools:visibility="visible" />
 
+    <TextView
+        android:id="@+id/import_empty_books_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:padding="8dp"
+        android:text="@string/tools_import_empty_books_intro"
+        android:textSize="@dimen/text_subtitle_2"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/import_file_library_chk"
+        tools:visibility="visible" />
+
+    <com.skydoves.powerspinner.PowerSpinnerView
+        android:id="@+id/import_empty_books_options"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_spinner_border"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/import_empty_books_label"
+        app:layout_constraintTop_toBottomOf="@id/import_empty_books_label"
+        app:spinner_arrow_gravity="end"
+        app:spinner_arrow_padding="8dp"
+        app:spinner_arrow_tint="@color/white_opacity_66"
+        app:spinner_divider_show="true"
+        app:spinner_divider_size="0.4dp"
+        app:spinner_popup_background="@color/dark_gray"
+        app:spinner_popup_elevation="14dp"
+        tools:visibility="visible" />
+
     <CheckBox
         android:id="@+id/import_file_queue_chk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/import_file_library_chk"
+        app:layout_constraintTop_toBottomOf="@id/import_empty_books_options"
         tools:text="Import queue (235 books)"
         tools:visibility="visible" />
 
@@ -113,40 +146,6 @@
         tools:text="Import bookmarks (23 items)"
         tools:visibility="visible" />
 
-    <TextView
-        android:id="@+id/import_file_help_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/import_warning"
-        android:textColor="@color/white_opacity_87"
-        android:background="@color/white_opacity_25"
-        android:textStyle="italic"
-        android:visibility="gone"
-        android:paddingStart="64dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/import_file_bookmarks_chk"
-        tools:visibility="visible" />
-
-    <ImageView
-        android:id="@+id/import_warning_img"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:adjustViewBounds="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_warning"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/import_file_help_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/import_file_help_text"
-        app:tint="@color/white_opacity_87"
-        tools:ignore="ContentDescription"
-        tools:visibility="visible" />
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/import_run_btn"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -157,14 +156,14 @@
         android:text="@string/import_run"
         android:textColor="@color/secondary_color_selector"
         android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
         app:icon="@drawable/ic_simple_arrow_up"
         app:iconTint="@color/secondary_color_selector"
-        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/import_file_help_text"
+        app:layout_constraintTop_toBottomOf="@id/import_file_bookmarks_chk"
         app:strokeColor="@color/secondary_color_selector"
-        tools:visibility="visible"/>
+        tools:visibility="visible" />
 
     <ProgressBar
         android:id="@+id/import_progress_bar"
@@ -182,14 +181,13 @@
         android:id="@+id/import_progress_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:textAlignment="viewStart"
         android:visibility="gone"
-        android:layout_marginTop="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/import_progress_bar"
-        tools:text="@string/book_progress"
+        tools:text="23 / 489 books"
         tools:visibility="visible" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

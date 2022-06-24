@@ -360,7 +360,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public long countAllInternalBooks(boolean favsOnly) {
-        return db.selectAllInternalBooksQ(favsOnly).count();
+        return db.selectAllInternalBooksQ(favsOnly, true).count();
     }
 
     public long countAllQueueBooks() {
@@ -379,7 +379,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void streamAllInternalBooks(boolean favsOnly, Consumer<Content> consumer) {
-        Query<Content> query = db.selectAllInternalBooksQ(favsOnly);
+        Query<Content> query = db.selectAllInternalBooksQ(favsOnly, true);
         query.forEach(consumer::accept);
     }
 
@@ -580,12 +580,12 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectAllQueueBooksQ().find();
     }
 
-    public void flagAllInternalBooks() {
-        db.flagContentsForDeletion(db.selectAllInternalBooksQ(false).find(), true);
+    public void flagAllInternalBooks(boolean includePlaceholders) {
+        db.flagContentsForDeletion(db.selectAllInternalBooksQ(false, includePlaceholders).find(), true);
     }
 
     public void deleteAllInternalBooks(boolean resetRemainingImagesStatus) {
-        db.deleteContentById(db.selectAllInternalBooksQ(false).findIds());
+        db.deleteContentById(db.selectAllInternalBooksQ(false, true).findIds());
 
         // Switch status of all remaining images (i.e. from queued books) to SAVED, as we cannot guarantee the files are still there
         if (resetRemainingImagesStatus) {

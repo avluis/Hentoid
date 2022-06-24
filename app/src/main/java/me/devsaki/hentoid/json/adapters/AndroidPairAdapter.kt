@@ -8,9 +8,9 @@ internal class AndroidPairAdapter(
     private val firstAdapter: JsonAdapter<Any>,
     private val secondAdapter: JsonAdapter<Any>,
     private val listAdapter: JsonAdapter<List<String>>
-) : JsonAdapter<Pair<Any, Any>>() {
+) : JsonAdapter<androidx.core.util.Pair<Any, Any>>() {
 
-    override fun toJson(writer: JsonWriter, value: Pair<Any, Any>?) {
+    override fun toJson(writer: JsonWriter, value: androidx.core.util.Pair<Any, Any>?) {
         value ?: throw NullPointerException("value == null")
 
         writer.beginArray()
@@ -19,7 +19,7 @@ internal class AndroidPairAdapter(
         writer.endArray()
     }
 
-    override fun fromJson(reader: JsonReader): Pair<Any, Any>? {
+    override fun fromJson(reader: JsonReader): androidx.core.util.Pair<Any, Any>? {
         val list = listAdapter.fromJson(reader) ?: return null
 
         require(list.size == 2) { "Pair with more or less than two elements: $list" }
@@ -29,7 +29,7 @@ internal class AndroidPairAdapter(
         val second = secondAdapter.fromJsonValue(list[1])
             ?: throw IllegalStateException("Pair without second")
 
-        return Pair(first, second)
+        return androidx.core.util.Pair(first, second)
     }
 }
 

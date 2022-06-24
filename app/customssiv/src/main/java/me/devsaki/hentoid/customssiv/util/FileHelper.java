@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.customssiv;
+package me.devsaki.hentoid.customssiv.util;
 
 /**
  * Generic file-related utility class

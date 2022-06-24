@@ -26,8 +26,14 @@
     </plurals>
     <plurals name="file" tools:ignore="ImpliedQuantity">
         <item quantity="one">файл</item>
-        <item quantity="few">файла</item>
+        <item quantity="few">файли</item>
         <item quantity="many">файлів</item>
+    </plurals>
+    <plurals name="item" tools:ignore="ImpliedQuantity">
+        <item quantity="one">елемент</item>
+        <item quantity="few">елементи</item>
+        <item quantity="many">елементів</item>
+        <item quantity="other">елементів</item>
     </plurals>
     <string name="groups">Групи</string>
     <string name="pause">Призупинити</string>
@@ -36,6 +42,7 @@
     <string name="cancel">Скасувати</string>
     <string name="cancel_all">Скасувати все</string>
     <string name="menu_completed_single">Завершено</string>
+    <string name="menu_reset_read">Позначити непрочитаним</string>
     <string name="service_running">Сервіс вже запущений</string>
     <string name="open_folder">Відкрити папку</string>
     <string name="_default">за замовчуванням</string>
@@ -99,6 +106,7 @@
     <string name="low_memory">Закінчується пам\'ять на пристрої!</string>
     <string name="fix_permissions">Виправити</string>
     <string name="view_queue">Переглянути чергу</string>
+    <string name="clear_search_history">Очистити історію пошуку</string>
 
     <!-- Queue / Downloader -->
     <string name="downloader_title">Завантажувач</string>
@@ -211,6 +219,7 @@
     <string name="refresh_location_internal">Бібліотека Hentoid</string>
     <string name="refresh_location_external">Зовнішня бібліотека</string>
     <string name="refresh_options_rename">Перейменувати всі папки відповідно до поточних параметрів назв і максимальної довжини</string>
+    <string name="refresh_options_remove_placeholders">Видалити порожні книги (імпортовані тільки метадані)</string>
     <string name="refresh_options_remove">Видалити папки, в яких…</string>
     <string name="refresh_options_remove_1">Немає JSON-файлу (рекомендується)</string>
     <string name="refresh_options_remove_2">Немає зображень</string>
@@ -235,6 +244,7 @@
     <string name="import_mode_add">Додати імпортовані елементи</string>
     <string name="import_mode_replace">Замінити імпортованими елементами</string>
     <string name="import_select_file">Вибір файлу для імпорту</string>
+    <string name="checking_file">Перевіряю файл…</string>
     <string name="import_file_invalid">Неможливо обробити файл <x:g id="filename" example="metadata.json">%s</x:g></string>
     <plurals name="import_file_library">
         <item quantity="one">Імпорт бібліотеки (<x:g id="number" example="1">%d</x:g> книга)</item>
@@ -268,7 +278,14 @@
         <item quantity="few"><x:g id="number" example="2">%d</x:g> закладки успішно імпортовані</item>
         <item quantity="many"><x:g id="number" example="5">%d</x:g> закладок успішно імпортовано</item>
     </plurals>
+    <plurals name="import_result">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> елемент із <x:g example="2" id="number">%2$d</x:g> успішно імпортован</item>
+        <item quantity="few"><x:g example="2" id="number">%1$d</x:g> елементи з <x:g example="2" id="number">%2$d</x:g> успішно імпортовані</item>
+        <item quantity="many"><x:g example="5" id="number">%1$d</x:g> елементів із <x:g example="2" id="number">%2$d</x:g> успішно імпортовано</item>
+        <item quantity="other"><x:g example="5" id="number">%1$d</x:g> елементів із <x:g example="2" id="number">%2$d</x:g> успішно імпортовано</item>
+    </plurals>
     <string name="dialog_prompt">Виберіть папку</string>
+    <string name="importing_metadata">Імпортую метадані…</string>
 
     <!-- Export metadata -->
     <string name="export_title">Експорт метаданих</string>
@@ -639,12 +656,17 @@
     <string name="search_category">Шукаємо <x:g id="search_category" example="мову">%s</x:g></string>
     <string name="search_prompt">Шукати <x:g id="search_prompt">%s</x:g></string>
     <!-- Used as a category on the search screen -->
-    <string name="category_artist">Художник (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_tag">Теґ (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_character">Персонаж (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_series">Сеттинг (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_language">Мова (<x:g id="count" example="2">%1$d</x:g>)</string>
-    <string name="category_source">Джерело (<x:g id="count" example="2">%1$d</x:g>)</string>
+    <string name="category_artist">Художник</string>
+    <string name="category_tag">Теґ</string>
+    <string name="category_character">Персонаж</string>
+    <string name="category_series">Сеттинг</string>
+    <string name="category_language">Мова</string>
+    <string name="category_source">Джерело</string>
+    <string name="category_uploader">Завантажувач</string>
+    <string name="category_circle">Коло</string>
+    <string name="category_category">Категорія</string>
+    <string name="category_translator">Перекладач</string>
+    <string name="category_publisher">Видавець</string>
     <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_artist">художника</string>
     <string name="object_tag">теґ</string>
@@ -732,6 +754,7 @@
     <string name="chapters_remove_failed">Не вдалося видалити глави</string>
     <string name="chapter_move_failed">Не вдалося перемістити главу</string>
     <string name="slideshow_start">Початок слайдшоу (затримка в <x:g id="time" example="0.5">%.1f</x:g> с)</string>
+    <string name="slideshow_start_vertical">Початок слайдшоу (<x:g example="швидко" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Слайдшоу зупинено</string>
     <string name="ask_clear_chapters">Видалити всі глави?</string>
 
@@ -820,6 +843,11 @@
     <string name="title_startup">Запуск</string>
     <string name="title_startup_progress">Запускається…</string>
     <string name="title_startup_complete">Запуск завершено</string>
+
+    <!-- Missing WebView -->
+    <string name="missing_web_view_title">WebView не встановлено або вимкнено</string>
+    <string name="missing_web_view">Hentoid не виявив вбудований спеціальний браузер Android.\nНа жаль, додаток не може працювати без нього.\n\nШвидше за все, він насправді встановлений у вас, просто відключений: будь ласка, перейдіть в <b>Налаштування</b> &gt; <b>Додатки</b> &gt; <b>Відключені</b> та включіть <b>Android System WebView</b>.\n\nЯкщо ви не можете знайти такий додаток, будь ласка, встановіть його з <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Маркета</a></b>.</string>
+    <string name="missing_web_view_close">Закрити Hentoid</string>
 
     <!-- Group names -->
     <string name="group_today">Сьогодні</string>

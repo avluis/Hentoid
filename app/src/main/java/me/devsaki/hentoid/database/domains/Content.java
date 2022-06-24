@@ -67,6 +67,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import timber.log.Timber;
 
 /**
@@ -109,7 +110,7 @@ public class Content implements Serializable {
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
     /**
-     * @deprecated Replaced by {@link me.devsaki.hentoid.workers.ImportWorker} methods; class is kept for retrocompatibilty
+     * @deprecated Replaced by {@link PrimaryImportWorker} methods; class is kept for retrocompatibilty
      */
     @Deprecated
     private String storageFolder; // Used as pivot for API29 migration; no use after that (replaced by storageUri)
@@ -148,6 +149,8 @@ public class Content implements Serializable {
     private boolean isFlaggedForDeletion = false;
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
+    @Transient
+    private long uniqueHash = 0;    // cached value of uniqueHash
     @Transient
     private long progress;          // number of downloaded pages; used to display the progress bar on the queue screen
     @Transient
@@ -967,6 +970,7 @@ public class Content implements Serializable {
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + uniqueSiteId).getBytes());
+        if (0 == uniqueHash) uniqueHash = Helper.hash64((id + "." + uniqueSiteId).getBytes());
+        return uniqueHash;
     }
 }

@@ -147,6 +147,15 @@ public final class Helper {
         return ret;
     }
 
+    public static int[] getPrimitiveArrayFromListInt(List<Integer> input) {
+        int[] ret = new int[input.size()];
+        Iterator<Integer> iterator = input.iterator();
+        for (int i = 0; i < ret.length; i++) {
+            ret[i] = iterator.next();
+        }
+        return ret;
+    }
+
     public static int[] getPrimitiveArrayFromSet(Set<Integer> input) {
         int[] ret = new int[input.size()];
         Iterator<Integer> iterator = input.iterator();
@@ -368,10 +377,8 @@ public final class Helper {
      * @return Generated ID
      */
     public static long generateIdForPlaceholder() {
-        long result = rand.nextLong();
         // Make sure nothing collides with an actual ID; nobody has 1M books; it should be fine
-        while (result < 1e6) result = rand.nextLong();
-        return result;
+        return (long) 1e6 + rand.nextLong();
     }
 
     /**

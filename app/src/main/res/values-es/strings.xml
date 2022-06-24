@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_intro">Bienvenido</string>
-    <string name="yes">Si</string>
-    <string name="no">No</string>
+<string name="app_intro">Bienvenido</string>
+<string name="yes">Sí</string>
+<string name="no">No</string>
     <string name="ok" tools:ignore="MissingTranslation">Ok</string>
     <string name="on">Encendido</string>
     <string name="off">Apagado</string>
@@ -13,65 +13,224 @@
     <string name="please_wait">Por favor espere...</string>
 
 
+
+    <string name="groups">Grupos</string>
     <string name="pause">Pausar</string>
     <string name="stop">Detener</string>
     <string name="resume">Resumir</string>
     <string name="cancel">Cancelar</string>
     <string name="cancel_all">Cancelar todo</string>
-
+    <string name="menu_completed_single">Marcar como completado</string>
+    <string name="menu_reset_read">Marcar como no leído</string>
     <string name="service_running">El servicio ya esta siendo ejecutado</string>
     <string name="open_folder">Abrir carpeta</string>
     <string name="_default">predeterminado</string>
     <string name="empty">vacío</string>
     <string name="none">Ninguno</string>
-    <string name="title_activity_api29_migration">Migración de API 29</string>
+<string name="title_activity_api29_migration">Migración de API 29</string>
     <string name="title_activity_downloads">Librería</string>
-    <string name="title_activity_queue">Cola de descarga</string>
-    <string name="title_activity_preferences">Preferencias</string>
+    <string name="title_activity_queue">Cola</string>
+    <string name="title_activity_preferences">Ajustes</string>
     <string name="title_activity_about">Acerca de</string>
     <string name="title_activity_app_lock">Bloqueo de la aplicación</string>
     <string name="title_activity_search">Búsqueda Avanzada</string>
+<string name="api29_migration_title">Hentoid v12 Actualización del manejo de archivos</string>
     <string name="api29_migration_subtitle">Hentoid esta actualizando tu colección. Esto puede tomar algunos minutos.</string>
     <string name="api29_migration_location">Ubicación actual de la carpeta de Hentoid<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
     <string name="api29_migration_step1">Carpeta de Hentoid</string>
     <string name="api29_migration_step1_external">Carpeta externa</string>
-    <string name="api29_migration_step1_select">Seleccionar la carpeta de Hentoid</string>
-    <string name="api29_migration_step1_select_external">Seleccionar la carpeta externa</string>
+    <string name="api29_migration_step1_select">Selecciona la carpeta de Hentoid</string>
+    <string name="api29_migration_step1_select_external">Selecciona la carpeta externa</string>
     <string name="api29_migration_step2">Escanear las carpetas de los sitios web</string>
     <string name="api29_migration_step3_init">Escaneando la librería...</string>
-    <string name="api29_migration_step3">Escanear librería (<x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g>)</string>
+    <string name="api29_migration_step3">Escanear la librería ( <x:g example="1" id="number">%1$d</x:g> / <x:g example="7" id="total">%2$d</x:g> )</string>
     <string name="api29_migration_step4_init">Importando la cola de descarga...</string>
-    <string name="api29_migration_select_folder">Por favor seleccionar una carpeta existente de Hentoid. La ubicación de esta se muestra en la pantalla.</string>
+    <string name="api29_migration_select_folder">Por favor seleccionar una carpeta de Hentoid existente. La ubicación de esta se muestra en la pantalla.</string>
     <string name="api29_migration_allow_write">Por favor autoriza el permiso de escritura</string>
-    <string name="menu_search">Búsqueda</string>
-
+<string name="menu_search">Búsqueda</string>
+    <string name="menu_fav">Cambiar el filtro de favoritos</string>
+    <string name="menu_mark_fav">Cambiar favorito</string>
     <string name="menu_group_new">Nuevo grupo</string>
+    <string name="menu_edit_order">Reordenar</string>
 
 
-    <string name="menu_select_all">Seleccionar todo</string>
 
 
-    <string name="menu_archive">Archivar</string>
-    <string name="menu_archive_help">Archiva el libro a un archivo ZIP</string>
-    <string name="search_hint">Título, artista, etiqueta o ID del libro</string>
-    <string name="send_to">Compartir con:</string>
+    <string name="menu_delete_single">Borrar</string>
 
 
-    <string name="import_title">Importar metadatos</string>
 
 
-    <string name="export_title">Exportar metadatos</string>
 
 
+    <string name="refresh_options_remove_or">o</string>
+
+<string name="import_title">Importar metadatos</string>
+
+
+
+    <string name="import_run">EJECUTAR LA IMPORTACIÓN</string>
+
+
+<string name="export_title">Exportar metadatos</string>
+
+
+    <string name="export_run">EJECUTAR LA EXPORTACIÓN</string>
     <string name="import_settings_title">Importar ajustes</string>
 
+    <string name="memory_details_source">Fuente</string>
+    <string name="memory_details_books">Libros</string>
+    <string name="memory_details_size">Tamaño</string>
 
-    <string name="pref_top_fab_summary_off">Botón deshabilitado</string>
-    <string name="pref_top_fab_summary_on">Botón habilitado</string>
-    <string name="pref_cat_theme">Tema de la aplicación</string>
-    <string name="pref_select_folder_title">Seleccione la carpeta de descargas</string>
-    <string name="pref_select_folder_summary">Seleccione dónde Hentoid almacenará sus descargas</string>
-    <string name="lang_en">inglés</string>
+
+
+
+
+    <string name="masterdata_no_result">Ningún resultado :(</string>
+
+
+
+
+
+
+
+
+
+
+
+
+    <string name="sort_title">Título</string>
+    <string name="sort_artist">Artista</string>
+
+
+
+
+    <string name="sort_size">Tamaño</string>
+
+
+
+    <string name="sort_books">Libros</string>
+
+
+
+
+
+
+
+
+    <string name="display_groups">Grupos</string>
+
+
+
+
+
+
+<string name="updates_title">Actualizaciones</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<string name="about1"><b>Hentoid</b> es una aplicación para archivar Doujinshi y H-Manga. <b>Hentoid</b> fue creada originalmente por Cesar Arasaki.</string>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<string name="object_artist">Artista</string>
+
+
+
+    <string name="object_source">Fuente</string>
+    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (<x:g example="100%" id="scale_percentage">%3$.0f%%</x:g> escala) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
+    <string name="viewer_direction_ltr">De izquierda a derecha</string>
+    <string name="viewer_direction_rtl">De derecha a izquierda</string>
+    <string name="viewer_direction_ttb">De arriba a abajo</string>
+
+
+
+
+
+
+
+
+
+
+
+
+    <string name="information_help">Información</string>
+<string name="title_activity_duplicate_detector">Detector de duplicados</string>
+    <string name="duplicate_use_title">Título</string>
+    <string name="duplicate_use_cover">Cubierta</string>
+    <string name="duplicate_use_artist">Artista</string>
+
+    <string name="duplicate_use_sensitivity">Sensibilidad</string>
+
+
+    <string name="duplicate_keep">Guardar</string>
+    <string name="duplicate_delete">Borrar</string>
+<string name="group_today">Hoy</string>
+
+
+
+
+
+<string name="theme_light">Claro</string>
+    <string name="theme_deep_red">Rojo intenso</string>
+    <string name="theme_dark">Oscuro</string>
+<string name="lang_en">inglés</string>
     <string name="lang_zh">chino</string>
     <string name="lang_ja">japonés</string>
     <string name="lang_ko">coreano</string>
@@ -88,36 +247,4 @@
     <string name="lang_hu">húngaro</string>
     <string name="lang_tr">turco</string>
     <string name="lang_cs">checo</string>
-    <string name="group_today">Hoy</string>
-    <string name="about1"><b>Hentoid</b> es una aplicación para archivar Doujinshi y H-Manga. <b>Hentoid</b> fue creada originalmente por Cesar Arasaki.</string>
-    <string name="groups">Grupos</string>
-    <string name="export_run">EJECUTAR LA EXPORTACIÓN</string>
-    <string name="import_run">EJECUTAR LA IMPORTACIÓN</string>
-    <string name="refresh_options_remove_or">o</string>
-    <string name="pref_screen_browser">Navegador</string>
-    <string name="pref_browser_behaviour">Funcionamiento</string>
-    <string name="theme_light">Claro</string>
-    <string name="theme_deep_red">Rojo intenso</string>
-    <string name="theme_dark">Oscuro</string>
-    <string name="duplicate_delete">Borrar</string>
-    <string name="duplicate_keep">Guardar</string>
-    <string name="duplicate_use_sensitivity">Sensibilidad</string>
-    <string name="duplicate_use_title">Título</string>
-    <string name="duplicate_use_cover">Cubierta</string>
-    <string name="duplicate_use_artist">Artista</string>
-    <string name="information_help">Información</string>
-    <string name="viewer_img_details"><x:g example="800" id="dimen_x">%1$d</x:g> x <x:g example="600" id="dimen_y">%2$d</x:g> (<x:g example="100%" id="scale_percentage">%3$.0f%%</x:g> escala) - <x:g example="544.40 KB" id="file_size">%4$s</x:g></string>
-    <string name="updates_title">Actualizaciones</string>
-    <string name="masterdata_no_result">Ningún resultado :(</string>
-    <string name="memory_details_books">Libros</string>
-    <string name="memory_details_size">Tamaño</string>
-    <string name="memory_details_source">Fuente</string>
-    <string name="pref_screen_privacy">Privacidad</string>
-    <string name="pref_browser_dns_title">DNS mediante HTTPS</string>
-
-
-    <string name="viewer_direction_ltr">De derecha a izquierda</string>
-    <string name="viewer_direction_rtl">De izquierda a derecha</string>
-    <string name="viewer_direction_ttb">De arriba a abajo</string>
-    <string name="title_activity_duplicate_detector">Detector de duplicados</string>
 </resources>

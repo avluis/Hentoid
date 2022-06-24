@@ -101,7 +101,7 @@ public final class ContentHelper {
     public static final String KEY_DL_PARAMS_UGOIRA_FRAMES = "ugo_frames";
 
     private static final String UNAUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
-    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode()};
+    private static final int[] libraryStatus = new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.MIGRATED.getCode(), StatusContent.EXTERNAL.getCode(), StatusContent.PLACEHOLDER.getCode()};
     private static final int[] queueStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode(), StatusContent.ERROR.getCode()};
     private static final int[] queueTabStatus = new int[]{StatusContent.DOWNLOADING.getCode(), StatusContent.PAUSED.getCode()};
 
@@ -236,13 +236,13 @@ public final class ContentHelper {
         List<Content> queuedContent = Stream.of(queue).map(qr -> qr.getContent().getTarget()).withoutNulls().toList();
         if (errors != null) queuedContent.addAll(errors);
 
-        JsonContentCollection contentCollection = new JsonContentCollection();
-        contentCollection.setQueue(queuedContent);
-
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
         if (null == rootFolder) return false;
 
         try {
+            JsonContentCollection contentCollection = new JsonContentCollection();
+            contentCollection.setQueue(queuedContent);
+
             JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
         } catch (IOException | IllegalArgumentException e) {
             // NB : IllegalArgumentException might happen for an unknown reason on certain devices
@@ -273,6 +273,7 @@ public final class ContentHelper {
             boolean forceShowGallery) {
         // Check if the book has at least its own folder
         if (content.getStorageUri().isEmpty()) return false;
+        if (content.getStatus().equals(StatusContent.PLACEHOLDER)) return false;
 
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageUri());
 
@@ -613,8 +614,10 @@ public final class ContentHelper {
      * @return Created directory
      */
     @Nullable
-    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content) {
-        DocumentFile siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
+    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content, @Nullable DocumentFile siteDlDir) {
+        DocumentFile siteDownloadDir = siteDlDir;
+        if (null == siteDownloadDir)
+            siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
         if (null == siteDownloadDir) return null;
 
         ImmutablePair<String, String> bookFolderName = formatBookFolderName(content);
@@ -728,7 +731,7 @@ public final class ContentHelper {
      * @return Download directory of the given Site
      */
     @Nullable
-    static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @Nullable FileExplorer explorer, @NonNull Site site) {
+    public static DocumentFile getOrCreateSiteDownloadDir(@NonNull Context context, @Nullable FileExplorer explorer, @NonNull Site site) {
         String appUriStr = Preferences.getStorageUri();
         if (appUriStr.isEmpty()) {
             Timber.e("No storage URI defined for the app");
@@ -1282,7 +1285,8 @@ public final class ContentHelper {
         // First find good rough candidates by searching for the longest word in the title
         String[] words = StringHelper.cleanMultipleSpaces(StringHelper.cleanup(content.getTitle())).split(" ");
         Optional<String> longestWord = Stream.of(words).sorted((o1, o2) -> Integer.compare(o1.length(), o2.length())).findLast();
-        if (longestWord.isEmpty()) return null;
+        if (longestWord.isEmpty() || longestWord.get().length() < 2)
+            return null; // Too many resources consumed if the longest word is 1 character long
 
         int[] contentStatuses = ArrayUtils.addAll(libraryStatus, queueTabStatus);
         List<Content> roughCandidates = dao.searchTitlesWith(longestWord.get(), contentStatuses);
@@ -1500,7 +1504,7 @@ public final class ContentHelper {
                 }
             }
         } else { // Hentoid download folder for non-external content
-            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent);
+            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, null);
         }
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");

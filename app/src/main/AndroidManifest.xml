@@ -32,6 +32,10 @@
         android:usesCleartextTraffic="true"
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
+            android:name=".activities.MissingWebViewActivity"
+            android:exported="false"
+            android:noHistory="true" />
+        <activity
             android:name=".activities.SplashActivity"
             android:exported="true"
             android:noHistory="true">

@@ -98,6 +98,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/refresh_options" />
 
+    <CheckBox
+        android:id="@+id/refresh_options_remove_placeholders"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:padding="8dp"
+        android:text="@string/refresh_options_remove_placeholders"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_rename" />
+
     <TextView
         android:id="@+id/refresh_options_remove"
         android:layout_width="0dp"
@@ -107,7 +117,7 @@
         android:textAlignment="center"
         android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_options_rename" />
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_placeholders" />
 
     <CheckBox
         android:id="@+id/refresh_options_remove_1"

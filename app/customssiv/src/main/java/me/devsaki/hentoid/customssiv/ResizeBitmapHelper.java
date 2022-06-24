@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import me.devsaki.hentoid.customssiv.util.Helper;
 import timber.log.Timber;
 
 // Credits go to https://medium.com/@petrakeas/alias-free-resize-with-renderscript-5bf15a86ce3

@@ -149,7 +149,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
 
         var filterBookNotCompleted by bundle.boolean(default = false)
 
-        var filterRating by bundle.int(default = 0)
+        var filterRating by bundle.int(default = -1)
 
         var query by bundle.string(default = "")
 

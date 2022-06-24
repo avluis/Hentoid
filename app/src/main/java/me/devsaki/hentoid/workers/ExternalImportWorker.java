@@ -129,7 +129,7 @@ public class ExternalImportWorker extends BaseWorker {
             List<Content> library = new ArrayList<>();
             // Deep recursive search starting from the place the user has selected
             scanFolderRecursive(context, rootFolder, explorer, new ArrayList<>(), library, dao);
-            eventComplete(ImportWorker.STEP_2_BOOK_FOLDERS, 0, 0, 0, null);
+            eventComplete(PrimaryImportWorker.STEP_2_BOOK_FOLDERS, 0, 0, 0, null);
 
             // Write JSON file for every found book and persist it in the DB
             trace(Log.DEBUG, 0, log, "Import books starting - initial detected count : %s", library.size() + "");
@@ -173,17 +173,17 @@ public class ExternalImportWorker extends BaseWorker {
                 trace(Log.INFO, 1, log, "Import book OK : %s", content.getStorageUri());
                 booksOK++;
                 notificationManager.notify(new ImportProgressNotification(content.getTitle(), booksOK + booksKO, library.size()));
-                eventProgress(ImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO);
+                eventProgress(PrimaryImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO);
             }
             trace(Log.INFO, 2, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", library.size() + "");
-            eventComplete(ImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO, null);
+            eventComplete(PrimaryImportWorker.STEP_3_BOOKS, library.size(), booksOK, booksKO, null);
 
             // Write log in root folder
             logFile = LogHelper.writeLog(context, buildLogInfo(log));
         } catch (IOException e) {
             Timber.w(e);
         } finally {
-            eventComplete(ImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
+            eventComplete(PrimaryImportWorker.STEP_4_QUEUE_FINAL, booksOK + booksKO, booksOK, booksKO, logFile); // Final event; should be step 4
             notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
             dao.cleanup();
         }

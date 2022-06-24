@@ -26,6 +26,10 @@
         <item quantity="one">file</item>
         <item quantity="other">files</item>
     </plurals>
+    <plurals name="item" tools:ignore="ImpliedQuantity">
+        <item quantity="one">item</item>
+        <item quantity="other">items</item>
+    </plurals>
     <string name="groups">Groups</string>
     <string name="pause">Pause</string>
     <string name="stop">Stop</string>
@@ -189,7 +193,7 @@
     <string name="errortype_img_processing">Image processing</string>
     <string name="errortype_site_limit">Downloads/bandwidth limit reached</string>
     <string name="errortype_account">No account or insufficient credentials</string>
-    <string name="errortype_import">No local file found after import</string>
+    <string name="errortype_import">No local file found while importing</string>
     <string name="errortype_wifi">Book skipped because of Wi-Fi download size limitations</string>
     <string name="errortype_blocked">Book contains a blocked tag</string>
     <string name="errortype_undefined">Undefined</string>
@@ -201,6 +205,7 @@
     <string name="refresh_location_internal">Hentoid library</string>
     <string name="refresh_location_external">External library</string>
     <string name="refresh_options_rename">Rename all folders according to the current naming and max length preference</string>
+    <string name="refresh_options_remove_placeholders">Remove placeholder books imported through metadata</string>
     <string name="refresh_options_remove">Remove folders where…</string>
     <string name="refresh_options_remove_1">JSON file is absent (recommended)</string>
     <string name="refresh_options_remove_2">No image has been downloaded</string>
@@ -223,6 +228,7 @@
     <string name="import_mode_add">Add imported items</string>
     <string name="import_mode_replace">Replace with imported items</string>
     <string name="import_select_file">Select file to import</string>
+    <string name="checking_file">Checking file…</string>
     <string name="import_file_invalid">File <x:g example="metadata.json" id="filename">%s</x:g> is invalid</string>
     <plurals name="import_file_library">
         <item quantity="one">Import library (<x:g example="1" id="number">%d</x:g> book)</item>
@@ -240,7 +246,6 @@
         <item quantity="one">Import bookmark (<x:g example="1" id="number">%d</x:g> item)</item>
         <item quantity="other">Import bookmarks (<x:g example="2" id="number">%d</x:g> items)</item>
     </plurals>
-    <string name="import_warning">If no images folder is detected, imported books will appear as empty downloads.\nYou will have to download them using Queue &gt; Errors.</string>
     <string name="import_run">RUN IMPORT</string>
     <plurals name="import_result_books">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> book imported successfully</item>
@@ -250,7 +255,12 @@
         <item quantity="one"><x:g example="1" id="number">%d</x:g> bookmark imported successfully</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> bookmarks imported successfully</item>
     </plurals>
+    <plurals name="import_result">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> / <x:g example="2" id="number">%2$d</x:g> item imported successfully</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g> / <x:g example="2" id="number">%2$d</x:g> items imported successfully</item>
+    </plurals>
     <string name="dialog_prompt">Choose a Folder</string>
+    <string name="importing_metadata">Importing metadata…</string>
 
     <!-- Export metadata -->
     <string name="export_title">Export metadata</string>
@@ -599,12 +609,17 @@
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> search</string>
     <string name="search_prompt">Search <x:g id="search_prompt">%s</x:g></string>
     <!-- Used as a category on the search screen -->
-    <string name="category_artist">Artist (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_tag">Tag (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_character">Character (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_series">Series (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_language">Language (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_source">Source (<x:g example="2" id="count">%1$d</x:g>)</string>
+    <string name="category_artist">Artist</string>
+    <string name="category_tag">Tag</string>
+    <string name="category_character">Character</string>
+    <string name="category_series">Series</string>
+    <string name="category_language">Language</string>
+    <string name="category_source">Source</string>
+    <string name="category_uploader">Uploader</string>
+    <string name="category_circle">Circle</string>
+    <string name="category_category">Category</string>
+    <string name="category_translator">Translator</string>
+    <string name="category_publisher">Publisher</string>
     <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_artist">Artist</string>
     <string name="object_tag">Tag</string>
@@ -778,6 +793,11 @@
     <string name="title_startup">Startup</string>
     <string name="title_startup_progress">Starting…</string>
     <string name="title_startup_complete">Startup complete</string>
+
+    <!-- Missing WebView -->
+    <string name="missing_web_view_title">WebView is not installed or disabled</string>
+    <string name="missing_web_view">Hentoid has been unable to find Android\'s Web Viewer.\nUnfortunately, the app cannot function without it.\n\nIt is most likely that it\'s actually installed on your system, but disabled: please go to <b>Settings</b> &gt; <b>Apps</b> &gt; <b>Disabled apps</b> and enable <b>Android System WebView</b>.\n\nIf you can\'t find the app, please install it from the <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Store</a></b>.</string>
+    <string name="missing_web_view_close">Close Hentoid</string>
 
     <!-- Group names -->
     <string name="group_today">Today</string>

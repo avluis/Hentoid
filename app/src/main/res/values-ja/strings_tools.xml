@@ -20,4 +20,9 @@
 <string name="tools_cache_app_success">アプリのキャッシュが正常にクリアされました</string>
 <string name="tools_latest_logs_title">アプリのログ</string>
 <string name="tools_latest_logs_summary">アプリの最新ログを見る</string>
+<string name="tools_import_empty_books_intro">画像フォルダが検出されない場合…</string>
+    <string name="tools_import_empty_books_entries_1">インポートしない</string>
+    <string name="tools_import_empty_books_entries_2">空の本としてインポート</string>
+    <string name="tools_import_empty_books_entries_3">可能であればストリーミングブックとしてインポートする</string>
+    <string name="tools_import_empty_books_entries_4">エラーキューに追加</string>
 </resources>

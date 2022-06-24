@@ -20,16 +20,18 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sort_ascending"
             style="@style/HentoidButtonOutlinedStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight=".5"
             android:text="@string/sort_ascending"
             app:icon="@drawable/ic_simple_arrow_up" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sort_descending"
             style="@style/HentoidButtonOutlinedStyle"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight=".5"
             android:text="@string/sort_descending"
             app:icon="@drawable/ic_simple_arrow_down" />
 
@@ -137,6 +139,19 @@
         tools:targetApi="o" />
 
     <!-- Rating buttons -->
+
+    <ImageView
+        android:id="@+id/filter_rating_none"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_forbidden"
+        android:tooltipText="@string/filter_rating"
+        app:layout_constraintEnd_toStartOf="@id/filter_rating_1"
+        app:layout_constraintTop_toBottomOf="@id/filter_favs_btn"
+        app:tint="@color/medium_gray"
+        tools:ignore="ContentDescription"
+        tools:targetApi="o" />
 
     <ImageView
         android:id="@+id/filter_rating_1"

@@ -23,6 +23,10 @@
         <item quantity="one">fájl</item>
         <item quantity="other">fájlok</item>
     </plurals>
+    <plurals name="item" tools:ignore="ImpliedQuantity">
+        <item quantity="one">elem</item>
+        <item quantity="other">elemek</item>
+    </plurals>
     <string name="groups">Csoportok</string>
     <string name="pause">Szüneteltetés</string>
     <string name="stop">Leállítás</string>
@@ -88,6 +92,7 @@
     <string name="low_memory">Kevés a hely az eszközödön!</string>
     <string name="fix_permissions">Javítás</string>
     <string name="view_queue">Várólista megtekintése</string>
+    <string name="clear_search_history">Keresési előzmény törlése</string>
 <string name="downloader_title">Letöltő</string>
     <string name="queue_queue_tab">Folyamatban</string>
     <string name="queue_errors_tab">Hibák</string>
@@ -175,7 +180,7 @@
     <string name="errortype_img_processing">Képfeldolgozás</string>
     <string name="errortype_site_limit">Letöltési/sávszélességi korlát elérve</string>
     <string name="errortype_account">Nincsen fiók beállítva vagy nem megfelelő hitelesítési adatokkal rendelkezik</string>
-    <string name="errortype_import">Nem található helyi fájl az importálás után</string>
+    <string name="errortype_import">Importálás közben nem találtunk lokális fájl(okat)</string>
     <string name="errortype_wifi">Könyv kihagyva a Wi-Fi letöltési méretkorlátozások miatt</string>
     <string name="errortype_blocked">A könyv tartalmaz egy blokkolt taget</string>
     <string name="errortype_undefined">Definiálatlan</string>
@@ -185,6 +190,7 @@
     <string name="refresh_location_internal">Hentoid könyvtár</string>
     <string name="refresh_location_external">Külső könyvtár</string>
     <string name="refresh_options_rename">Az összes mappa átnevezése az aktuális elnevezési és maximális hosszúsági beállításoknak megfelelően</string>
+    <string name="refresh_options_remove_placeholders">Metaadatokon keresztül importált helyőrző könyvek eltávolítása*</string>
     <string name="refresh_options_remove">Távolítsa el a mappákat, ahol...</string>
     <string name="refresh_options_remove_1">JSON fájl hiányzik (ajánlott)</string>
     <string name="refresh_options_remove_2">Nincsen letöltött kép</string>
@@ -203,6 +209,7 @@
     <string name="import_mode_add">Importált elemek hozzáadása</string>
     <string name="import_mode_replace">Lecserélés az importált elemekre</string>
     <string name="import_select_file">Importálandó fájl kiválasztása</string>
+    <string name="checking_file">Fájl ellenőrzése...</string>
     <string name="import_file_invalid">Fájl <x:g example="metadata.json" id="filename">%s</x:g> az hibás</string>
     <plurals name="import_file_library">
         <item quantity="one">Könyvtár importálása (<x:g example="1" id="number">%d</x:g> könyv)</item>
@@ -220,7 +227,6 @@
         <item quantity="one">Könyvjelző importálása (<x:g example="1" id="number">%d</x:g> elem)</item>
         <item quantity="other">Könyvjelzők importálása (<x:g example="2" id="number">%d</x:g> elemek)</item>
     </plurals>
-    <string name="import_warning">Ha nem található olyan mappa, amelyben képek vannak, akkor az importált könyvek üres letöltésekként jelennek meg.\nEzeket le kell töltenie a várakozási sor segítségével &gt; Hibák.</string>
     <string name="import_run">IMPORTÁLÁS ELINDÍTÁSA</string>
     <plurals name="import_result_books">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> könyv sikeresen importálva</item>
@@ -230,7 +236,12 @@
         <item quantity="one"><x:g example="1" id="number">%d</x:g> könyvjelző sikeresen importálva</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> könyvjelzők sikeresn importálva</item>
     </plurals>
+    <plurals name="import_result">
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g> /<x:g example="2" id="number">%2$d</x:g> elem sikeresen importálva</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="2" id="number">%2$d</x:g> elemek sikeresen importálva</item>
+    </plurals>
     <string name="dialog_prompt">Mappa kiválasztása</string>
+    <string name="importing_metadata">Metaadatok importálása...</string>
 <string name="export_title">Metaadat exportálása</string>
     <plurals name="export_file_library">
         <item quantity="one">Könyvtár exportálása (<x:g example="1" id="number">%d</x:g> könyv)</item>
@@ -434,8 +445,7 @@
     <string name="merge_split">Szétválasztás</string>
     <string name="new_title">Új cím</string>
     <string name="merge_delete_after_merging">Egyesítés után könyvek törlése</string>
-    <string name="split_select_help">Tartsa lenyomva és húzza a kijelöléshez\
-Minden kijelölt fejezet egy új könyvet hoz létre</string>
+    <string name="split_select_help">Tartsa lenyomva és húzza a kijelöléshez\ Minden kijelölt fejezet egy új könyvet hoz létre</string>
     <string name="split_no_chapters">Jelenleg egy fejezet sincsen létrehozva :-(</string>
     <string name="split_create_chapters">Fejezet(ek) létrehozása</string>
     <string name="merge_success">Tartalom egyesítve</string>
@@ -502,12 +512,10 @@ Minden kijelölt fejezet egy új könyvet hoz létre</string>
     <string name="pin_new">Kérjük írja be az új PIN-kódot</string>
     <string name="pin_new_confirm">Kérjük írja be újra az új PIN-kódot</string>
     <string name="pin_explanation">Az alkalmazás zárolása funkció megakadályozza az alkalmazás jogosulatlan használatát (más személyek alól), azzal, hogy az alkalmazás indulásakor 4 számjegyű PIN-kódot kér</string>
-    <string name="pin_lock_on_restore">Zárolás, amikor visszaállítva\
-háttérből</string>
+    <string name="pin_lock_on_restore">Zárolás, amikor visszaállítva\ háttérből</string>
 <string name="about1"><b>A Hentoid</b> az egy Doujinshi &amp; Hentai Manga archiváló alkalmazás. A Hentoid alkalmazást eredetileg <b>Cesar Arasaki</b> készítette.</string>
     <string name="personalDataStatement1"><b>SZEMÉLYES ADATVÉDELMI NYILATKOZAT</b>\n\nA Hentoid egy ingyenes és nyílt forráskódú szoftver, amelyet a Hentoid Közösség tart fenn (csatlakozz hozzánk a Discordon - lásd a fenti linket).</string>
-    <string name="personalDataStatement2">A Hentoid a következő személyes adatokat gyűjti és küldi a Google-nak feldolgozásra a firebase könyvtáron keresztül:\
- - Munkamenet azonosító\n - IP cím</string>
+    <string name="personalDataStatement2">A Hentoid a következő személyes adatokat gyűjti és küldi a Google-nak feldolgozásra a firebase könyvtáron keresztül:\ - Munkamenet azonosító\n - IP cím</string>
     <string name="personalDataStatement3">A fent említett adatokat 180 napon belül eltávolítjuk a Firebase live és backup rendszeréből (további részletekért lásd https://firebase.google.com/support/privacy/)\n\nNem gyűjtünk más személyes adatokat és azt nem küldjük el más félnek.</string>
     <string name="about_licenses">Licencek megjelenítése</string>
     <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
@@ -540,12 +548,17 @@ háttérből</string>
     <string name="exclude">Kizárás</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> keresés</string>
     <string name="search_prompt">Keresés <x:g id="search_prompt">%s</x:g></string>
-<string name="category_artist">Szerző (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_tag">Tag (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_character">Karakter (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_series">Sorozat (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_language">Nyelv (<x:g example="2" id="count">%1$d</x:g>)</string>
-    <string name="category_source">Forrás (<x:g example="2" id="count">%1$d</x:g>)</string>
+<string name="category_artist">Szerző</string>
+    <string name="category_tag">Tag</string>
+    <string name="category_character">Karakter</string>
+    <string name="category_series">Sorozat</string>
+    <string name="category_language">Nyelv</string>
+    <string name="category_source">Forrás</string>
+    <string name="category_uploader">Felöltő</string>
+    <string name="category_circle">Kör</string>
+    <string name="category_category">Kategória</string>
+    <string name="category_translator">Fordító</string>
+    <string name="category_publisher">Feltöltő</string>
 <string name="object_artist">Szerző</string>
     <string name="object_tag">Tag</string>
     <string name="object_character">Karakter</string>
@@ -630,6 +643,7 @@ háttérből</string>
     <string name="chapters_remove_failed">A fejezet eltávolítása nem történt meg</string>
     <string name="chapter_move_failed">A fejezet mozgatása nem történt meg</string>
     <string name="slideshow_start">Diavetítés elkezdése (késleltetés <x:g example="0.5" id="time">%.1f</x:g>s)</string>
+    <string name="slideshow_start_vertical">Diavetítés (<x:g example="fast" id="speed">%s</x:g>)</string>
     <string name="slideshow_stop">Diavetítés leállt</string>
     <string name="ask_clear_chapters">Összes fejezet törlése?</string>
 <string name="view_changelog">Változásnapló megtekintése</string>
@@ -702,6 +716,9 @@ háttérből</string>
 <string name="title_startup">Indítás</string>
     <string name="title_startup_progress">Kezdjük...</string>
     <string name="title_startup_complete">Indítás befejezve</string>
+<string name="missing_web_view_title">A WebView nincsen feltelepítve vagy le van tiltva</string>
+    <string name="missing_web_view">Hentoid alkalmazás nem találja meg a Android\'s Web Viewer alkalmazást.\nEmiatt, a Hentoid alkalmazás nem tud megfelelően működni. \n\nElképzelhető viszont az, hogy az alkalmazás telepítve van a rendszereden, de le van tiltva: kérlek menj a <b>Beállítások</b> &gt; <b>Alkalmazások</b> &gt; <b>Letiltott alkalmazások</b> és engedélyezd <b>Android System WebView</b>.\n\nHa nem találod meg itt az alkalmazást, akkor töltsd le a  <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Store</a></b>.</string>
+    <string name="missing_web_view_close">Hentoid Bezárása</string>
 <string name="group_today">Ma</string>
     <string name="group_7">Az elmúlt 7 napban</string>
     <string name="group_30">Az elmúlt 30 napban</string>

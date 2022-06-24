@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
+    <plurals name="download_completed" tools:ignore="MissingQuantity">
+        <item quantity="one" tools:ignore="ImpliedQuantity">다운로드 완료</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g>개 다운로드 완료</item>
+    </plurals>
+    <string name="download_complete">다운로드 완료</string>
+    <string name="download_cancelled">다운로드 취소</string>
+    <string name="download_error">다운로드가 완료되었지만 오류가 발생했습니다</string>
+    <plurals name="add_to_queue" tools:ignore="MissingQuantity">
+        <item quantity="one"><x:g example="1" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g>개 항목이 대기열에 추가되었습니다</item>
+        <item quantity="other"><x:g example="2" id="processed">%1$d</x:g>/<x:g example="10" id="total">%2$d</x:g>개 항목이 대기열에 추가되었습니다</item>
+    </plurals>
+    <string name="already_downloaded">이미 다운로드 했습니다</string>
+    <string name="already_queued">이미 대기열에 있습니다</string>
+</resources>

@@ -28,7 +28,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
-import me.devsaki.hentoid.workers.ImportWorker;
+import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import timber.log.Timber;
 
 public class Api29MigrationActivity extends AppCompatActivity {
@@ -180,16 +180,16 @@ public class Api29MigrationActivity extends AppCompatActivity {
     public void onMigrationEvent(ProcessEvent event) {
         if (event.processId != R.id.migrate_api29) return;
 
-        ProgressBar progressBar = (ImportWorker.STEP_2_BOOK_FOLDERS == event.step) ? step2progress : step3progress;
+        ProgressBar progressBar = (PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step) ? step2progress : step3progress;
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             progressBar.setMax(event.elementsTotal);
             progressBar.setProgress(event.elementsOK + event.elementsKO);
-            if (ImportWorker.STEP_3_BOOKS == event.step) {
+            if (PrimaryImportWorker.STEP_3_BOOKS == event.step) {
                 step2check.setVisibility(View.VISIBLE);
                 step3block.setVisibility(View.VISIBLE);
                 step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsKO + event.elementsOK, event.elementsTotal));
             }
-        } else if (ProcessEvent.EventType.COMPLETE == event.eventType && ImportWorker.STEP_3_BOOKS == event.step) {
+        } else if (ProcessEvent.EventType.COMPLETE == event.eventType && PrimaryImportWorker.STEP_3_BOOKS == event.step) {
             step3Txt.setText(getResources().getString(R.string.api29_migration_step3, event.elementsTotal, event.elementsTotal));
             step3check.setVisibility(View.VISIBLE);
             goToLibraryActivity();

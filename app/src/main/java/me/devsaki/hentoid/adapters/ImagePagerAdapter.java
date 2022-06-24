@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -77,11 +78,14 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
     private View.OnTouchListener itemTouchListener;
     private RecyclerView recyclerView;
+    private final Map<Integer, Float> initialAbsoluteScales = new HashMap<>();
+    private final Map<Integer, Float> absoluteScales = new HashMap<>();
 
     // To preload images before they appear on screen with CustomSubsamplingScaleImageView
     private int maxBitmapWidth = -1;
     private int maxBitmapHeight = -1;
 
+    // Direction user is curently reading the book with
     private boolean isScrollLTR = true;
 
     // Single instance of RenderScript
@@ -95,6 +99,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private boolean autoRotate;
     private boolean isSmoothRendering;
     private float doubleTapZoomCap;
+
 
     public ImagePagerAdapter(Context context) {
         super(IMAGE_DIFF_CALLBACK);
@@ -210,6 +215,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             if (!Preferences.isViewerZoomTransitions())
                 holder.ssiv.setDoubleTapZoomDuration(10);
             holder.ssiv.setOffsetLeftSide(isScrollLTR);
+            holder.ssiv.setScaleListener(s -> onAbsoluteScaleChanged(position, s));
         }
 
         int layoutStyle = (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
@@ -251,7 +257,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         }
 
         // Free the SSIV's resources
-        if (!holder.isImageView) holder.ssiv.recycle();
+        if (!holder.isImageView) holder.ssiv.clear();
 
         super.onViewRecycled(holder);
     }
@@ -265,12 +271,40 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         if (rs != null) rs.destroy();
     }
 
-    public float getScaleAtPosition(int position) {
-        if (recyclerView != null) {
+    public void reset() {
+        absoluteScales.clear();
+        initialAbsoluteScales.clear();
+    }
+
+    public float getAbsoluteScaleAtPosition(int position) {
+        if (absoluteScales.containsKey(position)) {
+            Float result = absoluteScales.get(position);
+            if (result != null) return result;
+        } else if (recyclerView != null) {
             ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
-            if (holder != null) return holder.getScale();
+            if (holder != null) return holder.getAbsoluteScale();
         }
         return 0f;
+    }
+
+    public float getRelativeScaleAtPosition(int position) {
+        if (absoluteScales.containsKey(position)) {
+            Float resultInitial = initialAbsoluteScales.get(position);
+            Float result = absoluteScales.get(position);
+            if (result != null && resultInitial != null) return result / resultInitial;
+        }
+        return 0f;
+    }
+
+    public void setRelativeScaleAtPosition(int position, float targetRelativeScale) {
+        if (recyclerView != null) {
+            ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+            if (holder != null && initialAbsoluteScales.containsKey(position)) {
+                Float initialScale = initialAbsoluteScales.get(position);
+                if (initialScale != null)
+                    holder.setAbsoluteScale(targetRelativeScale * initialScale);
+            }
+        }
     }
 
     public void resetScaleAtPosition(int position) {
@@ -287,6 +321,13 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 if (holder != null) holder.multiplyVirtualScale(multiplier);
             }
         }
+    }
+
+    private void onAbsoluteScaleChanged(int position, double scale) {
+        Timber.d(">> position %d -> scale %s", position, scale);
+        if (!initialAbsoluteScales.containsKey(position))
+            initialAbsoluteScales.put(position, (float) scale);
+        absoluteScales.put(position, (float) scale);
     }
 
     public void setMaxDimensions(int maxWidth, int maxHeight) {
@@ -389,11 +430,19 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             }
         }
 
-        private float getScale() {
+        private float getAbsoluteScale() {
             if (!isImageView) {
                 return ssiv.getVirtualScale();
             } else { // ImageView
                 return imageView.getScaleX(); // TODO doesn't work for Glide as it doesn't use ImageView's scaling
+            }
+        }
+
+        private void setAbsoluteScale(float targetScale) {
+            if (!isImageView) {
+                ssiv.setScaleAndCenter(targetScale, null);
+            } else { // ImageView
+                imageView.setScaleX(targetScale);
             }
         }
 
@@ -471,7 +520,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         public void onReady() {
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation) {
                 CustomSubsamplingScaleImageView scaleView = (CustomSubsamplingScaleImageView) imgView;
-                adjustHeight(0, (int) (scaleView.getScale() * scaleView.getSHeight()), false);
+                adjustHeight(0, (int) (scaleView.getAbsoluteScale() * scaleView.getSHeight()), false);
             }
         }
 

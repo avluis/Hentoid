@@ -4,19 +4,22 @@ import androidx.work.Data;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.workers.PrimaryImportWorker;
+
 /**
- * Helper class to transfer data from any Activity to {@link me.devsaki.hentoid.workers.ImportWorker}
+ * Helper class to transfer data from any Activity to {@link PrimaryImportWorker}
  * through a Data object
  * <p>
  * Use Builder class to set data; use Parser class to get data
  */
-public class ImportData {
+public class PrimaryImportData {
     private static final String KEY_REFRESH_RENAME = "rename";
+    private static final String KEY_REFRESH_REMOVE_PLACEHOLDERS = "removePlaceholders";
     private static final String KEY_REFRESH_CLEAN_NO_JSON = "cleanNoJson";
     private static final String KEY_REFRESH_CLEAN_NO_IMAGES = "cleanNoImages";
     private static final String KEY_IMPORT_GROUPS = "importGroups";
 
-    private ImportData() {
+    private PrimaryImportData() {
         throw new UnsupportedOperationException();
     }
 
@@ -26,6 +29,10 @@ public class ImportData {
 
         public void setRefreshRename(boolean rename) {
             builder.putBoolean(KEY_REFRESH_RENAME, rename);
+        }
+
+        public void setRefreshRemovePlaceholders(boolean data) {
+            builder.putBoolean(KEY_REFRESH_REMOVE_PLACEHOLDERS, data);
         }
 
         public void setRefreshCleanNoJson(boolean refresh) {
@@ -55,6 +62,10 @@ public class ImportData {
 
         public boolean getRefreshRename() {
             return data.getBoolean(KEY_REFRESH_RENAME, false);
+        }
+
+        public boolean getRefreshRemovePlaceholders() {
+            return data.getBoolean(KEY_REFRESH_REMOVE_PLACEHOLDERS, false);
         }
 
         public boolean getRefreshCleanNoJson() {

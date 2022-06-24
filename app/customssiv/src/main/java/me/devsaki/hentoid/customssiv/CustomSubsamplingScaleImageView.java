@@ -35,6 +35,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
 
+import com.annimon.stream.function.Consumer;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.lang.annotation.Retention;
@@ -60,6 +62,8 @@ import me.devsaki.hentoid.customssiv.decoder.ImageDecoder;
 import me.devsaki.hentoid.customssiv.decoder.ImageRegionDecoder;
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageDecoder;
 import me.devsaki.hentoid.customssiv.decoder.SkiaImageRegionDecoder;
+import me.devsaki.hentoid.customssiv.util.Debouncer;
+import me.devsaki.hentoid.customssiv.util.Helper;
 import timber.log.Timber;
 
 
@@ -335,8 +339,10 @@ public class CustomSubsamplingScaleImageView extends View {
     // Event listener
     private OnImageEventListener onImageEventListener;
 
-    // Scale and center listener
+    // Scale and center listeners
     private OnStateChangedListener onStateChangedListener;
+    private final Debouncer<Double> scaleDebouncer;
+    private Consumer<Double> scaleListener = null;
 
     // Long click listener
     private OnLongClickListener onLongClickListener;
@@ -447,10 +453,19 @@ public class CustomSubsamplingScaleImageView extends View {
         }
 
         quickScaleThreshold = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80, context.getResources().getDisplayMetrics());
+        scaleDebouncer = new Debouncer<>(context, 200, scale -> {
+            if (scaleListener != null) scaleListener.accept(scale);
+        });
     }
 
     public CustomSubsamplingScaleImageView(Context context) {
         this(context, null);
+    }
+
+    public void clear() {
+        recycle();
+        scaleDebouncer.clear();
+        scaleListener = null;
     }
 
     /**
@@ -940,6 +955,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
                             double previousScale = scale;
                             scale = Math.min(maxScale, (vDistEnd / vDistStart) * scaleStart);
+                            signalScaleChange(scale);
 
                             if (scale <= minScale()) {
                                 // Minimum scale reached so don't pan. Adjust start settings so any expand will zoom in.
@@ -1000,6 +1016,7 @@ public class CustomSubsamplingScaleImageView extends View {
 
                             double previousScale = scale;
                             scale = Math.max(minScale(), Math.min(maxScale, scale * multiplier));
+                            signalScaleChange(scale);
 
                             if (panEnabled) {
                                 float vLeftStart = vCenterStart.x - vTranslateStart.x;
@@ -1239,6 +1256,7 @@ public class CustomSubsamplingScaleImageView extends View {
             boolean finished = scaleElapsed > anim.duration;
             scaleElapsed = Math.min(scaleElapsed, anim.duration);
             scale = ease(anim.easing, scaleElapsed, anim.scaleStart, anim.scaleEnd - anim.scaleStart, anim.duration);
+            signalScaleChange(scale);
 
             // Apply required animation to the focal point
             float vFocusNowX = ease(anim.easing, scaleElapsed, anim.vFocusStart.x, anim.vFocusEnd.x - anim.vFocusStart.x, anim.duration);
@@ -1662,6 +1680,7 @@ public class CustomSubsamplingScaleImageView extends View {
         // If waiting to translate to new center position, set translate now
         if (sPendingCenter != null && pendingScale != null) {
             scale = pendingScale;
+            signalScaleChange(scale);
             if (vTranslate == null) {
                 vTranslate = new PointF();
             }
@@ -1792,6 +1811,7 @@ public class CustomSubsamplingScaleImageView extends View {
         satTemp.vTranslate.set(vTranslate);
         fitToBounds(center, satTemp, sSize);
         scale = satTemp.scale;
+        signalScaleChange(scale);
         if (-1 == initialScale) {
             initialScale = scale;
             Timber.i(">> initialScale : %s", initialScale);
@@ -2837,26 +2857,31 @@ public class CustomSubsamplingScaleImageView extends View {
     }
 
     /**
-     * Returns the current scale value.
+     * Returns the current absolute scale value.
      *
      * @return the current scale as a source/view pixels ratio.
      */
-    public final float getScale() {
+    public final float getAbsoluteScale() {
         return scale;
     }
 
     /**
-     * Externally change the scale and translation of the source image. This may be used with getCenter() and getScale()
+     * Externally change the absolute scale and translation of the source image. This may be used with getCenter() and getScale()
      * to restore the scale and zoom after a screen rotate.
      *
-     * @param scale   New scale to set.
-     * @param sCenter New source image coordinate to center on the screen, subject to boundaries.
+     * @param absoluteScale New scale to set.
+     * @param sCenter       New source image coordinate to center on the screen, subject to boundaries.
      */
-    public final void setScaleAndCenter(float scale, @Nullable PointF sCenter) {
+    public final void setScaleAndCenter(float absoluteScale, @Nullable PointF sCenter) {
         this.anim = null;
-        this.pendingScale = scale;
-        this.sPendingCenter = sCenter;
-        this.sRequestedCenter = sCenter;
+        this.pendingScale = absoluteScale;
+        if (sCenter != null) {
+            this.sPendingCenter = sCenter;
+            this.sRequestedCenter = sCenter;
+        } else {
+            this.sPendingCenter = getCenter();
+            this.sRequestedCenter = getCenter();
+        }
         invalidate();
     }
 
@@ -3235,6 +3260,14 @@ public class CustomSubsamplingScaleImageView extends View {
         if (onStateChangedListener != null && !vTranslate.equals(oldVTranslate)) {
             onStateChangedListener.onCenterChanged(getCenter(), origin);
         }
+    }
+
+    public void setScaleListener(Consumer<Double> scaleListener) {
+        this.scaleListener = scaleListener;
+    }
+
+    private void signalScaleChange(double targetScale) {
+        scaleDebouncer.submit(targetScale);
     }
 
     /**

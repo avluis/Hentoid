@@ -60,14 +60,14 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.notification.Notification;
-import me.devsaki.hentoid.workers.data.ImportData;
+import me.devsaki.hentoid.workers.data.PrimaryImportData;
 import timber.log.Timber;
 
 
 /**
  * Worker responsible for importing an existing Hentoid library.
  */
-public class ImportWorker extends BaseWorker {
+public class PrimaryImportWorker extends BaseWorker {
 
     public static final int STEP_GROUPS = 0;
     public static final int STEP_1 = 1;
@@ -83,7 +83,7 @@ public class ImportWorker extends BaseWorker {
     int nbFolders;                      // Number of folders found with no content but subfolders
 
 
-    public ImportWorker(
+    public PrimaryImportWorker(
             @NonNull Context context,
             @NonNull WorkerParameters parameters) {
         super(context, parameters, R.id.import_service, null);
@@ -110,13 +110,14 @@ public class ImportWorker extends BaseWorker {
 
     @Override
     void getToWork(@NonNull Data input) {
-        ImportData.Parser data = new ImportData.Parser(getInputData());
+        PrimaryImportData.Parser data = new PrimaryImportData.Parser(getInputData());
         boolean doRename = data.getRefreshRename();
+        boolean doRemovePlaceholders = data.getRefreshRemovePlaceholders();
         boolean doCleanNoJson = data.getRefreshCleanNoJson();
         boolean doCleanNoImages = data.getRefreshCleanNoImages();
         boolean doImportGroups = data.getImportGroups();
 
-        startImport(doRename, doCleanNoJson, doCleanNoImages, doImportGroups);
+        startImport(doRename, doRemovePlaceholders, doCleanNoJson, doCleanNoImages, doImportGroups);
     }
 
     private void eventProgress(int step, int nbBooks, int booksOK, int booksKO) {
@@ -142,12 +143,13 @@ public class ImportWorker extends BaseWorker {
     /**
      * Import books from known source folders
      *
-     * @param rename        True if the user has asked for a folder renaming when calling import from Preferences
-     * @param cleanNoJSON   True if the user has asked for a cleanup of folders with no JSONs when calling import from Preferences
-     * @param cleanNoImages True if the user has asked for a cleanup of folders with no images when calling import from Preferences
-     * @param importGroups  True if the worker has to import groups from the groups JSON; false if existing groups should be kept
+     * @param rename             True if the user has asked for a folder renaming when calling import from Preferences
+     * @param removePlaceholders True if the user has asked for a removal of all books with the status PLACEHOLDER (that do not exist on storage)
+     * @param cleanNoJSON        True if the user has asked for a cleanup of folders with no JSONs when calling import from Preferences
+     * @param cleanNoImages      True if the user has asked for a cleanup of folders with no images when calling import from Preferences
+     * @param importGroups       True if the worker has to import groups from the groups JSON; false if existing groups should be kept
      */
-    private void startImport(boolean rename, boolean cleanNoJSON, boolean cleanNoImages, boolean importGroups) {
+    private void startImport(boolean rename, boolean removePlaceholders, boolean cleanNoJSON, boolean cleanNoImages, boolean importGroups) {
         booksOK = 0;
         booksKO = 0;
         nbFolders = 0;
@@ -210,7 +212,7 @@ public class ImportWorker extends BaseWorker {
             // Flag DB content for cleanup
             CollectionDAO dao = new ObjectBoxDAO(context);
             try {
-                dao.flagAllInternalBooks();
+                dao.flagAllInternalBooks(removePlaceholders);
                 dao.flagAllErrorBooksWithJson();
             } finally {
                 dao.cleanup();
@@ -369,7 +371,7 @@ public class ImportWorker extends BaseWorker {
                     if (!ContentHelper.isInQueue(content.getStatus()))
                         content.setStatus(StatusContent.ERROR);
                     List<ErrorRecord> errors = new ArrayList<>();
-                    errors.add(new ErrorRecord(ErrorType.IMPORT, "", "Book", "No local images found when importing - Please redownload", Instant.now()));
+                    errors.add(new ErrorRecord(ErrorType.IMPORT, "", getApplicationContext().getResources().getQuantityString(R.plurals.book, 1), "No local images found when importing - Please redownload", Instant.now()));
                     content.setErrorLog(errors);
                 }
 

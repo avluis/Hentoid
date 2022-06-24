@@ -44,4 +44,12 @@
     <string name="tools_latest_logs_title">App logs</string>
     <!-- Menu item description -->
     <string name="tools_latest_logs_summary">View the app\'s latest logs</string>
+
+
+    <!-- Metadata import -->
+    <string name="tools_import_empty_books_intro">If no images folder is detected…</string>
+    <string name="tools_import_empty_books_entries_1">Do not import</string>
+    <string name="tools_import_empty_books_entries_2">Import as empty book</string>
+    <string name="tools_import_empty_books_entries_3">Import as streamed book if possible</string>
+    <string name="tools_import_empty_books_entries_4">Add to error queue</string>
 </resources>

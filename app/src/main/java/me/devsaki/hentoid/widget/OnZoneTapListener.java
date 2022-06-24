@@ -31,6 +31,8 @@ public class OnZoneTapListener implements View.OnTouchListener {
 
     private Runnable onMiddleZoneTapListener;
 
+    private Runnable onLongTapListener;
+
     public OnZoneTapListener(View view, int tapZoneScale) {
         this.view = view;
         Context context = view.getContext();
@@ -53,6 +55,11 @@ public class OnZoneTapListener implements View.OnTouchListener {
         return this;
     }
 
+    public OnZoneTapListener setOnLongTapListener(Runnable onLongTapListener) {
+        this.onLongTapListener = onLongTapListener;
+        return this;
+    }
+
     public boolean onSingleTapConfirmedAction(MotionEvent e) {
         if (e.getX() < pagerTapZoneWidth && onLeftZoneTapListener != null) {
             onLeftZoneTapListener.run();
@@ -65,6 +72,10 @@ public class OnZoneTapListener implements View.OnTouchListener {
         return true;
     }
 
+    public void onLongPressAction(MotionEvent e) {
+        if (onLongTapListener != null) onLongTapListener.run();
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -75,6 +86,11 @@ public class OnZoneTapListener implements View.OnTouchListener {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             return onSingleTapConfirmedAction(e);
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+            onLongPressAction(e);
         }
     }
 }

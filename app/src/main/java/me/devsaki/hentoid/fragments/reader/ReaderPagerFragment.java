@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -382,17 +383,22 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences))
                 rescaleDebouncer.submit((float) scale);
         });
-        binding.recyclerView.setLongTapListener(ev -> false);
+        binding.recyclerView.setLongTapListener(ev -> {
+            onLongTap();
+            return false;
+        });
 
         int tapZoneScale = Preferences.isViewerTapToTurn2x() ? 2 : 1;
 
         OnZoneTapListener onHorizontalZoneTapListener = new OnZoneTapListener(binding.recyclerView, tapZoneScale)
                 .setOnLeftZoneTapListener(this::onLeftTap)
                 .setOnRightZoneTapListener(this::onRightTap)
-                .setOnMiddleZoneTapListener(this::onMiddleTap);
+                .setOnMiddleZoneTapListener(this::onMiddleTap)
+                .setOnLongTapListener(this::onLongTap);
 
         OnZoneTapListener onVerticalZoneTapListener = new OnZoneTapListener(binding.recyclerView, 1)
-                .setOnMiddleZoneTapListener(this::onMiddleTap);
+                .setOnMiddleZoneTapListener(this::onMiddleTap)
+                .setOnLongTapListener(this::onLongTap);
 
         binding.recyclerView.setTapListener(onVerticalZoneTapListener);       // For paper roll mode (vertical)
         adapter.setItemTouchListener(onHorizontalZoneTapListener);    // For independent images mode (horizontal)
@@ -577,7 +583,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (0 == position) { // Content
             ReaderBottomContentFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager());
         } else { // Image
-            float currentScale = adapter.getScaleAtPosition(imageIndex);
+            float currentScale = adapter.getAbsoluteScaleAtPosition(imageIndex);
             ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
         }
         binding.controlsOverlay.informationMicroMenu.dips();
@@ -654,6 +660,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         }
 
         isComputingImageList = true;
+        adapter.reset();
         adapter.submitList(images, this::differEndCallback);
 
         if (images.isEmpty()) {
@@ -798,9 +805,17 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             adapter.setScrollLTR(isScrollLTR);
             hidePendingMicroMenus();
 
-            // Resets zoom if we're using horizontal (independent pages) mode
-            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences))
-                adapter.resetScaleAtPosition(scrollPosition);
+            // Manage scaling reset / stability if we're using horizontal (independent pages) mode
+            if (Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == Preferences.getContentOrientation(bookPreferences)) {
+                if (Preferences.isViewerMaintainHorizontalZoom() && imageIndex > -1) {
+                    float previousScale = adapter.getRelativeScaleAtPosition(imageIndex);
+                    Timber.d(">> relative scale : %s", previousScale);
+                    if (previousScale > 0)
+                        adapter.setRelativeScaleAtPosition(scrollPosition, previousScale);
+                } else {
+                    adapter.resetScaleAtPosition(scrollPosition);
+                }
+            }
 
             // Don't show loading progress from previous image
             binding.viewerLoadingTxt.setVisibility(View.GONE);
@@ -848,12 +863,12 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
      * @param content Current book
      */
     private void updateNavigationUi(@Nonnull Content content) {
-        if (content.isFirst())
-            binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.INVISIBLE);
-        else binding.controlsOverlay.viewerPrevBookBtn.setVisibility(View.VISIBLE);
-        if (content.isLast())
-            binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.INVISIBLE);
-        else binding.controlsOverlay.viewerNextBookBtn.setVisibility(View.VISIBLE);
+        int direction = Preferences.getContentDirection(bookPreferences);
+        ImageButton nextButton = (Constant.VIEWER_DIRECTION_LTR == direction) ? binding.controlsOverlay.viewerNextBookBtn : binding.controlsOverlay.viewerPrevBookBtn;
+        ImageButton prevButton = (Constant.VIEWER_DIRECTION_LTR == direction) ? binding.controlsOverlay.viewerPrevBookBtn : binding.controlsOverlay.viewerNextBookBtn;
+
+        prevButton.setVisibility(content.isFirst() ? View.INVISIBLE : View.VISIBLE);
+        nextButton.setVisibility(content.isLast() ? View.INVISIBLE : View.VISIBLE);
 
         maxPageNumber = content.getQtyPages();
         updatePageControls();
@@ -966,15 +981,21 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         pageSnapWidget.setPageSnapEnabled(Preferences.Constant.VIEWER_ORIENTATION_HORIZONTAL == orientation);
 
         int direction = Preferences.getContentDirection(bookPreferences);
+        adapter.setScrollLTR(Constant.VIEWER_DIRECTION_LTR == direction);
         if (Constant.VIEWER_DIRECTION_LTR == direction) {
             pageCurrentNumber = binding.controlsOverlay.viewerPagerLeftTxt;
             pageMaxNumber = binding.controlsOverlay.viewerPagerRightTxt;
             binding.controlsOverlay.pageSlider.setRotationY(0);
+            binding.controlsOverlay.viewerPrevBookBtn.setOnClickListener(v -> previousBook());
+            binding.controlsOverlay.viewerNextBookBtn.setOnClickListener(v -> nextBook());
         } else if (Constant.VIEWER_DIRECTION_RTL == direction) {
             pageCurrentNumber = binding.controlsOverlay.viewerPagerRightTxt;
             pageMaxNumber = binding.controlsOverlay.viewerPagerLeftTxt;
             binding.controlsOverlay.pageSlider.setRotationY(180);
+            binding.controlsOverlay.viewerPrevBookBtn.setOnClickListener(v -> nextBook());
+            binding.controlsOverlay.viewerNextBookBtn.setOnClickListener(v -> previousBook());
         }
+
         pageMaxNumber.setOnClickListener(null);
         pageCurrentNumber.setOnClickListener(v -> InputDialog.invokeNumberInputDialog(requireActivity(), R.string.goto_page, this::goToPage));
     }
@@ -1223,6 +1244,16 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             hideControlsOverlay();
         else
             showControlsOverlay();
+    }
+
+    /**
+     * Handler for long-tapping the screen
+     */
+    private void onLongTap() {
+        if (!Preferences.isViewerHoldToZoom()) {
+            float currentScale = adapter.getAbsoluteScaleAtPosition(imageIndex);
+            ReaderBottomImageFragment.invoke(requireContext(), requireActivity().getSupportFragmentManager(), imageIndex, currentScale);
+        }
     }
 
     private void showControlsOverlay() {

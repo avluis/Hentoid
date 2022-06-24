@@ -24,7 +24,7 @@ import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.ImportHelper.setAndScanHentoidFolder
 import me.devsaki.hentoid.util.Preferences
-import me.devsaki.hentoid.workers.ImportWorker
+import me.devsaki.hentoid.workers.PrimaryImportWorker
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -220,8 +220,8 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMigrationEvent(event: ProcessEvent) {
         val progressBar: ProgressBar = when (event.step) {
-            ImportWorker.STEP_2_BOOK_FOLDERS -> mergedBinding.importStep2Bar
-            ImportWorker.STEP_3_BOOKS -> mergedBinding.importStep3Bar
+            PrimaryImportWorker.STEP_2_BOOK_FOLDERS -> mergedBinding.importStep2Bar
+            PrimaryImportWorker.STEP_3_BOOKS -> mergedBinding.importStep3Bar
             else -> mergedBinding.importStep4Bar
         }
 
@@ -231,7 +231,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                 progressBar.max = event.elementsTotal
                 progressBar.progress = event.elementsOK + event.elementsKO
             } else progressBar.isIndeterminate = true
-            if (ImportWorker.STEP_3_BOOKS == event.step) {
+            if (PrimaryImportWorker.STEP_3_BOOKS == event.step) {
                 mergedBinding.importStep2Check.visibility = View.VISIBLE
                 mergedBinding.importStep3.visibility = View.VISIBLE
                 mergedBinding.importStep3Text.text = resources.getString(
@@ -239,17 +239,17 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     event.elementsKO + event.elementsOK,
                     event.elementsTotal
                 )
-            } else if (ImportWorker.STEP_4_QUEUE_FINAL == event.step) {
+            } else if (PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step) {
                 mergedBinding.importStep3Check.visibility = View.VISIBLE
                 mergedBinding.importStep4.visibility = View.VISIBLE
             }
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             when {
-                ImportWorker.STEP_2_BOOK_FOLDERS == event.step -> {
+                PrimaryImportWorker.STEP_2_BOOK_FOLDERS == event.step -> {
                     mergedBinding.importStep2Check.visibility = View.VISIBLE
                     mergedBinding.importStep3.visibility = View.VISIBLE
                 }
-                ImportWorker.STEP_3_BOOKS == event.step -> {
+                PrimaryImportWorker.STEP_3_BOOKS == event.step -> {
                     mergedBinding.importStep3Text.text = resources.getString(
                         R.string.api29_migration_step3,
                         event.elementsTotal,
@@ -258,7 +258,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
                     mergedBinding.importStep3Check.visibility = View.VISIBLE
                     mergedBinding.importStep4.visibility = View.VISIBLE
                 }
-                ImportWorker.STEP_4_QUEUE_FINAL == event.step -> {
+                PrimaryImportWorker.STEP_4_QUEUE_FINAL == event.step -> {
                     mergedBinding.importStep4Check.visibility = View.VISIBLE
                     nextStep()
                 }

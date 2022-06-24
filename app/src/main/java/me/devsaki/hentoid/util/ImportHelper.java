@@ -54,8 +54,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.workers.ExternalImportWorker;
-import me.devsaki.hentoid.workers.ImportWorker;
-import me.devsaki.hentoid.workers.data.ImportData;
+import me.devsaki.hentoid.workers.PrimaryImportWorker;
+import me.devsaki.hentoid.workers.data.PrimaryImportData;
 import timber.log.Timber;
 
 public class ImportHelper {
@@ -98,6 +98,7 @@ public class ImportHelper {
      */
     public static class ImportOptions {
         public boolean rename; // If true, rename folders with current naming convention
+        public boolean removePlaceholders; // If true, books & folders with status PLACEHOLDER will be removed
         public boolean cleanNoJson; // If true, delete folders where no JSON file is found
         public boolean cleanNoImages; // If true, delete folders where no supported images are found
         public boolean importGroups; // If true, reimport groups from the groups JSON
@@ -418,9 +419,10 @@ public class ImportHelper {
     ) {
         ImportNotificationChannel.init(context);
 
-        ImportData.Builder builder = new ImportData.Builder();
+        PrimaryImportData.Builder builder = new PrimaryImportData.Builder();
         if (options != null) {
             builder.setRefreshRename(options.rename);
+            builder.setRefreshRemovePlaceholders(options.removePlaceholders);
             builder.setRefreshCleanNoJson(options.cleanNoJson);
             builder.setRefreshCleanNoImages(options.cleanNoImages);
             builder.setImportGroups(options.importGroups);
@@ -430,7 +432,7 @@ public class ImportHelper {
         workManager.enqueueUniqueWork(
                 Integer.toString(R.id.import_service),
                 ExistingWorkPolicy.REPLACE,
-                new OneTimeWorkRequest.Builder(ImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
+                new OneTimeWorkRequest.Builder(PrimaryImportWorker.class).setInputData(builder.getData()).addTag(WORK_CLOSEABLE).build());
     }
 
     /**

@@ -21,9 +21,9 @@ public class FastAdapterPreClickSelectHelper<T extends IItem<? extends RecyclerV
     }
 
     public Boolean onPreClickListener(View v, IAdapter<T> adapter, T item, Integer position) {
-        Set<Integer> selectedPositions = selectExtension.getSelections();
         // Toggle selection while select mode is on
-        if (!selectExtension.getSelectOnLongClick() && !selectedPositions.isEmpty()) {
+        if (!selectExtension.getSelectOnLongClick()) {
+            Set<Integer> selectedPositions = selectExtension.getSelections();
             if (selectedPositions.contains(position) && 1 == selectedPositions.size())
                 selectExtension.setSelectOnLongClick(true);
             selectExtension.toggleSelection(position);
