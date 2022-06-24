@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+<string name="audio_plug1">그만둬~~♡</string>
+    <string name="audio_plug2">멈춰, 거기는...넣는 구멍이 아니야~~</string>
+    <string name="audio_plug3">응앗~</string>
+    <string name="audio_plug4">아앗♡♡</string>
+    <string name="audio_plug5">여기가 아니야~~♡</string>
+    <string name="audio_plug6">나, 나쁜 남자~~</string>
+    <string name="audio_plug7">너무…조여…♡</string>
+<string name="power_plug1">거기 좋아~~</string>
+    <string name="power_plug2">깊숙히 넣어줘~~~♡</string>
+    <string name="power_plug3">가버렷~~</string>
+    <string name="power_plug4">아앙♡</string>
+    <string name="power_plug5">앙~</string>
+    <string name="power_plug6">더 줘♡</string>
+</resources>

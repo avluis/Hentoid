@@ -1,141 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-<string name="app_intro">ようこそ</string>
-<string name="yes">はい</string>
-<string name="no">いいえ</string>
-    <string name="ok" tools:ignore="MissingTranslation">OK</string>
-    <string name="on">オン</string>
-    <string name="off">オフ</string>
-    <string name="select_all">全て選択</string>
-    <string name="select_none">選択無し</string>
-    <string name="goto_page">ページに移動...</string>
-    <string name="confirm">確認</string>
-    <string name="please_wait">お待ちください</string>
 
 
-    <string name="groups">グループ</string>
-    <string name="pause">一時停止</string>
-    <string name="stop">ストップ</string>
-    <string name="resume">再開する</string>
-    <string name="cancel">キャンセル</string>
-    <string name="cancel_all">全てキャンセル</string>
 
-    <string name="service_running">サービスはすでに実行されています</string>
-    <string name="open_folder">開いたフォルダ</string>
-    <string name="_default">デフォルト</string>
-    <string name="empty">空</string>
     <string name="none">無し</string>
-<string name="title_activity_api29_migration">API29の移行</string>
     <string name="title_activity_downloads">ライブラリー</string>
-    <string name="title_activity_queue">キュー</string>
-    <string name="title_activity_preferences">環境設定</string>
-    <string name="title_activity_about">Hentoidについて</string>
-    <string name="title_activity_app_lock">アプリをロック</string>
+
+
+
     <string name="title_activity_search">高度な検索</string>
-<string name="api29_migration_title">Hentoid v12\nファイル管理の更新</string>
-    <string name="api29_migration_subtitle">Hentoidがコレクションを更新しています。\n数分かかる場合があります。</string>
-    <string name="api29_migration_location">現在のHentoidフォルダの場所\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
-    <string name="api29_migration_step1">Hentoidのフォルダー</string>
-    <string name="api29_migration_step1_external">外部フォルダー</string>
-    <string name="api29_migration_step1_select">Hentoidのフォルダを選択</string>
-    <string name="api29_migration_step1_select_external">外部フォルダを選択</string>
-    <string name="api29_migration_step2">サイトフォルダをスキャンする</string>
-    <string name="api29_migration_step3_init">スキャンライブラリ…</string>
-    <string name="api29_migration_step3">ライブラリをスキャン(<x:g example="1" id="number">%1$d</x:g>/ <x:g example="7" id="total">%2$d</x:g>)</string>
-    <string name="api29_migration_step4_init">キューをインポートしています…</string>
-    <string name="api29_migration_select_folder">既存のHentoidフォルダを選択してください。 その場所が画面に表示されます。</string>
-    <string name="api29_migration_allow_write">書き込み許可を許可してください</string>
-<string name="menu_search">検索</string>
-    <string name="menu_fav">お気に入りのフィルターを切り替えます</string>
-    <string name="menu_mark_fav">お気に入りを切り替える</string>
-    <string name="menu_group_new">新しいグループ</string>
-    <string name="menu_edit_order">再注文</string>
-    <string name="menu_edit_name">名前を変更</string>
-    <string name="menu_edit_confirm">編集を確認する</string>
-    <string name="menu_edit_cancel">編集をキャンセルする</string>
-    <string name="menu_edit_warning_custom">新しいカスタム注文は、以前の注文を上書きします。</string>
-    <string name="menu_order">注文書</string>
-    <string name="menu_delete_single">消去</string>
-    <string name="menu_change_group">グループに移動…</string>
-    <string name="menu_open_folder">含まれているフォルダを開く</string>
-    <string name="menu_redownload">再ダウンロード</string>
-    <string name="menu_redownload_scratch">ゼロから再ダウンロード</string>
-    <string name="menu_stream">ストリーミングに切り替える</string>
-    <string name="menu_download_streamed">ダウンロード</string>
-    <string name="menu_select_all">全て選択</string>
-    <string name="menu_share">共有</string>
-    <string name="menu_share_help">別のアプリを使用して本のURLとタイトルを共有する</string>
-    <string name="menu_share_title">書籍のURL</string>
-    <string name="menu_archive">アーカイブ</string>
-    <string name="menu_archive_help">書籍をZIPファイルにアーカイブする</string>
-    <string name="search_hint">タイトル、アーティスト、タグ、または本のID</string>
-    <string name="send_to">共有する：</string>
-    <string name="open_settings">設定を開く</string>
-    <string name="app_settings">アプリの設定</string>
-    <string name="book_settings">ブックの設定</string>
-    <string name="permissions_lost">ファイルのアクセス許可が失われました</string>
-    <string name="low_memory">お使いのデバイスのストレージが不足しています！</string>
-    <string name="fix_permissions">修正</string>
-    <string name="view_queue">キューを表示</string>
-<string name="downloader_title">ダウンローダー</string>
-    <string name="queue_queue_tab">進行中</string>
-    <string name="queue_errors_tab">エラー</string>
-    <string name="redownload_all">全て再ダウンロード</string>
-    <string name="cancel_all_errors">全てのエラーをキャンセル</string>
-    <string name="move_top">上に移動</string>
-    <string name="move_bottom">下に移動</string>
-    <string name="queue_paused">キューが一時停止しました</string>
-    <string name="queue_preparing">ダウンロードの準備中</string>
-    <string name="queue_dl">ダウンロード中<x:g example="Cool H-Manga" id="book_name">%s</x:g></string>
-    <string name="err_stats_title">エラー統計</string>
-    <string name="err_stats_help">現在のダウンロードエラーに関する詳細な統計を表示</string>
-    <string name="err_no_content">本はまだ存在しません</string>
-    <string name="confirm_cancel_all">キュー全体をキャンセルします\？</string>
-
-    <string name="paused_no_internet">ダウンロード出来ません-インターネットがありません</string>
-    <string name="paused_no_wifi">ダウンロード出来ません-Wi-Fiがありません</string>
-    <string name="paused_no_storage">ダウンロードできません-ストレージが不足しています（<x:g example="0 bytes" id="size_left_bytes">%s</x:g>左）。 空き容量を増やすか、ダウンロードフォルダの場所を変更してください</string>
-    <string name="paused_no_dl_folder">ダウンロードできません-ダウンロードフォルダがありません。 アプリの設定を使用して1つを選択します</string>
-    <string name="paused_dl_folder_not_found">ダウンロードできません-ダウンロードフォルダが見つかりません。 アプリの設定を使用して1つを選択します</string>
-    <string name="paused_dl_folder_credentials">ダウンロードできません-ダウンロードフォルダのクレデンシャルが不十分です。 アプリの設定を使用して再選択します</string>
-    <string name="paused_dl_stale_online_credentials">ダウンロードできません-古いCookieまたはクレデンシャル。 通知を使用してそれらを再生成します</string>
-    <string name="step_init">初期化中</string>
-    <string name="step_prepare_img">画像の準備</string>
-    <string name="step_fetch_img">画像の取得</string>
-    <string name="step_prepare_folder">ダウンロードフォルダの準備</string>
-    <string name="step_prepare_download">ダウンロードチェーンの準備</string>
-    <string name="step_save_queue">キューの保存</string>
-    <string name="step_wait_purge">パージが完了するのを待っています</string>
-    <string name="step_start_download">ダウンロードチェーンが始まりました！</string>
-    <string name="step_complete_download">ダウンロードの完了</string>
-    <string name="step_remove_duplicate">重複を置き換える</string>
-    <string name="help_swipe_cancel">左にスワイプするとダウンロードをキャンセルできます</string>
-    <string name="redownloaded_error">再ダウンロード中に問題が発生しました-キャンセルされました</string>
-    <string name="queue_add_top">トップに追加</string>
-    <string name="queue_add_bottom">下に追加</string>
-    <string name="notification_user_action_title">ユーザーアクション</string>
-    <string name="notification_user_action_needed">必要なユーザーアクション</string>
-    <string name="notification_action_dl_revive">ここをタップしてダウンロードを再開します</string>
-    <string name="revive_wait">ダウンロードが再開するまでの間、この画面でお待ち下さい</string>
-    <string name="queue_json_saved">保存されたキューのJSON</string>
-    <string name="queue_json_failed">キューのJSONを保存できませんでした</string>
-    <string name="queue_content_size_estimate">推定<x:g example="13.37" id="size_mbytes">%.1f</x:g> メガバイト</string>
-    <string name="queue_bottom_bar_processed"><x:g example="3" id="processed">%1$s</x:g>/<x:g example="7" id="total">%2$d</x:g>処理済み</string>
-    <string name="queue_bottom_bar_retry">リトライ<x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
-    <string name="queue_bottom_bar_speed" tools:ignore="MissingTranslation"><x:g example="/102.4" id="formatted_speed_kbps">%d</x:g> KBps</string>
-    <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g>メガバイト＠<x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
-    <string name="download_notif_failed">ダウンロードに失敗しました</string>
-    <string name="download_notif_failed_details">ダウンロードできません<x:g example="Cool H-Manga" id="book_name">%1$s</x:g>：フォルダを作成できません<x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>。 Hentoidフォルダを確認し、「！」を使用してダウンロードを再試行してください</string>
-<string name="work_series">シリーズ：<x:g example="original" id="series">%s</x:g></string>
-    <string name="work_artist">作者：<x:g example="hayao miyazaki" id="artist">%s</x:g></string>
-    <string name="work_pages_queue">ページ：%1$s%2$s</string>
-    <string name="library_metrics_storage"><x:g example="3.88" id="size_mb">%.0f</x:g>メガバイト</string>
 
 
-    <string name="errortype_io">I/O</string>
-    <string name="errortype_captcha">Captcha</string>
+
+
+
+
+<string name="refresh_title">ライブラリを更新</string>
+
+    <string name="refresh_location_internal">Hentoidライブラリ</string>
+    <string name="refresh_location_external">外部ライブラリ</string>
 
 <string name="import_title">メタデータをインポート</string>
+
 
 
 
@@ -145,93 +31,6 @@
 
 
     <string name="import_settings_title">インポートの設定</string>
-
-    <string name="redownload_action">再ダウンロード</string>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <string name="display_groups">グループ</string>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <string name="web_download">ダウンロード</string>
-    <string name="viewer_direction_ltr">左から右へ</string>
-    <string name="viewer_direction_rtl">右から左へ</string>
-    <string name="viewer_direction_ttb">上から下へ</string>
-    <string name="book_prefs">ブックの設定</string>
-    <string name="goto_app_prefs">アプリの設定</string>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -254,7 +53,4 @@
 
 
 <string name="title_activity_duplicate_detector">複製検出器</string>
-
-
-    <string name="duplicate_delete">消去</string>
 </resources>

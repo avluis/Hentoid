@@ -1,49 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
     <string name="pref_cat_library">Biblioteca</string>
-
-
-
-
-
-
-
-
-
-
-
-    <string name="pref_cat_search">Busca avançada</string>
-
-
-
-
-
-
-
-
-    <string name="pref_cat_downloads_folder">Biblioteca Hentoid</string>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <string name="pref_cat_external">Biblioteca externa</string>
-    <string name="pref_external_library_title">Biblioteca externa</string>
-
-
-
-
-
-
-    <string name="pref_refresh_library_title">Atualizar biblioteca</string>
 <string name="pref_screen_updates">Atualizações</string>
 </resources>

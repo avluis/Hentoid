@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:x="urn:oasis:names:tc:xliff:document:1.2">
-<string name="pref_screen_interface">インターフェース＆amp; ナビゲーション</string>
     <string name="pref_cat_library">ライブラリー</string>
-    <string name="pref_drawer_sources_title">ソースを管理する</string>
-    <string name="pref_drawer_sources_summary">左側のナビゲーションドロワーに表示されるソースを有効化、無効化、および再編成します</string>
-    <string name="pref_library_display_title">画面タイプ</string>
-    <string name="pref_library_display_summary">書籍やグループの表示の種類\n現在：<x:g example="List" id="display_type">%s</x:g></string>
-    <string name="pref_endless_scroll_title">エンドレススクロール</string>
-    <string name="pref_endless_scroll_summary_off">ダウンロードリストで無限スクロールを有効にする\nページングを無効にする</string>
-    <string name="pref_endless_scroll_summary_on">心ゆくまでスクロールしてください</string>
 
+
+
+
+
+
+    <string name="pref_quantity_per_page_title">ページあたりの数量</string>
+    <string name="pref_quantity_per_page_summary">ダウンロードリストのページあたりのアイテム数\n現在：<x:g example="10" id="count">%s</x:g>アイテム</string>
     <string name="pref_top_fab_title">トップボタンに移動</string>
     <string name="pref_top_fab_summary_off">ボタンが無効</string>
     <string name="pref_top_fab_summary_on">ボタンが有効</string>
@@ -20,7 +19,47 @@
     <string name="pref_attributes_list_count_off">利用可能な本の数は表示されません</string>
     <string name="pref_cat_theme">アプリのテーマ</string>
     <string name="pref_color_theme_title">カラーテーマ</string>
-
+    <string name="pref_color_theme_summary">現在のテーマ：<x:g example="Deep Red" id="theme_name">%s</x:g></string>
+    <string name="pref_misc">その他</string>
 <string name="pref_screen_storage">ストレージ</string>
-<string name="pref_screen_downloader">ダウンローダー</string>
+    <string name="pref_cat_downloads_folder">Hentoidライブラリ</string>
+    <string name="pref_select_folder_title">ダウンロードフォルダを選択</string>
+    <string name="pref_select_folder_summary">Hentoidがダウンロードを保存する場所を選択します</string>
+    <string name="pref_import_queue_empty_title">空のインポートされた本をエラーとしてキューに入れる</string>
+    <string name="pref_import_queue_empty_on">空のインポートされた本はエラーとしてキューに追加されます</string>
+    <string name="pref_import_queue_empty_off">空のインポートされた本がライブラリに追加されます</string>
+    <string name="pref_folder_naming_content_title">フォルダ名</string>
+    <string name="pref_folder_naming_content_summary">ブックフォルダの命名規則：\ n<x:g example="Name - ID" id="convention">%s</x:g></string>
+    <string name="pref_import_running">インポートはすでに実行されています</string>
+    <string name="prefs_ask_detach_external_library">外部ライブラリを切り離しますか\？</string>
+    <string name="prefs_external_library_detached">外部ライブラリが切り離されました</string>
+    <string name="pref_folder_trunc_title">フォルダ名を切り捨てます</string>
+    <string name="pref_folder_trunc_summary">ブックフォルダ名の切り捨て\n現在：<x:g example="80 characters" id="chars">%s</x:g></string>
+    <string name="pref_memory_usage_summary">現在の空き容量：<x:g example="13.37%" id="percentage">%.2f%%</x:g>　　（タップして詳細を確認）</string>
+    <string name="pref_memory_alert_title">低ストレージに関するアラート</string>
+    <string name="pref_cat_external">外部ライブラリ</string>
+    <string name="pref_external_library_title">外部ライブラリ</string>
+    <string name="pref_external_library_summary_empty">外部ライブラリが設定されていません</string>
+    <string name="pref_external_library_delete_title">外部コンテンツの削除を許可する</string>
+    <string name="pref_external_library_delete_on">Hentoidは外部ライブラリの本やページを削除できます</string>
+    <string name="pref_external_library_delete_off">Hentoidは外部ライブラリの本やページを削除できません</string>
+    <string name="pref_external_library_detach_title">Hentoidは外部ライブラリの本やページを削除できません</string>
+    <string name="pref_external_library_detach_summary">外部ライブラリをHentoidに含めないでください</string>
+    <string name="pref_cat_advanced">高度</string>
+    <string name="pref_refresh_library_title">ライブラリを更新</string>
+    <string name="pref_refresh_library_summary">ライブラリの内容を手動で更新する</string>
+    <string name="pref_delete_all_except_favs_title">お気に入りを除くすべての本を削除する</string>
+    <string name="pref_delete_all_except_favs_summary">ライブラリを削除します。 お気に入りの本だけを保管してください\n注意：外部ライブラリには適用されません</string>
+<string name="pref_screen_browser">ブラウザ</string>
+    <string name="pref_browser_behaviour">行動</string>
+    <string name="pref_browser_resume_last_title">最後に表示したページで再開</string>
+    <string name="pref_browser_resume_last_off">どのサイトも常にホームページで開きます</string>
+    <string name="pref_browser_resume_last_on">すべてのサイトは最後に表示されたページで開きます</string>
+    <string name="pref_browser_dl_action_title">アクションをダウンロード</string>
+    <string name="pref_browser_quick_dl_title">クイックダウンロード</string>
+    <string name="pref_browser_quick_dl_summary">書籍リストページで、タップを押したままにして書籍をダウンロードします</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_title">nhentaiを隠す-ブラックリストに載っている本</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_off">nhentai-ブラックリストに載っている本はぼやけています</string>
+    <string name="pref_browser_nhentai_invisible_blacklist_on">nhentai-ブラックリストに載っている本は見えない</string>
+    <string name="pref_browser_quick_dl_threshold_title">クイックダウンロード長押ししきい値</string>
 </resources>
