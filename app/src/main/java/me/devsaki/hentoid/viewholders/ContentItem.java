@@ -2,6 +2,7 @@ package me.devsaki.hentoid.viewholders;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
+import static me.devsaki.hentoid.core.HentoidApp.isWebViewAvailable;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -408,7 +409,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
             ivCover.setVisibility(View.VISIBLE);
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-            if (thumbLocation.startsWith("http")) {
+            if (thumbLocation.startsWith("http") && isWebViewAvailable) {
                 String cookieStr = null;
                 String referer = null;
 

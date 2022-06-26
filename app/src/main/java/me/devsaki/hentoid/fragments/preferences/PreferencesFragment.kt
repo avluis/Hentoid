@@ -27,6 +27,8 @@ import kotlinx.coroutines.runBlocking
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DrawerEditActivity
 import me.devsaki.hentoid.activities.PinPreferenceActivity
+import me.devsaki.hentoid.core.HentoidApp.isWebViewAvailable
+import me.devsaki.hentoid.core.HentoidApp.isWebViewUpdating
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.database.ObjectBoxDAO
@@ -46,6 +48,7 @@ import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
+import kotlin.properties.Delegates
 
 
 class PreferencesFragment : PreferenceFragmentCompat(),
@@ -272,17 +275,20 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onClearCookies() {
-        CookieManager.getInstance().removeAllCookies {
-            var caption = R.string.pref_browser_clear_cookies_ok
-            if (!it) caption = R.string.pref_browser_clear_cookies_ko
-
-            val snack = Snackbar.make(
-                listView,
-                caption,
-                BaseTransientBottomBar.LENGTH_SHORT
-            )
-            snack.show()
-        }
+        var caption by Delegates.notNull<Int>()
+        if (isWebViewAvailable) {
+            CookieManager.getInstance().removeAllCookies {
+                caption = R.string.pref_browser_clear_cookies_ok
+                if (!it) caption = R.string.pref_browser_clear_cookies_ko
+            }
+        } else if (isWebViewUpdating) caption = R.string.pref_browser_clear_cookies_updating_webview;
+            else caption = R.string.pref_browser_clear_cookies_missing_webview;
+        val snack = Snackbar.make(
+            listView,
+            caption,
+            BaseTransientBottomBar.LENGTH_SHORT
+        )
+        snack.show()
     }
 
     private fun populateMemoryUsage() {

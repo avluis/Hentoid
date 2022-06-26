@@ -7,6 +7,7 @@ import com.mikepenz.aboutlibraries.LibsBuilder
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.core.Consts
+import me.devsaki.hentoid.core.HentoidApp.isWebViewAvailable
 import me.devsaki.hentoid.core.startBrowserActivity
 import me.devsaki.hentoid.databinding.ActivityAboutBinding
 import me.devsaki.hentoid.events.UpdateEvent
@@ -42,8 +43,10 @@ class AboutActivity : BaseActivity() {
                 BuildConfig.VERSION_NAME,
                 BuildConfig.VERSION_CODE
             )
-            it.tvChromeVersionName.text =
-                getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
+            if (isWebViewAvailable) it.tvChromeVersionName.text =
+                    getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
+            else it.tvChromeVersionName.text =
+                    getString(R.string.about_chrome_unavailable)
 
             it.changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
 

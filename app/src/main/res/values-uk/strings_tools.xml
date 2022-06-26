@@ -35,6 +35,8 @@
     <string name="tools_cache_browser">Очистити кеш браузера</string>
     <!-- Toast notification -->
     <string name="tools_cache_browser_success">Кеш WebView успішно очищено</string>
+    <string name="tools_cache_browser_missing_webview">WebView недоступно, неможливо очистити кеш зараз</string>
+    <string name="tools_cache_browser_updating_webview">WebView зараз оновлюється, поки неможливо очистити кеш</string>
     <!-- Button -->
     <string name="tools_cache_app">Очистити кеш додатка</string>
     <!-- Toast notification -->

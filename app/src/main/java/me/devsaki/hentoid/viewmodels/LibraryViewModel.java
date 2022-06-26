@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.viewmodels;
 
+import static me.devsaki.hentoid.core.HentoidApp.isWebViewAvailable;
+import static me.devsaki.hentoid.core.HentoidApp.isWebViewUpdating;
 import static me.devsaki.hentoid.util.GroupHelper.moveContentToCustomGroup;
 
 import android.app.Application;
@@ -595,6 +597,12 @@ public class LibraryViewModel extends AndroidViewModel {
             int position,
             @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
+        if (!isWebViewAvailable) {
+            if (isWebViewUpdating) onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_updating_webview)));
+            else onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_missing_webview)));
+            return;
+        }
+
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
 
@@ -638,6 +646,12 @@ public class LibraryViewModel extends AndroidViewModel {
             int position,
             @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
+        if (!isWebViewAvailable) {
+            if (isWebViewUpdating) onError.accept(new EmptyResultException(getApplication().getString(R.string.download_updating_webview)));
+            else onError.accept(new EmptyResultException(getApplication().getString(R.string.download_missing_webview)));
+            return;
+        }
+
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);
 
@@ -684,6 +698,11 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void streamContent(@NonNull final List<Content> contentList,
                               @NonNull final Consumer<Throwable> onError) {
+        if (!isWebViewAvailable) {
+            if (isWebViewUpdating) onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_updating_webview)));
+            else onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_missing_webview)));
+            return;
+        }
 
         // Flag the content as "being deleted" (triggers blink animation)
         for (Content c : contentList) flagContentDelete(c, true);

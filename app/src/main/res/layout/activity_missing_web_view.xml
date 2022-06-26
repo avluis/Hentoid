@@ -35,14 +35,14 @@
         app:layout_constraintTop_toBottomOf="@+id/missing_web_view_title" />
 
     <Button
-        android:id="@+id/close_hentoid"
+        android:id="@+id/open_library"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:onClick="onCloseHentoidPressed"
+        android:onClick="onOpenLibraryPressed"
         android:paddingStart="10sp"
         android:paddingEnd="10sp"
-        android:text="@string/missing_web_view_close"
+        android:text="@string/missing_web_view_library"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/missing_web_view" />

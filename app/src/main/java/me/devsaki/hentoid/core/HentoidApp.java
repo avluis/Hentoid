@@ -5,7 +5,11 @@ import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIB
 
 import android.app.ActivityManager;
 import android.app.Application;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.AndroidRuntimeException;
+import android.webkit.CookieManager;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.DefaultLifecycleObserver;
@@ -25,6 +29,7 @@ import io.reactivex.plugins.RxJavaPlugins;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.SplashActivity;
+import me.devsaki.hentoid.receiver.WebViewUpdateCycleReceiver;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
@@ -80,6 +85,10 @@ public class HentoidApp extends Application {
         FirebaseAnalytics.getInstance(instance).logEvent("Download", bundle);
     }
 
+    WebViewUpdateCycleReceiver webViewUpdateCycleReceiver = new WebViewUpdateCycleReceiver();
+    public static boolean isWebViewAvailable;
+    public static boolean isWebViewUpdating = false;
+
     /**
      * Must only contain FUNDAMENTAL app init tasks, as the time spent here makes
      * the app unresponsive. The rest should be deferred to AppStartup
@@ -132,13 +141,30 @@ public class HentoidApp extends Application {
             Timber.w(e, "Undeliverable exception received, not sure what to do");
         });
 
+        // Initialize WebView availability status and register the WebView Update Cycle Receiver
+        setIsWebViewAvailable();
+        IntentFilter filterWVUC = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
+        filterWVUC.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        filterWVUC.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        registerReceiver(webViewUpdateCycleReceiver, filterWVUC);
+
         // Init user agents (must be done here as some users seem not to complete AppStartup properly)
         Timber.i("Init user agents : start");
-        try {
+        if (isWebViewAvailable) {
             HttpHelper.initUserAgents(this);
             Timber.i("Init user agents : done");
-        } catch (Exception MissingWebViewPackageException) {
-            Timber.e("Failed to init user agents: No WebView installed");
+        } else Timber.w("Failed to init user agents: WebView is unavailable");
+    }
+
+    public static void setIsWebViewAvailable() {
+        try {
+            CookieManager.getInstance();
+            isWebViewAvailable = true;
+        } catch (AndroidRuntimeException e) {
+            String message = e.getMessage();
+            if (message!=null && message.contains("WebView")) {
+                isWebViewAvailable = false;
+            } else throw e;
         }
     }
 
