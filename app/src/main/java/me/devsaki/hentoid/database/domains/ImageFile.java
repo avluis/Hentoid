@@ -16,7 +16,6 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.StringHelper;
-import timber.log.Timber;
 
 /**
  * Image File builder
@@ -52,6 +51,8 @@ public class ImageFile {
 
     // Display order of the image in the image viewer (view-time only)
     @Transient
+    private long uniqueHash = 0;    // cached value of uniqueHash
+    @Transient
     private int displayOrder;
     // Backup URL for that picture (download-time only)
     @Transient
@@ -84,6 +85,7 @@ public class ImageFile {
         this.imageHash = img.imageHash;
         this.downloadParams = img.downloadParams;
 
+        this.uniqueHash = img.uniqueHash;
         this.displayOrder = img.displayOrder;
         this.backupUrl = img.backupUrl;
         this.isBackup = img.isBackup;
@@ -148,6 +150,7 @@ public class ImageFile {
 
     public ImageFile setOrder(Integer order) {
         this.order = order;
+        uniqueHash = 0;
         return this;
     }
 
@@ -207,6 +210,7 @@ public class ImageFile {
     public ImageFile setIsCover(boolean isCover) {
         this.isCover = isCover;
         if (isCover) this.read = true;
+        uniqueHash = 0;
         return this;
     }
 
@@ -216,6 +220,7 @@ public class ImageFile {
 
     public void setFavourite(boolean favourite) {
         this.favourite = favourite;
+        uniqueHash = 0;
     }
 
     public String getFileUri() {
@@ -309,11 +314,10 @@ public class ImageFile {
     }
 
     public void setChapter(Chapter chapter) {
-        if (null == this.chapter) {
-            Timber.d(">> INIT ToONE");
+        if (null == this.chapter)
             this.chapter = new ToOne<>(this, ImageFile_.chapter);
-        }
         this.chapter.setTarget(chapter);
+        uniqueHash = 0;
     }
 
     public boolean isReadable() {
@@ -359,6 +363,8 @@ public class ImageFile {
     }
 
     public long uniqueHash() {
-        return Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + favourite + "." + chapter.getTargetId()).getBytes());
+        if (0 == uniqueHash)
+            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + favourite + "." + chapter.getTargetId()).getBytes());
+        return uniqueHash;
     }
 }
