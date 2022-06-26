@@ -602,7 +602,10 @@ public class LibraryActivity extends BaseActivity {
                 if (item.getTag() != null) { // Tap on search record
                     SearchRecord record = (SearchRecord) item.getTag();
                     Uri searchUri = Uri.parse(record.getSearchString());
-                    setQuery(searchUri.getPath());
+                    String targetQuery = searchUri.getPath();
+                    if (!targetQuery.isEmpty())
+                        targetQuery = targetQuery.substring(1); // Remove the leading '/'
+                    setQuery(targetQuery);
                     setMetadata(SearchActivityBundle.Companion.parseSearchUri(searchUri));
                     if (getMetadata().isEmpty()) { // Universal search
                         if (!getQuery().isEmpty()) viewModel.searchContentUniversal(getQuery());
