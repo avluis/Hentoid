@@ -156,8 +156,7 @@ dependencies {
     }
 
     // Animated WEBP support -> https://github.com/zjupure/GlideWebpDecoder
-    // NB : v4.12 happens to be still compatible with Glide v4.13
-    def webp_glide_version = '4.12.0'
+    def webp_glide_version = '4.13.2'
     // webpdecoder
     implementation "com.github.zjupure:webpdecoder:2.0.$webp_glide_version"
 

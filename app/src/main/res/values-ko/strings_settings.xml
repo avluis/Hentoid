@@ -27,8 +27,8 @@
     <string name="pref_cat_downloads_folder">Hentoid 라이브러리</string>
     <string name="pref_select_folder_title">다운로드 폴더 선택</string>
     <string name="pref_select_folder_summary">다운로드 할 위치를 선택해주세요</string>
-    <string name="pref_import_queue_empty_title">불러온 항목이 비어있을 시 오류로 대기열에 추가</string>
-    <string name="pref_import_queue_empty_on">불러온 항목이 다운로드 대기열에 오류로 추가됩니다</string>
+    <string name="pref_import_queue_empty_title">불러온 항목이 비어있을 시 오류 대기열에 추가</string>
+    <string name="pref_import_queue_empty_on">불러온 항목이 오류 대기열에 추가됩니다</string>
     <string name="pref_import_queue_empty_off">불러온 항목이 라이브러리에 추가됩니다</string>
     <string name="pref_folder_naming_content_title">폴더 이름</string>
     <string name="pref_folder_naming_content_summary">저장 폴더 이름 규칙:\n<x:g example="Name - ID" id="convention">%s</x:g></string>
@@ -45,14 +45,14 @@
     <string name="pref_external_library_summary_empty">외부 라이브러리가 지정되지 않았습니다</string>
     <string name="pref_external_library_delete_title">외부 컨텐츠 삭제 허용</string>
     <string name="pref_external_library_delete_on">외부 컨텐츠를 삭제 가능합니다</string>
-    <string name="pref_external_library_delete_off">외부 컨텐츠를 삭제하지 못합니다</string>
+    <string name="pref_external_library_delete_off">외부 컨텐츠 삭제를 방지합니다</string>
     <string name="pref_external_library_detach_title">외부 라이브러리 분리</string>
     <string name="pref_external_library_detach_summary">더 이상 외부 라이브러리를 포함하지 않습니다</string>
     <string name="pref_cat_advanced">고급</string>
     <string name="pref_refresh_library_title">라이브러리 새로고침</string>
     <string name="pref_refresh_library_summary">수동으로 라이브러리 컨텐츠를 새로고침합니다</string>
     <string name="pref_delete_all_except_favs_title">즐겨찾기 외 항목 삭제</string>
-    <string name="pref_delete_all_except_favs_summary">즐겨찾기 항목만 유지하고 나머지를 제거합니다\n주의: 외부 라이브러리 항목에는 적용되지 않습니다</string>
+    <string name="pref_delete_all_except_favs_summary">즐겨찾기 항목만 유지하고 나머지를 삭제합니다\n주의: 외부 라이브러리 항목에는 적용되지 않습니다</string>
     <plurals name="pref_ask_delete_all_except_favs">
         <item quantity="one"><x:g example="1" id="count">%d</x:g>개 항목을 삭제하시겠습니까?</item>
         <item quantity="other"><x:g example="2" id="count">%d</x:g>개 항목을 삭제하시겠습니까?</item>
@@ -60,7 +60,7 @@
 <string name="pref_screen_browser">브라우저</string>
     <string name="pref_browser_behaviour">행동</string>
     <string name="pref_browser_resume_last_title">마지막으로 본 페이지에서 재개</string>
-    <string name="pref_browser_resume_last_off">사이트의 홈페이지를 엽니다</string>
+    <string name="pref_browser_resume_last_off">홈페이지에서 탐색을 시작합니다</string>
     <string name="pref_browser_resume_last_on">사이트에서 마지막으로 봤던 페이지를 엽니다</string>
     <string name="pref_browser_dl_action_title">다운로드 설정</string>
     <string name="pref_browser_quick_dl_title">빠른 다운로드</string>
@@ -76,9 +76,9 @@
     <string name="pref_browser_duplicate_try_pages_title">중복 가능성 있는 항목에서 추가 페이지 탐색을 시도하겠습니까\?</string>
     <string name="pref_browser_duplicate_try_pages_off">원본 항목에서 추가 페이지 탐색을 시도합니다</string>
     <string name="pref_browser_duplicate_try_pages_on">중복 가능성 있는 항목에서 추가 페이지 탐색을 시도합니다</string>
-    <string name="pref_browser_mark_downloaded_title">다운로드 된 항목 표식</string>
-    <string name="pref_browser_mark_downloaded_off">다운로드 된 항목에 아무런 표식이 나타나지 않습니다</string>
-    <string name="pref_browser_mark_downloaded_on">다운로드 된 항목에 표식이 생깁니다\n주의: 모든 사이트에서 작동하지는 않습니다</string>
+    <string name="pref_browser_mark_downloaded_title">다운로드 된 작품 표시</string>
+    <string name="pref_browser_mark_downloaded_off">다운로드 된 작품에 아무런 표시가 나타나지 않습니다</string>
+    <string name="pref_browser_mark_downloaded_on">다운로드 된 작품에 구분 가능한 표시가 생깁니다\n주의: 모든 사이트에서 작동하지는 않습니다</string>
     <string name="pref_browser_visuals">화면</string>
     <string name="pref_browser_augmented_title">브라우저 향상</string>
     <string name="pref_browser_augmented_off">기본 브라우저를 사용합니다</string>
@@ -88,7 +88,7 @@
     <string name="pref_browser_override_overview_summary_on">초기 확대율을 설정하려면 아래 설정을 조정하세요\n주의: hitomi와 e-hentai에서만 작동합니다</string>
     <string name="pref_browser_initial_zoom_title">초기 확대율</string>
     <string name="pref_browser_initial_zoom_summary">페이지를 처음 불러올 때 확대율\n현재: <x:g example="20%" id="percentage">%s%%</x:g></string>
-    <string name="pref_browser_dns_title">DNS over HTTPS (DoH)</string>
+    <string name="pref_browser_dns_title">DNS over HTTPS</string>
     <string name="pref_browser_clear_cookies">모든 쿠키 삭제</string>
     <string name="pref_browser_clear_cookies_ok">모든 쿠키가 성공적으로 삭제되었습니다</string>
     <string name="pref_browser_clear_cookies_ko">삭제할 쿠키가 없습니다</string>
@@ -96,10 +96,10 @@
     <string name="pref_queue_autostart_title">다운로드 대기열 자동 시작</string>
     <string name="pref_queue_autostart_on">다운로드가 완료되는 즉시 다음 다운로드가 시작됩니다</string>
     <string name="pref_queue_autostart_off">다운로드를 수동으로 시작해야 합니다</string>
-    <string name="pref_queue_wifi_only_title">와이파이에서만 다운로드</string>
+    <string name="pref_queue_wifi_only_title">와이파이에서만 다운로드 하기</string>
     <string name="pref_queue_wifi_only_on">다운로드 대기열이 와이파이에 연결되었을 때만 시작됩니다</string>
     <string name="pref_queue_wifi_only_off">다운로드 대기열이 아무 네트워크에나 연결되면 시작합니다</string>
-    <string name="pref_queue_new_position_title">새 다운로드 대기열 추가 위치</string>
+    <string name="pref_queue_new_position_title">새 다운로드 추가 대기열 위치</string>
     <string name="download_size_wifi_title">모바일 데이터에서 다운로드 넘기기</string>
     <string name="pref_dl_size_wifi_on">와이파이에 연결되지 않았을 경우 다운로드를 넘어갑니다</string>
     <string name="pref_dl_size_wifi_off">모든 다운로드가 실행됩니다</string>
@@ -175,8 +175,8 @@
     <string name="pref_viewer_resume_last_left_summary_on">마지막으로 보던 페이지에서 시작합니다. 끝까지 본 경우에는 적용되지 않습니다</string>
     <string name="pref_viewer_open_gallery">항상 갤러리 모드로 시작</string>
     <string name="pref_viewer_continuous_title">연속으로 보기</string>
-    <string name="pref_viewer_continuous_summary_off">마지막 장에서 다음 장으로 넘어가는 조작이 아무 일도 일어나지 않습니다</string>
-    <string name="pref_viewer_continuous_summary_on">마지막 장에서 다음 장으로 넘어가는 조작이 다음 작품으로 넘어갑니다</string>
+    <string name="pref_viewer_continuous_summary_off">마지막 장에서 다음 장으로 넘어가는 조작 시 아무 일도 일어나지 않습니다</string>
+    <string name="pref_viewer_continuous_summary_on">마지막 장에서 다음 장으로 넘어가는 조작 시 다음 작품으로 넘어갑니다</string>
     <string name="pref_viewer_read_threshold">N 페이지 읽은 후 읽음 표시 추가</string>
     <string name="pref_viewer_slideshow_delay">슬라이드쇼 / 페이지마다 대기 시간 (가로 화면)</string>
     <string name="pref_viewer_slideshow_delay_vertical">슬라이드쇼 / 스크롤 속도 (세로 화면)</string>

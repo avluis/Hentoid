@@ -183,8 +183,6 @@ public class LibraryContentFragment extends Fragment implements
     private PagedList<Content> library;
     // Position of top item to memorize or restore (used when activity is destroyed and recreated)
     private int topItemPosition = -1;
-    // Indicated whether top item position restoration has been consumed or not
-    private boolean topItemConsumed = false;
     // TODO doc
     private Group group = null;
     // TODO doc
@@ -852,8 +850,7 @@ public class LibraryContentFragment extends Fragment implements
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
 
-        topItemPosition = -1;
-        topItemConsumed = false;
+        topItemPosition = 0;
         if (null == savedInstanceState) return;
 
         if (viewModel != null) viewModel.onRestoreState(savedInstanceState);
@@ -1281,7 +1278,6 @@ public class LibraryContentFragment extends Fragment implements
      *
      * @param result Current library according to active filters
      */
-    @OptIn(markerClass = com.mikepenz.fastadapter.paged.ExperimentalPagedSupport.class)
     private void onLibraryChanged(PagedList<Content> result) {
         Timber.i(">> Library changed ! Size=%s", result.size());
         if (!enabled && !Preferences.getGroupingDisplay().equals(Grouping.FLAT)) return;
@@ -1545,17 +1541,21 @@ public class LibraryContentFragment extends Fragment implements
      */
     private void differEndCallback() {
         Timber.v(">> differEndCallback");
-        if (!topItemConsumed) listRefreshDebouncer.submit(topItemPosition);
+        if (topItemPosition > -1) {
+            int targetPos = topItemPosition;
+            listRefreshDebouncer.submit(targetPos);
+            topItemPosition = -1;
+        }
     }
 
     /**
      * Callback for the end of recycler updates
      * Activated when all _displayed_ items are placed on their definitive position
      */
-    private void onRecyclerUpdated(final int targetTopItemPosition) {
-        topItemConsumed = true;
-        if (targetTopItemPosition > -1 && getTopItemPosition() != targetTopItemPosition)
-            llm.scrollToPositionWithOffset(targetTopItemPosition, 0); // Used to restore position after activity has been stopped and recreated
+    private void onRecyclerUpdated(int topItemPosition) {
+        int currentPosition = getTopItemPosition();
+        if (currentPosition != topItemPosition)
+            llm.scrollToPositionWithOffset(topItemPosition, 0); // Used to restore position after activity has been stopped and recreated
     }
 
     /**
