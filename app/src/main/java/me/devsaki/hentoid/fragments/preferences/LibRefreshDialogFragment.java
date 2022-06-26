@@ -231,7 +231,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
     private void showImportProgressLayout(boolean askFolder, boolean isExternal) {
         // Replace launch options layout with import progress layout
         rootView.removeAllViews();
-        LayoutInflater.from(getActivity()).inflate(R.layout.include_import_steps, rootView, true);
+        requireActivity().getLayoutInflater().inflate(R.layout.include_import_steps, rootView, true);
 
         // Memorize UI elements that will be updated during the import events
         TextView step1Txt = rootView.findViewById(R.id.import_step1_text);
