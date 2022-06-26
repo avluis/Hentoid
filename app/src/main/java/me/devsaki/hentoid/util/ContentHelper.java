@@ -609,12 +609,14 @@ public final class ContentHelper {
     /**
      * Create the download directory of the given content
      *
-     * @param context Context
-     * @param content Content for which the directory to create
-     * @return Created directory
+     * @param context    Context to use
+     * @param content    Content for which the directory to create
+     * @param createOnly Set to true to exclusively create a new folder; set to false if one can reuse an existing folder
+     * @param siteDlDir  Provide the DocumentFile representing the site's folder (optional; will look for it if null)
+     * @return Created or existing directory
      */
     @Nullable
-    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content, @Nullable DocumentFile siteDlDir) {
+    public static DocumentFile getOrCreateContentDownloadDir(@NonNull Context context, @NonNull Content content, boolean createOnly, @Nullable DocumentFile siteDlDir) {
         DocumentFile siteDownloadDir = siteDlDir;
         if (null == siteDownloadDir)
             siteDownloadDir = getOrCreateSiteDownloadDir(context, null, content.getSite());
@@ -623,17 +625,19 @@ public final class ContentHelper {
         ImmutablePair<String, String> bookFolderName = formatBookFolderName(content);
 
         // First try finding the folder with new naming...
-        DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.left);
-        if (null == bookFolder) { // ...then with old (sanitized) naming...
-            bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.right);
-            if (null == bookFolder) { // ...if not, create a new folder with the new naming...
-                DocumentFile result = siteDownloadDir.createDirectory(bookFolderName.left);
-                if (null == result) { // ...if it fails, create a new folder with the old naming
-                    return siteDownloadDir.createDirectory(bookFolderName.right);
-                } else return result;
+        if (!createOnly) {
+            DocumentFile bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.left);
+            if (null == bookFolder) { // ...then with old (sanitized) naming
+                bookFolder = FileHelper.findFolder(context, siteDownloadDir, bookFolderName.right);
             }
+            if (bookFolder != null) return bookFolder;
         }
-        return bookFolder;
+
+        // If nothing found, or create-only, create a new folder with the new naming...
+        DocumentFile result = siteDownloadDir.createDirectory(bookFolderName.left);
+        if (null == result) { // ...if it fails, create a new folder with the old naming
+            return siteDownloadDir.createDirectory(bookFolderName.right);
+        } else return result;
     }
 
     /**
@@ -1504,7 +1508,7 @@ public final class ContentHelper {
                 }
             }
         } else { // Hentoid download folder for non-external content
-            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, null);
+            targetFolder = ContentHelper.getOrCreateContentDownloadDir(context, mergedContent, true, null);
         }
         if (null == targetFolder || !targetFolder.exists())
             throw new ContentNotProcessedException(mergedContent, "Could not create target directory");
@@ -1554,6 +1558,7 @@ public final class ContentHelper {
                     ImageFile newImg = new ImageFile(img);
                     newImg.setId(0); // Force working on a new picture
                     newImg.getContent().setTarget(null); // Clear content
+                    newImg.setFileUri(""); // Clear initial URI
                     newImg.setOrder(pictureOrder++);
                     newImg.computeName(nbMaxDigits);
                     Chapter chapLink = img.getLinkedChapter();

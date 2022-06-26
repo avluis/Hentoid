@@ -380,7 +380,7 @@ public class ContentDownloadWorker extends BaseWorker {
         EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.PREPARE_FOLDER));
 
         // Create destination folder for images to be downloaded
-        DocumentFile dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content, null);
+        DocumentFile dir = ContentHelper.getOrCreateContentDownloadDir(getApplicationContext(), content, false, null);
         // Folder creation failed
         if (null == dir || !dir.exists()) {
             String title = content.getTitle();
