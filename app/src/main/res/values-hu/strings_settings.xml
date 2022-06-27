@@ -92,6 +92,7 @@
     <string name="pref_browser_clear_cookies">Összes süti törlése</string>
     <string name="pref_browser_clear_cookies_ok">Az összes süti törlése sikeresen megtörtént</string>
     <string name="pref_browser_clear_cookies_ko">Nincsen olyan süti, amit törölhetnénk</string>
+
 <string name="pref_screen_downloader">Letöltő</string>
     <string name="pref_queue_autostart_title">Letöltési sor automatikus indítása</string>
     <string name="pref_queue_autostart_on">A letöltési sor elindul, amint a letöltés befejeződött.</string>

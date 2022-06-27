@@ -137,6 +137,7 @@
     <string name="step_remove_duplicate">Sostituendo duplicato</string>
     <string name="help_swipe_cancel">Puoi annullare i download scorrendoli verso sinistra</string>
     <string name="redownloaded_error">Si è verificato un problema durante il nuovo download - annullato</string>
+
     <plurals name="redownloaded_scratch">
         <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> elemento cancellato per riscaricarlo</item>
         <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> elementi cancellati per riscaricarli</item>
@@ -147,6 +148,7 @@
     <string name="notification_user_action_needed">Azione dell\'utente necessaria</string>
     <string name="notification_action_dl_revive">Tocca qui per riattivare il download</string>
     <string name="revive_wait">Rimani su questa schermata mentre il download viene riattivato</string>
+
     <string name="queue_json_saved">Coda JSON salvata</string>
     <string name="queue_json_failed">Salvataggio JSON della coda non riuscito</string>
     <string name="queue_content_size_estimate"><x:g example="13.37" id="size_mbytes">%.1f</x:g> MB estimati</string>
@@ -311,6 +313,7 @@
     <string name="error_creating_folder">La cartella non è valida.</string>
     <string name="error_open">Errore nell\'apertura del file: nessuna applicazione rilevante trovata</string>
     <string name="error_browser">Errore nell\'apertura del link: nessun browser trovato</string>
+
 <string name="redownload_dialog_title">Provare a scaricare di nuovo\?</string>
     <string name="redownload_dialog_message">Immagini totali in download: <x:g example="10" id="total_imgs">%1$d</x:g>\nImmagini senza errori: <x:g example="8" id="fine_imgs">%2$d</x:g>\nImmagini con errori: <x:g example="2" id="failed_imgs">%3$d</x:g></string>
     <string name="redownload_first_error">Primo errore: <x:g id="errortype">%s</x:g></string>
@@ -358,7 +361,9 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> libri archiviati nella tua cartella Download</item>
     </plurals>
     <string name="stream_canceled">Streaming annullato - libro non disponibile online</string>
+
     <string name="download_canceled">Download annullato - libro non disponibile online</string>
+
     <string name="press_back_again">Premi indietro due volte (rapidamente) per uscire.</string>
     <string name="queue_empty">Perché sono vuoto\?</string>
     <string name="errors_empty">Nessun errore rilevato tra i download</string>
@@ -520,6 +525,7 @@
     <string name="about_licenses">Visualizza licenze</string>
     <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
     <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g></string>
+
 <string name="web_gallery">Torna all\'ultima pagina della galleria</string>
     <string name="web_home">Torna alla libreria</string>
     <string name="web_back">Indietro</string>
@@ -717,8 +723,7 @@
     <string name="title_startup_progress">Avviando…</string>
     <string name="title_startup_complete">Avvio completato</string>
 <string name="missing_web_view_title">WebView non installata o disabilitata</string>
-    <string name="missing_web_view">Hentoid non è in grado di trovare Android Web Viewer.\nSfortunatamente, l\'applicazione non può funzionare senza.\n\nÈ probabile che sia installata, ma disabilitata: perfavore vai in <b>Impostazioni</b> &gt; <b>Applicazioni</b> &gt; <b>Applicazioni disabilitate</b> e abilita <b>Android System WebView</b>.\n\nSe non riesci a trovare l\'app, perfavore installala da <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Store</a></b>.</string>
-    <string name="missing_web_view_close">Chiudi Hentoid</string>
+    <string name="missing_web_view_library">Torna alla libreria</string>
 <string name="group_today">Oggi</string>
     <string name="group_7">Ultimi 7 giorni</string>
     <string name="group_30">Ultimi 30 giorni</string>

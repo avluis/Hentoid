@@ -137,6 +137,7 @@
     <string name="step_remove_duplicate">Duplikátumok cseréje</string>
     <string name="help_swipe_cancel">A letöltéseket megszakíthatja, ha balra húzza őket.</string>
     <string name="redownloaded_error">Probléma merült fel az újbóli letöltés során - visszavonva</string>
+
     <plurals name="redownloaded_scratch">
         <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> elem törölve újbóli letöltés gyanánt</item>
         <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> elem törölve újbóli letöltés gyanánt</item>
@@ -147,6 +148,7 @@
     <string name="notification_user_action_needed">Felhasználói beavatkozás szükséges</string>
     <string name="notification_action_dl_revive">Koppintson ide a letöltés, újbóli elindításához</string>
     <string name="revive_wait">Kérjük, maradjon ezen a képernyőn, amíg a letöltés újból el nem indul.</string>
+
     <string name="queue_json_saved">A várakozási sor JSON fájl-ba elmentésre került</string>
     <string name="queue_json_failed">A várakozási sort nem lehet elmenteni a JSON fájl-ba</string>
     <string name="queue_content_size_estimate">hátramaradt <x:g example="13.37" id="size_mbytes">%.1f</x:g> MB</string>
@@ -311,6 +313,7 @@
     <string name="error_creating_folder">Érvénytelen mappa</string>
     <string name="error_open">Hiba a fájl megnyitásakor: nem találtunk ehhez a fájlhoz releváns alkalmazást</string>
     <string name="error_browser">Hiba a link megnyitásakor: nem találtunk böngészőt az eszközén</string>
+
 <string name="redownload_dialog_title">Megpróbáljuk újra letölteni\?</string>
     <string name="redownload_dialog_message">Összesen ennyi kép van letöltés alatt: <x:g example="10" id="total_imgs">%1$d</x:g>\nKépek hibák nélkül: <x:g example="8" id="fine_imgs">%2$d</x:g>\nKépek hibával: <x:g example="2" id="failed_imgs">%3$d</x:g></string>
     <string name="redownload_first_error">Első hiba: <x:g id="errortype">%s</x:g></string>
@@ -358,7 +361,9 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> könyvek archiválásra kerültek a Letöltési mappádba</item>
     </plurals>
     <string name="stream_canceled">Streaming megszakítva - a könyv nem elérhető online</string>
+
     <string name="download_canceled">Letöltés megszakítva - a könyv nem elérhető online</string>
+
     <string name="press_back_again">Nyomja meg kétszer (gyorsan) a vissza gombot a kilépéshez.</string>
     <string name="queue_empty">Miért vagyok üres\? (Töltsön le néhány könyvet!)</string>
     <string name="errors_empty">A letöltések között nem észleltünk hibát</string>
@@ -520,6 +525,7 @@
     <string name="about_licenses">Licencek megjelenítése</string>
     <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
     <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g></string>
+
 <string name="web_gallery">Visszalépés a Galéria legutóbbi oldalára</string>
     <string name="web_home">Visszalépés a könyvtárba</string>
     <string name="web_back">Vissza</string>
@@ -717,8 +723,7 @@
     <string name="title_startup_progress">Kezdjük...</string>
     <string name="title_startup_complete">Indítás befejezve</string>
 <string name="missing_web_view_title">A WebView nincsen feltelepítve vagy le van tiltva</string>
-    <string name="missing_web_view">Hentoid alkalmazás nem találja meg a Android\'s Web Viewer alkalmazást.\nEmiatt, a Hentoid alkalmazás nem tud megfelelően működni. \n\nElképzelhető viszont az, hogy az alkalmazás telepítve van a rendszereden, de le van tiltva: kérlek menj a <b>Beállítások</b> &gt; <b>Alkalmazások</b> &gt; <b>Letiltott alkalmazások</b> és engedélyezd <b>Android System WebView</b>.\n\nHa nem találod meg itt az alkalmazást, akkor töltsd le a  <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Store</a></b>.</string>
-    <string name="missing_web_view_close">Hentoid Bezárása</string>
+    <string name="missing_web_view_library">Visszalépés a könyvtárba</string>
 <string name="group_today">Ma</string>
     <string name="group_7">Az elmúlt 7 napban</string>
     <string name="group_30">Az elmúlt 30 napban</string>

@@ -92,6 +92,7 @@
     <string name="pref_browser_clear_cookies">Rimuovi tutti i cookies</string>
     <string name="pref_browser_clear_cookies_ok">Cookies rimossi correttamente</string>
     <string name="pref_browser_clear_cookies_ko">Nessun cookie da rimuovere</string>
+
 <string name="pref_screen_downloader">Downloader</string>
     <string name="pref_queue_autostart_title">Coda di download ad avvio automatico</string>
     <string name="pref_queue_autostart_on">La coda di download inizierà non appena un download è stato fatto</string>

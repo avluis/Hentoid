@@ -16,6 +16,7 @@
 <string name="tools_screen_cache">캐시 관리</string>
 <string name="tools_cache_browser">브라우저 캐시 삭제</string>
 <string name="tools_cache_browser_success">웹뷰어 캐시가 성공적으로 삭제되었습니다</string>
+
 <string name="tools_cache_app">앱 캐시 삭제</string>
 <string name="tools_cache_app_success">앱 캐시가 성공적으로 삭제되었습니다</string>
 <string name="tools_latest_logs_title">앱 로그</string>

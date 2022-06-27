@@ -16,6 +16,7 @@
 <string name="tools_screen_cache">Gestionar caché</string>
 <string name="tools_cache_browser">Eliminar el caché del explorador</string>
 <string name="tools_cache_browser_success">La caché del Webview se ha borrado con éxito</string>
+
 <string name="tools_cache_app">Eliminar caché de la aplicación</string>
 <string name="tools_cache_app_success">La caché de la aplicación se ha borrado con éxito</string>
 <string name="tools_latest_logs_title">Registros de la aplicación</string>

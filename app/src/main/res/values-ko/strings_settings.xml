@@ -92,6 +92,7 @@
     <string name="pref_browser_clear_cookies">모든 쿠키 삭제</string>
     <string name="pref_browser_clear_cookies_ok">모든 쿠키가 성공적으로 삭제되었습니다</string>
     <string name="pref_browser_clear_cookies_ko">삭제할 쿠키가 없습니다</string>
+
 <string name="pref_screen_downloader">다운로더</string>
     <string name="pref_queue_autostart_title">다운로드 대기열 자동 시작</string>
     <string name="pref_queue_autostart_on">다운로드가 완료되는 즉시 다음 다운로드가 시작됩니다</string>

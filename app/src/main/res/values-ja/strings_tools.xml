@@ -16,6 +16,7 @@
 <string name="tools_screen_cache">キャッシュの管理</string>
 <string name="tools_cache_browser">ブラウザのキャッシュをクリア</string>
 <string name="tools_cache_browser_success">WebViewキャッシュがクリアされました</string>
+
 <string name="tools_cache_app">アプリのキャッシュをクリア</string>
 <string name="tools_cache_app_success">アプリのキャッシュが正常にクリアされました</string>
 <string name="tools_latest_logs_title">アプリのログ</string>
