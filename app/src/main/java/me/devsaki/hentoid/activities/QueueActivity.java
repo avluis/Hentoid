@@ -54,7 +54,9 @@ import me.devsaki.hentoid.fragments.queue.ErrorsFragment;
 import me.devsaki.hentoid.fragments.queue.QueueFragment;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -291,6 +293,11 @@ public class QueueActivity extends BaseActivity {
      * @param position       Position of the new item to redownload, either QUEUE_NEW_DOWNLOADS_POSITION_TOP or QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
      */
     private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, int position) {
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.redownloaded_updating_webview);
+            else ToastHelper.toast(R.string.redownloaded_missing_webview);
+            return;
+        }
         if (reparseContent || reparseImages)
             ProgressDialogFragment.invoke(getSupportFragmentManager(), getResources().getString(R.string.redownload_queue_progress), R.plurals.book);
         viewModel.redownloadContent(contentList, reparseContent, reparseImages, position,
@@ -324,6 +331,11 @@ public class QueueActivity extends BaseActivity {
     // TODO doc
     private void reviveDownload(@NonNull final Site revivedSite, @NonNull final String oldCookie) {
         Timber.d(">> REVIVAL ASKED @ %s", revivedSite.getUrl());
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.revive_updating_webview);
+            else ToastHelper.toast(R.string.revive_missing_webview);
+            return;
+        }
 
         // Remove any notification
         NotificationManager userActionNotificationManager = new NotificationManager(this, R.id.user_action_notification);

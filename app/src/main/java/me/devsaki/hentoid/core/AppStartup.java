@@ -203,7 +203,7 @@ public class AppStartup {
                 Timber.d("Process app update : update detected from %s to %s", Preferences.getLastKnownAppVersionCode(), BuildConfig.VERSION_CODE);
 
                 Timber.d("Process app update : Clearing webview cache");
-                ContextXKt.clearWebviewCache(context);
+                ContextXKt.clearWebviewCache(context, null);
 
                 Timber.d("Process app update : Clearing app cache");
                 ContextXKt.clearAppCache(context);

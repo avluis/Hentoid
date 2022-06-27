@@ -35,6 +35,8 @@
     <string name="tools_cache_browser">Clear browser cache</string>
     <!-- Toast notification -->
     <string name="tools_cache_browser_success">WebView cache successfully cleared</string>
+    <string name="tools_cache_browser_missing_webview">WebView is unavailable, can\'t clear cache now</string>
+    <string name="tools_cache_browser_updating_webview">WebView is updating right now, can\'t clear cache yet</string>
     <!-- Button -->
     <string name="tools_cache_app">Clear app cache</string>
     <!-- Toast notification -->

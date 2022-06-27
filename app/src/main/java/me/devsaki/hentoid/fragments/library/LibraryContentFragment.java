@@ -751,7 +751,7 @@ public class LibraryContentFragment extends Fragment implements
 
     private void onDownloadError(Throwable t) {
         Timber.w(t);
-        Snackbar.make(recyclerView, R.string.download_canceled, BaseTransientBottomBar.LENGTH_SHORT).show();
+        Snackbar.make(recyclerView, t.getMessage(), BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     /**
@@ -795,7 +795,7 @@ public class LibraryContentFragment extends Fragment implements
 
     private void onStreamError(Throwable t) {
         Timber.w(t);
-        Snackbar.make(recyclerView, R.string.stream_canceled, BaseTransientBottomBar.LENGTH_SHORT).show();
+        Snackbar.make(recyclerView, t.getMessage(), BaseTransientBottomBar.LENGTH_SHORT).show();
     }
 
     /**

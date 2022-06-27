@@ -41,11 +41,13 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.download.RequestQueueManager
+import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.ExternalImportWorker
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import me.devsaki.hentoid.workers.UpdateDownloadWorker
+import kotlin.properties.Delegates
 
 
 class PreferencesFragment : PreferenceFragmentCompat(),
@@ -272,17 +274,20 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onClearCookies() {
-        CookieManager.getInstance().removeAllCookies {
-            var caption = R.string.pref_browser_clear_cookies_ok
-            if (!it) caption = R.string.pref_browser_clear_cookies_ko
-
-            val snack = Snackbar.make(
-                listView,
-                caption,
-                BaseTransientBottomBar.LENGTH_SHORT
-            )
-            snack.show()
-        }
+        var caption by Delegates.notNull<Int>()
+        if (WebkitPackageHelper.getWebViewAvailable()) {
+            CookieManager.getInstance().removeAllCookies {
+                caption = R.string.pref_browser_clear_cookies_ok
+                if (!it) caption = R.string.pref_browser_clear_cookies_ko
+            }
+        } else if (WebkitPackageHelper.getWebViewUpdating()) caption = R.string.pref_browser_clear_cookies_updating_webview;
+            else caption = R.string.pref_browser_clear_cookies_missing_webview;
+        val snack = Snackbar.make(
+            listView,
+            caption,
+            BaseTransientBottomBar.LENGTH_SHORT
+        )
+        snack.show()
     }
 
     private fun populateMemoryUsage() {

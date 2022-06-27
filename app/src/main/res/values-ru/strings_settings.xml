@@ -99,6 +99,8 @@
     <string name="pref_browser_clear_cookies">Очистить cookies браузера</string>
     <string name="pref_browser_clear_cookies_ok">Cookies удалены успешно</string>
     <string name="pref_browser_clear_cookies_ko">Нечего удалять</string>
+    <string name="pref_browser_clear_cookies_missing_webview">WebView недоступен, невозможно удалить cookies сейчас</string>
+    <string name="pref_browser_clear_cookies_updating_webview">WebView сейчас обновляется, пока невозможно удалить cookies</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Загрузчик</string>

@@ -8,11 +8,14 @@ import android.content.res.Resources
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.webkit.WebView
 import android.widget.Toast
+import androidx.core.util.Consumer
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.views.NestedScrollWebView
 import timber.log.Timber
 
@@ -35,18 +38,25 @@ inline fun <reified T : Activity> Context.startLocalActivity() {
     startActivity(Intent(this, T::class.java))
 }
 
-fun Context.clearWebviewCache() {
+fun Context.clearWebviewCache(callback: Consumer<Boolean>?) {
     // Clear webview cache (needs to execute inside the activity's Looper)
     val h = Handler(Looper.getMainLooper())
     h.post {
-        val webView = try {
-            NestedScrollWebView(this)
-        } catch (e: Resources.NotFoundException) {
-            // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
-            // Creating with the application Context fixes this, but is not generally recommended for view creation
-            NestedScrollWebView(Helper.getFixedContext(this))
+        var webView: WebView? = null
+        if (WebkitPackageHelper.getWebViewAvailable()) {
+            try {
+                webView = NestedScrollWebView(this)
+                callback?.accept(true)
+            } catch (nfe: Resources.NotFoundException) {
+                // Some older devices can crash when instantiating a WebView, due to a Resources$NotFoundException
+                // Creating with the application Context fixes this, but is not generally recommended for view creation
+                webView = NestedScrollWebView(Helper.getFixedContext(this))
+                callback?.accept(true)
+            }
+            webView?.clearCache(true)
+        } else {
+            callback?.accept(false)
         }
-        webView.clearCache(true)
     }
 }
 

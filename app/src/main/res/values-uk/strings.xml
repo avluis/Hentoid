@@ -158,6 +158,8 @@
     <string name="step_remove_duplicate">Замінюється дублікат</string>
     <string name="help_swipe_cancel">Ви можете скасовувати завантаження свайпом вліво</string>
     <string name="redownloaded_error">Виникла проблема при повторному завантаженні — скасовано</string>
+    <string name="redownloaded_missing_webview">WebView недоступно, неможливо завантажити знову зараз</string>
+    <string name="redownloaded_updating_webview">WebView зараз оновлюється, поки неможливо завантажити знову</string>
     <plurals name="redownloaded_scratch">
         <item quantity="one"><x:g id="number" example="1">%1$d</x:g> елемент із <x:g id="total" example="42">%2$d</x:g> буде завантажено знову</item>
         <item quantity="few"><x:g id="number" example="2">%1$d</x:g> елементи з <x:g id="total" example="42">%2$d</x:g> будуть завантажені знову</item>
@@ -169,6 +171,8 @@
     <string name="notification_user_action_needed">Необхідна дія користувача</string>
     <string name="notification_action_dl_revive">Натисніть, щоб відновити завантаження</string>
     <string name="revive_wait">Будь ласка, не закривайте це вікно, поки ваше завантаження відновлюється</string>
+    <string name="revive_missing_webview">WebView недоступно, неможливо відновити завантаження зараз</string>
+    <string name="revive_updating_webview">WebView зараз оновлюється, поки неможливо відновити завантаження</string>
     <string name="queue_json_saved">JSON черги успішно збережено</string>
     <string name="queue_json_failed">Не вдалося зберегти JSON очереди</string>
     <string name="queue_content_size_estimate">приблизно <x:g id="size_mbytes" example="13.37">%.1f</x:g> МБ</string>
@@ -370,6 +374,8 @@
     <string name="error_creating_folder">Помилка створення папки.</string>
     <string name="error_open">Помилка відкриття файлу: не знайдено відповідного додатка</string>
     <string name="error_browser">Помилка відкриття лінку: браузер не виявлено</string>
+    <string name="error_missing_webview">WebView недоступно, неможливо відкрити вбудований браузер зараз</string>
+    <string name="error_updating_webview">WebView зараз оновлюється, поки неможливо відкрити вбудований браузер</string>
 
     <!-- Error log -->
     <string name="redownload_dialog_title">Спробувати завантажити знову\?</string>
@@ -427,7 +433,11 @@
         <item quantity="many"><x:g id="count" example="5">%d</x:g> книг заархівовані в Завантаженнях</item>
     </plurals>
     <string name="stream_canceled">Потокову передачу скасовано — книга не доступна в мережі</string>
+    <string name="stream_missing_webview">Потокову передачу скасовано — WebView недоступно</string>
+    <string name="stream_updating_webview">Потокову передачу скасовано — WebView оновлюється</string>
     <string name="download_canceled">Завантаження скасовано — книга не доступна в мережі</string>
+    <string name="download_missing_webview">Завантаження скасовано — WebView недоступно</string>
+    <string name="download_updating_webview">Завантаження скасовано — WebView оновлюється</string>
     <string name="press_back_again">Натисніть \'Назад\' двічі, щоб вийти.</string>
     <string name="queue_empty">Чому в мені порожньо\?</string>
     <string name="errors_empty">Помилок при завантаженні не виявлено</string>
@@ -622,6 +632,8 @@
     <string name="about_licenses">Показати ліцензії</string>
     <string name="about_app_version">Версія Hentoid: <x:g id="ver_name" example="1.15.20">%1$s</x:g> (<x:g id="ver_code" example="130">%2$d</x:g>)</string>
     <string name="about_chrome_version">Версія Chrome: <x:g id="chrome_ver" example="98">%1$d</x:g></string>
+    <string name="about_chrome_unavailable">WebView недоступно</string>
+    <string name="about_chrome_updating">WebView зараз оновлюється</string>
 
     <!-- Web browser -->
     <string name="web_gallery">Назад до останньої сторінки галереї</string>
@@ -845,9 +857,9 @@
     <string name="title_startup_complete">Запуск завершено</string>
 
     <!-- Missing WebView -->
-    <string name="missing_web_view_title">WebView не встановлено або вимкнено</string>
-    <string name="missing_web_view">Hentoid не виявив вбудований спеціальний браузер Android.\nНа жаль, додаток не може працювати без нього.\n\nШвидше за все, він насправді встановлений у вас, просто відключений: будь ласка, перейдіть в <b>Налаштування</b> &gt; <b>Додатки</b> &gt; <b>Відключені</b> та включіть <b>Android System WebView</b>.\n\nЯкщо ви не можете знайти такий додаток, будь ласка, встановіть його з <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Маркета</a></b>.</string>
-    <string name="missing_web_view_close">Закрити Hentoid</string>
+    <string name="missing_web_view_title">WebView не встановлено або відключено</string>
+    <string name="missing_web_view">Hentoid не виявив вбудований спеціальний браузер Android.\nБез нього неможливо ходити по сайтах, завантажувати книги, так само як і робити багато чого, що пов\'язано з інтернетом.\n\nШвидше за все, він насправді встановлений у вас, просто відключений: будь ласка, перейдіть в <b>Налаштування</b> &gt; <b>Додатки</b> &gt; <b>Відключені</b> та включіть <b>Android System WebView</b>.\n\nЯкщо ви не можете знайти такий додаток, будь ласка, встановіть його з вашого <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">магазину додатків</a></b>.</string>
+    <string name="missing_web_view_library">Назад до бібліотеки</string>
 
     <!-- Group names -->
     <string name="group_today">Сьогодні</string>

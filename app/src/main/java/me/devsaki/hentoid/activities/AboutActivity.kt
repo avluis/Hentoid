@@ -13,6 +13,7 @@ import me.devsaki.hentoid.events.UpdateEvent
 import me.devsaki.hentoid.fragments.about.ChangelogFragment
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.network.HttpHelper
+import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
@@ -43,7 +44,10 @@ class AboutActivity : BaseActivity() {
                 BuildConfig.VERSION_CODE
             )
             it.tvChromeVersionName.text =
-                getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
+                    if (WebkitPackageHelper.getWebViewAvailable())
+                        getString(R.string.about_chrome_version, HttpHelper.getChromeVersion())
+                    else
+                        getString(R.string.about_chrome_unavailable)
 
             it.changelogButton.setOnClickListener { showFragment(ChangelogFragment()) }
 

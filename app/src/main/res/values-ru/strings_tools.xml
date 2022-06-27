@@ -16,6 +16,8 @@
 <string name="tools_screen_cache">Управление кэшем</string>
 <string name="tools_cache_browser">Очистить кэш браузера</string>
 <string name="tools_cache_browser_success">Кэш WebView успешно очищен</string>
+    <string name="tools_cache_browser_missing_webview">WebView недоступен, невозможно очистить кэш сейчас</string>
+    <string name="tools_cache_browser_updating_webview">WebView сейчас обновляется, пока невозможно очистить кэш</string>
 <string name="tools_cache_app">Очистить кэш приложения</string>
 <string name="tools_cache_app_success">Кэш приложения успешно очищен</string>
 <string name="tools_latest_logs_title">Логи приложения</string>

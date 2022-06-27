@@ -77,6 +77,7 @@ import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.FileNotProcessedException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
 import okhttp3.Response;
@@ -157,6 +158,12 @@ public final class ContentHelper {
      */
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         if (content.getSite().equals(Site.NONE)) return;
+
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.error_updating_webview);
+            else ToastHelper.toast(R.string.error_missing_webview);
+            return;
+        }
 
         Intent intent = new Intent(context, Content.getWebActivityClass(content.getSite()));
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
@@ -996,6 +1003,11 @@ public final class ContentHelper {
      * @param targetUrl Url to navigate to
      */
     public static void launchBrowserFor(@NonNull final Context context, @NonNull final String targetUrl) {
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.error_updating_webview);
+            else ToastHelper.toast(R.string.error_missing_webview);
+            return;
+        }
         Site targetSite = Site.searchByUrl(targetUrl);
         if (null == targetSite || targetSite.equals(Site.NONE)) return;
 

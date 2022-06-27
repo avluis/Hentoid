@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -13,7 +14,19 @@ public class MissingWebViewActivity extends BaseActivity {
         setContentView(R.layout.activity_missing_web_view);
     }
 
-    public void onCloseHentoidPressed(View v) {
-        System.exit(0);
+    public void onOpenLibraryPressed(View v) {
+        onBackPressed();
+    }
+
+    @Override
+    public void onBackPressed() {
+        // from me.devsaki.hentoid.activities.sources.BaseWebActivity.goHome()
+        Intent intent = new Intent(this, LibraryActivity.class);
+        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
+        // it can interfere with Double-Back (press back twice) to exit
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        overridePendingTransition(0, 0);
+        finish();
     }
 }
