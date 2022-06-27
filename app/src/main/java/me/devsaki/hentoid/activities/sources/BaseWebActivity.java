@@ -4,7 +4,6 @@ import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
-import static me.devsaki.hentoid.core.HentoidApp.isWebViewAvailable;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -114,6 +113,7 @@ import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import me.devsaki.hentoid.widget.AddQueueMenu;
 import okhttp3.Response;
@@ -243,7 +243,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!isWebViewAvailable) {
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
             startActivity(new Intent(this, MissingWebViewActivity.class));
             return;
         }
@@ -407,7 +407,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
         BaseWebActivityBundle bundle = new BaseWebActivityBundle();
-        if (isWebViewAvailable) bundle.setUrl(webView.getUrl());
+        if (WebkitPackageHelper.getWebViewAvailable()) bundle.setUrl(webView.getUrl());
         outState.putAll(bundle.getBundle());
     }
 
@@ -426,7 +426,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     protected void onResume() {
         super.onResume();
 
-        if (!isWebViewAvailable) {
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
             startActivity(new Intent(this, MissingWebViewActivity.class));
             return;
         }
@@ -452,10 +452,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     @Override
     protected void onStop() {
-        if (isWebViewAvailable) {
-            if (webView.getUrl() != null)
-                dao.insertSiteHistory(getStartSite(), webView.getUrl());
-        }
+        if (WebkitPackageHelper.getWebViewAvailable() && (webView.getUrl() != null))
+            dao.insertSiteHistory(getStartSite(), webView.getUrl());
         super.onStop();
     }
 

@@ -35,7 +35,6 @@
             android:name=".activities.MissingWebViewActivity"
             android:exported="false"
             android:noHistory="true"
-
             android:label="@string/missing_web_view" />
         <activity
             android:name=".activities.SplashActivity"

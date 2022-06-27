@@ -2,7 +2,6 @@ package me.devsaki.hentoid.viewholders;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
-import static me.devsaki.hentoid.core.HentoidApp.isWebViewAvailable;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -71,6 +70,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.views.CircularProgressView;
 
 public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> implements IExtendedDraggable, ISwipeable {
@@ -409,7 +409,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
 
             ivCover.setVisibility(View.VISIBLE);
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
-            if (thumbLocation.startsWith("http") && isWebViewAvailable) {
+            if (thumbLocation.startsWith("http") && WebkitPackageHelper.getWebViewAvailable()) {
                 String cookieStr = null;
                 String referer = null;
 

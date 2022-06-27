@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.viewmodels;
 
-import static me.devsaki.hentoid.core.HentoidApp.isWebViewAvailable;
-import static me.devsaki.hentoid.core.HentoidApp.isWebViewUpdating;
 import static me.devsaki.hentoid.util.GroupHelper.moveContentToCustomGroup;
 
 import android.app.Application;
@@ -77,6 +75,7 @@ import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.widget.GroupSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
@@ -597,8 +596,8 @@ public class LibraryViewModel extends AndroidViewModel {
             int position,
             @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
-        if (!isWebViewAvailable) {
-            if (isWebViewUpdating) onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_updating_webview)));
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_updating_webview)));
             else onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_missing_webview)));
             return;
         }
@@ -646,8 +645,8 @@ public class LibraryViewModel extends AndroidViewModel {
             int position,
             @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
-        if (!isWebViewAvailable) {
-            if (isWebViewUpdating) onError.accept(new EmptyResultException(getApplication().getString(R.string.download_updating_webview)));
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) onError.accept(new EmptyResultException(getApplication().getString(R.string.download_updating_webview)));
             else onError.accept(new EmptyResultException(getApplication().getString(R.string.download_missing_webview)));
             return;
         }
@@ -698,8 +697,8 @@ public class LibraryViewModel extends AndroidViewModel {
 
     public void streamContent(@NonNull final List<Content> contentList,
                               @NonNull final Consumer<Throwable> onError) {
-        if (!isWebViewAvailable) {
-            if (isWebViewUpdating) onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_updating_webview)));
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_updating_webview)));
             else onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_missing_webview)));
             return;
         }

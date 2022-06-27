@@ -1,18 +1,10 @@
 package me.devsaki.hentoid.receiver;
 
-import static android.content.Intent.ACTION_PACKAGE_ADDED;
-import static android.content.Intent.ACTION_PACKAGE_CHANGED;
-import static android.content.Intent.ACTION_PACKAGE_REMOVED;
-import static android.content.Intent.ACTION_PACKAGE_REPLACED;
-
-import static me.devsaki.hentoid.core.HentoidApp.isWebViewAvailable;
-import static me.devsaki.hentoid.core.HentoidApp.isWebViewUpdating;
-import static me.devsaki.hentoid.core.HentoidApp.setIsWebViewAvailable;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import timber.log.Timber;
 
 public class WebViewUpdateCycleReceiver extends BroadcastReceiver {
@@ -48,24 +40,23 @@ public class WebViewUpdateCycleReceiver extends BroadcastReceiver {
         if (packageName.equals("com.android.webview") || packageName.equals("com.android.chrome") || packageName.equals("com.google.android.webview")
                 || packageName.equals("com.google.android.apps.chrome") || packageName.equals("com.google.android.webview.debug") || packageName.equals("org.bromite.webview")
                 || packageName.equals("app.vanadium.webview") || packageName.equals("app.vanadium.trichromelibrary") || packageName.equals("com.google.android.trichromelibrary")) {
-            setIsWebViewAvailable();
-            if (intent.getAction().equals(ACTION_PACKAGE_REMOVED)) {
-                if (!isWebViewAvailable) { // If some other WebView provider is available, then we shouldn't care
+            WebkitPackageHelper.setWebViewAvailable();
+            if (intent.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
+                if (!WebkitPackageHelper.getWebViewAvailable()) { // If some other WebView provider is available, then we shouldn't care
                     Timber.w("The last WebView provider (package %s) has been removed, hoping it is an update", packageName);
-                    isWebViewUpdating = true;
-                } else {
+                    WebkitPackageHelper.setWebViewUpdating(true);
+                } else
                     Timber.i("A WebView provider has been removed (package %s), but another implementation is available", packageName);
-                }
 
-            } else if (intent.getAction().equals(ACTION_PACKAGE_ADDED) || intent.getAction().equals(ACTION_PACKAGE_REPLACED)) {
-                if (isWebViewAvailable) { // ...but does the system recognize it as a WebView provider?
+            } else if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED) || intent.getAction().equals(Intent.ACTION_PACKAGE_REPLACED)) {
+                if (WebkitPackageHelper.getWebViewAvailable()) { // ...but does the system recognize it as a WebView provider?
                     Timber.i("Got WebView back! Implementation now provided by package %s", packageName);
-                    isWebViewUpdating = false;
+                    WebkitPackageHelper.setWebViewUpdating(false);
                 } else {
-                    if (isWebViewUpdating) Timber.w("WebView provider candidate (package %s) has installed, but there is still no implementation available", packageName);
+                    if (WebkitPackageHelper.getWebViewUpdating())
+                        Timber.w("WebView provider candidate (package %s) has installed, but there is still no implementation available", packageName);
                 }
             }
         }
     }
-
 }

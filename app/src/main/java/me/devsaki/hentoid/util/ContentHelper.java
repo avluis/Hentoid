@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import static me.devsaki.hentoid.core.HentoidApp.isWebViewAvailable;
-import static me.devsaki.hentoid.core.HentoidApp.isWebViewUpdating;
 import static me.devsaki.hentoid.util.network.HttpHelper.HEADER_CONTENT_TYPE;
 
 import android.content.Context;
@@ -79,6 +77,7 @@ import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.FileNotProcessedException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
 import me.devsaki.hentoid.util.string_similarity.StringSimilarity;
 import okhttp3.Response;
@@ -160,8 +159,8 @@ public final class ContentHelper {
     public static void viewContentGalleryPage(@NonNull final Context context, @NonNull Content content, boolean wrapPin) {
         if (content.getSite().equals(Site.NONE)) return;
 
-        if (!isWebViewAvailable) {
-            if (isWebViewUpdating) ToastHelper.toast(R.string.error_updating_webview);
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.error_updating_webview);
             else ToastHelper.toast(R.string.error_missing_webview);
             return;
         }
@@ -1004,8 +1003,8 @@ public final class ContentHelper {
      * @param targetUrl Url to navigate to
      */
     public static void launchBrowserFor(@NonNull final Context context, @NonNull final String targetUrl) {
-        if (!isWebViewAvailable) {
-            if (isWebViewUpdating) ToastHelper.toast(R.string.error_updating_webview);
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.error_updating_webview);
             else ToastHelper.toast(R.string.error_missing_webview);
             return;
         }

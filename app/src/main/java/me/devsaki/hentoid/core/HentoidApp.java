@@ -8,8 +8,6 @@ import android.app.Application;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.AndroidRuntimeException;
-import android.webkit.CookieManager;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.DefaultLifecycleObserver;
@@ -33,6 +31,7 @@ import me.devsaki.hentoid.receiver.WebViewUpdateCycleReceiver;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.network.HttpHelper;
+import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import timber.log.Timber;
 
 /**
@@ -86,8 +85,6 @@ public class HentoidApp extends Application {
     }
 
     WebViewUpdateCycleReceiver webViewUpdateCycleReceiver = new WebViewUpdateCycleReceiver();
-    public static boolean isWebViewAvailable;
-    public static boolean isWebViewUpdating = false;
 
     /**
      * Must only contain FUNDAMENTAL app init tasks, as the time spent here makes
@@ -142,7 +139,7 @@ public class HentoidApp extends Application {
         });
 
         // Initialize WebView availability status and register the WebView Update Cycle Receiver
-        setIsWebViewAvailable();
+        WebkitPackageHelper.setWebViewAvailable();
         IntentFilter filterWVUC = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
         filterWVUC.addAction(Intent.ACTION_PACKAGE_REMOVED);
         filterWVUC.addAction(Intent.ACTION_PACKAGE_REPLACED);
@@ -150,22 +147,10 @@ public class HentoidApp extends Application {
 
         // Init user agents (must be done here as some users seem not to complete AppStartup properly)
         Timber.i("Init user agents : start");
-        if (isWebViewAvailable) {
+        if (WebkitPackageHelper.getWebViewAvailable()) {
             HttpHelper.initUserAgents(this);
             Timber.i("Init user agents : done");
         } else Timber.w("Failed to init user agents: WebView is unavailable");
-    }
-
-    public static void setIsWebViewAvailable() {
-        try {
-            CookieManager.getInstance();
-            isWebViewAvailable = true;
-        } catch (AndroidRuntimeException e) {
-            String message = e.getMessage();
-            if (message!=null && message.contains("WebView")) {
-                isWebViewAvailable = false;
-            } else throw e;
-        }
     }
 
     public static boolean isInForeground() {

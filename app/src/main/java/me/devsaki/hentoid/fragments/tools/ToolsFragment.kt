@@ -13,13 +13,13 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
-import me.devsaki.hentoid.core.HentoidApp.isWebViewUpdating
 import me.devsaki.hentoid.core.clearAppCache
 import me.devsaki.hentoid.core.clearWebviewCache
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.json.JsonSettings
 import me.devsaki.hentoid.util.*
+import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import timber.log.Timber
@@ -93,7 +93,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
             CLEAR_BROWSER_CACHE -> {
                 context?.clearWebviewCache {
                     ToastHelper.toast(if (it) R.string.tools_cache_browser_success else
-                        if (isWebViewUpdating) R.string.tools_cache_browser_updating_webview
+                        if (WebkitPackageHelper.getWebViewUpdating()) R.string.tools_cache_browser_updating_webview
                         else R.string.tools_cache_browser_missing_webview)
                 }
                 true
