@@ -32,6 +32,7 @@
             android:layout_marginStart="8dp"
             android:textSize="@dimen/caption"
             app:layout_constraintBottom_toTopOf="@id/image_stats"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivThumb"
             app:layout_constraintTop_toTopOf="@id/ivThumb"
             tools:text="root/path1/path2/image_name.jpg" />
@@ -43,6 +44,7 @@
             android:layout_marginStart="8dp"
             android:textSize="@dimen/caption"
             app:layout_constraintBottom_toBottomOf="@id/ivThumb"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/ivThumb"
             app:layout_constraintTop_toBottomOf="@id/image_path"
             tools:text="1600 x 2300 (scale 86%) - 8.86 MB" />
