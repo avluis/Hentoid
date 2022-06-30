@@ -274,20 +274,32 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     }
 
     private fun onClearCookies() {
+        fun showSnackBar(caption: Int) {
+            val snack = Snackbar.make(
+                    listView,
+                    caption,
+                    BaseTransientBottomBar.LENGTH_SHORT
+            )
+            snack.show()
+        }
+
         var caption by Delegates.notNull<Int>()
-        if (WebkitPackageHelper.getWebViewAvailable()) {
+
+        if (!WebkitPackageHelper.getWebViewAvailable()) {
+            caption = R.string.pref_browser_clear_cookies_missing_webview
+            showSnackBar(caption)
+            return
+        } else if (WebkitPackageHelper.getWebViewUpdating()) {
+            caption = R.string.pref_browser_clear_cookies_updating_webview
+            showSnackBar(caption)
+            return
+        } else {
             CookieManager.getInstance().removeAllCookies {
                 caption = R.string.pref_browser_clear_cookies_ok
                 if (!it) caption = R.string.pref_browser_clear_cookies_ko
+                showSnackBar(caption)
             }
-        } else if (WebkitPackageHelper.getWebViewUpdating()) caption = R.string.pref_browser_clear_cookies_updating_webview;
-            else caption = R.string.pref_browser_clear_cookies_missing_webview;
-        val snack = Snackbar.make(
-            listView,
-            caption,
-            BaseTransientBottomBar.LENGTH_SHORT
-        )
-        snack.show()
+        }
     }
 
     private fun populateMemoryUsage() {
