@@ -729,7 +729,7 @@
     <string name="title_startup_progress">起動…</string>
     <string name="title_startup_complete">起動が完了しました</string>
 <string name="missing_web_view_title">WebViewがインストールまたは無効化されていない</string>
-    <string name="missing_web_view">Hentoidは、Androidに組み込まれているアプリ用のWebビューアを見つけることができませんでした。\ nこれがないと、ソースを閲覧したり、書籍を再ダウンロードしたりできません。 インターネットを必要とすることは実際にはできません。\n\nインターネットは実際にシステムにインストールされている可能性がありますが、無効になっています。<b>設定</b>に移動してください＆gt; <b>アプリ</b>＆gt; <b>アプリを無効にし</b><b> Android System WebView</b>を有効にします。\n\nアプリが見つからない場合は、デバイスのアプリストアから<b><a href="https://play.google.com/store/apps/details?id=com.google.android.webviewをインストールしてください。"</a></b>.</string>
+    <string name="missing_web_view">Hentoidは、Androidに組み込まれているアプリ用のWebビューアを見つけることができませんでした。\ nこれがないと、ソースを閲覧したり、書籍を再ダウンロードしたりできません。 インターネットを必要とすることは実際にはできません。\n\nインターネットは実際にシステムにインストールされている可能性がありますが、無効になっています。<b>設定</b>に移動してください＆gt; <b>アプリ</b>＆gt; <b>アプリを無効にし</b><b> Android System WebView</b>を有効にします。\n\nアプリが見つからない場合は、デバイスのアプリストアから<b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">をインストールしてください。\"</a></b>.</string>
     <string name="missing_web_view_library">ライブラリに戻る</string>
 <string name="group_today">今日</string>
     <string name="group_7">過去7日間</string>
