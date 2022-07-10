@@ -38,6 +38,7 @@ public class LusciousActivity extends BaseWebActivity {
         client.restrictTo(DOMAIN_FILTER);
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER);
         //client.addDirtyElements(DIRTY_ELEMENTS);
+        client.setJsStartupScripts("luscious_adblock.js");
 
         // Init fetch handler here for convenience
         fetchHandler = client::onFetchCall;

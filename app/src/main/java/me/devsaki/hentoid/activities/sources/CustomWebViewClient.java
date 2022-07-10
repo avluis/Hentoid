@@ -131,6 +131,9 @@ class CustomWebViewClient extends WebViewClient {
     // an inline script tag, the entire tag is removed from the HTML
     private List<String> jsContentBlacklist;
 
+    // TODO doc
+    private List<String> jsStartupScripts;
+
 
     CustomWebViewClient(Site site, String[] galleryUrl, CustomWebActivity activity) {
         this.site = site;
@@ -187,13 +190,20 @@ class CustomWebViewClient extends WebViewClient {
         Collections.addAll(jsContentBlacklist, elements);
     }
 
-
+    // TODO doc
     void setResultsUrlPatterns(String... patterns) {
         for (String s : patterns) resultsUrlPattern.add(Pattern.compile(s));
     }
 
+    // TODO doc
     void setResultUrlRewriter(@NonNull BiFunction<Uri, Integer, String> rewriter) {
         resultsUrlRewriter = rewriter;
+    }
+
+    // TODO doc
+    void setJsStartupScripts(String... assetNames) {
+        if (null == jsStartupScripts) jsStartupScripts = new ArrayList<>();
+        Collections.addAll(jsStartupScripts, assetNames);
     }
 
     /**
@@ -365,7 +375,7 @@ class CustomWebViewClient extends WebViewClient {
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         if (BuildConfig.DEBUG) Timber.v("WebView : page started %s", url);
         isPageLoading.set(true);
-        activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded.get(), true);
+        activity.onPageStarted(url, isGalleryPage(url), isHtmlLoaded.get(), true, jsStartupScripts);
     }
 
     @Override
@@ -755,7 +765,12 @@ class CustomWebViewClient extends WebViewClient {
         void loadUrl(@NonNull final String url);
 
         // CALLBACKS
-        void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded, boolean isBookmarkable);
+        void onPageStarted(
+                String url,
+                boolean isGalleryPage,
+                boolean isHtmlLoaded,
+                boolean isBookmarkable,
+                List<String> jsStartupScripts);
 
         void onPageFinished(boolean isResultsPage, boolean isGalleryPage);
 

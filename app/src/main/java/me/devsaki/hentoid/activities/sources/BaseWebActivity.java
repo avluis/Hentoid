@@ -603,7 +603,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 android.R.color.holo_red_light);
     }
 
-    public void onPageStarted(String url, boolean isGalleryPage, boolean isHtmlLoaded, boolean isBookmarkable) {
+    public void onPageStarted(
+            String url,
+            boolean isGalleryPage,
+            boolean isHtmlLoaded,
+            boolean isBookmarkable,
+            List<String> jsStartupScripts) {
         refreshStopMenu.setIcon(R.drawable.ic_close);
         progressBar.setVisibility(View.GONE);
         if (!isHtmlLoaded) {
@@ -613,8 +618,14 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // Activate fetch handler
         if (fetchHandler != null) {
-            if (null == jsInterceptorScript) jsInterceptorScript = getJsInterceptorScript();
+            if (null == jsInterceptorScript) jsInterceptorScript = getJsScript("fetch_override.js");
             webView.loadUrl(jsInterceptorScript);
+        }
+
+        // Activate startup JS
+        if (jsStartupScripts != null) {
+            for (String s : jsStartupScripts)
+                webView.loadUrl(getJsScript(s));
         }
 
         // Display download button tooltip if a book page has been reached
@@ -1378,10 +1389,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (reload && !webClient.isLoading()) webView.reload();
     }
 
-    private String getJsInterceptorScript() {
+    private String getJsScript(String assetName) {
         StringBuilder sb = new StringBuilder();
         sb.append("javascript:");
-        FileHelper.getAssetAsString(getAssets(), "fetch_override.js", sb);
+        FileHelper.getAssetAsString(getAssets(), assetName, sb);
         return sb.toString();
     }
 
@@ -1413,7 +1424,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         @JavascriptInterface
         @SuppressWarnings("unused")
         public void onFetchCall(String url, String body) {
-            Timber.w("AJAX Begin %s : %s", url, body);
+            Timber.d("AJAX Begin %s : %s", url, body);
             handler.accept(url, body);
         }
     }

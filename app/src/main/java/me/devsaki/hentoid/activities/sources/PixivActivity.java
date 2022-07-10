@@ -86,7 +86,7 @@ public class PixivActivity extends BaseWebActivity {
             for (String s : NAVIGATION_QUERIES)
                 if (url.contains(s)) {
                     compositeDisposable.add(
-                            Completable.fromRunnable(() -> activity.onPageStarted(url, isGalleryPage(url), false, false))
+                            Completable.fromRunnable(() -> activity.onPageStarted(url, isGalleryPage(url), false, false, null))
                                     .subscribeOn(AndroidSchedulers.mainThread())
                                     .subscribe()
                     );
