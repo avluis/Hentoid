@@ -67,7 +67,7 @@ public class ToonilyContent extends BaseContentParser {
             content.setUniqueSiteId(urlParts[0]);
 
         if (updateImages) {
-            List<String> imgUrls = Stream.of(chapterImgs).map(ParseHelper::getImgSrc).toList();
+            List<String> imgUrls = Stream.of(chapterImgs).map(ParseHelper::getImgSrc).filterNot(String::isEmpty).distinct().toList();
             String coverUrl = "";
             if (!imgUrls.isEmpty()) coverUrl = imgUrls.get(0);
             content.setImageFiles(ParseHelper.urlsToImageFiles(imgUrls, coverUrl, StatusContent.SAVED));
