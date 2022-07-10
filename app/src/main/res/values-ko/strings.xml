@@ -46,7 +46,7 @@
     <string name="title_activity_preferences">설정</string>
     <string name="title_activity_about">정보</string>
     <string name="title_activity_app_lock">앱 잠금</string>
-    <string name="title_activity_search">고급 찾기</string>
+    <string name="title_activity_search">고급 검색</string>
 <string name="api29_migration_title">Hentoid v12\n파일 관리 업데이트</string>
     <string name="api29_migration_subtitle">Hentoid가 컬렉션을 업데이트하는 중입니다.\n몇 분이 소요될 수 있습니다.</string>
     <string name="api29_migration_location">현재 Hentoid 폴더 위치\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
@@ -60,7 +60,7 @@
     <string name="api29_migration_step4_init">대기열 불러오는 중...</string>
     <string name="api29_migration_select_folder">기존 Hentoid 폴더를 선택하세요. 화면에 위치가 표시됩니다.</string>
     <string name="api29_migration_allow_write">쓰기 권한을 허용해주세요</string>
-<string name="menu_search">찾기</string>
+<string name="menu_search">검색</string>
     <string name="menu_fav">즐겨찾기 필터 켜기/끄기</string>
     <string name="menu_mark_fav">즐겨찾기 켜기/끄기</string>
     <string name="menu_group_new">새 그룹</string>
@@ -137,7 +137,8 @@
     <string name="step_remove_duplicate">중복 제거 중</string>
     <string name="help_swipe_cancel">왼쪽으로 밀어서 다운로드를 취소할 수 있습니다</string>
     <string name="redownloaded_error">다시 다운로드 하는 중에 문제가 발생했습니다 - 취소됨</string>
-
+    <string name="redownloaded_missing_webview">WebView를 사용할 수 없습니다, 현재 다운로드가 불가능합니다</string>
+    <string name="redownloaded_updating_webview">WebView를 업데이트 중입니다, 아직 다운로드가 불가능합니다</string>
     <plurals name="redownloaded_scratch">
         <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> 항목 제거됨</item>
         <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> 항목 제거됨</item>
@@ -147,8 +148,9 @@
     <string name="notification_user_action_title">사용자 작업</string>
     <string name="notification_user_action_needed">사용자 작업 필요</string>
     <string name="notification_action_dl_revive">다운로드를 다시 시작하려면 여기를 누르세요</string>
-    <string name="revive_wait">다운로드가 다시 시작하는 동안 이 화면을 유지해주세요</string>
-
+    <string name="revive_wait">다운로드를 다시 시작하는 동안 이 화면을 유지해주세요</string>
+    <string name="revive_missing_webview">WebView를 사용할 수 없습니다, 현재 다운로드가 불가능합니다</string>
+    <string name="revive_updating_webview">WebView를 업데이트 중입니다, 아직 다운로드가 불가능합니다</string>
     <string name="queue_json_saved">대기열 JSON 파일 저장됨</string>
     <string name="queue_json_failed">대기열 JSON 파일 저장 불가</string>
     <string name="queue_content_size_estimate"><x:g example="13.37" id="size_mbytes">%.1f</x:g> MB 확인됨</string>
@@ -313,7 +315,8 @@
     <string name="error_creating_folder">폴더가 유효하지 않습니다.</string>
     <string name="error_open">파일 여는 중 오류: 관련 응용 프로그램을 찾을 수 없습니다</string>
     <string name="error_browser">링크 여는 중 오류: 브라우저를 찾을 수 없습니다</string>
-
+    <string name="error_missing_webview">WebView를 사용할 수 없습니다, 현재 인앱 브라우저를 열 수 없습니다</string>
+    <string name="error_updating_webview">WebView를 업데이트 중입니다, 아직 인앱 브라우저를 열 수 없습니다</string>
 <string name="redownload_dialog_title">다운로드를 다시 시도하시겠습니까\?</string>
     <string name="redownload_dialog_message">총 갯수: <x:g example="10" id="total_imgs">%1$d</x:g>\n다운로드 성공 : <x:g example="8" id="fine_imgs">%2$d</x:g>\n다운로드 실패: <x:g example="2" id="failed_imgs">%3$d</x:g></string>
     <string name="redownload_first_error">첫번째 오류: <x:g id="errortype">%s</x:g></string>
@@ -361,9 +364,11 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g>개 작품이 다운로드 폴더에 보관되었습니다</item>
     </plurals>
     <string name="stream_canceled">불러오기 실패 - 온라인에서 불러올 수 없습니다</string>
-
+    <string name="stream_missing_webview">스트리밍 중지됨 - WebView 사용 불가</string>
+    <string name="stream_updating_webview">스트리밍 중지됨 - WebView 업데이트 중</string>
     <string name="download_canceled">다운로드 실패 - 온라인에서 불러올 수 없습니다</string>
-
+    <string name="download_missing_webview">다운로드 중지됨 - WebView 사용 불가</string>
+    <string name="download_updating_webview">다운로드 중지됨 - WebView 업데이트 중</string>
     <string name="press_back_again">뒤로 가기를 두 번 (빠르게) 눌러서 종료</string>
     <string name="queue_empty">비어 있음</string>
     <string name="errors_empty">오류가 발견되지 않음</string>
@@ -378,8 +383,8 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> 항목</item>
     </plurals>
     <plurals name="number_of_book_search_results">
-        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> 발견</item>
-        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> 발견</item>
+        <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> 검색 결과</item>
+        <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="7" id="total">%2$d</x:g> 검색 결과</item>
     </plurals>
     <string name="restart_needed">변경 사항은 Hentoid를 재시작 한 후에 적용됩니다</string>
     <plurals name="redownload_confirm" tools:ignore="ImpliedQuantity">
@@ -457,7 +462,7 @@
     <string name="split_success">분리 완료</string>
 <string name="groups_flat">모든 작품</string>
     <string name="groups_by_artist">작가별로</string>
-    <string name="groups_by_dl_date">다운로드 날짜별로 (진행)</string>
+    <string name="groups_by_dl_date">다운로드 시작 날짜별로</string>
     <string name="groups_custom">지정 그룹</string>
     <string name="no_artist_group_name">[작가 없음]</string>
 <string name="sort_ascending">오름차순</string>
@@ -466,8 +471,8 @@
     <string name="sort_title">제목</string>
     <string name="sort_artist">작가</string>
     <string name="sort_pages">페이지 수</string>
-    <string name="sort_dl_date">다운로드 날짜 (진행)</string>
-    <string name="sort_dl_completion_date">다운로드 날짜 (완료)</string>
+    <string name="sort_dl_date">다운로드 시작 날짜</string>
+    <string name="sort_dl_completion_date">다운로드 완료 날짜</string>
     <string name="sort_read_date">읽은 날짜</string>
     <string name="sort_reads">읽은 순서</string>
     <string name="sort_size">크기</string>
@@ -525,7 +530,8 @@
     <string name="about_licenses">라이센스 표시</string>
     <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
     <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g> [번역 제보(디스코드): Duality#4305]</string>
-
+    <string name="about_chrome_unavailable">WebView 사용 불가</string>
+    <string name="about_chrome_updating">WebView 업데이트 중</string>
 <string name="web_gallery">페이지 이동</string>
     <string name="web_home">라이브러리로 돌아가기</string>
     <string name="web_back">이전 페이지</string>
@@ -577,8 +583,8 @@
     <string name="object_translator">역자</string>
     <string name="object_publisher">Publisher</string>
     <plurals name="search_button">
-        <item quantity="one"><x:g example="1" id="count">%s</x:g>개 발견</item>
-        <item quantity="other"><x:g example="2" id="count">%s</x:g>개 발견</item>
+        <item quantity="one"><x:g example="1" id="count">%s</x:g>개 검색됨</item>
+        <item quantity="other"><x:g example="2" id="count">%s</x:g>개 검색됨</item>
     </plurals>
     <string name="search_select_a_filter">필터를 선택해주세요</string>
 
@@ -723,6 +729,7 @@
     <string name="title_startup_progress">시작 중...</string>
     <string name="title_startup_complete">시작 완료</string>
 <string name="missing_web_view_title">WebView가 설치되지 않았거나 비활성화 되었습니다</string>
+    <string name="missing_web_view">Hentoid가 안드로이드에 내장된 앱 용 웹 뷰어를 찾지 못했습니다.\n현재 브라우저 탐색이나 작품을 다운로드 하는 등 인터넷을 사용한 작업이 불가능합니다.\n\n<b>설정</b> &gt; <b>애플리케이션</b> &gt; <b>사용 안 함</b> 에서 <b>Android 시스템 WebView</b>를 활성화하세요.\n\n앱이 존재하지 않는다면 기기의 <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">앱 스토어</a></b>에서 설치하세요.</string>
     <string name="missing_web_view_library">라이브러리로 돌아가기</string>
 <string name="group_today">오늘</string>
     <string name="group_7">지난 7일</string>

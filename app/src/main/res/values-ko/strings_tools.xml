@@ -15,8 +15,9 @@
 <string name="tools_duplicate_detector_summary">중복된 작품 구분 및 삭제</string>
 <string name="tools_screen_cache">캐시 관리</string>
 <string name="tools_cache_browser">브라우저 캐시 삭제</string>
-<string name="tools_cache_browser_success">웹뷰어 캐시가 성공적으로 삭제되었습니다</string>
-
+<string name="tools_cache_browser_success">WebView 캐시가 성공적으로 삭제되었습니다</string>
+    <string name="tools_cache_browser_missing_webview">WebView를 사용할 수 없습니다, 현재 캐시 삭제가 불가능합니다</string>
+    <string name="tools_cache_browser_updating_webview">WebView를 업데이트 중입니다, 아직 캐시 삭제가 불가능합니다</string>
 <string name="tools_cache_app">앱 캐시 삭제</string>
 <string name="tools_cache_app_success">앱 캐시가 성공적으로 삭제되었습니다</string>
 <string name="tools_latest_logs_title">앱 로그</string>

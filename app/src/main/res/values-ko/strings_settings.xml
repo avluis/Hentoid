@@ -14,7 +14,7 @@
     <string name="pref_top_fab_title">맨 위로 이동 버튼</string>
     <string name="pref_top_fab_summary_off">버튼 비활성화됨</string>
     <string name="pref_top_fab_summary_on">버튼 활성화됨</string>
-    <string name="pref_cat_search">고급 찾기</string>
+    <string name="pref_cat_search">고급 검색</string>
     <string name="pref_attributes_list_order_title">메타데이터 정렬 표시 순서</string>
     <string name="pref_attributes_list_count_title">유효 항목 갯수 표시</string>
     <string name="pref_attributes_list_count_on">속성 옆에 해당 속성을 가지고 있는 항목 갯수를 표시합니다</string>
@@ -92,7 +92,8 @@
     <string name="pref_browser_clear_cookies">모든 쿠키 삭제</string>
     <string name="pref_browser_clear_cookies_ok">모든 쿠키가 성공적으로 삭제되었습니다</string>
     <string name="pref_browser_clear_cookies_ko">삭제할 쿠키가 없습니다</string>
-
+    <string name="pref_browser_clear_cookies_missing_webview">WebView를 사용할 수 없습니다, 현재 쿠키 삭제가 불가능합니다</string>
+    <string name="pref_browser_clear_cookies_updating_webview">WebView를 업데이트 중입니다, 아직 쿠키 삭제가 불가능합니다</string>
 <string name="pref_screen_downloader">다운로더</string>
     <string name="pref_queue_autostart_title">다운로드 대기열 자동 시작</string>
     <string name="pref_queue_autostart_on">다운로드가 완료되는 즉시 다음 다운로드가 시작됩니다</string>
