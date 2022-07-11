@@ -374,6 +374,7 @@
     <string name="pref_attributes_list_order_summary" translatable="false">%s</string>
     <string name="pref_attributes_list_count_default" translatable="false">true</string>
     <string name="pref_color_theme_default" translatable="false">0</string>
+    <string name="pref_force_english_default" translatable="false">false</string>
     <!-- Strings: Settings: Storage -->
     <string name="pref_import_queue_empty_default" translatable="false">false</string>
     <string name="pref_folder_naming_content_default" translatable="false">2</string>

@@ -110,6 +110,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             Preferences.Key.COLOR_THEME -> onPrefColorThemeChanged()
             Preferences.Key.DL_THREADS_QUANTITY_LISTS,
             Preferences.Key.APP_PREVIEW,
+            Preferences.Key.FORCE_ENGLISH,
             Preferences.Key.ANALYTICS_PREFERENCE -> onPrefRequiringRestartChanged()
             Preferences.Key.SETTINGS_FOLDER,
             Preferences.Key.SD_STORAGE_URI -> onHentoidFolderChanged()
@@ -276,9 +277,9 @@ class PreferencesFragment : PreferenceFragmentCompat(),
     private fun onClearCookies() {
         fun showSnackBar(caption: Int) {
             val snack = Snackbar.make(
-                    listView,
-                    caption,
-                    BaseTransientBottomBar.LENGTH_SHORT
+                listView,
+                caption,
+                BaseTransientBottomBar.LENGTH_SHORT
             )
             snack.show()
         }

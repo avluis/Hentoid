@@ -79,6 +79,17 @@
                 android:title="@string/pref_color_theme_title"
                 app:iconSpaceReserved="false" />
         </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_cat_language"
+            app:iconSpaceReserved="false">
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_force_english_default"
+                android:key="force_english"
+                android:summaryOff="@string/pref_force_english_summary_off"
+                android:summaryOn="@string/pref_force_english_summary_on"
+                android:title="@string/pref_force_english_title"
+                app:iconSpaceReserved="false" />
+        </PreferenceCategory>
     </PreferenceScreen>
 
     <PreferenceScreen

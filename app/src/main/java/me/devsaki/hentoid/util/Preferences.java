@@ -83,7 +83,7 @@ public final class Preferences {
         }
 
         if (sharedPreferences.contains(Key.ORDER_CONTENT_LISTS)) {
-            int field = 0;
+            int field;
             boolean isDesc = false;
 
             switch (sharedPreferences.getInt(Key.ORDER_CONTENT_LISTS, Constant.ORDER_CONTENT_TITLE_ALPHA)) {
@@ -128,6 +128,7 @@ public final class Preferences {
                     break;
                 default:
                     // Nothing there
+                    field = 0;
             }
             sharedPreferences.edit().putInt(Key.ORDER_CONTENT_FIELD, field).apply();
             sharedPreferences.edit().putBoolean(Key.ORDER_CONTENT_DESC, isDesc).apply();
@@ -230,6 +231,10 @@ public final class Preferences {
         sharedPreferences.edit()
                 .putString(Key.LIBRARY_DISPLAY, Integer.toString(displayMode))
                 .apply();
+    }
+
+    public static boolean isForceEnglishLocale() {
+        return sharedPreferences.getBoolean(Key.FORCE_ENGLISH, Default.FORCE_ENGLISH);
     }
 
     public static int getContentSortField() {
@@ -837,6 +842,7 @@ public final class Preferences {
         public static final String DELETE_ALL_EXCEPT_FAVS = "pref_delete_all_except_favs";
         static final String WELCOME_DONE = "pref_welcome_done";
         static final String VERSION_KEY = "prefs_version";
+        public static final String FORCE_ENGLISH = "force_english";
         public static final String LIBRARY_DISPLAY = "pref_library_display";
         public static final String IMPORT_QUEUE_EMPTY = "pref_import_queue_empty";
         static final String QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
@@ -950,6 +956,7 @@ public final class Preferences {
         }
 
         public static final int LIBRARY_DISPLAY = Constant.LIBRARY_DISPLAY_LIST;
+        static final boolean FORCE_ENGLISH = false;
         static final int QUANTITY_PER_PAGE = 20;
         public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
         public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;

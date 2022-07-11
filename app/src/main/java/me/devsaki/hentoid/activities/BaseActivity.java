@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.ContentView;
@@ -11,6 +13,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import org.threeten.bp.Instant;
+
+import java.util.Locale;
 
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.CommunicationEvent;
@@ -33,6 +37,15 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Change locale if set manually
+        if (Preferences.isForceEnglishLocale()) {
+            Locale englishLocale = new Locale("en");
+            Locale.setDefault(englishLocale);
+            Configuration config = getResources().getConfiguration();
+            config.setLocale(englishLocale);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) createConfigurationContext(config);
+            getResources().updateConfiguration(config, getResources().getDisplayMetrics());
+        }
         ThemeHelper.applyTheme(this);
         if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
     }
