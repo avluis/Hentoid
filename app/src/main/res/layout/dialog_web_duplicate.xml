@@ -88,7 +88,7 @@
         tools:text="@string/book_artist" />
 
     <TextView
-        android:id="@+id/tvPages"
+        android:id="@+id/tvPagesLibrary"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -97,7 +97,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/tvArtist"
         app:layout_constraintTop_toBottomOf="@id/tvArtist"
-        tools:text="@string/book_pages_queue" />
+        tools:text="Pages (in library): 1234" />
+
+    <TextView
+        android:id="@+id/tvPagesSource"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:textColor="@color/card_tags_light"
+        android:textSize="@dimen/caption"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/tvArtist"
+        app:layout_constraintTop_toBottomOf="@id/tvPagesLibrary"
+        tools:text="Pages (this source): 1234" />
 
     <ImageView
         android:id="@+id/ivSite"
@@ -111,7 +123,7 @@
         android:src="@drawable/ic_site_nhentai"
         android:tooltipText="@string/view_source_help"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvPages"
+        app:layout_constraintTop_toBottomOf="@id/tvPagesSource"
         app:layout_constraintVertical_bias="1.0"
         app:tint="@color/medium_gray"
         tools:ignore="ContentDescription"

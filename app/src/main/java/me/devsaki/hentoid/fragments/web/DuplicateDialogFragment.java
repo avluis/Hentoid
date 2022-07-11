@@ -48,6 +48,7 @@ import me.devsaki.hentoid.util.ThemeHelper;
 public final class DuplicateDialogFragment extends DialogFragment {
 
     private static final String KEY_CONTENT_ID = "contentId";
+    private static final String KEY_ONLINE_CONTENT_PAGES = "onlineContentPages";
     private static final String KEY_CONTENT_SIMILARITY = "similarity";
     private static final String KEY_IS_DOWNLOAD_PLUS = "downloadPlus";
     private DialogWebDuplicateBinding binding = null;
@@ -82,18 +83,21 @@ public final class DuplicateDialogFragment extends DialogFragment {
     // === VARIABLES
     private DuplicateDialogFragment.Parent parent;
     private long contentId;
+    private int onlineContentPages;
     private float similarity;
     private boolean isDownloadPlus;
 
     public static void invoke(
             @NonNull final FragmentActivity parent,
-            long contentId,
+            long libraryContentId,
+            int onlineContentNbPages,
             float similarity,
             boolean isDownloadPlus) {
         DuplicateDialogFragment fragment = new DuplicateDialogFragment();
 
         Bundle args = new Bundle();
-        args.putLong(KEY_CONTENT_ID, contentId);
+        args.putLong(KEY_CONTENT_ID, libraryContentId);
+        args.putInt(KEY_ONLINE_CONTENT_PAGES, onlineContentNbPages);
         args.putFloat(KEY_CONTENT_SIMILARITY, similarity);
         args.putBoolean(KEY_IS_DOWNLOAD_PLUS, isDownloadPlus);
         fragment.setArguments(args);
@@ -108,6 +112,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
         contentId = getArguments().getLong(KEY_CONTENT_ID, -1);
         if (contentId < 1) throw new IllegalArgumentException("No content ID found");
+        onlineContentPages = getArguments().getInt(KEY_ONLINE_CONTENT_PAGES);
         similarity = getArguments().getFloat(KEY_CONTENT_SIMILARITY);
         isDownloadPlus = getArguments().getBoolean(KEY_IS_DOWNLOAD_PLUS, false);
 
@@ -132,16 +137,16 @@ public final class DuplicateDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View rootView, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(rootView, savedInstanceState);
         Context context = requireContext();
-        Content content = loadContent();
-        if (null == content) return;
+        Content libraryContent = loadLibraryContent();
+        if (null == libraryContent) return;
 
         binding.subtitle.setText(isDownloadPlus ? R.string.duplicate_alert_subtitle_pages : R.string.duplicate_alert_subtitle_book);
         binding.downloadPlusBtn.setVisibility(isDownloadPlus ? View.VISIBLE : View.GONE);
         binding.chAlwaysDownload.setVisibility(isDownloadPlus ? View.GONE : View.VISIBLE);
         binding.chNeverExtraOnDupes.setVisibility(isDownloadPlus ? View.VISIBLE : View.GONE);
 
-        binding.tvTitle.setText(content.getTitle());
-        ImageFile cover = content.getCover();
+        binding.tvTitle.setText(libraryContent.getTitle());
+        ImageFile cover = libraryContent.getCover();
         String thumbLocation = cover.getUsableUri();
         if (thumbLocation.isEmpty()) {
             binding.ivCover.setVisibility(View.INVISIBLE);
@@ -159,7 +164,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
                         .into(binding.ivCover);
         }
 
-        @DrawableRes int resId = ContentHelper.getFlagResourceId(context, content);
+        @DrawableRes int resId = ContentHelper.getFlagResourceId(context, libraryContent);
         if (resId != 0) {
             binding.ivFlag.setImageResource(resId);
             binding.ivFlag.setVisibility(View.VISIBLE);
@@ -167,13 +172,16 @@ public final class DuplicateDialogFragment extends DialogFragment {
             binding.ivFlag.setVisibility(View.GONE);
         }
 
-        binding.tvArtist.setText(ContentHelper.formatArtistForDisplay(context, content));
+        binding.tvArtist.setText(ContentHelper.formatArtistForDisplay(context, libraryContent));
 
-        binding.tvPages.setVisibility(0 == content.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
-        binding.tvPages.setText(getResources().getString(R.string.work_pages_queue, content.getQtyPages() + "", ""));
+        binding.tvPagesLibrary.setVisibility(0 == libraryContent.getQtyPages() ? View.INVISIBLE : View.VISIBLE);
+        int stringRes = (ContentHelper.isInQueue(libraryContent.getStatus())) ? R.string.work_pages_duplicate_dialog_queue : R.string.work_pages_duplicate_dialog_library;
+        binding.tvPagesLibrary.setText(getResources().getString(stringRes, libraryContent.getQtyPages()));
+        binding.tvPagesSource.setVisibility(0 == onlineContentPages ? View.INVISIBLE : View.VISIBLE);
+        binding.tvPagesSource.setText(getResources().getString(R.string.work_pages_duplicate_dialog_source, onlineContentPages));
 
         // Buttons
-        Site site = content.getSite();
+        Site site = libraryContent.getSite();
         if (site != null && !site.equals(Site.NONE)) {
             int img = site.getIco();
             binding.ivSite.setImageResource(img);
@@ -181,8 +189,8 @@ public final class DuplicateDialogFragment extends DialogFragment {
         } else {
             binding.ivSite.setVisibility(View.GONE);
         }
-        binding.ivExternal.setVisibility(content.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
-        if (content.isFavourite()) {
+        binding.ivExternal.setVisibility(libraryContent.getStatus().equals(StatusContent.EXTERNAL) ? View.VISIBLE : View.GONE);
+        if (libraryContent.isFavourite()) {
             binding.ivFavourite.setImageResource(R.drawable.ic_fav_full);
         } else {
             binding.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
@@ -199,7 +207,7 @@ public final class DuplicateDialogFragment extends DialogFragment {
     }
 
     @Nullable
-    private Content loadContent() {
+    private Content loadLibraryContent() {
         CollectionDAO dao = new ObjectBoxDAO(requireContext());
         try {
             return dao.selectContent(contentId);

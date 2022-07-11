@@ -418,8 +418,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // NB : This doesn't restore the browsing history, but WebView.saveState/restoreState
         // doesn't work that well (bugged when using back/forward commands). A valid solution still has to be found
         String url = new BaseWebActivityBundle(savedInstanceState).getUrl();
-        if (url != null && !url.isEmpty())
-            webView.loadUrl(url);
+        if (!url.isEmpty()) webView.loadUrl(url);
     }
 
     @Override
@@ -811,31 +810,30 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * Listener for the Action button : download content, view queue or read content
      */
     protected void onActionClick() {
+        if (null == currentContent) return;
         boolean needsDuplicateAlert = Preferences.isDownloadDuplicateAsk() && duplicateSimilarity >= SIMILARITY_MIN_THRESHOLD;
         switch (actionButtonMode) {
             case ActionMode.DOWNLOAD:
                 if (needsDuplicateAlert)
-                    DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, false);
+                    DuplicateDialogFragment.invoke(this, duplicateId, currentContent.getQtyPages(), duplicateSimilarity, false);
                 else processDownload(false, false, false);
                 break;
             case ActionMode.DOWNLOAD_PLUS:
                 if (needsDuplicateAlert)
-                    DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, true);
+                    DuplicateDialogFragment.invoke(this, duplicateId, currentContent.getQtyPages(), duplicateSimilarity, true);
                 else processDownload(false, true, false);
                 break;
             case ActionMode.VIEW_QUEUE:
                 goToQueue();
                 break;
             case ActionMode.READ:
-                if (currentContent != null) {
-                    String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
-                    currentContent = dao.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
-                    if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
-                            || StatusContent.ERROR == currentContent.getStatus()
-                            || StatusContent.MIGRATED == currentContent.getStatus()))
-                        ContentHelper.openHentoidViewer(this, currentContent, -1, null, false);
-                    else actionMenu.setEnabled(false);
-                }
+                String searchUrl = getStartSite().hasCoverBasedPageUpdates() ? currentContent.getCoverImageUrl() : "";
+                currentContent = dao.selectContentBySourceAndUrl(currentContent.getSite(), currentContent.getUrl(), searchUrl);
+                if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
+                        || StatusContent.ERROR == currentContent.getStatus()
+                        || StatusContent.MIGRATED == currentContent.getStatus()))
+                    ContentHelper.openHentoidViewer(this, currentContent, -1, null, false);
+                else actionMenu.setEnabled(false);
                 break;
             default:
                 // Nothing
@@ -1150,7 +1148,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             case ContentStatus.UNKNOWN:
                 if (quickDownload) {
                     if (duplicateId > -1 && Preferences.isDownloadDuplicateAsk())
-                        DuplicateDialogFragment.invoke(this, duplicateId, duplicateSimilarity, false);
+                        DuplicateDialogFragment.invoke(this, duplicateId, currentContent.getQtyPages(), duplicateSimilarity, false);
                     else
                         processDownload(true, false, false);
                 } else setActionMode(ActionMode.DOWNLOAD);

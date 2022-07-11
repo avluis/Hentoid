@@ -188,6 +188,9 @@
         <item quantity="one"><x:g example="1" id="pages_count">%1$d</x:g> page / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
         <item quantity="other"><x:g example="2" id="pages_count">%1$d</x:g> pages / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
     </plurals>
+    <string name="work_pages_duplicate_dialog_library">Pages (in library): %d</string>
+    <string name="work_pages_duplicate_dialog_queue">Pages (in queue): %d</string>
+    <string name="work_pages_duplicate_dialog_source">Pages (this source): %d</string>
     <string name="library_metrics_storage"><x:g example="3.88" id="size_mb">%.0f</x:g> MB</string>
     <string name="redownload_queue_progress">Redownloading selected books</string>
     <string name="errortype_parsing">Parsing</string>
