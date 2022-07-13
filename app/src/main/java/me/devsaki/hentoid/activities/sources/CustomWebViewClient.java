@@ -36,10 +36,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -659,6 +657,18 @@ class CustomWebViewClient extends WebViewClient {
         dnsOverHttpsEnabled.set(value);
     }
 
+    // TODO doc
+    private String simplifyHref(@NonNull String href) {
+        String result = href;
+        int paramsIndex = result.indexOf("?");
+        if (paramsIndex > -1) result = result.substring(0, paramsIndex);
+        // Simplify & eliminate double separators
+        result = result.trim().replaceAll("\\p{Punct}", ".");
+        if (result.length() < 2) return "";
+        if (result.endsWith(".")) result = result.substring(0, result.length() - 1);
+        return result;
+    }
+
     /**
      * Process the given HTML document contained in the given stream :
      * - If set, remove nodes using the given list of CSS selectors to identify them
@@ -725,28 +735,43 @@ class CustomWebViewClient extends WebViewClient {
             // Mark downloaded books
             if (siteUrls != null && !siteUrls.isEmpty()) {
                 // Format elements
-                Elements links = doc.select("a");
-                Set<String> found = new HashSet<>();
-                for (Element link : links) {
-                    String aHref = link.attr("href");
-                    // Only examine path
-                    int paramsIndex = aHref.indexOf("?");
-                    if (paramsIndex > -1) aHref = aHref.substring(0, paramsIndex);
-                    // Simplify & eliminate double separators
-                    aHref = aHref.replaceAll("\\p{Punct}", ".");
-                    if (aHref.length() < 2) continue;
-                    if (aHref.endsWith(".")) aHref = aHref.substring(0, aHref.length() - 1);
+                Elements plainLinks = doc.select("a");
+                Elements linkedImages = doc.select("a img");
+
+                // Key = simplified HREF
+                // Value.left = plain link ("a")
+                // Value.right = corresponding linked images ("a img"), if any
+                Map<String, Pair<Element, Element>> elements = new HashMap<>();
+
+                for (Element link : plainLinks) {
+                    String aHref = simplifyHref(link.attr("href"));
+                    if (!aHref.isEmpty() && !elements.containsKey(aHref)) // We only process the first match - usually the cover
+                        elements.put(aHref, new Pair<>(link, null));
+                }
+
+                for (Element linkedImage : linkedImages) {
+                    Element parent = linkedImage.parent();
+                    while (parent != null && !parent.is("a")) parent = parent.parent();
+                    if (null == parent) break;
+
+                    String aHref = simplifyHref(parent.attr("href"));
+                    Pair<Element, Element> elt = elements.get(aHref);
+                    if (elt != null && null == elt.second) // We only process the first match - usually the cover
+                        elements.put(aHref, new Pair<>(elt.first, linkedImage));
+                }
+
+                for (Map.Entry<String, Pair<Element, Element>> entry : elements.entrySet()) {
                     for (String url : siteUrls) {
-                        if (aHref.endsWith(url) && !found.contains(url)) {
-                            Element markedElement = link;
-                            Element img = link.select("img").first();
-                            if (img != null) { // Mark two levels above the image
-                                Element imgParent = img.parent();
+                        if (entry.getKey().endsWith(url)) {
+                            Element markedElement = entry.getValue().second; // Linked images have priority over plain links
+                            if (markedElement != null) { // Mark two levels above the image
+                                Element imgParent = markedElement.parent();
                                 if (imgParent != null) imgParent = imgParent.parent();
                                 if (imgParent != null) markedElement = imgParent;
+                            } else { // Mark plain link
+                                markedElement = entry.getValue().first;
                             }
                             markedElement.addClass("watermarked");
-                            found.add(url); // We only process the first match - usually the cover
                             break;
                         }
                     }
@@ -754,7 +779,8 @@ class CustomWebViewClient extends WebViewClient {
             }
 
             return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             Timber.e(e);
             return null;
         }
