@@ -665,11 +665,11 @@ class CustomWebViewClient extends WebViewClient {
      * - If set, mark book covers or links matching the given list of Urls
      *
      * @param stream             Stream containing the HTML document to process; will be closed during the process
-     * @param baseUri            Base URI if the document
+     * @param baseUri            Base URI of the document
      * @param removableElements  CSS selectors of the nodes to remove
      * @param hideableElements   CSS selectors of the nodes to hide
      * @param jsContentBlacklist Blacklisted elements to detect script tags to remove
-     * @param siteUrls           Urls of the covers or links to mark
+     * @param siteUrls           Urls of the covers or links to visually mark as downloaded
      * @return Stream containing the HTML document stripped from the elements to remove
      */
     @Nullable
@@ -701,7 +701,7 @@ class CustomWebViewClient extends WebViewClient {
                 for (String s : hideableElements)
                     for (Element e : doc.select(s)) {
                         String existingStyle = e.attr("style");
-                        if (existingStyle.isEmpty() || !existingStyle.contains("min-height:0px;height:0%;")) {
+                        if (!existingStyle.contains("min-height:0px;height:0%;")) {
                             Timber.d("[%s] Hiding node %s", baseUri, e.toString());
                             e.attr("style", "min-height:0px;height:0%;");
                         }
