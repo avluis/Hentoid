@@ -28,9 +28,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebHistoryItem;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.IntDef;
@@ -39,13 +36,11 @@ import androidx.annotation.StringRes;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.util.Pair;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiConsumer;
 import com.google.android.material.badge.BadgeDrawable;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.skydoves.balloon.ArrowOrientation;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -67,8 +62,10 @@ import java.util.Map;
 import java.util.Set;
 
 import io.objectbox.relation.ToOne;
+import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
@@ -89,6 +86,7 @@ import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
+import me.devsaki.hentoid.databinding.ActivityBaseWebBinding;
 import me.devsaki.hentoid.enums.AlertStatus;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
@@ -169,8 +167,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private CustomWebViewClient webClient;
     // Database
     private CollectionDAO dao;
+    // Disposable to be used for parsing response during quick search
+    private final CompositeDisposable parseResponseDisposable = new CompositeDisposable();
     // Disposable to be used for punctual search
-    private Disposable searchExtraImagesdisposable;
+    private Disposable searchExtraImagesDisposable;
     // Disposable to be used for content processing
     private Disposable processContentDisposable;
     // Disposable to be used for content processing
@@ -179,13 +179,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
 
     // === UI
-    // Associated webview
+    private ActivityBaseWebBinding binding;
+    // Dynamically generated webview
     protected NestedScrollWebView webView;
     // Top toolbar buttons
     private MenuItem refreshStopMenu;
     private MenuItem bookmarkMenu;
-    // Bottom toolbar
-    private BottomNavigationView bottomToolbar;
     // Bottom toolbar buttons
     private MenuItem backMenu;
     private MenuItem forwardMenu;
@@ -193,18 +192,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private MenuItem actionMenu;
     private @DrawableRes
     int downloadIcon;
-    // Swipe layout
-    private SwipeRefreshLayout swipeLayout;
-    // Animated check (visual confirmation for quick download)
-    ImageView animatedCheck;
-    // Alert message panels and text
-    private View topAlertBanner;
-    private ImageView topAlertIcon;
-    private TextView topAlertMessage;
-    private View bottomAlertBanner;
-    private TextView bottomAlertMessage;
-    // Progress bar
-    private ProgressBar progressBar;
 
     // === CURRENTLY VIEWED CONTENT-RELATED VARIABLES
     private Content currentContent = null;
@@ -242,6 +229,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        binding = ActivityBaseWebBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         if (!WebkitPackageHelper.getWebViewAvailable()) {
             startActivity(new Intent(this, MissingWebViewActivity.class));
@@ -254,8 +243,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         Preferences.registerPrefsChangedListener(listener);
 
         if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
-
-        setContentView(R.layout.activity_base_web);
 
         if (getStartSite() == null) {
             Timber.w("Site is null!");
@@ -271,16 +258,14 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         refreshStopMenu = toolbar.getMenu().findItem(R.id.web_menu_refresh_stop);
         bookmarkMenu = toolbar.getMenu().findItem(R.id.web_menu_bookmark);
 
-        bottomToolbar = findViewById(R.id.bottom_navigation);
-        bottomToolbar.setOnItemSelectedListener(this::onMenuItemSelected);
-        bottomToolbar.setItemIconTintList(null); // Hack to make selector resource work
-        backMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_back);
-        forwardMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_forward);
-        seekMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_seek);
-        actionMenu = bottomToolbar.getMenu().findItem(R.id.web_menu_action);
+        binding.bottomNavigation.setOnItemSelectedListener(this::onMenuItemSelected);
+        binding.bottomNavigation.setItemIconTintList(null); // Hack to make selector resource work
+        backMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_back);
+        forwardMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_forward);
+        seekMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_seek);
+        actionMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_action);
 
         // Webview
-        animatedCheck = findViewById(R.id.animated_check);
         initUI();
         initSwipeLayout();
         webView.loadUrl(getStartUrl());
@@ -289,20 +274,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
         }
 
-        // Alert banners
-        topAlertBanner = findViewById(R.id.top_alert);
-        topAlertIcon = findViewById(R.id.top_alert_icon);
-        topAlertMessage = findViewById(R.id.top_alert_txt);
         // Banner close buttons
         View topAlertCloseButton = findViewById(R.id.top_alert_close_btn);
         topAlertCloseButton.setOnClickListener(this::onTopAlertCloseClick);
         View bottomAlertCloseButton = findViewById(R.id.bottom_alert_close_btn);
         bottomAlertCloseButton.setOnClickListener(this::onBottomAlertCloseClick);
-
-        bottomAlertBanner = findViewById(R.id.bottom_alert);
-        bottomAlertMessage = findViewById(R.id.bottom_alert_txt);
-
-        progressBar = findViewById(R.id.progress_bar);
 
         downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
         actionMenu.setIcon(downloadIcon);
@@ -393,10 +369,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 (currentContent != null && ContentHelper.isInLibrary(currentContent.getStatus()) && event.getRelevantId() == currentContent.getId())
                         || (duplicateId > 0 && event.getRelevantId() == duplicateId)
         ) {
-            progressBar.setMax(event.total);
-            progressBar.setProgress(event.done);
-            progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.secondary_light)));
-            progressBar.setVisibility(View.VISIBLE);
+            binding.progressBar.setMax(event.total);
+            binding.progressBar.setProgress(event.done);
+            binding.progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.secondary_light)));
+            binding.progressBar.setVisibility(View.VISIBLE);
         }
     }
 
@@ -478,9 +454,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         if (dao != null) dao.cleanup();
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
-        if (searchExtraImagesdisposable != null) searchExtraImagesdisposable.dispose();
+        if (parseResponseDisposable != null) parseResponseDisposable.dispose();
+        if (searchExtraImagesDisposable != null) searchExtraImagesDisposable.dispose();
         if (processContentDisposable != null) processContentDisposable.dispose();
         if (extraProcessingDisposable != null) extraProcessingDisposable.dispose();
+
+        binding = null;
         super.onDestroy();
     }
 
@@ -508,9 +487,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
                 if (newProgress == 100) {
-                    swipeLayout.post(() -> swipeLayout.setRefreshing(false));
+                    binding.swipeContainer.post(() -> binding.swipeContainer.setRefreshing(false));
                 } else {
-                    swipeLayout.post(() -> swipeLayout.setRefreshing(true));
+                    binding.swipeContainer.post(() -> binding.swipeContainer.setRefreshing(true));
                 }
             }
         });
@@ -535,7 +514,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // Download immediately on long click on a link / image link
         if (Preferences.isBrowserQuickDl()) {
-            webView.setOnLongClickListener(this::onLongTap);
+            webView.setOnLongTapListener(this::onLongTap);
             webView.setLongClickThreshold(Preferences.getBrowserQuickDlThreshold());
         }
 
@@ -560,45 +539,50 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     private void initSwipeLayout() {
         CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        swipeLayout = findViewById(R.id.swipe_container);
-        if (null == swipeLayout) return;
+        binding.swipeContainer.addView(webView, layoutParams);
 
-        swipeLayout.addView(webView, layoutParams);
-
-        swipeLayout = findViewById(R.id.swipe_container);
-        swipeLayout.setOnRefreshListener(() -> {
-            if (!swipeLayout.isRefreshing() || !webClient.isLoading()) webView.reload();
+        binding.swipeContainer.setOnRefreshListener(() -> {
+            if (!binding.swipeContainer.isRefreshing() || !webClient.isLoading()) webView.reload();
         });
-        swipeLayout.setColorSchemeResources(
+        binding.swipeContainer.setColorSchemeResources(
                 android.R.color.holo_blue_bright,
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
     }
 
-    private boolean onLongTap(View v) {
+    private void onLongTap(@NonNull Integer x, @NonNull Integer y) {
         WebView.HitTestResult result = webView.getHitTestResult();
 
-        String url = "";
+        final String url;
         // Plain link
-        if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null)
+        if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null) {
             url = result.getExtra();
-
+        }
         // Image link (https://stackoverflow.com/a/55299801/8374722)
-        if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+        else if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
             Handler handler = new Handler(getMainLooper());
             Message message = handler.obtainMessage();
 
             webView.requestFocusNodeHref(message);
             url = message.getData().getString("url");
+        } else {
+            url = null;
         }
 
         if (url != null && !url.isEmpty() && webClient.isGalleryPage(url)) {
-            // Launch on a new thread to avoid crashes
-            webClient.parseResponseAsync(url);
-            return true;
-        } else {
-            return false;
+            Helper.setMargins(binding.quickDlFeedback,
+                    x - binding.quickDlFeedback.getWidth() / 2,
+                    y - (binding.quickDlFeedback.getHeight() / 2) + binding.appBarLayout.getBottom(), 0, 0);
+            binding.quickDlFeedback.setTotalColor(R.color.medium_gray);
+            binding.quickDlFeedback.setVisibility(View.VISIBLE);
+
+            // Run on a new thread to avoid crashes
+            parseResponseDisposable.add(Completable.fromCallable(() -> webClient.parseResponse(url, null, true, true))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(() -> {
+                    }, Timber::e));
         }
     }
 
@@ -609,7 +593,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             boolean isBookmarkable,
             List<String> jsStartupScripts) {
         refreshStopMenu.setIcon(R.drawable.ic_close);
-        progressBar.setVisibility(View.GONE);
+        binding.progressBar.setVisibility(View.GONE);
         if (!isHtmlLoaded) {
             actionMenu.setIcon(downloadIcon);
             actionMenu.setEnabled(false);
@@ -677,10 +661,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * (the one that contains the alerts when downloads are broken or sites are unavailable)
      */
     private void displayTopAlertBanner() {
-        if (topAlertMessage != null && alert != null) {
-            topAlertIcon.setImageResource(alert.getStatus().getIcon());
-            topAlertMessage.setText(formatAlertMessage(alert));
-            topAlertBanner.setVisibility(View.VISIBLE);
+        if (alert != null) {
+            binding.topAlertIcon.setImageResource(alert.getStatus().getIcon());
+            binding.topAlertTxt.setText(formatAlertMessage(alert));
+            binding.topAlert.setVisibility(View.VISIBLE);
         }
     }
 
@@ -688,7 +672,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * Handler for the close icon of the top alert banner
      */
     public void onTopAlertCloseClick(View view) {
-        topAlertBanner.setVisibility(View.GONE);
+        binding.topAlert.setVisibility(View.GONE);
     }
 
     /**
@@ -697,10 +681,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      */
     private void displayBottomAlertBanner(@NonNull final List<String> unwantedTags) {
         if (!unwantedTags.isEmpty()) {
-            bottomAlertMessage.setText(getResources().getString(R.string.alert_unwanted_tags, TextUtils.join(", ", unwantedTags)));
-            bottomAlertBanner.setVisibility(View.VISIBLE);
+            binding.bottomAlertTxt.setText(getResources().getString(R.string.alert_unwanted_tags, TextUtils.join(", ", unwantedTags)));
+            binding.bottomAlert.setVisibility(View.VISIBLE);
         } else {
-            bottomAlertBanner.setVisibility(View.GONE);
+            binding.bottomAlert.setVisibility(View.GONE);
         }
     }
 
@@ -708,7 +692,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * Handler for the close icon of the bottom alert banner
      */
     public void onBottomAlertCloseClick(View view) {
-        bottomAlertBanner.setVisibility(View.GONE);
+        binding.bottomAlert.setVisibility(View.GONE);
     }
 
 
@@ -854,7 +838,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         } else if (ActionMode.READ == mode) {
             resId = R.drawable.ic_action_play;
         }
-        BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
+        BadgeDrawable badge = binding.bottomNavigation.getOrCreateBadge(R.id.web_menu_action);
         badge.setVisible(ActionMode.DOWNLOAD_PLUS == mode);
         actionButtonMode = mode;
         actionMenu.setIcon(resId);
@@ -984,9 +968,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     // TODO doc
     private void addToQueue(int position, int downloadMode, boolean isReplaceDuplicate) {
-        animatedCheck.setVisibility(View.VISIBLE);
-        ((Animatable) animatedCheck.getDrawable()).start();
-        new Handler(getMainLooper()).postDelayed(() -> animatedCheck.setVisibility(View.GONE), 1000);
+        binding.animatedCheck.setVisibility(View.VISIBLE);
+        ((Animatable) binding.animatedCheck.getDrawable()).start();
+        new Handler(getMainLooper()).postDelayed(() -> binding.animatedCheck.setVisibility(View.GONE), 1000);
         currentContent.setDownloadMode(downloadMode);
         dao.addContentToQueue(
                 currentContent,
@@ -1124,6 +1108,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     public void onResultReady(@NonNull Content result, boolean quickDownload) {
+        parseResponseDisposable.clear();
         if (processContentDisposable != null)
             processContentDisposable.dispose(); // Cancel whichever process was happening before
         processContentDisposable = Single.fromCallable(() -> processContent(result, quickDownload))
@@ -1169,14 +1154,15 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     public void onResultFailed() {
         runOnUiThread(() -> ToastHelper.toast(R.string.web_unparsable));
+        parseResponseDisposable.clear();
     }
 
     private void searchForExtraImages(
             @NonNull final Content storedContent,
             @NonNull final Content onlineContent) {
-        if (searchExtraImagesdisposable != null)
-            searchExtraImagesdisposable.dispose(); // Cancel previous operation
-        searchExtraImagesdisposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent, onlineContent))
+        if (searchExtraImagesDisposable != null)
+            searchExtraImagesDisposable.dispose(); // Cancel previous operation
+        searchExtraImagesDisposable = Single.fromCallable(() -> doSearchForExtraImages(storedContent, onlineContent))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
@@ -1237,10 +1223,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             @NonNull final Content storedContent,
             @NonNull final Content onlineContent,
             @NonNull final List<ImageFile> additionalImages) {
-        searchExtraImagesdisposable.dispose();
-        progressBar.setProgress(progressBar.getMax());
-        progressBar.setVisibility(View.VISIBLE);
-        progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.green)));
+        searchExtraImagesDisposable.dispose();
+        binding.progressBar.setProgress(binding.progressBar.getMax());
+        binding.progressBar.setVisibility(View.VISIBLE);
+        binding.progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.green)));
 
         if (null == currentContent || additionalImages.isEmpty()) return;
 
@@ -1256,7 +1242,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             if (!additionalNonDownloadedImages.isEmpty()) {
                 extraImages = additionalNonDownloadedImages;
                 setActionMode(ActionMode.DOWNLOAD_PLUS);
-                BadgeDrawable badge = bottomToolbar.getOrCreateBadge(R.id.web_menu_action);
+                BadgeDrawable badge = binding.bottomNavigation.getOrCreateBadge(R.id.web_menu_action);
                 badge.setNumber(additionalNonDownloadedImages.size());
             }
         }
@@ -1291,7 +1277,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     void showTooltip(@StringRes int resource, boolean always) {
-        TooltipHelper.showTooltip(this, resource, ArrowOrientation.BOTTOM, bottomToolbar, this, always);
+        TooltipHelper.showTooltip(this, resource, ArrowOrientation.BOTTOM, binding.bottomNavigation, this, always);
     }
 
     @Override
@@ -1385,9 +1371,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             reload = true;
         } else if (Preferences.Key.BROWSER_QUICK_DL.equals(key)) {
             if (Preferences.isBrowserQuickDl())
-                webView.setOnLongClickListener(this::onLongTap);
+                webView.setOnLongTapListener(this::onLongTap);
             else
-                webView.setOnLongClickListener(null);
+                webView.setOnLongTapListener(null);
         } else if (Preferences.Key.BROWSER_QUICK_DL_THRESHOLD.equals(key)) {
             webView.setLongClickThreshold(Preferences.getBrowserQuickDlThreshold());
         }

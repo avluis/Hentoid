@@ -115,7 +115,7 @@ class CustomWebViewClient extends WebViewClient {
     private final AtomicBoolean markDownloaded = new AtomicBoolean(Preferences.isBrowserMarkDownloaded());
     private final AtomicBoolean dnsOverHttpsEnabled = new AtomicBoolean(Preferences.getDnsOverHttps() > -1);
 
-    // Disposable to be used for punctual search
+    // Disposable to be used for punctual operations
     private Disposable disposable;
 
 
@@ -457,23 +457,8 @@ class CustomWebViewClient extends WebViewClient {
         return null;
     }
 
-    /**
-     * Process the given webpage in a background thread (used by quick download)
-     *
-     * @param url URL of the page to parse
-     */
-    void parseResponseAsync(@NonNull String url) {
-        compositeDisposable.add(
-                Completable.fromCallable(() -> parseResponse(url, null, true, true))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(() -> {
-                        }, Timber::e)
-        );
-    }
-
     // TODO doc
-    void browserLoad(@NonNull String url) {
+    void browserLoadAsync(@NonNull String url) {
         compositeDisposable.add(
                 Completable.fromRunnable(() -> activity.loadUrl(url))
                         .subscribeOn(AndroidSchedulers.mainThread())
@@ -524,7 +509,7 @@ class CustomWebViewClient extends WebViewClient {
                     targetUrl = StringHelper.protect(response.header("Location"));
                 if (BuildConfig.DEBUG)
                     Timber.v("WebView : redirection from %s to %s", urlStr, targetUrl);
-                if (!targetUrl.isEmpty()) browserLoad(HttpHelper.fixUrl(targetUrl, site.getUrl()));
+                if (!targetUrl.isEmpty()) browserLoadAsync(HttpHelper.fixUrl(targetUrl, site.getUrl()));
                 return null;
             }
 

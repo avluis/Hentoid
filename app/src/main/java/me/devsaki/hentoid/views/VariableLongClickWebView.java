@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.webkit.WebView;
 
+import com.annimon.stream.function.BiConsumer;
+
 
 /**
  * WebView implementation which allows setting arbitrary thresholds long clicks
@@ -20,8 +22,10 @@ public class VariableLongClickWebView extends WebView {
 
     private Handler handler;
     private static final int MESSAGE_LONG_CLICK = 1;
+    private int tapX;
+    private int tapY;
 
-    private OnLongClickListener onLongClickListener;
+    private BiConsumer<Integer, Integer> onLongClickListener;
 
     public VariableLongClickWebView(final Context context) {
         super(context);
@@ -41,16 +45,16 @@ public class VariableLongClickWebView extends WebView {
     private void init() {
         handler = new Handler(Looper.getMainLooper(), message -> {
             if (message.what == MESSAGE_LONG_CLICK && onLongClickListener != null) {
-                super.setOnLongClickListener(null);
-                performLongClick();
-                super.setOnLongClickListener(onLongClickListener);
+//                super.setOnLongClickListener(null);
+//                performLongClick();
+//                super.setOnLongClickListener(onLongClickListener);
+                onLongClickListener.accept(tapX, tapY);
             }
             return true;
         });
     }
 
-    @Override
-    public void setOnLongClickListener(OnLongClickListener onLongClickListener) {
+    public void setOnLongTapListener(BiConsumer<Integer, Integer> onLongClickListener) {
         this.onLongClickListener = onLongClickListener;
     }
 
@@ -67,6 +71,8 @@ public class VariableLongClickWebView extends WebView {
             case MotionEvent.ACTION_POINTER_DOWN:
                 Message m = new Message();
                 m.what = MESSAGE_LONG_CLICK;
+                tapX = (int) event.getX();
+                tapY = (int) event.getY();
                 handler.sendMessageDelayed(m, longClickThreshold);
                 break;
 

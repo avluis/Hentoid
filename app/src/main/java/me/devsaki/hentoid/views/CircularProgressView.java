@@ -7,7 +7,6 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
-import android.widget.TextView;
 
 import androidx.annotation.ColorRes;
 import androidx.core.content.ContextCompat;
@@ -23,11 +22,10 @@ public class CircularProgressView extends View {
     private final Paint progress1Paint;
     private final Paint progress2Paint;
     private final Paint progress3Paint;
-    private float progress1 = 0;
+    private float progress1 = 360;
     private float progress2 = 0;
     private float progress3 = 0;
     private float total = 360;
-    private TextView textView;
 
     public CircularProgressView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -80,8 +78,8 @@ public class CircularProgressView extends View {
         canvas.drawArc(new RectF(strokeWidth, strokeWidth, getWidth() - strokeWidth, getHeight() - strokeWidth), startAngle, sweepAngle, false, paint);
     }
 
-    public void setProgress1Color(Context context, @ColorRes int color) {
-        progress1Paint.setColor(ThemeHelper.getColor(context, color));
+    public void setProgress1Color(@ColorRes int color) {
+        progress1Paint.setColor(ThemeHelper.getColor(getContext(), color));
         invalidate();
     }
 
@@ -98,8 +96,8 @@ public class CircularProgressView extends View {
         setProgress2Internal(progress);
     }
 
-    public void setProgress2Color(Context context, @ColorRes int color) {
-        progress2Paint.setColor(ThemeHelper.getColor(context, color));
+    public void setProgress2Color(@ColorRes int color) {
+        progress2Paint.setColor(ThemeHelper.getColor(getContext(), color));
         invalidate();
     }
 
@@ -112,8 +110,8 @@ public class CircularProgressView extends View {
         setProgress3Internal(progress);
     }
 
-    public void setProgress3Color(Context context, @ColorRes int color) {
-        progress3Paint.setColor(ThemeHelper.getColor(context, color));
+    public void setProgress3Color(@ColorRes int color) {
+        progress3Paint.setColor(ThemeHelper.getColor(getContext(), color));
         invalidate();
     }
 
@@ -122,8 +120,8 @@ public class CircularProgressView extends View {
         invalidate();
     }
 
-    public void setTotalColor(Context context, @ColorRes int color) {
-        totalPaint.setColor(ThemeHelper.getColor(context, color));
+    public void setTotalColor(@ColorRes int color) {
+        totalPaint.setColor(ThemeHelper.getColor(getContext(), color));
         invalidate();
     }
 
@@ -137,8 +135,6 @@ public class CircularProgressView extends View {
 
     private void setTotalInternal(float total) {
         this.total = total;
-        if (textView != null)
-            textView.setText(String.valueOf(total));
         invalidate();
     }
 }

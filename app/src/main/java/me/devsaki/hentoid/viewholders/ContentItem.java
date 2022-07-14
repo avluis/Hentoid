@@ -470,7 +470,7 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
             List<ImageFile> imgs = content.getImageFiles();
             if (imgs != null && !content.isCompleted()) {
                 readingProgress.setVisibility(View.VISIBLE);
-                readingProgress.setTotalColor(readingProgress.getContext(), R.color.transparent);
+                readingProgress.setTotalColor(R.color.transparent);
                 readingProgress.setTotal(Stream.of(content.getImageFiles()).withoutNulls().filter(ImageFile::isReadable).count());
                 readingProgress.setProgress1(content.getReadPagesCount());
             } else {

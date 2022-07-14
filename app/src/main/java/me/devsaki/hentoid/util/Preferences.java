@@ -884,8 +884,8 @@ public final class Preferences {
         static final String BROWSER_AUGMENTED = "pref_browser_augmented";
         public static final String BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded";
         public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
-        static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
-        static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";
+        public static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
+        public static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";
         public static final String BROWSER_DNS_OVER_HTTPS = "pref_browser_dns_over_https";
         public static final String BROWSER_CLEAR_COOKIES = "pref_browser_clear_cookies";
         public static final String BROWSER_NHENTAI_INVISIBLE_BLACKLIST = "pref_nhentai_invisible_blacklist";
