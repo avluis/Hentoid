@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.views;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
@@ -30,7 +31,10 @@ public class CircularProgressView extends View {
     public CircularProgressView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
 
-        strokeWidth = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, context.getResources().getDisplayMetrics());
+        int defaultStrokeWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4, context.getResources().getDisplayMetrics());
+        TypedArray arr = context.obtainStyledAttributes(attrs, R.styleable.CircularProgressView);
+        strokeWidth = arr.getLayoutDimension(R.styleable.CircularProgressView_width, defaultStrokeWidth);
+        arr.recycle();
 
         totalPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         totalPaint.setStyle(Paint.Style.STROKE);

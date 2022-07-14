@@ -12,12 +12,16 @@
     </declare-styleable>
 
     <declare-styleable name="CustomSubsamplingScaleImageView">
-        <attr name="src" format="reference"/>
-        <attr name="assetName" format="string"/>
-        <attr name="panEnabled" format="boolean"/>
-        <attr name="zoomEnabled" format="boolean"/>
-        <attr name="quickScaleEnabled" format="boolean"/>
-        <attr name="tileBackgroundColor" format="color"/>
+        <attr name="src" format="reference" />
+        <attr name="assetName" format="string" />
+        <attr name="panEnabled" format="boolean" />
+        <attr name="zoomEnabled" format="boolean" />
+        <attr name="quickScaleEnabled" format="boolean" />
+        <attr name="tileBackgroundColor" format="color" />
+    </declare-styleable>
+
+    <declare-styleable name="CircularProgressView">
+        <attr name="width" format="dimension" />
     </declare-styleable>
 
 </resources>
