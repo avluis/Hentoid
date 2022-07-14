@@ -11,6 +11,7 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.drawable.Animatable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -62,7 +63,6 @@ import java.util.Map;
 import java.util.Set;
 
 import io.objectbox.relation.ToOne;
-import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -574,14 +574,19 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             Helper.setMargins(binding.quickDlFeedback,
                     x - binding.quickDlFeedback.getWidth() / 2,
                     y - (binding.quickDlFeedback.getHeight() / 2) + binding.appBarLayout.getBottom(), 0, 0);
-            binding.quickDlFeedback.setTotalColor(R.color.medium_gray);
+            binding.quickDlFeedback.setProgress1Color(R.color.medium_gray);
             binding.quickDlFeedback.setVisibility(View.VISIBLE);
 
             // Run on a new thread to avoid crashes
-            parseResponseDisposable.add(Completable.fromCallable(() -> webClient.parseResponse(url, null, true, true))
+            parseResponseDisposable.add(Single.fromCallable(() -> webClient.parseResponseOptional(url, null, true, true))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(() -> {
+                    .subscribe(res -> {
+                        if (res.isEmpty()) {
+                            binding.quickDlFeedback.setVisibility(View.INVISIBLE);
+                        } else {
+                            binding.quickDlFeedback.setProgress1Color(R.color.secondary_light);
+                        }
                     }, Timber::e));
         }
     }
@@ -968,6 +973,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     // TODO doc
     private void addToQueue(int position, int downloadMode, boolean isReplaceDuplicate) {
+        Point coords = Helper.getCenter(binding.quickDlFeedback);
+        if (coords != null) {
+            Helper.setMargins(binding.animatedCheck,
+                    coords.x - binding.animatedCheck.getWidth() / 2,
+                    coords.y - binding.animatedCheck.getHeight() / 2, 0, 0);
+        }
         binding.animatedCheck.setVisibility(View.VISIBLE);
         ((Animatable) binding.animatedCheck.getDrawable()).start();
         new Handler(getMainLooper()).postDelayed(() -> binding.animatedCheck.setVisibility(View.GONE), 1000);
@@ -1125,6 +1136,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     private void onContentProcessed(@ContentStatus int status, boolean quickDownload) {
         processContentDisposable.dispose();
+        binding.quickDlFeedback.setVisibility(View.INVISIBLE);
         if (null == currentContent) return;
         switch (status) {
             case ContentStatus.UNDOWNLOADABLE:

@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.function.BiFunction;
 
 import org.jsoup.Jsoup;
@@ -468,6 +469,14 @@ class CustomWebViewClient extends WebViewClient {
         );
     }
 
+    @SuppressWarnings("SameParameterValue")
+    protected Optional<WebResourceResponse> parseResponseOptional(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
+        WebResourceResponse result = parseResponse(urlStr, requestHeaders, analyzeForDownload, quickDownload);
+
+        if (null == result) return Optional.empty();
+        else return Optional.of(result);
+    }
+
     /**
      * Process the webpage at the given URL
      *
@@ -509,7 +518,8 @@ class CustomWebViewClient extends WebViewClient {
                     targetUrl = StringHelper.protect(response.header("Location"));
                 if (BuildConfig.DEBUG)
                     Timber.v("WebView : redirection from %s to %s", urlStr, targetUrl);
-                if (!targetUrl.isEmpty()) browserLoadAsync(HttpHelper.fixUrl(targetUrl, site.getUrl()));
+                if (!targetUrl.isEmpty())
+                    browserLoadAsync(HttpHelper.fixUrl(targetUrl, site.getUrl()));
                 return null;
             }
 
