@@ -54,10 +54,6 @@ public class VariableLongClickWebView extends WebView {
         this.onLongClickListener = onLongClickListener;
     }
 
-    public int getLongClickThreshold() {
-        return longClickThreshold;
-    }
-
     public void setLongClickThreshold(int threshold) {
         longClickThreshold = threshold;
     }

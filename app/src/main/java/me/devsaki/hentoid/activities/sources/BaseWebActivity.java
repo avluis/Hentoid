@@ -535,35 +535,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // Download immediately on long click on a link / image link
         if (Preferences.isBrowserQuickDl()) {
-            webView.setOnLongClickListener(v -> {
-                WebView.HitTestResult result = webView.getHitTestResult();
-
-                String url = "";
-                // Plain link
-                if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null)
-                    url = result.getExtra();
-
-                // Image link (https://stackoverflow.com/a/55299801/8374722)
-                if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
-                    Handler handler = new Handler(getMainLooper());
-                    Message message = handler.obtainMessage();
-
-                    webView.requestFocusNodeHref(message);
-                    url = message.getData().getString("url");
-                }
-
-                if (url != null && !url.isEmpty() && webClient.isGalleryPage(url)) {
-                    // Launch on a new thread to avoid crashes
-                    webClient.parseResponseAsync(url);
-                    return true;
-                } else {
-                    return false;
-                }
-            });
-
+            webView.setOnLongClickListener(this::onLongTap);
             webView.setLongClickThreshold(Preferences.getBrowserQuickDlThreshold());
         }
-
 
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptThirdPartyCookies(webView, true);
@@ -600,6 +574,32 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 android.R.color.holo_green_light,
                 android.R.color.holo_orange_light,
                 android.R.color.holo_red_light);
+    }
+
+    private boolean onLongTap(View v) {
+        WebView.HitTestResult result = webView.getHitTestResult();
+
+        String url = "";
+        // Plain link
+        if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE && result.getExtra() != null)
+            url = result.getExtra();
+
+        // Image link (https://stackoverflow.com/a/55299801/8374722)
+        if (result.getType() == WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE) {
+            Handler handler = new Handler(getMainLooper());
+            Message message = handler.obtainMessage();
+
+            webView.requestFocusNodeHref(message);
+            url = message.getData().getString("url");
+        }
+
+        if (url != null && !url.isEmpty() && webClient.isGalleryPage(url)) {
+            // Launch on a new thread to avoid crashes
+            webClient.parseResponseAsync(url);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void onPageStarted(
@@ -1383,6 +1383,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         } else if (Preferences.Key.BROWSER_DNS_OVER_HTTPS.equals(key)) {
             webClient.setDnsOverHttpsEnabled(Preferences.getDnsOverHttps() > -1);
             reload = true;
+        } else if (Preferences.Key.BROWSER_QUICK_DL.equals(key)) {
+            if (Preferences.isBrowserQuickDl())
+                webView.setOnLongClickListener(this::onLongTap);
+            else
+                webView.setOnLongClickListener(null);
+        } else if (Preferences.Key.BROWSER_QUICK_DL_THRESHOLD.equals(key)) {
+            webView.setLongClickThreshold(Preferences.getBrowserQuickDlThreshold());
         }
         if (reload && !webClient.isLoading()) webView.reload();
     }
