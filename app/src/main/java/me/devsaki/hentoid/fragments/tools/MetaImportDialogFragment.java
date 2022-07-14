@@ -214,8 +214,7 @@ public class MetaImportDialogFragment extends DialogFragment {
 
         binding.importRunBtn.setEnabled(
                 (binding.importFileLibraryChk.isChecked() && binding.importEmptyBooksOptions.getSelectedIndex() > -1)
-                        || binding.importFileQueueChk.isChecked()
-                        || binding.importFileBookmarksChk.isChecked()
+                        || (!binding.importFileLibraryChk.isChecked() && (binding.importFileQueueChk.isChecked() || binding.importFileBookmarksChk.isChecked()))
         );
     }
 
