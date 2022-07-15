@@ -1042,21 +1042,29 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    long countAvailableAttributes(AttributeType
-                                          type, List<Attribute> attributeFilter, String filter) {
-        return queryAvailableAttributes(type, filter, selectFilteredContent(attributeFilter)).count();
+    long countAvailableAttributes(
+            AttributeType type,
+            long groupId,
+            List<Attribute> attributeFilter,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType,
+            String filter) {
+        return queryAvailableAttributes(type, filter, selectFilteredContent(groupId, attributeFilter, location, contentType)).count();
     }
 
     @SuppressWarnings("squid:S2184")
         // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
     List<Attribute> selectAvailableAttributes(
             @NonNull AttributeType type,
+            long groupId,
             List<Attribute> attributeFilter,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType,
             String filter,
             int sortOrder,
             int page,
             int itemsPerPage) {
-        long[] filteredContent = selectFilteredContent(attributeFilter);
+        long[] filteredContent = selectFilteredContent(groupId, attributeFilter, location, contentType);
         if (filteredContent.length == 0 && attributeFilter != null && !attributeFilter.isEmpty())
             return Collections.emptyList();
         Set<Long> filteredContentAsSet = Helper.getSetFromPrimitiveArray(filteredContent);

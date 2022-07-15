@@ -133,12 +133,15 @@ public class ObjectBoxDAO implements CollectionDAO {
     public Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
+            long groupId,
             List<Attribute> attrs,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType,
             int page,
             int booksPerPage,
             int orderStyle) {
         return Single
-                .fromCallable(() -> pagedAttributeSearch(types, filter, attrs, orderStyle, page, booksPerPage))
+                .fromCallable(() -> pagedAttributeSearch(types, filter, groupId, attrs, location, contentType, orderStyle, page, booksPerPage))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -742,7 +745,10 @@ public class ObjectBoxDAO implements CollectionDAO {
     private SearchHelper.AttributeQueryResult pagedAttributeSearch(
             @NonNull List<AttributeType> attrTypes,
             String filter,
+            long groupId,
             List<Attribute> attrs,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType,
             int sortOrder,
             int pageNum,
             int itemPerPage) {
@@ -751,13 +757,13 @@ public class ObjectBoxDAO implements CollectionDAO {
 
         if (!attrTypes.isEmpty()) {
             if (attrTypes.get(0).equals(AttributeType.SOURCE)) {
-                attributes.addAll(db.selectAvailableSources(-1, attrs, ContentHelper.Location.ANY, ContentHelper.Type.ANY));
+                attributes.addAll(db.selectAvailableSources(groupId, attrs, location, contentType));
                 totalSelectedAttributes = attributes.size();
             } else {
                 for (AttributeType type : attrTypes) {
                     // TODO fix sorting when concatenating both lists
-                    attributes.addAll(db.selectAvailableAttributes(type, attrs, filter, sortOrder, pageNum, itemPerPage));
-                    totalSelectedAttributes += db.countAvailableAttributes(type, attrs, filter);
+                    attributes.addAll(db.selectAvailableAttributes(type, groupId, attrs, location, contentType, filter, sortOrder, pageNum, itemPerPage));
+                    totalSelectedAttributes += db.countAvailableAttributes(type, groupId, attrs, location, contentType, filter);
                 }
             }
         }

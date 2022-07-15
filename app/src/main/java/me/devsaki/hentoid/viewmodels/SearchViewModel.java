@@ -120,7 +120,10 @@ public class SearchViewModel extends ViewModel {
                 .selectAttributeMasterDataPaged(
                         attributeTypes,
                         query,
+                        selectedGroup,
                         selectedAttributes.getValue(),
+                        location,
+                        contentType,
                         pageNum,
                         itemsPerPage,
                         attributeSortOrder

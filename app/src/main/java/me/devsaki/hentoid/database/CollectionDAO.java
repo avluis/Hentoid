@@ -239,7 +239,10 @@ public interface CollectionDAO {
     Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
+            long groupId,
             List<Attribute> attrs,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType,
             int page,
             int booksPerPage,
             int orderStyle);
