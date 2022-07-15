@@ -414,11 +414,10 @@ public class ObjectBoxDB {
 
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrlStart) {
-        // TODO combine these two queries with an OR
-        Content result = store.boxFor(Content.class).query().notEqual(Content_.url, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).equal(Content_.url, contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE).equal(Content_.site, site.getCode()).build().findFirst();
-        if (null == result && !coverUrlStart.isEmpty())
-            result = store.boxFor(Content.class).query().notEqual(Content_.coverImageUrl, "", QueryBuilder.StringOrder.CASE_INSENSITIVE).startsWith(Content_.coverImageUrl, coverUrlStart, QueryBuilder.StringOrder.CASE_INSENSITIVE).equal(Content_.site, site.getCode()).build().findFirst();
-        return result;
+        QueryCondition<Content> qc = Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
+        QueryCondition<Content> qc2 = Content_.coverImageUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.coverImageUrl.equal(coverUrlStart, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
+
+        return store.boxFor(Content.class).query(qc.or(qc2)).build().findFirst();
     }
 
     Set<String> selectAllContentUrls(int siteCode) {
@@ -580,43 +579,6 @@ public class ObjectBoxDB {
 
         if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
 
-        /*
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-
-        query.in(Content_.status, libraryStatus);
-
-        if (hasSiteFilter)
-            query.in(Content_.site, getIdsFromAttributes(sources));
-        if (searchBundle.getFilterBookFavourites()) query.equal(Content_.favourite, true);
-
-        if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
-        else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
-
-        if (searchBundle.getFilterRating() > -1)
-            query.equal(Content_.rating, searchBundle.getFilterRating());
-
-            if (hasTitleFilter)
-            query.contains(Content_.title, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        if (hasTagFilter) {
-            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
-                AttributeType attrType = entry.getKey();
-                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = entry.getValue();
-                    if (attrs != null && !attrs.isEmpty()) {
-                        query.in(Content_.id, selectFilteredContent(attrs));
-                    }
-                }
-            }
-        }
-        if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
-        if (hasGroupFilter) applyContentGroupFilter(query, searchBundle.getGroupId());
-
-        if (searchBundle.getLocation() > 0)
-            applyContentLocationFilter(query, searchBundle.getLocation());
-        if (searchBundle.getContentType() > 0)
-            applyContentTypeFilter(query, searchBundle.getContentType());
-        */
-
         applySortOrder(query, searchBundle.getSortField(), searchBundle.getSortDesc());
         return query.build();
     }
@@ -709,7 +671,8 @@ public class ObjectBoxDB {
         if (searchBundle.getFilterBookFavourites()) qc = qc.and(Content_.favourite.equal(true));
 
         if (searchBundle.getFilterBookCompleted()) qc = qc.and(Content_.completed.equal(true));
-        else if (searchBundle.getFilterBookNotCompleted()) qc = qc.and(Content_.completed.equal(false));
+        else if (searchBundle.getFilterBookNotCompleted())
+            qc = qc.and(Content_.completed.equal(false));
 
         if (searchBundle.getFilterRating() > -1)
             qc = qc.and(Content_.rating.equal(searchBundle.getFilterRating()));
@@ -730,34 +693,6 @@ public class ObjectBoxDB {
 
         QueryBuilder<Content> query = store.boxFor(Content.class).query(qc);
         if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
-
-        /*
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, statuses);
-
-        if (searchBundle.getFilterBookFavourites()) query.equal(Content_.favourite, true);
-
-        if (searchBundle.getFilterBookCompleted()) query.equal(Content_.completed, true);
-        else if (searchBundle.getFilterBookNotCompleted()) query.equal(Content_.completed, false);
-
-        if (searchBundle.getFilterRating() > -1)
-            query.equal(Content_.rating, searchBundle.getFilterRating());
-
-        if (searchBundle.getFilterPageFavourites()) filterWithPageFavs(query);
-
-        query.contains(Content_.title, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        query.or().equal(Content_.uniqueSiteId, searchBundle.getQuery(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
-        query.or().in(Content_.id, additionalIds);
-
-        if (searchBundle.getGroupId() > 0) {
-            Group group = store.boxFor(Group.class).get(searchBundle.getGroupId());
-            if (group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
-                applyContentDownloadDateFilter(query, group.propertyMin, group.propertyMax);
-            else // Direct link to group
-                query.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
-        }
-         */
 
         applySortOrder(query, searchBundle.getSortField(), searchBundle.getSortDesc());
 
@@ -915,17 +850,7 @@ public class ObjectBoxDB {
             qc = applyContentLocationFilter(qc, location);
             qc = applyContentTypeFilter(qc, contentType);
 
-            final QueryBuilder<Content> simpleContentQuery = store.boxFor(Content.class).query(qc);
-            /*
-            final QueryBuilder<Content> simpleContentQuery = store.boxFor(Content.class).query();
-            simpleContentQuery.in(Content_.status, libraryStatus);
-
-            if (groupId > 0) applyContentGroupFilter(simpleContentQuery, groupId);
-            applyContentLocationFilter(simpleContentQuery, location);
-            applyContentTypeFilter(simpleContentQuery, contentType);
-             */
-
-            return simpleContentQuery.build().findIds();
+            return store.boxFor(Content.class).query(qc).build().findIds();
         }
 
         // Pre-build queries to reuse them efficiently within the loops
@@ -948,20 +873,6 @@ public class ObjectBoxDB {
                     .equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
             contentFromAttributesQuery = contentFromAttributesQueryBuilder.build();
-
-            /*
-            final QueryBuilder<Content> contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
-            contentFromAttributesQueryBuilder.in(Content_.status, libraryStatus);
-
-            applyContentLocationFilter(contentFromAttributesQueryBuilder, location);
-            applyContentTypeFilter(contentFromAttributesQueryBuilder, contentType);
-            if (groupId > 0) applyContentGroupFilter(contentFromAttributesQueryBuilder, groupId);
-
-            contentFromAttributesQueryBuilder.link(Content_.attributes)
-                    .equal(Attribute_.type, 0)
-                    .equal(Attribute_.name, "", QueryBuilder.StringOrder.CASE_INSENSITIVE);
-            contentFromAttributesQuery = contentFromAttributesQueryBuilder.build();
-             */
         }
 
         // Content from source (distinct query as source is not an actual Attribute of the data model)
@@ -977,17 +888,6 @@ public class ObjectBoxDB {
             if (groupId > 0) qc = applyContentGroupFilter(qc, groupId);
 
             contentFromSourceQuery = store.boxFor(Content.class).query(qc).build();
-            /*
-            final QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
-            contentFromSourceQueryBuilder.in(Content_.status, libraryStatus);
-            contentFromSourceQueryBuilder.equal(Content_.site, 1);
-
-            applyContentLocationFilter(contentFromSourceQueryBuilder, location);
-            applyContentTypeFilter(contentFromSourceQueryBuilder, contentType);
-            if (groupId > 0) applyContentGroupFilter(contentFromSourceQueryBuilder, groupId);
-
-            contentFromSourceQuery = contentFromSourceQueryBuilder.build();
-             */
         }
 
 
@@ -1079,33 +979,6 @@ public class ObjectBoxDB {
         qc = applyContentTypeFilter(qc, contentType);
 
         QueryBuilder<Content> query = store.boxFor(Content.class).query(qc);
-        /*
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, libraryStatus);
-
-        if (filter != null && !filter.isEmpty()) {
-            AttributeMap metadataMap = new AttributeMap();
-            metadataMap.addAll(filter);
-
-            List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
-            if (params != null && !params.isEmpty())
-                query.in(Content_.site, getIdsFromAttributes(params));
-
-            for (Map.Entry<AttributeType, List<Attribute>> entry : metadataMap.entrySet()) {
-                AttributeType attrType = entry.getKey();
-                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = entry.getValue();
-                    if (attrs != null && !attrs.isEmpty())
-                        query.in(Content_.id, selectFilteredContent(attrs));
-                }
-            }
-        }
-
-        if (groupId > 0) applyContentGroupFilter(query, groupId);
-        if (location > 0) applyContentLocationFilter(query, location);
-        if (contentType > 0) applyContentTypeFilter(query, contentType);
-         */
-
         List<Content> content = query.build().find();
 
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
@@ -1134,27 +1007,7 @@ public class ObjectBoxDB {
         QueryCondition<Content> qc = Content_.status.oneOf(libraryStatus);
         qc = applyContentDownloadDateFilter(qc, minDays, maxDays);
         return store.boxFor(Content.class).query(qc).build().find();
-
-        /*
-        QueryBuilder<Content> qb = store.boxFor(Content.class).query();
-        qb.in(Content_.status, libraryStatus);
-        applyContentDownloadDateFilter(qb, minDays, maxDays);
-        return qb.build().find();
-         */
     }
-
-    /*
-    @Deprecated
-    private void applyContentGroupFilter(@NonNull final QueryBuilder<Content> qb, long groupId) {
-        Group group = store.boxFor(Group.class).get(groupId);
-        if (group != null && group.grouping.equals(Grouping.DL_DATE)) // According to days since download date
-            applyContentDownloadDateFilter(qb, group.propertyMin, group.propertyMax);
-        else if (group != null && group.grouping.equals(Grouping.CUSTOM) && 1 == group.subtype) // Books with no CUSTOM group attached
-            applyContentUngroupedFilter(qb);
-        else // Direct link to group
-            qb.in(Content_.id, selectFilteredContent(groupId));
-    }
-     */
 
     private QueryCondition<Content> applyContentGroupFilter(@NonNull final QueryCondition<Content> qc, long groupId) {
         Group group = store.boxFor(Group.class).get(groupId);
@@ -1166,29 +1019,12 @@ public class ObjectBoxDB {
             return qc.and(Content_.id.oneOf(selectFilteredContent(groupId)));
     }
 
-    /*
-    @Deprecated
-    private void applyContentDownloadDateFilter(@NonNull final QueryBuilder<Content> qb, int minDays, int maxDays) {
-        long today = Instant.now().toEpochMilli();
-        long minDownloadDate = today - (maxDays * DAY_IN_MILLIS);
-        long maxDownloadDate = today - (minDays * DAY_IN_MILLIS);
-        qb.between(Content_.downloadDate, minDownloadDate, maxDownloadDate);
-    }
-     */
-
     private QueryCondition<Content> applyContentDownloadDateFilter(@NonNull final QueryCondition<Content> qc, int minDays, int maxDays) {
         long today = Instant.now().toEpochMilli();
         long minDownloadDate = today - (maxDays * DAY_IN_MILLIS);
         long maxDownloadDate = today - (minDays * DAY_IN_MILLIS);
         return qc.and(Content_.downloadDate.between(minDownloadDate, maxDownloadDate));
     }
-
-    /*
-    @Deprecated
-    private void applyContentUngroupedFilter(@NonNull final QueryBuilder<Content> qb) {
-        qb.notIn(Content_.id, selectCustomGroupedContent());
-    }
-     */
 
     private Query<Attribute> queryAvailableAttributes(
             @NonNull final AttributeType type,
@@ -1307,17 +1143,6 @@ public class ObjectBoxDB {
         return query.build().find();
     }
 
-    /*
-    @Deprecated
-    private void applyContentLocationFilter(@NonNull QueryBuilder<Content> qb, @ContentHelper.Location int location) {
-        if (ContentHelper.Location.PRIMARY == location) {
-            qb.notEqual(Content_.status, StatusContent.EXTERNAL.getCode());
-        } else if (ContentHelper.Location.EXTERNAL == location) {
-            qb.equal(Content_.status, StatusContent.EXTERNAL.getCode());
-        }
-    }
-     */
-
     private QueryCondition<Content> applyContentLocationFilter(@NonNull QueryCondition<Content> qc, @ContentHelper.Location int location) {
         if (ContentHelper.Location.PRIMARY == location) {
             return qc.and(Content_.status.notEqual(StatusContent.EXTERNAL.getCode()));
@@ -1326,32 +1151,6 @@ public class ObjectBoxDB {
         }
         return qc;
     }
-
-    /*
-    @Deprecated
-    private void applyContentTypeFilter(@NonNull QueryBuilder<Content> qb, @ContentHelper.Type int contentType) {
-        switch (contentType) {
-            case ContentHelper.Type.STREAMED:
-                qb.equal(Content_.downloadMode, Content.DownloadMode.STREAM);
-                break;
-            case ContentHelper.Type.ARCHIVE:
-                qb.equal(Content_.status, StatusContent.EXTERNAL.getCode());
-                for (String ext : ArchiveHelper.getSupportedExtensions())
-                    qb.endsWith(Content_.storageUri, ext, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-                break;
-            case ContentHelper.Type.PLACEHOLDER:
-                qb.equal(Content_.status, StatusContent.PLACEHOLDER.getCode()); // KO
-                break;
-            case ContentHelper.Type.FOLDER:
-                qb.equal(Content_.downloadMode, Content.DownloadMode.DOWNLOAD);
-                qb.notEqual(Content_.status, StatusContent.PLACEHOLDER.getCode());
-                break;
-            case ContentHelper.Type.ANY:
-            default:
-                //Nothing
-        }
-    }
-     */
 
     private QueryCondition<Content> applyContentTypeFilter(@NonNull QueryCondition<Content> qc, @ContentHelper.Type int contentType) {
         switch (contentType) {
