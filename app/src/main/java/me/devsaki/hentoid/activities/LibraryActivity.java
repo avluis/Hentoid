@@ -58,7 +58,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +67,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.SearchRecord;
@@ -90,6 +88,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
@@ -183,7 +182,7 @@ public class LibraryActivity extends BaseActivity {
     // Current text search query; one per tab
     private final List<String> query = Arrays.asList("", "");
     // Current metadata search query; one per tab
-    private final List<List<Attribute>> metadata = Arrays.asList(new ArrayList<>(), new ArrayList<>());
+    private final List<SearchHelper.AdvancedSearchCriteria> advSearchCriteria = Arrays.asList(new SearchHelper.AdvancedSearchCriteria(new ArrayList<>(), ContentHelper.Location.ANY, ContentHelper.Type.ANY), new SearchHelper.AdvancedSearchCriteria(new ArrayList<>(), ContentHelper.Location.ANY, ContentHelper.Type.ANY));
     // True if item positioning edit mode is on (only available for specific groupings)
     private boolean editMode = false;
     // Titles of each of the Viewpager2's tabs
@@ -212,12 +211,16 @@ public class LibraryActivity extends BaseActivity {
         this.query.set(getCurrentFragmentIndex(), query);
     }
 
-    public List<Attribute> getMetadata() {
-        return metadata.get(getCurrentFragmentIndex());
+    public SearchHelper.AdvancedSearchCriteria getAdvSearchCriteria() {
+        return advSearchCriteria.get(getCurrentFragmentIndex());
     }
 
-    public void setMetadata(List<Attribute> metadata) {
-        this.metadata.set(getCurrentFragmentIndex(), metadata);
+    public void setAdvancedSearchCriteria(@NonNull SearchHelper.AdvancedSearchCriteria criteria) {
+        this.advSearchCriteria.set(getCurrentFragmentIndex(), criteria);
+    }
+
+    public void clearAdvancedSearchCriteria() {
+        this.advSearchCriteria.set(getCurrentFragmentIndex(), SearchHelper.Companion.getEmptyAdvancedSearchCriteria());
     }
 
     public boolean isEditMode() {
@@ -404,7 +407,7 @@ public class LibraryActivity extends BaseActivity {
         searchClearButton = findViewById(R.id.search_clear_btn);
         searchClearButton.setOnClickListener(v -> {
             setQuery("");
-            getMetadata().clear();
+            clearAdvancedSearchCriteria();
             actionSearchView.setQuery("", false);
             hideSearchSubBar();
             signalCurrentFragment(EV_SEARCH, "");
@@ -606,11 +609,11 @@ public class LibraryActivity extends BaseActivity {
                     if (!targetQuery.isEmpty())
                         targetQuery = targetQuery.substring(1); // Remove the leading '/'
                     setQuery(targetQuery);
-                    setMetadata(SearchActivityBundle.Companion.parseSearchUri(searchUri));
-                    if (getMetadata().isEmpty()) { // Universal search
+                    setAdvancedSearchCriteria(SearchActivityBundle.Companion.parseSearchUri(searchUri));
+                    if (getAdvSearchCriteria().isEmpty()) { // Universal search
                         if (!getQuery().isEmpty()) viewModel.searchContentUniversal(getQuery());
                     } else { // Advanced search
-                        viewModel.searchContent(getQuery(), getMetadata(), searchUri);
+                        viewModel.searchContent(getQuery(), getAdvSearchCriteria(), searchUri);
                     }
                 } else { // Clear history
                     viewModel.clearSearchHistory();
@@ -753,7 +756,7 @@ public class LibraryActivity extends BaseActivity {
      * @return True if a search query is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
     public boolean isSearchQueryActive() {
-        return (!getQuery().isEmpty() || !getMetadata().isEmpty());
+        return (!getQuery().isEmpty() || !getAdvSearchCriteria().isEmpty());
     }
 
     private void fixPermissions() {
@@ -814,7 +817,7 @@ public class LibraryActivity extends BaseActivity {
     public boolean isFilterActive() {
         if (isSearchQueryActive()) {
             setQuery("");
-            setMetadata(Collections.emptyList());
+            clearAdvancedSearchCriteria();
             collapseSearchMenu();
             hideSearchSubBar();
         }

@@ -652,6 +652,14 @@
         <item quantity="other"><x:g example="2" id="count">%s</x:g> Results found</item>
     </plurals>
     <string name="search_select_a_filter">Select a filter</string>
+    <string name="search_location">Location</string>
+    <string name="search_location_entries_1">All locations</string>
+    <string name="search_type">Type</string>
+    <string name="search_type_entries_1">All book types</string>
+    <string name="search_type_entries_2">Folder</string>
+    <string name="search_type_entries_3">Streamed</string>
+    <string name="search_type_entries_4">Archive</string>
+    <string name="search_type_entries_5">Placeholder</string>
 
     <!-- DB migration & Maintenance -->
 

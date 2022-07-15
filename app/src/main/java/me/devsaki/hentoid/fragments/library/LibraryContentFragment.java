@@ -91,7 +91,6 @@ import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
@@ -109,6 +108,7 @@ import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
@@ -407,12 +407,12 @@ public class LibraryContentFragment extends Fragment implements
         activity.get().setQuery(query);
     }
 
-    private List<Attribute> getMetadata() {
-        return activity.get().getMetadata();
+    private SearchHelper.AdvancedSearchCriteria getMetadata() {
+        return activity.get().getAdvSearchCriteria();
     }
 
-    private void setMetadata(List<Attribute> attrs) {
-        activity.get().setMetadata(attrs);
+    private void setMetadata(SearchHelper.AdvancedSearchCriteria criteria) {
+        activity.get().setAdvancedSearchCriteria(criteria);
     }
 
     private void enterEditMode() {
@@ -977,8 +977,10 @@ public class LibraryContentFragment extends Fragment implements
 
         SearchActivityBundle builder = new SearchActivityBundle();
 
-        if (!getMetadata().isEmpty())
-            builder.setUri(SearchActivityBundle.Companion.buildSearchUri(getMetadata(), "").toString());
+        SearchHelper.AdvancedSearchCriteria advancedSearchCriteria = getMetadata();
+        if (!advancedSearchCriteria.isEmpty()) {
+            builder.setUri(SearchActivityBundle.Companion.buildSearchUri(advancedSearchCriteria, "").toString());
+        }
 
         if (group != null)
             builder.setGroupId(group.id);

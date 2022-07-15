@@ -17,6 +17,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -26,6 +28,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.databinding.ActivitySearchBinding;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
+import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -50,10 +53,16 @@ public class SearchActivity extends BaseActivity {
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        SearchActivityBundle builder = new SearchActivityBundle();
-        builder.setUri(SearchActivityBundle.Companion.buildSearchUri(viewModel.getSelectedAttributesData().getValue(), "").toString());
-        outState.putAll(builder.getBundle());
-        outState.putBoolean("exclude", excludeClicked);
+        if (binding != null) {
+            SearchActivityBundle builder = new SearchActivityBundle();
+            builder.setUri(SearchActivityBundle.Companion.buildSearchUri(
+                    selectedAttributeAdapter.getCurrentList(),
+                    "",
+                    binding.locationSpin.getSelectedIndex(),
+                    binding.typeSpin.getSelectedIndex()).toString());
+            outState.putAll(builder.getBundle());
+            outState.putBoolean("exclude", excludeClicked);
+        }
     }
 
     @Override
@@ -62,8 +71,17 @@ public class SearchActivity extends BaseActivity {
         excludeClicked = savedInstanceState.getBoolean("exclude");
         Uri searchUri = Uri.parse(new SearchActivityBundle(savedInstanceState).getUri());
         if (searchUri != null) {
-            List<Attribute> preSelectedAttributes = SearchActivityBundle.Companion.parseSearchUri(searchUri);
-            viewModel.setSelectedAttributes(preSelectedAttributes);
+            SearchHelper.AdvancedSearchCriteria preSelectedCriteria = SearchActivityBundle.Companion.parseSearchUri(searchUri);
+            if (!preSelectedCriteria.getAttributes().isEmpty())
+                viewModel.setSelectedAttributes(preSelectedCriteria.getAttributes());
+            if (preSelectedCriteria.getLocation() > 0) {
+                viewModel.setLocation(preSelectedCriteria.getLocation());
+                binding.locationSpin.selectItemByIndex(preSelectedCriteria.getLocation());
+            }
+            if (preSelectedCriteria.getContentType() > 0) {
+                viewModel.setContentType(preSelectedCriteria.getContentType());
+                binding.typeSpin.selectItemByIndex(preSelectedCriteria.getContentType());
+            }
         }
     }
 
@@ -74,13 +92,13 @@ public class SearchActivity extends BaseActivity {
         setContentView(binding.getRoot());
 
         Intent intent = getIntent();
-        List<Attribute> preSelectedAttributes = null;
+        SearchHelper.AdvancedSearchCriteria preSelectedCriteria = null;
         if (intent != null && intent.getExtras() != null) {
             SearchActivityBundle parser = new SearchActivityBundle(intent.getExtras());
             Uri searchUri = Uri.parse(parser.getUri());
             excludeClicked = parser.getExcludeMode();
             if (searchUri != null)
-                preSelectedAttributes = SearchActivityBundle.Companion.parseSearchUri(searchUri);
+                preSelectedCriteria = SearchActivityBundle.Companion.parseSearchUri(searchUri);
         }
 
         Toolbar toolbar = findViewById(R.id.search_toolbar);
@@ -103,6 +121,15 @@ public class SearchActivity extends BaseActivity {
         excludeCheckBox.setOnClickListener(this::onExcludeClick);
         excludeCheckBox.setChecked(excludeClicked);
 
+        String[] locations = getResources().getStringArray(R.array.search_location_entries);
+        binding.locationSpin.setItems(new ArrayList<>(Arrays.asList(locations)));
+        binding.locationSpin.selectItemByIndex(0);
+        binding.locationSpin.setOnSpinnerItemSelectedListener((i, o, i1, t1) -> viewModel.setLocation(binding.locationSpin.getSelectedIndex()));
+
+        String[] bookTypes = getResources().getStringArray(R.array.search_type_entries);
+        binding.typeSpin.setItems(new ArrayList<>(Arrays.asList(bookTypes)));
+        binding.typeSpin.selectItemByIndex(0);
+        binding.typeSpin.setOnSpinnerItemSelectedListener((i, o, i1, t1) -> viewModel.setContentType(binding.typeSpin.getSelectedIndex()));
 
         LinearLayoutManager llm = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.searchTags.setLayoutManager(llm);
@@ -124,8 +151,18 @@ public class SearchActivity extends BaseActivity {
         viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
         viewModel.getSelectedContentCount().observe(this, this::onBooksCounted);
 
-        if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
-        else viewModel.update();
+        if (preSelectedCriteria != null) {
+            if (!preSelectedCriteria.getAttributes().isEmpty())
+                viewModel.setSelectedAttributes(preSelectedCriteria.getAttributes());
+            if (preSelectedCriteria.getLocation() > 0) {
+                viewModel.setLocation(preSelectedCriteria.getLocation());
+                binding.locationSpin.selectItemByIndex(preSelectedCriteria.getLocation());
+            }
+            if (preSelectedCriteria.getContentType() > 0) {
+                viewModel.setContentType(preSelectedCriteria.getContentType());
+                binding.typeSpin.selectItemByIndex(preSelectedCriteria.getContentType());
+            }
+        } else viewModel.update();
     }
 
     @Override
@@ -182,17 +219,17 @@ public class SearchActivity extends BaseActivity {
     /**
      * Observer for changes in the selected attributes
      *
-     * @param attributes list of currently selected attributes
+     * @param selectedAttributes list of currently selected attributes
      */
-    private void onSelectedAttributesChanged(List<Attribute> attributes) {
-        if (attributes.isEmpty()) {
+    private void onSelectedAttributesChanged(List<Attribute> selectedAttributes) {
+        if (selectedAttributes.isEmpty()) {
             binding.searchTags.setVisibility(View.GONE);
             binding.startCaption.setVisibility(View.VISIBLE);
         } else {
             binding.searchTags.setVisibility(View.VISIBLE);
             binding.startCaption.setVisibility(View.GONE);
 
-            selectedAttributeAdapter.submitList(attributes);
+            selectedAttributeAdapter.submitList(selectedAttributes);
         }
     }
 
@@ -226,7 +263,12 @@ public class SearchActivity extends BaseActivity {
      * Transmit the search query to the library screen and close the advanced search screen
      */
     private void searchBooks() {
-        Uri searchUri = SearchActivityBundle.Companion.buildSearchUri(viewModel.getSelectedAttributesData().getValue(), "");
+        Uri searchUri = SearchActivityBundle.Companion.buildSearchUri(
+                selectedAttributeAdapter.getCurrentList(),
+                "",
+                binding.locationSpin.getSelectedIndex(),
+                binding.typeSpin.getSelectedIndex()
+        );
         Timber.d("URI :%s", searchUri);
 
         SearchActivityBundle builder = new SearchActivityBundle();

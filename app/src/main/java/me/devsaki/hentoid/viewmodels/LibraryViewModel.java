@@ -70,6 +70,7 @@ import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
@@ -238,7 +239,7 @@ public class LibraryViewModel extends AndroidViewModel {
         contentSearchManager.setQuery(query);
         newContentSearch.setValue(true);
         if (!query.isEmpty()) {
-            Uri searchUri = SearchActivityBundle.Companion.buildSearchUri(null, query);
+            Uri searchUri = SearchActivityBundle.Companion.buildSearchUri(null, query, ContentHelper.Location.ANY, ContentHelper.Type.ANY);
             dao.insertSearchRecord(SearchRecord.fromContentUniversalSearch(searchUri), 10);
         }
         doSearchContent();
@@ -250,13 +251,20 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param query    Query to use for the search
      * @param metadata Metadata to use for the search
      */
-    public void searchContent(@NonNull String query, @NonNull List<Attribute> metadata, @NonNull Uri searchUri) {
+    public void searchContent(@NonNull String query, @NonNull SearchHelper.AdvancedSearchCriteria metadata, @NonNull Uri searchUri) {
         contentSearchManager.setQuery(query);
-        contentSearchManager.setTags(metadata);
+        contentSearchManager.setTags(metadata.getAttributes());
+        contentSearchManager.setLocation(metadata.getLocation());
+        contentSearchManager.setContentType(metadata.getContentType());
         newContentSearch.setValue(true);
 
         if (!metadata.isEmpty()) {
-            String label = TextUtils.join("|", Stream.of(metadata).map(a -> formatAttribute(a, getApplication().getResources())).toList());
+            List<String> labelElts = Stream.of(metadata.getAttributes()).map(a -> formatAttribute(a, getApplication().getResources())).toList();
+            if (metadata.getLocation() != ContentHelper.Location.ANY)
+                labelElts.add("loc:" + metadata.getLocation());
+            if (metadata.getContentType() != ContentHelper.Type.ANY)
+                labelElts.add("type:" + metadata.getLocation());
+            String label = TextUtils.join("|", labelElts);
             if (label.length() > 50) label = label.substring(0, 50) + "…";
             dao.insertSearchRecord(SearchRecord.fromContentAdvancedSearch(searchUri, label), 10);
         }
@@ -597,8 +605,10 @@ public class LibraryViewModel extends AndroidViewModel {
             @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_updating_webview)));
-            else onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_missing_webview)));
+            if (WebkitPackageHelper.getWebViewUpdating())
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_updating_webview)));
+            else
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_missing_webview)));
             return;
         }
 
@@ -646,8 +656,10 @@ public class LibraryViewModel extends AndroidViewModel {
             @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.accept(new EmptyResultException(getApplication().getString(R.string.download_updating_webview)));
-            else onError.accept(new EmptyResultException(getApplication().getString(R.string.download_missing_webview)));
+            if (WebkitPackageHelper.getWebViewUpdating())
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.download_updating_webview)));
+            else
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.download_missing_webview)));
             return;
         }
 
@@ -698,8 +710,10 @@ public class LibraryViewModel extends AndroidViewModel {
     public void streamContent(@NonNull final List<Content> contentList,
                               @NonNull final Consumer<Throwable> onError) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_updating_webview)));
-            else onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_missing_webview)));
+            if (WebkitPackageHelper.getWebViewUpdating())
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_updating_webview)));
+            else
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_missing_webview)));
             return;
         }
 
@@ -1222,7 +1236,7 @@ public class LibraryViewModel extends AndroidViewModel {
             Content splitContent = createContentFromChapter(content, chap);
 
             // Create a new folder for the split content
-            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, true,null);
+            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, true, null);
             if (null == targetFolder || !targetFolder.exists())
                 throw new ContentNotProcessedException(splitContent, "Could not create target directory");
 

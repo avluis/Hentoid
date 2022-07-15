@@ -91,12 +91,36 @@ import timber.log.Timber;
  */
 public final class ContentHelper {
 
+    // == Used for queue management
+
     @IntDef({QueuePosition.TOP, QueuePosition.BOTTOM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface QueuePosition {
         int TOP = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
         int BOTTOM = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
     }
+
+    // == Used for advanced search
+    // NB : Needs to be in sync with the dropdown lists on the advanced search screen
+
+    @IntDef({Location.ANY, Location.PRIMARY, Location.EXTERNAL})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Location {
+        int ANY = 0;
+        int PRIMARY = 1; // Primary library
+        int EXTERNAL = 2; // External library
+    }
+
+    @IntDef({Type.ANY, Type.FOLDER, Type.STREAMED, Type.ARCHIVE, Type.PLACEHOLDER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Type {
+        int ANY = 0;
+        int FOLDER = 1; // Images in a folder
+        int STREAMED = 2; // Streamed book
+        int ARCHIVE = 3; // Archive
+        int PLACEHOLDER = 4; // "Empty book" placeholder created my metadata import
+    }
+
 
     public static final String KEY_DL_PARAMS_NB_CHAPTERS = "nbChapters";
     public static final String KEY_DL_PARAMS_UGOIRA_FRAMES = "ugo_frames";
@@ -160,7 +184,8 @@ public final class ContentHelper {
         if (content.getSite().equals(Site.NONE)) return;
 
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.error_updating_webview);
+            if (WebkitPackageHelper.getWebViewUpdating())
+                ToastHelper.toast(R.string.error_updating_webview);
             else ToastHelper.toast(R.string.error_missing_webview);
             return;
         }
@@ -1004,7 +1029,8 @@ public final class ContentHelper {
      */
     public static void launchBrowserFor(@NonNull final Context context, @NonNull final String targetUrl) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.error_updating_webview);
+            if (WebkitPackageHelper.getWebViewUpdating())
+                ToastHelper.toast(R.string.error_updating_webview);
             else ToastHelper.toast(R.string.error_missing_webview);
             return;
         }

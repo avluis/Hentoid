@@ -333,6 +333,18 @@
         <item>@string/tools_import_empty_books_entries_3</item>
         <item>@string/tools_import_empty_books_entries_4</item>
     </string-array>
+    <string-array name="search_location_entries" translatable="false">
+        <item>@string/search_location_entries_1</item>
+        <item>@string/refresh_location_internal</item>
+        <item>@string/refresh_location_external</item>
+    </string-array>
+    <string-array name="search_type_entries" translatable="false">
+        <item>@string/search_type_entries_1</item>
+        <item>@string/search_type_entries_2</item>
+        <item>@string/search_type_entries_3</item>
+        <item>@string/search_type_entries_4</item>
+        <item>@string/search_type_entries_5</item>
+    </string-array>
 
     <!-- Strings: Main: Generic Usage -->
     <string name="app_name" translatable="false">Hentoid</string>
