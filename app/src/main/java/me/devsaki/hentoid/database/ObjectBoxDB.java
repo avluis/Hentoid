@@ -64,6 +64,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -843,9 +844,9 @@ public class ObjectBoxDB {
             final QueryBuilder<Content> simpleContentQuery = store.boxFor(Content.class).query();
             simpleContentQuery.in(Content_.status, libraryStatus);
 
+            if (groupId > 0) applyContentGroupFilter(simpleContentQuery, groupId);
             applyContentLocationFilter(simpleContentQuery, location);
             applyContentTypeFilter(simpleContentQuery, contentType);
-            if (groupId > 0) applyContentGroupFilter(simpleContentQuery, groupId);
 
             return simpleContentQuery.build().findIds();
         }
@@ -969,14 +970,11 @@ public class ObjectBoxDB {
                         query.in(Content_.id, selectFilteredContent(attrs));
                 }
             }
-
         }
 
         if (groupId > 0) applyContentGroupFilter(query, groupId);
         if (location > 0) applyContentLocationFilter(query, location);
         if (contentType > 0) applyContentTypeFilter(query, contentType);
-        // TODO remove if it works
-        //if (contentType == ContentHelper.Type.ARCHIVE) query.filter(Content::isArchive);
 
         List<Content> content = query.build().find();
 
@@ -1157,7 +1155,9 @@ public class ObjectBoxDB {
                 qb.equal(Content_.downloadMode, Content.DownloadMode.STREAM);
                 break;
             case ContentHelper.Type.ARCHIVE:
-                qb.filter(Content::isArchive);
+                qb.equal(Content_.status, StatusContent.EXTERNAL.getCode());
+                for (String ext : ArchiveHelper.getSupportedExtensions())
+                    qb.endsWith(Content_.storageUri, ext, QueryBuilder.StringOrder.CASE_INSENSITIVE);
                 break;
             case ContentHelper.Type.PLACEHOLDER:
                 qb.equal(Content_.status, StatusContent.PLACEHOLDER.getCode());
