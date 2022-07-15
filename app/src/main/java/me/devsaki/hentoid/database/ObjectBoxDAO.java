@@ -538,7 +538,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void flagAllGroups(Grouping grouping) {
-        db.flagGroupsForDeletion(db.selectGroupsByGroupingQ(grouping.getId()).find(), true);
+        db.flagGroupsForDeletion(db.selectGroupsByGroupingQ(grouping.getId()).find());
     }
 
     public void deleteAllFlaggedGroups() {
