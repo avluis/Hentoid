@@ -577,6 +577,7 @@ public class LibraryContentFragment extends Fragment implements
         Context context = getActivity();
         if (1 == selectedItems.size() && context != null) {
             Content c = Stream.of(selectedItems).findFirst().get().getContent();
+            leaveSelectionMode();
             if (c != null) ContentHelper.shareContent(context, c);
         }
     }
