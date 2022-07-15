@@ -23,6 +23,10 @@
     <string name="pref_color_theme_title">색상 테마</string>
     <string name="pref_color_theme_summary">현재 테마: <x:g example="Deep Red" id="theme_name">%s</x:g></string>
     <string name="pref_misc">기타</string>
+    <string name="pref_cat_language">언어</string>
+    <string name="pref_force_english_title">언어를 영어로 고정</string>
+    <string name="pref_force_english_summary_off">사용중인 기기의 언어 사용</string>
+    <string name="pref_force_english_summary_on">영어 사용</string>
 <string name="pref_screen_storage">저장공간</string>
     <string name="pref_cat_downloads_folder">Hentoid 라이브러리</string>
     <string name="pref_select_folder_title">다운로드 폴더 선택</string>

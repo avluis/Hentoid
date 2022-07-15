@@ -175,6 +175,9 @@
         <item quantity="one"><x:g example="1" id="pages_count">%1$d</x:g> 페이지 / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
         <item quantity="other"><x:g example="2" id="pages_count">%1$d</x:g> 페이지 / <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
     </plurals>
+    <string name="work_pages_duplicate_dialog_library">페이지 (라이브러리): %d</string>
+    <string name="work_pages_duplicate_dialog_queue">페이지 (대기열): %d</string>
+    <string name="work_pages_duplicate_dialog_source">페이지 (사이트): %d</string>
     <string name="library_metrics_storage"><x:g example="3.88" id="size_mb">%.0f</x:g> MB</string>
     <string name="redownload_queue_progress">선택된 작품 다시 다운로드</string>
     <string name="errortype_parsing">분석</string>
@@ -587,6 +590,14 @@
         <item quantity="other"><x:g example="2" id="count">%s</x:g>개 검색됨</item>
     </plurals>
     <string name="search_select_a_filter">필터를 선택해주세요</string>
+    <string name="search_location">위치</string>
+    <string name="search_location_entries_1">모든 위치</string>
+    <string name="search_type">종류</string>
+    <string name="search_type_entries_1">모든 작품 유형</string>
+    <string name="search_type_entries_2">폴더</string>
+    <string name="search_type_entries_3">스트리밍</string>
+    <string name="search_type_entries_4">보관</string>
+    <string name="search_type_entries_5">임시 생성</string>
 
 <string name="no_images">불러오기 실패: 이미지를 찾을 수 없습니다</string>
     <string name="loading_archive">불러오는 중: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>

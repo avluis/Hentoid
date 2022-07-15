@@ -175,6 +175,9 @@
         <item quantity="one"><x:g example="1" id="pages_count">%1$d</x:g> ページ/ <x:g example="3.88" id="size_mb">%2$.1f</x:g> メガバイト</item>
         <item quantity="other"><x:g example="2" id="pages_count">%1$d</x:g>ページ/ <x:g example="3.88" id="size_mb">%2$.1f</x:g> メガバイト</item>
     </plurals>
+    <string name="work_pages_duplicate_dialog_library">ページ（ライブラリ内）：%d</string>
+    <string name="work_pages_duplicate_dialog_queue">ページ（キュー内）：%d</string>
+    <string name="work_pages_duplicate_dialog_source">ページ（このソース）：%d</string>
     <string name="library_metrics_storage"><x:g example="3.88" id="size_mb">%.0f</x:g>メガバイト</string>
     <string name="redownload_queue_progress">選択した書籍の再ダウンロード</string>
     <string name="errortype_parsing">構文解析</string>
@@ -587,6 +590,14 @@
         <item quantity="other"><x:g example="2" id="count">%s</x:g>結果が見つかりました</item>
     </plurals>
     <string name="search_select_a_filter">フィルターを選択します</string>
+    <string name="search_location">ロケーション</string>
+    <string name="search_location_entries_1">すべてのロケーション</string>
+    <string name="search_type">タイプ</string>
+    <string name="search_type_entries_1">すべての種類の本</string>
+    <string name="search_type_entries_2">フォルダ</string>
+    <string name="search_type_entries_3">ストリーミング</string>
+    <string name="search_type_entries_4">アーカイブ</string>
+    <string name="search_type_entries_5">プレースホルダー</string>
 
 <string name="no_images">書籍を読み込めませんでした：画像が見つかりません</string>
     <string name="loading_archive">読み込み中：<x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
