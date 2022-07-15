@@ -77,12 +77,17 @@ import timber.log.Timber;
 @Entity
 public class Content implements Serializable {
 
+    // == Used with the downloadMode attribute
+
     @IntDef({DownloadMode.DOWNLOAD, DownloadMode.STREAM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DownloadMode {
         int DOWNLOAD = Preferences.Constant.DL_ACTION_DL_PAGES; // Download images
         int STREAM = Preferences.Constant.DL_ACTION_STREAM; // Saves the book for on-demande viewing
     }
+
+
+    // == Attributes
 
     @Id
     private long id;
