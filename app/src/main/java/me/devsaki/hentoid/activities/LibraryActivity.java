@@ -216,11 +216,11 @@ public class LibraryActivity extends BaseActivity {
     }
 
     public void setAdvancedSearchCriteria(@NonNull SearchHelper.AdvancedSearchCriteria criteria) {
-        this.advSearchCriteria.set(getCurrentFragmentIndex(), criteria);
+        advSearchCriteria.set(getCurrentFragmentIndex(), criteria);
     }
 
     public void clearAdvancedSearchCriteria() {
-        this.advSearchCriteria.set(getCurrentFragmentIndex(), SearchHelper.Companion.getEmptyAdvancedSearchCriteria());
+        advSearchCriteria.set(getCurrentFragmentIndex(), SearchHelper.Companion.getEmptyAdvancedSearchCriteria());
     }
 
     public boolean isEditMode() {

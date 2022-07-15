@@ -123,13 +123,10 @@ public class SearchActivity extends BaseActivity {
 
         String[] locations = getResources().getStringArray(R.array.search_location_entries);
         binding.locationSpin.setItems(new ArrayList<>(Arrays.asList(locations)));
-        binding.locationSpin.selectItemByIndex(0);
-        binding.locationSpin.setOnSpinnerItemSelectedListener((i, o, i1, t1) -> viewModel.setLocation(binding.locationSpin.getSelectedIndex()));
 
         String[] bookTypes = getResources().getStringArray(R.array.search_type_entries);
         binding.typeSpin.setItems(new ArrayList<>(Arrays.asList(bookTypes)));
-        binding.typeSpin.selectItemByIndex(0);
-        binding.typeSpin.setOnSpinnerItemSelectedListener((i, o, i1, t1) -> viewModel.setContentType(binding.typeSpin.getSelectedIndex()));
+
 
         LinearLayoutManager llm = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.searchTags.setLayoutManager(llm);
@@ -154,15 +151,20 @@ public class SearchActivity extends BaseActivity {
         if (preSelectedCriteria != null) {
             if (!preSelectedCriteria.getAttributes().isEmpty())
                 viewModel.setSelectedAttributes(preSelectedCriteria.getAttributes());
-            if (preSelectedCriteria.getLocation() > 0) {
+            if (preSelectedCriteria.getLocation() > 0)
                 viewModel.setLocation(preSelectedCriteria.getLocation());
-                binding.locationSpin.selectItemByIndex(preSelectedCriteria.getLocation());
-            }
-            if (preSelectedCriteria.getContentType() > 0) {
+            binding.locationSpin.selectItemByIndex(preSelectedCriteria.getLocation());
+            if (preSelectedCriteria.getContentType() > 0)
                 viewModel.setContentType(preSelectedCriteria.getContentType());
-                binding.typeSpin.selectItemByIndex(preSelectedCriteria.getContentType());
-            }
-        } else viewModel.update();
+            binding.typeSpin.selectItemByIndex(preSelectedCriteria.getContentType());
+        } else {
+            binding.locationSpin.selectItemByIndex(0);
+            binding.typeSpin.selectItemByIndex(0);
+            viewModel.update();
+        }
+
+        binding.locationSpin.setOnSpinnerItemSelectedListener((i, o, i1, t1) -> viewModel.setLocation(i1));
+        binding.typeSpin.setOnSpinnerItemSelectedListener((i, o, i1, t1) -> viewModel.setContentType(i1));
     }
 
     @Override
