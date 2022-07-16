@@ -202,6 +202,9 @@
         <item quantity="few"><x:g id="pages_count" example="32">%1$d</x:g> сторінки / <x:g id="size_mb" example="3.88">%2$.1f</x:g> МБ</item>
         <item quantity="many"><x:g id="pages_count" example="45">%1$d</x:g> сторінок / <x:g id="size_mb" example="3.88">%2$.1f</x:g> МБ</item>
     </plurals>
+    <string name="work_pages_duplicate_dialog_library">Сторінок (в бібліотеці): %d</string>
+    <string name="work_pages_duplicate_dialog_queue">Сторінок (в черзі): %d</string>
+    <string name="work_pages_duplicate_dialog_source">Сторінок (в цьому джерелі): %d</string>
     <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> МБ</string>
     <string name="redownload_queue_progress">Вибрані книги завантажуються знову</string>
     <string name="errortype_parsing">Обробка</string>
@@ -697,6 +700,14 @@
         <item quantity="many">Знайдено <x:g id="count" example="5">%s</x:g> результатів</item>
     </plurals>
     <string name="search_select_a_filter">Виберіть фільтр</string>
+    <string name="search_location">Розташування</string>
+    <string name="search_location_entries_1">Всі розташування</string>
+    <string name="search_type">Вид</string>
+    <string name="search_type_entries_1">Всі види книг</string>
+    <string name="search_type_entries_2">Папка</string>
+    <string name="search_type_entries_3">Стрім</string>
+    <string name="search_type_entries_4">Архив</string>
+    <string name="search_type_entries_5">Пустушка</string>
 
     <!-- Image viewer -->
     <string name="no_images">Неможливо завантажити книгу: Не знайдено жодного зображення</string>
