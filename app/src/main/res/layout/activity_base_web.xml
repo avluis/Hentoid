@@ -46,12 +46,13 @@
     <me.devsaki.hentoid.views.CircularProgressView
         android:id="@+id/quick_dl_feedback"
         style="?android:attr/progressBarStyle"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="0.75in"
+        android:layout_height="0.75in"
         android:clickable="false"
         android:focusable="false"
         android:visibility="invisible"
         app:width="8dp"
+        tools:ignore="InOrMmUsage"
         tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
