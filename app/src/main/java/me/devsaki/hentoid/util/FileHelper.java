@@ -69,6 +69,7 @@ public class FileHelper {
     private static final String PRIMARY_VOLUME_NAME = "primary"; // DocumentsContract.PRIMARY_VOLUME_NAME
     private static final String NOMEDIA_FILE_NAME = ".nomedia";
     private static final String TEST_FILE_NAME = "delete.me";
+    public static final String DEFAULT_MIME_TYPE = "application/octet-steam";
 
     private static final String ILLEGAL_FILENAME_CHARS = "[\"*/:<>\\?\\\\|]"; // https://cs.android.com/android/platform/superproject/+/master:frameworks/base/core/java/android/os/FileUtils.java;l=972?q=isValidFatFilenameChar
 
@@ -388,7 +389,7 @@ public class FileHelper {
         // Look for it first
         DocumentFile file = findFile(context, folder, displayName);
         if (null == file) { // Create it
-            if (null == mimeType) mimeType = "application/octet-steam";
+            if (null == mimeType) mimeType = DEFAULT_MIME_TYPE;
             return folder.createFile(mimeType, displayName);
         } else return file;
     }
@@ -420,12 +421,12 @@ public class FileHelper {
         // Make sure the nomedia file is created
         DocumentFile nomedia = findFile(context, folder, NOMEDIA_FILE_NAME);
         if (null == nomedia) {
-            nomedia = folder.createFile("application/octet-steam", NOMEDIA_FILE_NAME);
+            nomedia = folder.createFile(DEFAULT_MIME_TYPE, NOMEDIA_FILE_NAME);
             if (null == nomedia || !nomedia.exists()) return -3;
         }
 
         // Remove and add back a test file to test if the user has the I/O rights to the selected folder
-        DocumentFile testFile = findOrCreateDocumentFile(context, folder, "application/octet-steam", TEST_FILE_NAME);
+        DocumentFile testFile = findOrCreateDocumentFile(context, folder, DEFAULT_MIME_TYPE, TEST_FILE_NAME);
         if (null == testFile) return -3;
         if (!testFile.delete()) return -2;
 
@@ -687,9 +688,9 @@ public class FileHelper {
      * @return Most relevant mime-type for the given file extension; generic mime-type if none found
      */
     private static String getMimeTypeFromExtension(@NonNull String extension) {
-        if (extension.isEmpty()) return "application/octet-stream";
+        if (extension.isEmpty()) return DEFAULT_MIME_TYPE;
         String result = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-        if (null == result) return "application/octet-stream";
+        if (null == result) return DEFAULT_MIME_TYPE;
         else return result;
     }
 

@@ -26,6 +26,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.util.FileHelper;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -200,7 +201,7 @@ public class HttpHelper {
             Pair<String, String> details = cleanContentType(contentTypeValue);
             result = new WebResourceResponse(details.first, details.second, resp.code(), message, responseHeaders, is);
         } else {
-            result = new WebResourceResponse("application/octet-stream", null, resp.code(), message, responseHeaders, is);
+            result = new WebResourceResponse(FileHelper.DEFAULT_MIME_TYPE, null, resp.code(), message, responseHeaders, is);
         }
 
         return result;
