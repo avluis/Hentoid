@@ -12,6 +12,7 @@ public class MissingWebViewActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_missing_web_view);
+        findViewById(R.id.open_library).setOnClickListener(this::onOpenLibraryPressed);
     }
 
     public void onOpenLibraryPressed(View v) {
