@@ -25,6 +25,10 @@
     <string name="pref_color_theme_title">Схема кольорів</string>
     <string name="pref_color_theme_summary">Поточна тема: <x:g id="theme_name" example="Темно-червона">%s</x:g></string>
     <string name="pref_misc">Інше</string>
+    <string name="pref_cat_language">Мова інтерфейсу</string>
+    <string name="pref_force_english_title">Примусово використовувати англійську</string>
+    <string name="pref_force_english_summary_off">Використовується мова пристрою, якщо додаток підтримує його</string>
+    <string name="pref_force_english_summary_on">Використовується англійська мова</string>
 
     <!-- Storage -->
     <string name="pref_screen_storage">Сховище</string>
@@ -100,7 +104,7 @@
     <string name="pref_browser_clear_cookies_ok">Cookies видалені успішно</string>
     <string name="pref_browser_clear_cookies_ko">Нічого видаляти</string>
     <string name="pref_browser_clear_cookies_missing_webview">WebView недоступно, неможливо видалити cookies зараз</string>
-    <string name="perf_browser_clear_cookies_updating_webview">WebView зараз оновлюється, поки неможливо видалити cookies</string>
+    <string name="pref_browser_clear_cookies_updating_webview">WebView зараз оновлюється, поки неможливо видалити cookies</string>
 
     <!-- Downloader -->
     <string name="pref_screen_downloader">Завантажувач</string>
