@@ -34,7 +34,7 @@ android {
         minSdkVersion 21
         targetSdkVersion 32
         versionCode 130 // is updated automatically by BitRise; only used when building locally
-        versionName '1.16.6'
+        versionName '1.16.6a'
 
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER") ?: "false"
         def includeLeakCanary = System.getenv("INCLUDE_LEAK_CANARY") ?: "false"
@@ -45,7 +45,7 @@ android {
         buildConfigField 'String', 'GITHUB_API_URL', '"https://api.github.com/repos/avluis/Hentoid/"'
 
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        resConfigs 'en', 'ru', 'it', 'uk', 'hu', 'ko'
+        resConfigs 'en', 'ru', 'it', 'uk', 'hu', 'ko', 'ja'
 
         // Only include complete translations
 
