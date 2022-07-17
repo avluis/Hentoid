@@ -75,7 +75,7 @@
     <string name="menu_open_folder">다운로드 된 폴더 열기</string>
     <string name="menu_redownload">다시 다운로드</string>
     <string name="menu_redownload_scratch">처음부터 다시 다운로드</string>
-    <string name="menu_stream">읽는 동안 불러오는 형식으로 변환</string>
+    <string name="menu_stream">스트리밍 형식으로 변환</string>
     <string name="menu_download_streamed">다운로드</string>
     <string name="menu_select_all">전체 선택</string>
     <string name="menu_share">공유</string>
@@ -592,7 +592,7 @@
     <string name="search_select_a_filter">필터를 선택해주세요</string>
     <string name="search_location">위치</string>
     <string name="search_location_entries_1">모든 위치</string>
-    <string name="search_type">종류</string>
+    <string name="search_type">유형</string>
     <string name="search_type_entries_1">모든 작품 유형</string>
     <string name="search_type_entries_2">폴더</string>
     <string name="search_type_entries_3">스트리밍</string>
