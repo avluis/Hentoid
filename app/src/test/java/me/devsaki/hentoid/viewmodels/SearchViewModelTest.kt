@@ -14,6 +14,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.enums.StatusContent
 import me.devsaki.hentoid.mocks.AbstractObjectBoxTest
+import me.devsaki.hentoid.util.ContentHelper
 import net.lachlanmckee.timberjunit.TimberTestRule
 import org.junit.BeforeClass
 import org.junit.Rule
@@ -55,16 +56,38 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
             attrs3.add(Attribute(AttributeType.LANGUAGE, "english"))
 
             mockObjectBoxDAO = ObjectBoxDAO(store)
-            mockObjectBoxDAO.insertContent(Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.ASMHENTAI).addAttributes(attrs1))
-            mockObjectBoxDAO.insertContent(Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.HITOMI).addAttributes(attrs1))
-            mockObjectBoxDAO.insertContent(Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.ASMHENTAI).addAttributes(attrs2))
-            mockObjectBoxDAO.insertContent(Content().setTitle("").setStatus(StatusContent.ONLINE).setSite(Site.HITOMI).addAttributes(attrs3))
+            mockObjectBoxDAO.insertContent(
+                Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.ASMHENTAI)
+                    .addAttributes(attrs1)
+            )
+            mockObjectBoxDAO.insertContent(
+                Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.HITOMI)
+                    .addAttributes(attrs1)
+            )
+            mockObjectBoxDAO.insertContent(
+                Content().setTitle("").setStatus(StatusContent.DOWNLOADED).setSite(Site.ASMHENTAI)
+                    .addAttributes(attrs2)
+            )
+            mockObjectBoxDAO.insertContent(
+                Content().setTitle("").setStatus(StatusContent.ONLINE).setSite(Site.HITOMI)
+                    .addAttributes(attrs3)
+            )
             println(">> DB prepared")
         }
     }
 
     fun lookForAttr(type: AttributeType, name: String): Attribute? {
-        val result = mockObjectBoxDAO.selectAttributeMasterDataPaged(listOf(type), name, null, false, false, false, 1, 40, 0).blockingGet()
+        val result = mockObjectBoxDAO.selectAttributeMasterDataPaged(
+            listOf(type),
+            name,
+            -1,
+            null,
+            ContentHelper.Location.ANY,
+            ContentHelper.Type.ANY,
+            1,
+            40,
+            0
+        ).blockingGet()
         return result.attributes[0]
     }
 
@@ -85,9 +108,9 @@ class SearchViewModelTest : AbstractObjectBoxTest() {
      * `InstantTaskExecutorRule` or a similar mechanism to execute tasks synchronously.
      */
     fun <T> LiveData<T>.getOrAwaitValue(
-            time: Long = 2,
-            timeUnit: TimeUnit = TimeUnit.SECONDS,
-            afterObserve: () -> Unit = {}
+        time: Long = 2,
+        timeUnit: TimeUnit = TimeUnit.SECONDS,
+        afterObserve: () -> Unit = {}
     ): T {
         var data: T? = null
         val latch = CountDownLatch(1)
