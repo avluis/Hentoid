@@ -956,7 +956,7 @@ public class ReaderViewModel extends AndroidViewModel {
         int increment = (direction >= 0) ? 1 : -1;
         int quantity = isArchive ? EXTRACT_RANGE : CONCURRENT_DOWNLOADS;
         // pageIndex at 1/3rd of the range to extract/download -> determine its bound
-        int initialIndex = (int) Math.floor(Helper.coerceIn(viewerIndex - (quantity * increment / 3f), 0, viewerImagesInternal.size() - 1));
+        int initialIndex = (int) Math.floor(Helper.coerceIn(1f * viewerIndex - (quantity * increment / 3f), 0, viewerImagesInternal.size() - 1));
         for (int i = 0; i < quantity; i++)
             if (picturesLeftToProcess.contains(initialIndex + (increment * i)))
                 indexesToLoad.add(initialIndex + (increment * i));
