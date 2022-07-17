@@ -306,35 +306,6 @@ public class Content implements Serializable {
         }
     }
 
-    /**
-     * @deprecated Used for upgrade purposes from old versions
-     */
-    @Deprecated
-    public String getOldUniqueSiteId() {
-        String[] paths;
-        switch (site) {
-            case FAKKU:
-                return url.substring(url.lastIndexOf('/') + 1);
-            case PURURIN:
-                paths = url.split("/");
-                return paths[2].replace(".html", "") + "-" + paths[1];
-            case HITOMI:
-                paths = url.split("/");
-                return paths[1].replace(".html", "") + "-" +
-                        title.replaceAll("[^a-zA-Z0-9.-]", "_");
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-            case NHENTAI:
-            case PANDA:
-            case EHENTAI:
-            case EXHENTAI:
-            case TSUMINO:
-                return url.replace("/", "") + "-" + site.getDescription();
-            default:
-                return null;
-        }
-    }
-
     public static Class<? extends AppCompatActivity> getWebActivityClass(Site site) {
         switch (site) {
             case HITOMI:
@@ -447,6 +418,36 @@ public class Content implements Serializable {
                 return site.getUrl() + "g" + url;
             default:
                 return getGalleryUrl();
+        }
+    }
+
+    public static String getGalleryUrlFromId(Site site, String id) {
+        switch (site) {
+            case HITOMI:
+                return site.getUrl() + "/galleries/" + id + ".html";
+            case NHENTAI:
+            case ASMHENTAI:
+            case ASMHENTAI_COMICS:
+                return site.getUrl() + "/g/" + id + "/";
+            case IMHENTAI:
+            case HENTAIFOX:
+                return site.getUrl() + "/gallery/" + id + "/";
+            case HENTAICAFE:
+                return site.getUrl() + "/hc.fyi/" + id;
+            case TSUMINO:
+                return site.getUrl() + "/entry/" + id;
+            case NEXUS:
+                return site.getUrl() + "/view/" + id;
+            case LUSCIOUS:
+                return site.getUrl().replace("manga", "albums") + id + "/";
+            case HBROWSE:
+                return site.getUrl() + id + "/c00001";
+            case PIXIV:
+                return site.getUrl() + "artworks/" + id;
+            case MULTPORN:
+                return site.getUrl() + "node/" + id;
+            default:
+                return site.getUrl();
         }
     }
 

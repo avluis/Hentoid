@@ -4,6 +4,7 @@
     <item name="import_external" type="id" />
     <item name="import_primary" type="id" />
     <item name="import_metadata" type="id" />
+    <item name="import_downloads" type="id" />
     <item name="migrate_api29" type="id" />
     <item name="queue_download" type="id" />
     <item name="duplicate_index" type="id" />

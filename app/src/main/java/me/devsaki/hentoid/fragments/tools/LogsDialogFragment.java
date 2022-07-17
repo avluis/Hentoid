@@ -60,7 +60,7 @@ public class LogsDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        rootView = inflater.inflate(R.layout.dialog_prefs_logs, container, false);
+        rootView = inflater.inflate(R.layout.dialog_tools_app_logs, container, false);
 
         FastAdapter<TextItem<DocumentFile>> fastadapter = FastAdapter.with(itemAdapter);
         RecyclerView recyclerView = requireViewById(rootView, R.id.logs_list);

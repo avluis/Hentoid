@@ -114,6 +114,7 @@
     <string name="invert_queue">Invert queue</string>
     <string name="redownload_all">Redownload all</string>
     <string name="cancel_all_errors">Cancel all errors</string>
+    <string name="import_downloads">Import downloads</string>
     <string name="move_top">Move to top</string>
     <string name="move_bottom">Move to bottom</string>
     <string name="queue_paused">Queue paused</string>
@@ -175,6 +176,14 @@
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Download failed</string>
     <string name="download_notif_failed_details">Cannot download <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: unable to create folder <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Please check your Hentoid folder and retry downloading using the \'!\' button.</string>
+
+    <!-- Import downloads -->
+    <string name="import_downloads_title">Import downloads</string>
+    <plurals name="import_downloads_found">
+        <item quantity="one"><x:g example="1" id="downloads">%d</x:g> valid download found</item>
+        <item quantity="other"><x:g example="2" id="downloads">%d</x:g> valid downloads found</item>
+    </plurals>
+    <string name="importing_downloads">Importing downloads…</string>
 
     <!-- TextViews -->
     <string name="work_series">Series: <x:g example="original" id="series">%s</x:g></string>

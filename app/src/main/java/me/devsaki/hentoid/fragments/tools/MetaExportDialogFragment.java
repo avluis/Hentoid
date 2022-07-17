@@ -75,7 +75,7 @@ public class MetaExportDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_prefs_meta_export, container, false);
+        return inflater.inflate(R.layout.dialog_tools_meta_export, container, false);
     }
 
     @Override

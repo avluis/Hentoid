@@ -23,13 +23,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.viewholders.TextItem;
 
 /**
- * Launcher dialog for the library refresh feature
+ * Launcher dialog for the "reach book page by launch code" feature
  */
 public class SearchContentIdDialogFragment extends DialogFragment {
 
@@ -94,40 +95,10 @@ public class SearchContentIdDialogFragment extends DialogFragment {
         }
     }
 
-    private static String getUrlFromId(Site site, String id) {
-        switch (site) {
-            case HITOMI:
-                return site.getUrl() + "/galleries/" + id + ".html";
-            case NHENTAI:
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                return site.getUrl() + "/g/" + id + "/";
-            case IMHENTAI:
-            case HENTAIFOX:
-                return site.getUrl() + "/gallery/" + id + "/";
-            case HENTAICAFE:
-                return site.getUrl() + "/hc.fyi/" + id;
-            case TSUMINO:
-                return site.getUrl() + "/entry/" + id;
-            case NEXUS:
-                return site.getUrl() + "/view/" + id;
-            case LUSCIOUS:
-                return site.getUrl().replace("manga", "albums") + id + "/";
-            case HBROWSE:
-                return site.getUrl() + id + "/c00001";
-            case PIXIV:
-                return site.getUrl() + "artworks/" + id;
-            case MULTPORN:
-                return site.getUrl() + "node/" + id;
-            default:
-                return site.getUrl();
-        }
-    }
-
     private boolean onItemSelected(Site s) {
         if (null == s) return false;
 
-        ContentHelper.launchBrowserFor(requireContext(), getUrlFromId(s, bookId));
+        ContentHelper.launchBrowserFor(requireContext(), Content.getGalleryUrlFromId(s, bookId));
 
         this.dismiss();
         return true;
