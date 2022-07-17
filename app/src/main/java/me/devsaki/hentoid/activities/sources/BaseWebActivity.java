@@ -974,10 +974,14 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     // TODO doc
     private void addToQueue(int position, int downloadMode, boolean isReplaceDuplicate) {
         Point coords = Helper.getCenter(binding.quickDlFeedback);
-        if (coords != null) {
+        if (coords != null && View.VISIBLE == binding.quickDlFeedback.getVisibility()) {
             Helper.setMargins(binding.animatedCheck,
                     coords.x - binding.animatedCheck.getWidth() / 2,
                     coords.y - binding.animatedCheck.getHeight() / 2, 0, 0);
+        } else {
+            Helper.setMargins(binding.animatedCheck,
+                    (webView.getWidth() / 2) - (binding.animatedCheck.getWidth() / 2),
+                    (webView.getHeight() / 2) - (binding.animatedCheck.getHeight() / 2), 0, 0);
         }
         binding.animatedCheck.setVisibility(View.VISIBLE);
         ((Animatable) binding.animatedCheck.getDrawable()).start();
