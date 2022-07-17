@@ -39,7 +39,7 @@ import timber.log.Timber;
  */
 public class HttpHelper {
 
-    public static final int DEFAULT_REQUEST_TIMEOUT = 30000; // 30 seconds
+    static final int DEFAULT_REQUEST_TIMEOUT = 30000; // 30 seconds
 
     // Keywords of the HTTP protocol
     public static final String HEADER_ACCEPT_KEY = "accept";
@@ -50,17 +50,17 @@ public class HttpHelper {
 
     public static final String POST_MIME_TYPE = "application/x-www-form-urlencoded";
 
-    public static final Set<String> COOKIES_STANDARD_ATTRS = new HashSet<>();
+    private static final Set<String> COOKIES_STANDARD_ATTRS = new HashSet<>();
 
     // To display sites with desktop layouts
-    public static final String DESKTOP_USER_AGENT_PATTERN = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) %s Safari/537.36";
+    private static final String DESKTOP_USER_AGENT_PATTERN = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) %s Safari/537.36";
 
-    public static String defaultUserAgent = null;
-    public static String defaultChromeAgent = null;
-    public static int defaultChromeVersion = -1;
+    private static String defaultUserAgent = null;
+    private static String defaultChromeAgent = null;
+    private static int defaultChromeVersion = -1;
 
     // Error messages
-    public static final String AGENT_INIT_ISSUE = "Call initUserAgents first to initialize them !";
+    private static final String AGENT_INIT_ISSUE = "Call initUserAgents first to initialize them !";
 
 
     static {
