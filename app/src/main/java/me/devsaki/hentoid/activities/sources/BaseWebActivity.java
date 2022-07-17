@@ -99,6 +99,7 @@ import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment;
 import me.devsaki.hentoid.json.core.UpdateInfo;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
+import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
@@ -266,7 +267,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         actionMenu = binding.bottomNavigation.getMenu().findItem(R.id.web_menu_action);
 
         // Webview
-        initUI();
+        initWebview();
         initSwipeLayout();
         webView.loadUrl(getStartUrl());
 
@@ -471,8 +472,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     @SuppressLint("SetJavaScriptEnabled")
-    private void initUI() {
-
+    private void initWebview() {
         try {
             webView = new NestedScrollWebView(this);
         } catch (Resources.NotFoundException e) {
@@ -576,6 +576,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     y - (binding.quickDlFeedback.getHeight() / 2) + binding.appBarLayout.getBottom(), 0, 0);
             binding.quickDlFeedback.setProgress1Color(R.color.medium_gray);
             binding.quickDlFeedback.setVisibility(View.VISIBLE);
+            binding.quickDlFeedback.startAnimation(new BlinkAnimation(750, 20));
 
             // Run on a new thread to avoid crashes
             parseResponseDisposable.add(Single.fromCallable(() -> webClient.parseResponseOptional(url, null, true, true))
@@ -583,6 +584,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(res -> {
                         if (res.isEmpty()) {
+                            binding.quickDlFeedback.clearAnimation();
                             binding.quickDlFeedback.setVisibility(View.INVISIBLE);
                         } else {
                             binding.quickDlFeedback.setProgress1Color(R.color.secondary_light);
@@ -1140,6 +1142,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     private void onContentProcessed(@ContentStatus int status, boolean quickDownload) {
         processContentDisposable.dispose();
+        binding.quickDlFeedback.clearAnimation();
         binding.quickDlFeedback.setVisibility(View.INVISIBLE);
         if (null == currentContent) return;
         switch (status) {
