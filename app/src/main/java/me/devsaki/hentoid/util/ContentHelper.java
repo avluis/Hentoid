@@ -76,6 +76,7 @@ import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.FileNotProcessedException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
+import me.devsaki.hentoid.util.network.CloudflareHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.util.string_similarity.Cosine;
@@ -1100,6 +1101,17 @@ public final class ContentHelper {
             requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
 
         Response response = HttpHelper.getOnlineResourceFast(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+
+        // Try passing Cloudflare if blocked by Cloudflare
+        if (503 == response.code() && site.isUseCloudflare()) {
+            CloudflareHelper cfHelper = new CloudflareHelper();
+            cfHelper.tryPassCloudflare(site, null, null, () -> {
+                // TODO
+            }, () -> {
+                // TODO
+            });
+            return Optional.empty();
+        }
 
         // Scram if the response is a redirection or an error
         if (response.code() >= 300) return Optional.empty();

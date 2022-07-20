@@ -84,8 +84,7 @@ public final class Helper {
     private static final byte[] SIP_KEY = "0123456789ABCDEF".getBytes();
     public static final Action EMPTY_ACTION = () -> {
     };
-    public static final Consumer<? super Object> EMPTY_CONSUMER = c -> {
-    };
+
 
 
     /**

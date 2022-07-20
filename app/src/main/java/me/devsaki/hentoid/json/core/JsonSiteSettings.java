@@ -10,7 +10,6 @@ public class JsonSiteSettings {
         public Boolean useMobileAgent = null;
         public Boolean useHentoidAgent = null;
         public Boolean useWebviewAgent = null;
-        public Boolean hasImageProcessing = null;
         public Boolean hasBackupURLs = null;
         public Boolean hasCoverBasedPageUpdates = null;
         public Boolean useCloudflare = null;

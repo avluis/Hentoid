@@ -124,8 +124,9 @@ public class DownloadsImportWorker extends BaseWorker {
     }
 
     private void importGallery(@NonNull String url) {
-        // TODO CLOUDFLARE
-        // TODO don't add if already in queue
+        // TODO CLOUDFLARE 503
+        // TODO don't add if already in queue or in collection
+
         try {
             Optional<Content> content = ContentHelper.parseFromScratch(url);
             if (content.isEmpty()) {

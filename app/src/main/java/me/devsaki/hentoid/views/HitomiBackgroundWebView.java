@@ -113,7 +113,7 @@ public class HitomiBackgroundWebView extends WebView {
         }
 
         // TODO optimize, factorize
-        WebResourceResponse sendRequest(@NonNull WebResourceRequest request) {
+        private WebResourceResponse sendRequest(@NonNull WebResourceRequest request) {
             if (Preferences.getDnsOverHttps() > -1) {
                 // Query resource using OkHttp
                 String urlStr = request.getUrl().toString();

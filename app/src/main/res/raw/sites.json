@@ -8,12 +8,10 @@
     },
     "NHENTAI": {
       "useHentoidAgent": false,
-      "useWebviewAgent": false
+      "useWebviewAgent": false,
+      "useCloudflare": true
     },
     "TSUMINO": {
-      "useHentoidAgent": true
-    },
-    "HENTAICAFE": {
       "useHentoidAgent": true
     },
     "ASMHENTAI": {

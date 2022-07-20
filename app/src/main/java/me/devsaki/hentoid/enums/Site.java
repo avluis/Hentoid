@@ -65,7 +65,6 @@ public enum Site {
     private boolean useMobileAgent = true;
     private boolean useHentoidAgent = false;
     private boolean useWebviewAgent = true;
-    private boolean hasImageProcessing = false;
     private boolean hasBackupURLs = false;
     private boolean hasCoverBasedPageUpdates = false;
     private boolean useCloudflare = false;
@@ -140,10 +139,6 @@ public enum Site {
         return useWebviewAgent;
     }
 
-    public boolean hasImageProcessing() {
-        return hasImageProcessing;
-    }
-
     public boolean hasBackupURLs() {
         return hasBackupURLs;
     }
@@ -187,7 +182,6 @@ public enum Site {
         if (jsonSite.useMobileAgent != null) useMobileAgent = jsonSite.useMobileAgent;
         if (jsonSite.useHentoidAgent != null) useHentoidAgent = jsonSite.useHentoidAgent;
         if (jsonSite.useWebviewAgent != null) useWebviewAgent = jsonSite.useWebviewAgent;
-        if (jsonSite.hasImageProcessing != null) hasImageProcessing = jsonSite.hasImageProcessing;
         if (jsonSite.hasBackupURLs != null) hasBackupURLs = jsonSite.hasBackupURLs;
         if (jsonSite.hasCoverBasedPageUpdates != null)
             hasCoverBasedPageUpdates = jsonSite.hasCoverBasedPageUpdates;
