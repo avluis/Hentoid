@@ -86,10 +86,10 @@ public class MemoryUsageDialogFragment extends DialogFragment {
         if (null == hentoidExternalUsageBytes) hentoidExternalUsageBytes = 0L;
 
         CircularProgressView donut = requireViewById(rootView, R.id.memory_global_graph);
-        donut.setTotalColor(requireContext(), R.color.primary_light);
-        donut.setProgress1Color(getContext(), R.color.secondary_light);
-        donut.setProgress2Color(getContext(), R.color.secondary_variant_light);
-        donut.setProgress3Color(getContext(), R.color.white_opacity_25);
+        donut.setTotalColor(R.color.primary_light);
+        donut.setProgress1Color(R.color.secondary_light);
+        donut.setProgress2Color(R.color.secondary_variant_light);
+        donut.setProgress3Color(R.color.white_opacity_25);
         donut.setTotal(1);
         donut.setProgress1(hentoidPrimaryUsageBytes * 1f / deviceTotalBytes); // Size taken by Hentoid primary library
         donut.setProgress2(hentoidExternalUsageBytes * 1f / deviceTotalBytes); // Size taken by Hentoid external library

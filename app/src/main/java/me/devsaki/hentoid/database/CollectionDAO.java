@@ -10,7 +10,6 @@ import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +33,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 
 public interface CollectionDAO {
@@ -181,7 +181,11 @@ public interface CollectionDAO {
     List<Content> selectErrorContentList();
 
 
-    LiveData<Integer> countBooks(long groupId, List<Attribute> metadata);
+    LiveData<Integer> countBooks(
+            long groupId,
+            List<Attribute> metadata,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType);
 
     LiveData<Integer> countAllBooksLive();
 
@@ -232,15 +236,22 @@ public interface CollectionDAO {
 
     // ATTRIBUTES
 
-    Single<AttributeQueryResult> selectAttributeMasterDataPaged(
+    Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
+            long groupId,
             List<Attribute> attrs,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType,
             int page,
             int booksPerPage,
             int orderStyle);
 
-    Single<SparseIntArray> countAttributesPerType(List<Attribute> filter);
+    Single<SparseIntArray> countAttributesPerType(
+            long groupId,
+            List<Attribute> filter,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType);
 
 
     // CHAPTERS
@@ -302,14 +313,4 @@ public interface CollectionDAO {
     Single<List<Long>> selectOldStoredBookIds();
 
     long countOldStoredContent();
-
-
-    // RESULTS STRUCTURES
-
-    // This is a dumb struct class, nothing more
-    @SuppressWarnings("squid:S1104")
-    class AttributeQueryResult {
-        public List<Attribute> attributes = new ArrayList<>();
-        public long totalSelectedAttributes = 0;
-    }
 }

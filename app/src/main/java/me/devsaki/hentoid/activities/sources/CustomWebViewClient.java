@@ -18,6 +18,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.function.BiFunction;
 
 import org.jsoup.Jsoup;
@@ -36,10 +37,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,7 +116,7 @@ class CustomWebViewClient extends WebViewClient {
     private final AtomicBoolean markDownloaded = new AtomicBoolean(Preferences.isBrowserMarkDownloaded());
     private final AtomicBoolean dnsOverHttpsEnabled = new AtomicBoolean(Preferences.getDnsOverHttps() > -1);
 
-    // Disposable to be used for punctual search
+    // Disposable to be used for punctual operations
     private Disposable disposable;
 
 
@@ -459,23 +458,8 @@ class CustomWebViewClient extends WebViewClient {
         return null;
     }
 
-    /**
-     * Process the given webpage in a background thread (used by quick download)
-     *
-     * @param url URL of the page to parse
-     */
-    void parseResponseAsync(@NonNull String url) {
-        compositeDisposable.add(
-                Completable.fromCallable(() -> parseResponse(url, null, true, true))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(() -> {
-                        }, Timber::e)
-        );
-    }
-
     // TODO doc
-    void browserLoad(@NonNull String url) {
+    void browserLoadAsync(@NonNull String url) {
         compositeDisposable.add(
                 Completable.fromRunnable(() -> activity.loadUrl(url))
                         .subscribeOn(AndroidSchedulers.mainThread())
@@ -483,6 +467,14 @@ class CustomWebViewClient extends WebViewClient {
                         .subscribe(() -> {
                         }, Timber::e)
         );
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    protected Optional<WebResourceResponse> parseResponseOptional(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
+        WebResourceResponse result = parseResponse(urlStr, requestHeaders, analyzeForDownload, quickDownload);
+
+        if (null == result) return Optional.empty();
+        else return Optional.of(result);
     }
 
     /**
@@ -526,7 +518,8 @@ class CustomWebViewClient extends WebViewClient {
                     targetUrl = StringHelper.protect(response.header("Location"));
                 if (BuildConfig.DEBUG)
                     Timber.v("WebView : redirection from %s to %s", urlStr, targetUrl);
-                if (!targetUrl.isEmpty()) browserLoad(HttpHelper.fixUrl(targetUrl, site.getUrl()));
+                if (!targetUrl.isEmpty())
+                    browserLoadAsync(HttpHelper.fixUrl(targetUrl, site.getUrl()));
                 return null;
             }
 
@@ -659,17 +652,29 @@ class CustomWebViewClient extends WebViewClient {
         dnsOverHttpsEnabled.set(value);
     }
 
+    // TODO doc
+    private String simplifyHref(@NonNull String href) {
+        String result = href;
+        int paramsIndex = result.indexOf("?");
+        if (paramsIndex > -1) result = result.substring(0, paramsIndex);
+        // Simplify & eliminate double separators
+        result = result.trim().replaceAll("\\p{Punct}", ".");
+        if (result.length() < 2) return "";
+        if (result.endsWith(".")) result = result.substring(0, result.length() - 1);
+        return result;
+    }
+
     /**
      * Process the given HTML document contained in the given stream :
      * - If set, remove nodes using the given list of CSS selectors to identify them
      * - If set, mark book covers or links matching the given list of Urls
      *
      * @param stream             Stream containing the HTML document to process; will be closed during the process
-     * @param baseUri            Base URI if the document
+     * @param baseUri            Base URI of the document
      * @param removableElements  CSS selectors of the nodes to remove
      * @param hideableElements   CSS selectors of the nodes to hide
      * @param jsContentBlacklist Blacklisted elements to detect script tags to remove
-     * @param siteUrls           Urls of the covers or links to mark
+     * @param siteUrls           Urls of the covers or links to visually mark as downloaded
      * @return Stream containing the HTML document stripped from the elements to remove
      */
     @Nullable
@@ -701,7 +706,7 @@ class CustomWebViewClient extends WebViewClient {
                 for (String s : hideableElements)
                     for (Element e : doc.select(s)) {
                         String existingStyle = e.attr("style");
-                        if (existingStyle.isEmpty() || !existingStyle.contains("min-height:0px;height:0%;")) {
+                        if (!existingStyle.contains("min-height:0px;height:0%;")) {
                             Timber.d("[%s] Hiding node %s", baseUri, e.toString());
                             e.attr("style", "min-height:0px;height:0%;");
                         }
@@ -725,28 +730,43 @@ class CustomWebViewClient extends WebViewClient {
             // Mark downloaded books
             if (siteUrls != null && !siteUrls.isEmpty()) {
                 // Format elements
-                Elements links = doc.select("a");
-                Set<String> found = new HashSet<>();
-                for (Element link : links) {
-                    String aHref = link.attr("href");
-                    // Only examine path
-                    int paramsIndex = aHref.indexOf("?");
-                    if (paramsIndex > -1) aHref = aHref.substring(0, paramsIndex);
-                    // Simplify & eliminate double separators
-                    aHref = aHref.replaceAll("\\p{Punct}", ".");
-                    if (aHref.length() < 2) continue;
-                    if (aHref.endsWith(".")) aHref = aHref.substring(0, aHref.length() - 1);
+                Elements plainLinks = doc.select("a");
+                Elements linkedImages = doc.select("a img");
+
+                // Key = simplified HREF
+                // Value.left = plain link ("a")
+                // Value.right = corresponding linked images ("a img"), if any
+                Map<String, Pair<Element, Element>> elements = new HashMap<>();
+
+                for (Element link : plainLinks) {
+                    String aHref = simplifyHref(link.attr("href"));
+                    if (!aHref.isEmpty() && !elements.containsKey(aHref)) // We only process the first match - usually the cover
+                        elements.put(aHref, new Pair<>(link, null));
+                }
+
+                for (Element linkedImage : linkedImages) {
+                    Element parent = linkedImage.parent();
+                    while (parent != null && !parent.is("a")) parent = parent.parent();
+                    if (null == parent) break;
+
+                    String aHref = simplifyHref(parent.attr("href"));
+                    Pair<Element, Element> elt = elements.get(aHref);
+                    if (elt != null && null == elt.second) // We only process the first match - usually the cover
+                        elements.put(aHref, new Pair<>(elt.first, linkedImage));
+                }
+
+                for (Map.Entry<String, Pair<Element, Element>> entry : elements.entrySet()) {
                     for (String url : siteUrls) {
-                        if (aHref.endsWith(url) && !found.contains(url)) {
-                            Element markedElement = link;
-                            Element img = link.select("img").first();
-                            if (img != null) { // Mark two levels above the image
-                                Element imgParent = img.parent();
+                        if (entry.getKey().endsWith(url)) {
+                            Element markedElement = entry.getValue().second; // Linked images have priority over plain links
+                            if (markedElement != null) { // Mark two levels above the image
+                                Element imgParent = markedElement.parent();
                                 if (imgParent != null) imgParent = imgParent.parent();
                                 if (imgParent != null) markedElement = imgParent;
+                            } else { // Mark plain link
+                                markedElement = entry.getValue().first;
                             }
                             markedElement.addClass("watermarked");
-                            found.add(url); // We only process the first match - usually the cover
                             break;
                         }
                     }
@@ -754,7 +774,8 @@ class CustomWebViewClient extends WebViewClient {
             }
 
             return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
-        } catch (IOException e) {
+        } catch (
+                IOException e) {
             Timber.e(e);
             return null;
         }

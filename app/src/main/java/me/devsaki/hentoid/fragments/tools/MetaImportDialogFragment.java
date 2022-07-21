@@ -40,7 +40,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.databinding.DialogPrefsMetaImportBinding;
+import me.devsaki.hentoid.databinding.DialogToolsMetaImportBinding;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.json.JsonContentCollection;
@@ -64,7 +64,7 @@ public class MetaImportDialogFragment extends DialogFragment {
     public static final int IMPORT_AS_ERROR = 3;
 
     // UI
-    private DialogPrefsMetaImportBinding binding = null;
+    private DialogToolsMetaImportBinding binding = null;
 
     private boolean isServiceGracefulClose = false;
 
@@ -86,7 +86,7 @@ public class MetaImportDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        binding = DialogPrefsMetaImportBinding.inflate(inflater, container, false);
+        binding = DialogToolsMetaImportBinding.inflate(inflater, container, false);
         EventBus.getDefault().register(this);
         return binding.getRoot();
     }

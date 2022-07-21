@@ -16,6 +16,7 @@ import com.annimon.stream.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +50,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
@@ -128,22 +130,29 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
-    public Single<AttributeQueryResult> selectAttributeMasterDataPaged(
+    public Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
+            long groupId,
             List<Attribute> attrs,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType,
             int page,
             int booksPerPage,
             int orderStyle) {
         return Single
-                .fromCallable(() -> pagedAttributeSearch(types, filter, attrs, orderStyle, page, booksPerPage))
+                .fromCallable(() -> pagedAttributeSearch(types, filter, groupId, attrs, location, contentType, orderStyle, page, booksPerPage))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
     @Override
-    public Single<SparseIntArray> countAttributesPerType(List<Attribute> filter) {
-        return Single.fromCallable(() -> count(filter))
+    public Single<SparseIntArray> countAttributesPerType(
+            long groupId,
+            List<Attribute> filter,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType) {
+        return Single.fromCallable(() -> countAttributes(groupId, filter, location, contentType))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -172,12 +181,18 @@ public class ObjectBoxDAO implements CollectionDAO {
         return result;
     }
 
-    public LiveData<Integer> countBooks(long groupId, List<Attribute> metadata) {
+    public LiveData<Integer> countBooks(
+            long groupId,
+            List<Attribute> metadata,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType) {
         // This is not optimal because it fetches all the content and returns its size only
         // That's because ObjectBox v2.4.0 does not allow watching Query.count or Query.findLazy using LiveData, but only Query.find
         // See https://github.com/objectbox/objectbox-java/issues/776
         ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle();
         bundle.setGroupId(groupId);
+        bundle.setLocation(location);
+        bundle.setContentType(contentType);
         bundle.setSortField(Preferences.Constant.ORDER_FIELD_NONE);
         ObjectBoxLiveData<Content> livedata = new ObjectBoxLiveData<>(db.selectContentSearchContentQ(bundle, metadata));
 
@@ -526,7 +541,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void flagAllGroups(Grouping grouping) {
-        db.flagGroupsForDeletion(db.selectGroupsByGroupingQ(grouping.getId()).find(), true);
+        db.flagGroupsForDeletion(db.selectGroupsByGroupingQ(grouping.getId()).find());
     }
 
     public void deleteAllFlaggedGroups() {
@@ -727,40 +742,46 @@ public class ObjectBoxDAO implements CollectionDAO {
         }
     }
 
-    private AttributeQueryResult pagedAttributeSearch(
+    private SearchHelper.AttributeQueryResult pagedAttributeSearch(
             @NonNull List<AttributeType> attrTypes,
             String filter,
+            long groupId,
             List<Attribute> attrs,
+            @ContentHelper.Location int location,
+            @ContentHelper.Type int contentType,
             int sortOrder,
             int pageNum,
             int itemPerPage) {
-        AttributeQueryResult result = new AttributeQueryResult();
+        List<Attribute> attributes = new ArrayList<>();
+        long totalSelectedAttributes = 0;
 
         if (!attrTypes.isEmpty()) {
             if (attrTypes.get(0).equals(AttributeType.SOURCE)) {
-                result.attributes.addAll(db.selectAvailableSources(attrs));
-                result.totalSelectedAttributes = result.attributes.size();
+                attributes.addAll(db.selectAvailableSources(groupId, attrs, location, contentType));
+                totalSelectedAttributes = attributes.size();
             } else {
                 for (AttributeType type : attrTypes) {
                     // TODO fix sorting when concatenating both lists
-                    result.attributes.addAll(db.selectAvailableAttributes(type, attrs, filter, sortOrder, pageNum, itemPerPage));
-                    result.totalSelectedAttributes += db.countAvailableAttributes(type, attrs, filter);
+                    attributes.addAll(db.selectAvailableAttributes(type, groupId, attrs, location, contentType, filter, sortOrder, pageNum, itemPerPage));
+                    totalSelectedAttributes += db.countAvailableAttributes(type, groupId, attrs, location, contentType, filter);
                 }
             }
         }
 
-        return result;
+        return new SearchHelper.AttributeQueryResult(attributes, totalSelectedAttributes);
     }
 
-    private SparseIntArray count(List<Attribute> filter) {
+    private SparseIntArray countAttributes(long groupId,
+                                           List<Attribute> filter,
+                                           @ContentHelper.Location int location,
+                                           @ContentHelper.Type int contentType) {
         SparseIntArray result;
-
-        if (null == filter || filter.isEmpty()) {
+        if ((null == filter || filter.isEmpty()) && 0 == location && 0 == contentType && -1 == groupId) {
             result = db.countAvailableAttributesPerType();
             result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
         } else {
-            result = db.countAvailableAttributesPerType(filter);
-            result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources(filter).size());
+            result = db.countAvailableAttributesPerType(groupId, filter, location, contentType);
+            result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources(groupId, filter, location, contentType).size());
         }
 
         return result;

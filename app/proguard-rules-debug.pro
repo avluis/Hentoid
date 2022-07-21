@@ -57,4 +57,5 @@
     java.lang.Object readResolve();
 }
 -keep class net.sf.sevenzipjbinding.** { *; }
-#-keep class com.skydoves.submarine.SubmarineView { *; }
+-keep class io.github.classgraph.** { *; }
+-keep class nonapi.io.github.classgraph.** { *; }

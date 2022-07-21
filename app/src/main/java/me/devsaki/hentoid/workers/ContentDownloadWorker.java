@@ -1141,7 +1141,7 @@ public class ContentDownloadWorker extends BaseWorker {
         if (null != contentType) {
             mimeType = HttpHelper.cleanContentType(contentType).first;
             // Ignore neutral binary content-type
-            if (!contentType.equalsIgnoreCase("application/octet-stream")) {
+            if (!contentType.equalsIgnoreCase(FileHelper.DEFAULT_MIME_TYPE)) {
                 fileExt = FileHelper.getExtensionFromMimeType(contentType);
                 Timber.v("Using content-type %s to determine file extension -> %s", contentType, fileExt);
             }

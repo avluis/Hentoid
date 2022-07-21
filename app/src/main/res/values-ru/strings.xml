@@ -203,6 +203,9 @@
         <item quantity="few"><x:g id="pages_count" example="32">%1$d</x:g> страницы / <x:g id="size_mb" example="3.88">%2$.1f</x:g> МБ</item>
         <item quantity="many"><x:g id="pages_count" example="45">%1$d</x:g> страниц / <x:g id="size_mb" example="3.88">%2$.1f</x:g> МБ</item>
     </plurals>
+    <string name="work_pages_duplicate_dialog_library">Страниц (в библиотеке): %d</string>
+    <string name="work_pages_duplicate_dialog_queue">Страниц (в очереди): %d</string>
+    <string name="work_pages_duplicate_dialog_source">Страниц (в этом источнике): %d</string>
     <string name="library_metrics_storage"><x:g id="size_mb" example="3.88">%.0f</x:g> МБ</string>
     <string name="redownload_queue_progress">Выбранные книги загружаются снова</string>
     <string name="errortype_parsing">Обработка</string>
@@ -698,6 +701,14 @@
         <item quantity="many">Найдено <x:g id="count" example="5">%s</x:g> результатов</item>
     </plurals>
     <string name="search_select_a_filter">Выберите фильтр</string>
+    <string name="search_location">Местоположение</string>
+    <string name="search_location_entries_1">Все местоположения</string>
+    <string name="search_type">Вид</string>
+    <string name="search_type_entries_1">Все виды книг</string>
+    <string name="search_type_entries_2">Папка</string>
+    <string name="search_type_entries_3">Потоковая передача</string>
+    <string name="search_type_entries_4">Архив</string>
+    <string name="search_type_entries_5">Пустышка</string>
 
     <!-- Image viewer -->
     <string name="no_images">Не удалось загрузить книгу: Не найдено ни одного изображения</string>

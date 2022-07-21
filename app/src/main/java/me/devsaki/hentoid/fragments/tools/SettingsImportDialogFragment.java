@@ -64,7 +64,7 @@ public class SettingsImportDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.dialog_prefs_settings_import, container, false);
+        return inflater.inflate(R.layout.dialog_tools_settings_import, container, false);
     }
 
     @Override

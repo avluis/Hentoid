@@ -25,7 +25,16 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
 
     // Helper methods
     companion object {
-        fun buildSearchUri(attributes: List<Attribute>?, query: String = ""): Uri {
+        fun buildSearchUri(advancedSearchCriteria: SearchHelper.AdvancedSearchCriteria, query : String): Uri {
+            return buildSearchUri(advancedSearchCriteria.attributes, query, advancedSearchCriteria.location, advancedSearchCriteria.contentType)
+        }
+
+        fun buildSearchUri(
+            attributes: List<Attribute>?,
+            query: String = "",
+            location: Int = 0,
+            contentType: Int = 0
+        ): Uri {
             val metadataMap = AttributeMap()
             if (attributes != null) metadataMap.addAll(attributes)
             val searchUri = Uri.Builder()
@@ -40,25 +49,40 @@ class SearchActivityBundle(val bundle: Bundle = Bundle()) {
                     attr.id.toString() + ";" + attr.name + ";" + attr.isExcluded
                 )
             }
+
+            if (location > 0) searchUri.appendQueryParameter("location", location.toString())
+            if (contentType > 0) searchUri.appendQueryParameter(
+                "contentType",
+                contentType.toString()
+            )
+
             return searchUri.build()
         }
 
-        fun parseSearchUri(uri: Uri?): List<Attribute> {
-            val result: MutableList<Attribute> = ArrayList()
+        fun parseSearchUri(uri: Uri?): SearchHelper.AdvancedSearchCriteria {
+            val attrs: MutableList<Attribute> = ArrayList()
+            var location = 0
+            var contentType = 0
             if (uri != null) for (typeStr in uri.queryParameterNames) {
                 val type = AttributeType.searchByName(typeStr)
-                if (type != null) for (attrStr in uri.getQueryParameters(typeStr)) {
-                    val attrParams = attrStr.split(";").toTypedArray()
-                    if (3 == attrParams.size) {
-                        result.add(
-                            Attribute(type, attrParams[1])
-                                .setId(attrParams[0].toLong())
-                                .setExcluded(attrParams[2].toBoolean())
-                        )
+                if (type != null) { // Parameter is an Attribute
+                    for (attrStr in uri.getQueryParameters(typeStr)) {
+                        val attrParams = attrStr.split(";").toTypedArray()
+                        if (3 == attrParams.size) {
+                            attrs.add(
+                                Attribute(type, attrParams[1])
+                                    .setId(attrParams[0].toLong())
+                                    .setExcluded(attrParams[2].toBoolean())
+                            )
+                        }
                     }
+                } else {
+                    if ("location" == typeStr) location = uri.getQueryParameters(typeStr)[0].toInt()
+                    if ("contentType" == typeStr) contentType =
+                        uri.getQueryParameters(typeStr)[0].toInt()
                 }
             }
-            return result
+            return SearchHelper.AdvancedSearchCriteria(attrs, location, contentType)
         }
     }
 }

@@ -24,12 +24,16 @@ public class ASMHentaiParser extends BaseImageListParser {
         // Fetch the reader page
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (doc != null) {
-            Elements imgContainer = doc.select("div.full_image"); // New ASM layout
+            Elements imgContainer = doc.select("div.reader_overlay"); // New ASM layout
+
             if (imgContainer.isEmpty())
-                imgContainer = doc.select("div.full_gallery"); // Old ASM layout; current ASM Comics layout
+                imgContainer = doc.select("div.full_image"); // Old ASM layout
+            if (imgContainer.isEmpty())
+                imgContainer = doc.select("div.full_gallery"); // Older ASM layout
             Element imgElt = imgContainer.select("a").select("img").first();
             if (imgElt != null) {
-                String imgUrl = "https:" + ParseHelper.getImgSrc(imgElt);
+                String imgUrl = ParseHelper.getImgSrc(imgElt);
+                if (!imgUrl.startsWith("http")) imgUrl = "https:" + imgUrl;
 
                 String ext = imgUrl.substring(imgUrl.lastIndexOf('.'));
 

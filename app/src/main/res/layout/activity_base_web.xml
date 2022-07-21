@@ -18,8 +18,7 @@
             android:elevation="@dimen/toolbar_layout_elevation"
             android:gravity="center_vertical"
             app:layout_scrollFlags="scroll|enterAlways"
-            app:menu="@menu/web_menu_top"
-            tools:targetApi="lollipop" />
+            app:menu="@menu/web_menu_top" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -36,15 +35,24 @@
         android:id="@+id/animated_check"
         android:layout_width="240dp"
         android:layout_height="240dp"
-        android:layout_gravity="center_horizontal|center_vertical"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/swipe_container"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/swipe_container"
+        android:clickable="false"
+        android:focusable="false"
+        android:visibility="invisible"
         app:srcCompat="@drawable/check_mark_anim"
         app:tint="?colorSecondary"
         tools:ignore="ContentDescription"
+        tools:visibility="visible" />
+
+    <me.devsaki.hentoid.views.CircularProgressView
+        android:id="@+id/quick_dl_feedback"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="0.75in"
+        android:layout_height="0.75in"
+        android:clickable="false"
+        android:focusable="false"
+        android:visibility="invisible"
+        app:width="8dp"
+        tools:ignore="InOrMmUsage"
         tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.ConstraintLayout

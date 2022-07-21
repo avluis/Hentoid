@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +56,8 @@ public class ArchiveHelper {
 
     public static final String ZIP_MIME_TYPE = "application/zip";
 
+    private static final String[] SUPPORTED_EXTENSIONS = {"zip", "epub", "cbz", "cbr", "cb7", "7z", "rar"};
+
     private static final FileHelper.NameFilter archiveNamesFilter = displayName -> isArchiveExtensionSupported(FileHelper.getExtension(displayName));
     private static final String CACHE_SEPARATOR = "£";
 
@@ -63,6 +66,10 @@ public class ArchiveHelper {
     private static final int BUFFER = 32 * 1024;
 
 
+    public static List<String> getSupportedExtensions() {
+        return Arrays.asList(SUPPORTED_EXTENSIONS);
+    }
+
     /**
      * Determine if the given file extension is supported by the app as an archive
      *
@@ -70,13 +77,9 @@ public class ArchiveHelper {
      * @return True if the app supports the reading of files with the given extension as archives; false if not
      */
     public static boolean isArchiveExtensionSupported(@NonNull final String extension) {
-        return extension.equalsIgnoreCase("zip")
-                || extension.equalsIgnoreCase("epub")
-                || extension.equalsIgnoreCase("cbz")
-                || extension.equalsIgnoreCase("cbr")
-                || extension.equalsIgnoreCase("cb7")
-                || extension.equalsIgnoreCase("7z")
-                || extension.equalsIgnoreCase("rar");
+        for (String supportedExt : SUPPORTED_EXTENSIONS)
+            if (extension.equalsIgnoreCase(supportedExt)) return true;
+        return false;
     }
 
     /**

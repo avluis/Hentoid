@@ -16,7 +16,8 @@
 <string name="tools_screen_cache">Gestione della cache</string>
 <string name="tools_cache_browser">Svuota la cache del browser</string>
 <string name="tools_cache_browser_success">WebView cache cancellata correttamente</string>
-
+    <string name="tools_cache_browser_missing_webview">WebView non è disponibile, impossibile pulire la cache al momento</string>
+    <string name="tools_cache_browser_updating_webview">WebView si sta aggiornando, ancora impossibile pulire la cache</string>
 <string name="tools_cache_app">Cancella la cache dell\'app</string>
 <string name="tools_cache_app_success">Cache dell\'app cancellata con successo</string>
 <string name="tools_latest_logs_title">Logs dell\'app</string>

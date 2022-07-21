@@ -91,12 +91,36 @@ import timber.log.Timber;
  */
 public final class ContentHelper {
 
+    // == Used for queue management
+
     @IntDef({QueuePosition.TOP, QueuePosition.BOTTOM})
     @Retention(RetentionPolicy.SOURCE)
     public @interface QueuePosition {
         int TOP = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
         int BOTTOM = Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
     }
+
+    // == Used for advanced search
+    // NB : Needs to be in sync with the dropdown lists on the advanced search screen
+
+    @IntDef({Location.ANY, Location.PRIMARY, Location.EXTERNAL})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Location {
+        int ANY = 0;
+        int PRIMARY = 1; // Primary library
+        int EXTERNAL = 2; // External library
+    }
+
+    @IntDef({Type.ANY, Type.FOLDER, Type.STREAMED, Type.ARCHIVE, Type.PLACEHOLDER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Type {
+        int ANY = 0;
+        int FOLDER = 1; // Images in a folder
+        int STREAMED = 2; // Streamed book
+        int ARCHIVE = 3; // Archive
+        int PLACEHOLDER = 4; // "Empty book" placeholder created my metadata import
+    }
+
 
     public static final String KEY_DL_PARAMS_NB_CHAPTERS = "nbChapters";
     public static final String KEY_DL_PARAMS_UGOIRA_FRAMES = "ugo_frames";
@@ -160,7 +184,8 @@ public final class ContentHelper {
         if (content.getSite().equals(Site.NONE)) return;
 
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.error_updating_webview);
+            if (WebkitPackageHelper.getWebViewUpdating())
+                ToastHelper.toast(R.string.error_updating_webview);
             else ToastHelper.toast(R.string.error_missing_webview);
             return;
         }
@@ -1004,7 +1029,8 @@ public final class ContentHelper {
      */
     public static void launchBrowserFor(@NonNull final Context context, @NonNull final String targetUrl) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.error_updating_webview);
+            if (WebkitPackageHelper.getWebViewUpdating())
+                ToastHelper.toast(R.string.error_updating_webview);
             else ToastHelper.toast(R.string.error_missing_webview);
             return;
         }
@@ -1058,6 +1084,58 @@ public final class ContentHelper {
             Timber.w(e);
             return new ImmutablePair<>(content, Optional.empty());
         }
+    }
+
+    // TODO factorize with reparseFromScratch
+    public static Optional<Content> parseFromScratch(@NonNull final String url) throws IOException {
+        Helper.assertNonUiThread();
+
+        Site site = Site.searchByUrl(url);
+        if (null == site || Site.NONE == site) return Optional.empty();
+
+        List<Pair<String, String>> requestHeadersList = new ArrayList<>();
+        requestHeadersList.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, url));
+        String cookieStr = HttpHelper.getCookies(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        if (!cookieStr.isEmpty())
+            requestHeadersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
+
+        Response response = HttpHelper.getOnlineResourceFast(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+
+        // Scram if the response is a redirection or an error
+        if (response.code() >= 300) return Optional.empty();
+
+        // Scram if the response is something else than html
+        Pair<String, String> contentType = HttpHelper.cleanContentType(StringHelper.protect(response.header(HEADER_CONTENT_TYPE, "")));
+        if (!contentType.first.isEmpty() && !contentType.first.equals("text/html"))
+            return Optional.empty();
+
+        // Scram if the response is empty
+        ResponseBody body = response.body();
+        if (null == body) return Optional.empty();
+
+        Class<? extends ContentParser> c = ContentParserFactory.getInstance().getContentParserClass(site);
+        final Jspoon jspoon = Jspoon.create();
+        HtmlAdapter<? extends ContentParser> htmlAdapter = jspoon.adapter(c); // Unchecked but alright
+
+        ContentParser contentParser = htmlAdapter.fromInputStream(body.byteStream(), new URL(url));
+        Content newContent = contentParser.toContent(url);
+
+        if (newContent.getStatus() != null && newContent.getStatus().equals(StatusContent.IGNORED)) {
+            String canonicalUrl = contentParser.getCanonicalUrl();
+            if (!canonicalUrl.isEmpty() && !canonicalUrl.equalsIgnoreCase(url))
+                return parseFromScratch(canonicalUrl);
+            else return Optional.empty();
+        }
+
+        // Clear existing chapters to avoid issues with extra chapter detection
+        newContent.clearChapters();
+
+        // Save cookies for future calls during download
+        Map<String, String> params = new HashMap<>();
+        if (!cookieStr.isEmpty()) params.put(HttpHelper.HEADER_COOKIE_KEY, cookieStr);
+
+        newContent.setDownloadParams(JsonHelper.serializeToJson(params, JsonHelper.MAP_STRINGS));
+        return Optional.of(newContent);
     }
 
     /**

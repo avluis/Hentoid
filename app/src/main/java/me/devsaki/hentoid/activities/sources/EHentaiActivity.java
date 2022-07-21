@@ -49,19 +49,21 @@ public class EHentaiActivity extends BaseWebActivity {
         // We call the API without using BaseWebActivity.parseResponse
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
-            activity.onGalleryPageStarted();
+            if (analyzeForDownload || quickDownload) {
+                activity.onGalleryPageStarted();
 
-            ContentParser contentParser = new EhentaiContent();
-            compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.computation())
-                    .map(content -> super.processContent(content, urlStr, quickDownload))
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                            content2 -> activity.onResultReady(content2, quickDownload),
-                            Timber::w
-                    )
-            );
+                ContentParser contentParser = new EhentaiContent();
+                compositeDisposable.add(Single.fromCallable(() -> contentParser.toContent(urlStr))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.computation())
+                        .map(content -> super.processContent(content, urlStr, quickDownload))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                content2 -> activity.onResultReady(content2, quickDownload),
+                                Timber::w
+                        )
+                );
+            }
 
             if (isMarkDownloaded())
                 return super.parseResponse(urlStr, requestHeaders, false, false); // Rewrite HTML

@@ -83,6 +83,7 @@ public class QueueActivity extends BaseActivity {
     private MenuItem cancelAllMenu;
     private MenuItem cancelAllErrorsMenu;
     private MenuItem redownloadAllMenu;
+    private MenuItem importDownloadsMenu;
 
     private TextView reviveOverlay;
     private ProgressBar reviveProgress;
@@ -109,6 +110,7 @@ public class QueueActivity extends BaseActivity {
         searchMenu = toolbar.getMenu().findItem(R.id.action_search);
         errorStatsMenu = toolbar.getMenu().findItem(R.id.action_error_stats);
         invertQueueMenu = toolbar.getMenu().findItem(R.id.action_invert_queue);
+        importDownloadsMenu = toolbar.getMenu().findItem(R.id.action_import_downloads);
         cancelAllMenu = toolbar.getMenu().findItem(R.id.action_cancel_all);
         cancelAllErrorsMenu = toolbar.getMenu().findItem(R.id.action_cancel_all_errors);
         redownloadAllMenu = toolbar.getMenu().findItem(R.id.action_redownload_all);
@@ -199,6 +201,7 @@ public class QueueActivity extends BaseActivity {
         // Update permanent toolbar
         searchMenu.setVisible(0 == position);
         invertQueueMenu.setVisible(0 == position);
+        importDownloadsMenu.setVisible(0 == position);
         cancelAllMenu.setVisible(0 == position);
         cancelAllErrorsMenu.setVisible(1 == position);
         redownloadAllMenu.setVisible(1 == position);
@@ -294,7 +297,8 @@ public class QueueActivity extends BaseActivity {
      */
     private void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages, int position) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.redownloaded_updating_webview);
+            if (WebkitPackageHelper.getWebViewUpdating())
+                ToastHelper.toast(R.string.redownloaded_updating_webview);
             else ToastHelper.toast(R.string.redownloaded_missing_webview);
             return;
         }
@@ -332,7 +336,8 @@ public class QueueActivity extends BaseActivity {
     private void reviveDownload(@NonNull final Site revivedSite, @NonNull final String oldCookie) {
         Timber.d(">> REVIVAL ASKED @ %s", revivedSite.getUrl());
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) ToastHelper.toast(R.string.revive_updating_webview);
+            if (WebkitPackageHelper.getWebViewUpdating())
+                ToastHelper.toast(R.string.revive_updating_webview);
             else ToastHelper.toast(R.string.revive_missing_webview);
             return;
         }

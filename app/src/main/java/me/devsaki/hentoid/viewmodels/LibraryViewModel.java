@@ -10,6 +10,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -70,6 +71,7 @@ import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
@@ -234,11 +236,15 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param query Query to use for the universal search
      */
     public void searchContentUniversal(@NonNull String query) {
-        contentSearchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
+        // If user searches in main toolbar, universal search takes over advanced search
+        contentSearchManager.clearSelectedSearchTags();
+        contentSearchManager.setLocation(ContentHelper.Location.ANY);
+        contentSearchManager.setContentType(ContentHelper.Type.ANY);
+
         contentSearchManager.setQuery(query);
         newContentSearch.setValue(true);
         if (!query.isEmpty()) {
-            Uri searchUri = SearchActivityBundle.Companion.buildSearchUri(null, query);
+            Uri searchUri = SearchActivityBundle.Companion.buildSearchUri(null, query, ContentHelper.Location.ANY, ContentHelper.Type.ANY);
             dao.insertSearchRecord(SearchRecord.fromContentUniversalSearch(searchUri), 10);
         }
         doSearchContent();
@@ -250,17 +256,54 @@ public class LibraryViewModel extends AndroidViewModel {
      * @param query    Query to use for the search
      * @param metadata Metadata to use for the search
      */
-    public void searchContent(@NonNull String query, @NonNull List<Attribute> metadata, @NonNull Uri searchUri) {
+    public void searchContent(@NonNull String query, @NonNull SearchHelper.AdvancedSearchCriteria metadata, @NonNull Uri searchUri) {
         contentSearchManager.setQuery(query);
-        contentSearchManager.setTags(metadata);
+        contentSearchManager.setTags(metadata.getAttributes());
+        contentSearchManager.setLocation(metadata.getLocation());
+        contentSearchManager.setContentType(metadata.getContentType());
         newContentSearch.setValue(true);
 
         if (!metadata.isEmpty()) {
-            String label = TextUtils.join("|", Stream.of(metadata).map(a -> formatAttribute(a, getApplication().getResources())).toList());
+            List<String> labelElts = Stream.of(metadata.getAttributes()).map(a -> formatAttribute(a, getApplication().getResources())).toList();
+            if (metadata.getLocation() != ContentHelper.Location.ANY)
+                labelElts.add("loc:" + getApplication().getResources().getString(formatLocation(metadata.getLocation())).toLowerCase());
+            if (metadata.getContentType() != ContentHelper.Type.ANY)
+                labelElts.add("type:" + getApplication().getResources().getString(formatContentType(metadata.getContentType())).toLowerCase());
+            String label = TextUtils.join("|", labelElts);
             if (label.length() > 50) label = label.substring(0, 50) + "…";
             dao.insertSearchRecord(SearchRecord.fromContentAdvancedSearch(searchUri, label), 10);
         }
         doSearchContent();
+    }
+
+    private @StringRes
+    int formatLocation(@ContentHelper.Location int value) {
+        switch (value) {
+            case ContentHelper.Location.PRIMARY:
+                return R.string.refresh_location_internal;
+            case ContentHelper.Location.EXTERNAL:
+                return R.string.refresh_location_external;
+            case ContentHelper.Location.ANY:
+            default:
+                return R.string.search_location_entries_1;
+        }
+    }
+
+    private @StringRes
+    int formatContentType(@ContentHelper.Type int value) {
+        switch (value) {
+            case ContentHelper.Type.FOLDER:
+                return R.string.search_type_entries_2;
+            case ContentHelper.Type.STREAMED:
+                return R.string.search_type_entries_3;
+            case ContentHelper.Type.ARCHIVE:
+                return R.string.search_type_entries_4;
+            case ContentHelper.Type.PLACEHOLDER:
+                return R.string.search_type_entries_5;
+            case ContentHelper.Type.ANY:
+            default:
+                return R.string.search_type_entries_1;
+        }
     }
 
     private String formatAttribute(@NonNull Attribute a, @NonNull Resources res) {
@@ -597,8 +640,10 @@ public class LibraryViewModel extends AndroidViewModel {
             @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_updating_webview)));
-            else onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_missing_webview)));
+            if (WebkitPackageHelper.getWebViewUpdating())
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_updating_webview)));
+            else
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.redownloaded_missing_webview)));
             return;
         }
 
@@ -646,8 +691,10 @@ public class LibraryViewModel extends AndroidViewModel {
             @NonNull final Consumer<Integer> onSuccess,
             @NonNull final Consumer<Throwable> onError) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.accept(new EmptyResultException(getApplication().getString(R.string.download_updating_webview)));
-            else onError.accept(new EmptyResultException(getApplication().getString(R.string.download_missing_webview)));
+            if (WebkitPackageHelper.getWebViewUpdating())
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.download_updating_webview)));
+            else
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.download_missing_webview)));
             return;
         }
 
@@ -698,8 +745,10 @@ public class LibraryViewModel extends AndroidViewModel {
     public void streamContent(@NonNull final List<Content> contentList,
                               @NonNull final Consumer<Throwable> onError) {
         if (!WebkitPackageHelper.getWebViewAvailable()) {
-            if (WebkitPackageHelper.getWebViewUpdating()) onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_updating_webview)));
-            else onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_missing_webview)));
+            if (WebkitPackageHelper.getWebViewUpdating())
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_updating_webview)));
+            else
+                onError.accept(new EmptyResultException(getApplication().getString(R.string.stream_missing_webview)));
             return;
         }
 
@@ -1222,7 +1271,7 @@ public class LibraryViewModel extends AndroidViewModel {
             Content splitContent = createContentFromChapter(content, chap);
 
             // Create a new folder for the split content
-            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, true,null);
+            DocumentFile targetFolder = ContentHelper.getOrCreateContentDownloadDir(getApplication(), splitContent, true, null);
             if (null == targetFolder || !targetFolder.exists())
                 throw new ContentNotProcessedException(splitContent, "Could not create target directory");
 

@@ -8,15 +8,18 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Point;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.DimenRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.core.util.Pair;
 import androidx.documentfile.provider.DocumentFile;
@@ -533,5 +536,30 @@ public final class Helper {
         } catch (Exception e) {
             Timber.w(e);
         }
+    }
+
+    /**
+     * Set the given view's margins, in pixels
+     *
+     * @param view   View to update the margins for
+     * @param left   Left margin (pixels)
+     * @param top    Top margin (pixels)
+     * @param right  Right margin (pixels)
+     * @param bottom Bottom margin (pixels)
+     */
+    public static void setMargins(@NonNull View view, int left, int top, int right, int bottom) {
+        if (view.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            p.setMargins(left, top, right, bottom);
+        }
+    }
+
+    @Nullable
+    public static Point getCenter(@NonNull View view) {
+        if (view.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+            return new Point(p.leftMargin + view.getWidth() / 2, p.topMargin + view.getHeight() / 2);
+        }
+        return null;
     }
 }

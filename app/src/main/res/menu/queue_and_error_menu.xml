@@ -33,6 +33,12 @@
         android:tooltipText="@string/invert_queue"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_import_downloads"
+        android:icon="@drawable/ic_simple_arrow_up"
+        android:title="@string/import_downloads"
+        android:tooltipText="@string/import_downloads"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_cancel_all"
         android:icon="@drawable/ic_action_delete_forever"
         android:title="@string/cancel_all"

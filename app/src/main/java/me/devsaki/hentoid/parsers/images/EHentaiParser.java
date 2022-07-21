@@ -48,6 +48,8 @@ public class EHentaiParser implements ImageListParser {
 
     public static final String MPV_LINK_CSS = "#gmid a[href*='/mpv/']";
 
+    private static final String LIMIT_509_URL = "/509.gif";
+
     private final ParseProgress progress = new ParseProgress();
 
     static class MpvInfo {
@@ -329,7 +331,7 @@ public class EHentaiParser implements ImageListParser {
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
-            if (imageUrl.contains("/509.gif"))
+            if (imageUrl.contains(LIMIT_509_URL))
                 throw new LimitReachedException(site.getDescription() + " download points regenerate over time or can be bought if you're in a hurry");
             if (!imageUrl.isEmpty())
                 return Optional.of(ParseHelper.urlToImageFile(imageUrl, order, maxPages, StatusContent.SAVED, chapter));
@@ -348,7 +350,7 @@ public class EHentaiParser implements ImageListParser {
 
         String imageUrl = imageMetadata.getUrl();
         // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
-        if (imageUrl.contains("/509.gif"))
+        if (imageUrl.contains(LIMIT_509_URL))
             throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
 
         return new ImmutablePair<>(imageUrl, Optional.empty());
@@ -359,7 +361,7 @@ public class EHentaiParser implements ImageListParser {
         if (doc != null) {
             String imageUrl = getDisplayedImageUrl(doc).toLowerCase();
             // If we have the 509.gif picture, it means the bandwidth limit for e-h has been reached
-            if (imageUrl.contains("/509.gif"))
+            if (imageUrl.contains(LIMIT_509_URL))
                 throw new LimitReachedException("E(x)-hentai download points regenerate over time or can be bought on e(x)-hentai if you're in a hurry");
 
             Optional<String> backupUrl = getBackupPageUrl(doc, url);

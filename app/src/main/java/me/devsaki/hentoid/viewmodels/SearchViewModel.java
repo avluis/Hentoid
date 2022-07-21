@@ -18,25 +18,26 @@ import io.reactivex.disposables.Disposables;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.SearchHelper;
 
 /**
  * ViewModel for the advanced search screen
  */
 public class SearchViewModel extends ViewModel {
 
-    private final CollectionDAO collectionDAO;
+    private final CollectionDAO dao;
 
     // LIVEDATAS
 
     // Results of queries
-    private final MutableLiveData<CollectionDAO.AttributeQueryResult> availableAttributes = new MutableLiveData<>();
+    private final MutableLiveData<SearchHelper.AttributeQueryResult> availableAttributes = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> nbAttributesPerType = new MutableLiveData<>();
     private LiveData<Integer> currentSelectedContentCountInternal = null;
     private final MediatorLiveData<Integer> selectedContentCount = new MediatorLiveData<>();
 
     // Selected attributes (passed between SearchBottomSheetFragment and SearchActivity as LiveData via the ViewModel)
     private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
-
 
     // Currently active attribute types
     private List<AttributeType> attributeTypes;
@@ -50,9 +51,15 @@ public class SearchViewModel extends ViewModel {
     private final int attributeSortOrder;
     private long selectedGroup = -1;
 
+    // Location and type (bottom spinners)
+    private @ContentHelper.Location
+    int location = 0;
+    private @ContentHelper.Type
+    int contentType = 0;
 
-    public SearchViewModel(@NonNull CollectionDAO collectionDAO, int attributeSortOrder) {
-        this.collectionDAO = collectionDAO;
+
+    public SearchViewModel(@NonNull CollectionDAO dao, int attributeSortOrder) {
+        this.dao = dao;
         this.attributeSortOrder = attributeSortOrder;
         selectedAttributes.setValue(new ArrayList<>());
     }
@@ -61,13 +68,13 @@ public class SearchViewModel extends ViewModel {
     protected void onCleared() {
         filterDisposable.dispose();
         countDisposable.dispose();
-        collectionDAO.cleanup();
+        dao.cleanup();
         super.onCleared();
     }
 
 
     @NonNull
-    public LiveData<CollectionDAO.AttributeQueryResult> getAvailableAttributesData() {
+    public LiveData<SearchHelper.AttributeQueryResult> getAvailableAttributesData() {
         return availableAttributes;
     }
 
@@ -86,14 +93,6 @@ public class SearchViewModel extends ViewModel {
         return selectedContentCount;
     }
 
-
-    /**
-     * Update the viewmodel according to current query properties
-     */
-    public void update() {
-        countAttributesPerType();
-        updateSelectionResult();
-    }
 
     /**
      * Set the attributes type to search in the Atttribute search
@@ -117,11 +116,14 @@ public class SearchViewModel extends ViewModel {
      */
     public void setAttributeQuery(String query, int pageNum, int itemsPerPage) {
         filterDisposable.dispose();
-        filterDisposable = collectionDAO
+        filterDisposable = dao
                 .selectAttributeMasterDataPaged(
                         attributeTypes,
                         query,
+                        selectedGroup,
                         selectedAttributes.getValue(),
+                        location,
+                        contentType,
                         pageNum,
                         itemsPerPage,
                         attributeSortOrder
@@ -171,12 +173,30 @@ public class SearchViewModel extends ViewModel {
         setSelectedAttributes(selectedAttributesList);
     }
 
+    public void setLocation(@ContentHelper.Location int location) {
+        this.location = location;
+        update();
+    }
+
+    public void setContentType(@ContentHelper.Type int contentType) {
+        this.contentType = contentType;
+        update();
+    }
+
+    /**
+     * Update the viewmodel according to current query properties
+     */
+    public void update() {
+        countAttributesPerType();
+        updateSelectionResult();
+    }
+
     /**
      * Run the query to get the number of attributes per type
      */
     private void countAttributesPerType() {
         countDisposable.dispose();
-        countDisposable = collectionDAO.countAttributesPerType(selectedAttributes.getValue())
+        countDisposable = dao.countAttributesPerType(selectedGroup, selectedAttributes.getValue(), location, contentType)
                 .subscribe(results -> {
                     // Result has to take into account the number of attributes already selected (hence unavailable)
                     List<Attribute> selectedAttrs = selectedAttributes.getValue();
@@ -202,7 +222,7 @@ public class SearchViewModel extends ViewModel {
     private void updateSelectionResult() {
         if (currentSelectedContentCountInternal != null)
             selectedContentCount.removeSource(currentSelectedContentCountInternal);
-        currentSelectedContentCountInternal = collectionDAO.countBooks(selectedGroup, selectedAttributes.getValue());
+        currentSelectedContentCountInternal = dao.countBooks(selectedGroup, selectedAttributes.getValue(), location, contentType);
         selectedContentCount.addSource(currentSelectedContentCountInternal, selectedContentCount::setValue);
     }
 }
