@@ -20,7 +20,7 @@ public class HitomiGalleryInfo {
     private String title;
     private List<HitomiCharacter> characters;
     private List<HitomiGroup> groups;
-    private String date; // Format : "YYYY-MM-DD HH:MM:SS-05" (-05 being the timezone of the server ?)
+    private String date; // Format : "YYYY-MM-DD HH:MM:ss-05" or "YYYY-MM-DD HH:MM:ss.SSS-05" (-05 being the timezone of the server ?)
     private String language;
     private String language_localname;
     private String language_url;
@@ -69,7 +69,10 @@ public class HitomiGalleryInfo {
     public void updateContent(@NonNull Content content) {
         content.setTitle(StringHelper.removeNonPrintableChars(title));
 
-        content.setUploadDate(Helper.parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx"));
+        long uploadDate = Helper.parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ssx");
+        if (0 == uploadDate)
+            uploadDate = Helper.parseDatetimeToEpoch(date, "yyyy-MM-dd HH:mm:ss.SSSx");
+        content.setUploadDate(uploadDate);
 
         AttributeMap attributes = new AttributeMap();
         if (parodys != null)
