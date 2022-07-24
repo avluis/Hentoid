@@ -521,9 +521,12 @@ public class ReaderViewModel extends AndroidViewModel {
         if (null == theImages || null == theContent) return;
 
         int nbReadablePages = (int) Stream.of(theImages).filter(ImageFile::isReadable).count();
-        int readThresholdPref = Preferences.getViewerReadThreshold();
+
         int readThresholdPosition;
-        switch (readThresholdPref) {
+        switch (Preferences.getViewerPageReadThreshold()) {
+            case Preferences.Constant.VIEWER_READ_THRESHOLD_1:
+                readThresholdPosition = 1;
+                break;
             case Preferences.Constant.VIEWER_READ_THRESHOLD_2:
                 readThresholdPosition = 2;
                 break;
@@ -531,19 +534,42 @@ public class ReaderViewModel extends AndroidViewModel {
                 readThresholdPosition = 5;
                 break;
             case Preferences.Constant.VIEWER_READ_THRESHOLD_ALL:
-                readThresholdPosition = nbReadablePages;
-                break;
             default:
-                readThresholdPosition = 1;
+                readThresholdPosition = nbReadablePages;
         }
+
+        float completedThresholdRatio;
+        switch (Preferences.getViewerRatioCompletedThreshold()) {
+            case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_10:
+                completedThresholdRatio = 0.1f;
+                break;
+            case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_25:
+                completedThresholdRatio = 0.25f;
+                break;
+            case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_33:
+                completedThresholdRatio = 0.33f;
+                break;
+            case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_50:
+                completedThresholdRatio = 0.5f;
+                break;
+            case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_75:
+                completedThresholdRatio = 0.75f;
+                break;
+            case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_ALL:
+            default:
+                completedThresholdRatio = 1;
+        }
+        int completedThresholdPosition = Math.round(completedThresholdRatio * nbReadablePages);
+
         int collectionIndex = viewerIndex + thumbIndex + 1;
         boolean updateReads = (readPageNumbers.size() >= readThresholdPosition || theContent.getReads() > 0);
+        boolean markAsComplete = (readPageNumbers.size() >= completedThresholdPosition);
 
         // Reset the memorized page index if it represents the last page
         int indexToSet = (collectionIndex >= nbReadablePages) ? 0 : collectionIndex;
 
         leaveDisposable =
-                Completable.fromRunnable(() -> doLeaveBook(theContent.getId(), indexToSet, updateReads))
+                Completable.fromRunnable(() -> doLeaveBook(theContent.getId(), indexToSet, updateReads, markAsComplete))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -555,11 +581,16 @@ public class ReaderViewModel extends AndroidViewModel {
     /**
      * Perform the I/O operations to persist book information upon leaving
      *
-     * @param contentId   ID of the Content to save
-     * @param indexToSet  DB page index to set as the last read page
-     * @param updateReads True if number of reads have to be updated; false if not
+     * @param contentId       ID of the Content to save
+     * @param indexToSet      DB page index to set as the last read page
+     * @param updateReads     True if number of reads have to be updated; false if not
+     * @param markAsCompleted True if the book has to be marked as completed
      */
-    private void doLeaveBook(final long contentId, int indexToSet, boolean updateReads) {
+    private void doLeaveBook(
+            final long contentId,
+            int indexToSet,
+            boolean updateReads,
+            boolean markAsCompleted) {
         Helper.assertNonUiThread();
 
         // Use a brand new DAO for that (the viewmodel's DAO may be in the process of being cleaned up)
@@ -581,8 +612,8 @@ public class ReaderViewModel extends AndroidViewModel {
                 savedContent.computeReadProgress();
             }
 
-            if (indexToSet != savedContent.getLastReadPageIndex() || updateReads || readPageNumbers.size() > previousReadPagesCount)
-                ContentHelper.updateContentReadStats(getApplication(), dao, savedContent, theImages, indexToSet, updateReads);
+            if (indexToSet != savedContent.getLastReadPageIndex() || updateReads || readPageNumbers.size() > previousReadPagesCount || savedContent.isCompleted() != markAsCompleted)
+                ContentHelper.updateContentReadStats(getApplication(), dao, savedContent, theImages, indexToSet, updateReads, markAsCompleted);
         } finally {
             dao.cleanup();
         }

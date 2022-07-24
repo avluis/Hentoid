@@ -325,6 +325,7 @@ public final class ContentHelper {
 
     /**
      * Update the given Content's number of reads in both DB and JSON file
+     * TODO update doc
      *
      * @param context Context to use for the action
      * @param dao     DAO to use for the action
@@ -336,9 +337,11 @@ public final class ContentHelper {
             @NonNull Content content,
             @NonNull List<ImageFile> images,
             int targetLastReadPageIndex,
-            boolean updateReads) {
+            boolean updateReads,
+            boolean markAsCompleted) {
         content.setLastReadPageIndex(targetLastReadPageIndex);
         if (updateReads) content.increaseReads().setLastReadDate(Instant.now().toEpochMilli());
+        if (markAsCompleted) content.setCompleted(true);
         dao.replaceImageList(content.getId(), images);
         dao.insertContent(content);
         persistJson(context, content);

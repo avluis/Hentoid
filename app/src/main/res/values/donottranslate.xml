@@ -249,16 +249,36 @@
         <item>3</item>
     </string-array>
     <string-array name="pref_viewer_read_threshold_entries" translatable="false">
+        <item>@string/disabled_generic</item>
         <item>@string/pref_viewer_read_threshold_entries_1</item>
         <item>@string/pref_viewer_read_threshold_entries_2</item>
         <item>@string/pref_viewer_read_threshold_entries_3</item>
         <item>@string/pref_viewer_read_threshold_entries_4</item>
     </string-array>
     <string-array name="pref_viewer_read_threshold_values" translatable="false">
+        <item>-1</item>
         <item>0</item>
         <item>1</item>
         <item>2</item>
         <item>3</item>
+    </string-array>
+    <string-array name="pref_viewer_ratio_completed_threshold_entries" translatable="false">
+        <item>@string/disabled_generic</item>
+        <item>10%</item>
+        <item>25%</item>
+        <item>33%</item>
+        <item>50%</item>
+        <item>75%</item>
+        <item>100%</item>
+    </string-array>
+    <string-array name="pref_viewer_ratio_completed_threshold_values" translatable="false">
+        <item>-1</item>
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>99</item>
     </string-array>
     <string-array name="pref_viewer_slideshow_delay_entries" translatable="false">
         <item>@string/pref_viewer_slideshow_delay_entries_1</item>
@@ -452,6 +472,7 @@
     <bool name="pref_viewer_open_gallery_default" translatable="false">false</bool>
     <bool name="pref_viewer_continuous_default" translatable="false">false</bool>
     <string name="pref_viewer_read_threshold_default" translatable="false">0</string>
+    <string name="pref_viewer_ratio_completed_threshold_default" translatable="false">-1</string>
     <string name="pref_viewer_slideshow_delay_default" translatable="false">0</string>
     <string name="pref_viewer_slideshow_delay_vertical_default" translatable="false">0</string>
 </resources>

@@ -43,6 +43,7 @@
     <string name="_default">default</string>
     <string name="empty">empty</string>
     <string name="none">None</string>
+    <string name="disabled_generic">Disabled</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
