@@ -486,10 +486,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
-                if (newProgress == 100) {
-                    binding.swipeContainer.post(() -> binding.swipeContainer.setRefreshing(false));
-                } else {
-                    binding.swipeContainer.post(() -> binding.swipeContainer.setRefreshing(true));
+                if (binding != null) {
+                    if (newProgress == 100) {
+                        binding.swipeContainer.post(() -> binding.swipeContainer.setRefreshing(false));
+                    } else {
+                        binding.swipeContainer.post(() -> binding.swipeContainer.setRefreshing(true));
+                    }
                 }
             }
         });
@@ -779,7 +781,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     public void loadUrl(@NonNull final String url) {
-        webView.loadUrl(url);
+        if (webView != null) webView.loadUrl(url);
     }
 
     public void updateBookmarkButton(boolean newValue) {
@@ -975,6 +977,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     // TODO doc
     private void addToQueue(int position, int downloadMode, boolean isReplaceDuplicate) {
+        if (null == currentContent) return;
         Point coords = Helper.getCenter(binding.quickDlFeedback);
         if (coords != null && View.VISIBLE == binding.quickDlFeedback.getVisibility()) {
             Helper.setMargins(binding.animatedCheck,
@@ -987,7 +990,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
         binding.animatedCheck.setVisibility(View.VISIBLE);
         ((Animatable) binding.animatedCheck.getDrawable()).start();
-        new Handler(getMainLooper()).postDelayed(() -> binding.animatedCheck.setVisibility(View.GONE), 1000);
+        new Handler(getMainLooper()).postDelayed(() -> {
+            if (binding != null) binding.animatedCheck.setVisibility(View.GONE);
+        }, 1000);
         currentContent.setDownloadMode(downloadMode);
         dao.addContentToQueue(
                 currentContent,
@@ -1142,8 +1147,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
     private void onContentProcessed(@ContentStatus int status, boolean quickDownload) {
         processContentDisposable.dispose();
-        binding.quickDlFeedback.clearAnimation();
-        binding.quickDlFeedback.setVisibility(View.INVISIBLE);
+        if (binding != null) {
+            binding.quickDlFeedback.clearAnimation();
+            binding.quickDlFeedback.setVisibility(View.INVISIBLE);
+        }
         if (null == currentContent) return;
         switch (status) {
             case ContentStatus.UNDOWNLOADABLE:
@@ -1243,9 +1250,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             @NonNull final Content onlineContent,
             @NonNull final List<ImageFile> additionalImages) {
         searchExtraImagesDisposable.dispose();
-        binding.progressBar.setProgress(binding.progressBar.getMax());
-        binding.progressBar.setVisibility(View.VISIBLE);
-        binding.progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.green)));
+        if (binding != null) {
+            binding.progressBar.setProgress(binding.progressBar.getMax());
+            binding.progressBar.setVisibility(View.VISIBLE);
+            binding.progressBar.setProgressTintList(ColorStateList.valueOf(getResources().getColor(R.color.green)));
+        }
 
         if (null == currentContent || additionalImages.isEmpty()) return;
 
@@ -1261,8 +1270,10 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             if (!additionalNonDownloadedImages.isEmpty()) {
                 extraImages = additionalNonDownloadedImages;
                 setActionMode(ActionMode.DOWNLOAD_PLUS);
-                BadgeDrawable badge = binding.bottomNavigation.getOrCreateBadge(R.id.web_menu_action);
-                badge.setNumber(additionalNonDownloadedImages.size());
+                if (binding != null) {
+                    BadgeDrawable badge = binding.bottomNavigation.getOrCreateBadge(R.id.web_menu_action);
+                    badge.setNumber(additionalNonDownloadedImages.size());
+                }
             }
         }
     }
