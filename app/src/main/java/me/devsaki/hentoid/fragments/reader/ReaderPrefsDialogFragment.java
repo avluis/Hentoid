@@ -125,7 +125,9 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
         // App pref
         displayItems.add(res.getString(R.string.use_app_prefs, displayModes[Preferences.getViewerDisplayMode()]));
         // Available prefs
-        displayItems.addAll(Arrays.asList(displayModes));
+        for (String mode : displayModes) {
+            displayItems.add(mode.replace(" (" + getString(R.string._default) + ")", ""));
+        }
 
         PowerSpinnerView displaySpin = rootView.findViewById(R.id.book_prefs_display_spin);
         displaySpin.setItems(displayItems);
