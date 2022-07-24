@@ -6,6 +6,7 @@ import androidx.work.Data;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 
 /**
@@ -16,6 +17,7 @@ import me.devsaki.hentoid.util.StringHelper;
  */
 public class DownloadsImportData {
     private static final String KEY_FILE_URI = "file_uri";
+    private static final String KEY_QUEUE_POSITION = "queue_position";
 
     private DownloadsImportData() {
         throw new UnsupportedOperationException();
@@ -27,6 +29,10 @@ public class DownloadsImportData {
 
         public void setFileUri(Uri data) {
             builder.putString(KEY_FILE_URI, data.toString());
+        }
+
+        public void setQueuePosition(int data) {
+            builder.putInt(KEY_QUEUE_POSITION, data);
         }
 
         public Data getData() {
@@ -44,6 +50,10 @@ public class DownloadsImportData {
 
         public String getFileUri() {
             return StringHelper.protect(data.getString(KEY_FILE_URI));
+        }
+
+        public int getQueuePosition() {
+            return data.getInt(KEY_QUEUE_POSITION, Preferences.Default.QUEUE_NEW_DOWNLOADS_POSITION);
         }
     }
 }

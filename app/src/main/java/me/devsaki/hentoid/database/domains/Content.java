@@ -248,6 +248,46 @@ public class Content implements Serializable {
         this.uniqueSiteId = uniqueSiteId;
     }
 
+    public static String transformRawUrl(@NonNull final Site site, @NonNull final String url) {
+        switch (site) {
+            case TSUMINO:
+                return url.replace("/Read/Index", "");
+            case PURURIN:
+                return url.replace(HttpHelper.getProtocol(url) + "://pururin.to/gallery", "");
+            case NHENTAI:
+                return url.replace(site.getUrl(), "").replace("/g", "").replaceFirst("/1/$", "/");
+            case MUSES:
+                return url.replace(site.getUrl(), "").replace("https://comics.8muses.com", "");
+            case MRM:
+                return url.replace(site.getUrl(), "").split("/")[0];
+            case HITOMI:
+                return url.replace(site.getUrl(), "").replace("/reader", "").replace("/galleries", "");
+            case MANHWA18:
+            case IMHENTAI:
+            case HENTAIFOX:
+                return url.replace(site.getUrl(), "").replace("/gallery", "");
+            case ASMHENTAI:
+            case ASMHENTAI_COMICS:
+                return url.substring(url.indexOf("/gallery/") + 8, url.length() - 2);
+            case PIXIV:
+                return url.replace(site.getUrl(), "").replaceAll("^[a-z]{2}/", "");
+            case ALLPORNCOMIC:
+            case DOUJINS:
+            case HENTAI2READ:
+            case HBROWSE:
+            case MANHWA:
+            case MULTPORN:
+            case TOONILY:
+                return url.replace(site.getUrl(), "");
+            case PORNCOMIX:
+            case EHENTAI:
+            case EXHENTAI:
+            case LUSCIOUS:
+            default:
+                return url;
+        }
+    }
+
     private String computeUniqueSiteId() {
         String[] paths;
 
@@ -421,7 +461,7 @@ public class Content implements Serializable {
         }
     }
 
-    public static String getGalleryUrlFromId(Site site, String id) {
+    public static String getGalleryUrlFromId(@NonNull Site site, @NonNull String id) {
         switch (site) {
             case HITOMI:
                 return site.getUrl() + "/galleries/" + id + ".html";
@@ -495,8 +535,14 @@ public class Content implements Serializable {
         return (null == url) ? "" : url;
     }
 
+    public Content setRawUrl(@NonNull String url) {
+        return setUrl(transformRawUrl(site, url));
+    }
+
     public Content setUrl(String url) {
-        this.url = url;
+        if (url != null && site != null && url.startsWith("http"))
+            this.url = transformRawUrl(site, url);
+        else this.url = url;
         populateUniqueSiteId();
         return this;
     }

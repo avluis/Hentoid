@@ -46,8 +46,8 @@ public class MultpornContent extends BaseContentParser {
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.MULTPORN);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
-
-        content.setUrl(url.replace(Site.MULTPORN.getUrl(), ""));
+        content.setRawUrl(url);
+        
         if (!title.isEmpty()) {
             content.setTitle(StringHelper.removeNonPrintableChars(title));
         } else content.setTitle(NO_TITLE);

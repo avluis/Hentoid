@@ -51,7 +51,7 @@ public class ToonilyContent extends BaseContentParser {
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.TOONILY);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
-        content.setUrl(url.replace(Site.TOONILY.getUrl(), ""));
+        content.setRawUrl(url);
 
         if (GALLERY_PATTERN.matcher(url).find()) return updateGallery(content, url, updateImages);
         else return updateSingleChapter(content, url, updateImages);

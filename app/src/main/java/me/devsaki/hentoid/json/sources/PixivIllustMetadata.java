@@ -1,8 +1,7 @@
 package me.devsaki.hentoid.json.sources;
 
-import androidx.core.util.Pair;
-
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.Stream;
 import com.squareup.moshi.Types;
@@ -300,7 +299,7 @@ public class PixivIllustMetadata {
 
         String urlValue = illustData.getCanonicalUrl();
         if (urlValue.isEmpty()) urlValue = url;
-        content.setUrl(urlValue.replace(Site.PIXIV.getUrl(), ""));
+        content.setRawUrl(urlValue);
 
         content.setCoverImageUrl(illustData.getThumbUrl());
         content.setUploadDate(illustData.getUploadTimestamp() * 1000);

@@ -45,7 +45,7 @@ public class Manhwa18Content extends BaseContentParser {
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.MANHWA18);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
-        content.setUrl(url.replace(Site.MANHWA18.getUrl(), "").replace("/gallery", ""));
+        content.setRawUrl(url);
 
         if (GALLERY_PATTERN.matcher(url).find()) return updateGallery(content, url, updateImages);
         else return updateSingleChapter(content, url, updateImages);

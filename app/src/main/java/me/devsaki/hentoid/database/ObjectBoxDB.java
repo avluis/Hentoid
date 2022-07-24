@@ -414,10 +414,11 @@ public class ObjectBoxDB {
 
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrlStart) {
-        QueryCondition<Content> qc = Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
-        QueryCondition<Content> qc2 = Content_.coverImageUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.coverImageUrl.equal(coverUrlStart, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
-
-        return store.boxFor(Content.class).query(qc.or(qc2)).build().findFirst();
+        QueryCondition<Content> urlCondition = Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
+        if (!coverUrlStart.isEmpty()) {
+            QueryCondition<Content> coverCondition = Content_.coverImageUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.coverImageUrl.equal(coverUrlStart, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
+            return store.boxFor(Content.class).query(urlCondition.or(coverCondition)).build().findFirst();
+        } else return store.boxFor(Content.class).query(urlCondition).build().findFirst();
     }
 
     Set<String> selectAllContentUrls(int siteCode) {

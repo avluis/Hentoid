@@ -2,9 +2,8 @@ package me.devsaki.hentoid.parsers.images;
 
 import static me.devsaki.hentoid.util.network.HttpHelper.getOnlineDocument;
 
-import androidx.core.util.Pair;
-
 import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
 
 import org.jsoup.nodes.Document;
 
@@ -17,6 +16,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.network.HttpHelper;
 
 /**
  * Handles parsing of content from pururin.to
@@ -38,8 +38,7 @@ public class PururinParser extends BaseImageListParser {
         ParseHelper.addSavedCookiesToHeader(content.getDownloadParams(), headers);
 
         String url = content.getReaderUrl();
-        String protocol = url.substring(0, 5);
-        if ("https".equals(protocol)) protocol = "https:";
+        String protocol = HttpHelper.getProtocol(url) + ":";
 
         // The whole algorithm is in app.js
         // 1- Get image extension from gallery data (JSON on HTML body)

@@ -72,8 +72,7 @@ public class PixivSeriesMetadata {
         content.setTitle(StringHelper.removeNonPrintableChars(data.getTitle()));
         content.setUniqueSiteId(data.getId());
 
-        String urlValue = "user/" + data.getUserId() + "/series/" + data.getId();
-        content.setUrl(urlValue);
+        content.setUrl("user/" + data.getUserId() + "/series/" + data.getId());
 
         content.setCoverImageUrl(data.getCoverUrl());
 //        content.setUploadDate(

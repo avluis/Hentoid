@@ -38,8 +38,7 @@ public class ImhentaiContent extends BaseContentParser {
 
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.IMHENTAI);
-
-        content.setUrl(url.replace(Site.IMHENTAI.getUrl(), "").replace("/gallery", ""));
+        content.setRawUrl(url);
 
         if (cover != null) content.setCoverImageUrl(ParseHelper.getImgSrc(cover));
 

@@ -329,6 +329,10 @@ public class HttpHelper {
         return parts[parts.length - 2] + "." + parts[parts.length - 1];
     }
 
+    public static String getProtocol(@NonNull final String url) {
+        return url.startsWith("https") ? "https" : "http";
+    }
+
     /**
      * Parse the given cookie String
      *

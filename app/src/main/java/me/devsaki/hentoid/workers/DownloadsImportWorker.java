@@ -91,7 +91,8 @@ public class DownloadsImportWorker extends BaseWorker {
 
         startImport(
                 getApplicationContext(),
-                data.getFileUri()
+                data.getFileUri(),
+                data.getQueuePosition()
         );
     }
 
@@ -100,7 +101,8 @@ public class DownloadsImportWorker extends BaseWorker {
      */
     private void startImport(
             @NonNull final Context context,
-            @NonNull final String fileUri
+            @NonNull final String fileUri,
+            final int queuePosition
     ) {
         DocumentFile file = FileHelper.getFileFromSingleUriString(context, fileUri);
         if (null == file) {
@@ -121,7 +123,7 @@ public class DownloadsImportWorker extends BaseWorker {
                 String galleryUrl = s;
                 if (StringHelper.isNumeric(galleryUrl))
                     galleryUrl = Content.getGalleryUrlFromId(Site.NHENTAI, galleryUrl);
-                importGallery(galleryUrl, false);
+                importGallery(galleryUrl, queuePosition, false);
             }
         } catch (InterruptedException ie) {
             Timber.e(ie);
@@ -134,11 +136,19 @@ public class DownloadsImportWorker extends BaseWorker {
         notifyProcessEnd();
     }
 
-    private void importGallery(@NonNull String url, boolean hasPassedCf) throws InterruptedException {
-        // TODO don't add if already in queue or in collection
+    private void importGallery(@NonNull String url, final int queuePosition, boolean hasPassedCf) throws InterruptedException {
         Site site = Site.searchByUrl(url);
         if (null == site || Site.NONE == site) {
             trace(Log.WARN, "ERROR : Unsupported source @ %s", url);
+            nextKO(getApplicationContext(), null);
+            return;
+        }
+
+        Content existingContent = dao.selectContentBySourceAndUrl(site, Content.transformRawUrl(site, url), null);
+        if (existingContent != null) {
+            String location = (ContentHelper.isInQueue(existingContent.getStatus())) ? "queue" : "library";
+            trace(Log.INFO, "ERROR : Content already in %s @ %s", location, url);
+            nextKO(getApplicationContext(), null);
             return;
         }
 
@@ -152,7 +162,7 @@ public class DownloadsImportWorker extends BaseWorker {
                 dao.addContentToQueue(
                         content.get(),
                         null,
-                        ContentHelper.QueuePosition.BOTTOM,
+                        queuePosition,
                         -1,
                         ContentQueueManager.getInstance().isQueueActive(getApplicationContext())
                 );
@@ -164,14 +174,16 @@ public class DownloadsImportWorker extends BaseWorker {
         } catch (CloudflareHelper.CloudflareProtectedException cpe) {
             if (hasPassedCf) {
                 trace(Log.WARN, "Cloudflare bypass ineffective for content @ %s", url);
+                nextKO(getApplicationContext(), null);
                 return;
             }
             trace(Log.INFO, "Trying to bypass Cloudflare for content @ %s", url);
             if (null == cfHelper) cfHelper = new CloudflareHelper();
             if (cfHelper.tryPassCloudflare(site, null)) {
-                importGallery(url, true);
+                importGallery(url, queuePosition, true);
             } else {
                 trace(Log.WARN, "Cloudflare bypass failed for content @ %s", url);
+                nextKO(getApplicationContext(), null);
             }
         }
     }

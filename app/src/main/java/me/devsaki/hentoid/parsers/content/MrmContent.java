@@ -40,14 +40,14 @@ public class MrmContent extends BaseContentParser {
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         content.setSite(Site.MRM);
         if (url.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
+        content.setRawUrl(url);
 
-        content.setUrl(url.replace(Site.MRM.getUrl(), "").split("/")[0]);
         if (!title.isEmpty()) {
             title = StringHelper.removeNonPrintableChars(title.trim());
             content.setTitle(title);
         } else content.setTitle(NO_TITLE);
 
-        content.setUploadDate(Helper.parseDatetimeToEpoch(uploadDate,"yyyy-MM-dd'T'HH:mm:ssXXX")); // e.g. 2022-03-20T00:09:43+07:00
+        content.setUploadDate(Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")); // e.g. 2022-03-20T00:09:43+07:00
 
         if (images != null && !images.isEmpty())
             content.setCoverImageUrl(ParseHelper.getImgSrc(images.get(0)));

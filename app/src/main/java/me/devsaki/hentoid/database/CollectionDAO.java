@@ -53,7 +53,7 @@ public interface CollectionDAO {
     Content selectContentByStorageUri(@NonNull final String folderUri, boolean onlyFlagged);
 
     @Nullable
-    Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrl);
+    Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @Nullable String coverUrl);
 
     Set<String> selectAllSourceUrls(@NonNull Site site);
 

@@ -16,6 +16,7 @@ import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
+import com.skydoves.powermenu.PowerMenuItem
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposables
@@ -30,7 +31,9 @@ import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
 import me.devsaki.hentoid.util.FileHelper
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.ImportHelper.PickFileContract
+import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
+import me.devsaki.hentoid.widget.AddQueueMenu
 import me.devsaki.hentoid.workers.DownloadsImportWorker
 import me.devsaki.hentoid.workers.data.DownloadsImportData
 import org.apache.commons.lang3.tuple.ImmutablePair
@@ -164,20 +167,40 @@ class ImportDownloadsDialogFragment : DialogFragment() {
             binding.importRunBtn.visibility = View.VISIBLE
             binding.importRunBtn.isEnabled = true
             binding.importRunBtn.setOnClickListener {
-                runImport(
+                askRun(
                     jsonFile.uri
                 )
             }
         }
     }
 
+    private fun askRun(fileUri: Uri) {
+        val queuePosition = Preferences.getQueueNewDownloadPosition()
+        if (queuePosition == Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
+            AddQueueMenu.show(
+                requireContext(),
+                binding.root,
+                this
+            ) { position: Int, _: PowerMenuItem? ->
+                runImport(
+                    fileUri,
+                    if (0 == position) Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP else Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM
+                )
+            }
+        } else {
+            runImport(fileUri, queuePosition)
+        }
+    }
+
     private fun runImport(
-        fileUri: Uri
+        fileUri: Uri,
+        queuePosition: Int
     ) {
         binding.importRunBtn.visibility = View.GONE
         isCancelable = false
         val builder = DownloadsImportData.Builder()
         builder.setFileUri(fileUri)
+        builder.setQueuePosition(queuePosition)
         ImportNotificationChannel.init(requireContext())
         binding.importProgressText.setText(R.string.starting_import)
         binding.importProgressBar.isIndeterminate = true
@@ -195,7 +218,7 @@ class ImportDownloadsDialogFragment : DialogFragment() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onImportEvent(event: ProcessEvent) {
-        if (event.processId != R.id.import_downloads) return
+        if (event.processId != R.id.import_downloads || isServiceGracefulClose) return
         if (ProcessEvent.EventType.PROGRESS == event.eventType) {
             val progress = event.elementsOK + event.elementsKO
             val itemTxt = resources.getQuantityString(R.plurals.item, progress)
@@ -212,19 +235,16 @@ class ImportDownloadsDialogFragment : DialogFragment() {
         } else if (ProcessEvent.EventType.COMPLETE == event.eventType) {
             importDisposable.dispose()
             isServiceGracefulClose = true
-            Snackbar.make(
-                binding.root,
+            binding.importProgressBar.progress = event.elementsTotal
+            binding.importProgressText.text =
                 resources.getQuantityString(
                     R.plurals.import_result,
                     event.elementsOK,
                     event.elementsOK,
                     event.elementsTotal
-                ),
-                BaseTransientBottomBar.LENGTH_LONG
-            ).show()
-
-            // Dismiss after 3s, for the user to be able to see the snackbar
-            Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 3000)
+                )
+            // Dismiss after 3s, for the user to be able to see the ending message
+            Handler(Looper.getMainLooper()).postDelayed({ dismissAllowingStateLoss() }, 2500)
         }
     }
 

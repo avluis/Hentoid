@@ -35,7 +35,7 @@ public class HentaifoxContent extends BaseContentParser {
         content.setSite(Site.HENTAIFOX);
         if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
-        content.setUrl(url.replace(Site.HENTAIFOX.getUrl(), "").replace("/gallery", ""));
+        content.setRawUrl(url);
 
         content.populateUniqueSiteId();
         if (cover != null) content.setCoverImageUrl(ParseHelper.getImgSrc(cover));

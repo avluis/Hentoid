@@ -29,9 +29,8 @@ public class HbrowseContent extends BaseContentParser {
         content.setSite(Site.HBROWSE);
         if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
-        content.setUrl(url.replace(Site.HBROWSE.getUrl(), ""));
+        content.setRawUrl(url);
 
-        content.populateUniqueSiteId();
         content.setCoverImageUrl(Site.HBROWSE.getUrl() + "/thumbnails/" + content.getUniqueSiteId() + "_1.jpg");
 
         if (null == information || information.isEmpty()) return content;
@@ -39,34 +38,36 @@ public class HbrowseContent extends BaseContentParser {
         AttributeMap attributes = new AttributeMap();
 
         for (Element e : information) {
-            if (null == e.select("td strong").first()) continue;
+            Element metaTypeContainer = e.select("td strong").first();
+            if (metaTypeContainer != null) {
+                String metaType = metaTypeContainer.childNode(0).toString();
+                Element metaContent = e.select("td").last();
+                if (metaContent != null) {
+                    if (metaType.equalsIgnoreCase("title"))
+                        content.setTitle(metaContent.childNode(0).toString());
+                    if (metaType.equalsIgnoreCase("artist"))
+                        addAttribute(metaContent, attributes, AttributeType.ARTIST);
 
-            String metaType = e.select("td strong").first().childNode(0).toString();
-            Element metaContent = e.select("td").last();
-
-            if (metaType.equalsIgnoreCase("title"))
-                content.setTitle(metaContent.childNode(0).toString());
-            if (metaType.equalsIgnoreCase("artist"))
-                addAttribute(metaContent, attributes, AttributeType.ARTIST);
-
-            if (metaType.equalsIgnoreCase("type"))
-                addAttribute(metaContent, attributes, AttributeType.TAG);
-            if (metaType.equalsIgnoreCase("setting"))
-                addAttribute(metaContent, attributes, AttributeType.TAG);
-            if (metaType.equalsIgnoreCase("fetish"))
-                addAttribute(metaContent, attributes, AttributeType.TAG);
-            if (metaType.equalsIgnoreCase("relationship"))
-                addAttribute(metaContent, attributes, AttributeType.TAG);
-            if (metaType.equalsIgnoreCase("male body"))
-                addAttribute(metaContent, attributes, AttributeType.TAG, "male");
-            if (metaType.equalsIgnoreCase("female body"))
-                addAttribute(metaContent, attributes, AttributeType.TAG, "female");
-            if (metaType.equalsIgnoreCase("grouping"))
-                addAttribute(metaContent, attributes, AttributeType.TAG);
-            if (metaType.equalsIgnoreCase("scene"))
-                addAttribute(metaContent, attributes, AttributeType.TAG);
-            if (metaType.equalsIgnoreCase("position"))
-                addAttribute(metaContent, attributes, AttributeType.TAG);
+                    if (metaType.equalsIgnoreCase("type"))
+                        addAttribute(metaContent, attributes, AttributeType.TAG);
+                    if (metaType.equalsIgnoreCase("setting"))
+                        addAttribute(metaContent, attributes, AttributeType.TAG);
+                    if (metaType.equalsIgnoreCase("fetish"))
+                        addAttribute(metaContent, attributes, AttributeType.TAG);
+                    if (metaType.equalsIgnoreCase("relationship"))
+                        addAttribute(metaContent, attributes, AttributeType.TAG);
+                    if (metaType.equalsIgnoreCase("male body"))
+                        addAttribute(metaContent, attributes, AttributeType.TAG, "male");
+                    if (metaType.equalsIgnoreCase("female body"))
+                        addAttribute(metaContent, attributes, AttributeType.TAG, "female");
+                    if (metaType.equalsIgnoreCase("grouping"))
+                        addAttribute(metaContent, attributes, AttributeType.TAG);
+                    if (metaType.equalsIgnoreCase("scene"))
+                        addAttribute(metaContent, attributes, AttributeType.TAG);
+                    if (metaType.equalsIgnoreCase("position"))
+                        addAttribute(metaContent, attributes, AttributeType.TAG);
+                }
+            }
         }
         content.putAttributes(attributes);
 
@@ -90,6 +91,6 @@ public class HbrowseContent extends BaseContentParser {
                 for (Element e : links)
                     ParseHelper.parseAttribute(e, attributes, type, Site.HBROWSE, prefix, false, null);
         } else
-            attributes.add(new Attribute(type, prefix.isEmpty() ? "" : prefix + ":" + metaContent.childNode(0).toString(), metaContent.childNode(0).toString(), Site.HBROWSE));
+            attributes.add(new Attribute(type, prefix.isEmpty() ? "" : prefix + ":" + metaContent.childNode(0), metaContent.childNode(0).toString(), Site.HBROWSE));
     }
 }

@@ -71,8 +71,7 @@ public class MusesContent extends BaseContentParser {
         content.setSite(Site.MUSES);
         String theUrl = canonicalUrl.isEmpty() ? url : canonicalUrl;
         if (theUrl.isEmpty() || 0 == nbImages) return content.setStatus(StatusContent.IGNORED);
-
-        content.setUrl(theUrl.replace(Site.MUSES.getUrl(), "").replace("https://comics.8muses.com", ""));
+        content.setRawUrl(theUrl);
 
         // == Circle (publisher), Artist and Series
         AttributeMap attributes = new AttributeMap();

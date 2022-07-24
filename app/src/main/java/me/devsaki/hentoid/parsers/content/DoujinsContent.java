@@ -37,7 +37,7 @@ public class DoujinsContent extends BaseContentParser {
         content.setSite(Site.DOUJINS);
         if (url.isEmpty()) return content.setStatus(StatusContent.IGNORED);
 
-        content.setUrl(url.replace(Site.DOUJINS.getUrl(), ""));
+        content.setRawUrl(url);
 
         if (breadcrumbs != null && !breadcrumbs.isEmpty()) {
             Element e = breadcrumbs.get(breadcrumbs.size() - 1);

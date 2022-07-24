@@ -1025,7 +1025,7 @@ public final class Preferences {
         static final boolean VIEWER_AUTO_ROTATE = false;
         public static final int COLOR_THEME = Constant.COLOR_THEME_LIGHT;
         static final boolean QUEUE_AUTOSTART = true;
-        static final int QUEUE_NEW_DOWNLOADS_POSITION = Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
+        public static final int QUEUE_NEW_DOWNLOADS_POSITION = Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
         static final boolean QUEUE_WIFI_ONLY = false;
         static final boolean DL_SIZE_WIFI = false;
         static final int DL_SIZE_WIFI_THRESHOLD = 40;

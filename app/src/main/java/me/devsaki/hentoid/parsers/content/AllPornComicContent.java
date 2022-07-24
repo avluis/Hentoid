@@ -47,7 +47,7 @@ public class AllPornComicContent extends BaseContentParser {
 
         content.setCoverImageUrl(coverUrl);
 
-        content.setUrl(url.replace(Site.ALLPORNCOMIC.getUrl(), ""));
+        content.setRawUrl(url);
         if (!title.isEmpty()) {
             content.setTitle(StringHelper.removeNonPrintableChars(title));
         } else content.setTitle(NO_TITLE);

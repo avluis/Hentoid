@@ -49,8 +49,7 @@ public class TsuminoContent extends BaseContentParser {
         content.setSite(TSUMINO);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
         if (theUrl.isEmpty()) return new Content().setStatus(StatusContent.IGNORED);
-
-        content.setUrl(theUrl.replace("/Read/Index", ""));
+        content.setRawUrl(theUrl);
         String coverUrl = (cover != null) ? ParseHelper.getImgSrc(cover) : "";
         if (!coverUrl.startsWith("http")) coverUrl = TSUMINO.getUrl() + coverUrl;
         content.setCoverImageUrl(coverUrl);
