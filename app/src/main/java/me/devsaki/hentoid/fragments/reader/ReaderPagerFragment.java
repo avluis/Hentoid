@@ -1411,6 +1411,8 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == Preferences.getContentOrientation(bookPreferences)) {
             smoothScroller = new ReaderSmoothScroller(requireContext()); // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
+            smoothScroller.setCurrentPositionY(scrollListener.getTotalScrolledY());
+            smoothScroller.setItemHeight(adapter.getDimensionsAtPosition(imageIndex).y);
             smoothScroller.setTargetPosition(adapter.getItemCount() - 1);
             smoothScroller.setSpeed(900f / (factor / 4f));
             llm.startSmoothScroll(smoothScroller);
@@ -1430,6 +1432,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             slideshowTimer = null;
         } else {
             smoothScroller = new ReaderSmoothScroller(requireContext()); // Mandatory; if we don't recreate it, we can't change scrolling speed as it is cached internally
+            smoothScroller.setCurrentPositionY(scrollListener.getTotalScrolledY());
             smoothScroller.setTargetPosition(Math.max(llm.findFirstVisibleItemPosition(), llm.findFirstCompletelyVisibleItemPosition()));
             llm.startSmoothScroll(smoothScroller);
         }

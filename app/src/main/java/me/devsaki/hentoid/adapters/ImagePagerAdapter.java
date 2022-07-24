@@ -2,6 +2,7 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -276,6 +277,14 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         initialAbsoluteScales.clear();
     }
 
+    public Point getDimensionsAtPosition(int position) {
+        if (recyclerView != null) {
+            ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+            if (holder != null) return holder.getDimensions();
+        }
+        return new Point();
+    }
+
     public float getAbsoluteScaleAtPosition(int position) {
         if (absoluteScales.containsKey(position)) {
             Float result = absoluteScales.get(position);
@@ -462,6 +471,14 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                     ssiv.setVirtualScale(rawScale * multiplier);
                     scaleMultiplier = multiplier;
                 }
+            }
+        }
+
+        Point getDimensions() {
+            if (!isImageView) {
+                return new Point(ssiv.getWidth(), ssiv.getHeight());
+            } else { // ImageView
+                return new Point(imageView.getWidth(), imageView.getHeight());
             }
         }
 

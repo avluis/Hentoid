@@ -13,6 +13,9 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
     private final IntConsumer onPositionChangeListener;
     private boolean isScrollEnabled = true;
 
+    private int mTotalScrolledX = 0;
+    private int mTotalScrolledY = 0;
+
     // Out of bounds scrolling detection
     private boolean isSettlingX = false;
     private boolean isSettlingY = false;
@@ -38,6 +41,9 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
     @Override
     public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
         super.onScrolled(recyclerView, dx, dy);
+
+        mTotalScrolledY += dy;
+        mTotalScrolledX += dx;
 
         LinearLayoutManager llm = (LinearLayoutManager) recyclerView.getLayoutManager();
         if (llm != null) {
@@ -100,5 +106,13 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
 
     public void enableScroll() {
         isScrollEnabled = true;
+    }
+
+    public int getTotalScrolledX() {
+        return mTotalScrolledX;
+    }
+
+    public int getTotalScrolledY() {
+        return mTotalScrolledY;
     }
 }
