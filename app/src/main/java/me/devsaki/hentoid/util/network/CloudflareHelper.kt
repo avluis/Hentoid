@@ -6,9 +6,6 @@ import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
 import android.webkit.*
-import io.reactivex.Observable
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.BuildConfig
 import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.core.HentoidApp
@@ -18,15 +15,11 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import timber.log.Timber
 import java.io.IOException
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 
 const val RELOAD_LIMIT = 3
 
 class CloudflareHelper {
 
-    private val compositeDisposable = CompositeDisposable()
     private var webView: CloudflareWebView? = null
 
     init {
@@ -46,10 +39,7 @@ class CloudflareHelper {
     // TODO doc
     fun tryPassCloudflare(
         revivedSite: Site,
-        oldCookie: String?,
-        onProgress: Runnable?,
-        onPassed: Runnable,
-        onFailed: Runnable
+        oldCookie: String?
     ) {
         val oldCookieInternal: String = oldCookie ?: StringHelper.protect(
             HttpHelper.parseCookies(
@@ -71,41 +61,32 @@ class CloudflareHelper {
             )
             webView?.loadUrl(revivedSite.url)
         }
-        val reloadTimer = AtomicInteger(0)
-        val reloadCounter = AtomicInteger(0)
-        val tasks = LinkedBlockingQueue<Runnable>()
+        var reloadTimer = 0
+        var reloadCounter = 0
+        var passed = false
         // Wait for cookies to refresh
-        compositeDisposable.add(
-            Observable.timer(1500, TimeUnit.MILLISECONDS)
-                .subscribeOn(Schedulers.computation())
-                .repeat()
-                .observeOn(Schedulers.from { e: Runnable -> tasks.add(e) })
-                .subscribe {
-                    val cfcookie =
-                        HttpHelper.parseCookies(HttpHelper.getCookies(revivedSite.url))[Consts.CLOUDFLARE_COOKIE]
-                    if (cfcookie != null && cfcookie.isNotEmpty() && cfcookie != oldCookieInternal) {
-                        Timber.d("CF-COOKIE : refreshed !")
-                        onPassed.run()
-                        compositeDisposable.clear()
-                    } else {
-                        Timber.v("CF-COOKIE : not refreshed")
-                        onProgress?.run()
-                        // Reload if nothing for 7.5s
-                        if (reloadTimer.incrementAndGet() > 5 && reloadCounter.incrementAndGet() < RELOAD_LIMIT) {
-                            reloadTimer.set(0)
-                            Timber.v("CF-COOKIE : RELOAD %d/%d", reloadCounter.get(), RELOAD_LIMIT)
-                            handler.post {
-                                webView?.reload()
-                            }
-                        }
-                        if (reloadCounter.get() >= RELOAD_LIMIT) {
-                            compositeDisposable.clear()
-                            onFailed.run()
-                        }
+        do {
+            val cfcookie =
+                HttpHelper.parseCookies(HttpHelper.getCookies(revivedSite.url))[Consts.CLOUDFLARE_COOKIE]
+            if (cfcookie != null && cfcookie.isNotEmpty() && cfcookie != oldCookieInternal) {
+                Timber.d("CF-COOKIE : refreshed !")
+                passed = true
+            } else {
+                Timber.v("CF-COOKIE : not refreshed")
+                // Reload if nothing for 7.5s
+                reloadTimer++
+                if (reloadTimer > 5 && reloadCounter < RELOAD_LIMIT) {
+                    reloadTimer = 0
+                    reloadCounter++
+                    Timber.v("CF-COOKIE : RELOAD %d/%d", reloadCounter, RELOAD_LIMIT)
+                    handler.post {
+                        webView?.reload()
                     }
                 }
-        )
-        tasks.take().run()
+            }
+            // We're polling the DB because we can't observe LiveData from a background service
+            Helper.pause(1500)
+        } while (reloadCounter < RELOAD_LIMIT && !passed)
     }
 
     fun clear() {
