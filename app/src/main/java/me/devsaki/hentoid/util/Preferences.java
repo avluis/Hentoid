@@ -436,10 +436,18 @@ public final class Preferences {
     }
 
     public static int getContentDisplayMode(final Map<String, String> bookPrefs) {
-        if (Constant.VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(bookPrefs))
-            return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_IMAGE_DISPLAY, Integer.toString(Default.VIEWER_IMAGE_DISPLAY)) + "");
-        else
+        if (Constant.VIEWER_ORIENTATION_HORIZONTAL == getContentOrientation(bookPrefs)) {
+            if (bookPrefs != null && bookPrefs.containsKey(Key.VIEWER_IMAGE_DISPLAY)) {
+                String value = bookPrefs.get(Key.VIEWER_IMAGE_DISPLAY);
+                if (value != null) return Integer.parseInt(value);
+            }
+            return getViewerDisplayMode();
+        } else
             return Constant.VIEWER_DISPLAY_FIT; // The only relevant mode for vertical (aka. webtoon) display
+    }
+
+    public static int getViewerDisplayMode() {
+        return Integer.parseInt(sharedPreferences.getString(Key.VIEWER_IMAGE_DISPLAY, Integer.toString(Default.VIEWER_IMAGE_DISPLAY)) + "");
     }
 
     public static int getContentBrowseMode(final Map<String, String> bookPrefs) {

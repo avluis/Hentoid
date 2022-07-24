@@ -79,6 +79,36 @@
         app:spinner_popup_background="@color/dark_gray"
         app:spinner_popup_elevation="14dp" />
 
+    <TextView
+        android:id="@+id/book_prefs_display_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:text="@string/pref_viewer_display_mode"
+        android:textSize="@dimen/text_subtitle_1"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_spin" />
+
+    <com.skydoves.powerspinner.PowerSpinnerView
+        android:id="@+id/book_prefs_display_spin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/bg_spinner_border"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/book_prefs_display_txt"
+        app:spinner_arrow_gravity="end"
+        app:spinner_arrow_padding="8dp"
+        app:spinner_arrow_tint="@color/white_opacity_66"
+        app:spinner_divider_show="true"
+        app:spinner_divider_size="0.4dp"
+        app:spinner_popup_background="@color/dark_gray"
+        app:spinner_popup_elevation="14dp" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/book_prefs_app_prefs_btn"
         style="@style/Widget.MaterialComponents.Button.TextButton.Dialog"
@@ -88,7 +118,7 @@
         android:text="@string/goto_app_prefs"
         app:icon="@drawable/ic_settings"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_spin" />
+        app:layout_constraintTop_toBottomOf="@id/book_prefs_display_spin" />
 
     <TextView
         android:id="@+id/book_prefs_ok_btn"
@@ -105,6 +135,6 @@
         android:paddingEnd="16dp"
         android:text="@android:string/ok"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/book_prefs_rendering_spin" />
+        app:layout_constraintTop_toBottomOf="@id/book_prefs_display_spin" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

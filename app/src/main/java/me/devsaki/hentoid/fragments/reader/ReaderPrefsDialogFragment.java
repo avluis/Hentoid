@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.reader;
 
 import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_BROWSE_MODE;
+import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_IMAGE_DISPLAY;
 import static me.devsaki.hentoid.util.Preferences.Key.VIEWER_RENDERING;
 
 import android.content.Intent;
@@ -33,10 +34,12 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
 
     private static final String RENDERING_MODE = "render_mode";
     private static final String BROWSE_MODE = "browse_mode";
+    private static final String DISPLAY_MODE = "display_mode";
 
     private Parent parent;
     private int renderingMode;
     private int browseMode;
+    private int displayMode;
 
 
     public static void invoke(Fragment parent, Map<String, String> bookPrefs) {
@@ -48,6 +51,8 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
                 args.putInt(RENDERING_MODE, Preferences.isContentSmoothRendering(bookPrefs) ? 1 : 0);
             if (bookPrefs.containsKey(VIEWER_BROWSE_MODE))
                 args.putInt(BROWSE_MODE, Preferences.getContentBrowseMode(bookPrefs));
+            if (bookPrefs.containsKey(VIEWER_IMAGE_DISPLAY))
+                args.putInt(DISPLAY_MODE, Preferences.getContentDisplayMode(bookPrefs));
         }
         fragment.setArguments(args);
 
@@ -61,6 +66,7 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
         if (null == getArguments()) throw new IllegalArgumentException("No arguments found");
         renderingMode = getArguments().getInt(RENDERING_MODE, -1);
         browseMode = getArguments().getInt(BROWSE_MODE, -1);
+        displayMode = getArguments().getInt(DISPLAY_MODE, -1);
         parent = (Parent) getParentFragment();
     }
 
@@ -114,6 +120,18 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
         } else renderSpin.selectItemByIndex(renderingMode + 1);
 
 
+        String[] displayModes = getResources().getStringArray(R.array.pref_viewer_display_mode_entries);
+        List<String> displayItems = new ArrayList<>();
+        // App pref
+        displayItems.add(res.getString(R.string.use_app_prefs, displayModes[Preferences.getViewerDisplayMode()]));
+        // Available prefs
+        displayItems.addAll(Arrays.asList(displayModes));
+
+        PowerSpinnerView displaySpin = rootView.findViewById(R.id.book_prefs_display_spin);
+        displaySpin.setItems(displayItems);
+        displaySpin.selectItemByIndex(displayMode + 1);
+
+
         // == Bottom buttons
 
         View appSettingsBtn = rootView.findViewById(R.id.book_prefs_app_prefs_btn);
@@ -134,6 +152,8 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
                 newPrefs.put(VIEWER_RENDERING, (renderSpin.getSelectedIndex() - 1) + "");
             if (browseSpin.getSelectedIndex() > 0)
                 newPrefs.put(VIEWER_BROWSE_MODE, (browseSpin.getSelectedIndex() - 1) + "");
+            if (displaySpin.getSelectedIndex() > 0)
+                newPrefs.put(VIEWER_IMAGE_DISPLAY, (displaySpin.getSelectedIndex() - 1) + "");
             parent.onBookPreferenceChanged(newPrefs);
             dismiss();
         });
