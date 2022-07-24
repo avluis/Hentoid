@@ -1088,7 +1088,7 @@ public final class ContentHelper {
     }
 
     // TODO factorize with reparseFromScratch
-    public static Optional<Content> parseFromScratch(@NonNull final String url) throws IOException {
+    public static Optional<Content> parseFromScratch(@NonNull final String url) throws IOException, CloudflareHelper.CloudflareProtectedException {
         Helper.assertNonUiThread();
 
         Site site = Site.searchByUrl(url);
@@ -1102,16 +1102,9 @@ public final class ContentHelper {
 
         Response response = HttpHelper.getOnlineResourceFast(url, requestHeadersList, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
 
-        // Try passing Cloudflare if blocked by Cloudflare
-        if (503 == response.code() && site.isUseCloudflare()) {
-            CloudflareHelper cfHelper = new CloudflareHelper();
-            cfHelper.tryPassCloudflare(site, null, null, () -> {
-                // TODO
-            }, () -> {
-                // TODO
-            });
-            return Optional.empty();
-        }
+        // Raise exception if blocked by Cloudflare
+        if (503 == response.code() && site.isUseCloudflare())
+            throw new CloudflareHelper.CloudflareProtectedException();
 
         // Scram if the response is a redirection or an error
         if (response.code() >= 300) return Optional.empty();

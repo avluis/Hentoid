@@ -5,10 +5,8 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Handler
 import android.os.Looper
-import android.webkit.CookieManager
-import android.webkit.WebView
+import android.webkit.*
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.BuildConfig
@@ -16,8 +14,11 @@ import me.devsaki.hentoid.core.Consts
 import me.devsaki.hentoid.core.HentoidApp
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import timber.log.Timber
+import java.io.IOException
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -60,19 +61,25 @@ class CloudflareHelper {
         val domain = "." + HttpHelper.getDomainFromUri(revivedSite.url)
         HttpHelper.setCookies(domain, Consts.CLOUDFLARE_COOKIE + "=;Max-Age=0; secure; HttpOnly")
 
-        webView?.setUserAgent(revivedSite.userAgent);
         val handler = Handler(Looper.getMainLooper())
         handler.post {
+            webView?.setUserAgent(revivedSite.userAgent)
+            webView?.setAgentProperties(
+                revivedSite.useMobileAgent(),
+                revivedSite.useHentoidAgent(),
+                revivedSite.useWebviewAgent()
+            )
             webView?.loadUrl(revivedSite.url)
         }
         val reloadTimer = AtomicInteger(0)
         val reloadCounter = AtomicInteger(0)
+        val tasks = LinkedBlockingQueue<Runnable>()
         // Wait for cookies to refresh
         compositeDisposable.add(
             Observable.timer(1500, TimeUnit.MILLISECONDS)
                 .subscribeOn(Schedulers.computation())
                 .repeat()
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.from { e: Runnable -> tasks.add(e) })
                 .subscribe {
                     val cfcookie =
                         HttpHelper.parseCookies(HttpHelper.getCookies(revivedSite.url))[Consts.CLOUDFLARE_COOKIE]
@@ -98,19 +105,26 @@ class CloudflareHelper {
                     }
                 }
         )
+        tasks.take().run()
     }
 
     fun clear() {
-        compositeDisposable.clear()
         webView?.removeAllViews()
-        webView?.destroy()
+        val handler = Handler(Looper.getMainLooper())
+        handler.post {
+            webView?.destroy()
+        }
         webView = null
     }
 
-    internal class CloudflareWebView @SuppressLint("SetJavaScriptEnabled") constructor(
-        context: Context
-    ) :
-        WebView(context) {
+    class CloudflareProtectedException : Exception()
+    class CloudflareFailedException : Exception()
+
+    @SuppressLint("SetJavaScriptEnabled")
+    internal class CloudflareWebView constructor(context: Context) : WebView(context) {
+
+        val client: CloudflareWebViewClient
+
         init {
             val cookieManager = CookieManager.getInstance()
             cookieManager.setAcceptThirdPartyCookies(this, true)
@@ -123,10 +137,62 @@ class CloudflareHelper {
                 it.loadWithOverviewMode = true
             }
             if (BuildConfig.DEBUG) setWebContentsDebuggingEnabled(true)
+            client = CloudflareWebViewClient(Preferences.getDnsOverHttps() > -1)
+            webViewClient = client
         }
 
         fun setUserAgent(agent: String) {
             settings.userAgentString = agent
+        }
+
+        fun setAgentProperties(
+            useMobileAgent: Boolean,
+            useHentoidAgent: Boolean,
+            useWebviewAgent: Boolean
+        ) {
+            client.useMobileAgent = useMobileAgent
+            client.useHentoidAgent = useHentoidAgent
+            client.useWebviewAgent = useWebviewAgent
+        }
+    }
+
+    internal class CloudflareWebViewClient(private val dnsOverHttpsEnabled: Boolean) :
+        WebViewClient() {
+
+        var useMobileAgent = false
+        var useHentoidAgent = false
+        var useWebviewAgent = false
+
+        /**
+         * Note : this method is called by a non-UI thread
+         */
+        override fun shouldInterceptRequest(
+            view: WebView,
+            request: WebResourceRequest
+        ): WebResourceResponse? {
+            if (dnsOverHttpsEnabled) {
+                // Query resource using OkHttp
+                val urlStr = request.url.toString()
+                val requestHeadersList =
+                    HttpHelper.webkitRequestHeadersToOkHttpHeaders(request.requestHeaders, urlStr)
+                try {
+                    val response = HttpHelper.getOnlineResource(
+                        urlStr,
+                        requestHeadersList,
+                        useMobileAgent,
+                        useHentoidAgent,
+                        useWebviewAgent
+                    )
+
+                    // Scram if the response is a redirection or an error
+                    if (response.code >= 300) return null
+                    val body = response.body ?: throw IOException("Empty body")
+                    return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream())
+                } catch (e: IOException) {
+                    Timber.i(e)
+                }
+            }
+            return null
         }
     }
 }

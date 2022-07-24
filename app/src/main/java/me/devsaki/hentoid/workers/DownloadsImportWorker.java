@@ -33,6 +33,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.network.CloudflareHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.DownloadsImportData;
 import timber.log.Timber;
@@ -46,10 +47,12 @@ public class DownloadsImportWorker extends BaseWorker {
     // Variable used during the import process
     private CollectionDAO dao;
     private int totalItems = 0;
+    private CloudflareHelper cfHelper = null;
     private int nbOK = 0;
     private int nbKO = 0;
 
     private final CompositeDisposable notificationDisposables = new CompositeDisposable();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
     public DownloadsImportWorker(
@@ -69,12 +72,15 @@ public class DownloadsImportWorker extends BaseWorker {
 
     @Override
     void onInterrupt() {
+        compositeDisposable.clear();
         notificationDisposables.clear();
     }
 
     @Override
     void onClear() {
         notificationDisposables.clear();
+        compositeDisposable.clear();
+        if (cfHelper != null) cfHelper.clear();
         if (dao != null) dao.cleanup();
     }
 
@@ -110,11 +116,16 @@ public class DownloadsImportWorker extends BaseWorker {
 
         dao = new ObjectBoxDAO(context);
 
-        for (String s : downloads) {
-            String galleryUrl = s;
-            if (StringHelper.isNumeric(galleryUrl))
-                galleryUrl = Content.getGalleryUrlFromId(Site.NHENTAI, galleryUrl);
-            importGallery(galleryUrl);
+        try {
+            for (String s : downloads) {
+                String galleryUrl = s;
+                if (StringHelper.isNumeric(galleryUrl))
+                    galleryUrl = Content.getGalleryUrlFromId(Site.NHENTAI, galleryUrl);
+                importGallery(galleryUrl);
+            }
+        } catch (InterruptedException ie) {
+            Timber.e(ie);
+            Thread.currentThread().interrupt();
         }
 
         if (Preferences.isQueueAutostart())
@@ -123,9 +134,14 @@ public class DownloadsImportWorker extends BaseWorker {
         notifyProcessEnd();
     }
 
-    private void importGallery(@NonNull String url) {
+    private void importGallery(@NonNull String url) throws InterruptedException {
         // TODO CLOUDFLARE 503
         // TODO don't add if already in queue or in collection
+        Site site = Site.searchByUrl(url);
+        if (null == site || Site.NONE == site) {
+            trace(Log.WARN, "ERROR : Unsupported source @ %s", url);
+            return;
+        }
 
         try {
             Optional<Content> content = ContentHelper.parseFromScratch(url);
@@ -146,6 +162,10 @@ public class DownloadsImportWorker extends BaseWorker {
         } catch (IOException e) {
             trace(Log.WARN, "ERROR : While loading content @ %s", url);
             nextKO(getApplicationContext(), e);
+        } catch (CloudflareHelper.CloudflareProtectedException cpe) {
+            trace(Log.INFO, "Trying to bypass Cloudflare for content @ %s", url);
+            if (null == cfHelper) cfHelper = new CloudflareHelper();
+            cfHelper.tryPassCloudflare(site, null, null, null, null); // TODO
         }
     }
 
