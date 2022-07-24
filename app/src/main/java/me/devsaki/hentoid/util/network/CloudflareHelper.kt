@@ -15,12 +15,14 @@ import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import timber.log.Timber
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
 
 const val RELOAD_LIMIT = 3
 
 class CloudflareHelper {
 
     private var webView: CloudflareWebView? = null
+    private val stopped = AtomicBoolean(false)
 
     init {
         val handler = Handler(Looper.getMainLooper())
@@ -40,7 +42,7 @@ class CloudflareHelper {
     fun tryPassCloudflare(
         revivedSite: Site,
         oldCookie: String?
-    ) {
+    ): Boolean {
         val oldCookieInternal: String = oldCookie ?: StringHelper.protect(
             HttpHelper.parseCookies(
                 HttpHelper.getCookies(revivedSite.url)
@@ -86,10 +88,13 @@ class CloudflareHelper {
             }
             // We're polling the DB because we can't observe LiveData from a background service
             Helper.pause(1500)
-        } while (reloadCounter < RELOAD_LIMIT && !passed)
+        } while (reloadCounter < RELOAD_LIMIT && !passed && !stopped.get())
+
+        return passed
     }
 
     fun clear() {
+        stopped.set(true)
         webView?.removeAllViews()
         val handler = Handler(Looper.getMainLooper())
         handler.post {

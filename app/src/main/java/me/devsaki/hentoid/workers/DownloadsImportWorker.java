@@ -121,7 +121,7 @@ public class DownloadsImportWorker extends BaseWorker {
                 String galleryUrl = s;
                 if (StringHelper.isNumeric(galleryUrl))
                     galleryUrl = Content.getGalleryUrlFromId(Site.NHENTAI, galleryUrl);
-                importGallery(galleryUrl);
+                importGallery(galleryUrl, false);
             }
         } catch (InterruptedException ie) {
             Timber.e(ie);
@@ -134,8 +134,7 @@ public class DownloadsImportWorker extends BaseWorker {
         notifyProcessEnd();
     }
 
-    private void importGallery(@NonNull String url) throws InterruptedException {
-        // TODO CLOUDFLARE 503
+    private void importGallery(@NonNull String url, boolean hasPassedCf) throws InterruptedException {
         // TODO don't add if already in queue or in collection
         Site site = Site.searchByUrl(url);
         if (null == site || Site.NONE == site) {
@@ -163,9 +162,17 @@ public class DownloadsImportWorker extends BaseWorker {
             trace(Log.WARN, "ERROR : While loading content @ %s", url);
             nextKO(getApplicationContext(), e);
         } catch (CloudflareHelper.CloudflareProtectedException cpe) {
+            if (hasPassedCf) {
+                trace(Log.WARN, "Cloudflare bypass ineffective for content @ %s", url);
+                return;
+            }
             trace(Log.INFO, "Trying to bypass Cloudflare for content @ %s", url);
             if (null == cfHelper) cfHelper = new CloudflareHelper();
-            cfHelper.tryPassCloudflare(site, null, null, null, null); // TODO
+            if (cfHelper.tryPassCloudflare(site, null)) {
+                importGallery(url, true);
+            } else {
+                trace(Log.WARN, "Cloudflare bypass failed for content @ %s", url);
+            }
         }
     }
 

@@ -32,7 +32,11 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.QueueActivityBundle;
 import me.devsaki.hentoid.database.domains.Content;
@@ -80,6 +84,7 @@ public class QueueActivity extends BaseActivity {
     private TextView reviveCancel;
 
     private CloudflareHelper cloudflareHelper;
+    private Disposable reviveDisposable;
 
     private QueueViewModel viewModel;
 
@@ -107,7 +112,7 @@ public class QueueActivity extends BaseActivity {
         reviveOverlay = findViewById(R.id.download_revive_txt);
         reviveProgress = findViewById(R.id.download_revive_progress);
         reviveCancel = findViewById(R.id.download_revive_cancel);
-        reviveCancel.setOnClickListener(v -> cancelReviveDownload());
+        reviveCancel.setOnClickListener(v -> clearReviveDownload());
 
         // Instantiate a ViewPager and a PagerAdapter.
         tabLayout = findViewById(R.id.queue_tabs);
@@ -171,6 +176,8 @@ public class QueueActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
+        if (cloudflareHelper != null) cloudflareHelper.clear();
+        if (reviveDisposable != null) reviveDisposable.dispose();
         super.onDestroy();
     }
 
@@ -304,8 +311,6 @@ public class QueueActivity extends BaseActivity {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onReviveDownload(DownloadReviveEvent event) {
-        if (cloudflareHelper != null) return;
-
         reviveDownload(event.site, event.url);
     }
 
@@ -323,27 +328,33 @@ public class QueueActivity extends BaseActivity {
         NotificationManager userActionNotificationManager = new NotificationManager(this, R.id.user_action_notification);
         userActionNotificationManager.cancel();
 
-        cloudflareHelper = new CloudflareHelper();
-        cloudflareHelper.tryPassCloudflare(
-                revivedSite,
-                oldCookie,
-                () -> {
-                    int currentProgress = reviveProgress.getProgress();
-                    if (currentProgress > 0) reviveProgress.setProgress(currentProgress - 1);
-                },
-                () -> {
-                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_UNPAUSE));
-                    cancelReviveDownload();
-                }, this::cancelReviveDownload
-        );
-
         reviveProgress.setMax((int) Math.round(90 / 1.5)); // How many ticks in 1.5 minutes, which is the maximum time for revival
         reviveProgress.setProgress(reviveProgress.getMax());
         changeReviveUIVisibility(true);
+
+        // Start progress UI
+        reviveDisposable = Observable.timer(1500, TimeUnit.MILLISECONDS)
+                .repeat()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(
+                        v -> {
+                            int currentProgress = reviveProgress.getProgress();
+                            if (currentProgress > 0)
+                                reviveProgress.setProgress(currentProgress - 1);
+                        }
+                );
+
+        // Try passing CF
+        if (null == cloudflareHelper) cloudflareHelper = new CloudflareHelper();
+        if (cloudflareHelper.tryPassCloudflare(revivedSite, oldCookie)) {
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_UNPAUSE));
+        }
+        clearReviveDownload();
     }
 
-    private void cancelReviveDownload() {
+    private void clearReviveDownload() {
         changeReviveUIVisibility(false);
+        if (reviveDisposable != null) reviveDisposable.dispose();
         cloudflareHelper.clear();
     }
 }
