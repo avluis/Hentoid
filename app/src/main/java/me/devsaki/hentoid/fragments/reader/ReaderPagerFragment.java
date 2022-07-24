@@ -1415,7 +1415,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             smoothScroller.setSpeed(900f / (factor / 4f));
             llm.startSmoothScroll(smoothScroller);
         } else {
-            slideshowTimer = Observable.timer((long) factor * 1000, TimeUnit.MILLISECONDS)
+            slideshowTimer = Observable.timer((long) (factor * 1000), TimeUnit.MILLISECONDS)
                     .subscribeOn(Schedulers.computation())
                     .repeat()
                     .observeOn(AndroidSchedulers.mainThread())
