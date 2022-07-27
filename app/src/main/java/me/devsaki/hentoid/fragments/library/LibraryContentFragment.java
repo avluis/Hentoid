@@ -1481,8 +1481,9 @@ public class LibraryContentFragment extends Fragment implements
             List<Content> contentList = Stream.of(selectedItems).map(ContentItem::getContent).withoutNulls().toList();
             long selectedLocalCount = Stream.of(contentList).filterNot(c -> c.getStatus().equals(StatusContent.EXTERNAL)).filterNot(c -> c.getDownloadMode() == Content.DownloadMode.STREAM).count();
             long selectedStreamedCount = Stream.of(contentList).map(Content::getDownloadMode).filter(m -> m == Content.DownloadMode.STREAM).count();
-            long selectedEligibleExternalCount = Stream.of(contentList).filter(c -> c.getStatus().equals(StatusContent.EXTERNAL) && !c.isArchive()).count();
-            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedStreamedCount, selectedEligibleExternalCount);
+            long selectedNonArchiveExternalCount = Stream.of(contentList).filter(c -> c.getStatus().equals(StatusContent.EXTERNAL) && !c.isArchive()).count();
+            long selectedArchiveExternalCount = Stream.of(contentList).filter(c -> c.getStatus().equals(StatusContent.EXTERNAL) && c.isArchive()).count();
+            activity.get().updateSelectionToolbar(selectedCount, selectedLocalCount, selectedStreamedCount, selectedNonArchiveExternalCount, selectedArchiveExternalCount);
             activity.get().getSelectionToolbar().setVisibility(View.VISIBLE);
         }
     }
