@@ -67,8 +67,8 @@ public class TooltipHelper {
 
         if (orientation.equals(ArrowOrientation.BOTTOM)) balloon.showAlignTop(anchor);
         else if (orientation.equals(ArrowOrientation.TOP)) balloon.showAlignBottom(anchor);
-        else if (orientation.equals(ArrowOrientation.LEFT)) balloon.showAlignRight(anchor);
-        else if (orientation.equals(ArrowOrientation.RIGHT)) balloon.showAlignLeft(anchor);
+        else if (orientation.equals(ArrowOrientation.START)) balloon.showAlignRight(anchor);
+        else if (orientation.equals(ArrowOrientation.END)) balloon.showAlignLeft(anchor);
     }
 
     private static String getViewName(@NonNull final View view) {
