@@ -27,7 +27,7 @@
     <string name="pref_misc">Інше</string>
     <string name="pref_cat_language">Мова інтерфейсу</string>
     <string name="pref_force_english_title">Примусово використовувати англійську</string>
-    <string name="pref_force_english_summary_off">Використовується мова пристрою, якщо додаток підтримує його</string>
+    <string name="pref_force_english_summary_off">Використовується мова пристрою, якщо додаток підтримує її</string>
     <string name="pref_force_english_summary_on">Використовується англійська мова</string>
 
     <!-- Storage -->
@@ -199,6 +199,7 @@
     <string name="pref_viewer_continuous_summary_off">Остання сторінка книги справді остання</string>
     <string name="pref_viewer_continuous_summary_on">З останньої сторінки книги можна піти на наступну книгу</string>
     <string name="pref_viewer_read_threshold">Вважати книгу прочитаною після N сторінок</string>
+    <string name="pref_viewer_ratio_completed_threshold">Вважати книгу прочитаною після відсотка сторінок</string>
     <string name="pref_viewer_slideshow_delay">Слайдшоу / Час показу кожної сторінки</string>
     <string name="pref_viewer_slideshow_delay_vertical">Слайдшоу / Швидкість вертикального перегортання</string>
     <string name="doh_warning">Деякі сайти погано працюють з DNS через HTTPS. Скористайтеся стороннім додатком для DNS, якщо ви маєте проблеми при навігації (наприклад: порожні сторінки або помилки під час авторизації)</string>
