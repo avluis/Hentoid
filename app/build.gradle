@@ -190,7 +190,7 @@ dependencies {
     implementation 'com.github.skydoves:balloon:1.4.6'
 
     // Dropdown lists
-    implementation 'com.github.skydoves:powerspinner:1.1.9'
+    implementation 'com.github.skydoves:powerspinner:1.2.3'
 
     // Popup menus with icons
     implementation 'com.github.skydoves:powermenu:2.2.0'

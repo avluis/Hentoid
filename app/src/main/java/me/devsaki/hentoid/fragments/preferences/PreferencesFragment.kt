@@ -88,13 +88,11 @@ class PreferencesFragment : PreferenceFragmentCompat(),
 
     override fun onResume() {
         super.onResume()
-        preferenceScreen.sharedPreferences
-            .registerOnSharedPreferenceChangeListener(this)
+        preferenceScreen.sharedPreferences?.registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onDestroy() {
-        preferenceScreen.sharedPreferences
-            .unregisterOnSharedPreferenceChangeListener(this)
+        preferenceScreen.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(this)
         super.onDestroy()
     }
 

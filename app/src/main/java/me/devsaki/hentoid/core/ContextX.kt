@@ -42,7 +42,7 @@ fun Context.clearWebviewCache(callback: Consumer<Boolean>?) {
     // Clear webview cache (needs to execute inside the activity's Looper)
     val h = Handler(Looper.getMainLooper())
     h.post {
-        var webView: WebView? = null
+        var webView: WebView?
         if (WebkitPackageHelper.getWebViewAvailable()) {
             try {
                 webView = NestedScrollWebView(this)
