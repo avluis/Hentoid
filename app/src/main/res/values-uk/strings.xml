@@ -48,6 +48,7 @@
     <string name="_default">за замовчуванням</string>
     <string name="empty">порожньо</string>
     <string name="none">Ніяк</string>
+    <string name="disabled_generic">Відключено</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">Перехід на API 29</string>
@@ -120,6 +121,7 @@
     <string name="invert_queue">Інвертувати порядок</string>
     <string name="redownload_all">Завантажити все знову</string>
     <string name="cancel_all_errors">Скасувати всі помилки</string>
+    <string name="import_downloads">Імпортувати завантаження</string>
     <string name="move_top">В початок</string>
     <string name="move_bottom">В кінець</string>
     <string name="queue_paused">Черга призупинена</string>
@@ -187,6 +189,15 @@
     <string name="download_notif_speed"><x:g id="size_dled" example="3.88">%1$d</x:g><x:g id="formatted_estimated_total" example="/14.56">%2$s</x:g> МБ, <x:g id="speed_kbps" example="102.4">%3$d</x:g> Кб/c</string>
     <string name="download_notif_failed">Завантаження не вдалося</string>
     <string name="download_notif_failed_details">Неможливо завантажити <x:g id="book_name" example="Крута хентай-манґа">%1$s</x:g>: не вдалося створити папку <x:g id="path" example="/storage/emulated/0/Hentoid/nhentai/coolhmanga">%2$s</x:g>. Будь ласка, перевірте папку Hentoid та повторіть завантаження за допомогою кнопки \'!\'.</string>
+
+    <!-- Import downloads -->
+    <string name="import_downloads_title">Імпорт завантажень</string>
+    <plurals name="import_downloads_found">
+        <item quantity="one"><x:g example="1" id="downloads">%d</x:g> завантаження оброблено</item>
+        <item quantity="few"><x:g example="2" id="downloads">%d</x:g> завантаження оброблено</item>
+        <item quantity="many"><x:g example="2" id="downloads">%d</x:g> завантажень оброблено</item>
+    </plurals>
+    <string name="importing_downloads">Импортирую загрузки…</string>
 
     <!-- TextViews -->
     <string name="work_series">Сеттинг: <x:g id="series" example="original">%s</x:g></string>
@@ -706,7 +717,7 @@
     <string name="search_type_entries_1">Всі види книг</string>
     <string name="search_type_entries_2">Папка</string>
     <string name="search_type_entries_3">Стрім</string>
-    <string name="search_type_entries_4">Архив</string>
+    <string name="search_type_entries_4">Архів</string>
     <string name="search_type_entries_5">Пустушка</string>
 
     <!-- Image viewer -->

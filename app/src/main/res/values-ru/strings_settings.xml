@@ -199,6 +199,7 @@
     <string name="pref_viewer_continuous_summary_off">Последняя страница книги действительно последняя</string>
     <string name="pref_viewer_continuous_summary_on">С последней страницы книги можно уйти на следующую книгу</string>
     <string name="pref_viewer_read_threshold">Считать книгу прочитанной после N страниц</string>
+    <string name="pref_viewer_ratio_completed_threshold">Считать книгу прочитанной после процента страниц</string>
     <string name="pref_viewer_slideshow_delay">Слайдшоу / Время показа каждой страницы</string>
     <string name="pref_viewer_slideshow_delay_vertical">Слайдшоу / Скорость вертикального пролистывания</string>
     <string name="doh_warning">Некоторые сайты плохо работают с DNS через HTTPS. Воспользуйтесь сторонним приложением для DNS, если вы испытываете проблемы при навигации (напрмер: пустые страницы или ошибки при авторизации)</string>
