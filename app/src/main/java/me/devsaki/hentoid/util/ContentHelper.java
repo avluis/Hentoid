@@ -18,6 +18,9 @@ import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import net.greypanther.natsort.CaseInsensitiveSimpleNaturalComparator;
@@ -1365,6 +1368,48 @@ public final class ContentHelper {
             String artists = android.text.TextUtils.join(", ", allArtists);
             return context.getString(R.string.work_artist, artists);
         }
+    }
+
+    // TODO doc
+    public static String formatSeriesForDisplay(@NonNull final Context context, @NonNull final Content content) {
+        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
+        if (seriesAttributes == null || seriesAttributes.isEmpty()) {
+            return "";
+        } else {
+            List<String> allSeries = new ArrayList<>();
+            for (Attribute attribute : seriesAttributes) {
+                allSeries.add(attribute.getName());
+            }
+            String series = android.text.TextUtils.join(", ", allSeries);
+            return context.getString(R.string.work_series, series);
+        }
+    }
+
+    // TODO doc
+    @Nullable
+    public static GlideUrl bindOnlineCover(@NonNull final Content content, @NonNull final String thumbLocation) {
+        if (WebkitPackageHelper.getWebViewAvailable()) {
+            String cookieStr = null;
+            String referer = null;
+
+            // Quickly skip JSON deserialization if there are no cookies in downloadParams
+            String downloadParamsStr = content.getDownloadParams();
+            if (downloadParamsStr != null && downloadParamsStr.contains(HttpHelper.HEADER_COOKIE_KEY)) {
+                Map<String, String> downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr);
+                cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
+                referer = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+            }
+            if (null == cookieStr) cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
+            if (null == referer) referer = content.getGalleryUrl();
+
+            LazyHeaders.Builder builder = new LazyHeaders.Builder()
+                    .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
+                    .addHeader(HttpHelper.HEADER_REFERER_KEY, referer)
+                    .addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
+
+            return new GlideUrl(thumbLocation, builder.build()); // From URL
+        }
+        return null;
     }
 
     /**

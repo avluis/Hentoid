@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.MetadataEditActivity">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorPrimary"
+        android:elevation="@dimen/toolbar_layout_elevation"
+        android:minHeight="?android:attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/meta_edit_menu"
+        app:title="@string/title_activity_meta_edit"
+        tools:ignore="UnusedAttribute" />
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:textSize="@dimen/text_subtitle_1"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        tools:text="This is the title. What a nice title" />
+
+    <ImageView
+        android:id="@+id/ivCover"
+        android:layout_width="100dp"
+        android:layout_height="133dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:adjustViewBounds="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/ic_hentoid_trans"
+        tools:tint="@color/light_gray" />
+
+    <ImageView
+        android:id="@+id/ivFlag"
+        android:layout_width="40dp"
+        android:layout_height="30dp"
+        android:adjustViewBounds="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/ivCover"
+        app:layout_constraintEnd_toEndOf="@id/ivCover"
+        tools:ignore="ContentDescription"
+        tools:src="@drawable/flag_cn"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/tvArtist"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/card_tags_light"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/ivCover"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        tools:text="@string/book_artist" />
+
+    <TextView
+        android:id="@+id/tvSeries"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/card_tags_light"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@id/tvArtist"
+        app:layout_constraintStart_toStartOf="@id/tvArtist"
+        app:layout_constraintTop_toBottomOf="@id/tvArtist"
+        tools:text="@string/book_series" />
+
+    <TextView
+        android:id="@+id/tvTags"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/card_tags_light"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@id/tvArtist"
+        app:layout_constraintStart_toStartOf="@id/tvArtist"
+        app:layout_constraintTop_toBottomOf="@id/tvSeries"
+        tools:text="@string/book_tags" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/title_new"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:hint="@string/new_title"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tvTags"
+        tools:visibility="visible">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <me.devsaki.hentoid.views.MaxHeightRecyclerView
+        android:id="@+id/tags"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:textIsSelectable="false"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTags"
+        app:maxHeight="200dp"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -120,6 +120,14 @@ fun Bundle.intArray() = object : ReadWriteProperty<Any, IntArray?> {
         putIntArray(property.name, value)
 }
 
+fun Bundle.longArray() = object : ReadWriteProperty<Any, LongArray?> {
+    override fun getValue(thisRef: Any, property: KProperty<*>) =
+        getLongArray(property.name)
+
+    override fun setValue(thisRef: Any, property: KProperty<*>, value: LongArray?) =
+        putLongArray(property.name, value)
+}
+
 fun Bundle.intArrayList() = object : ReadWriteProperty<Any, ArrayList<Int>?> {
     override fun getValue(thisRef: Any, property: KProperty<*>) =
         getIntegerArrayList(property.name)

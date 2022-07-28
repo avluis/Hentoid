@@ -53,6 +53,7 @@
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
+    <string name="title_activity_meta_edit">Edit metadata</string>
 
     <!-- API29 migration / library refresh screen -->
     <string name="api29_migration_title">Hentoid v12\nFile management update</string>
