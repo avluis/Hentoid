@@ -40,6 +40,7 @@
     <string name="_default">デフォルト</string>
     <string name="empty">空</string>
     <string name="none">無し</string>
+    <string name="disabled_generic">無効</string>
 <string name="title_activity_api29_migration">API29の移行</string>
     <string name="title_activity_downloads">ライブラリー</string>
     <string name="title_activity_queue">キュー</string>
@@ -103,6 +104,7 @@
     <string name="invert_queue">キューを反転</string>
     <string name="redownload_all">全て再ダウンロード</string>
     <string name="cancel_all_errors">全てのエラーをキャンセル</string>
+    <string name="import_downloads">ダウンロードのインポート</string>
     <string name="move_top">上に移動</string>
     <string name="move_bottom">下に移動</string>
     <string name="queue_paused">キューが一時停止しました</string>
@@ -164,6 +166,12 @@
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g>メガバイト＠<x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">ダウンロードに失敗しました</string>
     <string name="download_notif_failed_details">ダウンロードできません<x:g example="Cool H-Manga" id="book_name">%1$s</x:g>：フォルダを作成できません<x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>。 Hentoidフォルダを確認し、「！」を使用してダウンロードを再試行してください</string>
+<string name="import_downloads_title">ダウンロードのインポート</string>
+    <plurals name="import_downloads_found">
+        <item quantity="one"><x:g example="1" id="downloads">%d</x:g>有効なダウンロードが見つかりました</item>
+        <item quantity="other"><x:g example="2" id="downloads">%d</x:g>有効なダウンロードが見つかりました</item>
+    </plurals>
+    <string name="importing_downloads">ダウンロードのインポート…</string>
 <string name="work_series">シリーズ：<x:g example="original" id="series">%s</x:g></string>
     <string name="work_artist">作者：<x:g example="hayao miyazaki" id="artist">%s</x:g></string>
     <plurals name="work_pages_missing">

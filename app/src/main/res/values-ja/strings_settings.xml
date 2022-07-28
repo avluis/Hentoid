@@ -23,10 +23,10 @@
     <string name="pref_color_theme_title">カラーテーマ</string>
     <string name="pref_color_theme_summary">現在のテーマ：<x:g example="Deep Red" id="theme_name">%s</x:g></string>
     <string name="pref_misc">その他</string>
-    <string name="pref_cat_language">言語</string>
-    <string name="pref_force_english_title">言語を強制的に英語にする</string>
+    <string name="pref_cat_language">インターフェースの言語</string>
+    <string name="pref_force_english_title">英語ロケールを強制する</string>
     <string name="pref_force_english_summary_off">デバイスの言語を使用してください\n翻訳が利用可能な場合</string>
-    <string name="pref_force_english_summary_on">英語を使用</string>
+    <string name="pref_force_english_summary_on">英語を使う</string>
 <string name="pref_screen_storage">ストレージ</string>
     <string name="pref_cat_downloads_folder">Hentoidライブラリ</string>
     <string name="pref_select_folder_title">ダウンロードフォルダを選択</string>
@@ -184,6 +184,7 @@
     <string name="pref_viewer_continuous_summary_off">最後のページで次のページを使用しても効果はありません</string>
     <string name="pref_viewer_continuous_summary_on">最後のページで次のページを使用すると、次の本が読み込まれます</string>
     <string name="pref_viewer_read_threshold">Nページ後に本を既読としてマークする</string>
+    <string name="pref_viewer_ratio_completed_threshold">N％ページ後に本を完了としてマークする</string>
     <string name="pref_viewer_slideshow_delay">スライドショー/各ページ間の遅延（水平表示）</string>
     <string name="pref_viewer_slideshow_delay_vertical">スライドショー/スクロール速度（垂直表示）</string>
     <string name="doh_warning">一部のWebサイトは、DNSoverHTTPSではうまく機能しません。 ナビゲーション中に問題が発生した場合は、外部DNSアプリを使用してください（空白のページ、応答しないログインフォームなど）</string>

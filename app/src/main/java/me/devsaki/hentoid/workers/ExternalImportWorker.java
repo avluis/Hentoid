@@ -252,7 +252,7 @@ public class ExternalImportWorker extends BaseWorker {
                 if (!c.getStatus().equals(StatusContent.IGNORED)) library.add(c);
             }
         }
-        if (images.size() > 2) { // We've got a book
+        if (images.size() > 2 || !jsons.isEmpty()) { // We've got a book
             DocumentFile json = ImportHelper.getFileWithName(jsons, Consts.JSON_FILE_NAME_V2);
             library.add(scanBookFolder(context, root, explorer, parentNames, StatusContent.EXTERNAL, dao, images, json));
         }
