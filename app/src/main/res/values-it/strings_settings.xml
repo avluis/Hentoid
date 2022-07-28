@@ -23,6 +23,10 @@
     <string name="pref_color_theme_title">Colore del tema</string>
     <string name="pref_color_theme_summary">Tema attuale: <x:g example="Deep Red" id="theme_name">%s</x:g></string>
     <string name="pref_misc">Vario</string>
+    <string name="pref_cat_language">Lingua interfaccia</string>
+    <string name="pref_force_english_title">Forza lingua inglese</string>
+    <string name="pref_force_english_summary_off">Utilizza la lingua del tuo dispositivo\nse la traduzione è disponibile</string>
+    <string name="pref_force_english_summary_on">Utilizza l\'inglese</string>
 <string name="pref_screen_storage">Memoria</string>
     <string name="pref_cat_downloads_folder">Libreria di Hentoid</string>
     <string name="pref_select_folder_title">Seleziona la cartella Downloads</string>
@@ -92,7 +96,8 @@
     <string name="pref_browser_clear_cookies">Rimuovi tutti i cookies</string>
     <string name="pref_browser_clear_cookies_ok">Cookies rimossi correttamente</string>
     <string name="pref_browser_clear_cookies_ko">Nessun cookie da rimuovere</string>
-
+    <string name="pref_browser_clear_cookies_missing_webview">WebView non è disponibile, impossibile rimuovere i cookies al momento</string>
+    <string name="pref_browser_clear_cookies_updating_webview">WebView si sta aggiornando, ancora impossibile rimuovere i cookies </string>
 <string name="pref_screen_downloader">Downloader</string>
     <string name="pref_queue_autostart_title">Coda di download ad avvio automatico</string>
     <string name="pref_queue_autostart_on">La coda di download inizierà non appena un download è stato fatto</string>
@@ -179,6 +184,7 @@
     <string name="pref_viewer_continuous_summary_off">L\'uso della pagina successiva nell\'ultima pagina non ha effetto</string>
     <string name="pref_viewer_continuous_summary_on">L\'utilizzo della pagina successiva nell\'ultima pagina carica il libro successivo</string>
     <string name="pref_viewer_read_threshold">Segna il libro come letto dopo N pagine</string>
+    <string name="pref_viewer_ratio_completed_threshold">Segna libro come completato dopo N% pagine</string>
     <string name="pref_viewer_slideshow_delay">Presentazione / Ritardo tra ogni pagina (orizzontalmente)</string>
     <string name="pref_viewer_slideshow_delay_vertical">Presentazione / Velocità scorrimento (verticalmente)</string>
     <string name="doh_warning">Alcuni siti web non funzionano bene con DNS su HTTPS. Utilizzate un\'applicazione DNS esterna se riscontrate problemi durante la navigazione (ad esempio pagine bianche, moduli di login che non rispondono).</string>
