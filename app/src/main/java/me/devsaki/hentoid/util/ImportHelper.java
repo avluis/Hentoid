@@ -522,10 +522,20 @@ public class ImportHelper {
         result.setStatus(targetStatus).setStorageUri(bookFolder.getUri().toString());
         if (0 == result.getDownloadDate()) result.setDownloadDate(Instant.now().toEpochMilli());
         List<ImageFile> images = new ArrayList<>();
-        scanImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles);
+        scanFolderImages(context, bookFolder, explorer, targetStatus, false, images, imageFiles);
+
+        // Detect cover
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
-        result.setImageFiles(images);
+
+        // If streamed, keep everything and update cover URI
+        if (result.getDownloadMode() == Content.DownloadMode.STREAM) {
+            Optional<ImageFile> coverFile = Stream.of(images).filter(ImageFile::isCover).findFirst();
+            if (coverFile.isPresent())
+                result.getCover().setFileUri(coverFile.get().getFileUri()).setSize(coverFile.get().getSize());
+        } else { // Set all detected images
+            result.setImageFiles(images);
+        }
         if (0 == result.getQtyPages()) {
             int countUnreadable = (int) Stream.of(images).filterNot(ImageFile::isReadable).count();
             result.setQtyPages(images.size() - countUnreadable); // Minus unreadable pages (cover thumb)
@@ -586,7 +596,7 @@ public class ImportHelper {
         List<ImageFile> images = new ArrayList<>();
         // Scan pages across all subfolders
         for (DocumentFile chapterFolder : chapterFolders)
-            scanImages(context, chapterFolder, explorer, StatusContent.EXTERNAL, true, images, null);
+            scanFolderImages(context, chapterFolder, explorer, StatusContent.EXTERNAL, true, images, null);
         boolean coverExists = Stream.of(images).anyMatch(ImageFile::isCover);
         if (!coverExists) createCover(images);
         result.setImageFiles(images);
@@ -609,7 +619,7 @@ public class ImportHelper {
      * @param images                 Image list to populate or enrich
      * @param imageFiles             Image file list, if already listed upstream; null if it needs to be listed
      */
-    private static void scanImages(
+    private static void scanFolderImages(
             @NonNull final Context context,
             @NonNull final DocumentFile bookFolder,
             @NonNull final FileExplorer explorer,
