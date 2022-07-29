@@ -23,7 +23,7 @@
     <string name="pref_color_theme_title">색상 테마</string>
     <string name="pref_color_theme_summary">현재 테마: <x:g example="Deep Red" id="theme_name">%s</x:g></string>
     <string name="pref_misc">기타</string>
-    <string name="pref_cat_language">언어</string>
+    <string name="pref_cat_language">인터페이스 언어</string>
     <string name="pref_force_english_title">언어를 영어로 고정</string>
     <string name="pref_force_english_summary_off">사용중인 기기의 언어 사용</string>
     <string name="pref_force_english_summary_on">영어 사용</string>
@@ -184,6 +184,7 @@
     <string name="pref_viewer_continuous_summary_off">마지막 장에서 다음 장으로 넘어가는 조작 시 아무 일도 일어나지 않습니다</string>
     <string name="pref_viewer_continuous_summary_on">마지막 장에서 다음 장으로 넘어가는 조작 시 다음 작품으로 넘어갑니다</string>
     <string name="pref_viewer_read_threshold">N 페이지 읽은 후 읽음 표시 추가</string>
+    <string name="pref_viewer_ratio_completed_threshold">N% 페이지 읽은 후 전체 읽음 표시 추가</string>
     <string name="pref_viewer_slideshow_delay">슬라이드쇼 / 페이지마다 대기 시간 (가로 화면)</string>
     <string name="pref_viewer_slideshow_delay_vertical">슬라이드쇼 / 스크롤 속도 (세로 화면)</string>
     <string name="doh_warning">일부 웹 사이트는 DNS over HTTPS가 제대로 작동하지 않습니다. 탐색 중 문제가 발생하면 외부 DNS 앱을 사용하십시오 (예: 빈 페이지, 페이지 응답 없음)</string>

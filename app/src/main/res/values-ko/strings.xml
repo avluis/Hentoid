@@ -40,6 +40,7 @@
     <string name="_default">기본</string>
     <string name="empty">비어있음</string>
     <string name="none">없음</string>
+    <string name="disabled_generic">비활성화됨</string>
 <string name="title_activity_api29_migration">API 29 이동</string>
     <string name="title_activity_downloads">라이브러리</string>
     <string name="title_activity_queue">대기열</string>
@@ -103,6 +104,7 @@
     <string name="invert_queue">대기열 반전</string>
     <string name="redownload_all">전체 다시 다운로드</string>
     <string name="cancel_all_errors">오류 모두 취소</string>
+    <string name="import_downloads">다운로드 불러오기</string>
     <string name="move_top">위로 옮기기</string>
     <string name="move_bottom">아래로 옮기기</string>
     <string name="queue_paused">대기열 일시 정지</string>
@@ -164,6 +166,12 @@
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">다운로드 실패</string>
     <string name="download_notif_failed_details"><x:g example="Cool H-Manga" id="book_name">%1$s</x:g> 다운로드 불가능: <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g> 폴더를 생성할 수 없습니다. Hentoid 폴더를 확인하고 다시 시도하려면 \'!\' 버튼을 누르세요.</string>
+<string name="import_downloads_title">다운로드 불러오기</string>
+    <plurals name="import_downloads_found">
+        <item quantity="one">유효한 다운로드 <x:g example="1" id="downloads">%d</x:g>개 발견</item>
+        <item quantity="other">유효한 다운로드 <x:g example="2" id="downloads">%d</x:g>개 발견</item>
+    </plurals>
+    <string name="importing_downloads">다운로드 불러오는 중...</string>
 <string name="work_series">시리즈: <x:g example="original" id="series">%s</x:g></string>
     <string name="work_artist">작가: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>
     <plurals name="work_pages_missing">
