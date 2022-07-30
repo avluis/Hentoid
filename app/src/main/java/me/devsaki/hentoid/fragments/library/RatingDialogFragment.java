@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.library;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -18,7 +18,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Debouncer;
 
 /**
- * Dialog to select or create a custom group
+ * Dialog to assign a reting
  */
 public class RatingDialogFragment extends DialogFragment {
 

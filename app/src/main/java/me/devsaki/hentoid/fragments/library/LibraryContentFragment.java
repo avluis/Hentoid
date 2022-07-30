@@ -103,7 +103,6 @@ import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.fragments.ProgressDialogFragment;
-import me.devsaki.hentoid.fragments.RatingDialogFragment;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;

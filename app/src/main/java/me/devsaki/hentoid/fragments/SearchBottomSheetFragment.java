@@ -72,7 +72,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private TextView tagWaitMessage;
     // Search bar
     private SearchView tagSearchView;
-    // Container where all proposed attributes are loaded
+    // Container where all suggested attributes are loaded
     private AvailableAttributeAdapter attributeAdapter;
 
     private boolean clearOnSuccess; // Flag to clear the adapter on content reception

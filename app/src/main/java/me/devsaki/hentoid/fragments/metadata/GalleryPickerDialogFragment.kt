@@ -55,9 +55,9 @@ class GalleyPickerDialogFragment : DialogFragment() {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
         parent = null
         _binding = null
+        super.onDestroyView()
     }
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {

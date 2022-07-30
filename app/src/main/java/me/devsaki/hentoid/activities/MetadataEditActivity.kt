@@ -28,7 +28,9 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.ActivityMetaEditBinding
 import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.fragments.SearchBottomSheetFragment
 import me.devsaki.hentoid.fragments.metadata.GalleyPickerDialogFragment
+import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewholders.AttributeItem
@@ -76,7 +78,8 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
 
         bindInteractions()
 
-        viewModel.contentList.observe(this) { this.onContentChanged(it) }
+        viewModel.getContent().observe(this) { this.onContentChanged(it) }
+        viewModel.getContentAttributes().observe(this) { this.onContentAttributesChanged(it) }
     }
 
     override fun onDestroy() {
@@ -88,6 +91,10 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
         contents = content
         if (1 == content.size) bindSingleBookUI()
         else bindMultipleBooksUI()
+    }
+
+    private fun onContentAttributesChanged(attrs: List<Attribute>) {
+        FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
     }
 
     private fun bindSingleBookUI() {
@@ -173,71 +180,57 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
                 binding?.let { b2 ->
                     b2.titleNew.visibility = View.VISIBLE
                     b2.tags.visibility = View.GONE
+                    b2.tagsFab.visibility = View.GONE
                 }
             }
 
             // Artist
             it.tvArtist.setOnClickListener {
                 binding?.let { b2 ->
-                    val attrs = ArrayList<Attribute>()
-                    contents.forEach { c ->
-                        attrs.addAll(c.attributes.filter { a ->
-                            a.type.equals(AttributeType.ARTIST) || a.type.equals(
-                                AttributeType.CIRCLE
-                            )
-                        })
-                    }
-                    FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
+                    viewModel.setAttributeTypes(listOf(AttributeType.ARTIST, AttributeType.CIRCLE))
                     b2.titleNew.visibility = View.GONE
                     b2.tags.visibility = View.VISIBLE
+                    b2.tagsFab.visibility = View.VISIBLE
                 }
             }
 
             // Series
             it.tvSeries.setOnClickListener {
                 binding?.let { b2 ->
-                    val attrs = ArrayList<Attribute>()
-                    contents.forEach { c ->
-                        attrs.addAll(c.attributes.filter { a -> a.type.equals(AttributeType.SERIE) })
-                    }
-                    FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
+                    viewModel.setAttributeTypes(listOf(AttributeType.SERIE))
                     b2.titleNew.visibility = View.GONE
                     b2.tags.visibility = View.VISIBLE
+                    b2.tagsFab.visibility = View.VISIBLE
                 }
             }
 
             // Tags
             it.tvTags.setOnClickListener {
                 binding?.let { b2 ->
-                    val attrs = ArrayList<Attribute>()
-                    contents.forEach { c ->
-                        attrs.addAll(c.attributes.filter { a ->
-                            a.type.equals(AttributeType.TAG) || a.type.equals(
-                                AttributeType.CHARACTER
-                            )
-                        })
+                    viewModel.setAttributeTypes(listOf(AttributeType.CHARACTER))
+                    b2.tagsFab.setOnClickListener {
+                        MetaEditBottomSheetFragment.invoke(
+                            this,
+                            supportFragmentManager, true
+                        )
                     }
-                    FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
                     b2.titleNew.visibility = View.GONE
                     b2.tags.visibility = View.VISIBLE
+                    b2.tagsFab.visibility = View.VISIBLE
                 }
             }
 
             // Flag
             it.ivFlag.setOnClickListener {
                 binding?.let { b2 ->
-                    val attrs = ArrayList<Attribute>()
-                    contents.forEach { c ->
-                        attrs.addAll(c.attributes.filter { a -> a.type.equals(AttributeType.LANGUAGE) })
-                    }
-                    FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
+                    viewModel.setAttributeTypes(listOf(AttributeType.LANGUAGE))
                     b2.titleNew.visibility = View.GONE
                     b2.tags.visibility = View.VISIBLE
+                    b2.tagsFab.visibility = View.VISIBLE
                 }
             }
 
             // Cover
-            // TODO warn about archives
             it.ivCover.setOnClickListener {
                 binding?.let { b2 ->
                     if (1 == contents.size) {

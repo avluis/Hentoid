@@ -144,4 +144,16 @@
         app:maxHeight="200dp"
         tools:visibility="visible" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/tags_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toBottomOf="@id/tags"
+        app:layout_constraintEnd_toEndOf="@id/tags"
+        app:srcCompat="@drawable/ic_add"
+        tools:ignore="ContentDescription,SpeakableTextPresentCheck"
+        tools:visibility="visible" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
