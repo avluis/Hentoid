@@ -123,8 +123,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
-        viewModel.allDuplicates.observe(viewLifecycleOwner, { this.onDuplicatesChanged(it) })
-        viewModel.firstUse.observe(viewLifecycleOwner, { b -> firstUse = b })
+        viewModel.allDuplicates.observe(viewLifecycleOwner) { this.onDuplicatesChanged(it) }
+        viewModel.firstUse.observe(viewLifecycleOwner) { b -> firstUse = b }
     }
 
     private fun addCustomBackControl() {
@@ -337,9 +337,9 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     }
 
     /**
-     * Callback for the group holder itself
+     * Callback for duplicate item click
      *
-     * @param item GroupDisplayItem that has been clicked on
+     * @param item DuplicateItem that has been clicked on
      */
     private fun onItemClick(item: DuplicateItem): Boolean {
         if (item.content != null) {
