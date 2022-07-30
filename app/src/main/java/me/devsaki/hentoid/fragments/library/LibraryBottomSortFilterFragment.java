@@ -293,7 +293,10 @@ public class LibraryBottomSortFilterFragment extends BottomSheetDialogFragment {
             boolean activated = i <= rating && !clear;
             if (i > 0)
                 stars[i].setImageResource(activated ? R.drawable.ic_star_full : R.drawable.ic_star_empty);
-            stars[i].setColorFilter(activated ? selectedColor : greyColor);
+            int color = activated ? selectedColor : greyColor;
+            // Don't colour the 1st icon if we're choosing at least 1 star
+            if (activated && rating > 0 && 0 == i) color = greyColor;
+            stars[i].setColorFilter(color);
         }
 
         ratingFilter = clear ? -1 : rating;
