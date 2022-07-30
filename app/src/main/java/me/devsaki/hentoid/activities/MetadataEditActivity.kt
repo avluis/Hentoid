@@ -25,13 +25,16 @@ import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.ActivityMetaEditBinding
+import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.fragments.metadata.GalleyPickerDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import timber.log.Timber
 
-class MetadataEditActivity : BaseActivity() {
+class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
 
     // Communication
     private lateinit var viewModel: MetadataEditViewModel
@@ -142,10 +145,6 @@ class MetadataEditActivity : BaseActivity() {
             } else {
                 it.ivFlag.visibility = View.GONE
             }
-
-            // Tags
-            val items = content.attributes.map { a -> AttributeItem(a) }
-            FastAdapterDiffUtil.set(itemAdapter, items)
         }
     }
 
@@ -178,9 +177,77 @@ class MetadataEditActivity : BaseActivity() {
             // Artist
             it.tvArtist.setOnClickListener {
                 binding?.let { b2 ->
-                    b2.tags
+                    val attrs = ArrayList<Attribute>()
+                    contents.forEach { c ->
+                        attrs.addAll(c.attributes.filter { a ->
+                            a.type.equals(AttributeType.ARTIST) || a.type.equals(
+                                AttributeType.CIRCLE
+                            )
+                        })
+                    }
+                    FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
                     b2.titleNew.visibility = View.GONE
                     b2.tags.visibility = View.VISIBLE
+                }
+            }
+
+            // Series
+            it.tvSeries.setOnClickListener {
+                binding?.let { b2 ->
+                    val attrs = ArrayList<Attribute>()
+                    contents.forEach { c ->
+                        attrs.addAll(c.attributes.filter { a -> a.type.equals(AttributeType.SERIE) })
+                    }
+                    FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
+                    b2.titleNew.visibility = View.GONE
+                    b2.tags.visibility = View.VISIBLE
+                }
+            }
+
+            // Tags
+            it.tvTags.setOnClickListener {
+                binding?.let { b2 ->
+                    val attrs = ArrayList<Attribute>()
+                    contents.forEach { c ->
+                        attrs.addAll(c.attributes.filter { a ->
+                            a.type.equals(AttributeType.TAG) || a.type.equals(
+                                AttributeType.CHARACTER
+                            )
+                        })
+                    }
+                    FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
+                    b2.titleNew.visibility = View.GONE
+                    b2.tags.visibility = View.VISIBLE
+                }
+            }
+
+            // Flag
+            it.ivFlag.setOnClickListener {
+                binding?.let { b2 ->
+                    val attrs = ArrayList<Attribute>()
+                    contents.forEach { c ->
+                        attrs.addAll(c.attributes.filter { a -> a.type.equals(AttributeType.LANGUAGE) })
+                    }
+                    FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
+                    b2.titleNew.visibility = View.GONE
+                    b2.tags.visibility = View.VISIBLE
+                }
+            }
+
+            // Cover
+            it.ivCover.setOnClickListener {
+                binding?.let { b2 ->
+                    if (1 == contents.size) {
+                        val imgs = contents[0].imageFiles
+                        if (imgs != null) {
+                            b2.titleNew.visibility = View.GONE
+                            b2.tags.visibility = View.GONE
+                            GalleyPickerDialogFragment.invoke(
+                                supportFragmentManager,
+                                imgs
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -202,6 +269,7 @@ class MetadataEditActivity : BaseActivity() {
      */
     private fun onItemClick(item: AttributeItem): Boolean {
         // TODO
+        Timber.d("Attribute %s clicked", item.attribute.name)
         return true
     }
 
@@ -215,13 +283,11 @@ class MetadataEditActivity : BaseActivity() {
     }
 
     /**
-     * Handler for Attribute button click
-     *
-     * @param button Button that has been clicked on
+     * Callback from the gallery picker
      */
-    private fun onAttributeClicked(button: View) {
-        val a = button.tag as Attribute
-        // TODO
+    override fun selectPage(index: Int) {
+        TODO("Not yet implemented")
+        Timber.d("Image %s clicked", index)
     }
 
     companion object {

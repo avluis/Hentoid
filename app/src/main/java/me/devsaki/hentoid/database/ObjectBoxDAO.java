@@ -675,6 +675,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectImageFile(id);
     }
 
+    public List<ImageFile> selectImageFiles(long[] ids) {
+        return db.selectImageFiles(ids);
+    }
+
     public LiveData<List<ImageFile>> selectDownloadedImagesFromContentLive(long id) {
         return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContentQ(id));
     }

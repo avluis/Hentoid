@@ -7,7 +7,6 @@ import androidx.lifecycle.MutableLiveData
 import io.reactivex.disposables.CompositeDisposable
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Content
-import me.devsaki.hentoid.util.Helper
 
 
 class MetadataEditViewModel(
@@ -38,6 +37,6 @@ class MetadataEditViewModel(
      * @param contentId  IDs of the Contents to load
      */
     fun loadContent(contentId: LongArray) {
-        contentList.postValue(dao.selectContent(Helper.getPrimitiveArrayFromList(contentId.filter { id -> id > 0 })))
+        contentList.postValue(dao.selectContent(contentId.filter { id -> id > 0 }.toLongArray()))
     }
 }

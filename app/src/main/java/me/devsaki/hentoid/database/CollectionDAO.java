@@ -206,6 +206,8 @@ public interface CollectionDAO {
 
     ImageFile selectImageFile(long id);
 
+    List<ImageFile> selectImageFiles(long[] ids);
+
     LiveData<List<ImageFile>> selectDownloadedImagesFromContentLive(long id);
 
     List<ImageFile> selectDownloadedImagesFromContent(long id);

@@ -1329,6 +1329,10 @@ public class ObjectBoxDB {
         else return null;
     }
 
+    List<ImageFile> selectImageFiles(long[] id) {
+        return store.boxFor(ImageFile.class).get(id);
+    }
+
     Query<ImageFile> selectDownloadedImagesFromContentQ(long id) {
         QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
         builder.equal(ImageFile_.contentId, id);
