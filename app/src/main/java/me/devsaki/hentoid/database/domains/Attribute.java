@@ -18,6 +18,7 @@ import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**
@@ -48,6 +49,8 @@ public class Attribute {
     public ToMany<Content> contents;
     @Transient
     private String displayName = "";
+    @Transient
+    private long uniqueHash = 0;    // cached value of uniqueHash
 
 
     public Attribute() { // Required by ObjectBox when an alternate constructor exists
@@ -196,5 +199,14 @@ public class Attribute {
         long idComp = id;
         if (externalId != 0) idComp = externalId;
         return Objects.hash(getName(), getType(), idComp);
+    }
+
+    public long uniqueHash() {
+        if (0 == uniqueHash) {
+            long idComp = id;
+            if (externalId != 0) idComp = externalId;
+            uniqueHash = Helper.hash64((idComp + "." + name + "." + type.getCode()).getBytes());
+        }
+        return uniqueHash;
     }
 }

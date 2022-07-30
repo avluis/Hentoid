@@ -24,6 +24,7 @@ class ViewModelFactory(val application: Application) : ViewModelProvider.Factory
             )
             PreferencesViewModel::class.java -> PreferencesViewModel(application, ObjectBoxDAO(application))
             DuplicateViewModel::class.java -> DuplicateViewModel(application, ObjectBoxDAO(application), DuplicatesDAO(application))
+            MetadataEditViewModel::class.java -> MetadataEditViewModel(application, ObjectBoxDAO(application))
             else -> throw RuntimeException()
         } as T
     }

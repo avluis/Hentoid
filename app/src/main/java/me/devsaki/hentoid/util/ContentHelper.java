@@ -1386,6 +1386,7 @@ public final class ContentHelper {
     }
 
     // TODO doc
+    // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
     @Nullable
     public static GlideUrl bindOnlineCover(@NonNull final Content content, @NonNull final String thumbLocation) {
         if (WebkitPackageHelper.getWebViewAvailable()) {
