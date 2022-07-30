@@ -812,6 +812,10 @@
     <string name="duplicate_alert_download_pages">Download extra pages</string>
     <string name="duplicate_wait_index">Indexing…</string>
 
+    <!-- Metadata editor -->
+    <string name="cover_multiple_warning">Cover cannot be changed for multiple books</string>
+    <string name="cover_archive_warning">Cover cannot be changed for archives</string>
+
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>
     <string name="notif_delete_title">Content deletion</string>

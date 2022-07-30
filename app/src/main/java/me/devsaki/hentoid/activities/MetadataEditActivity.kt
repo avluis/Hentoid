@@ -16,6 +16,8 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -235,18 +237,33 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
             }
 
             // Cover
+            // TODO warn about archives
             it.ivCover.setOnClickListener {
                 binding?.let { b2 ->
                     if (1 == contents.size) {
-                        val imgs = contents[0].imageFiles
-                        if (imgs != null) {
-                            b2.titleNew.visibility = View.GONE
-                            b2.tags.visibility = View.GONE
-                            GalleyPickerDialogFragment.invoke(
-                                supportFragmentManager,
-                                imgs
-                            )
+                        if (contents[0].isArchive) {
+                            Snackbar.make(
+                                b2.root,
+                                R.string.cover_archive_warning,
+                                BaseTransientBottomBar.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            val imgs = contents[0].imageFiles?.filter { i -> i.isReadable }
+                            if (imgs != null) {
+                                b2.titleNew.visibility = View.GONE
+                                b2.tags.visibility = View.GONE
+                                GalleyPickerDialogFragment.invoke(
+                                    supportFragmentManager,
+                                    imgs
+                                )
+                            }
                         }
+                    } else {
+                        Snackbar.make(
+                            b2.root,
+                            R.string.cover_multiple_warning,
+                            BaseTransientBottomBar.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
@@ -286,8 +303,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
      * Callback from the gallery picker
      */
     override fun selectPage(index: Int) {
-        TODO("Not yet implemented")
-        Timber.d("Image %s clicked", index)
+        viewModel.setCover(index)
     }
 
     companion object {

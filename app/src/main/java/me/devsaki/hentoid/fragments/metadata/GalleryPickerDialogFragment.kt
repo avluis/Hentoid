@@ -13,7 +13,6 @@ import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.ImageFile
 import me.devsaki.hentoid.databinding.DialogMetaGalleryBinding
-import me.devsaki.hentoid.fragments.tools.ImportDownloadsDialogFragment
 import me.devsaki.hentoid.viewholders.ImageFileItem
 
 /**
@@ -43,7 +42,7 @@ class GalleyPickerDialogFragment : DialogFragment() {
 
         imageIds = imgs!!
 
-        parent = parentFragment as Parent
+        parent = activity as Parent
     }
 
     override fun onCreateView(
@@ -98,7 +97,7 @@ class GalleyPickerDialogFragment : DialogFragment() {
 
     companion object {
         fun invoke(fragmentManager: FragmentManager, images: List<ImageFile>) {
-            val fragment = ImportDownloadsDialogFragment()
+            val fragment = GalleyPickerDialogFragment()
 
             val args = Bundle()
             args.putLongArray(KEY_IMGS, images.map { i -> i.id }.toLongArray())
