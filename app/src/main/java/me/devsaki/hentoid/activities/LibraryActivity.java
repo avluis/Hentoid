@@ -375,7 +375,7 @@ public class LibraryActivity extends BaseActivity {
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, contentSearchBundle, false);
+                        ContentHelper.openReader(this, c, previouslyViewedPage, contentSearchBundle, false);
                 } finally {
                     dao.cleanup();
                 }
@@ -660,7 +660,7 @@ public class LibraryActivity extends BaseActivity {
         selectionToolbar.inflateMenu(R.menu.library_selection_menu);
         Helper.tryShowMenuIcons(this, selectionToolbar.getMenu());
 
-        editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
+        editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit);
         deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
         completedMenu = selectionToolbar.getMenu().findItem(R.id.action_completed);
         resetReadStatsMenu = selectionToolbar.getMenu().findItem(R.id.action_reset_read);
@@ -671,7 +671,7 @@ public class LibraryActivity extends BaseActivity {
         redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
         downloadStreamedMenu = selectionToolbar.getMenu().findItem(R.id.action_download);
         streamMenu = selectionToolbar.getMenu().findItem(R.id.action_stream);
-        coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+        coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_group_cover);
         mergeMenu = selectionToolbar.getMenu().findItem(R.id.action_merge);
         splitMenu = selectionToolbar.getMenu().findItem(R.id.action_split);
     }

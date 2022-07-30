@@ -301,7 +301,7 @@ public final class ContentHelper {
      * @param searchParams Current search parameters (so that the next/previous book feature
      *                     is faithful to the library screen's order)
      */
-    public static boolean openHentoidViewer(
+    public static boolean openReader(
             @NonNull Context context,
             @NonNull Content content,
             int pageNumber,

@@ -6,7 +6,7 @@
     tools:ignore="AlwaysShowAction"
     tools:targetApi="o">
     <item
-        android:id="@+id/action_edit_name"
+        android:id="@+id/action_edit"
         android:icon="@drawable/ic_edit"
         android:title="@string/menu_edit_name"
         android:tooltipText="@string/menu_edit_name"
@@ -74,7 +74,7 @@
         android:tooltipText="@string/menu_download_streamed"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_set_cover"
+        android:id="@+id/action_set_group_cover"
         android:icon="@drawable/ic_action_make_cover"
         android:title="@string/group_make_cover"
         android:tooltipText="@string/group_make_cover"

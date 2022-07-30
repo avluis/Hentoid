@@ -105,6 +105,13 @@
         app:layout_constraintTop_toBottomOf="@id/tvSeries"
         tools:text="@string/book_tags" />
 
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/horizontal_barrier"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="tvTags,tvSeries, ivCover" />
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/title_new"
         android:layout_width="match_parent"
@@ -114,7 +121,7 @@
         android:layout_marginEnd="8dp"
         android:hint="@string/new_title"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/tvTags"
+        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
         tools:visibility="visible">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -133,7 +140,7 @@
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvTags"
+        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
         app:maxHeight="200dp"
         tools:visibility="visible" />
 

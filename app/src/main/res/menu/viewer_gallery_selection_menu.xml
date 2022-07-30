@@ -12,7 +12,7 @@
         android:tooltipText="@string/menu_mark_fav"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_set_cover"
+        android:id="@+id/action_set_group_cover"
         android:icon="@drawable/ic_action_make_cover"
         android:title="@string/viewer_make_cover"
         android:tooltipText="@string/viewer_make_cover"

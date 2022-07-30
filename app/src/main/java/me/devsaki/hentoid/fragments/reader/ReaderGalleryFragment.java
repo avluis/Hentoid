@@ -212,7 +212,7 @@ public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback
         addChapterMenu = toolbar.getMenu().findItem(R.id.action_add_remove_chapters);
 
         selectionToolbar = requireViewById(rootView, R.id.viewer_gallery_selection_toolbar);
-        itemSetCoverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+        itemSetCoverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_group_cover);
         selectionToolbar.setNavigationOnClickListener(v -> {
             selectExtension.deselect(selectExtension.getSelections());
             selectionToolbar.setVisibility(View.GONE);
@@ -503,7 +503,7 @@ public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback
                     askDeleteSelected(selectedImages);
                 }
                 break;
-            case R.id.action_set_cover:
+            case R.id.action_set_group_cover:
                 if (!selectedItems.isEmpty()) {
                     Optional<ImageFile> selectedImages = Stream.of(selectedItems).map(ImageFileItem::getImage).withoutNulls().findFirst();
                     if (selectedImages.isPresent()) askSetSelectedCover(selectedImages.get());

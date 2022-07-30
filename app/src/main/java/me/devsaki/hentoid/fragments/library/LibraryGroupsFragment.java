@@ -271,7 +271,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private boolean onSelectionToolbarItemClicked(@NonNull MenuItem menuItem) {
         boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
-            case R.id.action_edit_name:
+            case R.id.action_edit:
                 editSelectedItemName();
                 break;
             case R.id.action_delete:

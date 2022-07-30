@@ -825,7 +825,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 if (currentContent != null && (StatusContent.DOWNLOADED == currentContent.getStatus()
                         || StatusContent.ERROR == currentContent.getStatus()
                         || StatusContent.MIGRATED == currentContent.getStatus()))
-                    ContentHelper.openHentoidViewer(this, currentContent, -1, null, false);
+                    ContentHelper.openReader(this, currentContent, -1, null, false);
                 else actionMenu.setEnabled(false);
                 break;
             default:

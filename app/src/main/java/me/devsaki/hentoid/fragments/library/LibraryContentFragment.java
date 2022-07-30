@@ -87,9 +87,11 @@ import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.LibraryActivity;
+import me.devsaki.hentoid.activities.MetadataEditActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
+import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle;
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
@@ -102,7 +104,6 @@ import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.fragments.ProgressDialogFragment;
 import me.devsaki.hentoid.fragments.RatingDialogFragment;
-import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.FileHelper;
@@ -519,8 +520,8 @@ public class LibraryContentFragment extends Fragment implements
                     selectExtension.select(Stream.range(0, getItemAdapter().getAdapterItemCount()).toList());
                 keepToolbar = true;
                 break;
-            case R.id.action_set_cover:
-                askSetCover();
+            case R.id.action_set_group_cover:
+                askSetGroupCover();
                 break;
             case R.id.action_merge:
                 MergeDialogFragment.invoke(this, Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).toList(), false);
@@ -535,14 +536,16 @@ public class LibraryContentFragment extends Fragment implements
                 }
                 keepToolbar = true;
                 break;
-            case R.id.action_edit_name:
-                selectedContent = Stream.of(selectExtension.getSelectedItems()).findFirst();
-                if (selectedContent.isPresent()) {
-                    Content c = selectedContent.get().getContent();
-                    if (c != null)
-                        InputDialog.invokeInputDialog(requireActivity(), R.string.book_edit_title,
-                                c.getTitle(),
-                                s -> viewModel.renameContent(c, s), null);
+            case R.id.action_edit:
+                List<Long> selectedIds = Stream.of(selectExtension.getSelectedItems()).map(ContentItem::getContent).withoutNulls().map(Content::getId).toList();
+                if (!selectedIds.isEmpty()) {
+                    Intent editMetaIntent = new Intent(this.getContext(), MetadataEditActivity.class);
+                    MetaEditActivityBundle builder = new MetaEditActivityBundle();
+
+                    builder.setContentIds(Helper.getPrimitiveArrayFromList(selectedIds));
+                    editMetaIntent.putExtras(builder.getBundle());
+
+                    requireContext().startActivity(editMetaIntent);
                 }
                 keepSelection = false;
                 break;
@@ -802,7 +805,7 @@ public class LibraryContentFragment extends Fragment implements
     /**
      * Callback for the "set as group cover" action button
      */
-    private void askSetCover() {
+    private void askSetGroupCover() {
         Set<ContentItem> selectedItems = selectExtension.getSelectedItems();
         if (selectedItems.isEmpty()) return;
 
@@ -1382,7 +1385,7 @@ public class LibraryContentFragment extends Fragment implements
     // TODO doc
     public void readBook(@NonNull Content content, boolean forceShowGallery) {
         topItemPosition = getTopItemPosition();
-        ContentHelper.openHentoidViewer(requireContext(), content, -1, contentSearchBundle, forceShowGallery);
+        ContentHelper.openReader(requireContext(), content, -1, contentSearchBundle, forceShowGallery);
     }
 
     /**
