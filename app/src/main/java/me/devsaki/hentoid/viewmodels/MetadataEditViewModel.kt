@@ -14,6 +14,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
+import org.threeten.bp.Instant
 
 
 class MetadataEditViewModel(
@@ -174,6 +175,7 @@ class MetadataEditViewModel(
 
     fun saveContent() {
         contentList.value?.forEach {
+            it.lastEditDate = Instant.now().toEpochMilli()
             dao.insertContent(it)
         }
     }

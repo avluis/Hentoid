@@ -41,7 +41,7 @@
     },
     {
       "id": "2:5880334030341287801",
-      "lastPropertyId": "31:4486721253337313651",
+      "lastPropertyId": "32:7481361061328264193",
       "name": "Content",
       "properties": [
         {
@@ -203,6 +203,11 @@
           "id": "31:4486721253337313651",
           "name": "rating",
           "type": 5
+        },
+        {
+          "id": "32:7481361061328264193",
+          "name": "lastEditDate",
+          "type": 6
         }
       ],
       "relations": [

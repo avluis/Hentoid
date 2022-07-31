@@ -152,6 +152,7 @@ public class Content implements Serializable {
     private String jsonUri;
     // Useful only during cleanup operations; no need to get it into the JSON
     private boolean isFlaggedForDeletion = false;
+    private long lastEditDate = 0;
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
@@ -960,6 +961,14 @@ public class Content implements Serializable {
         this.manuallyMerged = manuallyMerged;
     }
 
+    public long getLastEditDate() {
+        return lastEditDate;
+    }
+
+    public void setLastEditDate(long lastEditDate) {
+        this.lastEditDate = lastEditDate;
+    }
+
     public boolean isUpdatedProperties() {
         return updatedProperties;
     }
@@ -1013,12 +1022,12 @@ public class Content implements Serializable {
                 Objects.equals(getUrl(), content.getUrl()) &&
                 Objects.equals(getCoverImageUrl(), content.getCoverImageUrl()) &&
                 getSite() == content.getSite() &&
-                getTitle().equals(content.getTitle());
+                getLastEditDate() == content.getLastEditDate();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingDeleted(), getTitle());
+        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingDeleted(), getLastEditDate());
     }
 
     public long uniqueHash() {
