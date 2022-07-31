@@ -150,6 +150,7 @@
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:fabSize="mini"
+        android:layout_marginBottom="-16dp"
         app:layout_constraintBottom_toBottomOf="@id/tags"
         app:layout_constraintEnd_toEndOf="@id/tags"
         app:srcCompat="@drawable/ic_add"

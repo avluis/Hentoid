@@ -28,7 +28,6 @@ import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.ActivityMetaEditBinding
 import me.devsaki.hentoid.enums.AttributeType
-import me.devsaki.hentoid.fragments.SearchBottomSheetFragment
 import me.devsaki.hentoid.fragments.metadata.GalleyPickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.util.ContentHelper
@@ -207,7 +206,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
             // Tags
             it.tvTags.setOnClickListener {
                 binding?.let { b2 ->
-                    viewModel.setAttributeTypes(listOf(AttributeType.CHARACTER))
+                    viewModel.setAttributeTypes(listOf(AttributeType.TAG, AttributeType.CHARACTER))
                     b2.tagsFab.setOnClickListener {
                         MetaEditBottomSheetFragment.invoke(
                             this,

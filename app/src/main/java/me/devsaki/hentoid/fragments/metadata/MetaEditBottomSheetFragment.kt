@@ -9,9 +9,7 @@ import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.ViewCompat
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
@@ -85,7 +83,8 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
             currentPage = 1
 
             val vmFactory = ViewModelFactory(requireActivity().application)
-            viewModel = ViewModelProvider(this, vmFactory)[MetadataEditViewModel::class.java]
+            viewModel =
+                ViewModelProvider(requireActivity(), vmFactory)[MetadataEditViewModel::class.java]
         }
         searchMasterDataDebouncer = Debouncer(context, 1000) { filter: String ->
             this.searchMasterData(filter)
@@ -107,20 +106,13 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         super.onDestroyView()
     }
 
+    override fun onResume() {
+        super.onResume()
+        isInitialized = true
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val mainAttr = selectedAttributeTypes[0]
-
-        // Image that displays current metadata type icon (e.g. face icon for character)
-        binding.tagWaitImage.setImageResource(mainAttr.icon)
-
-        // Image that displays current metadata type title (e.g. "Character search")
-        val tagWaitTitle = ViewCompat.requireViewById<TextView>(binding.root, R.id.tag_wait_title)
-        tagWaitTitle.text = getString(
-            R.string.search_category,
-            StringHelper.capitalizeString(getString(mainAttr.accusativeName))
-        )
 
         val layoutManager = FlexboxLayoutManager(this.context)
         layoutManager.alignItems = AlignItems.STRETCH
@@ -134,12 +126,6 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         binding.tagSuggestion.adapter = attributeAdapter
         binding.tagFilter.setSearchableInfo(getSearchableInfo(requireActivity())) // Associate searchable configuration with the SearchView
 
-        val attrTypesNames = selectedAttributeTypes.map { a -> a.accusativeName }
-
-        binding.tagFilter.queryHint = resources.getString(
-            R.string.search_prompt,
-            TextUtils.join(", ", attrTypesNames)
-        )
         binding.tagFilter.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(s: String): Boolean {
                 if (s.isNotEmpty()) searchMasterData(s)
@@ -153,17 +139,17 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
             }
         })
 
-        viewModel.getLibraryAttributes()
-            .observe(viewLifecycleOwner) { results: AttributeQueryResult ->
-                onLibraryAttributesReady(results)
+        viewModel.getAttributeTypes()
+            .observe(viewLifecycleOwner) { results: List<AttributeType> ->
+                onSelectedAttributeTypesReady(results)
             }
         viewModel.getSelectedAttributes()
             .observe(viewLifecycleOwner) { results: List<Attribute> ->
                 onSelectedAttributesReady(results)
             }
-        viewModel.getAttributeTypes()
-            .observe(viewLifecycleOwner) { results: List<AttributeType> ->
-                selectedAttributeTypes = ArrayList(results)
+        viewModel.getLibraryAttributes()
+            .observe(viewLifecycleOwner) { results: AttributeQueryResult ->
+                onLibraryAttributesReady(results)
             }
         searchMasterData("")
     }
@@ -238,6 +224,28 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
     private fun onSelectedAttributesReady(data: List<Attribute>) {
         this.selectedAttributes.clear()
         this.selectedAttributes.addAll(data)
+    }
+
+    private fun onSelectedAttributeTypesReady(data: List<AttributeType>) {
+        selectedAttributeTypes = ArrayList(data)
+        val mainAttr = selectedAttributeTypes[0]
+
+        // Image that displays current metadata type icon (e.g. face icon for character)
+        binding.tagWaitImage.setImageResource(mainAttr.icon)
+
+        // Image that displays current metadata type title (e.g. "Character search")
+        binding.tagWaitTitle.text = getString(
+            R.string.search_category,
+            StringHelper.capitalizeString(getString(mainAttr.accusativeName))
+        )
+
+        val attrTypesNames =
+            selectedAttributeTypes.map { a -> resources.getString(a.accusativeName) }
+
+        binding.tagFilter.queryHint = resources.getString(
+            R.string.search_prompt,
+            TextUtils.join(", ", attrTypesNames)
+        )
     }
 
     /**

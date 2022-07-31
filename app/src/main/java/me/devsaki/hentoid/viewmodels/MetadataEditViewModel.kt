@@ -14,7 +14,6 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
-import java.util.*
 
 
 class MetadataEditViewModel(
@@ -25,7 +24,7 @@ class MetadataEditViewModel(
     // Disposables (to cleanup Rx calls and avoid memory leaks)
     private val compositeDisposable = CompositeDisposable()
     private val countDisposable = Disposables.empty()
-    private var filterDisposable = Disposables.disposed()
+    private var filterDisposable = Disposables.empty()
 
     // LIVEDATAS
     private val contentList = MutableLiveData<List<Content>>()
@@ -98,17 +97,17 @@ class MetadataEditViewModel(
     /**
      * Set the attributes type to search in the Atttribute search
      *
-     * @param attributeTypes Attribute types the searches will be performed for
+     * @param value Attribute types the searches will be performed for
      */
-    fun setAttributeTypes(attributeTypes: List<AttributeType>) {
-        this.attributeTypes.postValue(attributeTypes)
+    fun setAttributeTypes(value: List<AttributeType>) {
+        attributeTypes.postValue(value)
         val attrs = ArrayList<Attribute>()
         contentList.value?.forEach { c ->
             attrs.addAll(c.attributes.filter { a ->
-                attributeTypes.contains(a.type)
+                value.contains(a.type)
             })
         }
-        this.contentAttributes.postValue(attrs)
+        contentAttributes.postValue(attrs)
     }
 
     /**
@@ -124,7 +123,7 @@ class MetadataEditViewModel(
             attributeTypes.value!!,
             query,
             -1,
-            selectedAttributes.value,
+            emptyList(),
             ContentHelper.Location.ANY,
             ContentHelper.Type.ANY,
             pageNum,
@@ -143,8 +142,8 @@ class MetadataEditViewModel(
      * @param attr Attribute to add to current selection
      */
     fun addSelectedAttribute(attr: Attribute) {
-        val selectedAttributesList: MutableList<Attribute> =
-            ArrayList(Objects.requireNonNull(selectedAttributes.value)) // Create new instance to make ListAdapter.submitList happy
+        val selectedAttributesList = ArrayList<Attribute>()
+        if (selectedAttributes.value != null) selectedAttributesList.addAll(selectedAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
 
         // Direct impact on selectedAttributes
         selectedAttributesList.add(attr)
@@ -159,7 +158,6 @@ class MetadataEditViewModel(
      * @param attrs Selected attributes
      */
     fun setSelectedAttributes(attrs: List<Attribute>) {
-        selectedAttributes.setValue(attrs)
-        //update()
+        selectedAttributes.value = attrs
     }
 }
