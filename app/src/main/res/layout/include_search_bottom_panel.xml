@@ -57,10 +57,30 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         app:iconifiedByDefault="false"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/new_attr_btn"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tag_suggestion" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/new_attr_btn"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_margin="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/create_new_attributes"
+        android:textColor="@color/secondary_color_selector"
+        android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add"
+        app:iconTint="@color/secondary_color_selector"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/tag_filter"
+        app:layout_constraintStart_toStartOf="@id/tag_filter"
+        app:layout_constraintTop_toBottomOf="@id/tag_filter"
+        app:strokeColor="@color/secondary_color_selector"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/tag_wait_panel"

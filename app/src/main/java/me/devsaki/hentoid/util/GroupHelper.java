@@ -183,4 +183,11 @@ public final class GroupHelper {
                 }
             }
     }
+
+    // TODO doc
+    public static Group addArtistToAttributesGroup(@NonNull String name, @NonNull CollectionDAO dao) {
+        Group artistGroup = new Group(Grouping.ARTIST, name, -1);
+        artistGroup.id = dao.insertGroup(artistGroup);
+        return artistGroup;
+    }
 }

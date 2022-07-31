@@ -5,16 +5,21 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.annimon.stream.Stream
+import io.reactivex.Completable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
+import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import org.threeten.bp.Instant
+import timber.log.Timber
 
 
 class MetadataEditViewModel(
@@ -26,6 +31,7 @@ class MetadataEditViewModel(
     private val compositeDisposable = CompositeDisposable()
     private val countDisposable = Disposables.empty()
     private var filterDisposable = Disposables.empty()
+    private var leaveDisposable = Disposables.empty()
 
     // LIVEDATAS
     private val contentList = MutableLiveData<List<Content>>()
@@ -119,6 +125,7 @@ class MetadataEditViewModel(
             emptyList(),
             ContentHelper.Location.ANY,
             ContentHelper.Type.ANY,
+            true,
             pageNum,
             itemsPerPage,
             Preferences.getSearchAttributesSortOrder()
@@ -151,6 +158,14 @@ class MetadataEditViewModel(
         setAttrList(newAttrs)
     }
 
+    fun createAssignNewAttribute(attrName: String) {
+        val attrType = attributeTypes.value?.get(0)
+        if (attrType != null) {
+            val attr = ContentHelper.addAttribute(attrType, attrName, dao)
+            addContentAttribute(attr)
+        }
+    }
+
     private fun setAttrList(value: List<Attribute>) {
         contentAttributes.value = value
 
@@ -174,9 +189,21 @@ class MetadataEditViewModel(
     }
 
     fun saveContent() {
+        leaveDisposable = Completable.fromRunnable { doSaveContent() }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { leaveDisposable.dispose() }
+            ) { t: Throwable? -> Timber.e(t) }
+    }
+
+    fun doSaveContent() {
         contentList.value?.forEach {
             it.lastEditDate = Instant.now().toEpochMilli()
             dao.insertContent(it)
+            // TODO update artist groups
+            ContentHelper.persistJson(getApplication(), it)
         }
+        GroupHelper.updateGroupsJson(getApplication(), dao)
     }
 }

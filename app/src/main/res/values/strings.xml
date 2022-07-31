@@ -815,6 +815,7 @@
     <!-- Metadata editor -->
     <string name="cover_multiple_warning">Cover cannot be changed for multiple books</string>
     <string name="cover_archive_warning">Cover cannot be changed for archives</string>
+    <string name="create_new_attributes">Create new</string>
 
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>

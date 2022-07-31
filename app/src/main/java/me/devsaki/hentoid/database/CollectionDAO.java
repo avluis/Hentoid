@@ -238,6 +238,8 @@ public interface CollectionDAO {
 
     // ATTRIBUTES
 
+    long insertAttribute(@NonNull Attribute attr);
+
     Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
@@ -245,6 +247,7 @@ public interface CollectionDAO {
             List<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             int page,
             int booksPerPage,
             int orderStyle);

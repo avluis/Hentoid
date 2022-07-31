@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.Property;
-import io.objectbox.android.AndroidObjectBrowser;
+import io.objectbox.android.Admin;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import io.objectbox.query.QueryCondition;
@@ -95,8 +95,8 @@ public class ObjectBoxDB {
         store = MyObjectBox.builder().androidContext(context.getApplicationContext()).maxSizeInKByte(Preferences.getMaxDbSizeKb()).build();
 
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
-            boolean started = new AndroidObjectBrowser(store).start(context.getApplicationContext());
-            Timber.i("ObjectBrowser started: %s", started);
+            boolean started = new Admin(store).start(context.getApplicationContext());
+            Timber.i("ObjectBox Admin started: %s", started);
         }
 
         // Pre-cache intensive search queries
@@ -818,15 +818,6 @@ public class ObjectBoxDB {
         QueryBuilder<Content> qb = store.boxFor(Content.class).query();
         qb.link(Content_.groupItems).equal(GroupItem_.groupId, groupId);
         return qb.build().findIds();
-
-        // https://github.com/objectbox/objectbox-java/issues/1028
-        /*
-        return store.boxFor(GroupItem.class).query()
-                .equal(GroupItem_.groupId, groupId)
-                .build()
-                .property(GroupItem_.contentId)
-                .findLongs();
-         */
     }
 
     private long[] selectFilteredContent(List<Attribute> attrs) {
@@ -898,10 +889,6 @@ public class ObjectBoxDB {
         if (!attrs.isEmpty() && attrs.get(0).isExcluded()) {
             final QueryBuilder<Content> contentFromAttributesQueryBuilder1 = store.boxFor(Content.class).query();
             contentFromAttributesQueryBuilder1.in(Content_.status, libraryStatus);
-            /*
-            if (filterFavourites)
-                contentFromAttributesQueryBuilder1.equal(Content_.favourite, true);
-             */
             idsFull = Helper.getListFromPrimitiveArray(contentFromAttributesQueryBuilder1.build().findIds());
         }
 
@@ -944,14 +931,15 @@ public class ObjectBoxDB {
     }
 
     List<Attribute> selectAvailableSources() {
-        return selectAvailableSources(-1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY);
+        return selectAvailableSources(-1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY, false);
     }
 
     List<Attribute> selectAvailableSources(
             long groupId,
             List<Attribute> filter,
             @ContentHelper.Location int location,
-            @ContentHelper.Type int contentType
+            @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs
     ) {
         List<Attribute> result = new ArrayList<>();
 
@@ -969,7 +957,7 @@ public class ObjectBoxDB {
                 AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
-                    if (attrs != null && !attrs.isEmpty())
+                    if (attrs != null && !attrs.isEmpty() && !includeFreeAttrs)
                         qc = qc.and(Content_.id.oneOf(selectFilteredContent(attrs)));
                 }
             }
@@ -1027,18 +1015,25 @@ public class ObjectBoxDB {
         return qc.and(Content_.downloadDate.between(minDownloadDate, maxDownloadDate));
     }
 
+    long insertAttribute(@NonNull Attribute attr) {
+        return store.boxFor(Attribute.class).put(attr);
+    }
+
     private Query<Attribute> queryAvailableAttributes(
             @NonNull final AttributeType type,
             String filter,
-            long[] filteredContent) {
+            long[] filteredContent,
+            boolean includeFreeAttrs) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
             query.contains(Attribute_.name, filter.trim(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        if (filteredContent.length > 0)
-            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, libraryStatus);
-        else
-            query.link(Attribute_.contents).in(Content_.status, libraryStatus);
+        if (!includeFreeAttrs) {
+            if (filteredContent.length > 0)
+                query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, libraryStatus);
+            else
+                query.link(Attribute_.contents).in(Content_.status, libraryStatus);
+        }
 
         return query.build();
     }
@@ -1049,8 +1044,10 @@ public class ObjectBoxDB {
             List<Attribute> attributeFilter,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             String filter) {
-        return queryAvailableAttributes(type, filter, selectFilteredContent(groupId, attributeFilter, location, contentType)).count();
+        long[] filteredContent = (includeFreeAttrs ? new long[0] : selectFilteredContent(groupId, attributeFilter, location, contentType));
+        return queryAvailableAttributes(type, filter, filteredContent, includeFreeAttrs).count();
     }
 
     @SuppressWarnings("squid:S2184")
@@ -1061,16 +1058,17 @@ public class ObjectBoxDB {
             List<Attribute> attributeFilter,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             String filter,
             int sortOrder,
             int page,
             int itemsPerPage) {
-        long[] filteredContent = selectFilteredContent(groupId, attributeFilter, location, contentType);
-        if (filteredContent.length == 0 && attributeFilter != null && !attributeFilter.isEmpty())
+        long[] filteredContent = (includeFreeAttrs ? new long[0] : selectFilteredContent(groupId, attributeFilter, location, contentType));
+        if (filteredContent.length == 0 && attributeFilter != null && !attributeFilter.isEmpty() && !includeFreeAttrs)
             return Collections.emptyList();
         Set<Long> filteredContentAsSet = Helper.getSetFromPrimitiveArray(filteredContent);
         Set<Integer> libraryStatusAsSet = Helper.getSetFromPrimitiveArray(libraryStatus);
-        List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
+        List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent, includeFreeAttrs).find();
 
         // Compute attribute count for sorting
         if (Preferences.getSearchAttributesCount()) {
@@ -1096,7 +1094,7 @@ public class ObjectBoxDB {
         // Apply paging on sorted items
         if (itemsPerPage > 0) {
             int start = (page - 1) * itemsPerPage;
-            s = s.limit(page * itemsPerPage).skip(start); // squid:S2184 here because int * int -> int (not long)
+            s = s.limit((long) page * itemsPerPage).skip(start);
         }
         return s.collect(toList());
     }
@@ -1672,12 +1670,6 @@ public class ObjectBoxDB {
                 .equal(Group_.grouping, Grouping.CUSTOM.getId()) // Custom group
                 .equal(Group_.subtype, 0); // Not the Ungrouped group (subtype 1)
         return customContentQB.build().findIds();
-        // See https://github.com/objectbox/objectbox-java/issues/1028
-        /*
-        QueryBuilder<GroupItem> customGContentQB = store.boxFor(GroupItem.class).query();
-        customGContentQB.link(GroupItem_.group).equal(Group_.grouping, Grouping.CUSTOM.getId());
-        return customGContentQB.build().property(GroupItem_.contentId).findLongs();
-         */
     }
 
     Set<Long> selectUngroupedContentIds() {

@@ -130,6 +130,11 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public long insertAttribute(@NonNull Attribute attr) {
+        return db.insertAttribute(attr);
+    }
+
+    @Override
     public Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
@@ -137,11 +142,12 @@ public class ObjectBoxDAO implements CollectionDAO {
             List<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             int page,
             int booksPerPage,
             int orderStyle) {
         return Single
-                .fromCallable(() -> pagedAttributeSearch(types, filter, groupId, attrs, location, contentType, orderStyle, page, booksPerPage))
+                .fromCallable(() -> pagedAttributeSearch(types, filter, groupId, attrs, location, contentType, includeFreeAttrs, orderStyle, page, booksPerPage))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -754,6 +760,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             List<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             int sortOrder,
             int pageNum,
             int itemPerPage) {
@@ -762,13 +769,13 @@ public class ObjectBoxDAO implements CollectionDAO {
 
         if (!attrTypes.isEmpty()) {
             if (attrTypes.get(0).equals(AttributeType.SOURCE)) {
-                attributes.addAll(db.selectAvailableSources(groupId, attrs, location, contentType));
+                attributes.addAll(db.selectAvailableSources(groupId, attrs, location, contentType, includeFreeAttrs));
                 totalSelectedAttributes = attributes.size();
             } else {
                 for (AttributeType type : attrTypes) {
                     // TODO fix sorting when concatenating both lists
-                    attributes.addAll(db.selectAvailableAttributes(type, groupId, attrs, location, contentType, filter, sortOrder, pageNum, itemPerPage));
-                    totalSelectedAttributes += db.countAvailableAttributes(type, groupId, attrs, location, contentType, filter);
+                    attributes.addAll(db.selectAvailableAttributes(type, groupId, attrs, location, contentType, includeFreeAttrs, filter, sortOrder, pageNum, itemPerPage));
+                    totalSelectedAttributes += db.countAvailableAttributes(type, groupId, attrs, location, contentType, includeFreeAttrs, filter);
                 }
             }
         }
@@ -786,7 +793,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
         } else {
             result = db.countAvailableAttributesPerType(groupId, filter, location, contentType);
-            result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources(groupId, filter, location, contentType).size());
+            result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources(groupId, filter, location, contentType, false).size());
         }
 
         return result;

@@ -139,6 +139,10 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
             }
         })
 
+        binding.newAttrBtn.setOnClickListener {
+            this.onNewAttributeClicked()
+        }
+
         viewModel.getAttributeTypes()
             .observe(viewLifecycleOwner) { results: List<AttributeType> ->
                 onSelectedAttributeTypesReady(results)
@@ -213,8 +217,10 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         mTotalSelectedCount = results.totalSelectedAttributes.toInt()
         if (clearOnSuccess) attributeAdapter.clear()
         if (0 == mTotalSelectedCount) {
+            if (binding.tagFilter.query.isNotEmpty()) binding.newAttrBtn.visibility = View.VISIBLE
             binding.tagWaitDescription.setText(R.string.masterdata_no_result)
         } else {
+            binding.newAttrBtn.visibility = View.GONE
             binding.tagWaitPanel.visibility = View.GONE
             attributeAdapter.setFormatWithNamespace(selectedAttributeTypes.size > 1)
             attributeAdapter.add(attrs)
@@ -296,6 +302,11 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
                 clearOnSuccess = false
             )
         }
+    }
+
+    private fun onNewAttributeClicked() {
+        viewModel.createAssignNewAttribute(binding.tagFilter.query.toString())
+        searchMasterData(binding.tagFilter.query.toString())
     }
 
     companion object {

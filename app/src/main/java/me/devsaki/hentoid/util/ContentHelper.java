@@ -18,7 +18,6 @@ import androidx.documentfile.provider.DocumentFile;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
-import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
@@ -577,6 +576,18 @@ public final class ContentHelper {
         }
 
         return newContentId;
+    }
+
+    public static Attribute addAttribute(
+            @NonNull final AttributeType type, @NonNull final String name, @NonNull final CollectionDAO dao) {
+        Group artistGroup = null;
+        if (type.equals(AttributeType.ARTIST) || type.equals(AttributeType.CIRCLE))
+            artistGroup = GroupHelper.addArtistToAttributesGroup(name, dao);
+        Attribute attr = new Attribute(type, name);
+        long newId = dao.insertAttribute(attr);
+        attr.setId(newId);
+        if (artistGroup != null) attr.putGroup(artistGroup);
+        return attr;
     }
 
     /**

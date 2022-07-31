@@ -384,10 +384,10 @@ public class DatabaseMaintenance {
             for (Grouping g : groupingsToProcess) {
                 if (g.equals(Grouping.ARTIST)) {
                     List<Attribute> artists = db.selectAvailableAttributes(
-                            AttributeType.ARTIST, -1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY,
+                            AttributeType.ARTIST, -1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY, false,
                             null, Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC, 0, 0);
                     artists.addAll(db.selectAvailableAttributes(
-                            AttributeType.CIRCLE, -1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY,
+                            AttributeType.CIRCLE, -1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY, false,
                             null, Preferences.Constant.SEARCH_ORDER_ATTRIBUTES_ALPHABETIC, 0, 0));
                     int order = 1;
                     for (Attribute a : artists) {
