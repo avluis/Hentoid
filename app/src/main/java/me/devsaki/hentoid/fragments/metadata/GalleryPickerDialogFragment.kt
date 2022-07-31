@@ -90,7 +90,7 @@ class GalleyPickerDialogFragment : DialogFragment() {
      * @param pageOrder Order of the clicked image
      */
     private fun onItemClick(pageOrder: Int): Boolean {
-        parent?.selectPage(pageOrder)
+        parent?.onPageSelected(pageOrder)
         dismissAllowingStateLoss()
         return true
     }
@@ -108,6 +108,6 @@ class GalleyPickerDialogFragment : DialogFragment() {
     }
 
     interface Parent {
-        fun selectPage(index: Int)
+        fun onPageSelected(index: Int)
     }
 }

@@ -122,24 +122,13 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
             it.tvTitle.text = content.title
 
             // Artist
-            it.tvArtist.text = ContentHelper.formatArtistForDisplay(this, content)
+            bindArtistUI(content)
 
             // Series
-            var text = ContentHelper.formatSeriesForDisplay(this, content)
-            if (text.isEmpty()) {
-                it.tvSeries.text =
-                    getString(R.string.work_series, resources.getString(R.string.work_untitled))
-            } else {
-                it.tvSeries.text = text
-            }
+            bindSeriesUI(content)
 
             // Tags
-            text = ContentHelper.formatTagsForDisplay(content)
-            if (text.isEmpty()) {
-                it.tvTags.text = resources.getString(R.string.work_untitled)
-            } else {
-                it.tvTags.text = text
-            }
+            bindTagsUI(content)
 
             // Cover
             val thumbLocation = content.cover.usableUri
@@ -163,19 +152,76 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
             }
 
             // Flag
-            @DrawableRes val resId = ContentHelper.getFlagResourceId(this, content)
-            if (resId != 0) {
-                it.ivFlag.setImageResource(resId)
-                it.ivFlag.visibility = View.VISIBLE
-            } else {
-                it.ivFlag.visibility = View.GONE
-            }
+            bindLanguagesUI(content)
+        }
+    }
+
+    private fun bindArtistUI(content: Content) {
+        binding?.tvArtist?.text = ContentHelper.formatArtistForDisplay(this, content)
+    }
+
+    private fun bindSeriesUI(content: Content) {
+        val text = ContentHelper.formatSeriesForDisplay(this, content)
+        if (text.isEmpty()) {
+            binding?.tvSeries?.text =
+                getString(R.string.work_series, resources.getString(R.string.work_untitled))
+        } else {
+            binding?.tvSeries?.text = text
+        }
+    }
+
+    private fun bindTagsUI(content: Content) {
+        val text = ContentHelper.formatTagsForDisplay(content)
+        if (text.isEmpty()) {
+            binding?.tvTags?.text = getString(R.string.work_untitled)
+        } else {
+            binding?.tvTags?.text = text
+        }
+    }
+
+    private fun bindLanguagesUI(content: Content) {
+        @DrawableRes val resId = ContentHelper.getFlagResourceId(this, content)
+        if (resId != 0) {
+            binding?.ivFlag?.setImageResource(resId)
+        } else {
+            binding?.ivFlag?.setImageResource(R.drawable.flag_unknown)
         }
     }
 
     private fun bindMultipleBooksUI() {
+        val keep = String.format("<%s>", resources.getString(R.string.meta_keep))
         binding?.let {
-            // TODO
+            // Title
+            val firstTitle = contents[0].title
+            val anyDifferent = contents.find { c -> c.title != firstTitle }
+            val title = if (null == anyDifferent) firstTitle else keep
+            it.tvTitle.text = title
+
+            // Artist
+            var isDiff = areAttributesDifferent(
+                contents,
+                setOf(AttributeType.ARTIST, AttributeType.CIRCLE)
+            )
+            if (isDiff) it.tvArtist.text = keep
+            else bindArtistUI(contents[0])
+
+            // Series
+            isDiff = areAttributesDifferent(contents, setOf(AttributeType.SERIE))
+            if (isDiff) it.tvSeries.text = keep
+            else bindSeriesUI(contents[0])
+
+            // Tags
+            isDiff =
+                areAttributesDifferent(contents, setOf(AttributeType.TAG, AttributeType.CHARACTER))
+            if (isDiff) it.tvTags.text = keep
+            else bindTagsUI(contents[0])
+
+            // No cover displayed for multiple books
+
+            // Flag
+            isDiff = areAttributesDifferent(contents, setOf(AttributeType.LANGUAGE))
+            if (isDiff) it.ivFlag.setImageResource(R.drawable.flag_multiple)
+            else bindLanguagesUI(contents[0])
         }
     }
 
@@ -287,7 +333,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
                         if (contents[0].isArchive) {
                             Snackbar.make(
                                 b2.root,
-                                R.string.cover_archive_warning,
+                                R.string.meta_cover_archive_warning,
                                 BaseTransientBottomBar.LENGTH_SHORT
                             ).show()
                         } else {
@@ -304,7 +350,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
                     } else {
                         Snackbar.make(
                             b2.root,
-                            R.string.cover_multiple_warning,
+                            R.string.meta_cover_multiple_warning,
                             BaseTransientBottomBar.LENGTH_SHORT
                         ).show()
                     }
@@ -345,8 +391,26 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
     /**
      * Callback from the gallery picker
      */
-    override fun selectPage(index: Int) {
+    override fun onPageSelected(index: Int) {
         viewModel.setCover(index)
+    }
+
+    private fun areAttributesDifferent(
+        contents: List<Content>,
+        types: Set<AttributeType>
+    ): Boolean {
+        if (contents.isEmpty()) return false
+
+        val allAttrs = ArrayList<Set<Attribute>>()
+        contents.forEach {
+            allAttrs.add(it.attributes.filter { a -> types.contains(a.type) }.toSet())
+        }
+        val firstAttrs = allAttrs[0]
+        allAttrs.forEach {
+            if (it.size != firstAttrs.size) return true
+            if (!it.containsAll(firstAttrs)) return true
+        }
+        return false
     }
 
     companion object {

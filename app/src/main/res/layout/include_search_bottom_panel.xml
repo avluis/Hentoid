@@ -69,7 +69,7 @@
         android:layout_height="?android:attr/actionBarSize"
         android:layout_margin="8dp"
         android:layout_marginTop="8dp"
-        android:text="@string/create_new_attributes"
+        android:text="@string/meta_create_new"
         android:textColor="@color/secondary_color_selector"
         android:textSize="@dimen/text_body_1"
         android:visibility="gone"

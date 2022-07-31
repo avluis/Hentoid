@@ -77,12 +77,12 @@ class MetadataEditViewModel(
      */
     fun loadContent(contentId: LongArray) {
         val contents = dao.selectContent(contentId.filter { id -> id > 0 }.toLongArray())
-        val attrs = ArrayList<Attribute>()
+        val attrs = HashSet<Attribute>()
         contents.forEach { c ->
             attrs.addAll(c.attributes)
         }
         contentList.postValue(contents)
-        contentAttributes.postValue(attrs)
+        contentAttributes.postValue(attrs.toList())
     }
 
     fun setCover(order: Int) {
@@ -197,7 +197,7 @@ class MetadataEditViewModel(
             ) { t: Throwable? -> Timber.e(t) }
     }
 
-    fun doSaveContent() {
+    private fun doSaveContent() {
         contentList.value?.forEach {
             it.lastEditDate = Instant.now().toEpochMilli()
             dao.insertContent(it)
