@@ -60,7 +60,6 @@ import javax.annotation.Nonnull;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
 import io.whitfin.siphash.SipHasher;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
@@ -84,7 +83,6 @@ public final class Helper {
     private static final byte[] SIP_KEY = "0123456789ABCDEF".getBytes();
     public static final Action EMPTY_ACTION = () -> {
     };
-
 
 
     /**
@@ -238,19 +236,6 @@ public final class Helper {
             throw new IllegalStateException("This should not be run on the UI thread");
         }
     }
-
-    /// <summary>
-    /// Format the given duration using the following format
-    ///     DDdHH:MM:SS
-    ///
-    ///  Where
-    ///     DD is the number of days, if applicable (i.e. durations of less than 1 day won't display the "DDd" part)
-    ///     HH is the number of hours, if applicable (i.e. durations of less than 1 hour won't display the "HH:" part)
-    ///     MM is the number of minutes
-    ///     SS is the number of seconds
-    /// </summary>
-    /// <param name="seconds">Duration to format (in seconds)</param>
-    /// <returns>Formatted duration according to the abovementioned convention</returns>
 
     /**
      * Format the given duration using the HH:MM:SS format
