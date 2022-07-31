@@ -67,7 +67,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
     // Selected attribute types (selection done in the activity view)
     private var selectedAttributeTypes = ArrayList<AttributeType>()
 
-    private var selectedAttributes = ArrayList<Attribute>()
+    private var contentAttributes = ArrayList<Attribute>()
 
     private var excludeAttr = false
 
@@ -121,7 +121,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         attributeAdapter = AvailableAttributeAdapter()
         attributeAdapter.setOnScrollToEndListener { this.loadMore() }
         attributeAdapter.setOnClickListener { button: View ->
-            this.onAttributeChosen(button)
+            this.onAttributeClicked(button)
         }
         binding.tagSuggestion.adapter = attributeAdapter
         binding.tagFilter.setSearchableInfo(getSearchableInfo(requireActivity())) // Associate searchable configuration with the SearchView
@@ -143,9 +143,9 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
             .observe(viewLifecycleOwner) { results: List<AttributeType> ->
                 onSelectedAttributeTypesReady(results)
             }
-        viewModel.getSelectedAttributes()
+        viewModel.getContentAttributes()
             .observe(viewLifecycleOwner) { results: List<Attribute> ->
-                onSelectedAttributesReady(results)
+                onContentAttributesReady(results)
             }
         viewModel.getLibraryAttributes()
             .observe(viewLifecycleOwner) { results: AttributeQueryResult ->
@@ -163,7 +163,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
      */
     private fun searchMasterData(filter: String) {
         currentPage = 1
-        searchMasterData(filter, true, true)
+        searchMasterData(filter, displayLoadingImage = true, clearOnSuccess = true)
     }
 
     /**
@@ -199,7 +199,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
 
         // Remove selected attributes from the result set
         val attrs = ArrayList(results.attributes)
-        attrs.removeAll(selectedAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }
+        attrs.removeAll(contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }
             .toSet())
 
         // Translate language names if present
@@ -221,9 +221,9 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun onSelectedAttributesReady(data: List<Attribute>) {
-        this.selectedAttributes.clear()
-        this.selectedAttributes.addAll(data)
+    private fun onContentAttributesReady(data: List<Attribute>) {
+        this.contentAttributes.clear()
+        this.contentAttributes.addAll(data)
     }
 
     private fun onSelectedAttributeTypesReady(data: List<AttributeType>) {
@@ -253,12 +253,12 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
      *
      * @param button Button that has been clicked on
      */
-    private fun onAttributeChosen(button: View) {
+    private fun onAttributeClicked(button: View) {
         val a = button.tag as Attribute
-        if (!selectedAttributes.contains(a)) { // Add selected tag
+        if (!contentAttributes.contains(a)) { // Add selected tag
             button.isPressed = true
             a.isExcluded = excludeAttr
-            viewModel.addSelectedAttribute(a)
+            viewModel.addContentAttribute(a)
             // Empty query and display all attributes again
             binding.tagFilter.setQuery("", false)
             searchMasterData("")
@@ -290,7 +290,11 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         if (!isLastPage()) { // NB : A "page" is a group of loaded attributes. Last page is reached when scrolling reaches the very end of the list
             Timber.d("Load more data now~")
             currentPage++
-            searchMasterData(binding.tagFilter.query.toString(), false, false)
+            searchMasterData(
+                binding.tagFilter.query.toString(),
+                displayLoadingImage = false,
+                clearOnSuccess = false
+            )
         }
     }
 

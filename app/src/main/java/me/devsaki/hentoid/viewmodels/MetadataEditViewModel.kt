@@ -32,12 +32,9 @@ class MetadataEditViewModel(
     private val contentAttributes = MutableLiveData<List<Attribute>>()
     private val libraryAttributes = MutableLiveData<AttributeQueryResult>()
 
-    // Selected attributes (passed between MetaEditBottomSheetFragment and MetadataEditActivity as LiveData via the ViewModel)
-    private val selectedAttributes = MutableLiveData<List<Attribute>>()
-
 
     init {
-        selectedAttributes.value = ArrayList()
+        contentAttributes.value = ArrayList()
     }
 
     override fun onCleared() {
@@ -63,10 +60,6 @@ class MetadataEditViewModel(
 
     fun getLibraryAttributes(): LiveData<AttributeQueryResult> {
         return libraryAttributes
-    }
-
-    fun getSelectedAttributes(): LiveData<List<Attribute>> {
-        return selectedAttributes
     }
 
 
@@ -141,23 +134,20 @@ class MetadataEditViewModel(
      *
      * @param attr Attribute to add to current selection
      */
-    fun addSelectedAttribute(attr: Attribute) {
-        val selectedAttributesList = ArrayList<Attribute>()
-        if (selectedAttributes.value != null) selectedAttributesList.addAll(selectedAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
+    fun addContentAttribute(attr: Attribute) {
+        val newAttrs = ArrayList<Attribute>()
+        if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
 
-        // Direct impact on selectedAttributes
-        selectedAttributesList.add(attr)
-        setSelectedAttributes(selectedAttributesList)
+        newAttrs.add(attr)
+        contentAttributes.value = newAttrs
     }
 
-    /**
-     * Set the selected attributes for the Content and Attribute searches
-     * - Only books tagged with all selected attributes will be among Content search results
-     * - Only attributes contained in these books will be among Attribute search results
-     *
-     * @param attrs Selected attributes
-     */
-    fun setSelectedAttributes(attrs: List<Attribute>) {
-        selectedAttributes.value = attrs
+    // TODO doc
+    fun removeContentAttribute(attr: Attribute) {
+        val newAttrs = ArrayList<Attribute>()
+        if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
+
+        newAttrs.remove(attr)
+        contentAttributes.value = newAttrs
     }
 }

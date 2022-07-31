@@ -277,7 +277,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
      * @param item AttributeItem that has been clicked on
      */
     private fun onItemClick(item: AttributeItem): Boolean {
-        // TODO
+        viewModel.removeContentAttribute(item.attribute)
         Timber.d("Attribute %s clicked", item.attribute.name)
         return true
     }

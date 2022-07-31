@@ -126,7 +126,9 @@
 
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:lines="1"
+            android:maxLines="1" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -148,9 +150,9 @@
         android:id="@+id/tags_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="-16dp"
         android:visibility="gone"
         app:fabSize="mini"
-        android:layout_marginBottom="-16dp"
         app:layout_constraintBottom_toBottomOf="@id/tags"
         app:layout_constraintEnd_toEndOf="@id/tags"
         app:srcCompat="@drawable/ic_add"
