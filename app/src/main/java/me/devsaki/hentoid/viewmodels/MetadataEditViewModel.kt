@@ -69,11 +69,12 @@ class MetadataEditViewModel(
      * @param contentId  IDs of the Contents to load
      */
     fun loadContent(contentId: LongArray) {
-        contentList.postValue(dao.selectContent(contentId.filter { id -> id > 0 }.toLongArray()))
+        val contents = dao.selectContent(contentId.filter { id -> id > 0 }.toLongArray())
         val attrs = ArrayList<Attribute>()
-        contentList.value?.forEach { c ->
+        contents.forEach { c ->
             attrs.addAll(c.attributes)
         }
+        contentList.postValue(contents)
         contentAttributes.postValue(attrs)
     }
 

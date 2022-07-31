@@ -51,6 +51,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
 
     // Vars
     private lateinit var contents: List<Content>
+    private var contentAttributes = ArrayList<Attribute>()
     private var selectedAttributeTypes = ArrayList<AttributeType>()
 
 
@@ -96,14 +97,21 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
         else bindMultipleBooksUI()
     }
 
-    private fun onSelectedAttributeTypesChanged(attrs: List<AttributeType>) {
+    private fun onSelectedAttributeTypesChanged(data: List<AttributeType>) {
         selectedAttributeTypes.clear()
-        selectedAttributeTypes.addAll(attrs)
+        selectedAttributeTypes.addAll(data)
+        updateAttrsList()
     }
 
-    private fun onContentAttributesChanged(attrs: List<Attribute>) {
+    private fun onContentAttributesChanged(data: List<Attribute>) {
+        contentAttributes.clear()
+        contentAttributes.addAll(data)
+        updateAttrsList()
+    }
+
+    private fun updateAttrsList() {
         FastAdapterDiffUtil[itemAdapter] =
-            attrs.filter { a -> selectedAttributeTypes.contains(a.type) }
+            contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }
                 .map { attr -> AttributeItem(attr) }
     }
 
@@ -119,18 +127,17 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
             // Series
             var text = ContentHelper.formatSeriesForDisplay(this, content)
             if (text.isEmpty()) {
-                it.tvSeries.visibility = View.GONE
+                it.tvSeries.text =
+                    getString(R.string.work_series, resources.getString(R.string.work_untitled))
             } else {
-                it.tvSeries.visibility = View.VISIBLE
                 it.tvSeries.text = text
             }
 
             // Tags
             text = ContentHelper.formatTagsForDisplay(content)
             if (text.isEmpty()) {
-                it.tvTags.visibility = View.GONE
+                it.tvTags.text = resources.getString(R.string.work_untitled)
             } else {
-                it.tvTags.visibility = View.VISIBLE
                 it.tvTags.text = text
             }
 

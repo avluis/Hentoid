@@ -213,8 +213,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         mTotalSelectedCount = results.totalSelectedAttributes.toInt()
         if (clearOnSuccess) attributeAdapter.clear()
         if (0 == mTotalSelectedCount) {
-            val searchQuery: String = binding.tagFilter.query.toString()
-            if (searchQuery.isEmpty()) dismiss() else binding.tagWaitDescription.setText(R.string.masterdata_no_result)
+            binding.tagWaitDescription.setText(R.string.masterdata_no_result)
         } else {
             binding.tagWaitPanel.visibility = View.GONE
             attributeAdapter.setFormatWithNamespace(selectedAttributeTypes.size > 1)
