@@ -258,16 +258,16 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
                             AttributeType.CHARACTER
                         )
                     )
-                    b2.tagsFab.setOnClickListener {
-                        MetaEditBottomSheetFragment.invoke(
-                            this,
-                            supportFragmentManager, true
-                        )
-                    }
                     b2.titleNew.visibility = View.GONE
                     b2.tags.visibility = View.VISIBLE
                     b2.tagsFab.visibility = View.VISIBLE
                 }
+            }
+            it.tagsFab.setOnClickListener {
+                MetaEditBottomSheetFragment.invoke(
+                    this,
+                    supportFragmentManager, true
+                )
             }
 
             // Flag
@@ -334,7 +334,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
     }
 
     private fun confirmEdit() {
-        // TODO save to DB
+        viewModel.saveContent()
         finish()
     }
 

@@ -150,7 +150,7 @@ class MetadataEditViewModel(
         setAttrList(newAttrs)
     }
 
-    fun setAttrList(value: List<Attribute>) {
+    private fun setAttrList(value: List<Attribute>) {
         contentAttributes.value = value
 
         // Update Contents
@@ -169,6 +169,12 @@ class MetadataEditViewModel(
             contents.addAll(contentList.value!!)
             contents.forEach { c -> c.title = value }
             contentList.postValue(contents)
+        }
+    }
+
+    fun saveContent() {
+        contentList.value?.forEach {
+            dao.insertContent(it)
         }
     }
 }
