@@ -199,7 +199,8 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
 
         // Remove selected attributes from the result set
         val attrs = ArrayList(results.attributes)
-        attrs.removeAll(contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }
+        attrs.removeAll(contentAttributes
+            .filter { a -> selectedAttributeTypes.contains(a.type) }
             .toSet())
 
         // Translate language names if present
@@ -222,8 +223,8 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun onContentAttributesReady(data: List<Attribute>) {
-        this.contentAttributes.clear()
-        this.contentAttributes.addAll(data)
+        contentAttributes.clear()
+        contentAttributes.addAll(data)
     }
 
     private fun onSelectedAttributeTypesReady(data: List<AttributeType>) {

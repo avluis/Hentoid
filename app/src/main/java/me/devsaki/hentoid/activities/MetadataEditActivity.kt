@@ -3,6 +3,8 @@ package me.devsaki.hentoid.activities
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.DrawableRes
@@ -49,6 +51,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
 
     // Vars
     private lateinit var contents: List<Content>
+    private var selectedAttributeTypes = ArrayList<AttributeType>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,6 +82,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
 
         viewModel.getContent().observe(this) { this.onContentChanged(it) }
         viewModel.getContentAttributes().observe(this) { this.onContentAttributesChanged(it) }
+        viewModel.getAttributeTypes().observe(this) { this.onSelectedAttributeTypesChanged(it) }
     }
 
     override fun onDestroy() {
@@ -92,8 +96,15 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
         else bindMultipleBooksUI()
     }
 
+    private fun onSelectedAttributeTypesChanged(attrs: List<AttributeType>) {
+        selectedAttributeTypes.clear()
+        selectedAttributeTypes.addAll(attrs)
+    }
+
     private fun onContentAttributesChanged(attrs: List<Attribute>) {
-        FastAdapterDiffUtil[itemAdapter] = attrs.map { attr -> AttributeItem(attr) }
+        FastAdapterDiffUtil[itemAdapter] =
+            attrs.filter { a -> selectedAttributeTypes.contains(a.type) }
+                .map { attr -> AttributeItem(attr) }
     }
 
     private fun bindSingleBookUI() {
@@ -101,7 +112,6 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
         binding?.let {
             // Title
             it.tvTitle.text = content.title
-            it.titleNew.editText?.setText(content.title)
 
             // Artist
             it.tvArtist.text = ContentHelper.formatArtistForDisplay(this, content)
@@ -177,16 +187,45 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
             // Title
             it.tvTitle.setOnClickListener {
                 binding?.let { b2 ->
+                    b2.titleNew.editText?.setText(b2.tvTitle.text.toString())
                     b2.titleNew.visibility = View.VISIBLE
                     b2.tags.visibility = View.GONE
                     b2.tagsFab.visibility = View.GONE
                 }
             }
+            it.titleNew.editText?.addTextChangedListener(
+                object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        if (s != null) viewModel.setTitle(s.toString())
+                    }
+
+                    override fun beforeTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        count: Int,
+                        after: Int
+                    ) {
+                    }
+
+                    override fun onTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        before: Int,
+                        count: Int
+                    ) {
+                    }
+                }
+            )
 
             // Artist
             it.tvArtist.setOnClickListener {
                 binding?.let { b2 ->
-                    viewModel.setAttributeTypes(listOf(AttributeType.ARTIST, AttributeType.CIRCLE))
+                    viewModel.setAttributeTypes(
+                        listOf(
+                            AttributeType.ARTIST,
+                            AttributeType.CIRCLE
+                        )
+                    )
                     b2.titleNew.visibility = View.GONE
                     b2.tags.visibility = View.VISIBLE
                     b2.tagsFab.visibility = View.VISIBLE
@@ -206,7 +245,12 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
             // Tags
             it.tvTags.setOnClickListener {
                 binding?.let { b2 ->
-                    viewModel.setAttributeTypes(listOf(AttributeType.TAG, AttributeType.CHARACTER))
+                    viewModel.setAttributeTypes(
+                        listOf(
+                            AttributeType.TAG,
+                            AttributeType.CHARACTER
+                        )
+                    )
                     b2.tagsFab.setOnClickListener {
                         MetaEditBottomSheetFragment.invoke(
                             this,
@@ -302,6 +346,9 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
         val centerInside: Transformation<Bitmap> = CenterInside()
         val glideRequestOptions = RequestOptions()
             .optionalTransform(centerInside)
-            .optionalTransform(WebpDrawable::class.java, WebpDrawableTransformation(centerInside))
+            .optionalTransform(
+                WebpDrawable::class.java,
+                WebpDrawableTransformation(centerInside)
+            )
     }
 }

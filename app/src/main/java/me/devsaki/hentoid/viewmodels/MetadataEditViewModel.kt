@@ -70,6 +70,11 @@ class MetadataEditViewModel(
      */
     fun loadContent(contentId: LongArray) {
         contentList.postValue(dao.selectContent(contentId.filter { id -> id > 0 }.toLongArray()))
+        val attrs = ArrayList<Attribute>()
+        contentList.value?.forEach { c ->
+            attrs.addAll(c.attributes)
+        }
+        contentAttributes.postValue(attrs)
     }
 
     fun setCover(order: Int) {
@@ -94,13 +99,6 @@ class MetadataEditViewModel(
      */
     fun setAttributeTypes(value: List<AttributeType>) {
         attributeTypes.postValue(value)
-        val attrs = ArrayList<Attribute>()
-        contentList.value?.forEach { c ->
-            attrs.addAll(c.attributes.filter { a ->
-                value.contains(a.type)
-            })
-        }
-        contentAttributes.postValue(attrs)
     }
 
     /**
@@ -139,7 +137,7 @@ class MetadataEditViewModel(
         if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
 
         newAttrs.add(attr)
-        contentAttributes.value = newAttrs
+        setAttrList(newAttrs)
     }
 
     // TODO doc
@@ -148,6 +146,28 @@ class MetadataEditViewModel(
         if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
 
         newAttrs.remove(attr)
-        contentAttributes.value = newAttrs
+        setAttrList(newAttrs)
+    }
+
+    fun setAttrList(value: List<Attribute>) {
+        contentAttributes.value = value
+
+        // Update Contents
+        val contents = ArrayList<Content>()
+        if (contentList.value != null) {
+            contents.addAll(contentList.value!!)
+            contents.forEach { c -> c.putAttributes(value) }
+            contentList.postValue(contents)
+        }
+    }
+
+    fun setTitle(value: String) {
+        // Update Contents
+        val contents = ArrayList<Content>()
+        if (contentList.value != null) {
+            contents.addAll(contentList.value!!)
+            contents.forEach { c -> c.title = value }
+            contentList.postValue(contents)
+        }
     }
 }
