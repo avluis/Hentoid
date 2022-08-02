@@ -488,9 +488,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 super.onProgressChanged(view, newProgress);
                 if (binding != null) {
                     if (newProgress == 100) {
-                        binding.swipeContainer.post(() -> binding.swipeContainer.setRefreshing(false));
+                        binding.swipeContainer.post(() -> {
+                            if (binding != null) binding.swipeContainer.setRefreshing(false);
+                        });
                     } else {
-                        binding.swipeContainer.post(() -> binding.swipeContainer.setRefreshing(true));
+                        binding.swipeContainer.post(() -> {
+                            if (binding != null) binding.swipeContainer.setRefreshing(true);
+                        });
                     }
                 }
             }
@@ -847,11 +851,13 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         } else if (ActionMode.READ == mode) {
             resId = R.drawable.ic_action_play;
         }
-        BadgeDrawable badge = binding.bottomNavigation.getOrCreateBadge(R.id.web_menu_action);
-        badge.setVisible(ActionMode.DOWNLOAD_PLUS == mode);
         actionButtonMode = mode;
-        actionMenu.setIcon(resId);
-        actionMenu.setEnabled(true);
+        if (binding != null) {
+            BadgeDrawable badge = binding.bottomNavigation.getOrCreateBadge(R.id.web_menu_action);
+            badge.setVisible(ActionMode.DOWNLOAD_PLUS == mode);
+            actionMenu.setIcon(resId);
+            actionMenu.setEnabled(true);
+        }
     }
 
     /**
