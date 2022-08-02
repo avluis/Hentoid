@@ -358,7 +358,7 @@ public final class ImageHelper {
 
         Bitmap resizedBitmap = resizeBitmap(bm, Math.min(scaleHeight, scaleWidth));
 
-        if (!isNecessaryToKeepOrig) {
+        if (!isNecessaryToKeepOrig && bm != resizedBitmap) { // Don't recycle if the result is the same object as the source
             bm.recycle();
         }
         return resizedBitmap;
