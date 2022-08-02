@@ -556,8 +556,11 @@ public class ReaderViewModel extends AndroidViewModel {
                 completedThresholdRatio = 0.75f;
                 break;
             case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_ALL:
-            default:
                 completedThresholdRatio = 1;
+                break;
+            case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_NONE:
+            default:
+                completedThresholdRatio = 2;
         }
         int completedThresholdPosition = Math.round(completedThresholdRatio * nbReadablePages);
 
