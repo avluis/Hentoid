@@ -153,11 +153,11 @@ public class ImportHelper {
             Uri uri = intent.getData();
             if (uri != null)
                 return new ImmutablePair<>(PickerResult.OK, uri);
-            else return new ImmutablePair<>(PickerResult.KO_NO_URI, null);
+            else return new ImmutablePair<>(PickerResult.KO_NO_URI, Uri.EMPTY);
         } else if (resultCode == Activity.RESULT_CANCELED) {
-            return new ImmutablePair<>(PickerResult.KO_CANCELED, null);
+            return new ImmutablePair<>(PickerResult.KO_CANCELED, Uri.EMPTY);
         }
-        return new ImmutablePair<>(PickerResult.KO_OTHER, null);
+        return new ImmutablePair<>(PickerResult.KO_OTHER, Uri.EMPTY);
     }
 
     /**
