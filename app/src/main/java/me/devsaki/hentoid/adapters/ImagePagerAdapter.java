@@ -53,6 +53,7 @@ import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -72,8 +73,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     // Screen width and height; used to adjust dimensions of small images handled by Glide
-    static final int SCREEN_WIDTH = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
-    static final int SCREEN_HEIGHT = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
+    static final int screenWidth = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
+    static final int screenHeight = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
 
     private static final int PAGE_MIN_HEIGHT = (int) HentoidApp.getInstance().getResources().getDimension(R.dimen.page_min_height);
 
@@ -491,7 +492,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
             int targetImgHeight = imgHeight;
             // If we display a picture smaller than the screen dimensions, we have to zoom it
-            if (resizeSmallPics && imgHeight < SCREEN_HEIGHT && imgWidth < SCREEN_WIDTH) {
+            if (resizeSmallPics && imgHeight < screenHeight && imgWidth < screenWidth) {
                 targetImgHeight = Math.round(imgHeight * getTargetScale(imgWidth, imgHeight, displayMode));
                 ViewGroup.LayoutParams imgLayoutParams = imgView.getLayoutParams();
                 imgLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -507,27 +508,32 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
                 if (imgHeight > imgWidth) {
                     // Fit to width
-                    return SCREEN_WIDTH / (float) imgWidth;
+                    return screenWidth / (float) imgWidth;
                 } else {
-                    if (SCREEN_HEIGHT > SCREEN_WIDTH)
-                        return SCREEN_HEIGHT / (float) imgHeight; // Fit to height when in portrait mode
+                    if (screenHeight > screenWidth)
+                        return screenHeight / (float) imgHeight; // Fit to height when in portrait mode
                     else
-                        return SCREEN_WIDTH / (float) imgWidth; // Fit to width when in landscape mode
+                        return screenWidth / (float) imgWidth; // Fit to width when in landscape mode
                 }
             } else { // Fit screen
-                return Math.min(SCREEN_WIDTH / (float) imgWidth, SCREEN_HEIGHT / (float) imgHeight);
+                return Math.min(screenWidth / (float) imgWidth, screenHeight / (float) imgHeight);
             }
         }
 
-        void switchImageView(boolean isImageView) {
+        private void rotateImageView(int angle) {
+            imageView.setRotation(angle);
+        }
+
+        private void switchImageView(boolean isImageView) {
             Timber.d("Picture %d : switching to %s", getAbsoluteAdapterPosition(), isImageView ? "imageView" : "ssiv");
             ssiv.setVisibility(isImageView ? View.GONE : View.VISIBLE);
+            rotateImageView(0);
             imageView.setVisibility(isImageView ? View.VISIBLE : View.GONE);
             imgView = (isImageView) ? imageView : ssiv;
             this.isImageView = isImageView;
         }
 
-        void forceImageView(boolean isImageView) {
+        private void forceImageView(boolean isImageView) {
             switchImageView(isImageView);
             this.forceImageView = isImageView;
         }
@@ -583,6 +589,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
                 adjustHeight(resource.getIntrinsicWidth(), resource.getIntrinsicHeight(), true);
+            if (autoRotate && ImageHelper.needsRotating(screenWidth, screenHeight, resource.getIntrinsicWidth(), resource.getIntrinsicHeight()))
+                rotateImageView(90);
             return false;
         }
 
@@ -593,6 +601,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             public void onAnimationStart(Drawable drawable) {
                 if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
                     adjustHeight(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), true);
+                if (autoRotate && ImageHelper.needsRotating(screenWidth, screenHeight, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight()))
+                    rotateImageView(90);
             }
         };
     }
