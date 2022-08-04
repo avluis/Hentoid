@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.fragments.web;
 
-import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
+import static me.devsaki.hentoid.util.image.ImageHelper.tintBitmap;
 
 import android.content.Context;
 import android.graphics.Bitmap;

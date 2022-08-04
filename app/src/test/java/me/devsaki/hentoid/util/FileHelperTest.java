@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
+import me.devsaki.hentoid.util.file.FileHelper;
+
 public class FileHelperTest {
 
     @Test

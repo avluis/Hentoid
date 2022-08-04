@@ -18,8 +18,8 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.ImageHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;

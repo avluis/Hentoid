@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.activities.sources;
 
-import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
+import static me.devsaki.hentoid.util.file.PermissionHelper.RQST_STORAGE_PERMISSION;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
@@ -103,9 +103,9 @@ import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.PermissionHelper;
+import me.devsaki.hentoid.util.file.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;

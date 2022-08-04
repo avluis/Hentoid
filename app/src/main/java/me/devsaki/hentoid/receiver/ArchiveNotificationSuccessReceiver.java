@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 
 /**
  * Broadcast receiver for when an archival notification is clicked

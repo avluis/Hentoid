@@ -20,7 +20,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.parsers.content.ExhentaiContent;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 

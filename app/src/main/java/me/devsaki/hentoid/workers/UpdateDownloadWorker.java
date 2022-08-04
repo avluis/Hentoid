@@ -15,7 +15,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.notification.update.UpdateFailedNotification;
 import me.devsaki.hentoid.notification.update.UpdateInstallNotification;
 import me.devsaki.hentoid.notification.update.UpdateProgressNotification;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.UpdateDownloadData;

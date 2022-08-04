@@ -26,8 +26,10 @@ import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
 import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.MultiTransformation;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.load.resource.UnitTransformation;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
@@ -52,9 +54,9 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.SmartRotateTransformation;
 import timber.log.Timber;
 
 
@@ -421,10 +423,12 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 } else {
                     Timber.d("Using Glide");
                     Transformation<Bitmap> centerInside = new CenterInside();
+                    Transformation<Bitmap> smartRotate90 = (autoRotate) ? new SmartRotateTransformation(90, screenWidth, screenHeight) : UnitTransformation.get();
+
                     GlideApp.with(view)
                             .load(uri)
-                            .optionalTransform(centerInside)
-                            .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
+                            .optionalTransform(new MultiTransformation<>(centerInside, smartRotate90))
+                            .optionalTransform(WebpDrawable.class, new MultiTransformation<>(new WebpDrawableTransformation(centerInside), new WebpDrawableTransformation(smartRotate90)))
 //                            .set(WebpFrameLoader.FRAME_CACHE_STRATEGY, WebpFrameCacheStrategy.ALL)
                             .listener(this)
                             .into(view);
@@ -520,22 +524,17 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             }
         }
 
-        private void rotateImageView(int angle) {
-            imageView.setRotation(angle);
-        }
-
         private void switchImageView(boolean isImageView) {
             Timber.d("Picture %d : switching to %s", getAbsoluteAdapterPosition(), isImageView ? "imageView" : "ssiv");
             ssiv.setVisibility(isImageView ? View.GONE : View.VISIBLE);
-            rotateImageView(0);
             imageView.setVisibility(isImageView ? View.VISIBLE : View.GONE);
             imgView = (isImageView) ? imageView : ssiv;
             this.isImageView = isImageView;
         }
 
-        private void forceImageView(boolean isImageView) {
-            switchImageView(isImageView);
-            this.forceImageView = isImageView;
+        private void forceImageView() {
+            switchImageView(true);
+            this.forceImageView = true;
         }
 
         // == SUBSAMPLINGSCALEVIEW CALLBACKS
@@ -561,7 +560,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         public void onImageLoadError(Throwable e) {
             Timber.d(e, "Picture %d : SSIV loading failed; reloading with Glide : %s", getAbsoluteAdapterPosition(), img.getFileUri());
             // Fall back to Glide
-            forceImageView(true);
+            forceImageView();
             // Reload adapter
             notifyItemChanged(getLayoutPosition());
         }
@@ -589,8 +588,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
             if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
                 adjustHeight(resource.getIntrinsicWidth(), resource.getIntrinsicHeight(), true);
-            if (autoRotate && ImageHelper.needsRotating(screenWidth, screenHeight, resource.getIntrinsicWidth(), resource.getIntrinsicHeight()))
-                rotateImageView(90);
             return false;
         }
 
@@ -601,8 +598,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             public void onAnimationStart(Drawable drawable) {
                 if (Preferences.Constant.VIEWER_ORIENTATION_VERTICAL == viewerOrientation)
                     adjustHeight(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), true);
-                if (autoRotate && ImageHelper.needsRotating(screenWidth, screenHeight, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight()))
-                    rotateImageView(90);
             }
         };
     }

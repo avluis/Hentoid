@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.activities;
 
-import static me.devsaki.hentoid.util.PermissionHelper.RQST_STORAGE_PERMISSION;
+import static me.devsaki.hentoid.util.file.PermissionHelper.RQST_STORAGE_PERMISSION;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,7 +14,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle;
 import me.devsaki.hentoid.fragments.reader.ReaderGalleryFragment;
 import me.devsaki.hentoid.fragments.reader.ReaderPagerFragment;
-import me.devsaki.hentoid.util.PermissionHelper;
+import me.devsaki.hentoid.util.file.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.viewmodels.ReaderViewModel;

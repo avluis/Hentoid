@@ -29,7 +29,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.CircularProgressView;
 

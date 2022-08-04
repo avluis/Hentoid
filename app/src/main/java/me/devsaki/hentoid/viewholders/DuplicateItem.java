@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.viewholders;
 
 import static androidx.core.view.ViewCompat.requireViewById;
-import static me.devsaki.hentoid.util.ImageHelper.tintBitmap;
+import static me.devsaki.hentoid.util.image.ImageHelper.tintBitmap;
 
 import android.content.Context;
 import android.content.res.Resources;

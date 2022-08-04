@@ -13,8 +13,8 @@ import java.util.List;
 
 import io.reactivex.ObservableEmitter;
 import me.devsaki.hentoid.util.DuplicateHelper;
-import me.devsaki.hentoid.util.ImageHelper;
-import me.devsaki.hentoid.util.ImagePHash;
+import me.devsaki.hentoid.util.image.ImageHelper;
+import me.devsaki.hentoid.util.image.ImagePHash;
 import timber.log.Timber;
 
 public class AppStartupDev {

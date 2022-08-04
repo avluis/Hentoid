@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.image;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
@@ -29,6 +29,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**

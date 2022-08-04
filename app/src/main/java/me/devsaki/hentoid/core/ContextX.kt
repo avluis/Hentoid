@@ -12,7 +12,7 @@ import android.webkit.WebView
 import android.widget.Toast
 import androidx.core.util.Consumer
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.util.FileHelper
+import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper

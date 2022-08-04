@@ -1,6 +1,6 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.file;
 
-import static me.devsaki.hentoid.util.FileExplorer.createNameFilterEquals;
+import static me.devsaki.hentoid.util.file.FileExplorer.createNameFilterEquals;
 
 import android.annotation.TargetApi;
 import android.app.usage.StorageStatsManager;
@@ -53,6 +53,10 @@ import java.util.UUID;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.ToastHelper;
 import timber.log.Timber;
 
 /**
@@ -273,7 +277,7 @@ public class FileHelper {
      *
      * @param stream - OutputStream
      */
-    static void sync(@NonNull final FileOutputStream stream) {
+    public static void sync(@NonNull final FileOutputStream stream) {
         FileUtil.sync(stream);
     }
 
@@ -736,7 +740,7 @@ public class FileHelper {
      * @param limit      Limit not to cross (in bytes counted from the initial position); 0 for unlimited
      * @return Position of the sequence in the data array; -1 if not found within the given initial position and limit
      */
-    static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
+    public static int findSequencePosition(byte[] data, int initialPos, byte[] sequence, int limit) {
         int remainingBytes;
         int iSequence = 0;
 
@@ -1106,7 +1110,7 @@ public class FileHelper {
      * @param f       File to read from
      * @return Content of the given file as a string; empty string if an error occurred
      */
-    static String readFileAsString(@NonNull final Context context, @NonNull DocumentFile f) {
+    public static String readFileAsString(@NonNull final Context context, @NonNull DocumentFile f) {
         try {
             return readStreamAsString(FileHelper.getInputStream(context, f));
         } catch (IOException | IllegalArgumentException e) {

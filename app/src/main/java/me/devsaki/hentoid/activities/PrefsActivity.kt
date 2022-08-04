@@ -10,7 +10,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.PrefsBundle
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.fragments.preferences.PreferencesFragment
-import me.devsaki.hentoid.util.FileHelper
+import me.devsaki.hentoid.util.file.FileHelper
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode

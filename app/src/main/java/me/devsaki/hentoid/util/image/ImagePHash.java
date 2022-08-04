@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.image;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
