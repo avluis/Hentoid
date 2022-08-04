@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.file;
 
 import static org.apache.commons.io.FileUtils.ONE_EB_BI;
 import static org.apache.commons.io.FileUtils.ONE_GB_BI;

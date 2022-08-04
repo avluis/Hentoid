@@ -12,7 +12,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
 
 public class NhentaiParser extends BaseImageListParser {

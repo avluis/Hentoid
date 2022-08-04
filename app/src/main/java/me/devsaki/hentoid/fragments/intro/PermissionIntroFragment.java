@@ -22,7 +22,7 @@ import com.google.android.material.snackbar.Snackbar;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.IntroActivity;
-import me.devsaki.hentoid.util.PermissionHelper;
+import me.devsaki.hentoid.util.file.PermissionHelper;
 
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 

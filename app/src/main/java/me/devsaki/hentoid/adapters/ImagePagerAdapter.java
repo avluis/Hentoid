@@ -26,8 +26,10 @@ import androidx.vectordrawable.graphics.drawable.Animatable2Compat;
 import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
 import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.MultiTransformation;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.load.resource.UnitTransformation;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
@@ -52,8 +54,9 @@ import me.devsaki.hentoid.customssiv.CustomSubsamplingScaleImageView;
 import me.devsaki.hentoid.customssiv.ImageSource;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.SmartRotateTransformation;
 import timber.log.Timber;
 
 
@@ -72,8 +75,8 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     }
 
     // Screen width and height; used to adjust dimensions of small images handled by Glide
-    static final int SCREEN_WIDTH = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
-    static final int SCREEN_HEIGHT = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
+    static final int screenWidth = HentoidApp.getInstance().getResources().getDisplayMetrics().widthPixels;
+    static final int screenHeight = HentoidApp.getInstance().getResources().getDisplayMetrics().heightPixels;
 
     private static final int PAGE_MIN_HEIGHT = (int) HentoidApp.getInstance().getResources().getDimension(R.dimen.page_min_height);
 
@@ -420,10 +423,12 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
                 } else {
                     Timber.d("Using Glide");
                     Transformation<Bitmap> centerInside = new CenterInside();
+                    Transformation<Bitmap> smartRotate90 = (autoRotate) ? new SmartRotateTransformation(90, screenWidth, screenHeight) : UnitTransformation.get();
+
                     GlideApp.with(view)
                             .load(uri)
-                            .optionalTransform(centerInside)
-                            .optionalTransform(WebpDrawable.class, new WebpDrawableTransformation(centerInside))
+                            .optionalTransform(new MultiTransformation<>(centerInside, smartRotate90))
+                            .optionalTransform(WebpDrawable.class, new MultiTransformation<>(new WebpDrawableTransformation(centerInside), new WebpDrawableTransformation(smartRotate90)))
 //                            .set(WebpFrameLoader.FRAME_CACHE_STRATEGY, WebpFrameCacheStrategy.ALL)
                             .listener(this)
                             .into(view);
@@ -491,7 +496,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
 
             int targetImgHeight = imgHeight;
             // If we display a picture smaller than the screen dimensions, we have to zoom it
-            if (resizeSmallPics && imgHeight < SCREEN_HEIGHT && imgWidth < SCREEN_WIDTH) {
+            if (resizeSmallPics && imgHeight < screenHeight && imgWidth < screenWidth) {
                 targetImgHeight = Math.round(imgHeight * getTargetScale(imgWidth, imgHeight, displayMode));
                 ViewGroup.LayoutParams imgLayoutParams = imgView.getLayoutParams();
                 imgLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
@@ -507,19 +512,19 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             if (Preferences.Constant.VIEWER_DISPLAY_FILL == displayMode) { // Fill screen
                 if (imgHeight > imgWidth) {
                     // Fit to width
-                    return SCREEN_WIDTH / (float) imgWidth;
+                    return screenWidth / (float) imgWidth;
                 } else {
-                    if (SCREEN_HEIGHT > SCREEN_WIDTH)
-                        return SCREEN_HEIGHT / (float) imgHeight; // Fit to height when in portrait mode
+                    if (screenHeight > screenWidth)
+                        return screenHeight / (float) imgHeight; // Fit to height when in portrait mode
                     else
-                        return SCREEN_WIDTH / (float) imgWidth; // Fit to width when in landscape mode
+                        return screenWidth / (float) imgWidth; // Fit to width when in landscape mode
                 }
             } else { // Fit screen
-                return Math.min(SCREEN_WIDTH / (float) imgWidth, SCREEN_HEIGHT / (float) imgHeight);
+                return Math.min(screenWidth / (float) imgWidth, screenHeight / (float) imgHeight);
             }
         }
 
-        void switchImageView(boolean isImageView) {
+        private void switchImageView(boolean isImageView) {
             Timber.d("Picture %d : switching to %s", getAbsoluteAdapterPosition(), isImageView ? "imageView" : "ssiv");
             ssiv.setVisibility(isImageView ? View.GONE : View.VISIBLE);
             imageView.setVisibility(isImageView ? View.VISIBLE : View.GONE);
@@ -527,9 +532,9 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
             this.isImageView = isImageView;
         }
 
-        void forceImageView(boolean isImageView) {
-            switchImageView(isImageView);
-            this.forceImageView = isImageView;
+        private void forceImageView() {
+            switchImageView(true);
+            this.forceImageView = true;
         }
 
         // == SUBSAMPLINGSCALEVIEW CALLBACKS
@@ -555,7 +560,7 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         public void onImageLoadError(Throwable e) {
             Timber.d(e, "Picture %d : SSIV loading failed; reloading with Glide : %s", getAbsoluteAdapterPosition(), img.getFileUri());
             // Fall back to Glide
-            forceImageView(true);
+            forceImageView();
             // Reload adapter
             notifyItemChanged(getLayoutPosition());
         }

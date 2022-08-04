@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.file;
 
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.util.MaxSizeHashMap;
 import timber.log.Timber;
 
 public class FileExplorer implements Closeable {

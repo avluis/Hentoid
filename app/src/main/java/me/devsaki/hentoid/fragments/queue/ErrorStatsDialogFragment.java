@@ -33,7 +33,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 

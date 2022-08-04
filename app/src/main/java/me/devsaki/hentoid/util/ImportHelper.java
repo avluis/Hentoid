@@ -53,6 +53,10 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.FileExplorer;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.workers.ExternalImportWorker;
 import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import me.devsaki.hentoid.workers.data.PrimaryImportData;
@@ -153,11 +157,11 @@ public class ImportHelper {
             Uri uri = intent.getData();
             if (uri != null)
                 return new ImmutablePair<>(PickerResult.OK, uri);
-            else return new ImmutablePair<>(PickerResult.KO_NO_URI, null);
+            else return new ImmutablePair<>(PickerResult.KO_NO_URI, Uri.EMPTY);
         } else if (resultCode == Activity.RESULT_CANCELED) {
-            return new ImmutablePair<>(PickerResult.KO_CANCELED, null);
+            return new ImmutablePair<>(PickerResult.KO_CANCELED, Uri.EMPTY);
         }
-        return new ImmutablePair<>(PickerResult.KO_OTHER, null);
+        return new ImmutablePair<>(PickerResult.KO_OTHER, Uri.EMPTY);
     }
 
     /**
