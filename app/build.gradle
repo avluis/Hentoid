@@ -204,9 +204,12 @@ dependencies {
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
-    def auto_about_version = '8.9.4'
-    implementation "com.mikepenz:aboutlibraries-core:$auto_about_version"
-    implementation "com.mikepenz:aboutlibraries:$auto_about_version"
+    def about_version = '8.9.4'
+    implementation "com.mikepenz:aboutlibraries-core:$about_version"
+    implementation "com.mikepenz:aboutlibraries:$about_version"
+
+    // https://github.com/nekocode/Badge (for the tag editor)
+    implementation "com.github.nekocode:Badge:2.1"
 
 
     /**

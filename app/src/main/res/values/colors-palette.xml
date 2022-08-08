@@ -37,6 +37,12 @@
     <color name="orange">@android:color/holo_orange_dark</color>
     <color name="red">@android:color/holo_red_dark</color>
 
-    <!-- Green -->
+    <!-- Green (for validation feedback) -->
     <color name="green">#70AD47</color>
+
+    <!-- Attribute type colors -->
+    <color name="purple_light">@android:color/holo_purple</color>
+    <color name="purple_dark">#8600C4</color>
+    <color name="blue">@android:color/holo_blue_dark</color>
+    <color name="bronze">@android:color/holo_orange_light</color>
 </resources>
