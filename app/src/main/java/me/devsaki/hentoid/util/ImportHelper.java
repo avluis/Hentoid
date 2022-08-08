@@ -97,6 +97,8 @@ public class ImportHelper {
     private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_PRIMARY_FOLDER)
             || displayName.equalsIgnoreCase(Consts.DEFAULT_PRIMARY_FOLDER_OLD);
 
+    private static final FileHelper.NameFilter hentoidContentJson = displayName -> displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME_V2) || displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME) || displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME_OLD);
+
     /**
      * Import options for the Hentoid folder
      */
@@ -837,5 +839,14 @@ public class ImportHelper {
         String targetBareName = FileHelper.getFileNameWithoutExtension(name);
         Optional<DocumentFile> file = Stream.of(files).filter(f -> (f.getName() != null && FileHelper.getFileNameWithoutExtension(f.getName()).equalsIgnoreCase(targetBareName))).findFirst();
         return file.orElse(null);
+    }
+
+    /**
+     * Build a {@link FileHelper.NameFilter} only accepting Content json files
+     *
+     * @return {@link FileHelper.NameFilter} only accepting Content json files
+     */
+    public static FileHelper.NameFilter getContentJsonNamesFilter() {
+        return hentoidContentJson;
     }
 }
