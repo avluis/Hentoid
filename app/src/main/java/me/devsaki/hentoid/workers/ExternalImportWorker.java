@@ -35,16 +35,16 @@ import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.file.FileExplorer;
-import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.FileExplorer;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import timber.log.Timber;
 
@@ -216,6 +216,7 @@ public class ExternalImportWorker extends BaseWorker {
         List<DocumentFile> images = new ArrayList<>();
         List<DocumentFile> archives = new ArrayList<>();
         List<DocumentFile> jsons = new ArrayList<>();
+        List<DocumentFile> contentJsons = new ArrayList<>();
 
         // Look for the interesting stuff
         for (DocumentFile file : files)
@@ -224,7 +225,11 @@ public class ExternalImportWorker extends BaseWorker {
                 else if (ImageHelper.getImageNamesFilter().accept(file.getName())) images.add(file);
                 else if (ArchiveHelper.getArchiveNamesFilter().accept(file.getName()))
                     archives.add(file);
-                else if (JsonHelper.getJsonNamesFilter().accept(file.getName())) jsons.add(file);
+                else if (JsonHelper.getJsonNamesFilter().accept(file.getName())) {
+                    jsons.add(file);
+                    if (ImportHelper.getContentJsonNamesFilter().accept(file.getName()))
+                        contentJsons.add(file);
+                }
             }
 
         // If at least 2 subfolders and everyone of them ends with a number, we've got a multi-chapter book
@@ -252,8 +257,8 @@ public class ExternalImportWorker extends BaseWorker {
                 if (!c.getStatus().equals(StatusContent.IGNORED)) library.add(c);
             }
         }
-        if (images.size() > 2 || !jsons.isEmpty()) { // We've got a book
-            DocumentFile json = ImportHelper.getFileWithName(jsons, Consts.JSON_FILE_NAME_V2);
+        if (images.size() > 2 || !contentJsons.isEmpty()) { // We've got a book
+            DocumentFile json = ImportHelper.getFileWithName(contentJsons, Consts.JSON_FILE_NAME_V2);
             library.add(scanBookFolder(context, root, explorer, parentNames, StatusContent.EXTERNAL, dao, images, json));
         }
 
