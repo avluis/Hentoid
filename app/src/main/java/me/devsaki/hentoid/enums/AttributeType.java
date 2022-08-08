@@ -17,15 +17,15 @@ public enum AttributeType {
 
     // Attributes stored in Attributes table of the DB
     ARTIST(0, R.string.category_artist, R.string.object_artist, R.drawable.ic_attribute_artist),
-    PUBLISHER(1, R.string.category_publisher, R.string.object_publisher, R.drawable.ic_site_fakku),
+    PUBLISHER(1, R.string.category_publisher, R.string.object_publisher, R.drawable.ic_hentoid_shape),
     LANGUAGE(2, R.string.category_language, R.string.object_language, R.drawable.ic_attribute_language),
     TAG(3, R.string.category_tag, R.string.object_tag, R.drawable.ic_attribute_tag),
-    TRANSLATOR(4, R.string.category_translator, R.string.object_translator, R.drawable.ic_site_fakku),
+    TRANSLATOR(4, R.string.category_translator, R.string.object_translator, R.drawable.ic_hentoid_shape),
     SERIE(5, R.string.category_series, R.string.object_series, R.drawable.ic_attribute_serie),
-    UPLOADER(6, R.string.category_uploader, R.string.object_uploader, R.drawable.ic_site_fakku),
-    CIRCLE(7, R.string.category_circle, R.string.object_circle, R.drawable.ic_site_fakku),
+    UPLOADER(6, R.string.category_uploader, R.string.object_uploader, R.drawable.ic_hentoid_shape),
+    CIRCLE(7, R.string.category_circle, R.string.object_circle, R.drawable.ic_hentoid_shape),
     CHARACTER(8, R.string.category_character, R.string.object_character, R.drawable.ic_attribute_character),
-    CATEGORY(9, R.string.category_category, R.string.object_category, R.drawable.ic_site_fakku),
+    CATEGORY(9, R.string.category_category, R.string.object_category, R.drawable.ic_hentoid_shape),
     // Attributes displayed on screen and stored elsewhere
     SOURCE(10, R.string.category_source, R.string.object_source, R.drawable.ic_attribute_source);
 
