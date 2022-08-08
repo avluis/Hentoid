@@ -36,8 +36,7 @@ class GalleyPickerDialogFragment : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        requireNotNull(arguments) { "No arguments found" }
-        val imgs = arguments!!.getLongArray(KEY_IMGS)
+        val imgs = requireArguments().getLongArray(KEY_IMGS)
         require(!(null == imgs || imgs.isEmpty())) { "No images provided" }
 
         imageIds = imgs!!
