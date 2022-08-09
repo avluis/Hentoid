@@ -15,8 +15,10 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -60,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
@@ -340,6 +343,20 @@ public class LibraryActivity extends BaseActivity {
             selectionToolbar.setNavigationOnClickListener(null);
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void onRestart() {
+        // Change locale if set manually
+        if (Preferences.isForceEnglishLocale()) {
+            Locale englishLocale = new Locale("en");
+            Locale.setDefault(englishLocale);
+            Configuration config = getResources().getConfiguration();
+            config.setLocale(englishLocale);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) createConfigurationContext(config);
+            getResources().updateConfiguration(config, getResources().getDisplayMetrics());
+        }
+        super.onRestart();
     }
 
     private void onCreated() {
