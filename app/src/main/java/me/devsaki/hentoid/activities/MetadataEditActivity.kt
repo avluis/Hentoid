@@ -27,6 +27,7 @@ import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle
 import me.devsaki.hentoid.database.domains.Attribute
+import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.ActivityMetaEditBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -93,8 +94,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
 
     private fun onContentChanged(content: List<Content>) {
         contents = content
-        if (1 == content.size) bindSingleBookUI()
-        else bindMultipleBooksUI()
+        bindUI()
     }
 
     private fun onSelectedAttributeTypesChanged(data: List<AttributeType>) {
@@ -112,32 +112,32 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
     private fun updateAttrsList() {
         FastAdapterDiffUtil[itemAdapter] =
             contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }
-                .map { attr -> AttributeItem(attr) }
+                .map { attr -> AttributeItem(attr, contents.size > 1) }
     }
 
-    private fun bindSingleBookUI() {
-        val content = contents[0]
+    private fun bindUI() {
         binding?.let {
             // Title
-            it.tvTitle.text = content.title
+            it.tvTitle.visibility = if (contents.size > 1) View.GONE else View.VISIBLE
+            it.tvTitle.text = contents[0].title
 
             // Artist
-            bindArtistUI(content)
+            bindArtistUI()
 
             // Series
-            bindSeriesUI(content)
+            bindSeriesUI()
 
             // Tags
-            bindTagsUI(content)
+            bindTagsUI()
 
             // Cover
-            val thumbLocation = content.cover.usableUri
+            val thumbLocation = if (contents.size > 1) "" else contents[0].cover.usableUri
             if (thumbLocation.isEmpty()) {
                 it.ivCover.visibility = View.INVISIBLE
             } else {
                 it.ivCover.visibility = View.VISIBLE
                 if (thumbLocation.startsWith("http")) {
-                    val glideUrl = ContentHelper.bindOnlineCover(content, thumbLocation)
+                    val glideUrl = ContentHelper.bindOnlineCover(contents[0], thumbLocation)
                     if (glideUrl != null) {
                         Glide.with(it.ivCover)
                             .load(glideUrl)
@@ -151,17 +151,41 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
                         .into(it.ivCover)
             }
 
-            // Flag
-            bindLanguagesUI(content)
+            // Flag (language)
+            bindLanguagesUI()
+
+            // Tags (default uncategorized display)
+            viewModel.setAttributeTypes(
+                listOf(
+                    AttributeType.ARTIST,
+                    AttributeType.CIRCLE,
+                    AttributeType.SERIE,
+                    AttributeType.TAG,
+                    AttributeType.CHARACTER,
+                    AttributeType.LANGUAGE
+                )
+            )
+            it.titleNew.visibility = View.GONE
+            it.tags.visibility = View.VISIBLE
+            it.tagsFab.visibility = View.VISIBLE
         }
     }
 
-    private fun bindArtistUI(content: Content) {
-        binding?.tvArtist?.text = ContentHelper.formatArtistForDisplay(this, content)
+    private fun bindArtistUI() {
+        val attrContainer = Content()
+        attrContainer.putAttributes(
+            mergeAttributeMaps(
+                contents,
+                setOf(AttributeType.ARTIST, AttributeType.CIRCLE)
+            )
+        )
+        binding?.tvArtist?.text = ContentHelper.formatArtistForDisplay(this, attrContainer)
     }
 
-    private fun bindSeriesUI(content: Content) {
-        val text = ContentHelper.formatSeriesForDisplay(this, content)
+    private fun bindSeriesUI() {
+        val attrContainer = Content()
+        attrContainer.putAttributes(mergeAttributeMaps(contents, setOf(AttributeType.SERIE)))
+        val text = ContentHelper.formatSeriesForDisplay(this, attrContainer)
         if (text.isEmpty()) {
             binding?.tvSeries?.text =
                 getString(R.string.work_series, resources.getString(R.string.work_untitled))
@@ -170,8 +194,15 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
         }
     }
 
-    private fun bindTagsUI(content: Content) {
-        val text = ContentHelper.formatTagsForDisplay(content)
+    private fun bindTagsUI() {
+        val attrContainer = Content()
+        attrContainer.putAttributes(
+            mergeAttributeMaps(
+                contents,
+                setOf(AttributeType.TAG, AttributeType.CHARACTER)
+            )
+        )
+        val text = ContentHelper.formatTagsForDisplay(attrContainer)
         if (text.isEmpty()) {
             binding?.tvTags?.text = getString(R.string.work_untitled)
         } else {
@@ -179,49 +210,14 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
         }
     }
 
-    private fun bindLanguagesUI(content: Content) {
-        @DrawableRes val resId = ContentHelper.getFlagResourceId(this, content)
+    private fun bindLanguagesUI() {
+        val attrContainer = Content()
+        attrContainer.putAttributes(mergeAttributeMaps(contents, setOf(AttributeType.LANGUAGE)))
+        @DrawableRes val resId = ContentHelper.getFlagResourceId(this, attrContainer)
         if (resId != 0) {
             binding?.ivFlag?.setImageResource(resId)
         } else {
             binding?.ivFlag?.setImageResource(R.drawable.flag_unknown)
-        }
-    }
-
-    private fun bindMultipleBooksUI() {
-        val keep = String.format("<%s>", resources.getString(R.string.meta_keep))
-        binding?.let {
-            // Title
-            val firstTitle = contents[0].title
-            val anyDifferent = contents.find { c -> c.title != firstTitle }
-            val title = if (null == anyDifferent) firstTitle else keep
-            it.tvTitle.text = title
-
-            // Artist
-            var isDiff = areAttributesDifferent(
-                contents,
-                setOf(AttributeType.ARTIST, AttributeType.CIRCLE)
-            )
-            if (isDiff) it.tvArtist.text = keep
-            else bindArtistUI(contents[0])
-
-            // Series
-            isDiff = areAttributesDifferent(contents, setOf(AttributeType.SERIE))
-            if (isDiff) it.tvSeries.text = keep
-            else bindSeriesUI(contents[0])
-
-            // Tags
-            isDiff =
-                areAttributesDifferent(contents, setOf(AttributeType.TAG, AttributeType.CHARACTER))
-            if (isDiff) it.tvTags.text = keep
-            else bindTagsUI(contents[0])
-
-            // No cover displayed for multiple books
-
-            // Flag
-            isDiff = areAttributesDifferent(contents, setOf(AttributeType.LANGUAGE))
-            if (isDiff) it.ivFlag.setImageResource(R.drawable.flag_multiple)
-            else bindLanguagesUI(contents[0])
         }
     }
 
@@ -341,6 +337,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
                             if (imgs != null) {
                                 b2.titleNew.visibility = View.GONE
                                 b2.tags.visibility = View.GONE
+                                b2.tagsFab.visibility = View.GONE
                                 GalleyPickerDialogFragment.invoke(
                                     supportFragmentManager,
                                     imgs
@@ -395,22 +392,22 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
         viewModel.setCover(index)
     }
 
-    private fun areAttributesDifferent(
+    private fun mergeAttributeMaps(
         contents: List<Content>,
         types: Set<AttributeType>
-    ): Boolean {
-        if (contents.isEmpty()) return false
+    ): AttributeMap {
+        val result = AttributeMap()
+        if (contents.isEmpty()) return result
 
-        val allAttrs = ArrayList<Set<Attribute>>()
-        contents.forEach {
-            allAttrs.add(it.attributes.filter { a -> types.contains(a.type) }.toSet())
+        contents.forEach { content ->
+            val localMap = content.attributeMap
+            types.forEach { type ->
+                val localAttrs = localMap[type]
+                if (localAttrs != null) result.addAll(localAttrs)
+            }
         }
-        val firstAttrs = allAttrs[0]
-        allAttrs.forEach {
-            if (it.size != firstAttrs.size) return true
-            if (!it.containsAll(firstAttrs)) return true
-        }
-        return false
+
+        return result
     }
 
     companion object {

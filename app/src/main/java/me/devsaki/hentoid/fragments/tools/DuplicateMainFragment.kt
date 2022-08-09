@@ -284,6 +284,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
         // Group by reference book and count duplicates
         val entries: MutableList<DuplicateEntry> = ArrayList()
+        // TODO use groupingBy + eachCount
         val map =
             duplicates.groupBy { it.referenceContent }.mapValues { it.value.sumOf { 1 as Int } }
                 .toMap()

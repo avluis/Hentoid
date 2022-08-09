@@ -83,5 +83,5 @@
     <!-- metadata editor tags -->
     <dimen name="badge_padding_vertical">5dp</dimen>
     <dimen name="badge_padding_horizontal">10dp</dimen>
-    <dimen name="badge_stroke_width">4dp</dimen>
+    <dimen name="badge_stroke_width">3dp</dimen>
 </resources>

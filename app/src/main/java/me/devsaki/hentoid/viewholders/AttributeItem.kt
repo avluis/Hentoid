@@ -9,7 +9,8 @@ import com.mikepenz.fastadapter.ui.utils.StringHolder
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.domains.Attribute
 
-class AttributeItem(val attribute: Attribute) : AbstractItem<AttributeItem.ViewHolder>() {
+class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
+    AbstractItem<AttributeItem.ViewHolder>() {
 
     var name: StringHolder? = null
 
@@ -37,7 +38,7 @@ class AttributeItem(val attribute: Attribute) : AbstractItem<AttributeItem.ViewH
             val badgePaddingH = badge.resources.getDimension(R.dimen.badge_padding_horizontal)
             val badgeStroke = badge.resources.getDimension(R.dimen.badge_stroke_width).toInt()
             val badgeType =
-                if (0 == item.attribute.count) BadgeDrawable.TYPE_ONLY_ONE_TEXT else BadgeDrawable.TYPE_WITH_TWO_TEXT_COMPLEMENTARY
+                if (0 == item.attribute.count || !item.showCount) BadgeDrawable.TYPE_ONLY_ONE_TEXT else BadgeDrawable.TYPE_WITH_TWO_TEXT_COMPLEMENTARY
             badgeDrawable = BadgeDrawable.Builder()
                 .type(badgeType)
                 .badgeColor(badge.context.getColor(item.attribute.type.color))

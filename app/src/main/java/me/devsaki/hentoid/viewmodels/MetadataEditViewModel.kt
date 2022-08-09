@@ -77,12 +77,15 @@ class MetadataEditViewModel(
      */
     fun loadContent(contentId: LongArray) {
         val contents = dao.selectContent(contentId.filter { id -> id > 0 }.toLongArray())
-        val attrs = HashSet<Attribute>()
+        val rawAttrs = java.util.ArrayList<Attribute>()
         contents.forEach { c ->
-            attrs.addAll(c.attributes)
+            rawAttrs.addAll(c.attributes)
         }
+        val attrsCount = rawAttrs.groupingBy { a -> a }.eachCount()
+        attrsCount.entries.forEach { it.key.count = it.value }
+
         contentList.postValue(contents)
-        contentAttributes.postValue(attrs.toList())
+        contentAttributes.postValue(attrsCount.keys.toList())
     }
 
     fun setCover(order: Int) {

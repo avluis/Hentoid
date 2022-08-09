@@ -52,12 +52,10 @@
         android:layout_width="40dp"
         android:layout_height="30dp"
         android:adjustViewBounds="true"
-        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/ivCover"
         app:layout_constraintEnd_toEndOf="@id/ivCover"
         tools:ignore="ContentDescription"
-        tools:src="@drawable/flag_cn"
-        tools:visibility="visible" />
+        tools:src="@drawable/flag_cn" />
 
     <TextView
         android:id="@+id/tvArtist"
