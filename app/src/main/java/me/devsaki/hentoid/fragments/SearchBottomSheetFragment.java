@@ -269,7 +269,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             else tagWaitMessage.setText(R.string.masterdata_no_result);
         } else {
             tagWaitPanel.setVisibility(View.GONE);
-            attributeAdapter.setFormatWithNamespace(selectedAttributeTypes.size() > 1);
             attributeAdapter.add(attrs);
         }
     }

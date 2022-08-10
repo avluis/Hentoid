@@ -42,6 +42,8 @@ public class Attribute {
     @Transient
     private boolean excluded = false;
     @Transient
+    private boolean isNew = false;
+    @Transient
     private int count = 0;
     @Transient
     private int externalId = 0;
@@ -114,6 +116,14 @@ public class Attribute {
 
     public boolean isExcluded() {
         return excluded;
+    }
+
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void setNew(boolean aNew) {
+        isNew = aNew;
     }
 
     public void setType(@Nonnull AttributeType type) {

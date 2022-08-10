@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.flexbox.AlignItems
@@ -35,7 +36,8 @@ import timber.log.Timber
 
 const val ATTRS_PER_PAGE = 40
 
-class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
+class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
+    AttributeTypePickerDialogFragment.Parent {
 
     // Communication
     private lateinit var viewModel: MetadataEditViewModel
@@ -139,10 +141,6 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
             }
         })
 
-        binding.newAttrBtn.setOnClickListener {
-            this.onNewAttributeClicked()
-        }
-
         viewModel.getAttributeTypes()
             .observe(viewLifecycleOwner) { results: List<AttributeType> ->
                 onSelectedAttributeTypesReady(results)
@@ -217,14 +215,14 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         mTotalSelectedCount = results.totalSelectedAttributes.toInt()
         if (clearOnSuccess) attributeAdapter.clear()
         if (0 == mTotalSelectedCount) {
-            if (binding.tagFilter.query.isNotEmpty()) binding.newAttrBtn.visibility = View.VISIBLE
-            binding.tagWaitDescription.setText(R.string.masterdata_no_result)
+            val newAttr =
+                Attribute(AttributeType.TAG, binding.tagFilter.query.toString().lowercase())
+            newAttr.isNew = true
+            attrs.add(newAttr)
         } else {
-            binding.newAttrBtn.visibility = View.GONE
             binding.tagWaitPanel.visibility = View.GONE
-            attributeAdapter.setFormatWithNamespace(selectedAttributeTypes.size > 1)
-            attributeAdapter.add(attrs)
         }
+        attributeAdapter.add(attrs)
     }
 
     private fun onContentAttributesReady(data: List<Attribute>) {
@@ -261,7 +259,10 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
      */
     private fun onAttributeClicked(button: View) {
         val a = button.tag as Attribute
-        if (!contentAttributes.contains(a)) { // Add selected tag
+        if (a.isNew) { // Create new tag
+            //AttributeTypePickerDialogFragment.invoke(this, a.name)
+            AttributeTypePickerDialogFragment.invoke(activity as FragmentActivity, a.name)
+        } else if (!contentAttributes.contains(a)) { // Add selected tag
             button.isPressed = true
             a.isExcluded = excludeAttr
             viewModel.addContentAttribute(a)
@@ -304,11 +305,6 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
         }
     }
 
-    private fun onNewAttributeClicked() {
-        viewModel.createAssignNewAttribute(binding.tagFilter.query.toString())
-        searchMasterData(binding.tagFilter.query.toString())
-    }
-
     companion object {
         fun invoke(
             context: Context,
@@ -328,5 +324,10 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment() {
             )
             metaEditBottomSheetFragment.show(fragmentManager, "metaEditBottomSheetFragment")
         }
+    }
+
+    override fun onNewAttributeSelected(name: String, type: AttributeType) {
+        viewModel.createAssignNewAttribute(name, type)
+        searchMasterData(name)
     }
 }

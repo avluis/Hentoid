@@ -51,7 +51,6 @@
         android:id="@+id/ivFlag"
         android:layout_width="40dp"
         android:layout_height="30dp"
-        android:adjustViewBounds="true"
         app:layout_constraintBottom_toBottomOf="@id/ivCover"
         app:layout_constraintEnd_toEndOf="@id/ivCover"
         tools:ignore="ContentDescription"

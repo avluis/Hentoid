@@ -138,45 +138,57 @@ class MetadataEditViewModel(
     }
 
     /**
-     * Add the given attribute to the attribute selection for the Content and Attribute searches
-     * - Only books tagged with all selected attributes will be among Content search results
-     * - Only attributes contained in these books will be among Attribute search results
+     * Add the given attribute to the selected books
      *
      * @param attr Attribute to add to current selection
      */
     fun addContentAttribute(attr: Attribute) {
-        val newAttrs = ArrayList<Attribute>()
-        if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
-
-        newAttrs.add(attr)
-        setAttrList(newAttrs)
+        setAttr(attr, null)
     }
 
-    // TODO doc
+    /**
+     * Remove the given attribute from the selected books
+     *
+     * @param attr Attribute to remove to current selection
+     */
     fun removeContentAttribute(attr: Attribute) {
+        setAttr(null, attr)
+    }
+
+    fun createAssignNewAttribute(attrName: String, type: AttributeType) {
+        val attr = ContentHelper.addAttribute(type, attrName, dao)
+        addContentAttribute(attr)
+    }
+
+    /**
+     * Add and remove the given attributes from the selected books
+     *
+     * @param toAdd Attribute to add to current selection
+     * @param toRemove Attribute to remove to current selection
+     */
+    private fun setAttr(toAdd: Attribute?, toRemove: Attribute?) {
+        // Update displayed attributes
         val newAttrs = ArrayList<Attribute>()
         if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
 
-        newAttrs.remove(attr)
-        setAttrList(newAttrs)
-    }
-
-    fun createAssignNewAttribute(attrName: String) {
-        val attrType = attributeTypes.value?.get(0)
-        if (attrType != null) {
-            val attr = ContentHelper.addAttribute(attrType, attrName, dao)
-            addContentAttribute(attr)
+        if (toAdd != null) {
+            toAdd.count = contentList.value!!.size
+            newAttrs.add(toAdd)
         }
-    }
+        if (toRemove != null) newAttrs.remove(toRemove)
 
-    private fun setAttrList(value: List<Attribute>) {
-        contentAttributes.value = value
+        contentAttributes.value = newAttrs
 
         // Update Contents
         val contents = ArrayList<Content>()
         if (contentList.value != null) {
             contents.addAll(contentList.value!!)
-            contents.forEach { c -> c.putAttributes(value) }
+            contents.forEach {
+                val attrs = it.attributes
+                if (toAdd != null) attrs.add(toAdd)
+                if (toRemove != null) attrs.remove(toRemove)
+                it.putAttributes(attrs)
+            }
             contentList.postValue(contents)
         }
     }

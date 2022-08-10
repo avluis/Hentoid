@@ -31,6 +31,7 @@ import me.devsaki.hentoid.database.domains.AttributeMap
 import me.devsaki.hentoid.database.domains.Content
 import me.devsaki.hentoid.databinding.ActivityMetaEditBinding
 import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.fragments.metadata.AttributeTypePickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.GalleyPickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.util.ContentHelper
@@ -38,9 +39,9 @@ import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import timber.log.Timber
 
-class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
+class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
+    AttributeTypePickerDialogFragment.Parent {
 
     // Communication
     private lateinit var viewModel: MetadataEditViewModel
@@ -233,6 +234,13 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
             fastAdapter.onClickListener =
                 { _: View?, _: IAdapter<AttributeItem>, i: AttributeItem, _: Int -> onItemClick(i) }
 
+            fastAdapter.onLongClickListener =
+                { _: View?, _: IAdapter<AttributeItem>, i: AttributeItem, _: Int ->
+                    onItemLongClick(
+                        i
+                    )
+                }
+
             // Title
             it.tvTitle.setOnClickListener {
                 binding?.let { b2 ->
@@ -371,8 +379,17 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
      * @param item AttributeItem that has been clicked on
      */
     private fun onItemClick(item: AttributeItem): Boolean {
+        // TODO
+        return true
+    }
+
+    /**
+     * Callback for attribute item long click
+     *
+     * @param item AttributeItem that has been clicked on
+     */
+    private fun onItemLongClick(item: AttributeItem): Boolean {
         viewModel.removeContentAttribute(item.attribute)
-        Timber.d("Attribute %s clicked", item.attribute.name)
         return true
     }
 
@@ -408,6 +425,10 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent {
         }
 
         return result
+    }
+
+    override fun onNewAttributeSelected(name: String, type: AttributeType) {
+        viewModel.createAssignNewAttribute(name, type)
     }
 
     companion object {

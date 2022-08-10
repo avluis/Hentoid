@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.viewholders
 
+import android.content.Context
+import android.text.SpannableString
 import android.view.View
 import android.widget.TextView
 import cn.nekocode.badge.BadgeDrawable
@@ -31,27 +33,38 @@ class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
 
     class ViewHolder(view: View) : FastAdapter.ViewHolder<AttributeItem>(view) {
         val badge: TextView = itemView.findViewById(R.id.badge)
-        lateinit var badgeDrawable: BadgeDrawable
 
         override fun bindView(item: AttributeItem, payloads: List<Any>) {
-            val badgePaddingV = badge.resources.getDimension(R.dimen.badge_padding_vertical)
-            val badgePaddingH = badge.resources.getDimension(R.dimen.badge_padding_horizontal)
-            val badgeStroke = badge.resources.getDimension(R.dimen.badge_stroke_width).toInt()
-            val badgeType =
-                if (0 == item.attribute.count || !item.showCount) BadgeDrawable.TYPE_ONLY_ONE_TEXT else BadgeDrawable.TYPE_WITH_TWO_TEXT_COMPLEMENTARY
-            badgeDrawable = BadgeDrawable.Builder()
-                .type(badgeType)
-                .badgeColor(badge.context.getColor(item.attribute.type.color))
-                .text1(item.attribute.displayName)
-                .text2(item.attribute.count.toString())
-                .padding(badgePaddingH, badgePaddingV, badgePaddingH, badgePaddingV, badgePaddingH)
-                .strokeWidth(badgeStroke)
-                .build()
-            badge.text = badgeDrawable.toSpannable()
+            badge.text = formatAttrBadge(badge.context, item.attribute, item.showCount)
         }
 
         override fun unbindView(item: AttributeItem) {
             // Nothing special here
+        }
+    }
+
+    companion object {
+        fun formatAttrBadge(
+            context: Context,
+            attribute: Attribute,
+            showCount: Boolean
+        ): SpannableString {
+            val badgePaddingV = context.resources.getDimension(R.dimen.badge_padding_vertical)
+            val badgePaddingH = context.resources.getDimension(R.dimen.badge_padding_horizontal)
+            val badgeStroke = context.resources.getDimension(R.dimen.badge_stroke_width).toInt()
+            val badgeType =
+                if (!attribute.isNew && (0 == attribute.count || !showCount)) BadgeDrawable.TYPE_ONLY_ONE_TEXT else BadgeDrawable.TYPE_WITH_TWO_TEXT_COMPLEMENTARY
+            val text2 =
+                if (attribute.count > 0) attribute.count.toString() else if (attribute.isNew) "+" else "";
+            val badgeDrawable = BadgeDrawable.Builder()
+                .type(badgeType)
+                .badgeColor(context.getColor(attribute.type.color))
+                .text1(attribute.displayName.lowercase())
+                .text2(text2)
+                .padding(badgePaddingH, badgePaddingV, badgePaddingH, badgePaddingV, badgePaddingH)
+                .strokeWidth(badgeStroke)
+                .build()
+            return badgeDrawable.toSpannable()
         }
     }
 }
