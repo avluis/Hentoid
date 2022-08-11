@@ -70,12 +70,14 @@ public abstract class BaseWorker extends Worker {
 
         // Change locale if set manually
         if (Preferences.isForceEnglishLocale()) {
-            Locale englishLocale = new Locale("en");
-            Locale.setDefault(englishLocale);
             Configuration config = context.getResources().getConfiguration();
-            config.setLocale(englishLocale);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) context.createConfigurationContext(config);
-            context.getResources().updateConfiguration(config, context.getResources().getDisplayMetrics());
+            if (!config.locale.equals(Locale.ENGLISH)) {
+                Locale englishLocale = new Locale("en");
+                Locale.setDefault(englishLocale);
+                config.setLocale(englishLocale);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) context.createConfigurationContext(config);
+                context.getResources().updateConfiguration(config, context.getResources().getDisplayMetrics());
+            }
         }
 
         initNotifications(context);

@@ -349,12 +349,14 @@ public class LibraryActivity extends BaseActivity {
     public void onRestart() {
         // Change locale if set manually
         if (Preferences.isForceEnglishLocale()) {
-            Locale englishLocale = new Locale("en");
-            Locale.setDefault(englishLocale);
             Configuration config = getResources().getConfiguration();
-            config.setLocale(englishLocale);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) createConfigurationContext(config);
-            getResources().updateConfiguration(config, getResources().getDisplayMetrics());
+            if (!config.locale.equals(Locale.ENGLISH)) {
+                Locale englishLocale = new Locale("en");
+                Locale.setDefault(englishLocale);
+                config.setLocale(englishLocale);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) createConfigurationContext(config);
+                getResources().updateConfiguration(config, getResources().getDisplayMetrics());
+            }
         }
         super.onRestart();
     }
