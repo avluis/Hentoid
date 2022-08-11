@@ -15,10 +15,8 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -62,7 +60,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import me.devsaki.hentoid.BuildConfig;
@@ -87,12 +84,13 @@ import me.devsaki.hentoid.notification.archive.ArchiveNotificationChannel;
 import me.devsaki.hentoid.notification.archive.ArchiveProgressNotification;
 import me.devsaki.hentoid.notification.archive.ArchiveStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.file.PermissionHelper;
+import me.devsaki.hentoid.util.LocaleHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.SearchHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.file.PermissionHelper;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.viewmodels.LibraryViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
@@ -348,16 +346,8 @@ public class LibraryActivity extends BaseActivity {
     @Override
     public void onRestart() {
         // Change locale if set manually
-        if (Preferences.isForceEnglishLocale()) {
-            Configuration config = getResources().getConfiguration();
-            if (!config.locale.equals(Locale.ENGLISH)) {
-                Locale englishLocale = new Locale("en");
-                Locale.setDefault(englishLocale);
-                config.setLocale(englishLocale);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) createConfigurationContext(config);
-                getResources().updateConfiguration(config, getResources().getDisplayMetrics());
-            }
-        }
+        LocaleHelper.convertLocaleToEnglish(this);
+
         super.onRestart();
     }
 

@@ -1,8 +1,6 @@
 package me.devsaki.hentoid.workers;
 
 import android.content.Context;
-import android.content.res.Configuration;
-import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.IdRes;
@@ -21,12 +19,11 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
+import me.devsaki.hentoid.util.LocaleHelper;
 import me.devsaki.hentoid.util.LogHelper;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
@@ -69,16 +66,7 @@ public abstract class BaseWorker extends Worker {
         this.serviceId = serviceId;
 
         // Change locale if set manually
-        if (Preferences.isForceEnglishLocale()) {
-            Configuration config = context.getResources().getConfiguration();
-            if (!config.locale.equals(Locale.ENGLISH)) {
-                Locale englishLocale = new Locale("en");
-                Locale.setDefault(englishLocale);
-                config.setLocale(englishLocale);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) context.createConfigurationContext(config);
-                context.getResources().updateConfiguration(config, context.getResources().getDisplayMetrics());
-            }
-        }
+        LocaleHelper.convertLocaleToEnglish(context);
 
         initNotifications(context);
 
