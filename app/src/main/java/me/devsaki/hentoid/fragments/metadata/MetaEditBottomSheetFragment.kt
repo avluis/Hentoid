@@ -72,6 +72,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
     private var contentAttributes = ArrayList<Attribute>()
 
     private var excludeAttr = false
+    private var idToReplace: Long = -1
 
 
     override fun onAttach(context: Context) {
@@ -82,6 +83,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             val parser = MetaEditActivityBundle(bundle)
 
             excludeAttr = parser.excludeMode
+            idToReplace = parser.idToReplace
             currentPage = 1
 
             val vmFactory = ViewModelFactory(requireActivity().application)
@@ -265,7 +267,10 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         } else if (!contentAttributes.contains(a)) { // Add selected tag
             button.isPressed = true
             a.isExcluded = excludeAttr
-            viewModel.addContentAttribute(a)
+            if (idToReplace > -1) viewModel.replaceContentAttribute(
+                idToReplace,
+                a
+            ) else viewModel.addContentAttribute(a)
             // Empty query and display all attributes again
             binding.tagFilter.setQuery("", false)
             searchMasterData("")
@@ -309,10 +314,12 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         fun invoke(
             context: Context,
             fragmentManager: FragmentManager,
-            excludeSelected: Boolean
+            excludeSelected: Boolean,
+            idToReplace: Long = -1
         ) {
             val builder = MetaEditActivityBundle()
             builder.excludeMode = excludeSelected
+            builder.idToReplace = idToReplace
 
             val metaEditBottomSheetFragment = MetaEditBottomSheetFragment()
             metaEditBottomSheetFragment.arguments = builder.bundle

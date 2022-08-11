@@ -65,11 +65,11 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
@@ -1017,6 +1017,11 @@ public class ObjectBoxDB {
 
     long insertAttribute(@NonNull Attribute attr) {
         return store.boxFor(Attribute.class).put(attr);
+    }
+
+    @Nullable
+    Attribute selectAttribute(long id) {
+        return store.boxFor(Attribute.class).get(id);
     }
 
     private Query<Attribute> queryAvailableAttributes(

@@ -138,6 +138,18 @@ class MetadataEditViewModel(
     }
 
     /**
+     * Replace the given attribute with the other given attribute to the selected books
+     * NB : Replacement will be done only on books where 'toBeReplaced' is set; _not_ on all books of the collection
+     *
+     * @param idToBeReplaced ID of the Attribute to be replaced in the current book selection
+     * @param toReplaceWith Attribute to replace with in the current book selection
+     */
+    fun replaceContentAttribute(idToBeReplaced: Long, toReplaceWith: Attribute) {
+        val toBeReplaced = dao.selectAttribute(idToBeReplaced)
+        if (toBeReplaced != null) setAttr(toReplaceWith, toBeReplaced, true)
+    }
+
+    /**
      * Add the given attribute to the selected books
      *
      * @param attr Attribute to add to current selection
@@ -165,32 +177,42 @@ class MetadataEditViewModel(
      *
      * @param toAdd Attribute to add to current selection
      * @param toRemove Attribute to remove to current selection
+     * @param replaceMode True to add only where removed items are present; false to apply to all books
      */
-    private fun setAttr(toAdd: Attribute?, toRemove: Attribute?) {
+    private fun setAttr(toAdd: Attribute?, toRemove: Attribute?, replaceMode: Boolean = false) {
         // Update displayed attributes
         val newAttrs = ArrayList<Attribute>()
         if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
 
+        val toAddNew: Attribute?
         if (toAdd != null) {
-            toAdd.count = contentList.value!!.size
-            newAttrs.add(toAdd)
-        }
+            if (newAttrs.contains(toAdd)) newAttrs.remove(toAdd)
+            toAddNew = Attribute(toAdd) // Create new instance for list differs to detect changes (if not, attributes are changed both on the old and the updated object)
+            newAttrs.add(toAddNew)
+        } else toAddNew = null
         if (toRemove != null) newAttrs.remove(toRemove)
 
-        contentAttributes.value = newAttrs
-
         // Update Contents
+        var newCount = 0
         val contents = ArrayList<Content>()
         if (contentList.value != null) {
             contents.addAll(contentList.value!!)
             contents.forEach {
                 val attrs = it.attributes
-                if (toAdd != null) attrs.add(toAdd)
+                if (toAddNew != null) {
+                    if (attrs.contains(toAddNew)) attrs.remove(toAddNew)
+                    if (!replaceMode || (toRemove != null && attrs.contains(toRemove))) {
+                        attrs.add(toAddNew)
+                        newCount++
+                    }
+                }
                 if (toRemove != null) attrs.remove(toRemove)
                 it.putAttributes(attrs)
             }
+            if (newCount > 0) toAddNew?.count = newCount
             contentList.postValue(contents)
         }
+        contentAttributes.value = newAttrs
     }
 
     fun setTitle(value: String) {

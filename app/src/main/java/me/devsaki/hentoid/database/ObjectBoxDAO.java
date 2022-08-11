@@ -135,6 +135,12 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    @Nullable
+    public Attribute selectAttribute(long id) {
+        return db.selectAttribute(id);
+    }
+
+    @Override
     public Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,

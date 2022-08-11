@@ -240,6 +240,9 @@ public interface CollectionDAO {
 
     long insertAttribute(@NonNull Attribute attr);
 
+    @Nullable
+    Attribute selectAttribute(long id);
+
     Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,

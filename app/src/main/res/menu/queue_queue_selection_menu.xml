@@ -23,7 +23,7 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/action_select_queue_cancel"
-        android:icon="@drawable/ic_action_delete_forever"
+        android:icon="@drawable/ic_action_delete"
         android:title="@string/cancel"
         app:showAsAction="always" />
     <item

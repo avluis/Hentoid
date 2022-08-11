@@ -40,7 +40,7 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/action_cancel_all"
-        android:icon="@drawable/ic_action_delete_forever"
+        android:icon="@drawable/ic_action_delete"
         android:title="@string/cancel_all"
         android:tooltipText="@string/cancel_all"
         app:showAsAction="never" />
@@ -52,7 +52,7 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/action_cancel_all_errors"
-        android:icon="@drawable/ic_action_delete_forever"
+        android:icon="@drawable/ic_action_delete"
         android:title="@string/cancel_all_errors"
         android:tooltipText="@string/cancel_all_errors"
         app:showAsAction="never" />

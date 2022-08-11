@@ -116,7 +116,7 @@
             android:adjustViewBounds="true"
             android:clickable="true"
             android:focusable="true"
-            android:src="@drawable/ic_action_delete_forever"
+            android:src="@drawable/ic_action_delete"
             android:tooltipText="@string/page_delete_help"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/img_divider"

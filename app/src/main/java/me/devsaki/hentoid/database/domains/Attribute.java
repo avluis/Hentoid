@@ -54,14 +54,31 @@ public class Attribute {
     @Transient
     private long uniqueHash = 0;    // cached value of uniqueHash
 
+    // WARNING : Update copy constructor when adding attributes
+
 
     public Attribute() { // Required by ObjectBox when an alternate constructor exists
+    }
+
+    public Attribute(Attribute data) {
+        this.id = data.id;
+        this.name = data.name;
+        this.type = data.type;
+        this.locations = data.locations; // this isn't a deep copy
+        this.group = data.group; // this isn't a deep copy
+
+        this.excluded = data.excluded;
+        this.isNew = data.isNew;
+        this.count = data.count;
+        this.externalId = data.externalId;
+        this.contents = data.contents;  // this isn't a deep copy
+        this.displayName = data.displayName;
+        this.uniqueHash = data.uniqueHash;
     }
 
     public Attribute(@Nonnull AttributeType type, @Nonnull String name) {
         this.type = type;
         this.name = name;
-
     }
 
     public Attribute(@Nonnull AttributeType type, @Nonnull String name, @Nonnull String url, @Nonnull Site site) {

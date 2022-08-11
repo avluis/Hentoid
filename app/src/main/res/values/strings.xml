@@ -44,6 +44,7 @@
     <string name="empty">empty</string>
     <string name="none">None</string>
     <string name="disabled_generic">Disabled</string>
+    <string name="remove_generic">Remove</string>
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -816,6 +817,8 @@
     <string name="meta_cover_multiple_warning">Cover cannot be changed for multiple books</string>
     <string name="meta_cover_archive_warning">Cover cannot be changed for archives</string>
     <string name="meta_choose_type">Choose a type for \'%s\'</string>
+    <string name="meta_replace_with">Replace with…</string>
+    <string name="meta_tag_all_selected">Tag all selected books</string>
 
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>

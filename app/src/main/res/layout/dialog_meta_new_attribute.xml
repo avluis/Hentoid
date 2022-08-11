@@ -13,7 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:text="@string/meta_choose_type"
+        tools:text="@string/meta_choose_type"
         android:textSize="@dimen/text_header_6"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"

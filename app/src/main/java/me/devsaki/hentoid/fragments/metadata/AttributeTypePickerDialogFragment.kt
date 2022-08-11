@@ -5,11 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
+import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.databinding.DialogMetaNewAttributeBinding
 import me.devsaki.hentoid.enums.AttributeType
@@ -62,6 +62,8 @@ class AttributeTypePickerDialogFragment : DialogFragment() {
 
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
+
+        binding.title.text = resources.getText(R.string.meta_choose_type, newAttrName)
 
         itemAdapter.set(
             listOf(

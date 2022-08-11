@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities
 
 import android.graphics.Bitmap
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
@@ -8,6 +9,7 @@ import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
 import androidx.annotation.DrawableRes
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.integration.webp.decoder.WebpDrawable
@@ -24,6 +26,10 @@ import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil
+import com.skydoves.powermenu.MenuAnimation
+import com.skydoves.powermenu.OnMenuItemClickListener
+import com.skydoves.powermenu.PowerMenu
+import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle
 import me.devsaki.hentoid.database.domains.Attribute
@@ -35,6 +41,7 @@ import me.devsaki.hentoid.fragments.metadata.AttributeTypePickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.GalleyPickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
 import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
@@ -379,7 +386,64 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
      * @param item AttributeItem that has been clicked on
      */
     private fun onItemClick(item: AttributeItem): Boolean {
-        // TODO
+        val powerMenuBuilder = PowerMenu.Builder(this)
+            .addItem(
+                PowerMenuItem(
+                    resources.getString(R.string.meta_replace_with),
+                    R.drawable.ic_replace,
+                    false
+                )
+            )
+            .addItem(
+                PowerMenuItem(
+                    resources.getString(R.string.remove_generic),
+                    R.drawable.ic_action_delete,
+                    false
+                )
+            )
+            .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
+            .setMenuRadius(10f)
+            .setLifecycleOwner(this)
+            .setTextColor(ContextCompat.getColor(this, R.color.white_opacity_87))
+            .setTextTypeface(Typeface.DEFAULT)
+            .setMenuColor(ContextCompat.getColor(this, R.color.dark_gray))
+            .setWidth(resources.getDimension(R.dimen.popup_menu_width).toInt())
+            .setTextSize(Helper.dimensAsDp(this, R.dimen.text_subtitle_1))
+            .setAutoDismiss(true)
+
+        if (contents.size > 1)
+            powerMenuBuilder.addItem(
+                1,
+                PowerMenuItem(
+                    resources.getString(R.string.meta_tag_all_selected),
+                    R.drawable.ic_action_select_all,
+                    false
+                )
+            )
+
+        val powerMenu = powerMenuBuilder.build()
+
+        powerMenu.onMenuItemClickListener =
+            OnMenuItemClickListener { p: Int, _: PowerMenuItem? ->
+                when (p) {
+                    0 -> { // Replace with...
+                        MetaEditBottomSheetFragment.invoke(
+                            this,
+                            supportFragmentManager, false, item.attribute.id
+                        )
+                    }
+                    1 -> { // Tag all selected books
+                        // TODO confirmation dialog
+                        viewModel.addContentAttribute(item.attribute)
+                    }
+                    else -> { // Remove
+                        viewModel.removeContentAttribute(item.attribute)
+                    }
+                }
+            }
+
+        powerMenu.setIconColor(ContextCompat.getColor(this, R.color.white_opacity_87))
+        powerMenu.showAtCenter(binding?.root)
         return true
     }
 
