@@ -6,8 +6,8 @@
     <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">su 90% pieno</string>
     <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">su 95% pieno</string>
     <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">su 98% pieno</string>
-<string name="pref_browser_quick_dl_threshold_entries_1">500 ms (predefinito)</string>
-    <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 sec</string>
+<string name="pref_browser_quick_dl_threshold_entries_1">500 ms</string>
+    <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 sec (predefinito)</string>
     <string name="pref_browser_quick_dl_threshold_entries_3" tools:ignore="MissingTranslation">1.5 sec</string>
     <string name="pref_browser_quick_dl_threshold_entries_4" tools:ignore="MissingTranslation">2 sec</string>
     <string name="pref_browser_quick_dl_threshold_entries_5" tools:ignore="MissingTranslation">3 sec</string>
