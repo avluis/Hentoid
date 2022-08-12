@@ -40,6 +40,7 @@
     <string name="_default">alapértelmezett</string>
     <string name="empty">üres</string>
     <string name="none">Egyik sem</string>
+    <string name="disabled_generic">Letiltva</string>
 <string name="title_activity_api29_migration">API 29 migráció</string>
     <string name="title_activity_downloads">Könyvtár</string>
     <string name="title_activity_queue">Várólista</string>
@@ -103,6 +104,7 @@
     <string name="invert_queue">Várakozási sor megfordítása</string>
     <string name="redownload_all">Összes újbóli letöltése</string>
     <string name="cancel_all_errors">Összes hibás letöltés visszavonása</string>
+    <string name="import_downloads">Letöltések importálása</string>
     <string name="move_top">Mozgatás a legtetejére</string>
     <string name="move_bottom">Mozgatás az aljára</string>
     <string name="queue_paused">Várakozási sor megállítva</string>
@@ -137,7 +139,8 @@
     <string name="step_remove_duplicate">Duplikátumok cseréje</string>
     <string name="help_swipe_cancel">A letöltéseket megszakíthatja, ha balra húzza őket.</string>
     <string name="redownloaded_error">Probléma merült fel az újbóli letöltés során - visszavonva</string>
-
+    <string name="redownloaded_missing_webview">Webview jelenleg nem elérhető, nem lehet újra letölteni jelenleg</string>
+    <string name="redownloaded_updating_webview">Webview jelenleg frissítés alatt áll, emiatt még nem lehet újra letölteni</string>
     <plurals name="redownloaded_scratch">
         <item quantity="one"><x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> elem törölve újbóli letöltés gyanánt</item>
         <item quantity="other"><x:g example="2" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g> elem törölve újbóli letöltés gyanánt</item>
@@ -148,7 +151,8 @@
     <string name="notification_user_action_needed">Felhasználói beavatkozás szükséges</string>
     <string name="notification_action_dl_revive">Koppintson ide a letöltés, újbóli elindításához</string>
     <string name="revive_wait">Kérjük, maradjon ezen a képernyőn, amíg a letöltés újból el nem indul.</string>
-
+    <string name="revive_missing_webview">WebView nem érhető el, jelenleg nem tudja újraindítani a letöltéseket</string>
+    <string name="revive_updating_webview">WebView jelenleg frissítés alatt áll, emiatt tudja újraindítani a letöltéseket</string>
     <string name="queue_json_saved">A várakozási sor JSON fájl-ba elmentésre került</string>
     <string name="queue_json_failed">A várakozási sort nem lehet elmenteni a JSON fájl-ba</string>
     <string name="queue_content_size_estimate">hátramaradt <x:g example="13.37" id="size_mbytes">%.1f</x:g> MB</string>
@@ -162,6 +166,12 @@
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">A letöltés sikertelen</string>
     <string name="download_notif_failed_details">Nem lehet letölteni <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: nem lehet létrehozni a mappát <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Kérjük ellenőrizze a Hentoid mappát és próbálja meg újból letölteni azt a \'!\' gomb segítségével.</string>
+<string name="import_downloads_title">Letöltések importálása</string>
+    <plurals name="import_downloads_found">
+        <item quantity="one"><x:g example="1" id="downloads">%d</x:g> érvényes letöltés található</item>
+        <item quantity="other"><x:g example="2" id="downloads">%d</x:g> érvényes letöltések találhatóak</item>
+    </plurals>
+    <string name="importing_downloads">Letöltések importálása</string>
 <string name="work_series">Sorozat: <x:g example="original" id="series">%s</x:g></string>
     <string name="work_artist">Szerző: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>
     <plurals name="work_pages_missing">
@@ -173,6 +183,9 @@
         <item quantity="one"><x:g example="1" id="pages_count">%1$d</x:g> oldal/ <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
         <item quantity="other"><x:g example="2" id="pages_count">%1$d</x:g> oldalak/ <x:g example="3.88" id="size_mb">%2$.1f</x:g> MB</item>
     </plurals>
+    <string name="work_pages_duplicate_dialog_library">Oldalak (könyvtárban): %d</string>
+    <string name="work_pages_duplicate_dialog_queue">Oldalak (várakozási sorban): %d</string>
+    <string name="work_pages_duplicate_dialog_source">Oldalak (a forrásban): %d</string>
     <string name="library_metrics_storage"><x:g example="3.88" id="size_mb">%.0f</x:g> MB</string>
     <string name="redownload_queue_progress">A kiválasztott könyvek újbóli letöltése</string>
     <string name="errortype_parsing">Elemzés</string>
@@ -313,7 +326,8 @@
     <string name="error_creating_folder">Érvénytelen mappa</string>
     <string name="error_open">Hiba a fájl megnyitásakor: nem találtunk ehhez a fájlhoz releváns alkalmazást</string>
     <string name="error_browser">Hiba a link megnyitásakor: nem találtunk böngészőt az eszközén</string>
-
+    <string name="error_missing_webview">Webview jelenleg nem elérhető, nem lehet megnyitni az alkalmazás böngészőjét</string>
+    <string name="error_updating_webview">Webview jelenleg frissítés alatt áll, emiatt nem lehet megnyitni az alkalmazás böngészőjét</string>
 <string name="redownload_dialog_title">Megpróbáljuk újra letölteni\?</string>
     <string name="redownload_dialog_message">Összesen ennyi kép van letöltés alatt: <x:g example="10" id="total_imgs">%1$d</x:g>\nKépek hibák nélkül: <x:g example="8" id="fine_imgs">%2$d</x:g>\nKépek hibával: <x:g example="2" id="failed_imgs">%3$d</x:g></string>
     <string name="redownload_first_error">Első hiba: <x:g id="errortype">%s</x:g></string>
@@ -361,9 +375,11 @@
         <item quantity="other"><x:g example="2" id="count">%d</x:g> könyvek archiválásra kerültek a Letöltési mappádba</item>
     </plurals>
     <string name="stream_canceled">Streaming megszakítva - a könyv nem elérhető online</string>
-
+    <string name="stream_missing_webview">Streaming megszakítva - Webview jelenleg nem elérhető</string>
+    <string name="stream_updating_webview">Streaming megszakítva - Webview jelenleg frissítés alatt</string>
     <string name="download_canceled">Letöltés megszakítva - a könyv nem elérhető online</string>
-
+    <string name="download_missing_webview">Letöltés megszakítva - Webview jelenleg nem elérhető</string>
+    <string name="download_updating_webview">Letöltés megszakítva - Webview jelenleg frissítés alatt</string>
     <string name="press_back_again">Nyomja meg kétszer (gyorsan) a vissza gombot a kilépéshez.</string>
     <string name="queue_empty">Miért vagyok üres\? (Töltsön le néhány könyvet!)</string>
     <string name="errors_empty">A letöltések között nem észleltünk hibát</string>
@@ -525,7 +541,8 @@
     <string name="about_licenses">Licencek megjelenítése</string>
     <string name="about_app_version" tools:ignore="MissingTranslation">Hentoid v<x:g example="1.15.20" id="ver_name">%1$s</x:g> (<x:g example="130" id="ver_code">%2$d</x:g>)</string>
     <string name="about_chrome_version" tools:ignore="MissingTranslation">Chrome v<x:g example="98" id="chrome_ver">%1$d</x:g></string>
-
+    <string name="about_chrome_unavailable">Webview jelenleg nem elérhető</string>
+    <string name="about_chrome_updating">Webview jelenleg frissítés alatt áll</string>
 <string name="web_gallery">Visszalépés a Galéria legutóbbi oldalára</string>
     <string name="web_home">Visszalépés a könyvtárba</string>
     <string name="web_back">Vissza</string>
@@ -581,6 +598,14 @@
         <item quantity="other"><x:g example="2" id="count">%s</x:g> Eredmények találva</item>
     </plurals>
     <string name="search_select_a_filter">Szűrő kiválasztása</string>
+    <string name="search_location">Hely</string>
+    <string name="search_location_entries_1">Összes hely</string>
+    <string name="search_type">Típus</string>
+    <string name="search_type_entries_1">Összes könyv típusa</string>
+    <string name="search_type_entries_2">Mappa</string>
+    <string name="search_type_entries_3">Streamelt</string>
+    <string name="search_type_entries_4">Archívum</string>
+    <string name="search_type_entries_5">Helyörző</string>
 
 <string name="no_images">Nem sikerült betölteni a könyvet: Nem található kép</string>
     <string name="loading_archive">Betöltés: <x:g example="1" id="number">%1$d</x:g>/<x:g example="42" id="total">%2$d</x:g></string>
@@ -723,6 +748,7 @@
     <string name="title_startup_progress">Kezdjük...</string>
     <string name="title_startup_complete">Indítás befejezve</string>
 <string name="missing_web_view_title">A WebView nincsen feltelepítve vagy le van tiltva</string>
+    <string name="missing_web_view">Hentoid nem találta az Android beépített webes megjelenítőjét az alkalmazásokhoz. \nEnélkül nem tudsz böngészni a források között, nem tudsz könyveket letölteni; tényleg nem tudsz sok mindent csinálni, amihez internetre van szükséged.\n\nValószínűleg valóban telepítve van az Ön rendszerén, de le van tiltva: kérjük, lépjen be a következő helyre b>Beállítások</b> &gt; <b>Alkalmazások</b> &gt; <b>Letiltott alkalmazások</b> és engedélyezze a <b>Android System WebView</b> alkalmazást.\n\nHa nem találod meg ezt az alkalmazást, akkor kérlek rakd fel az eszközödre a <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Áruház</a></b>-ról.</string>
     <string name="missing_web_view_library">Visszalépés a könyvtárba</string>
 <string name="group_today">Ma</string>
     <string name="group_7">Az elmúlt 7 napban</string>

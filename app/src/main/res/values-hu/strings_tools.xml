@@ -16,7 +16,8 @@
 <string name="tools_screen_cache">Gyorsítótár menedzsment</string>
 <string name="tools_cache_browser">Böngésző gyorsítótárának törlése</string>
 <string name="tools_cache_browser_success">Webview gyorsítótára sikeresen törölve</string>
-
+    <string name="tools_cache_browser_missing_webview">Webview jelenleg nem elérhető, a cache-t jelenleg nem lehet letörölni</string>
+    <string name="tools_cache_browser_updating_webview">Webview jelenleg frissítés alatt áll, emiatt még a cache-t nem lehet törölni</string>
 <string name="tools_cache_app">Alkalmazás gyorsítótárának törlése</string>
 <string name="tools_cache_app_success">Alkalmazás gyorsítótára sikeresen törölve</string>
 <string name="tools_latest_logs_title">Alkalmazás naplók</string>

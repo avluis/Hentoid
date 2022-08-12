@@ -23,6 +23,10 @@
     <string name="pref_color_theme_title">Színtéma</string>
     <string name="pref_color_theme_summary">Jelenlegi téma: <x:g example="Deep Red" id="theme_name">%s</x:g></string>
     <string name="pref_misc">Egyéb</string>
+    <string name="pref_cat_language">Interfész nyelve</string>
+    <string name="pref_force_english_title">Angol nyelv kényszerítése</string>
+    <string name="pref_force_english_summary_off">Használja az eszköz nyelvét\amennyiben elérhető fordítás az alkalmazáshoz</string>
+    <string name="pref_force_english_summary_on">Angol nyelv használata</string>
 <string name="pref_screen_storage">Tárhely</string>
     <string name="pref_cat_downloads_folder">Hentoid könyvtár</string>
     <string name="pref_select_folder_title">Letöltési mappa kiválasztása</string>
@@ -92,7 +96,8 @@
     <string name="pref_browser_clear_cookies">Összes süti törlése</string>
     <string name="pref_browser_clear_cookies_ok">Az összes süti törlése sikeresen megtörtént</string>
     <string name="pref_browser_clear_cookies_ko">Nincsen olyan süti, amit törölhetnénk</string>
-
+    <string name="pref_browser_clear_cookies_missing_webview">Webview jelenleg nem elérhető, nem lehet a sütiket most törölni</string>
+    <string name="pref_browser_clear_cookies_updating_webview">Webview jelenleg frissítés alatt áll, nem lehet a sütiket most törölni</string>
 <string name="pref_screen_downloader">Letöltő</string>
     <string name="pref_queue_autostart_title">Letöltési sor automatikus indítása</string>
     <string name="pref_queue_autostart_on">A letöltési sor elindul, amint a letöltés befejeződött.</string>
@@ -179,6 +184,7 @@
     <string name="pref_viewer_continuous_summary_off">A következő oldal használata az utolsó oldalra nincs hatással</string>
     <string name="pref_viewer_continuous_summary_on">A következő oldal használata az utolsó oldalon betölti a következő könyvet</string>
     <string name="pref_viewer_read_threshold">Jelölje a könyvet olvasottnak N oldal után</string>
+    <string name="pref_viewer_ratio_completed_threshold">Könyv késznek nyilvánítása N% oldal után</string>
     <string name="pref_viewer_slideshow_delay">Diavetítés / Késleltetés az egyes oldalak között</string>
     <string name="pref_viewer_slideshow_delay_vertical">Diavetítési / Görgetési sebesség (vertikális megjelenés)</string>
     <string name="doh_warning">Egyes webhelyek nem működnek jól a HTTPS-en keresztüli DNS-sel. Használjon külső DNS-alkalmazást, ha a navigáció során problémákat tapasztal (pl. üres oldalak, nem reagáló bejelentkezési űrlapok).</string>
