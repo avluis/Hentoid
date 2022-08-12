@@ -895,7 +895,8 @@ public class ContentDownloadWorker extends BaseWorker {
             }
         } catch (UnsupportedContentException e) {
             Timber.i(e);
-            if (!backupUrl.isEmpty()) tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);
+            if (!backupUrl.isEmpty() && !img.isBackup())
+                tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);
             else {
                 Timber.d("No backup URL found - aborting this image");
                 updateImageProperties(img, false, "");
