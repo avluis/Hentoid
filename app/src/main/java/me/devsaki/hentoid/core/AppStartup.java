@@ -46,7 +46,7 @@ import me.devsaki.hentoid.notification.startup.StartupNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.receiver.PlugEventsReceiver;
 import me.devsaki.hentoid.services.UpdateCheckService;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;

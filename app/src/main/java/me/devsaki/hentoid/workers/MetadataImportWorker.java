@@ -46,7 +46,7 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImportHelper;
@@ -223,6 +223,14 @@ public class MetadataImportWorker extends BaseWorker {
             boolean mappedToFiles = mapFilesToContent(context, c, siteFolder);
             // If no local storage found for the book, it goes in the errors queue (except if it already was in progress)
             if (!mappedToFiles) {
+                // Insert queued content into the queue
+                if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
+                    long newContentId = ContentHelper.addContent(context, dao, c);
+                    List<QueueRecord> lst = new ArrayList<>();
+                    lst.add(new QueueRecord(newContentId, queueSize++));
+                    dao.updateQueue(lst);
+                    return;
+                }
                 switch (emptyBooksOption) {
                     case MetaImportDialogFragment.IMPORT_AS_STREAMED:
                         // Greenlighted if images exist and are available online
@@ -265,13 +273,7 @@ public class MetadataImportWorker extends BaseWorker {
         }
 
         // All checks successful => create the content
-        long newContentId = ContentHelper.addContent(context, dao, c);
-        // Insert queued content into the queue
-        if (c.getStatus().equals(StatusContent.DOWNLOADING) || c.getStatus().equals(StatusContent.PAUSED)) {
-            List<QueueRecord> lst = new ArrayList<>();
-            lst.add(new QueueRecord(newContentId, queueSize++));
-            dao.updateQueue(lst);
-        }
+        ContentHelper.addContent(context, dao, c);
     }
 
     private boolean mapFilesToContent(@NonNull Context context, @NonNull final Content c, @NonNull final DocumentFile siteFolder) {

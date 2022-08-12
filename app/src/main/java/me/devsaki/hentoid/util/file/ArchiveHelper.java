@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.file;
 
 import android.content.ContentResolver;
 import android.content.Context;
@@ -43,6 +43,7 @@ import java.util.zip.ZipOutputStream;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
+import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**

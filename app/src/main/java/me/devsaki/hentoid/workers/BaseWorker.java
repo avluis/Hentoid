@@ -22,6 +22,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
+import me.devsaki.hentoid.util.LocaleHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.util.notification.NotificationManager;
@@ -63,6 +64,9 @@ public abstract class BaseWorker extends Worker {
             String logName) {
         super(context, parameters);
         this.serviceId = serviceId;
+
+        // Change locale if set manually
+        LocaleHelper.convertLocaleToEnglish(context);
 
         initNotifications(context);
 

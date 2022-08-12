@@ -28,7 +28,7 @@ import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel
-import me.devsaki.hentoid.util.FileHelper
+import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.ImportHelper.PickFileContract
 import me.devsaki.hentoid.util.Preferences

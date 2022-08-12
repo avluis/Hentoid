@@ -6,8 +6,8 @@
     <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">90%-ban tele van</string>
     <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">95%-ban tele van</string>
     <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">98%-ban tele van</string>
-<string name="pref_browser_quick_dl_threshold_entries_1">500 ms (alapértelmezett)</string>
-    <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 másodperc</string>
+<string name="pref_browser_quick_dl_threshold_entries_1">500 ms</string>
+    <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 másodperc (alapértelmezett)</string>
     <string name="pref_browser_quick_dl_threshold_entries_3" tools:ignore="MissingTranslation">1,5 másodperc</string>
     <string name="pref_browser_quick_dl_threshold_entries_4" tools:ignore="MissingTranslation">2 másodperc</string>
     <string name="pref_browser_quick_dl_threshold_entries_5" tools:ignore="MissingTranslation">3 másodperc</string>

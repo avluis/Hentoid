@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.core.HentoidApp;
+import me.devsaki.hentoid.util.file.FileHelper;
 import timber.log.Timber;
 
 /**

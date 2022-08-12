@@ -62,11 +62,11 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.util.ArchiveHelper;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.ImageHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.StringHelper;
@@ -556,8 +556,11 @@ public class ReaderViewModel extends AndroidViewModel {
                 completedThresholdRatio = 0.75f;
                 break;
             case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_ALL:
-            default:
                 completedThresholdRatio = 1;
+                break;
+            case Preferences.Constant.VIEWER_COMPLETED_RATIO_THRESHOLD_NONE:
+            default:
+                completedThresholdRatio = 2;
         }
         int completedThresholdPosition = Math.round(completedThresholdRatio * nbReadablePages);
 

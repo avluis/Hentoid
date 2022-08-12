@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.file;
 
 import android.Manifest;
 import android.app.Activity;

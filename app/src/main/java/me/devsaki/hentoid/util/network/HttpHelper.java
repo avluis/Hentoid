@@ -26,7 +26,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.BuildConfig;
-import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;

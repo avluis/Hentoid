@@ -9,8 +9,8 @@
     <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">on 95% full</string>
     <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">on 98% full</string>
     <!-- Choice for "Quick download long press threshold" setting -->
-    <string name="pref_browser_quick_dl_threshold_entries_1">500 ms (default)</string>
-    <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 s</string>
+    <string name="pref_browser_quick_dl_threshold_entries_1">500 ms</string>
+    <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 s (default)</string>
     <string name="pref_browser_quick_dl_threshold_entries_3" tools:ignore="MissingTranslation">1.5 s</string>
     <string name="pref_browser_quick_dl_threshold_entries_4" tools:ignore="MissingTranslation">2 s</string>
     <string name="pref_browser_quick_dl_threshold_entries_5" tools:ignore="MissingTranslation">3 s</string>

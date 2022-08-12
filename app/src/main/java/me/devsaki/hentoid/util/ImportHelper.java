@@ -53,6 +53,10 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.JsonContent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.FileExplorer;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.workers.ExternalImportWorker;
 import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import me.devsaki.hentoid.workers.data.PrimaryImportData;
@@ -92,6 +96,8 @@ public class ImportHelper {
 
     private static final FileHelper.NameFilter hentoidFolderNames = displayName -> displayName.equalsIgnoreCase(Consts.DEFAULT_PRIMARY_FOLDER)
             || displayName.equalsIgnoreCase(Consts.DEFAULT_PRIMARY_FOLDER_OLD);
+
+    private static final FileHelper.NameFilter hentoidContentJson = displayName -> displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME_V2) || displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME) || displayName.equalsIgnoreCase(Consts.JSON_FILE_NAME_OLD);
 
     /**
      * Import options for the Hentoid folder
@@ -153,11 +159,11 @@ public class ImportHelper {
             Uri uri = intent.getData();
             if (uri != null)
                 return new ImmutablePair<>(PickerResult.OK, uri);
-            else return new ImmutablePair<>(PickerResult.KO_NO_URI, null);
+            else return new ImmutablePair<>(PickerResult.KO_NO_URI, Uri.EMPTY);
         } else if (resultCode == Activity.RESULT_CANCELED) {
-            return new ImmutablePair<>(PickerResult.KO_CANCELED, null);
+            return new ImmutablePair<>(PickerResult.KO_CANCELED, Uri.EMPTY);
         }
-        return new ImmutablePair<>(PickerResult.KO_OTHER, null);
+        return new ImmutablePair<>(PickerResult.KO_OTHER, Uri.EMPTY);
     }
 
     /**
@@ -833,5 +839,14 @@ public class ImportHelper {
         String targetBareName = FileHelper.getFileNameWithoutExtension(name);
         Optional<DocumentFile> file = Stream.of(files).filter(f -> (f.getName() != null && FileHelper.getFileNameWithoutExtension(f.getName()).equalsIgnoreCase(targetBareName))).findFirst();
         return file.orElse(null);
+    }
+
+    /**
+     * Build a {@link FileHelper.NameFilter} only accepting Content json files
+     *
+     * @return {@link FileHelper.NameFilter} only accepting Content json files
+     */
+    public static FileHelper.NameFilter getContentJsonNamesFilter() {
+        return hentoidContentJson;
     }
 }

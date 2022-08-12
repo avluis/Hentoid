@@ -14,6 +14,7 @@ import java.util.Map;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.json.core.JsonLangSettings;
+import me.devsaki.hentoid.util.file.FileHelper;
 import timber.log.Timber;
 
 public class LanguageHelper {

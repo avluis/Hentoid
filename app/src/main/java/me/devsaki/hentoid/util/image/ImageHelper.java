@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.util.image;
 
 import static android.graphics.Bitmap.Config.ARGB_8888;
 
@@ -29,6 +29,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**
@@ -339,6 +341,7 @@ public final class ImageHelper {
 
         if (width == height && width > threshold) {
             newWidth = threshold;
+            //noinspection SuspiciousNameCombination
             newHeight = newWidth;
         }
 
@@ -358,13 +361,13 @@ public final class ImageHelper {
 
         Bitmap resizedBitmap = resizeBitmap(bm, Math.min(scaleHeight, scaleWidth));
 
-        if (!isNecessaryToKeepOrig) {
+        if (!isNecessaryToKeepOrig && bm != resizedBitmap) { // Don't recycle if the result is the same object as the source
             bm.recycle();
         }
         return resizedBitmap;
     }
 
-    static Bitmap resizeBitmap(@NonNull final Bitmap src, float targetScale) {
+    private static Bitmap resizeBitmap(@NonNull final Bitmap src, float targetScale) {
         ImmutablePair<Integer, Float> resizeParams = computeResizeParams(targetScale);
         Timber.d(">> resizing successively to scale %s", resizeParams.right);
         return successiveResize(src, resizeParams.left);
@@ -390,7 +393,7 @@ public final class ImageHelper {
         return new ImmutablePair<>(nbResize, resultScale);
     }
 
-    static Bitmap successiveResize(@NonNull final Bitmap src, int resizeNum) {
+    private static Bitmap successiveResize(@NonNull final Bitmap src, int resizeNum) {
         if (0 == resizeNum) return src;
 
         int srcWidth = src.getWidth();
@@ -407,5 +410,24 @@ public final class ImageHelper {
         }
 
         return output;
+    }
+
+    /**
+     * Indicates if the picture needs to be rotated 90°, according to the given picture proportions (auto-rotate feature)
+     * The goal is to align the picture's proportions with the phone screen's proportions
+     *
+     * @param screenWidth  Screen width
+     * @param screenHeight Screen height
+     * @param width        Picture width
+     * @param height       Picture height
+     * @return True if the picture needs to be rotated 90°
+     */
+    public static boolean needsRotating(int screenWidth, int screenHeight, int width, int height) {
+        boolean isSourceSquare = (Math.abs(height - width) < width * 0.1);
+        if (isSourceSquare) return false;
+
+        boolean isSourceLandscape = (width > height * 1.33);
+        boolean isScreenLandscape = (screenWidth > screenHeight * 1.33);
+        return (isSourceLandscape != isScreenLandscape);
     }
 }
