@@ -67,11 +67,8 @@ import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
@@ -86,6 +83,9 @@ import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.NetworkHelper;
@@ -1147,7 +1147,7 @@ public class ContentDownloadWorker extends BaseWorker {
             }
         }
         // Content-type has not been useful to determine the extension => See if the URL contains an extension
-        if (null == fileExt || fileExt.isEmpty()) {
+        if (null == fileExt || fileExt.isEmpty() || fileExt.equalsIgnoreCase("bin")) {
             fileExt = HttpHelper.getExtensionFromUri(img.getUrl());
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt);
             Timber.v("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
