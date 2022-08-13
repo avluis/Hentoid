@@ -184,6 +184,7 @@
         <item quantity="one"><x:g example="1" id="downloads">%d</x:g> valid download found</item>
         <item quantity="other"><x:g example="2" id="downloads">%d</x:g> valid downloads found</item>
     </plurals>
+    <string name="import_streamed">Import as streamed books</string>
     <string name="importing_downloads">Importing downloads…</string>
 
     <!-- TextViews -->
