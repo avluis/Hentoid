@@ -25,12 +25,14 @@ import com.google.android.material.snackbar.Snackbar
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
+import com.mikepenz.fastadapter.diff.DiffCallback
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil
 import com.skydoves.powermenu.MenuAnimation
 import com.skydoves.powermenu.OnMenuItemClickListener
 import com.skydoves.powermenu.PowerMenu
 import com.skydoves.powermenu.PowerMenuItem
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.bundles.AttributeItemBundle
 import me.devsaki.hentoid.activities.bundles.MetaEditActivityBundle
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.AttributeMap
@@ -62,6 +64,38 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     private lateinit var contents: List<Content>
     private var contentAttributes = ArrayList<Attribute>()
     private var selectedAttributeTypes = ArrayList<AttributeType>()
+
+    private val attributeItemDiffCallback: DiffCallback<AttributeItem> =
+        object : DiffCallback<AttributeItem> {
+            override fun areItemsTheSame(oldItem: AttributeItem, newItem: AttributeItem): Boolean {
+                return oldItem.identifier == newItem.identifier
+            }
+
+            override fun areContentsTheSame(
+                oldItem: AttributeItem,
+                newItem: AttributeItem
+            ): Boolean {
+                return (oldItem.attribute == newItem.attribute) && (oldItem.attribute.count == newItem.attribute.count)
+            }
+
+            override fun getChangePayload(
+                oldItem: AttributeItem,
+                oldItemPosition: Int,
+                newItem: AttributeItem,
+                newItemPosition: Int
+            ): Any? {
+                val oldAttr = oldItem.attribute
+                val newAttr = newItem.attribute
+                val diffBundleBuilder = AttributeItemBundle()
+                if (oldAttr.count != newAttr.count) {
+                    diffBundleBuilder.count = newAttr.count
+                }
+                if (oldAttr.name != newAttr.name) {
+                    diffBundleBuilder.name = newAttr.name
+                }
+                return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
+            }
+        }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,9 +152,10 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     }
 
     private fun updateAttrsList() {
-        FastAdapterDiffUtil[itemAdapter] =
-            contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }
-                .map { attr -> AttributeItem(attr, contents.size > 1) }
+        val items = contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }
+            .map { attr -> AttributeItem(attr, contents.size > 1) }
+
+        FastAdapterDiffUtil.set(itemAdapter, items, attributeItemDiffCallback)
     }
 
     private fun bindUI() {

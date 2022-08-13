@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.viewholders
 
 import android.content.Context
+import android.os.Bundle
 import android.text.SpannableString
 import android.view.View
 import android.widget.TextView
@@ -9,6 +10,7 @@ import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
 import com.mikepenz.fastadapter.ui.utils.StringHolder
 import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.bundles.AttributeItemBundle
 import me.devsaki.hentoid.database.domains.Attribute
 
 class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
@@ -35,6 +37,13 @@ class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
         val badge: TextView = itemView.findViewById(R.id.badge)
 
         override fun bindView(item: AttributeItem, payloads: List<Any>) {
+            if (payloads.isNotEmpty()) {
+                val bundleParser = AttributeItemBundle(payloads[0] as Bundle)
+                val stringValue = bundleParser.name
+                if (stringValue != null) item.attribute.name = stringValue
+                val intValue = bundleParser.count
+                if (intValue != null) item.attribute.count = intValue
+            }
             badge.text = formatAttrBadge(badge.context, item.attribute, item.showCount)
         }
 
