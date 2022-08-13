@@ -819,6 +819,7 @@
     <string name="meta_choose_type">Choose a type for \'%s\'</string>
     <string name="meta_replace_with">Replace with…</string>
     <string name="meta_tag_all_selected">Tag all selected books</string>
+    <string name="meta_tag_all_selected_confirm">Tag all %d selected books with \'%s\' ?</string>
 
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>

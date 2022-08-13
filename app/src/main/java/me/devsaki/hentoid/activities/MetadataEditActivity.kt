@@ -20,6 +20,7 @@ import com.bumptech.glide.request.RequestOptions
 import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import com.mikepenz.fastadapter.FastAdapter
@@ -468,8 +469,21 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                         )
                     }
                     1 -> { // Tag all selected books
-                        // TODO confirmation dialog
-                        viewModel.addContentAttribute(item.attribute)
+                        val builder = MaterialAlertDialogBuilder(this)
+                        val title = resources.getString(
+                            R.string.meta_tag_all_selected_confirm,
+                            contents.size,
+                            item.attribute.name
+                        )
+                        builder.setMessage(title)
+                            .setPositiveButton(
+                                R.string.ok
+                            ) { _, _ ->
+                                viewModel.addContentAttribute(item.attribute)
+                            }
+                            .setNegativeButton(R.string.cancel, null)
+                            .create().show()
+
                     }
                     else -> { // Remove
                         viewModel.removeContentAttribute(item.attribute)
