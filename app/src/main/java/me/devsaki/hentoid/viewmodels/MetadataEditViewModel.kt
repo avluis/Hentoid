@@ -38,10 +38,12 @@ class MetadataEditViewModel(
     private val attributeTypes = MutableLiveData<List<AttributeType>>()
     private val contentAttributes = MutableLiveData<List<Attribute>>()
     private val libraryAttributes = MutableLiveData<AttributeQueryResult>()
+    private val resetSelectionFilter = MutableLiveData<Int>()
 
 
     init {
         contentAttributes.value = ArrayList()
+        resetSelectionFilter.value = 0
     }
 
     override fun onCleared() {
@@ -69,6 +71,17 @@ class MetadataEditViewModel(
         return libraryAttributes
     }
 
+    fun getResetSelectionFilter(): LiveData<Int> {
+        return resetSelectionFilter
+    }
+
+    /**
+     * Allow the Activity to tell the BottomSheetFragment to reset its filter
+     * Needed because the callback from AttributeTypePickerDialogFragment is done on the activity
+     */
+    fun resetSelectionFilter() {
+        resetSelectionFilter.postValue(resetSelectionFilter.value!! + 1)
+    }
 
     /**
      * Load the given list of Content
@@ -187,7 +200,8 @@ class MetadataEditViewModel(
         val toAddNew: Attribute?
         if (toAdd != null) {
             if (newAttrs.contains(toAdd)) newAttrs.remove(toAdd)
-            toAddNew = Attribute(toAdd) // Create new instance for list differs to detect changes (if not, attributes are changed both on the old and the updated object)
+            toAddNew =
+                Attribute(toAdd) // Create new instance for list differs to detect changes (if not, attributes are changed both on the old and the updated object)
             newAttrs.add(toAddNew)
         } else toAddNew = null
         if (toRemove != null) newAttrs.remove(toRemove)

@@ -63,7 +63,7 @@ class AttributeTypePickerDialogFragment : DialogFragment() {
     override fun onViewCreated(rootView: View, savedInstanceState: Bundle?) {
         super.onViewCreated(rootView, savedInstanceState)
 
-        binding.title.text = resources.getText(R.string.meta_choose_type, newAttrName)
+        binding.title.text = resources.getString(R.string.meta_choose_type, newAttrName)
 
         itemAdapter.set(
             listOf(

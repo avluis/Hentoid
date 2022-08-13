@@ -155,6 +155,10 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             .observe(viewLifecycleOwner) { results: AttributeQueryResult ->
                 onLibraryAttributesReady(results)
             }
+        viewModel.getResetSelectionFilter()
+            .observe(viewLifecycleOwner) {
+                binding.tagFilter.setQuery("", true)
+            }
         searchMasterData("")
     }
 
@@ -216,13 +220,12 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         }
         mTotalSelectedCount = results.totalSelectedAttributes.toInt()
         if (clearOnSuccess) attributeAdapter.clear()
+        binding.tagWaitPanel.visibility = View.GONE
         if (0 == mTotalSelectedCount) {
             val newAttr =
                 Attribute(AttributeType.TAG, binding.tagFilter.query.toString().lowercase())
             newAttr.isNew = true
             attrs.add(newAttr)
-        } else {
-            binding.tagWaitPanel.visibility = View.GONE
         }
         attributeAdapter.add(attrs)
     }

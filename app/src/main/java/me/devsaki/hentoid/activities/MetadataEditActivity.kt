@@ -528,6 +528,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
 
     override fun onNewAttributeSelected(name: String, type: AttributeType) {
         viewModel.createAssignNewAttribute(name, type)
+        viewModel.resetSelectionFilter()
     }
 
     companion object {
