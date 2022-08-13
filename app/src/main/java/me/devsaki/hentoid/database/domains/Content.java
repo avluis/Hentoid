@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -60,12 +59,12 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import timber.log.Timber;
@@ -905,12 +904,8 @@ public class Content implements Serializable {
         this.archiveLocationUri = archiveLocationUri;
     }
 
-    public List<GroupItem> getGroupItems(Grouping grouping) {
-        List<GroupItem> result = new ArrayList<>();
-        for (GroupItem gi : groupItems)
-            if (gi.group.getTarget().grouping.equals(grouping)) result.add(gi);
-
-        return result;
+    public List<GroupItem> getGroupItems(@NonNull Grouping grouping) {
+        return Stream.of(groupItems).filter(gi -> gi.group.getTarget().grouping.equals(grouping)).toList();
     }
 
     public int getReadPagesCount() {

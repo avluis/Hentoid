@@ -252,9 +252,14 @@ public final class ContentHelper {
         return null;
     }
 
-    // TODO doc
+    /**
+     * Persist the given content's JSON file, whether it already exists or it needs to be created
+     *
+     * @param context Context to use
+     * @param content Content to persist the JSON for
+     */
     public static void persistJson(@NonNull Context context, @NonNull Content content) {
-        if (!content.getJsonUri().isEmpty()) // Having an active Content without JSON file shouldn't be possible after the API29 migration
+        if (!content.getJsonUri().isEmpty()) // NB : Having an active Content without JSON file shouldn't be possible after the API29 migration (Hentoid v1.12)
             ContentHelper.updateJson(context, content);
         else ContentHelper.createJson(context, content);
     }
@@ -298,11 +303,12 @@ public final class ContentHelper {
     /**
      * Open the given Content in the built-in image viewer
      *
-     * @param context      Context to use for the action
-     * @param content      Content to view
-     * @param pageNumber   Page number to view
-     * @param searchParams Current search parameters (so that the next/previous book feature
-     *                     is faithful to the library screen's order)
+     * @param context          Context to use for the action
+     * @param content          Content to view
+     * @param pageNumber       Page number to view
+     * @param searchParams     Current search parameters (so that the next/previous book feature
+     *                         is faithful to the library screen's order)
+     * @param forceShowGallery True to force the gallery screen to show first; false to follow app settings
      */
     public static boolean openReader(
             @NonNull Context context,
@@ -330,12 +336,15 @@ public final class ContentHelper {
     }
 
     /**
-     * Update the given Content's number of reads in both DB and JSON file
-     * TODO update doc
+     * Update the given Content read stats in both DB and JSON file
      *
-     * @param context Context to use for the action
-     * @param dao     DAO to use for the action
-     * @param content Content to update
+     * @param context                 Context to use for the action
+     * @param dao                     DAO to use for the action
+     * @param content                 Content to update
+     * @param images                  Images to attach to the given Content
+     * @param targetLastReadPageIndex Index of the last read page
+     * @param updateReads             True to increment the reads counter and to set the last read date to now
+     * @param markAsCompleted         True to mark as completed
      */
     public static void updateContentReadStats(
             @NonNull Context context,
@@ -358,6 +367,7 @@ public final class ContentHelper {
      * NB1 : Pictures with non-supported formats are not included in the results
      * NB2 : Cover picture is not included in the results
      *
+     * @param context Context to use
      * @param content Content to retrieve picture files for
      * @return List of picture files
      */
@@ -452,6 +462,12 @@ public final class ContentHelper {
         if (deleteContent) removeContent(context, dao, content);
     }
 
+    /**
+     * Remove all external content from DB without removing files
+     *
+     * @param context Context to use
+     * @param dao     DAO to use
+     */
     public static void removeAllExternalContent(
             @NonNull final Context context,
             @NonNull final CollectionDAO dao
@@ -470,7 +486,8 @@ public final class ContentHelper {
     /**
      * Add new content to the library
      *
-     * @param dao     DAO to be used
+     * @param context Context to use
+     * @param dao     DAO to use
      * @param content Content to add to the library
      * @return ID of the newly added Content
      */
@@ -512,7 +529,7 @@ public final class ContentHelper {
                                     if (!a.contents.isEmpty())
                                         group.coverContent.setTarget(a.contents.get(0));
                                 }
-                                GroupHelper.addContentToAttributeGroup(dao, group, a, content);
+                                GroupHelper.addContentToAttributeGroup(group, a, content, dao);
                             }
                         }
                     }
@@ -582,6 +599,14 @@ public final class ContentHelper {
         return newContentId;
     }
 
+    /**
+     * Add a new Attribute to the library master data (and updates groups accordingly)
+     *
+     * @param type Attribute type of the new Attribute
+     * @param name Name of the new Attribute
+     * @param dao  DAO to use
+     * @return Newly created Attribute
+     */
     public static Attribute addAttribute(
             @NonNull final AttributeType type, @NonNull final String name, @NonNull final CollectionDAO dao) {
         Group artistGroup = null;
@@ -763,6 +788,12 @@ public final class ContentHelper {
         return "[" + id + "]";
     }
 
+    /**
+     * Format the given Content's artists and circles to form the "author" string
+     *
+     * @param content Content to use
+     * @return Resulting author string
+     */
     public static String formatBookAuthor(@NonNull final Content content) {
         String result = "";
         AttributeMap attrMap = content.getAttributeMap();
@@ -784,8 +815,9 @@ public final class ContentHelper {
     /**
      * Return the given site's download directory. Create it if it doesn't exist.
      *
-     * @param context Context to use for the action
-     * @param site    Site to get the download directory for
+     * @param context  Context to use for the action
+     * @param explorer FileExplorer to use for the action
+     * @param site     Site to get the download directory for
      * @return Download directory of the given Site
      */
     @Nullable
@@ -1172,6 +1204,7 @@ public final class ContentHelper {
      * @return Content with updated properties, or Optional.empty if something went wrong
      * @throws IOException If something horrible happens during parsing
      */
+    // TODO factorize with parseFromScratch
     private static Optional<Content> reparseFromScratch(@NonNull final Content content, @NonNull final String url) throws IOException {
         Helper.assertNonUiThread();
 
@@ -1224,7 +1257,8 @@ public final class ContentHelper {
     /**
      * Query source to fetch all image file names and URLs of a given book
      *
-     * @param content Book whose pages to retrieve
+     * @param content           Book whose pages to retrieve
+     * @param targetImageStatus Target status to set on the fetched images
      * @return List of pages with original URLs and file name
      */
     public static List<ImageFile> fetchImageURLs(@NonNull Content content, @NonNull StatusContent targetImageStatus) throws Exception {
@@ -1286,8 +1320,10 @@ public final class ContentHelper {
      * <p>
      * Caution : exec time is long
      *
-     * @param context Context to use
-     * @param content Content to remove files from
+     * @param context    Context to use
+     * @param content    Content to remove files from
+     * @param removeJson True to remove the Hentoid JSON file; false to keep it
+     * @param keepCover  True to keep the cover picture; false to remove it
      */
     public static void purgeFiles(
             @NonNull final Context context,
@@ -1337,7 +1373,12 @@ public final class ContentHelper {
         return 0;
     }
 
-    // TODO doc
+    /**
+     * Get the drawable ID for the given rating
+     *
+     * @param rating Rating to get the resource ID for (0 to 5)
+     * @return Resource ID representing the given rating
+     */
     public static @DrawableRes
     int getRatingResourceId(int rating) {
         switch (rating) {
@@ -1385,7 +1426,13 @@ public final class ContentHelper {
         }
     }
 
-    // TODO doc
+    /**
+     * Format the given Content's series for display on book cards
+     *
+     * @param context Context to use
+     * @param content Content to format
+     * @return "Series" caption ready to be displayed on a book card
+     */
     public static String formatSeriesForDisplay(@NonNull final Context context, @NonNull final Content content) {
         List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
         if (seriesAttributes == null || seriesAttributes.isEmpty()) {
@@ -1400,10 +1447,16 @@ public final class ContentHelper {
         }
     }
 
-    // TODO doc
-    // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
+    /**
+     * Transform the given online URL into a working GlideUrl using the given Content's cookies
+     * (useful when viewing queue screen before any image has been downloaded)
+     *
+     * @param content  Content to use for cookies / referer
+     * @param imageUrl URL of the online picture to transform
+     * @return Working GlideUrl pointing to the given image URL, using the correct cookies / referer
+     */
     @Nullable
-    public static GlideUrl bindOnlineCover(@NonNull final Content content, @NonNull final String thumbLocation) {
+    public static GlideUrl bindOnlineCover(@NonNull final Content content, @NonNull final String imageUrl) {
         if (WebkitPackageHelper.getWebViewAvailable()) {
             String cookieStr = null;
             String referer = null;
@@ -1423,7 +1476,7 @@ public final class ContentHelper {
                     .addHeader(HttpHelper.HEADER_REFERER_KEY, referer)
                     .addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
 
-            return new GlideUrl(thumbLocation, builder.build()); // From URL
+            return new GlideUrl(imageUrl, builder.build()); // From URL
         }
         return null;
     }

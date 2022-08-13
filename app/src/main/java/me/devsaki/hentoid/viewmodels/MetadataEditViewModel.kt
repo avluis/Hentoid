@@ -252,7 +252,11 @@ class MetadataEditViewModel(
         contentList.value?.forEach {
             it.lastEditDate = Instant.now().toEpochMilli()
             dao.insertContent(it)
-            // TODO update artist groups
+            // Assign Content to each artist/circle group
+            it.attributes.forEach { attr ->
+                if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE)
+                    GroupHelper.addContentToAttributeGroup(attr.group.target, attr, it, dao)
+            }
             ContentHelper.persistJson(getApplication(), it)
         }
         GroupHelper.updateGroupsJson(getApplication(), dao)
