@@ -418,7 +418,7 @@
     <string name="pref_browser_dl_action_default" translatable="false">0</string>
     <string name="pref_browser_quick_dl_default" translatable="false">true</string>
     <string name="pref_browser_nhentai_invisible_blacklist_default" translatable="false">false</string>
-    <string name="pref_browser_quick_dl_threshold_default" translatable="false">500</string>
+    <string name="pref_browser_quick_dl_threshold_default" translatable="false">1000</string>
     <string name="pref_browser_augmented_default" translatable="false">true</string>
     <string name="pref_browser_duplicate_ask_default" translatable="false">true</string>
     <string name="pref_browser_duplicate_try_pages_default" translatable="false">true</string>

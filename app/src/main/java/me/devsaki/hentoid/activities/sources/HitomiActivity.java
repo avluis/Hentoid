@@ -26,7 +26,7 @@ public class HitomiActivity extends BaseWebActivity {
     private static final String[] GALLERY_FILTER = {"//hitomi.la/[manga|doujinshi|gamecg|cg]+/[^/]+-[0-9]{2,}.html(#[0-9]{1,2}){0,1}$"};
     private static final String[] RESULTS_FILTER = {"//hitomi.la[/]{0,1}$", "//hitomi.la[/]{0,1}\\?", "//hitomi.la/search.html", "//hitomi.la/index-[\\w%\\-\\.\\?]+", "//hitomi.la/(series|artist|tag|character)/[\\w%\\-\\.\\?]+"};
     private static final String[] BLOCKED_CONTENT = {"hitomi-horizontal.js", "hitomi-vertical.js", "invoke.js", "ion.sound"};
-    private static final String[] JS_URL_PATTERN_WHITELIST = {"//hitomi.la[/]{0,1}$", "galleries/[\\w%\\-]+.js$"};
+    private static final String[] JS_URL_PATTERN_WHITELIST = {"//hitomi.la[/]{0,1}$", "galleries/[\\w%\\-]+.js$", "//hitomi.la/[?]page=[0-9]+"};
     private static final String[] JS_URL_WHITELIST = {"nozomiurlindex", "languagesindex", "tagindex", "filesaver", "common", "date", "download", "gallery", "jquery", "cookie", "jszip", "limitlists", "moment-with-locales", "moveimage", "pagination", "search", "searchlib", "yall", "reader", "decode_webp", "bootstrap", "gg.js", "paging", "language_support"};
     private static final String[] JS_CONTENT_BLACKLIST = {"exoloader", "popunder", "da_etirw"};
     private static final String[] REMOVABLE_ELEMENTS = {".content div[class^=hitomi-]", ".container div[class^=hitomi-]", ".top-content > div:not(.list-title)"};
@@ -47,6 +47,7 @@ public class HitomiActivity extends BaseWebActivity {
         client.adBlocker.addToJsUrlWhitelist(JS_URL_WHITELIST);
         for (String s : JS_URL_PATTERN_WHITELIST) client.adBlocker.addJsUrlPatternWhitelist(s);
         for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
+        for (String s : JS_CONTENT_BLACKLIST) client.addJavascriptBlacklist(s);
         return client;
     }
 

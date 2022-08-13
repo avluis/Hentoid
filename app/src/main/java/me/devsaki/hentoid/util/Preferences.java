@@ -1004,7 +1004,7 @@ public final class Preferences {
         static final boolean BROWSER_MARK_DOWNLOADED = false;
         static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
         static final boolean BROWSER_QUICK_DL = true;
-        static final int BROWSER_QUICK_DL_THRESHOLD = 500; // 500ms
+        static final int BROWSER_QUICK_DL_THRESHOLD = 1000; // 1s
         static final int BROWSER_DNS_OVER_HTTPS = -1; // No DNS
         static final boolean BROWSER_NHENTAI_INVISIBLE_BLACKLIST = false;
         static final int DL_THREADS_QUANTITY = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
