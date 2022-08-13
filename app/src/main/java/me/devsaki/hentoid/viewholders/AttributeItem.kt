@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.view.View
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import cn.nekocode.badge.BadgeDrawable
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
@@ -67,7 +68,7 @@ class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
                 if (attribute.count > 0) attribute.count.toString() else if (attribute.isNew) "+" else "";
             val badgeDrawable = BadgeDrawable.Builder()
                 .type(badgeType)
-                .badgeColor(context.getColor(attribute.type.color))
+                .badgeColor(ContextCompat.getColor(context, attribute.type.color))
                 .text1(attribute.displayName.lowercase())
                 .text2(text2)
                 .padding(badgePaddingH, badgePaddingV, badgePaddingH, badgePaddingV, badgePaddingH)
