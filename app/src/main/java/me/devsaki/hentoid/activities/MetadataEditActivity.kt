@@ -154,6 +154,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
 
     private fun updateAttrsList() {
         val items = contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }
+            .sortedWith(compareBy({ it.type }, { -it.count }, { it.name }))
             .map { attr -> AttributeItem(attr, contents.size > 1) }
 
         FastAdapterDiffUtil.set(itemAdapter, items, attributeItemDiffCallback)
@@ -257,11 +258,16 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     private fun bindLanguagesUI() {
         val attrContainer = Content()
         attrContainer.putAttributes(mergeAttributeMaps(contents, setOf(AttributeType.LANGUAGE)))
-        @DrawableRes val resId = ContentHelper.getFlagResourceId(this, attrContainer)
-        if (resId != 0) {
-            binding?.ivFlag?.setImageResource(resId)
+        if (1 == contents.size) {
+            binding?.ivFlag?.visibility = View.VISIBLE
+            @DrawableRes val resId = ContentHelper.getFlagResourceId(this, attrContainer)
+            if (resId != 0) {
+                binding?.ivFlag?.setImageResource(resId)
+            } else {
+                binding?.ivFlag?.setImageResource(R.drawable.flag_unknown)
+            }
         } else {
-            binding?.ivFlag?.setImageResource(R.drawable.flag_unknown)
+            binding?.ivFlag?.visibility = View.GONE
         }
     }
 
