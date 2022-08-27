@@ -390,6 +390,10 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.BROWSER_MARK_DOWNLOADED, Default.BROWSER_MARK_DOWNLOADED);
     }
 
+    public static boolean isBrowserMarkMerged() {
+        return sharedPreferences.getBoolean(Key.BROWSER_MARK_MERGED, Default.BROWSER_MARK_DOWNLOADED);
+    }
+
     public static int getBrowserDlAction() {
         return Integer.parseInt(
                 sharedPreferences.getString(
@@ -895,6 +899,7 @@ public final class Preferences {
         static final String BROWSER_RESUME_LAST = "pref_browser_resume_last";
         static final String BROWSER_AUGMENTED = "pref_browser_augmented";
         public static final String BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded";
+        public static final String BROWSER_MARK_MERGED = "browser_mark_merged";
         public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
         public static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
         public static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";

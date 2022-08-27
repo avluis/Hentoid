@@ -88,6 +88,9 @@
     <string name="pref_browser_mark_downloaded_title">Mark downloaded books</string>
     <string name="pref_browser_mark_downloaded_off">Downloaded books have no special display</string>
     <string name="pref_browser_mark_downloaded_on">Downloaded books are marked\nNB: does not work on all sites</string>
+    <string name="pref_browser_mark_merged_title">Mark merged books</string>
+    <string name="pref_browser_mark_merged_off">Merged books have no special display</string>
+    <string name="pref_browser_mark_merged_on">Merged books are marked\nNB: does not work on all sites</string>
     <string name="pref_browser_visuals">Visuals</string>
     <string name="pref_browser_augmented_title">Augmented browser</string>
     <string name="pref_browser_augmented_off">Using vanilla behaviour</string>
