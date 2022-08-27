@@ -426,6 +426,16 @@ public class ObjectBoxDB {
         return new HashSet<>(Stream.of(allContentQ.property(Content_.url).findStrings()).toList());
     }
 
+    Set<String> selectAllMergedContentUrls(Site site) {
+        Query<Chapter> allChapterQ = store.boxFor(Chapter.class).query().build();
+
+        return new HashSet<>(Stream.of(allChapterQ.property(Chapter_.url).findStrings())
+                .filter(s -> s.contains(site.getUrl()))
+                .map(s -> s.replace(site.getUrl(), ""))
+                .map(s -> s.replaceAll("\\b|/galleries|/gallery|/g|/entry\\b", "")) //each sites "gallery" path
+                .toList());
+    }
+
     @Nullable
     Content selectContentEndWithStorageUri(@NonNull final String folderUriEnd, boolean onlyFlagged) {
         QueryBuilder<Content> queryBuilder = store.boxFor(Content.class).query().endsWith(Content_.storageUri, folderUriEnd, QueryBuilder.StringOrder.CASE_INSENSITIVE);

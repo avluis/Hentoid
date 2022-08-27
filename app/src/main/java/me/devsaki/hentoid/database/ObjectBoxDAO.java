@@ -298,6 +298,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectAllContentUrls(site.getCode());
     }
 
+    public Set<String> selectAllMergedUrls(@NonNull Site site){
+        return db.selectAllMergedContentUrls(site);
+    }
+
     @Override
     public List<Content> searchTitlesWith(@NonNull String word, int[] contentStatusCodes) {
         return db.selectContentWithTitle(word, contentStatusCodes);

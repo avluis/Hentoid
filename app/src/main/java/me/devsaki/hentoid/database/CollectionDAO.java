@@ -57,6 +57,8 @@ public interface CollectionDAO {
 
     Set<String> selectAllSourceUrls(@NonNull Site site);
 
+    Set<String> selectAllMergedUrls(@NonNull Site site);
+
     List<Content> searchTitlesWith(@NonNull final String word, int[] contentStatusCodes);
 
     long insertContent(@NonNull final Content content);
