@@ -78,7 +78,7 @@ public class HitomiActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view, @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
 
-            if (isMarkDownloaded() && url.contains("galleryblock")) { // Process book blocks to mark existing ones
+            if ((isMarkDownloaded() ||isMarkMerged()) && url.contains("galleryblock")) { // Process book blocks to mark existing ones
                 WebResourceResponse result = parseResponse(url, request.getRequestHeaders(), false, false);
                 if (result != null) return result;
                 else return sendRequest(request);

@@ -206,6 +206,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private List<ImageFile> extraImages = Collections.emptyList();
     // List of URLs of downloaded books for the current site
     private final List<String> downloadedBooksUrls = new ArrayList<>();
+    // List of URLs of merged books for the current site
+    private final List<String> mergedBooksUrls = new ArrayList<>();
 
     // === OTHER VARIABLES
     // Indicates which mode the download button is in
@@ -244,6 +246,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         Preferences.registerPrefsChangedListener(listener);
 
         if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
+        if (Preferences.isBrowserMarkMerged()) updateMergedBooksUrls();
 
         if (getStartSite() == null) {
             Timber.w("Site is null!");
@@ -1296,6 +1299,18 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
     }
 
+    private void updateMergedBooksUrls() {
+        synchronized (mergedBooksUrls) {
+            mergedBooksUrls.clear();
+            mergedBooksUrls.addAll(
+                    Stream.of(dao.selectAllMergedUrls(getStartSite()))
+                            .map(s -> s.replaceAll("\\p{Punct}", "."))
+                            .map(s -> s.endsWith(".") && s.length() > 1 ? s.substring(0, s.length() - 1) : s)
+                            .toList()
+            );
+        }
+    }
+
     /**
      * Listener for the events of the download engine
      * Used to switch the action button to Read when the download of the currently viewed is completed
@@ -1383,6 +1398,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         return new ArrayList<>(downloadedBooksUrls); // Work on a copy to avoid any thread-synch issue
     }
 
+    @Override
+    public List<String> getAllMergedBooksUrls() {
+        return new ArrayList<>(mergedBooksUrls);
+    }
+
     /**
      * Listener for preference changes (from the settings dialog)
      *
@@ -1398,6 +1418,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             customCss = null;
             webClient.setMarkDownloaded(Preferences.isBrowserMarkDownloaded());
             if (webClient.isMarkDownloaded()) updateDownloadedBooksUrls();
+            reload = true;
+        } else if (Preferences.Key.BROWSER_MARK_MERGED.equals(key)) {
+            customCss = null;
+            webClient.setMarkMerged(Preferences.isBrowserMarkMerged());
+            if (webClient.isMarkMerged()) updateMergedBooksUrls();
             reload = true;
         } else if (Preferences.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST.equals(key)) {
             customCss = null;
