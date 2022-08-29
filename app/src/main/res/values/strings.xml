@@ -634,6 +634,7 @@
     <string name="category_any">Any</string>
     <string name="exclude">Exclude</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> search</string>
+    <string name="searching_generic">Searching</string>
     <string name="search_prompt">Search <x:g id="search_prompt">%s</x:g></string>
     <!-- Used as a category on the search screen -->
     <string name="category_artist">Artist</string>

@@ -6,36 +6,39 @@
     android:layout_height="wrap_content"
     android:theme="@style/Theme.Light.BottomSheetDialog">
 
-    <TextView
-        android:id="@+id/tag_wait_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/tag_wait_image"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="Category search" />
-
     <ImageView
         android:id="@+id/tag_wait_image"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_attribute_source"
-        app:layout_constraintBottom_toTopOf="@+id/tag_wait_description"
-        app:layout_constraintTop_toBottomOf="@+id/tag_wait_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
     <TextView
-        android:id="@+id/tag_wait_description"
-        android:layout_width="match_parent"
+        android:id="@+id/tag_wait_title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:gravity="center"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/tag_suggestion"
-        app:layout_constraintTop_toBottomOf="@+id/tag_wait_image"
-        tools:text="X results" />
+        android:textSize="24sp"
+        app:layout_constraintStart_toEndOf="@id/tag_wait_image"
+        app:layout_constraintTop_toTopOf="@id/tag_wait_image"
+        tools:text="Category search" />
+
+    <TextView
+        android:id="@+id/tag_wait_description"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:gravity="center"
+        android:textSize="@dimen/text_button"
+        app:layout_constraintStart_toEndOf="@id/tag_wait_image"
+        app:layout_constraintTop_toBottomOf="@+id/tag_wait_title"
+        tools:text="@string/downloads_loading" />
 
     <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/tag_suggestion"
@@ -55,6 +58,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
         app:iconifiedByDefault="false"
         app:layout_constraintEnd_toEndOf="parent"

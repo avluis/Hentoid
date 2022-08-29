@@ -237,16 +237,22 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
 
     private fun onSelectedAttributeTypesReady(data: List<AttributeType>) {
         selectedAttributeTypes = ArrayList(data)
-        val mainAttr = selectedAttributeTypes[0]
+        if (selectedAttributeTypes.count() < 3) {
+            val mainAttr = selectedAttributeTypes[0]
 
-        // Image that displays current metadata type icon (e.g. face icon for character)
-        binding.tagWaitImage.setImageResource(mainAttr.icon)
+            // Image that displays current metadata type icon (e.g. face icon for character)
+            binding.tagWaitImage.visibility = View.VISIBLE
+            binding.tagWaitImage.setImageResource(mainAttr.icon)
 
-        // Image that displays current metadata type title (e.g. "Character search")
-        binding.tagWaitTitle.text = getString(
-            R.string.search_category,
-            StringHelper.capitalizeString(getString(mainAttr.accusativeName))
-        )
+            // Image that displays current metadata type title (e.g. "Character search")
+            binding.tagWaitTitle.text = getString(
+                R.string.search_category,
+                StringHelper.capitalizeString(getString(mainAttr.accusativeName))
+            )
+        } else {
+            binding.tagWaitImage.visibility = View.INVISIBLE
+            binding.tagWaitTitle.text = getString(R.string.searching_generic)
+        }
 
         val attrTypesNames =
             selectedAttributeTypes.map { a -> resources.getString(a.accusativeName) }
