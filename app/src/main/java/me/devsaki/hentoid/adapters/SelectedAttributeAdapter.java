@@ -33,7 +33,7 @@ public class SelectedAttributeAdapter extends ListAdapter<Attribute, AttributeVi
     @NonNull
     @Override
     public AttributeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chip_choice, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_badge, parent, false);
         return new AttributeViewHolder(view);
     }
 
