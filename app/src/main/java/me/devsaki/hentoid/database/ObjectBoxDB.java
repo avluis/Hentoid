@@ -1076,7 +1076,7 @@ public class ObjectBoxDB {
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent, includeFreeAttrs).find();
 
         // Compute attribute count for sorting
-        if (Preferences.getSearchAttributesCount()) {
+        if (Preferences.getSearchAttributesCount()) { // TODO get that call to Prefs out of there
             long count;
             for (Attribute a : result) {
                 // Only count the relevant Contents
