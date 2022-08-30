@@ -47,24 +47,40 @@ import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewholders.AttributeItem
+import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 
 class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     AttributeTypePickerDialogFragment.Parent {
 
-    // Communication
+    // == Communication
     private lateinit var viewModel: MetadataEditViewModel
 
-    // UI
+    // == UI
     private var binding: ActivityMetaEditBinding? = null
+
+    // Attribute type filter
+    private val itemFilterAdapter = ItemAdapter<AttributeTypeFilterItem>()
+    private val fastFilterAdapter = FastAdapter.with(itemFilterAdapter)
+
+    // Tags
     private val itemAdapter = ItemAdapter<AttributeItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
 
-    // Vars
+    // == Vars
     private lateinit var contents: List<Content>
     private var contentAttributes = ArrayList<Attribute>()
     private var selectedAttributeTypes = ArrayList<AttributeType>()
+
+    private val allAttributeTypes = listOf(
+        AttributeType.ARTIST,
+        AttributeType.CIRCLE,
+        AttributeType.SERIE,
+        AttributeType.TAG,
+        AttributeType.CHARACTER,
+        AttributeType.LANGUAGE
+    )
 
     private val attributeItemDiffCallback: DiffCallback<AttributeItem> =
         object : DiffCallback<AttributeItem> {
@@ -143,6 +159,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     private fun onSelectedAttributeTypesChanged(data: List<AttributeType>) {
         selectedAttributeTypes.clear()
         selectedAttributeTypes.addAll(data)
+        updateAttrsFilter()
         updateAttrsList()
     }
 
@@ -150,6 +167,17 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
         contentAttributes.clear()
         contentAttributes.addAll(data)
         updateAttrsList()
+    }
+
+    private fun updateAttrsFilter() {
+        val items = allAttributeTypes.map { attrType ->
+            AttributeTypeFilterItem(
+                attrType,
+                selectedAttributeTypes.size < allAttributeTypes.size
+                        && selectedAttributeTypes.contains(attrType)
+            )
+        }
+        itemFilterAdapter.set(items)
     }
 
     private fun updateAttrsList() {
@@ -166,14 +194,8 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
             it.tvTitle.visibility = if (contents.size > 1) View.GONE else View.VISIBLE
             it.tvTitle.text = contents[0].title
 
-            // Artist
-            bindArtistUI()
-
-            // Series
-            bindSeriesUI()
-
-            // Tags
-            bindTagsUI()
+            // Tag filters
+            bindTagFilterssUI()
 
             // Cover
             val thumbLocation = if (contents.size > 1) "" else contents[0].cover.usableUri
@@ -200,58 +222,10 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
             bindLanguagesUI()
 
             // Tags (default uncategorized display)
-            viewModel.setAttributeTypes(
-                listOf(
-                    AttributeType.ARTIST,
-                    AttributeType.CIRCLE,
-                    AttributeType.SERIE,
-                    AttributeType.TAG,
-                    AttributeType.CHARACTER,
-                    AttributeType.LANGUAGE
-                )
-            )
+            viewModel.setAttributeTypes(allAttributeTypes)
             it.titleNew.visibility = View.GONE
             it.tags.visibility = View.VISIBLE
             it.tagsFab.visibility = View.VISIBLE
-        }
-    }
-
-    private fun bindArtistUI() {
-        val attrContainer = Content()
-        attrContainer.putAttributes(
-            mergeAttributeMaps(
-                contents,
-                setOf(AttributeType.ARTIST, AttributeType.CIRCLE)
-            )
-        )
-        binding?.tvArtist?.text = ContentHelper.formatArtistForDisplay(this, attrContainer)
-    }
-
-    private fun bindSeriesUI() {
-        val attrContainer = Content()
-        attrContainer.putAttributes(mergeAttributeMaps(contents, setOf(AttributeType.SERIE)))
-        val text = ContentHelper.formatSeriesForDisplay(this, attrContainer)
-        if (text.isEmpty()) {
-            binding?.tvSeries?.text =
-                getString(R.string.work_series, resources.getString(R.string.work_untitled))
-        } else {
-            binding?.tvSeries?.text = text
-        }
-    }
-
-    private fun bindTagsUI() {
-        val attrContainer = Content()
-        attrContainer.putAttributes(
-            mergeAttributeMaps(
-                contents,
-                setOf(AttributeType.TAG, AttributeType.CHARACTER)
-            )
-        )
-        val text = ContentHelper.formatTagsForDisplay(attrContainer)
-        if (text.isEmpty()) {
-            binding?.tvTags?.text = getString(R.string.work_untitled)
-        } else {
-            binding?.tvTags?.text = text
         }
     }
 
@@ -271,6 +245,14 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
         }
     }
 
+    private fun bindTagFilterssUI() {
+        binding?.tagFilter?.adapter = fastFilterAdapter
+        fastFilterAdapter.onClickListener =
+            { _: View?, _: IAdapter<AttributeTypeFilterItem>, i: AttributeTypeFilterItem, _: Int ->
+                onAttributeFilterClick(i)
+            }
+    }
+
     private fun bindInteractions() {
         binding?.let {
             // Attributes box init
@@ -281,13 +263,13 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
             it.tags.adapter = fastAdapter
 
             fastAdapter.onClickListener =
-                { _: View?, _: IAdapter<AttributeItem>, i: AttributeItem, _: Int -> onItemClick(i) }
+                { _: View?, _: IAdapter<AttributeItem>, i: AttributeItem, _: Int ->
+                    onAttributeClick(i)
+                }
 
             fastAdapter.onLongClickListener =
                 { _: View?, _: IAdapter<AttributeItem>, i: AttributeItem, _: Int ->
-                    onItemLongClick(
-                        i
-                    )
+                    onItemLongClick(i)
                 }
 
             // Title
@@ -323,45 +305,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                 }
             )
 
-            // Artist
-            it.tvArtist.setOnClickListener {
-                binding?.let { b2 ->
-                    viewModel.setAttributeTypes(
-                        listOf(
-                            AttributeType.ARTIST,
-                            AttributeType.CIRCLE
-                        )
-                    )
-                    b2.titleNew.visibility = View.GONE
-                    b2.tags.visibility = View.VISIBLE
-                    b2.tagsFab.visibility = View.VISIBLE
-                }
-            }
-
-            // Series
-            it.tvSeries.setOnClickListener {
-                binding?.let { b2 ->
-                    viewModel.setAttributeTypes(listOf(AttributeType.SERIE))
-                    b2.titleNew.visibility = View.GONE
-                    b2.tags.visibility = View.VISIBLE
-                    b2.tagsFab.visibility = View.VISIBLE
-                }
-            }
-
             // Tags
-            it.tvTags.setOnClickListener {
-                binding?.let { b2 ->
-                    viewModel.setAttributeTypes(
-                        listOf(
-                            AttributeType.TAG,
-                            AttributeType.CHARACTER
-                        )
-                    )
-                    b2.titleNew.visibility = View.GONE
-                    b2.tags.visibility = View.VISIBLE
-                    b2.tagsFab.visibility = View.VISIBLE
-                }
-            }
             it.tagsFab.setOnClickListener {
                 MetaEditBottomSheetFragment.invoke(
                     this,
@@ -423,11 +367,24 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     }
 
     /**
+     * Callback for attribute filter item click
+     *
+     * @param item AttributeTypeFilterItem that has been clicked on
+     */
+    private fun onAttributeFilterClick(item: AttributeTypeFilterItem): Boolean {
+        if (item.isSelected)
+            viewModel.setAttributeTypes(allAttributeTypes)
+        else
+            viewModel.setAttributeTypes(listOf(item.attributeType))
+        return true
+    }
+
+    /**
      * Callback for attribute item click
      *
      * @param item AttributeItem that has been clicked on
      */
-    private fun onItemClick(item: AttributeItem): Boolean {
+    private fun onAttributeClick(item: AttributeItem): Boolean {
         val powerMenuBuilder = PowerMenu.Builder(this)
             .addItem(
                 PowerMenuItem(

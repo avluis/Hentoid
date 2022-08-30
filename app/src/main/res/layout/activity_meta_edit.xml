@@ -56,58 +56,20 @@
         tools:ignore="ContentDescription"
         tools:src="@drawable/flag_cn" />
 
-    <TextView
-        android:id="@+id/tvArtist"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/tag_filter"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:gravity="center_vertical"
-        android:minHeight="48dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/card_tags_light"
-        android:textStyle="bold"
+        android:textIsSelectable="false"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintBottom_toBottomOf="@id/ivFlag"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/ivCover"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
-        tools:text="@string/book_artist" />
-
-    <TextView
-        android:id="@+id/tvSeries"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:gravity="center_vertical"
-        android:minHeight="48dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/card_tags_light"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@id/tvArtist"
-        app:layout_constraintStart_toStartOf="@id/tvArtist"
-        app:layout_constraintTop_toBottomOf="@id/tvArtist"
-        tools:text="@string/book_series" />
-
-    <TextView
-        android:id="@+id/tvTags"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:gravity="center_vertical"
-        android:minHeight="48dp"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@color/card_tags_light"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="@id/tvArtist"
-        app:layout_constraintStart_toStartOf="@id/tvArtist"
-        app:layout_constraintTop_toBottomOf="@id/tvSeries"
-        tools:text="@string/book_tags" />
-
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/horizontal_barrier"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:constraint_referenced_ids="tvTags,tvSeries, ivCover" />
+        app:spanCount="2"
+        tools:listitem="@layout/item_badge" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/title_new"
@@ -118,7 +80,7 @@
         android:layout_marginEnd="8dp"
         android:hint="@string/new_title"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
+        app:layout_constraintTop_toBottomOf="@id/tag_filter"
         tools:visibility="visible">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -130,18 +92,20 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <me.devsaki.hentoid.views.MaxHeightRecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/tags"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:textIsSelectable="false"
         android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/horizontal_barrier"
-        app:maxHeight="200dp"
+        app:layout_constraintTop_toBottomOf="@id/tag_filter"
+        tools:listitem="@layout/item_badge"
         tools:visibility="visible" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
