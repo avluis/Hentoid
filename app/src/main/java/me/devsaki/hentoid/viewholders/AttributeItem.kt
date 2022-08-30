@@ -57,7 +57,8 @@ class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
         fun formatAttrBadge(
             context: Context,
             attribute: Attribute,
-            showCount: Boolean
+            showCount: Boolean,
+            excluded: Boolean = false
         ): SpannableString {
             val badgePaddingV = context.resources.getDimension(R.dimen.badge_padding_vertical)
             val badgePaddingH = context.resources.getDimension(R.dimen.badge_padding_horizontal)
@@ -69,7 +70,8 @@ class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
             val badgeDrawable = BadgeDrawable.Builder()
                 .type(badgeType)
                 .badgeColor(ContextCompat.getColor(context, attribute.type.color))
-                .text1(attribute.displayName.lowercase())
+                .textColor(ContextCompat.getColor(context, R.color.white_opacity_87))
+                .text1((if (excluded) "✖ " else "") + attribute.displayName.lowercase())
                 .text2(text2)
                 .padding(badgePaddingH, badgePaddingV, badgePaddingH, badgePaddingV, badgePaddingH)
                 .strokeWidth(badgeStroke)
