@@ -8,8 +8,11 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.bumptech.glide.integration.webp.decoder.WebpDrawable
@@ -50,6 +53,7 @@ import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+
 
 class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     AttributeTypePickerDialogFragment.Parent {
@@ -223,9 +227,6 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
 
             // Tags (default uncategorized display)
             viewModel.setAttributeTypes(allAttributeTypes)
-            it.titleNew.visibility = View.GONE
-            it.tags.visibility = View.VISIBLE
-            it.tagsFab.visibility = View.VISIBLE
         }
     }
 
@@ -304,6 +305,14 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                     }
                 }
             )
+            it.titleNew.editText?.setOnEditorActionListener { _, actionId, _ ->
+                var handled = false
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    retractTextEdit()
+                    handled = true
+                }
+                handled
+            }
 
             // Tags
             it.tagsFab.setOnClickListener {
@@ -357,6 +366,21 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
         }
     }
 
+    private fun retractTextEdit() {
+        binding?.let {
+            if (!it.titleNew.isVisible) return
+
+            it.titleNew.visibility = View.GONE
+            it.tags.visibility = View.VISIBLE
+            it.tagsFab.visibility = View.VISIBLE
+            // Make sure virtual keyboard is closed
+            (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(
+                it.root.windowToken,
+                0
+            )
+        }
+    }
+
     private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
             R.id.action_edit_confirm -> confirmEdit()
@@ -372,6 +396,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
      * @param item AttributeTypeFilterItem that has been clicked on
      */
     private fun onAttributeFilterClick(item: AttributeTypeFilterItem): Boolean {
+        retractTextEdit()
         if (item.isSelected)
             viewModel.setAttributeTypes(allAttributeTypes)
         else

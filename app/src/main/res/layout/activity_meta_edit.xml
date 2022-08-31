@@ -86,6 +86,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
             android:inputType="text"
             android:lines="1"
             android:maxLines="1" />
@@ -100,13 +101,12 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:textIsSelectable="false"
-        android:visibility="gone"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tag_filter"
-        tools:listitem="@layout/item_badge"
-        tools:visibility="visible" />
+        tools:listitem="@layout/item_badge" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/tags_fab"
@@ -114,12 +114,11 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:visibility="gone"
+        android:visibility="visible"
         app:fabSize="mini"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_add"
-        tools:ignore="ContentDescription,SpeakableTextPresentCheck"
-        tools:visibility="visible" />
+        tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
