@@ -211,7 +211,6 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             .filter { a -> selectedAttributeTypes.contains(a.type) }
             .toSet())
 
-        // Translate language names if present
         var isQueryPresent = false
         val query = binding.tagFilter.query.toString()
         val filteredContentAttr =
@@ -220,6 +219,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             if (attr.displayName.equals(query, true)) isQueryPresent = true
             if (filteredContentAttr.contains(attr)) continue
 
+            // Translate language names if present
             if (attr.type.equals(AttributeType.LANGUAGE))
                 attr.displayName = LanguageHelper.getLocalNameFromLanguage(
                     requireContext(),
@@ -228,7 +228,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             attrs.add(attr)
         }
 
-        // Add the "new tag" attribute at the beginning of the list if absent from collection
+        // If query is absent from collection, add the "new tag" attribute at the beginning of the list
         if (!isQueryPresent && query.isNotEmpty()) {
             val targetType =
                 if (1 == selectedAttributeTypes.size) selectedAttributeTypes[0] else AttributeType.UNDEFINED
