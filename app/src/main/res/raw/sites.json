@@ -42,6 +42,9 @@
     "IMHENTAI": {
       "requestsCapPerSecond": 1,
       "parallelDownloadCap": 2
+    },
+    "PURURIN": {
+      "bookCardDepth": 1
     }
   }
 }
