@@ -648,6 +648,7 @@
     <string name="category_category">Category</string>
     <string name="category_translator">Translator</string>
     <string name="category_publisher">Publisher</string>
+    <string name="category_undefined">Undefined</string>
     <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_artist">Artist</string>
     <string name="object_tag">Tag</string>
@@ -660,6 +661,7 @@
     <string name="object_category">Category</string>
     <string name="object_translator">Translator</string>
     <string name="object_publisher">Publisher</string>
+    <string name="object_undefined">Undefined</string>
     <plurals name="search_button">
         <item quantity="one"><x:g example="1" id="count">%s</x:g> Result found</item>
         <item quantity="other"><x:g example="2" id="count">%s</x:g> Results found</item>

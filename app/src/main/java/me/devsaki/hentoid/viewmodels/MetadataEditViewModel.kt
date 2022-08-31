@@ -200,9 +200,10 @@ class MetadataEditViewModel(
         val toAddNew: Attribute?
         if (toAdd != null) {
             if (newAttrs.contains(toAdd)) newAttrs.remove(toAdd)
-            toAddNew =
-                Attribute(toAdd) // Create new instance for list differs to detect changes (if not, attributes are changed both on the old and the updated object)
+            // Create new instance for list differs to detect changes (if not, attributes are changed both on the old and the updated object)
+            toAddNew = Attribute(toAdd)
             newAttrs.add(toAddNew)
+            dao.insertAttribute(toAdd) // Add new attribute to DB for it to appear on the attribute search
         } else toAddNew = null
         if (toRemove != null) newAttrs.remove(toRemove)
 
@@ -226,6 +227,7 @@ class MetadataEditViewModel(
             if (newCount > 0) toAddNew?.count = newCount
             contentList.postValue(contents)
         }
+
         contentAttributes.value = newAttrs
     }
 

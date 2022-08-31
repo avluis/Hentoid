@@ -212,21 +212,32 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             .toSet())
 
         // Translate language names if present
-        if (attrs.isNotEmpty() && attrs[0].type == AttributeType.LANGUAGE) {
-            for (a in attrs) a.displayName = LanguageHelper.getLocalNameFromLanguage(
-                requireContext(),
-                a.name
-            )
+        var isQueryPresent = false
+        val query = binding.tagFilter.query.toString()
+        for (a in attrs) {
+            if (a.type.equals(AttributeType.LANGUAGE))
+                a.displayName = LanguageHelper.getLocalNameFromLanguage(
+                    requireContext(),
+                    a.name
+                )
+            if (a.displayName.equals(query, true)) isQueryPresent =
+                true
         }
+
+        // Add the "new tag" attribute at the beginning of the list if absent from collection
+        if (!isQueryPresent && query.isNotEmpty()) {
+            val targetType =
+                if (1 == selectedAttributeTypes.size) selectedAttributeTypes[0] else AttributeType.UNDEFINED
+            val newAttr =
+                Attribute(targetType, query.lowercase())
+            newAttr.isNew = true
+            attrs.add(0, newAttr)
+        }
+
         mTotalSelectedCount = results.totalSelectedAttributes.toInt()
         if (clearOnSuccess) attributeAdapter.clear()
         binding.tagWaitPanel.visibility = View.GONE
-        if (0 == mTotalSelectedCount) {
-            val newAttr =
-                Attribute(AttributeType.TAG, binding.tagFilter.query.toString().lowercase())
-            newAttr.isNew = true
-            attrs.add(newAttr)
-        }
+
         attributeAdapter.add(attrs)
     }
 
@@ -269,17 +280,19 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
      * @param button Button that has been clicked on
      */
     private fun onAttributeClicked(button: View) {
-        val a = button.tag as Attribute
-        if (a.isNew) { // Create new tag
-            //AttributeTypePickerDialogFragment.invoke(this, a.name)
-            AttributeTypePickerDialogFragment.invoke(activity as FragmentActivity, a.name)
-        } else if (!contentAttributes.contains(a)) { // Add selected tag
+        val attr = button.tag as Attribute
+        if (attr.isNew) { // Create new tag
+            if (attr.type.equals(AttributeType.UNDEFINED))
+                AttributeTypePickerDialogFragment.invoke(activity as FragmentActivity, attr.name)
+            else // Type already known
+                onNewAttributeSelected(attr.name, attr.type)
+        } else if (!contentAttributes.contains(attr)) { // Add selected tag
             button.isPressed = true
-            a.isExcluded = excludeAttr
+            attr.isExcluded = excludeAttr
             if (idToReplace > -1) viewModel.replaceContentAttribute(
                 idToReplace,
-                a
-            ) else viewModel.addContentAttribute(a)
+                attr
+            ) else viewModel.addContentAttribute(attr)
             // Empty query and display all attributes again
             binding.tagFilter.setQuery("", false)
             searchMasterData("")

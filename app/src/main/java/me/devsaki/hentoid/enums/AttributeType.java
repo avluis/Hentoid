@@ -28,7 +28,8 @@ public enum AttributeType {
     CHARACTER(8, R.string.category_character, R.string.object_character, R.drawable.ic_attribute_character, R.color.bronze),
     CATEGORY(9, R.string.category_category, R.string.object_category, R.drawable.ic_hentoid_shape, R.color.black),
     // Attributes displayed on screen and stored elsewhere
-    SOURCE(10, R.string.category_source, R.string.object_source, R.drawable.ic_attribute_source, R.color.black);
+    SOURCE(10, R.string.category_source, R.string.object_source, R.drawable.ic_attribute_source, R.color.black),
+    UNDEFINED(99, R.string.category_undefined, R.string.object_undefined, R.drawable.ic_attribute_tag, R.color.medium_gray); // Specific to the metadata editor
 
     private final int code;
     private final @StringRes
