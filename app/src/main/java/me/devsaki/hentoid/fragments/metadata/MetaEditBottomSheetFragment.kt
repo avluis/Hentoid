@@ -206,7 +206,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         binding.tagWaitDescription.clearAnimation()
 
         // Remove selected attributes from the result set
-        val attrs = ArrayList(results.attributes)
+        val attrs = ArrayList<Attribute>()
         attrs.removeAll(contentAttributes
             .filter { a -> selectedAttributeTypes.contains(a.type) }
             .toSet())
@@ -214,14 +214,18 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         // Translate language names if present
         var isQueryPresent = false
         val query = binding.tagFilter.query.toString()
-        for (a in attrs) {
-            if (a.type.equals(AttributeType.LANGUAGE))
-                a.displayName = LanguageHelper.getLocalNameFromLanguage(
+        val filteredContentAttr =
+            contentAttributes.filter { a -> selectedAttributeTypes.contains(a.type) }.toSet()
+        for (attr in results.attributes) {
+            if (attr.displayName.equals(query, true)) isQueryPresent = true
+            if (filteredContentAttr.contains(attr)) continue
+
+            if (attr.type.equals(AttributeType.LANGUAGE))
+                attr.displayName = LanguageHelper.getLocalNameFromLanguage(
                     requireContext(),
-                    a.name
+                    attr.name
                 )
-            if (a.displayName.equals(query, true)) isQueryPresent =
-                true
+            attrs.add(attr)
         }
 
         // Add the "new tag" attribute at the beginning of the list if absent from collection
