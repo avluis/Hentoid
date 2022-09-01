@@ -57,13 +57,19 @@ public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeVie
         return dataset.size();
     }
 
-    public void add(List<Attribute> contents) {
-        dataset.addAll(contents);
+    public void add(List<Attribute> attrs) {
+        dataset.addAll(attrs);
         notifyDataSetChanged();
     }
 
     public void clear() {
         dataset.clear();
         notifyDataSetChanged();
+    }
+
+    public void remove(Attribute attribute) {
+        int index = dataset.indexOf(attribute);
+        dataset.remove(attribute);
+        notifyItemRemoved(index);
     }
 }

@@ -285,12 +285,12 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
      */
     private fun onAttributeClicked(button: View) {
         val attr = button.tag as Attribute
-        if (attr.isNew) { // Create new tag
+        if (attr.isNew) { // Create new attribute
             if (attr.type.equals(AttributeType.UNDEFINED))
                 AttributeTypePickerDialogFragment.invoke(activity as FragmentActivity, attr.name)
             else // Type already known
                 onNewAttributeSelected(attr.name, attr.type)
-        } else if (!contentAttributes.contains(attr)) { // Add selected tag
+        } else if (!contentAttributes.contains(attr)) { // Add existing attribute
             button.isPressed = true
             attr.isExcluded = excludeAttr
             if (idToReplace > -1) viewModel.replaceContentAttribute(
@@ -299,7 +299,7 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             ) else viewModel.addContentAttribute(attr)
             // Empty query and display all attributes again
             binding.tagFilter.setQuery("", false)
-            searchMasterData("")
+            attributeAdapter.remove(attr)
         }
     }
 
@@ -360,7 +360,8 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
     }
 
     override fun onNewAttributeSelected(name: String, type: AttributeType) {
-        viewModel.createAssignNewAttribute(name, type)
+        val attr = viewModel.createAssignNewAttribute(name, type)
+        attributeAdapter.remove(attr)
         searchMasterData(name)
     }
 }

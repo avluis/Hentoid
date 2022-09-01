@@ -180,9 +180,10 @@ class MetadataEditViewModel(
         setAttr(null, attr)
     }
 
-    fun createAssignNewAttribute(attrName: String, type: AttributeType) {
+    fun createAssignNewAttribute(attrName: String, type: AttributeType) : Attribute {
         val attr = ContentHelper.addAttribute(type, attrName, dao)
         addContentAttribute(attr)
+        return attr
     }
 
     /**
