@@ -18,6 +18,7 @@ import me.devsaki.hentoid.util.StringHelper;
 public class DownloadsImportData {
     private static final String KEY_FILE_URI = "file_uri";
     private static final String KEY_QUEUE_POSITION = "queue_position";
+    private static final String KEY_IMPORT_AS_STREAMED = "as_streamed";
 
     private DownloadsImportData() {
         throw new UnsupportedOperationException();
@@ -33,6 +34,10 @@ public class DownloadsImportData {
 
         public void setQueuePosition(int data) {
             builder.putInt(KEY_QUEUE_POSITION, data);
+        }
+
+        public void setImportAsStreamed(boolean data) {
+            builder.putBoolean(KEY_IMPORT_AS_STREAMED, data);
         }
 
         public Data getData() {
@@ -54,6 +59,10 @@ public class DownloadsImportData {
 
         public int getQueuePosition() {
             return data.getInt(KEY_QUEUE_POSITION, Preferences.Default.QUEUE_NEW_DOWNLOADS_POSITION);
+        }
+
+        public boolean getImportAsStreamed() {
+            return data.getBoolean(KEY_IMPORT_AS_STREAMED, false);
         }
     }
 }

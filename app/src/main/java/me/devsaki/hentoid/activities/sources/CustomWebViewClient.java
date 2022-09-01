@@ -61,13 +61,13 @@ import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.util.AdBlocker;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -759,9 +759,10 @@ class CustomWebViewClient extends WebViewClient {
                     for (String url : siteUrls) {
                         if (entry.getKey().endsWith(url)) {
                             Element markedElement = entry.getValue().second; // Linked images have priority over plain links
-                            if (markedElement != null) { // Mark two levels above the image
+                            if (markedElement != null) { // Mark <site.bookCardDepth> levels above the image
                                 Element imgParent = markedElement.parent();
-                                if (imgParent != null) imgParent = imgParent.parent();
+                                for (int i = 0; i < site.getBookCardDepth() - 1; i++)
+                                    if (imgParent != null) imgParent = imgParent.parent();
                                 if (imgParent != null) markedElement = imgParent;
                             } else { // Mark plain link
                                 markedElement = entry.getValue().first;

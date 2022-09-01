@@ -26,13 +26,20 @@ public class PrefetchLinearLayoutManager extends LinearLayoutManager {
     // {@code extraLayoutSpace[1]} should be used for the extra space at the bottom/right (depending on the orientation)
     @Override
     protected void calculateExtraLayoutSpace(@NonNull RecyclerView.State state, @NonNull int[] extraLayoutSpace) {
-        extraLayoutSpace[0] = 0;
-        extraLayoutSpace[1] = this.extraLayoutSpace;
+        extraLayoutSpace[0] = this.extraLayoutSpace; // Used for RTL
+        extraLayoutSpace[1] = this.extraLayoutSpace; // Used for LTR & Top to bottom
     }
 
+    /**
+     * Return the "delta distance" used during the last scroll action
+     *
+     * @return "delta distance" used during the last scroll action
+     */
     public int getRawDeltaPx() {
         return rawDeltaPx;
     }
+
+    // Following overrides only used to capture rawDeltaPx
 
     @Override
     public int scrollHorizontallyBy(int dx, RecyclerView.Recycler recycler, RecyclerView.State state) {

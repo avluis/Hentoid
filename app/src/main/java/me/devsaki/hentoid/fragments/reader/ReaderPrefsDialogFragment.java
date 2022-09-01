@@ -97,6 +97,8 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
         browseItems.addAll(Arrays.asList(browseModes));
 
         PowerSpinnerView browseSpin = rootView.findViewById(R.id.book_prefs_browse_spin);
+        browseSpin.setIsFocusable(true);
+        browseSpin.setLifecycleOwner(this);
         browseSpin.setItems(browseItems);
         browseSpin.selectItemByIndex(browseMode + 1);
 
@@ -113,6 +115,8 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
         }
 
         PowerSpinnerView renderSpin = rootView.findViewById(R.id.book_prefs_rendering_spin);
+        renderSpin.setIsFocusable(true);
+        renderSpin.setLifecycleOwner(this);
         renderSpin.setItems(renderingItems);
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             renderSpin.selectItemByIndex(0);
@@ -130,6 +134,8 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
         }
 
         PowerSpinnerView displaySpin = rootView.findViewById(R.id.book_prefs_display_spin);
+        displaySpin.setIsFocusable(true);
+        displaySpin.setLifecycleOwner(this);
         displaySpin.setItems(displayItems);
         displaySpin.selectItemByIndex(displayMode + 1);
 

@@ -70,6 +70,7 @@ public enum Site {
     private boolean useCloudflare = false;
     private int requestsCapPerSecond = -1;
     private int parallelDownloadCap = 0;
+    private int bookCardDepth = 2;
 
     Site(int code,
          String description,
@@ -159,6 +160,8 @@ public enum Site {
         return parallelDownloadCap;
     }
 
+    public int getBookCardDepth() { return bookCardDepth; }
+
     public boolean isVisible() {
         for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;
         return true;
@@ -191,6 +194,8 @@ public enum Site {
             parallelDownloadCap = jsonSite.parallelDownloadCap;
         if (jsonSite.requestsCapPerSecond != null)
             requestsCapPerSecond = jsonSite.requestsCapPerSecond;
+        if (jsonSite.bookCardDepth != null)
+            bookCardDepth = jsonSite.bookCardDepth;
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {
