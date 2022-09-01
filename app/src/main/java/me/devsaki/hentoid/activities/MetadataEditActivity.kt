@@ -415,14 +415,16 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                 PowerMenuItem(
                     resources.getString(R.string.meta_replace_with),
                     R.drawable.ic_replace,
-                    false
+                    false,
+                    0
                 )
             )
             .addItem(
                 PowerMenuItem(
                     resources.getString(R.string.remove_generic),
                     R.drawable.ic_action_delete,
-                    false
+                    false,
+                    1
                 )
             )
             .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
@@ -441,22 +443,23 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                 PowerMenuItem(
                     resources.getString(R.string.meta_tag_all_selected),
                     R.drawable.ic_action_select_all,
-                    false
+                    false,
+                    2
                 )
             )
 
         val powerMenu = powerMenuBuilder.build()
 
         powerMenu.onMenuItemClickListener =
-            OnMenuItemClickListener { p: Int, _: PowerMenuItem? ->
-                when (p) {
+            OnMenuItemClickListener { _: Int, it: PowerMenuItem ->
+                when (it.tag) {
                     0 -> { // Replace with...
                         MetaEditBottomSheetFragment.invoke(
                             this,
                             supportFragmentManager, false, item.attribute.id
                         )
                     }
-                    1 -> { // Tag all selected books
+                    2 -> { // Tag all selected books
                         val builder = MaterialAlertDialogBuilder(this)
                         val title = resources.getString(
                             R.string.meta_tag_all_selected_confirm,
