@@ -63,6 +63,8 @@ public final class ReaderDeleteDialogFragment extends DialogFragment {
         RadioButton pageBtn = rootView.findViewById(R.id.delete_mode_page);
         RadioButton bookBtn = rootView.findViewById(R.id.delete_mode_book);
         PowerSpinnerView spin = rootView.findViewById(R.id.book_prefs_delete_spin);
+        spin.setIsFocusable(true);
+        spin.setLifecycleOwner(requireActivity());
         spin.setItems(R.array.page_delete_choices);
         spin.selectItemByIndex(0);
 

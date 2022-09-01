@@ -164,7 +164,11 @@ public class SearchActivity extends BaseActivity {
         }
 
         binding.locationSpin.setOnSpinnerItemSelectedListener((i, o, i1, t1) -> viewModel.setLocation(i1));
+        binding.locationSpin.setIsFocusable(true);
+        binding.locationSpin.setLifecycleOwner(this);
         binding.typeSpin.setOnSpinnerItemSelectedListener((i, o, i1, t1) -> viewModel.setContentType(i1));
+        binding.typeSpin.setIsFocusable(true);
+        binding.typeSpin.setLifecycleOwner(this);
     }
 
     @Override

@@ -392,6 +392,8 @@ public class ReaderGalleryFragment extends Fragment implements ItemTouchCallback
         List<Chapter> chapters = content.getChapters();
         if (null == chapters || chapters.isEmpty()) return;
 
+        chaptersSelector.setIsFocusable(true);
+        chaptersSelector.setLifecycleOwner(requireActivity());
         chaptersSelector.setOnFocusChangeListener(
                 (v, hasFocus) -> Timber.i("hasFocus %s", hasFocus)
         );
