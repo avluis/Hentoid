@@ -360,9 +360,19 @@ public class PrimaryImportWorker extends BaseWorker {
                         contentImages = ContentHelper.createImageListFromFiles(imageFiles);
                         content.setImageFiles(contentImages);
                         content.getCover().setUrl(content.getCoverImageUrl());
-                    } else { // Existing images described in the JSON -> map them
+                    } else { // Existing images described in the JSON
+                        // Clean image list if larger than the book's reported number of pages
+                        // (remove non-cover pages that have the cover URL)
+                        boolean cleaned = false;
+                        if (contentImages.size() > content.getQtyPages() * 1.2) {
+                            String coverUrl = content.getCoverImageUrl();
+                            contentImages = Stream.of(contentImages).filterNot(i -> (i.getUrl().equals(coverUrl) && !i.isCover())).toList();
+                            cleaned = true;
+                        }
+                        // Map files to image list
                         contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
                         content.setImageFiles(contentImages);
+                        if (cleaned) ContentHelper.persistJson(context, content);
                     }
                 } else if (Preferences.isImportQueueEmptyBooks()
                         && !content.isManuallyMerged()
