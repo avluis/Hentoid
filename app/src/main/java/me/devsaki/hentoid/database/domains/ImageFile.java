@@ -14,8 +14,8 @@ import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 
 /**
  * Image File builder
@@ -364,7 +364,7 @@ public class ImageFile {
 
     public long uniqueHash() {
         if (0 == uniqueHash)
-            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + favourite + "." + chapter.getTargetId()).getBytes());
+            uniqueHash = Helper.hash64((id + "." + pageUrl + "." + url + "." + order + "." + isCover + "." + chapter.getTargetId()).getBytes());
         return uniqueHash;
     }
 }
