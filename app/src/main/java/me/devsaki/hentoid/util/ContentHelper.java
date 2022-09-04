@@ -241,7 +241,7 @@ public final class ContentHelper {
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return null;
         try {
-            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder, Consts.JSON_FILE_NAME_V2);
             content.setJsonUri(newJson.getUri().toString());
             return newJson;
         } catch (IOException e) {
