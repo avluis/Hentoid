@@ -70,7 +70,7 @@ import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
 import me.devsaki.hentoid.fragments.ProgressDialogFragment;
-import me.devsaki.hentoid.fragments.tools.ImportDownloadsDialogFragment;
+import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
@@ -384,7 +384,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         });
         MenuItem importMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_import_downloads);
         importMenu.setOnMenuItemClickListener(item -> {
-            ImportDownloadsDialogFragment.Companion.invoke(getParentFragmentManager());
+            DownloadsImportDialogFragment.Companion.invoke(getParentFragmentManager());
             return true;
         });
         errorStatsMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_error_stats);

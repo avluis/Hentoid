@@ -24,7 +24,7 @@ import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.fragments.tools.ImportDownloadsDialogFragment;
+import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
@@ -111,7 +111,7 @@ public class DownloadsImportWorker extends BaseWorker {
             trace(Log.ERROR, "Couldn't find downloads file at %s", fileUri);
             return;
         }
-        List<String> downloads = ImportDownloadsDialogFragment.Companion.readFile(context, file);
+        List<String> downloads = DownloadsImportDialogFragment.Companion.readFile(context, file);
         if (downloads.isEmpty()) {
             trace(Log.ERROR, "Downloads file %s is empty", fileUri);
             return;
