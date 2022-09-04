@@ -60,12 +60,12 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import timber.log.Timber;
@@ -279,10 +279,12 @@ public class Content implements Serializable {
             case MULTPORN:
             case TOONILY:
                 return url.replace(site.getUrl(), "");
-            case PORNCOMIX:
             case EHENTAI:
             case EXHENTAI:
+                return url.replace(site.getUrl() + "/g", "");
             case LUSCIOUS:
+                return url.replace(site.getUrl().replace("/manga/", ""), "");
+            case PORNCOMIX:
             default:
                 return url;
         }
