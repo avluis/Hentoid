@@ -46,7 +46,7 @@ import java.io.InputStreamReader
 /**
  * Dialog for the downloads list import feature
  */
-class ImportDownloadsDialogFragment : DialogFragment() {
+class DownloadsImportDialogFragment : DialogFragment() {
 
     private var _binding: DialogQueueDownloadsImportBinding? = null
     private val binding get() = _binding!!
@@ -270,7 +270,7 @@ class ImportDownloadsDialogFragment : DialogFragment() {
 
     companion object {
         fun invoke(fragmentManager: FragmentManager) {
-            val fragment = ImportDownloadsDialogFragment()
+            val fragment = DownloadsImportDialogFragment()
             fragment.show(fragmentManager, null)
         }
 

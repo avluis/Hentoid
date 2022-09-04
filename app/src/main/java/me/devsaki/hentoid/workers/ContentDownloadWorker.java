@@ -757,7 +757,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
                 // Save JSON file
                 try {
-                    DocumentFile jsonFile = JsonHelper.jsonToFile(getApplicationContext(), JsonContent.fromEntity(content), JsonContent.class, dir);
+                    DocumentFile jsonFile = JsonHelper.jsonToFile(getApplicationContext(), JsonContent.fromEntity(content), JsonContent.class, dir, Consts.JSON_FILE_NAME_V2);
                     // Cache its URI to the newly created content
                     if (jsonFile != null) {
                         content.setJsonUri(jsonFile.getUri().toString());

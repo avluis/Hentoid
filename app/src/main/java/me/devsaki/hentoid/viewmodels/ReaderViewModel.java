@@ -62,11 +62,8 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.StringHelper;
@@ -77,6 +74,9 @@ import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
@@ -371,56 +371,67 @@ public class ReaderViewModel extends AndroidViewModel {
         Boolean shuffledVal = getShuffled().getValue();
         sortAndSetViewerImages(imageFiles, null != shuffledVal && shuffledVal);
 
-        if (theContent.getId() != loadedContentId) { // To be done once per book only
-            int startingIndex = 0;
-
-            // Auto-restart at last read position if asked to
-            if (Preferences.isViewerResumeLastLeft() && theContent.getLastReadPageIndex() > -1)
-                startingIndex = theContent.getLastReadPageIndex();
-
-            // Start at the given page number, if any
-            if (pageNumber > -1) {
-                int index = 0;
-                for (ImageFile img : imageFiles) {
-                    if (img.getOrder() == pageNumber) {
-                        startingIndex = index + 1;
-                        break;
-                    }
-                    index++;
-                }
-            }
-
-            // Correct offset with the thumb index
-            thumbIndex = -1;
-            for (int i = 0; i < imageFiles.size(); i++)
-                if (!imageFiles.get(i).isReadable()) {
-                    thumbIndex = i;
-                    break;
-                }
-
-            if (thumbIndex == startingIndex) startingIndex += 1;
-            else if (thumbIndex > startingIndex) thumbIndex = 0; // Ignore if it doesn't intervene
-
-            setViewerStartingIndex(startingIndex - thumbIndex - 1);
-
-            // Init the read pages write cache
-            readPageNumbers.clear();
-            Collection<Integer> readPages = Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).map(ImageFile::getOrder).toList();
-
-            // Fix pre-v1.13 books where ImageFile.read has no value
-            if (readPages.isEmpty() && theContent.getLastReadPageIndex() > 0 && theContent.getLastReadPageIndex() < imageFiles.size()) {
-                int lastReadPageNumber = imageFiles.get(theContent.getLastReadPageIndex()).getOrder();
-                readPageNumbers.addAll(IntStream.rangeClosed(1, lastReadPageNumber).boxed().toList());
-            } else {
-                readPageNumbers.addAll(readPages);
-            }
-
-            // Mark initial page as read
-            if (startingIndex < imageFiles.size())
-                markPageAsRead(imageFiles.get(startingIndex).getOrder());
-        }
+        if (theContent.getId() != loadedContentId)
+            contentFirstLoad(theContent, pageNumber, imageFiles);
 
         loadedContentId = theContent.getId();
+    }
+
+    /**
+     * Initialize the picture viewer using the given parameters
+     * (used only once per book when it is loaded for the first time)
+     *
+     * @param theContent Content to use
+     * @param pageNumber Page number to start with
+     * @param imageFiles Pictures to process
+     */
+    private void contentFirstLoad(@NonNull Content theContent, int pageNumber, @NonNull List<ImageFile> imageFiles) {
+        int startingIndex = 0;
+
+        // Auto-restart at last read position if asked to
+        if (Preferences.isViewerResumeLastLeft() && theContent.getLastReadPageIndex() > -1)
+            startingIndex = theContent.getLastReadPageIndex();
+
+        // Start at the given page number, if any
+        if (pageNumber > -1) {
+            int index = 0;
+            for (ImageFile img : imageFiles) {
+                if (img.getOrder() == pageNumber) {
+                    startingIndex = index + 1;
+                    break;
+                }
+                index++;
+            }
+        }
+
+        // Correct offset with the thumb index
+        thumbIndex = -1;
+        for (int i = 0; i < imageFiles.size(); i++)
+            if (!imageFiles.get(i).isReadable()) {
+                thumbIndex = i;
+                break;
+            }
+
+        if (thumbIndex == startingIndex) startingIndex += 1;
+        else if (thumbIndex > startingIndex) thumbIndex = 0; // Ignore if it doesn't intervene
+
+        setViewerStartingIndex(startingIndex - thumbIndex - 1);
+
+        // Init the read pages write cache
+        readPageNumbers.clear();
+        Collection<Integer> readPages = Stream.of(imageFiles).filter(ImageFile::isRead).filter(ImageFile::isReadable).map(ImageFile::getOrder).toList();
+
+        // Fix pre-v1.13 books where ImageFile.read has no value
+        if (readPages.isEmpty() && theContent.getLastReadPageIndex() > 0 && theContent.getLastReadPageIndex() < imageFiles.size()) {
+            int lastReadPageNumber = imageFiles.get(theContent.getLastReadPageIndex()).getOrder();
+            readPageNumbers.addAll(IntStream.rangeClosed(1, lastReadPageNumber).boxed().toList());
+        } else {
+            readPageNumbers.addAll(readPages);
+        }
+
+        // Mark initial page as read
+        if (startingIndex < imageFiles.size())
+            markPageAsRead(imageFiles.get(startingIndex).getOrder());
     }
 
     /**

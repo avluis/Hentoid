@@ -279,10 +279,12 @@ public class Content implements Serializable {
             case MULTPORN:
             case TOONILY:
                 return url.replace(site.getUrl(), "");
-            case PORNCOMIX:
             case EHENTAI:
             case EXHENTAI:
+                return url.replace(site.getUrl() + "/g", "");
             case LUSCIOUS:
+                return url.replace(site.getUrl().replace("/manga/", ""), "");
+            case PORNCOMIX:
             default:
                 return url;
         }

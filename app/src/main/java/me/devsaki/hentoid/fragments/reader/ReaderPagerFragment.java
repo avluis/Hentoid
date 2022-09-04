@@ -105,6 +105,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private static final String KEY_HUD_VISIBLE = "hud_visible";
     private static final String KEY_GALLERY_SHOWN = "gallery_shown";
     private static final String KEY_SLIDESHOW_ON = "slideshow_on";
+    private static final String KEY_IMG_INDEX = "image_index";
 
     private final Transformation<Bitmap> centerInside = new CenterInside();
     private final RequestOptions glideRequestOptions = new RequestOptions()
@@ -260,10 +261,9 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             outState.putInt(KEY_HUD_VISIBLE, binding.controlsOverlay.getRoot().getVisibility());
         outState.putBoolean(KEY_SLIDESHOW_ON, isSlideshowActive);
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
-        if (viewModel != null) {
-            viewModel.setViewerStartingIndex(imageIndex); // Memorize the current page
-//            viewModel.onSaveState(outState);
-        }
+        // Memorize the current page
+        outState.putInt(KEY_IMG_INDEX, imageIndex);
+        if (viewModel != null) viewModel.setViewerStartingIndex(imageIndex);
     }
 
     @Override
@@ -273,6 +273,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
         if (savedInstanceState != null) {
             hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE);
             hasGalleryBeenShown = savedInstanceState.getBoolean(KEY_GALLERY_SHOWN, false);
+            imageIndex = savedInstanceState.getInt(KEY_IMG_INDEX, -1);
             if (savedInstanceState.getBoolean(KEY_SLIDESHOW_ON, false)) startSlideshow(false);
         }
         binding.controlsOverlay.getRoot().setVisibility(hudVisibility);

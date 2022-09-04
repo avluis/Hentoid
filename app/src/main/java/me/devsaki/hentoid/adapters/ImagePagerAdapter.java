@@ -105,6 +105,22 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
     private float doubleTapZoomCap;
 
 
+    private static final DiffUtil.ItemCallback<ImageFile> IMAGE_DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<ImageFile>() {
+                @Override
+                public boolean areItemsTheSame(
+                        @NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
+                    return oldItem.uniqueHash() == newItem.uniqueHash();
+                }
+
+                @Override
+                public boolean areContentsTheSame(
+                        @NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
+                    return Objects.equals(oldItem, newItem);
+                }
+            };
+
+
     public ImagePagerAdapter(Context context) {
         super(IMAGE_DIFF_CALLBACK);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) rs = RenderScript.create(context);
@@ -351,20 +367,6 @@ public final class ImagePagerAdapter extends ListAdapter<ImageFile, ImagePagerAd
         this.isScrollLTR = isScrollLTR;
     }
 
-    private static final DiffUtil.ItemCallback<ImageFile> IMAGE_DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<ImageFile>() {
-                @Override
-                public boolean areItemsTheSame(
-                        @NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
-                    return oldItem.uniqueHash() == newItem.uniqueHash();
-                }
-
-                @Override
-                public boolean areContentsTheSame(
-                        @NonNull ImageFile oldItem, @NonNull ImageFile newItem) {
-                    return Objects.equals(oldItem, newItem);
-                }
-            };
 
     final class ImageViewHolder extends RecyclerView.ViewHolder implements CustomSubsamplingScaleImageView.OnImageEventListener, RequestListener<Drawable> {
 

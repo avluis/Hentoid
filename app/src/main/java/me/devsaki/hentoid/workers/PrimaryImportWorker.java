@@ -50,15 +50,15 @@ import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportProgressNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.file.FileExplorer;
-import me.devsaki.hentoid.util.file.FileHelper;
-import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.ParseException;
+import me.devsaki.hentoid.util.file.FileExplorer;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.image.ImageHelper;
 import me.devsaki.hentoid.util.notification.Notification;
 import me.devsaki.hentoid.workers.data.PrimaryImportData;
 import timber.log.Timber;
@@ -316,8 +316,7 @@ public class PrimaryImportWorker extends BaseWorker {
             if (null == content) content = importJson(context, bookFolder, bookFiles, dao);
             if (content != null) {
                 // If the book exists and is flagged for deletion, delete it to make way for a new import (as intended)
-                if (existingFlaggedContent != null)
-                    dao.deleteContent(existingFlaggedContent);
+                if (existingFlaggedContent != null) dao.deleteContent(existingFlaggedContent);
 
                 // If the very same book still exists in the DB at this point, it means it's present in the queue
                 // => don't import it even though it has a JSON file; it has been re-queued after being downloaded or viewed once
@@ -361,9 +360,19 @@ public class PrimaryImportWorker extends BaseWorker {
                         contentImages = ContentHelper.createImageListFromFiles(imageFiles);
                         content.setImageFiles(contentImages);
                         content.getCover().setUrl(content.getCoverImageUrl());
-                    } else { // Existing images described in the JSON -> map them
+                    } else { // Existing images described in the JSON
+                        // Clean image list if larger than the book's reported number of pages
+                        // (remove non-cover pages that have the cover URL)
+                        boolean cleaned = false;
+                        if (contentImages.size() > content.getQtyPages() * 1.2) {
+                            String coverUrl = content.getCoverImageUrl();
+                            contentImages = Stream.of(contentImages).filterNot(i -> (i.getUrl().equals(coverUrl) && !i.isCover())).toList();
+                            cleaned = true;
+                        }
+                        // Map files to image list
                         contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
                         content.setImageFiles(contentImages);
+                        if (cleaned) ContentHelper.persistJson(context, content);
                     }
                 } else if (Preferences.isImportQueueEmptyBooks()
                         && !content.isManuallyMerged()
@@ -404,7 +413,7 @@ public class PrimaryImportWorker extends BaseWorker {
             // If the book is still present in the DB, regenerate the JSON and unflag the book
             if (existingFlaggedContent != null) {
                 try {
-                    DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(existingFlaggedContent), JsonContent.class, bookFolder);
+                    DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(existingFlaggedContent), JsonContent.class, bookFolder, Consts.JSON_FILE_NAME_V2);
                     existingFlaggedContent.setJsonUri(newJson.getUri().toString());
                     existingFlaggedContent.setFlaggedForDeletion(false);
                     dao.insertContent(existingFlaggedContent);
@@ -429,7 +438,7 @@ public class PrimaryImportWorker extends BaseWorker {
                     }
                     // Scan the folder
                     Content storedContent = ImportHelper.scanBookFolder(context, bookFolder, explorer, parentFolder, StatusContent.DOWNLOADED, dao, null, null);
-                    DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder);
+                    DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(storedContent), JsonContent.class, bookFolder, Consts.JSON_FILE_NAME_V2);
                     storedContent.setJsonUri(newJson.getUri().toString());
                     ContentHelper.addContent(context, dao, storedContent);
                     trace(Log.INFO, STEP_2_BOOK_FOLDERS, log, "Import book OK (Content regenerated) : %s", bookFolder.getUri().toString());
@@ -658,7 +667,7 @@ public class PrimaryImportWorker extends BaseWorker {
 
             contentV2.setStorageUri(parentFolder.getUri().toString());
 
-            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
+            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder, Consts.JSON_FILE_NAME_V2);
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;
@@ -681,7 +690,7 @@ public class PrimaryImportWorker extends BaseWorker {
 
             contentV2.setStorageUri(parentFolder.getUri().toString());
 
-            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder);
+            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(contentV2), JsonContent.class, parentFolder, Consts.JSON_FILE_NAME_V2);
             contentV2.setJsonUri(newJson.getUri().toString());
 
             return contentV2;

@@ -243,7 +243,7 @@ public final class ContentHelper {
         DocumentFile folder = FileHelper.getFolderFromTreeUriString(context, content.getStorageUri());
         if (null == folder) return null;
         try {
-            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder);
+            DocumentFile newJson = JsonHelper.jsonToFile(context, JsonContent.fromEntity(content), JsonContent.class, folder, Consts.JSON_FILE_NAME_V2);
             content.setJsonUri(newJson.getUri().toString());
             return newJson;
         } catch (IOException e) {
@@ -938,8 +938,9 @@ public final class ContentHelper {
         // Look up similar names between images and file names
         int order;
         int previousOrder = -1;
-        for (int i = 0; i < images.size(); i++) {
-            ImageFile img = images.get(i);
+        List<ImageFile> orderedImages = Stream.of(images).sortBy(ImageFile::getOrder).toList();
+        for (int i = 0; i < orderedImages.size(); i++) {
+            ImageFile img = orderedImages.get(i);
             String imgName = removeLeadingZeroesAndExtensionCached(img.getName());
 
             ImmutablePair<String, Long> property;
@@ -956,7 +957,7 @@ public final class ContentHelper {
                         ImmutablePair<String, Long> localProperty = fileNameProperties.get(j + "");
                         if (localProperty != null) {
                             Timber.i("Numbering gap filled with a file : %d", j);
-                            ImageFile newImage = ImageFile.fromImageUrl(j, images.get(i - 1).getUrl(), StatusContent.DOWNLOADED, images.size());
+                            ImageFile newImage = ImageFile.fromImageUrl(j, orderedImages.get(i - 1).getUrl(), StatusContent.DOWNLOADED, orderedImages.size());
                             newImage.setFileUri(localProperty.left).setSize(localProperty.right);
                             result.add(result.size() - 1, newImage);
                         }

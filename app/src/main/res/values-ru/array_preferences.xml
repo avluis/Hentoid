@@ -10,8 +10,8 @@
     <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">когда заполнена на 98%</string>
     <!-- Choice for "Quick download long press threshold" setting -->
     <string name="pref_browser_quick_dl_threshold_entries_1">500 мс</string>
-    <string name="pref_browser_quick_dl_threshold_entries_2">1 с (по умолчанию)</string>
-    <string name="pref_browser_quick_dl_threshold_entries_3">1.5 с</string>
+    <string name="pref_browser_quick_dl_threshold_entries_2">1 с</string>
+    <string name="pref_browser_quick_dl_threshold_entries_3">1.5 с (по умолчанию)</string>
     <string name="pref_browser_quick_dl_threshold_entries_4">2 с</string>
     <string name="pref_browser_quick_dl_threshold_entries_5">3 с</string>
     <!-- Choice for "DNS over HTTPS entries" setting -->
