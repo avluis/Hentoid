@@ -364,7 +364,8 @@ public class PrimaryImportWorker extends BaseWorker {
                         // Clean image list if larger than the book's reported number of pages
                         // (remove non-cover pages that have the cover URL)
                         boolean cleaned = false;
-                        if (contentImages.size() > content.getQtyPages() * 1.2) {
+                        Optional<Integer> maxOrder = Stream.of(contentImages).map(ImageFile::getOrder).max(Integer::compareTo);
+                        if (maxOrder.isPresent() && contentImages.size() > maxOrder.get() * 1.2) {
                             String coverUrl = content.getCoverImageUrl();
                             contentImages = Stream.of(contentImages).filterNot(i -> (i.getUrl().equals(coverUrl) && !i.isCover())).toList();
                             cleaned = true;

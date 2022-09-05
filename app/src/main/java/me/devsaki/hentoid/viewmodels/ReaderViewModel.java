@@ -415,7 +415,7 @@ public class ReaderViewModel extends AndroidViewModel {
         if (thumbIndex == startingIndex) startingIndex += 1;
         else if (thumbIndex > startingIndex) thumbIndex = 0; // Ignore if it doesn't intervene
 
-        setViewerStartingIndex(startingIndex - thumbIndex - 1);
+        setViewerStartingIndex(Math.max(0, startingIndex - thumbIndex - 1));
 
         // Init the read pages write cache
         readPageNumbers.clear();
@@ -575,7 +575,7 @@ public class ReaderViewModel extends AndroidViewModel {
         }
         int completedThresholdPosition = Math.round(completedThresholdRatio * nbReadablePages);
 
-        int collectionIndex = viewerIndex + thumbIndex + 1;
+        int collectionIndex = viewerIndex + (-1 == thumbIndex ? 0 : thumbIndex) + 1;
         boolean updateReads = (readPageNumbers.size() >= readThresholdPosition || theContent.getReads() > 0);
         boolean markAsComplete = (readPageNumbers.size() >= completedThresholdPosition);
 
