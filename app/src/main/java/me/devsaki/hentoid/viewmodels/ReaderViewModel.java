@@ -575,7 +575,7 @@ public class ReaderViewModel extends AndroidViewModel {
         }
         int completedThresholdPosition = Math.round(completedThresholdRatio * nbReadablePages);
 
-        int collectionIndex = viewerIndex + thumbIndex + 1;
+        int collectionIndex = viewerIndex + (-1 == thumbIndex ? 0 : thumbIndex) + 1;
         boolean updateReads = (readPageNumbers.size() >= readThresholdPosition || theContent.getReads() > 0);
         boolean markAsComplete = (readPageNumbers.size() >= completedThresholdPosition);
 
