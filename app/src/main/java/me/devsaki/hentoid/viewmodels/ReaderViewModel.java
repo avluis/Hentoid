@@ -415,7 +415,7 @@ public class ReaderViewModel extends AndroidViewModel {
         if (thumbIndex == startingIndex) startingIndex += 1;
         else if (thumbIndex > startingIndex) thumbIndex = 0; // Ignore if it doesn't intervene
 
-        setViewerStartingIndex(startingIndex - thumbIndex - 1);
+        setViewerStartingIndex(Math.max(0, startingIndex - thumbIndex - 1));
 
         // Init the read pages write cache
         readPageNumbers.clear();
