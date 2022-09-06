@@ -427,13 +427,8 @@ public class ObjectBoxDB {
     }
 
     Set<String> selectAllMergedContentUrls(Site site) {
-        Query<Chapter> allChapterQ = store.boxFor(Chapter.class).query().build();
-
-        return new HashSet<>(Stream.of(allChapterQ.property(Chapter_.url).findStrings())
-                .filter(s -> s.contains(site.getUrl()))
-                .map(s -> s.replace(site.getUrl(), ""))
-                .map(s -> s.replaceAll("\\b|/galleries|/gallery|/g|/entry\\b", "")) //each sites "gallery" path
-                .toList());
+        Query<Chapter> allChapterQ = store.boxFor(Chapter.class).query().startsWith(Chapter_.url,site.getUrl(), QueryBuilder.StringOrder.CASE_SENSITIVE).build();
+        return new HashSet<>(Stream.of(allChapterQ.property(Chapter_.url).findStrings()).toList());
     }
 
     @Nullable
