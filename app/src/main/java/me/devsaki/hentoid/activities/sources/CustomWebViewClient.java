@@ -796,9 +796,10 @@ class CustomWebViewClient extends WebViewClient {
                     for (String url : mergedSiteUrls) {
                         if (entry.getKey().endsWith(url)) {
                             Element markedElement = entry.getValue().second; // Linked images have priority over plain links
-                            if (markedElement != null) { // Mark two levels above the image
+                            if (markedElement != null) { // // Mark <site.bookCardDepth> levels above the image
                                 Element imgParent = markedElement.parent();
-                                if (imgParent != null) imgParent = imgParent.parent();
+                                for (int i = 0; i < site.getBookCardDepth() - 1; i++)
+                                    if (imgParent != null) imgParent = imgParent.parent();
                                 if (imgParent != null) markedElement = imgParent;
                             } else { // Mark plain link
                                 markedElement = entry.getValue().first;
