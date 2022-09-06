@@ -365,9 +365,11 @@ public class PrimaryImportWorker extends BaseWorker {
                         // (remove non-cover pages that have the cover URL)
                         boolean cleaned = false;
                         Optional<Integer> maxOrder = Stream.of(contentImages).map(ImageFile::getOrder).max(Integer::compareTo);
-                        if (maxOrder.isPresent() && contentImages.size() > maxOrder.get() * 1.2) {
+                        if (maxOrder.isPresent() && contentImages.size() > maxOrder.get() * 1.2 || content.getQtyPages() > contentImages.size() * 1.1) {
                             String coverUrl = content.getCoverImageUrl();
                             contentImages = Stream.of(contentImages).filterNot(i -> (i.getUrl().equals(coverUrl) && !i.isCover())).toList();
+                            int nbCovers = (int) Stream.of(contentImages).filter(ImageFile::isCover).count();
+                            content.setQtyPages(contentImages.size() - nbCovers);
                             cleaned = true;
                         }
                         // Map files to image list
