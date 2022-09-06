@@ -750,7 +750,7 @@ class CustomWebViewClient extends WebViewClient {
             }
 
             // Mark downloaded books and merged books
-            if (siteUrls != null && mergedSiteUrls != null && !siteUrls.isEmpty()) {
+            if (siteUrls != null && mergedSiteUrls != null && (!siteUrls.isEmpty() || !mergedSiteUrls.isEmpty())) {
                 // Format elements
                 Elements plainLinks = doc.select("a");
                 Elements linkedImages = doc.select("a img");

@@ -1453,7 +1453,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     public String getCustomCss() {
         if (null == customCss) {
             StringBuilder sb = new StringBuilder();
-            if (Preferences.isBrowserMarkDownloaded())
+            if (Preferences.isBrowserMarkDownloaded() || Preferences.isBrowserMarkMerged())
                 FileHelper.getAssetAsString(getAssets(), "downloaded.css", sb);
             if (getStartSite().equals(Site.NHENTAI) && Preferences.isBrowserNhentaiInvisibleBlacklist())
                 FileHelper.getAssetAsString(getAssets(), "nhentai_invisible_blacklist.css", sb);
