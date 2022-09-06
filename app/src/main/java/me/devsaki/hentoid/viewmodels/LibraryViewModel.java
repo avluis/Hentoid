@@ -1326,10 +1326,12 @@ public class LibraryViewModel extends AndroidViewModel {
             Site site = Site.searchByUrl(url);
             if (site != null && !site.equals(Site.NONE)) {
                 splitContent.setSite(site);
-                url = url.replace(site.getUrl(), "");
+                //url = url.replace(site.getUrl(), "");
+                url = Content.transformRawUrl(site, url);
             }
         }
         splitContent.setUrl(url);
+        splitContent.populateUniqueSiteId();
 
         String id = chapter.getUniqueId();
         if (id.isEmpty()) id = content.getUniqueSiteId() + "_"; // Don't create a copy of content
