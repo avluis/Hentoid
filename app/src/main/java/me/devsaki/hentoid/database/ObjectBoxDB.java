@@ -427,7 +427,7 @@ public class ObjectBoxDB {
     }
 
     Set<String> selectAllMergedContentUrls(Site site) {
-        Query<Chapter> allChapterQ = store.boxFor(Chapter.class).query().startsWith(Chapter_.url,site.getUrl(), QueryBuilder.StringOrder.CASE_SENSITIVE).build();
+        Query<Chapter> allChapterQ = store.boxFor(Chapter.class).query().startsWith(Chapter_.url,site.getUrl(), QueryBuilder.StringOrder.CASE_INSENSITIVE).build();
         return new HashSet<>(Stream.of(allChapterQ.property(Chapter_.url).findStrings()).toList());
     }
 
