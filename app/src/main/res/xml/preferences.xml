@@ -252,6 +252,13 @@
                 android:title="@string/pref_browser_mark_downloaded_title"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_mark_merged_default"
+                android:key="browser_mark_merged"
+                android:summaryOff="@string/pref_browser_mark_merged_off"
+                android:summaryOn="@string/pref_browser_mark_merged_on"
+                android:title="@string/pref_browser_mark_merged_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_nhentai_invisible_blacklist_default"
                 android:key="pref_nhentai_invisible_blacklist"
                 android:summaryOff="@string/pref_browser_nhentai_invisible_blacklist_off"

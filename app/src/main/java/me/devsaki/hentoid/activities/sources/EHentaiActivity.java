@@ -65,7 +65,7 @@ public class EHentaiActivity extends BaseWebActivity {
                 );
             }
 
-            if (isMarkDownloaded())
+            if (isMarkDownloaded() || isMarkMerged())
                 return super.parseResponse(urlStr, requestHeaders, false, false); // Rewrite HTML
             else return null;
         }
