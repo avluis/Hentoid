@@ -133,7 +133,7 @@ class CustomWebViewClient extends WebViewClient {
     // an inline script tag, the entire tag is removed from the HTML
     private List<String> jsContentBlacklist;
 
-    // TODO doc
+    // List of JS scripts to load from app resources every time a webpage is started
     private List<String> jsStartupScripts;
 
 
@@ -199,17 +199,32 @@ class CustomWebViewClient extends WebViewClient {
         Collections.addAll(jsContentBlacklist, elements);
     }
 
-    // TODO doc
+    /**
+     * Set the list of patterns to detect URLs where result paging can be applied
+     *
+     * @param patterns Patterns to detect URLs where result paging can be applied
+     */
     void setResultsUrlPatterns(String... patterns) {
         for (String s : patterns) resultsUrlPattern.add(Pattern.compile(s));
     }
 
-    // TODO doc
+    /**
+     * Set the rewriter to use when paging results from the app :
+     * - 1st argument : Search results page URL, as an Uri
+     * - 2nd argument : Search results page number to reach
+     * - Result : Modified Uri, as a string
+     *
+     * @param rewriter Rewriter to use when paging results from the app
+     */
     void setResultUrlRewriter(@NonNull BiFunction<Uri, Integer, String> rewriter) {
         resultsUrlRewriter = rewriter;
     }
 
-    // TODO doc
+    /**
+     * Set the list of JS scripts (app assets) to load at each new page start
+     *
+     * @param assetNames Name of assets to load
+     */
     void setJsStartupScripts(String... assetNames) {
         if (null == jsStartupScripts) jsStartupScripts = new ArrayList<>();
         Collections.addAll(jsStartupScripts, assetNames);
@@ -470,7 +485,11 @@ class CustomWebViewClient extends WebViewClient {
         return null;
     }
 
-    // TODO doc
+    /**
+     * Load the given URL using a separate thread
+     *
+     * @param url URL to load
+     */
     void browserLoadAsync(@NonNull String url) {
         compositeDisposable.add(
                 Completable.fromRunnable(() -> activity.loadUrl(url))
@@ -672,9 +691,18 @@ class CustomWebViewClient extends WebViewClient {
         dnsOverHttpsEnabled.set(value);
     }
 
-    // TODO doc
-    private String simplifyHref(@NonNull String href) {
-        String result = href;
+    /**
+     * Simplify the given URL :
+     * - Remove parameters
+     * - Remove any duplicate separator
+     * - Replace all separators by .'s
+     *
+     * @param url Url to simplify
+     * @return Simplified URL according to the above rules
+     */
+    private String simplifyUrl(@NonNull String url) {
+        String result = url;
+        // Remove parameters
         int paramsIndex = result.indexOf("?");
         if (paramsIndex > -1) result = result.substring(0, paramsIndex);
         // Simplify & eliminate double separators
@@ -761,7 +789,7 @@ class CustomWebViewClient extends WebViewClient {
                 Map<String, Pair<Element, Element>> elements = new HashMap<>();
 
                 for (Element link : plainLinks) {
-                    String aHref = simplifyHref(link.attr("href"));
+                    String aHref = simplifyUrl(link.attr("href"));
                     if (!aHref.isEmpty() && !elements.containsKey(aHref)) // We only process the first match - usually the cover
                         elements.put(aHref, new Pair<>(link, null));
                 }
@@ -771,7 +799,7 @@ class CustomWebViewClient extends WebViewClient {
                     while (parent != null && !parent.is("a")) parent = parent.parent();
                     if (null == parent) break;
 
-                    String aHref = simplifyHref(parent.attr("href"));
+                    String aHref = simplifyUrl(parent.attr("href"));
                     Pair<Element, Element> elt = elements.get(aHref);
                     if (elt != null && null == elt.second) // We only process the first match - usually the cover
                         elements.put(aHref, new Pair<>(elt.first, linkedImage));
@@ -850,6 +878,7 @@ class CustomWebViewClient extends WebViewClient {
 
         // GETTERS
         List<String> getAllSiteUrls();
+
         List<String> getAllMergedBooksUrls();
 
         String getCustomCss();

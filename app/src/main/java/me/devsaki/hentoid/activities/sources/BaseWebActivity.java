@@ -1,9 +1,7 @@
 package me.devsaki.hentoid.activities.sources;
 
-import static me.devsaki.hentoid.util.file.PermissionHelper.RQST_STORAGE_PERMISSION;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM;
-import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_TOP;
+import static me.devsaki.hentoid.util.file.PermissionHelper.RQST_STORAGE_PERMISSION;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -103,14 +101,14 @@ import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.DuplicateHelper;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.file.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.file.PermissionHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
@@ -879,10 +877,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     /**
      * Add current content (i.e. content of the currently viewed book) to the download queue
      *
-     * @param quickDownload True if the action has been triggered by a quick download
-     *                      (which means we're not on a book gallery page but on the book list page)
+     * @param quickDownload      True if the action has been triggered by a quick download
+     *                           (which means we're not on a book gallery page but on the book list page)
+     * @param isDownloadPlus     True if the action has been triggered by a "download extra pages" action
+     * @param isReplaceDuplicate True if the action has been triggered by a "download and replace existing duplicate book" action
      */
-    // TODO update doc
     void processDownload(boolean quickDownload, boolean isDownloadPlus, boolean isReplaceDuplicate) {
         if (null == currentContent) return;
 
@@ -975,7 +974,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                     webView,
                     this,
                     (position, item) -> addToQueue(
-                            (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM,
+                            (0 == position) ? ContentHelper.QueuePosition.TOP : ContentHelper.QueuePosition.BOTTOM,
                             Preferences.getBrowserDlAction(),
                             isReplaceDuplicate
                     )
@@ -984,8 +983,14 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             addToQueue(Preferences.getQueueNewDownloadPosition(), Preferences.getBrowserDlAction(), isReplaceDuplicate);
     }
 
-    // TODO doc
-    private void addToQueue(int position, int downloadMode, boolean isReplaceDuplicate) {
+    /**
+     * Add current content to the downloads queue
+     *
+     * @param position           Target position in the queue (top or bottom)
+     * @param downloadMode       Download mode for this content
+     * @param isReplaceDuplicate True if existing duplicate book has to be replaced upon download completion
+     */
+    private void addToQueue(@ContentHelper.QueuePosition int position, @Content.DownloadMode int downloadMode, boolean isReplaceDuplicate) {
         if (null == currentContent) return;
         Point coords = Helper.getCenter(binding.quickDlFeedback);
         if (coords != null && View.VISIBLE == binding.quickDlFeedback.getVisibility()) {
