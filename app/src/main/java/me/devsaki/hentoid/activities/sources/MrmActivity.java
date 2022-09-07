@@ -15,7 +15,7 @@ public class MrmActivity extends BaseWebActivity {
     }
 
     @Override
-    protected CustomWebViewClient getWebClient() {
+    protected CustomWebViewClient createWebClient() {
         CustomWebViewClient client = new MrmWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.addRemovableElements(DIRTY_ELEMENTS);

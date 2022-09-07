@@ -30,7 +30,7 @@ public class EHentaiActivity extends BaseWebActivity {
     }
 
     @Override
-    protected CustomWebViewClient getWebClient() {
+    protected CustomWebViewClient createWebClient() {
         CustomWebViewClient client = new EHentaiWebClient(getStartSite(), GALLERY_FILTER, this);
         CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "sl=dm_2"); // Show thumbs in results page ("extended display")
         CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "nw=1"); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)

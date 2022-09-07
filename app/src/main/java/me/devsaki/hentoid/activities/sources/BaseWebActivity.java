@@ -222,7 +222,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     protected String customCss = null;
 
 
-    protected abstract CustomWebViewClient getWebClient();
+    protected abstract CustomWebViewClient createWebClient();
 
     abstract Site getStartSite();
 
@@ -411,7 +411,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         checkPermissions();
         String url = webView.getUrl();
         Timber.i(">> WebActivity resume : %s %s %s", url, currentContent != null, (currentContent != null) ? currentContent.getTitle() : "");
-        if (currentContent != null && url != null && getWebClient().isGalleryPage(url)) {
+        if (currentContent != null && url != null && createWebClient().isGalleryPage(url)) {
             if (processContentDisposable != null)
                 processContentDisposable.dispose(); // Cancel whichever process was happening before
             processContentDisposable = Single.fromCallable(() -> processContent(currentContent, false))
@@ -516,7 +516,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         if (BuildConfig.DEBUG) WebView.setWebContentsDebuggingEnabled(true);
 
 
-        webClient = getWebClient();
+        webClient = createWebClient();
         webView.setWebViewClient(webClient);
 
         // Download immediately on long click on a link / image link
