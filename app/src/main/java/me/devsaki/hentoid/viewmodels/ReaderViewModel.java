@@ -1676,6 +1676,9 @@ public class ReaderViewModel extends AndroidViewModel {
 
         if (oldIndex < 0 || oldIndex >= chapters.size()) return;
 
+        // Don't take the last chapter into acconut if it doesn't exist (means the user has moved the item below "no chapter")
+        if (newIndex >= chapters.size()) newIndex = chapters.size() - 1;
+
         // Move the item
         Chapter fromValue = chapters.get(oldIndex);
         int delta = oldIndex < newIndex ? 1 : -1;
