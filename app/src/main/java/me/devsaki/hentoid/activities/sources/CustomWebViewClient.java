@@ -84,9 +84,11 @@ class CustomWebViewClient extends WebViewClient {
     // Pre-built object to represent an empty input stream
     // (will be used instead of the actual stream when the requested resource is blocked)
     private final byte[] nothing = "".getBytes();
-    // Pre-built object to represent WEBP binary data for the checkmark icon used to mark downloaded boks
+    // Pre-built object to represent WEBP binary data for the checkmark icon used to mark downloaded books
     // (will be fed directly to the browser when the resourcei is requested)
     private final byte[] checkmark;
+    // this is for merged books
+    private final byte[] mergedMark;
 
     // Site for the session
     protected final Site site;
@@ -114,6 +116,7 @@ class CustomWebViewClient extends WebViewClient {
 
     // Faster access to Preferences settings
     private final AtomicBoolean markDownloaded = new AtomicBoolean(Preferences.isBrowserMarkDownloaded());
+    private final AtomicBoolean markMerged = new AtomicBoolean((Preferences.isBrowserMarkMerged()));
     private final AtomicBoolean dnsOverHttpsEnabled = new AtomicBoolean(Preferences.getDnsOverHttps() > -1);
 
     // Disposable to be used for punctual operations
@@ -130,7 +133,7 @@ class CustomWebViewClient extends WebViewClient {
     // an inline script tag, the entire tag is removed from the HTML
     private List<String> jsContentBlacklist;
 
-    // TODO doc
+    // List of JS scripts to load from app resources every time a webpage is started
     private List<String> jsStartupScripts;
 
 
@@ -149,6 +152,13 @@ class CustomWebViewClient extends WebViewClient {
         checkmark = ImageHelper.BitmapToWebp(
                 ImageHelper.tintBitmap(
                         ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_checked),
+                        HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
+                )
+        );
+
+        mergedMark = ImageHelper.BitmapToWebp(
+                ImageHelper.tintBitmap(
+                        ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_action_merge),
                         HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
@@ -189,17 +199,32 @@ class CustomWebViewClient extends WebViewClient {
         Collections.addAll(jsContentBlacklist, elements);
     }
 
-    // TODO doc
+    /**
+     * Set the list of patterns to detect URLs where result paging can be applied
+     *
+     * @param patterns Patterns to detect URLs where result paging can be applied
+     */
     void setResultsUrlPatterns(String... patterns) {
         for (String s : patterns) resultsUrlPattern.add(Pattern.compile(s));
     }
 
-    // TODO doc
+    /**
+     * Set the rewriter to use when paging results from the app :
+     * - 1st argument : Search results page URL, as an Uri
+     * - 2nd argument : Search results page number to reach
+     * - Result : Modified Uri, as a string
+     *
+     * @param rewriter Rewriter to use when paging results from the app
+     */
     void setResultUrlRewriter(@NonNull BiFunction<Uri, Integer, String> rewriter) {
         resultsUrlRewriter = rewriter;
     }
 
-    // TODO doc
+    /**
+     * Set the list of JS scripts (app assets) to load at each new page start
+     *
+     * @param assetNames Name of assets to load
+     */
     void setJsStartupScripts(String... assetNames) {
         if (null == jsStartupScripts) jsStartupScripts = new ArrayList<>();
         Collections.addAll(jsStartupScripts, assetNames);
@@ -420,13 +445,15 @@ class CustomWebViewClient extends WebViewClient {
             return new WebResourceResponse("text/plain", "utf-8", new ByteArrayInputStream(nothing));
         } else if (isMarkDownloaded() && url.contains("hentoid-checkmark")) {
             return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(checkmark));
+        } else if (isMarkMerged() && url.contains("hentoid-mergedmark")) {
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(mergedMark));
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
             else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url);
 
             // If we're here to remove "dirty elements" or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || !activity.getCustomCss().isEmpty())
+            if ((removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || !activity.getCustomCss().isEmpty())
                     && (HttpHelper.getExtensionFromUri(url).isEmpty() || HttpHelper.getExtensionFromUri(url).equalsIgnoreCase("html"))) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
@@ -458,7 +485,11 @@ class CustomWebViewClient extends WebViewClient {
         return null;
     }
 
-    // TODO doc
+    /**
+     * Load the given URL using a separate thread
+     *
+     * @param url URL to load
+     */
     void browserLoadAsync(@NonNull String url) {
         compositeDisposable.add(
                 Completable.fromRunnable(() -> activity.loadUrl(url))
@@ -552,8 +583,8 @@ class CustomWebViewClient extends WebViewClient {
 
                 // Remove dirty elements from HTML resources
                 String customCss = activity.getCustomCss();
-                if (removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || !customCss.isEmpty()) {
-                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, hideableElements, jsContentBlacklist, activity.getAllSiteUrls());
+                if (removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || !customCss.isEmpty()) {
+                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, hideableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls());
                     if (null == browserStream) return null;
                 }
 
@@ -648,13 +679,30 @@ class CustomWebViewClient extends WebViewClient {
         markDownloaded.set(value);
     }
 
+    boolean isMarkMerged() {
+        return markMerged.get();
+    }
+
+    void setMarkMerged(boolean value) {
+        markMerged.set(value);
+    }
+
     void setDnsOverHttpsEnabled(boolean value) {
         dnsOverHttpsEnabled.set(value);
     }
 
-    // TODO doc
-    private String simplifyHref(@NonNull String href) {
-        String result = href;
+    /**
+     * Simplify the given URL :
+     * - Remove parameters
+     * - Remove any duplicate separator
+     * - Replace all separators by .'s
+     *
+     * @param url Url to simplify
+     * @return Simplified URL according to the above rules
+     */
+    private String simplifyUrl(@NonNull String url) {
+        String result = url;
+        // Remove parameters
         int paramsIndex = result.indexOf("?");
         if (paramsIndex > -1) result = result.substring(0, paramsIndex);
         // Simplify & eliminate double separators
@@ -675,6 +723,7 @@ class CustomWebViewClient extends WebViewClient {
      * @param hideableElements   CSS selectors of the nodes to hide
      * @param jsContentBlacklist Blacklisted elements to detect script tags to remove
      * @param siteUrls           Urls of the covers or links to visually mark as downloaded
+     * @param mergedSiteUrls     Urls of the covers or links to visually mark as merged
      * @return Stream containing the HTML document stripped from the elements to remove
      */
     @Nullable
@@ -685,7 +734,8 @@ class CustomWebViewClient extends WebViewClient {
             @Nullable List<String> removableElements,
             @Nullable List<String> hideableElements,
             @Nullable List<String> jsContentBlacklist,
-            @Nullable List<String> siteUrls) {
+            @Nullable List<String> siteUrls,
+            @Nullable List<String> mergedSiteUrls) {
         try {
             Document doc = Jsoup.parse(stream, null, baseUri);
 
@@ -727,8 +777,8 @@ class CustomWebViewClient extends WebViewClient {
                 }
             }
 
-            // Mark downloaded books
-            if (siteUrls != null && !siteUrls.isEmpty()) {
+            // Mark downloaded books and merged books
+            if (siteUrls != null && mergedSiteUrls != null && (!siteUrls.isEmpty() || !mergedSiteUrls.isEmpty())) {
                 // Format elements
                 Elements plainLinks = doc.select("a");
                 Elements linkedImages = doc.select("a img");
@@ -739,7 +789,7 @@ class CustomWebViewClient extends WebViewClient {
                 Map<String, Pair<Element, Element>> elements = new HashMap<>();
 
                 for (Element link : plainLinks) {
-                    String aHref = simplifyHref(link.attr("href"));
+                    String aHref = simplifyUrl(link.attr("href"));
                     if (!aHref.isEmpty() && !elements.containsKey(aHref)) // We only process the first match - usually the cover
                         elements.put(aHref, new Pair<>(link, null));
                 }
@@ -749,7 +799,7 @@ class CustomWebViewClient extends WebViewClient {
                     while (parent != null && !parent.is("a")) parent = parent.parent();
                     if (null == parent) break;
 
-                    String aHref = simplifyHref(parent.attr("href"));
+                    String aHref = simplifyUrl(parent.attr("href"));
                     Pair<Element, Element> elt = elements.get(aHref);
                     if (elt != null && null == elt.second) // We only process the first match - usually the cover
                         elements.put(aHref, new Pair<>(elt.first, linkedImage));
@@ -768,6 +818,21 @@ class CustomWebViewClient extends WebViewClient {
                                 markedElement = entry.getValue().first;
                             }
                             markedElement.addClass("watermarked");
+                            break;
+                        }
+                    }
+                    for (String url : mergedSiteUrls) {
+                        if (entry.getKey().endsWith(url)) {
+                            Element markedElement = entry.getValue().second; // Linked images have priority over plain links
+                            if (markedElement != null) { // // Mark <site.bookCardDepth> levels above the image
+                                Element imgParent = markedElement.parent();
+                                for (int i = 0; i < site.getBookCardDepth() - 1; i++)
+                                    if (imgParent != null) imgParent = imgParent.parent();
+                                if (imgParent != null) markedElement = imgParent;
+                            } else { // Mark plain link
+                                markedElement = entry.getValue().first;
+                            }
+                            markedElement.addClass("watermarked-merged");
                             break;
                         }
                     }
@@ -813,6 +878,8 @@ class CustomWebViewClient extends WebViewClient {
 
         // GETTERS
         List<String> getAllSiteUrls();
+
+        List<String> getAllMergedBooksUrls();
 
         String getCustomCss();
     }

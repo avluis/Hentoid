@@ -1,9 +1,8 @@
 package me.devsaki.hentoid.parsers;
 
-import androidx.core.util.Pair;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Optional;
@@ -400,7 +399,8 @@ public class ParseHelper {
                 Element dateElement = e.selectFirst(dateCssQuery);
                 if (dateElement != null) {
                     String[] dateStr = dateElement.text().split("-");
-                    if (dateStr.length > 1) epoch = Helper.parseDateToEpoch(dateStr[1], datePattern);
+                    if (dateStr.length > 1)
+                        epoch = Helper.parseDateToEpoch(dateStr[1], datePattern);
                 }
             }
             // Make sure we're not adding duplicates
@@ -432,6 +432,7 @@ public class ParseHelper {
      */
     private static String getLastPathPart(@NonNull final String url) {
         String[] parts = url.split("/");
+        if (parts.length < 2) return url;
         return (parts[parts.length - 1].isEmpty()) ? parts[parts.length - 2] : parts[parts.length - 1];
     }
 

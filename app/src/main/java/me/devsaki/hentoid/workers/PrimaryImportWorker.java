@@ -28,6 +28,7 @@ import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.DuplicatesDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
@@ -361,15 +362,37 @@ public class PrimaryImportWorker extends BaseWorker {
                         content.setImageFiles(contentImages);
                         content.getCover().setUrl(content.getCoverImageUrl());
                     } else { // Existing images described in the JSON
+                        // CLEANUPS
+                        boolean cleaned = false;
+
+                        // Get basic stats + fix chapterless pages
+                        int maxPageOrder = -1;
+                        Chapter previousChapter = null;
+                        for (ImageFile img : contentImages) {
+                            maxPageOrder = Math.max(maxPageOrder, img.getOrder());
+                            if (!img.isCover()) {
+                                Chapter chapter = img.getLinkedChapter();
+                                // If a page is chapterless while the book has chapters, attach it to the previous chapter
+                                if (null == chapter && previousChapter != null) {
+                                    img.setChapter(previousChapter);
+                                    previousChapter.addImageFile(img);
+                                    cleaned = true;
+                                } else {
+                                    previousChapter = chapter;
+                                }
+                            }
+                        }
+
                         // Clean image list if larger than the book's reported number of pages
                         // (remove non-cover pages that have the cover URL)
-                        boolean cleaned = false;
-                        Optional<Integer> maxOrder = Stream.of(contentImages).map(ImageFile::getOrder).max(Integer::compareTo);
-                        if (maxOrder.isPresent() && contentImages.size() > maxOrder.get() * 1.2) {
+                        if (contentImages.size() > maxPageOrder * 1.2 || content.getQtyPages() > contentImages.size() * 1.1) {
                             String coverUrl = content.getCoverImageUrl();
                             contentImages = Stream.of(contentImages).filterNot(i -> (i.getUrl().equals(coverUrl) && !i.isCover())).toList();
+                            int nbCovers = (int) Stream.of(contentImages).filter(ImageFile::isCover).count();
+                            content.setQtyPages(contentImages.size() - nbCovers);
                             cleaned = true;
                         }
+
                         // Map files to image list
                         contentImages = ContentHelper.matchFilesToImageList(imageFiles, contentImages);
                         content.setImageFiles(contentImages);

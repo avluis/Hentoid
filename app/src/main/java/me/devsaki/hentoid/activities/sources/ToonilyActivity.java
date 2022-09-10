@@ -17,7 +17,7 @@ public class ToonilyActivity extends BaseWebActivity {
     }
 
     @Override
-    protected CustomWebViewClient getWebClient() {
+    protected CustomWebViewClient createWebClient() {
         CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.adBlocker.addToUrlBlacklist(BLOCKED_CONTENT);

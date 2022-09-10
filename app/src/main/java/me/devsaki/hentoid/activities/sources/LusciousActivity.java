@@ -33,7 +33,7 @@ public class LusciousActivity extends BaseWebActivity {
     }
 
     @Override
-    protected CustomWebViewClient getWebClient() {
+    protected CustomWebViewClient createWebClient() {
         LusciousWebClient client = new LusciousWebClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER);
