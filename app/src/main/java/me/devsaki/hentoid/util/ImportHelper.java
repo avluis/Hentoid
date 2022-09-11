@@ -47,6 +47,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.AttributeMap;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -823,6 +824,21 @@ public class ImportHelper {
         List<SiteBookmark> bookmarksToImport = Stream.of(new HashSet<>(bookmarks)).filterNot(existingBookmarkUrls::contains).toList();
         dao.insertBookmarks(bookmarksToImport);
         return bookmarksToImport.size();
+    }
+
+    /**
+     * Add the given list of renaming rules to the DB, handling duplicates
+     * Rules that have the same attribute type, source and target string as existing ones won't be imported
+     *
+     * @param dao   CollectionDAO to use
+     * @param rules List of rules to add to the existing rules
+     * @return Quantity of new integrated rules
+     */
+    public static int importRenamingRules(@NonNull final CollectionDAO dao, List<RenamingRule> rules) {
+        Set<RenamingRule> existingRules = new HashSet<>(dao.selectRenamingRules(AttributeType.UNDEFINED, null));
+        List<RenamingRule> rulesToImport = Stream.of(new HashSet<>(rules)).filterNot(existingRules::contains).toList();
+        dao.insertRenamingRules(rulesToImport);
+        return rulesToImport.size();
     }
 
     /**

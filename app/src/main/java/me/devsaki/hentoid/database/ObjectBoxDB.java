@@ -1455,6 +1455,10 @@ public class ObjectBoxDB {
         return store.boxFor(RenamingRule.class).put(rule);
     }
 
+    public void insertRenamingRules(@NonNull List<RenamingRule> rules) {
+        store.boxFor(RenamingRule.class).put(rules);
+    }
+
     public void deleteRenamingRule(long id) {
         store.boxFor(RenamingRule.class).remove(id);
     }

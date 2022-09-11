@@ -932,6 +932,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.insertRenamingRule(rule);
     }
 
+    public void insertRenamingRules(@NonNull List<RenamingRule> rules) {
+        db.insertRenamingRules(rules);
+    }
+
     public void deleteRenamingRule(long id) {
         db.deleteRenamingRule(id);
     }

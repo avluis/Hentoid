@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import java.util.Objects;
+
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
@@ -37,5 +39,18 @@ public class RenamingRule {
 
     public String getTargetName() {
         return targetName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RenamingRule that = (RenamingRule) o;
+        return attributeType.equals(that.attributeType) && Objects.equals(sourceName, that.sourceName) && Objects.equals(targetName, that.targetName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(attributeType, sourceName, targetName);
     }
 }
