@@ -41,7 +41,6 @@ class AttributeTypePickerDialogFragment : DialogFragment() {
 
         newAttrName = newName!!
 
-        //parent = parentFragment as Parent
         parent = activity as Parent
     }
 
@@ -104,18 +103,6 @@ class AttributeTypePickerDialogFragment : DialogFragment() {
     }
 
     companion object {
-        /*
-        fun invoke(parentFragment: Fragment, newAttrName: String) {
-            val fragment = AttributeTypePickerDialogFragment()
-
-            val args = Bundle()
-            args.putString(KEY_NAME, newAttrName)
-            fragment.arguments = args
-
-            fragment.show(parentFragment.childFragmentManager, null)
-        }
-         */
-
         fun invoke(parent: FragmentActivity, newAttrName: String) {
             val fragment = AttributeTypePickerDialogFragment()
 

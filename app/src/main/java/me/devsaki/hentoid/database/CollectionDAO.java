@@ -25,6 +25,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
@@ -309,6 +310,12 @@ public interface CollectionDAO {
     void insertSearchRecord(@NonNull SearchRecord record, int limit);
 
     void deleteAllSearchRecords();
+
+
+    // RENAMING RULES
+
+    @Nullable
+    RenamingRule selectRenamingRule(long id);
 
 
     // RESOURCES

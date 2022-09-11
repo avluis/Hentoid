@@ -34,7 +34,7 @@
         android:id="@+id/change_group_existing_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_marginStart="32dp"
         android:background="@drawable/bg_spinner_border"
         android:gravity="center_vertical"
         android:padding="8dp"

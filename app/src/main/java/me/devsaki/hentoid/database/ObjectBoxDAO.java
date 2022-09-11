@@ -40,6 +40,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
@@ -310,7 +311,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectAllContentUrls(site.getCode());
     }
 
-    public Set<String> selectAllMergedUrls(@NonNull Site site){
+    public Set<String> selectAllMergedUrls(@NonNull Site site) {
         return db.selectAllMergedContentUrls(site);
     }
 
@@ -907,6 +908,14 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteAllSearchRecords() {
         db.selectSearchRecordsQ().remove();
+    }
+
+
+    // RENAMING RULES
+
+    @Nullable
+    public RenamingRule selectRenamingRule(long id) {
+        return db.selectRenamingRule(id);
     }
 
 

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/dialog_width"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:clipToPadding="false"
+    android:padding="8dp"
+    tools:context=".activities.MetadataEditActivity">
+
+    <com.skydoves.powerspinner.PowerSpinnerView
+        android:id="@+id/attributeType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_spinner_border"
+        android:gravity="center_vertical"
+        android:padding="8dp"
+        android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:spinner_arrow_gravity="end"
+        app:spinner_arrow_padding="8dp"
+        app:spinner_arrow_tint="@color/white_opacity_66"
+        app:spinner_divider_show="true"
+        app:spinner_divider_size="0.4dp"
+        app:spinner_popup_background="@color/dark_gray"
+        app:spinner_popup_elevation="14dp"
+        tools:visibility="visible" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_marginTop="8dp"
+        android:id="@+id/source_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/meta_rule_source"
+        app:layout_constraintTop_toBottomOf="@id/attributeType">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:lines="1"
+            android:maxLines="1"
+            tools:text="Name goes here" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/arrow_bottom"
+        android:layout_width="@dimen/about_ic_icons_width"
+        android:layout_height="@dimen/about_ic_icons_height"
+        android:cropToPadding="true"
+        android:src="@drawable/ic_drop_down"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/source_name"
+        tools:ignore="ContentDescription" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/target_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/meta_rule_target"
+        app:layout_constraintTop_toBottomOf="@id/arrow_bottom">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:lines="1"
+            android:maxLines="1"
+            tools:text="Name goes here" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_new"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginTop="8dp"
+        android:text="@string/create_generic"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
+        app:icon="@drawable/ic_add"
+        app:iconTint="?colorSecondary"
+        app:layout_constraintEnd_toStartOf="@id/action_edit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/target_name"
+        tools:visibility="visible" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_edit"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginTop="8dp"
+        android:text="@string/edit_generic"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
+        app:icon="@drawable/ic_edit_square"
+        app:iconTint="?colorSecondary"
+        app:layout_constraintEnd_toStartOf="@id/action_remove"
+        app:layout_constraintStart_toEndOf="@id/action_new"
+        app:layout_constraintTop_toBottomOf="@id/target_name"
+        tools:visibility="visible" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_remove"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginTop="8dp"
+        android:text="@string/remove_generic"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_body_1"
+        android:visibility="gone"
+        app:icon="@drawable/ic_action_delete"
+        app:iconTint="?colorSecondary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/action_edit"
+        app:layout_constraintTop_toBottomOf="@id/target_name"
+        tools:visibility="visible" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

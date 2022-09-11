@@ -44,7 +44,10 @@
     <string name="empty">empty</string>
     <string name="none">None</string>
     <string name="disabled_generic">Disabled</string>
+    <string name="create_generic">Create</string>
+    <string name="edit_generic">Edit</string>
     <string name="remove_generic">Remove</string>
+
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -824,6 +827,10 @@
     <string name="meta_replace_with">Replace with…</string>
     <string name="meta_tag_all_selected">Tag all selected books</string>
     <string name="meta_tag_all_selected_confirm">Tag all %d selected books with \'%s\' ?</string>
+    <string name="meta_rename_new_name">New name</string>
+    <string name="meta_rename_new_rule">Remember for future downloads</string>
+    <string name="meta_rule_source">Source name</string>
+    <string name="meta_rule_target">Target name</string>
 
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>

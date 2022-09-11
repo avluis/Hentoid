@@ -734,10 +734,43 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "17:6641557876936961674",
+      "lastPropertyId": "4:3985044306907702935",
+      "name": "RenamingRule",
+      "properties": [
+        {
+          "id": "1:5913557841241390262",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1947933496531930303",
+          "name": "attributeType",
+          "indexId": "24:3206913621463801366",
+          "type": 5,
+          "flags": 8
+        },
+        {
+          "id": "3:3557145121202799570",
+          "name": "sourceName",
+          "indexId": "25:4599952400679226647",
+          "type": 9,
+          "flags": 2048
+        },
+        {
+          "id": "4:3985044306907702935",
+          "name": "targetName",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "16:6863432510804694130",
-  "lastIndexId": "23:4823016725405687888",
+  "lastEntityId": "17:6641557876936961674",
+  "lastIndexId": "25:4599952400679226647",
   "lastRelationId": "3:1412032361666532056",
   "lastSequenceId": "0:0",
   "modelVersion": 5,

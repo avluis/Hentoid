@@ -55,6 +55,7 @@ import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
+import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.ShuffleRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
@@ -427,7 +428,7 @@ public class ObjectBoxDB {
     }
 
     Set<String> selectAllMergedContentUrls(Site site) {
-        Query<Chapter> allChapterQ = store.boxFor(Chapter.class).query().startsWith(Chapter_.url,site.getUrl(), QueryBuilder.StringOrder.CASE_INSENSITIVE).build();
+        Query<Chapter> allChapterQ = store.boxFor(Chapter.class).query().startsWith(Chapter_.url, site.getUrl(), QueryBuilder.StringOrder.CASE_INSENSITIVE).build();
         return new HashSet<>(Stream.of(allChapterQ.property(Chapter_.url).findStrings()).toList());
     }
 
@@ -1426,6 +1427,13 @@ public class ObjectBoxDB {
 
     void insertSearchRecords(@NonNull List<SearchRecord> records) {
         store.boxFor(SearchRecord.class).put(records);
+    }
+
+    // RENAMING RULES
+
+    @Nullable
+    RenamingRule selectRenamingRule(long id) {
+        return store.boxFor(RenamingRule.class).get(id);
     }
 
     // GROUPS

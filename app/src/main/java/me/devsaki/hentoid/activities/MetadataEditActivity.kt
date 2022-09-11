@@ -46,6 +46,7 @@ import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.metadata.AttributeTypePickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.GalleyPickerDialogFragment
 import me.devsaki.hentoid.fragments.metadata.MetaEditBottomSheetFragment
+import me.devsaki.hentoid.fragments.metadata.MetaRenameDialogFragment
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.ThemeHelper
@@ -53,10 +54,11 @@ import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import timber.log.Timber
 
 
 class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
-    AttributeTypePickerDialogFragment.Parent {
+    AttributeTypePickerDialogFragment.Parent, MetaRenameDialogFragment.Parent {
 
     // == Communication
     private lateinit var viewModel: MetadataEditViewModel
@@ -413,10 +415,18 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
         val powerMenuBuilder = PowerMenu.Builder(this)
             .addItem(
                 PowerMenuItem(
+                    resources.getString(R.string.menu_edit_name),
+                    R.drawable.ic_edit_square,
+                    false,
+                    0
+                )
+            )
+            .addItem(
+                PowerMenuItem(
                     resources.getString(R.string.meta_replace_with),
                     R.drawable.ic_replace,
                     false,
-                    0
+                    1
                 )
             )
             .addItem(
@@ -424,7 +434,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                     resources.getString(R.string.remove_generic),
                     R.drawable.ic_action_delete,
                     false,
-                    1
+                    3
                 )
             )
             .setAnimation(MenuAnimation.SHOWUP_TOP_LEFT)
@@ -453,7 +463,13 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
         powerMenu.onMenuItemClickListener =
             OnMenuItemClickListener { _: Int, it: PowerMenuItem ->
                 when (it.tag) {
-                    0 -> { // Replace with...
+                    0 -> { // Rename
+                        MetaRenameDialogFragment.invoke(
+                            this,
+                            item.attribute.id
+                        )
+                    }
+                    1 -> { // Replace with...
                         MetaEditBottomSheetFragment.invoke(
                             this,
                             supportFragmentManager, false, item.attribute.id
@@ -534,6 +550,11 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     override fun onNewAttributeSelected(name: String, type: AttributeType) {
         viewModel.createAssignNewAttribute(name, type)
         viewModel.resetSelectionFilter()
+    }
+
+    override fun onRenameAttribute(newName: String, id: Long, createRule: Boolean) {
+        Timber.d("%s %s %s", newName, id, createRule)
+        TODO("Not yet implemented")
     }
 
     companion object {
