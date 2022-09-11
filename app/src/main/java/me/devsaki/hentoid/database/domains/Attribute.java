@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
@@ -166,6 +167,11 @@ public class Attribute {
 
     public ToOne<Group> getGroup() {
         return group;
+    }
+
+    @Nullable
+    public Group getLinkedGroup() {
+        return (group != null && !group.isNull()) ? group.getTarget() : null;
     }
 
     public void putGroup(@NonNull Group group) {

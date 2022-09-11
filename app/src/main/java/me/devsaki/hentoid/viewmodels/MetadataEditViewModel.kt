@@ -13,9 +13,11 @@ import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.ContentHelper
 import me.devsaki.hentoid.util.GroupHelper
+import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import org.threeten.bp.Instant
@@ -180,7 +182,7 @@ class MetadataEditViewModel(
         setAttr(null, attr)
     }
 
-    fun createAssignNewAttribute(attrName: String, type: AttributeType) : Attribute {
+    fun createAssignNewAttribute(attrName: String, type: AttributeType): Attribute {
         val attr = ContentHelper.addAttribute(type, attrName, dao)
         addContentAttribute(attr)
         return attr
@@ -254,6 +256,7 @@ class MetadataEditViewModel(
     private fun doSaveContent() {
         contentList.value?.forEach {
             it.lastEditDate = Instant.now().toEpochMilli()
+            it.author = ContentHelper.formatBookAuthor(it)
             dao.insertContent(it)
             // Assign Content to each artist/circle group
             it.attributes.forEach { attr ->
@@ -263,5 +266,50 @@ class MetadataEditViewModel(
             ContentHelper.persistJson(getApplication(), it)
         }
         GroupHelper.updateGroupsJson(getApplication(), dao)
+    }
+
+    fun renameAttribute(newName: String, id: Long, createRule: Boolean) {
+        leaveDisposable = Completable.fromRunnable { doRenameAttribute(newName, id, createRule) }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { leaveDisposable.dispose() }
+            ) { t: Throwable? -> Timber.e(t) }
+    }
+
+    private fun doRenameAttribute(newName: String, id: Long, createRule: Boolean) {
+        val attr = dao.selectAttribute(id) ?: return
+
+        // Persist rule
+        if (createRule) {
+            dao.insertRenamingRule(RenamingRule(attr.type, attr.name, newName))
+            Helper.updateRenamingRulesJson(getApplication(), dao)
+        }
+
+        // Update attribute
+        attr.name = newName
+        attr.displayName = newName
+        dao.insertAttribute(attr)
+
+        // Update corresponding group if needed
+        val group = attr.linkedGroup
+        if (group != null) {
+            group.name = newName
+            dao.insertGroup(group)
+            GroupHelper.updateGroupsJson(getApplication(), dao)
+        }
+
+        // Update the 'author' pre-calculated field for all related books if needed
+        if (attr.type.equals(AttributeType.ARTIST) || attr.type.equals(AttributeType.CIRCLE)) {
+            val contents = attr.contents
+            if (contents != null && !contents.isEmpty()) {
+                contents.forEach {
+                    it.lastEditDate = Instant.now().toEpochMilli()
+                    it.author = ContentHelper.formatBookAuthor(it)
+                    dao.insertContent(it)
+                    ContentHelper.persistJson(getApplication(), it)
+                }
+            }
+        }
     }
 }

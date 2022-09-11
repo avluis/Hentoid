@@ -54,7 +54,6 @@ import me.devsaki.hentoid.viewholders.AttributeItem
 import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewmodels.MetadataEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import timber.log.Timber
 
 
 class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
@@ -553,8 +552,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
     }
 
     override fun onRenameAttribute(newName: String, id: Long, createRule: Boolean) {
-        Timber.d("%s %s %s", newName, id, createRule)
-        TODO("Not yet implemented")
+        viewModel.renameAttribute(newName, id, createRule)
     }
 
     companion object {

@@ -56,6 +56,7 @@ import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
 import me.devsaki.hentoid.database.domains.RenamingRule;
+import me.devsaki.hentoid.database.domains.RenamingRule_;
 import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.ShuffleRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
@@ -1434,6 +1435,32 @@ public class ObjectBoxDB {
     @Nullable
     RenamingRule selectRenamingRule(long id) {
         return store.boxFor(RenamingRule.class).get(id);
+    }
+
+    Query<RenamingRule> selectRenamingRulesQ(@NonNull AttributeType type, @NonNull String nameFilter) {
+        QueryCondition<RenamingRule> qc = null;
+        QueryCondition<RenamingRule> nameQc = null;
+        if (!nameFilter.isEmpty())
+            nameQc = RenamingRule_.sourceName.contains(nameFilter, QueryBuilder.StringOrder.CASE_INSENSITIVE).or(RenamingRule_.sourceName.contains(nameFilter, QueryBuilder.StringOrder.CASE_INSENSITIVE));
+        if (!type.equals(AttributeType.UNDEFINED)) {
+            qc = RenamingRule_.attributeType.equal(type.getCode());
+            if (nameQc != null) qc = qc.and(nameQc);
+        }
+        if (null == qc) qc = nameQc;
+        if (null == qc) return store.boxFor(RenamingRule.class).query().build();
+        else return store.boxFor(RenamingRule.class).query(qc).build();
+    }
+
+    public long insertRenamingRule(@NonNull RenamingRule rule) {
+        return store.boxFor(RenamingRule.class).put(rule);
+    }
+
+    public void deleteRenamingRule(long id) {
+        store.boxFor(RenamingRule.class).remove(id);
+    }
+
+    public void deleteAllRenamingRules() {
+        store.boxFor(RenamingRule.class).removeAll();
     }
 
     // GROUPS

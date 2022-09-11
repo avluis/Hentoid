@@ -317,6 +317,16 @@ public interface CollectionDAO {
     @Nullable
     RenamingRule selectRenamingRule(long id);
 
+    LiveData<List<RenamingRule>> selectRenamingRulesLive(@NonNull AttributeType type, String nameFilter);
+
+    List<RenamingRule> selectRenamingRules(@NonNull AttributeType type, String nameFilter);
+
+    long insertRenamingRule(@NonNull RenamingRule rule);
+
+    void deleteRenamingRule(long id);
+
+    void deleteAllRenamingRules();
+
 
     // RESOURCES
 

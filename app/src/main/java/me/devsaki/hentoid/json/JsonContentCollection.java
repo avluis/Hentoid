@@ -11,6 +11,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Group;
+import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.Grouping;
 
@@ -20,6 +21,7 @@ public class JsonContentCollection {
     private List<JsonContent> queue = new ArrayList<>();
     private List<JsonCustomGrouping> groupings = new ArrayList<>();
     private List<JsonBookmark> bookmarks = new ArrayList<>();
+    private List<JsonRenamingRule> renamingRules = new ArrayList<>();
 
 
     public JsonContentCollection() {
@@ -71,7 +73,15 @@ public class JsonContentCollection {
         this.bookmarks = Stream.of(bookmarks).map(JsonBookmark::fromEntity).toList();
     }
 
+    public List<RenamingRule> getRenamingRules() {
+        return Stream.of(renamingRules).map(JsonRenamingRule::toEntity).toList();
+    }
+
+    public void setRenamingRules(List<RenamingRule> data) {
+        this.renamingRules = Stream.of(data).map(JsonRenamingRule::fromEntity).toList();
+    }
+
     public boolean isEmpty() {
-        return library.isEmpty() && queue.isEmpty() && groupings.isEmpty() && bookmarks.isEmpty();
+        return library.isEmpty() && queue.isEmpty() && groupings.isEmpty() && bookmarks.isEmpty() && renamingRules.isEmpty();
     }
 }

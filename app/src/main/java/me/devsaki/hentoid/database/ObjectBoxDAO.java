@@ -52,6 +52,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.SearchHelper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
@@ -916,6 +917,27 @@ public class ObjectBoxDAO implements CollectionDAO {
     @Nullable
     public RenamingRule selectRenamingRule(long id) {
         return db.selectRenamingRule(id);
+    }
+
+    public LiveData<List<RenamingRule>> selectRenamingRulesLive(@NonNull AttributeType type, String nameFilter) {
+        return new ObjectBoxLiveData<>(db.selectRenamingRulesQ(type, StringHelper.protect(nameFilter)));
+    }
+
+    public List<RenamingRule> selectRenamingRules(@NonNull AttributeType type, String nameFilter) {
+        Query<RenamingRule> query = db.selectRenamingRulesQ(type, StringHelper.protect(nameFilter));
+        return query.find();
+    }
+
+    public long insertRenamingRule(@NonNull RenamingRule rule) {
+        return db.insertRenamingRule(rule);
+    }
+
+    public void deleteRenamingRule(long id) {
+        db.deleteRenamingRule(id);
+    }
+
+    public void deleteAllRenamingRules() {
+        db.deleteAllRenamingRules();
     }
 
 
