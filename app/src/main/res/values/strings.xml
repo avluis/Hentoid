@@ -792,6 +792,10 @@
     </plurals>
     <string name="duplicate_empty_first_use">Nothing to display - Run a new duplicate search</string>
     <string name="duplicate_processing">Detecting duplicates…</string>
+    <plurals name="duplicate_main_title">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> item left</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> items left</item>
+    </plurals>
     <plurals name="duplicate_detail_title">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> duplicate</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> duplicates</item>

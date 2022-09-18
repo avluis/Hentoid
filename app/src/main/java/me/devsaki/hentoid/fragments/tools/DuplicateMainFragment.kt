@@ -262,6 +262,8 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     private fun onDuplicatesChanged(duplicates: List<DuplicateEntry>) {
         Timber.i(">> New duplicates ! Size=%s", duplicates.size)
 
+        activity.get()?.updateTitle(duplicates.size * -1)
+
         // Update settings panel visibility
         if (duplicates.isEmpty()) {
             binding.emptyTxt.visibility = View.VISIBLE

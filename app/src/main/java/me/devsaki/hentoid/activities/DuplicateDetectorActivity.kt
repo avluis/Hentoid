@@ -76,7 +76,7 @@ class DuplicateDetectorActivity : BaseActivity() {
                 enableCurrentFragment()
                 hideSettingsBar()
                 updateToolbar(0, 0, 0)
-                updateTitle(-1)
+                updateTitle(if (viewModel.allDuplicates.value != null) viewModel.allDuplicates.value!!.size * -1 else 0)
                 updateSelectionToolbar()
             }
         })
@@ -133,10 +133,14 @@ class DuplicateDetectorActivity : BaseActivity() {
     }
 
     fun updateTitle(count: Int) {
-        binding!!.toolbar.title = if (count > -1) resources.getQuantityString(
+        binding!!.toolbar.title = if (count > 0) resources.getQuantityString(
             R.plurals.duplicate_detail_title,
             count,
             count
+        ) else if (count < 0) resources.getQuantityString(
+            R.plurals.duplicate_main_title,
+            -count,
+            -count
         ) else resources.getString(R.string.title_activity_duplicate_detector)
     }
 
