@@ -76,7 +76,8 @@ class DuplicateDetectorActivity : BaseActivity() {
                 enableCurrentFragment()
                 hideSettingsBar()
                 updateToolbar(0, 0, 0)
-                viewModel.allDuplicates.observe(this@DuplicateDetectorActivity, { updateTitle(it.size * -1) })
+                viewModel.allDuplicates.observe(this@DuplicateDetectorActivity,
+                        { updateTitle(it.groupBy { it.referenceContent }.mapValues { it.value.sumOf { 1 as Int } }.size * -1) })
                 updateSelectionToolbar()
             }
         })
