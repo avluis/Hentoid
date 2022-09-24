@@ -7,10 +7,7 @@
     android:background="@color/dark_gray"
     android:clickable="true"
     android:focusable="true"
-    android:padding="16dp"
-    android:visibility="gone"
-    app:layout_constraintTop_toBottomOf="@id/toolbar"
-    tools:visibility="visible">
+    android:padding="16dp">
 
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/sort_asc_desc"

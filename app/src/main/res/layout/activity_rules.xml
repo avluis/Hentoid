@@ -59,10 +59,11 @@
         app:srcCompat="@drawable/ic_add"
         tools:ignore="ContentDescription,SpeakableTextPresentCheck" />
 
+    <!--
     <include
         android:id="@+id/controls"
         layout="@layout/include_rules_controls"
         android:clickable="true"
         android:focusable="true" />
-
+-->
 </androidx.constraintlayout.widget.ConstraintLayout>

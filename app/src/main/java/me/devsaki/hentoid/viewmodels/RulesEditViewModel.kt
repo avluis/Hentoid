@@ -11,10 +11,8 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
-import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
-import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
 import timber.log.Timber
 
 
@@ -29,19 +27,18 @@ class RulesEditViewModel(
     private var filterDisposable = Disposables.empty()
     private var leaveDisposable = Disposables.empty()
 
+    // VARS
+    private var query = ""
+
     // LIVEDATAS
     private var currentRulesSource: LiveData<List<RenamingRule>>? = null
     private val rulesList = MediatorLiveData<List<RenamingRule>>()
-
-
-    private val attributeTypes = MutableLiveData<List<AttributeType>>()
-    private val contentAttributes = MutableLiveData<List<Attribute>>()
-    private val libraryAttributes = MutableLiveData<AttributeQueryResult>()
+    private val attributeTypeFilter = MutableLiveData<AttributeType>()
 
 
     init {
-        contentAttributes.value = ArrayList()
-        loadRules("", AttributeType.UNDEFINED)
+        attributeTypeFilter.value = AttributeType.UNDEFINED
+        loadRules()
     }
 
     override fun onCleared() {
@@ -57,19 +54,18 @@ class RulesEditViewModel(
         return rulesList
     }
 
-    fun getAttributeTypes(): LiveData<List<AttributeType>> {
-        return attributeTypes
+    fun getAttributeTypeFilter(): LiveData<AttributeType> {
+        return attributeTypeFilter
     }
 
-    fun getContentAttributes(): LiveData<List<Attribute>> {
-        return contentAttributes
+
+    fun setAttributeType(attributeType: AttributeType) {
+        attributeTypeFilter.postValue(attributeType)
+        loadRules()
     }
 
-    fun getLibraryAttributes(): LiveData<AttributeQueryResult> {
-        return libraryAttributes
-    }
-
-    fun loadRules(query: String, attributeType: AttributeType) {
+    fun loadRules() {
+        val attributeType = attributeTypeFilter.value!!
         if (currentRulesSource != null) rulesList.removeSource(currentRulesSource!!)
         currentRulesSource = dao.selectRenamingRulesLive(attributeType, query)
         rulesList.addSource(currentRulesSource!!, rulesList::setValue)
@@ -115,14 +111,5 @@ class RulesEditViewModel(
 
     private fun doRemoveRules(itemIds: List<Long>) {
         dao.deleteRenamingRules(itemIds)
-    }
-
-    /**
-     * Set the attributes type to search in the Atttribute search
-     *
-     * @param value Attribute types the searches will be performed for
-     */
-    fun setAttributeTypes(value: List<AttributeType>) {
-        attributeTypes.postValue(value)
     }
 }

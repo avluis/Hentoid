@@ -68,3 +68,7 @@ fun Context.clearAppCache() {
         Timber.e(e, "Error when clearing app cache upon update")
     }
 }
+
+internal fun Context.isFinishing(): Boolean {
+    return this is Activity && this.isFinishing
+}

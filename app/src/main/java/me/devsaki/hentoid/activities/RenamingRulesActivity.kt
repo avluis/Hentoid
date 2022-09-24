@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import androidx.lifecycle.ViewModelProvider
-import com.annimon.stream.Optional
-import com.annimon.stream.Stream
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
@@ -20,11 +18,9 @@ import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.databinding.ActivityRulesBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.metadata.MetaEditRuleDialogFragment
-import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.fragments.metadata.MetaEditRuleTopPanel
 import me.devsaki.hentoid.util.ThemeHelper
-import me.devsaki.hentoid.viewholders.AttributeTypeFilterItem
 import me.devsaki.hentoid.viewholders.RuleItem
-import me.devsaki.hentoid.viewholders.TextItem
 import me.devsaki.hentoid.viewmodels.RulesEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
@@ -43,30 +39,9 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
     private val fastAdapter = FastAdapter.with(itemAdapter)
     private lateinit var selectExtension: SelectExtension<RuleItem>
 
-    // == TOP PANEL UI
-
-    // Field filter
-    private val fieldItemAdapter = ItemAdapter<TextItem<Int>>()
-    private val fieldFastAdapter: FastAdapter<TextItem<Int>> = FastAdapter.with(fieldItemAdapter)
-    private var fieldSelectExtension: SelectExtension<TextItem<Int>>? = null
-
-    // Attribute type filter
-    private val typeItemAdapter = ItemAdapter<AttributeTypeFilterItem>()
-    private val typeFastAdapter = FastAdapter.with(typeItemAdapter)
-
-
     // == Vars
     private var queryFilter = ""
     private var attributeTypeFilter = AttributeType.UNDEFINED
-
-    private val allAttributeTypes = listOf(
-        AttributeType.ARTIST,
-        AttributeType.CIRCLE,
-        AttributeType.SERIE,
-        AttributeType.TAG,
-        AttributeType.CHARACTER,
-        AttributeType.LANGUAGE
-    )
 
     private val ruleItemDiffCallback: DiffCallback<RuleItem> =
         object : DiffCallback<RuleItem> {
@@ -131,8 +106,6 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
     }
 
     private fun bindUI() {
-        bindTopPanelUI()
-
         binding?.let {
             it.toolbar.setNavigationOnClickListener { onBackPressed() }
             it.toolbar.setOnMenuItemClickListener(this::onToolbarItemClicked)
@@ -142,54 +115,6 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
                 MetaEditRuleDialogFragment.invoke(this, true, 0, attributeTypeFilter)
             }
         }
-    }
-
-    private fun bindTopPanelUI() {
-        // Gets (or creates and attaches if not yet existing) the extension from the given `FastAdapter`
-        fieldSelectExtension = fieldFastAdapter.getOrCreateExtension(SelectExtension::class.java)
-        fieldSelectExtension?.let {
-            it.isSelectable = true
-            it.multiSelect = false
-            it.selectOnLongClick = false
-            it.selectWithItemUpdate = true
-            it.allowDeselection = false
-            it.selectionListener = object : ISelectionListener<TextItem<Int>> {
-                override fun onSelectionChanged(item: TextItem<Int>, selected: Boolean) {
-                    if (selected) onSortFieldChanged()
-                }
-            }
-        }
-        binding?.let {
-            it.controls.fieldList.adapter = fieldFastAdapter
-            fieldItemAdapter.set(getSortFields())
-
-            it.controls.tagFilter.adapter = typeFastAdapter
-            typeItemAdapter.set(allAttributeTypes.map { attrType ->
-                AttributeTypeFilterItem(
-                    attrType,
-                    false
-                )
-            })
-            typeFastAdapter.onClickListener =
-                { _: View?, _: IAdapter<AttributeTypeFilterItem>, i: AttributeTypeFilterItem, _: Int ->
-                    onAttributeFilterChanged(i)
-                }
-        }
-    }
-
-    private fun getSortFields(): List<TextItem<Int>> {
-        return listOf(
-            TextItem(
-                resources.getString(R.string.meta_rule_source),
-                Preferences.Constant.ORDER_FIELD_SOURCE_NAME,
-                false
-            ),
-            TextItem(
-                resources.getString(R.string.meta_rule_target),
-                Preferences.Constant.ORDER_FIELD_TARGET_NAME,
-                false
-            )
-        )
     }
 
     private fun bindInteractions() {
@@ -256,9 +181,8 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
     }
 
     private fun showSortFilterPanel() {
-        val currentVisibility = binding?.controls?.root?.visibility
-        binding?.controls?.root?.visibility =
-            if (View.VISIBLE == currentVisibility) View.GONE else View.VISIBLE
+        val topPanel = MetaEditRuleTopPanel(this)
+        topPanel.showAsDropDown(binding!!.toolbar)
     }
 
     private fun deleteSelectedItems() {
@@ -279,19 +203,6 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
             .create().show()
     }
 
-    /**
-     * Callback for attribute filter item click
-     *
-     * @param item AttributeTypeFilterItem that has been clicked on
-     */
-    private fun onAttributeFilterChanged(item: AttributeTypeFilterItem): Boolean {
-        attributeTypeFilter = if (item.isSelected)
-            item.tag as AttributeType
-        else
-            AttributeType.UNDEFINED
-        viewModel.loadRules(queryFilter, attributeTypeFilter)
-        return true
-    }
 
     /**
      * Callback for attribute item click
@@ -300,35 +211,12 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
      */
     private fun onItemClick(item: RuleItem): Boolean {
         if (selectExtension.selectOnLongClick) {
-            if (item.tag != null) editRule(item.rule)
+            editRule(item.rule)
             return true
         }
         return false
     }
 
-    private fun updateSortDirection() {
-        binding?.controls?.let {
-            val currentPrefSortDesc = Preferences.isRuleSortDesc()
-            it.sortAscDesc.check(if (currentPrefSortDesc) R.id.sort_descending else R.id.sort_ascending)
-        }
-    }
-
-    /**
-     * Callback for any selection change (item added to or removed from selection)
-     */
-    private fun onSortFieldChanged() {
-        if (null == fieldSelectExtension) return
-        val item: Optional<TextItem<Int>> =
-            Stream.of(fieldSelectExtension!!.selectedItems).findFirst()
-        if (item.isPresent) {
-            val code = item.get().getTag()
-            if (code != null) {
-                Preferences.setRuleSortField(code)
-                viewModel.loadRules(queryFilter, attributeTypeFilter)
-            }
-        }
-        updateSortDirection()
-    }
 
     private fun editRule(rule: RenamingRule) {
         MetaEditRuleDialogFragment.invoke(this, false, rule.id)
