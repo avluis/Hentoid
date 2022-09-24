@@ -7,7 +7,7 @@
     android:layout_gravity="center"
     android:clipToPadding="false"
     android:padding="8dp"
-    tools:context=".activities.MetadataEditActivity">
+    tools:context=".activities.RenamingRulesActivity">
 
     <com.skydoves.powerspinner.PowerSpinnerView
         android:id="@+id/attributeType"
@@ -30,10 +30,10 @@
         tools:visibility="visible" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:layout_marginTop="8dp"
         android:id="@+id/source_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:hint="@string/meta_rule_source"
         app:layout_constraintTop_toBottomOf="@id/attributeType">
 
@@ -81,15 +81,17 @@
         android:layout_width="0dp"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_marginTop="8dp"
+        android:enabled="false"
         android:text="@string/create_generic"
-        android:textColor="?colorSecondary"
+        android:textColor="@color/secondary_color_selector"
         android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:icon="@drawable/ic_add"
-        app:iconTint="?colorSecondary"
+        app:iconTint="@color/secondary_color_selector"
         app:layout_constraintEnd_toStartOf="@id/action_edit"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/target_name"
+        app:strokeColor="@color/secondary_color_selector"
         tools:visibility="visible" />
 
     <com.google.android.material.button.MaterialButton
@@ -98,15 +100,17 @@
         android:layout_width="0dp"
         android:layout_height="?android:attr/actionBarSize"
         android:layout_marginTop="8dp"
+        android:enabled="false"
         android:text="@string/edit_generic"
-        android:textColor="?colorSecondary"
+        android:textColor="@color/secondary_color_selector"
         android:textSize="@dimen/text_body_1"
         android:visibility="gone"
         app:icon="@drawable/ic_edit_square"
-        app:iconTint="?colorSecondary"
+        app:iconTint="@color/secondary_color_selector"
         app:layout_constraintEnd_toStartOf="@id/action_remove"
         app:layout_constraintStart_toEndOf="@id/action_new"
         app:layout_constraintTop_toBottomOf="@id/target_name"
+        app:strokeColor="@color/secondary_color_selector"
         tools:visibility="visible" />
 
     <com.google.android.material.button.MaterialButton

@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.fragments.metadata
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -77,7 +79,7 @@ class MetaEditRuleDialogFragment : DialogFragment() {
                 )
                 binding.attributeType.setIsFocusable(true)
                 binding.attributeType.lifecycleOwner = viewLifecycleOwner
-                binding.attributeType.setItems(attributeTypes.map { AttributeType::getDisplayName })
+                binding.attributeType.setItems(attributeTypes.map { a -> resources.getString(a.displayName) })
             }
         } else {
             val rule = loadRule()
@@ -89,14 +91,90 @@ class MetaEditRuleDialogFragment : DialogFragment() {
             binding.targetName.editText?.setText(rule.targetName)
         }
 
-        binding.attributeType.visibility = if (isCreateMode) View.VISIBLE else View.GONE
-        binding.actionNew.visibility = if (isCreateMode) View.VISIBLE else View.GONE
-        binding.actionEdit.visibility = if (!isCreateMode) View.VISIBLE else View.GONE
-        binding.actionRemove.visibility = if (!isCreateMode) View.VISIBLE else View.GONE
+        binding.let {
+            binding.attributeType.setOnSpinnerItemSelectedListener<String> { _, _, _, _ -> updateNewBtnStates() }
 
-        binding.actionNew.setOnClickListener { onCreateClick() }
-        binding.actionEdit.setOnClickListener { onEditClick() }
-        binding.actionRemove.setOnClickListener { onRemoveClick() }
+            it.sourceName.editText?.addTextChangedListener(
+                object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        if (s != null) updateNewBtnStates()
+                    }
+
+                    override fun beforeTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        count: Int,
+                        after: Int
+                    ) {
+                    }
+
+                    override fun onTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        before: Int,
+                        count: Int
+                    ) {
+                    }
+                }
+            )
+
+            it.targetName.editText?.addTextChangedListener(
+                object : TextWatcher {
+                    override fun afterTextChanged(s: Editable?) {
+                        if (s != null) updateNewBtnStates()
+                    }
+
+                    override fun beforeTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        count: Int,
+                        after: Int
+                    ) {
+                    }
+
+                    override fun onTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        before: Int,
+                        count: Int
+                    ) {
+                    }
+                }
+            )
+
+            it.attributeType.visibility = if (isCreateMode) View.VISIBLE else View.GONE
+            it.actionNew.visibility = if (isCreateMode) View.VISIBLE else View.GONE
+            it.actionEdit.visibility = if (!isCreateMode) View.VISIBLE else View.GONE
+            it.actionRemove.visibility = if (!isCreateMode) View.VISIBLE else View.GONE
+
+            updateNewBtnStates()
+
+            it.actionNew.setOnClickListener { onCreateClick() }
+            it.actionEdit.setOnClickListener { onEditClick() }
+            it.actionRemove.setOnClickListener { onRemoveClick() }
+        }
+    }
+
+    private fun updateNewBtnStates() {
+        binding.let {
+            val typeIndex = it.attributeType.selectedIndex
+            val source = if (null == it.sourceName.editText) "" else it.sourceName.editText!!.text
+            val target = if (null == it.targetName.editText) "" else it.targetName.editText!!.text
+            val enabled =
+                ((typeIndex > -1 || !isCreateMode) && source.isNotEmpty() && target.isNotEmpty())
+
+            it.actionNew.isEnabled = enabled
+            it.actionEdit.isEnabled = enabled
+        }
+    }
+
+    private fun loadRule(): RenamingRule? {
+        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
+        try {
+            return dao.selectRenamingRule(ruleId)
+        } finally {
+            dao.cleanup()
+        }
     }
 
     private fun onCreateClick() {
@@ -122,21 +200,12 @@ class MetaEditRuleDialogFragment : DialogFragment() {
         dismissAllowingStateLoss()
     }
 
-    private fun loadRule(): RenamingRule? {
-        val dao: CollectionDAO = ObjectBoxDAO(requireContext())
-        try {
-            return dao.selectRenamingRule(ruleId)
-        } finally {
-            dao.cleanup()
-        }
-    }
-
     companion object {
         fun invoke(
             parent: FragmentActivity,
             createMode: Boolean,
             ruleId: Long,
-            attrType: AttributeType?
+            attrType: AttributeType? = null
         ) {
             val fragment = MetaEditRuleDialogFragment()
 
