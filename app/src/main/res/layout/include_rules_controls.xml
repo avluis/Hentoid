@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/dark_gray"
+    android:clickable="true"
+    android:focusable="true"
+    android:padding="16dp"
+    android:visibility="gone"
+    app:layout_constraintTop_toBottomOf="@id/toolbar"
+    tools:visibility="visible">
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/sort_asc_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:checkedButton="@id/sort_ascending"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sort_ascending"
+            style="@style/HentoidButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:text="@string/sort_ascending"
+            app:icon="@drawable/ic_simple_arrow_up" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sort_descending"
+            style="@style/HentoidButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".5"
+            android:text="@string/sort_descending"
+            app:icon="@drawable/ic_simple_arrow_down" />
+
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/field_list"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sort_asc_desc"
+        app:spanCount="2"
+        tools:listitem="@layout/item_text" />
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/filters_divider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:dividerColor="@color/medium_gray"
+        app:layout_constraintEnd_toEndOf="@id/field_list"
+        app:layout_constraintStart_toStartOf="@id/field_list"
+        app:layout_constraintTop_toBottomOf="@id/field_list" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/tag_filter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:textIsSelectable="false"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/filters_divider"
+        app:spanCount="2"
+        tools:listitem="@layout/item_badge" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

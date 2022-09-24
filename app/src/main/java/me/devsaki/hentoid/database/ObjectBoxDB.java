@@ -1447,8 +1447,19 @@ public class ObjectBoxDB {
             if (nameQc != null) qc = qc.and(nameQc);
         }
         if (null == qc) qc = nameQc;
-        if (null == qc) return store.boxFor(RenamingRule.class).query().build();
-        else return store.boxFor(RenamingRule.class).query(qc).build();
+
+        QueryBuilder<RenamingRule> qb;
+        if (null == qc) qb = store.boxFor(RenamingRule.class).query();
+        else qb = store.boxFor(RenamingRule.class).query(qc);
+
+        Property<RenamingRule> sortField = (Preferences.Constant.ORDER_FIELD_SOURCE_NAME == Preferences.getRuleSortField()) ? RenamingRule_.sourceName : RenamingRule_.targetName;
+        if (Preferences.isRuleSortDesc()) {
+            qb.orderDesc(sortField);
+        } else {
+            qb.order(sortField);
+        }
+
+        return qb.build();
     }
 
     public long insertRenamingRule(@NonNull RenamingRule rule) {
@@ -1459,8 +1470,8 @@ public class ObjectBoxDB {
         store.boxFor(RenamingRule.class).put(rules);
     }
 
-    public void deleteRenamingRule(long id) {
-        store.boxFor(RenamingRule.class).remove(id);
+    public void deleteRenamingRules(long[] ids) {
+        store.boxFor(RenamingRule.class).remove(ids);
     }
 
     public void deleteAllRenamingRules() {

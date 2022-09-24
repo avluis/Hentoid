@@ -70,7 +70,7 @@
     <string name="menu_edit_confirm">Conferma modifica</string>
     <string name="menu_edit_cancel">Annulla modifica</string>
     <string name="menu_edit_warning_custom">Il nuovo ordine personalizzato che stai per creare sovrascriverà quello precedente.</string>
-    <string name="menu_order">Ordina libri</string>
+    <string name="menu_sort_filter">Ordina libri</string>
     <string name="menu_delete_single">Elimina</string>
     <string name="menu_change_group">Passa al gruppo…</string>
     <string name="menu_open_folder">Apri la cartella contenente</string>

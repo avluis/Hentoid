@@ -193,6 +193,10 @@
             android:label="@string/title_activity_meta_edit"
             tools:ignore="UnusedAttribute" />
         <activity
+            android:name=".activities.RenamingRulesActivity"
+            android:label="@string/title_activity_rules"
+            tools:ignore="UnusedAttribute" />
+        <activity
             android:name=".activities.IntentActivity"
             android:exported="true"
             android:theme="@style/Theme.Invisible">

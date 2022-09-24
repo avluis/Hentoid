@@ -290,6 +290,26 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getRuleSortField() {
+        return sharedPreferences.getInt(Key.ORDER_RULE_FIELD, Default.ORDER_RULE_FIELD);
+    }
+
+    public static void setRuleSortField(int sortField) {
+        sharedPreferences.edit()
+                .putInt(Key.ORDER_RULE_FIELD, sortField)
+                .apply();
+    }
+
+    public static boolean isRuleSortDesc() {
+        return sharedPreferences.getBoolean(Key.ORDER_RULE_DESC, Default.ORDER_RULE_DESC);
+    }
+
+    public static void setRuleSortDesc(boolean isDesc) {
+        sharedPreferences.edit()
+                .putBoolean(Key.ORDER_RULE_DESC, isDesc)
+                .apply();
+    }
+
     public static int getSearchAttributesSortOrder() {
         return Integer.parseInt(sharedPreferences.getString(Key.SEARCH_ORDER_ATTRIBUTE_LISTS, Default.SEARCH_ORDER_ATTRIBUTES + "") + "");
     }
@@ -879,6 +899,8 @@ public final class Preferences {
         static final String ORDER_CONTENT_DESC = "pref_order_content_desc";
         static final String ORDER_GROUP_FIELD = "pref_order_group_field";
         static final String ORDER_GROUP_DESC = "pref_order_group_desc";
+        static final String ORDER_RULE_FIELD = "pref_order_rule_field";
+        static final String ORDER_RULE_DESC = "pref_order_rule_desc";
         static final String SEARCH_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String SEARCH_COUNT_ATTRIBUTE_RESULTS = "pref_order_attribute_count";
         static final String FIRST_RUN = "pref_first_run";
@@ -991,8 +1013,10 @@ public final class Preferences {
         static final int QUANTITY_PER_PAGE = 20;
         public static final int ORDER_CONTENT_FIELD = Constant.ORDER_FIELD_TITLE;
         public static final int ORDER_GROUP_FIELD = Constant.ORDER_FIELD_TITLE;
+        public static final int ORDER_RULE_FIELD = Constant.ORDER_FIELD_SOURCE_NAME;
         static final boolean ORDER_CONTENT_DESC = false;
         static final boolean ORDER_GROUP_DESC = false;
+        static final boolean ORDER_RULE_DESC = false;
         static final int SEARCH_ORDER_ATTRIBUTES = Constant.SEARCH_ORDER_ATTRIBUTES_COUNT;
         static final boolean SEARCH_COUNT_ATTRIBUTE_RESULTS = true;
         static final boolean FIRST_RUN = true;
@@ -1100,6 +1124,8 @@ public final class Preferences {
         public static final int ORDER_FIELD_CHILDREN = 8; // Groups only
         public static final int ORDER_FIELD_READ_PROGRESS = 9;
         public static final int ORDER_FIELD_DOWNLOAD_COMPLETION_DATE = 10;
+        public static final int ORDER_FIELD_SOURCE_NAME = 11;
+        public static final int ORDER_FIELD_TARGET_NAME = 12;
         public static final int ORDER_FIELD_CUSTOM = 98;
         public static final int ORDER_FIELD_RANDOM = 99;
 

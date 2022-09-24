@@ -53,6 +53,11 @@
             app:iconSpaceReserved="false" />
     </PreferenceScreen>
     <Preference
+        android:icon="@drawable/ic_lightbulb"
+        android:key="tools_renaming_rules"
+        android:summary="@string/tools_renaming_rules_summary"
+        android:title="@string/tools_renaming_rules_title" />
+    <Preference
         android:icon="@drawable/ic_logs"
         android:key="tools_latest_logs"
         android:summary="@string/tools_latest_logs_summary"

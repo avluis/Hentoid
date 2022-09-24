@@ -936,8 +936,8 @@ public class ObjectBoxDAO implements CollectionDAO {
         db.insertRenamingRules(rules);
     }
 
-    public void deleteRenamingRule(long id) {
-        db.deleteRenamingRule(id);
+    public void deleteRenamingRules(List<Long> ids) {
+        db.deleteRenamingRules(Helper.getPrimitiveArrayFromList(ids));
     }
 
     public void deleteAllRenamingRules() {

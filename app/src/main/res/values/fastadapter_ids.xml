@@ -13,4 +13,5 @@
     <item name="text" type="id"/>
     <item name="group" type="id"/>
     <item name="expandable_item" type="id"/>
+    <item name="renamingRule" type="id"/>
 </resources>

@@ -325,7 +325,7 @@ public interface CollectionDAO {
 
     void insertRenamingRules(@NonNull List<RenamingRule> rules);
 
-    void deleteRenamingRule(long id);
+    void deleteRenamingRules(List<Long> ids);
 
     void deleteAllRenamingRules();
 

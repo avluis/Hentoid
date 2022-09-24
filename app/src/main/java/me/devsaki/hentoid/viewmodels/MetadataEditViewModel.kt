@@ -31,7 +31,6 @@ class MetadataEditViewModel(
 
     // Disposables (to cleanup Rx calls and avoid memory leaks)
     private val compositeDisposable = CompositeDisposable()
-    private val countDisposable = Disposables.empty()
     private var filterDisposable = Disposables.empty()
     private var leaveDisposable = Disposables.empty()
 
@@ -51,7 +50,6 @@ class MetadataEditViewModel(
     override fun onCleared() {
         super.onCleared()
         filterDisposable.dispose()
-        countDisposable.dispose()
         dao.cleanup()
         compositeDisposable.clear()
     }

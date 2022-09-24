@@ -20,6 +20,7 @@ public class RenamingRule {
     private String sourceName;
     private String targetName;
 
+
     public RenamingRule() { // Required by ObjectBox when an alternate constructor exists
     }
 
@@ -39,6 +40,14 @@ public class RenamingRule {
 
     public String getTargetName() {
         return targetName;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
+    }
+
+    public void setTargetName(String targetName) {
+        this.targetName = targetName;
     }
 
     @Override
