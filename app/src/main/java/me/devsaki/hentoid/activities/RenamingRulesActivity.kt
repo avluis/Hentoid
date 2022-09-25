@@ -31,8 +31,9 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
     // == Communication
     private lateinit var viewModel: RulesEditViewModel
 
-    // == MAIN SCREEN UI
+    // == UI
     private var binding: ActivityRulesBinding? = null
+    private lateinit var topPanel: MetaEditRuleTopPanel
 
     // Rules
     private val itemAdapter = ItemAdapter<RuleItem>()
@@ -93,6 +94,7 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
         bindInteractions()
 
         viewModel.getRules().observe(this) { this.onRulesChanged(it) }
+        viewModel.getAttributeTypeFilter().observe(this) { attributeTypeFilter = it }
     }
 
     override fun onDestroy() {
@@ -115,6 +117,7 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
                 MetaEditRuleDialogFragment.invoke(this, true, 0, attributeTypeFilter)
             }
         }
+        topPanel = MetaEditRuleTopPanel(this)
     }
 
     private fun bindInteractions() {
@@ -181,7 +184,6 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
     }
 
     private fun showSortFilterPanel() {
-        val topPanel = MetaEditRuleTopPanel(this)
         topPanel.showAsDropDown(binding!!.toolbar)
     }
 

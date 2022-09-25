@@ -67,6 +67,8 @@ class MetaEditRuleTopPanel(activity: RenamingRulesActivity) : DefaultLifecycleOb
 
         val vmFactory = ViewModelFactory(activity.application)
         viewModel = ViewModelProvider(activity, vmFactory)[RulesEditViewModel::class.java]
+
+        viewModel.getAttributeTypeFilter().observe(activity) { updateAttributeFilters(it) }
     }
 
     private fun setLifecycleOwnerFromContext(context: Context) {
@@ -78,6 +80,10 @@ class MetaEditRuleTopPanel(activity: RenamingRulesActivity) : DefaultLifecycleOb
     private fun setLifecycleOwner(lifecycleOwner: LifecycleOwner) {
         lifecycleOwner.lifecycle.addObserver(this)
         this.lifecycleOwner = lifecycleOwner
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        dismiss()
     }
 
     private fun initFrame(activity: RenamingRulesActivity) {
@@ -112,21 +118,28 @@ class MetaEditRuleTopPanel(activity: RenamingRulesActivity) : DefaultLifecycleOb
         }
         binding.let {
             it.fieldList.adapter = fieldFastAdapter
-            fieldItemAdapter.set(getSortFields(context))
+            fieldItemAdapter.set(getSortFields(context, Preferences.getRuleSortField()))
 
             it.tagFilter.adapter = typeFastAdapter
-            typeItemAdapter.set(allAttributeTypes.map { attrType ->
-                AttributeTypeFilterItem(
-                    attrType,
-                    false
-                )
-            })
-
-            typeFastAdapter.onClickListener =
-                { _: View?, _: IAdapter<AttributeTypeFilterItem>, i: AttributeTypeFilterItem, _: Int ->
-                    onAttributeFilterChanged(i)
-                }
+            it.sortAscDesc.addOnButtonCheckedListener { _, i, b ->
+                if (!b) return@addOnButtonCheckedListener
+                Preferences.setRuleSortDesc(i == R.id.sort_descending)
+                viewModel.loadRules()
+            }
         }
+        typeFastAdapter.onClickListener =
+            { _: View?, _: IAdapter<AttributeTypeFilterItem>, i: AttributeTypeFilterItem, _: Int ->
+                onAttributeFilterChanged(i)
+            }
+    }
+
+    private fun updateAttributeFilters(currentFilter: AttributeType) {
+        typeItemAdapter.set(allAttributeTypes.map { attrType ->
+            AttributeTypeFilterItem(
+                attrType,
+                currentFilter == attrType
+            )
+        })
     }
 
     fun showAsDropDown(anchor: View) {
@@ -164,9 +177,9 @@ class MetaEditRuleTopPanel(activity: RenamingRulesActivity) : DefaultLifecycleOb
      */
     private fun onAttributeFilterChanged(item: AttributeTypeFilterItem): Boolean {
         val attributeTypeFilter = if (item.isSelected)
-            item.tag as AttributeType
-        else
             AttributeType.UNDEFINED
+        else
+            item.tag as AttributeType
         viewModel.setAttributeType(attributeTypeFilter)
         return true
     }
@@ -189,17 +202,17 @@ class MetaEditRuleTopPanel(activity: RenamingRulesActivity) : DefaultLifecycleOb
     }
 
 
-    private fun getSortFields(context: Context): List<TextItem<Int>> {
+    private fun getSortFields(context: Context, currentSortField: Int): List<TextItem<Int>> {
         return listOf(
             TextItem(
                 context.resources.getString(R.string.meta_rule_source),
                 Preferences.Constant.ORDER_FIELD_SOURCE_NAME,
-                false
+                false, (Preferences.Constant.ORDER_FIELD_SOURCE_NAME == currentSortField)
             ),
             TextItem(
                 context.resources.getString(R.string.meta_rule_target),
                 Preferences.Constant.ORDER_FIELD_TARGET_NAME,
-                false
+                false, (Preferences.Constant.ORDER_FIELD_TARGET_NAME == currentSortField)
             )
         )
     }

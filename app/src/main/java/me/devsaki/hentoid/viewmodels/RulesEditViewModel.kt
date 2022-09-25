@@ -60,7 +60,7 @@ class RulesEditViewModel(
 
 
     fun setAttributeType(attributeType: AttributeType) {
-        attributeTypeFilter.postValue(attributeType)
+        attributeTypeFilter.value = attributeType
         loadRules()
     }
 

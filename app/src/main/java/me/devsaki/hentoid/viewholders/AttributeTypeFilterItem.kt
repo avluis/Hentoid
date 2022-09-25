@@ -11,7 +11,7 @@ import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.AttributeItemBundle
 import me.devsaki.hentoid.enums.AttributeType
 
-class AttributeTypeFilterItem(val attributeType: AttributeType, val selected: Boolean) :
+class AttributeTypeFilterItem(val attributeType: AttributeType, selected: Boolean) :
     AbstractItem<AttributeTypeFilterItem.ViewHolder>() {
 
     init {
