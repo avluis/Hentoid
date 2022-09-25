@@ -6,9 +6,9 @@
     <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">cuando este 90% ocupado</string>
     <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">cuando este 95% ocupado</string>
     <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">cuando este 98% ocupado</string>
-<string name="pref_browser_quick_dl_threshold_entries_1">500 ms</string>
+<string name="pref_browser_quick_dl_threshold_entries_1" tools:ignore="MissingTranslation">500 ms</string>
     <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 s</string>
-    <string name="pref_browser_quick_dl_threshold_entries_3" tools:ignore="MissingTranslation">1.5 s (predeterminado)</string>
+    <string name="pref_browser_quick_dl_threshold_entries_3">1.5 segundos (Predeterminado)</string>
     <string name="pref_browser_quick_dl_threshold_entries_4" tools:ignore="MissingTranslation">2 s</string>
     <string name="pref_browser_quick_dl_threshold_entries_5" tools:ignore="MissingTranslation">3 s</string>
 <string name="pref_browser_dns_entries_1">Ninguno</string>
