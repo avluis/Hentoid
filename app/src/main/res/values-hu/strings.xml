@@ -70,7 +70,7 @@
     <string name="menu_edit_confirm">Módosítás elfogadása</string>
     <string name="menu_edit_cancel">Módosítás elvetése</string>
     <string name="menu_edit_warning_custom">Az új rendezési séma felülfogja írni az előzőt.</string>
-    <string name="menu_order">Könyvek rendezése</string>
+    <string name="menu_sort_filter">Könyvek rendezése</string>
     <string name="menu_delete_single">Törlés</string>
     <string name="menu_change_group">Csoporthoz hozzárendelés...</string>
     <string name="menu_open_folder">Tartalmazó mappa megnyitása</string>
@@ -84,7 +84,7 @@
     <string name="menu_share_title">Könyv URL</string>
     <string name="menu_archive">Archívum</string>
     <string name="menu_archive_help">Könyv becsomagolása ZIP fájl-ba</string>
-    <string name="search_hint">Cím, szerző, kategória vagy könyv ID</string>
+    <string name="library_search_hint">Cím, szerző, kategória vagy könyv ID</string>
     <string name="send_to">Megosztás ezzel:</string>
     <string name="open_settings">Beállítások megnyitása</string>
     <string name="app_settings">Alkalmazás beállítások</string>

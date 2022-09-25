@@ -323,7 +323,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         mainSearchView = (SearchView) searchMenu.getActionView();
         mainSearchView.setIconifiedByDefault(true);
-        mainSearchView.setQueryHint(getString(R.string.search_hint));
+        mainSearchView.setQueryHint(getString(R.string.library_search_hint));
         // Change display when text query is typed
         mainSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -847,7 +847,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 c = new ObjectBoxDAO(requireContext()).selectContent(c.getId());
 
             if (c != null) {
-                if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null, false))
+                if (!ContentHelper.openReader(requireContext(), c, -1, null, false))
                     ToastHelper.toast(R.string.err_no_content);
                 return true;
             } else return false;

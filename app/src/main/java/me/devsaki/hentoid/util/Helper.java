@@ -65,7 +65,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.CollectionDAO;
+import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.json.JsonContentCollection;
 import me.devsaki.hentoid.util.file.FileHelper;
 import timber.log.Timber;
@@ -84,7 +86,6 @@ public final class Helper {
     private static final byte[] SIP_KEY = "0123456789ABCDEF".getBytes();
     public static final Action EMPTY_ACTION = () -> {
     };
-
 
 
     /**
@@ -238,19 +239,6 @@ public final class Helper {
             throw new IllegalStateException("This should not be run on the UI thread");
         }
     }
-
-    /// <summary>
-    /// Format the given duration using the following format
-    ///     DDdHH:MM:SS
-    ///
-    ///  Where
-    ///     DD is the number of days, if applicable (i.e. durations of less than 1 day won't display the "DDd" part)
-    ///     HH is the number of hours, if applicable (i.e. durations of less than 1 hour won't display the "HH:" part)
-    ///     MM is the number of minutes
-    ///     SS is the number of seconds
-    /// </summary>
-    /// <param name="seconds">Duration to format (in seconds)</param>
-    /// <returns>Formatted duration according to the abovementioned convention</returns>
 
     /**
      * Format the given duration using the HH:MM:SS format
@@ -491,6 +479,37 @@ public final class Helper {
 
         try {
             JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
+        } catch (IOException | IllegalArgumentException e) {
+            // NB : IllegalArgumentException might happen for an unknown reason on certain devices
+            // even though all the file existence checks are in place
+            // ("Failed to determine if primary:.Hentoid/queue.json is child of primary:.Hentoid: java.io.FileNotFoundException: Missing file for primary:.Hentoid/queue.json at /storage/emulated/0/.Hentoid/queue.json")
+            Timber.e(e);
+            FirebaseCrashlytics crashlytics = FirebaseCrashlytics.getInstance();
+            crashlytics.recordException(e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Update the JSON file that stores renaming rules with the current rules
+     *
+     * @param context Context to be used
+     * @param dao     DAO to be used
+     * @return True if the rules JSON file has been updated properly; false instead
+     */
+    public static boolean updateRenamingRulesJson(@NonNull Context context, @NonNull CollectionDAO dao) {
+        Helper.assertNonUiThread();
+        List<RenamingRule> rules = dao.selectRenamingRules(AttributeType.UNDEFINED, null);
+
+        JsonContentCollection contentCollection = new JsonContentCollection();
+        contentCollection.setRenamingRules(rules);
+
+        DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(context, Preferences.getStorageUri());
+        if (null == rootFolder) return false;
+
+        try {
+            JsonHelper.jsonToFile(context, contentCollection, JsonContentCollection.class, rootFolder, Consts.RENAMING_RULES_JSON_FILE_NAME);
         } catch (IOException | IllegalArgumentException e) {
             // NB : IllegalArgumentException might happen for an unknown reason on certain devices
             // even though all the file existence checks are in place

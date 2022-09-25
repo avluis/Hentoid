@@ -44,6 +44,10 @@
     <string name="empty">empty</string>
     <string name="none">None</string>
     <string name="disabled_generic">Disabled</string>
+    <string name="create_generic">Create</string>
+    <string name="edit_generic">Edit</string>
+    <string name="remove_generic">Remove</string>
+
 
     <!-- Activities -->
     <string name="title_activity_api29_migration">API 29 migration</string>
@@ -53,6 +57,8 @@
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="title_activity_search">Advanced Search</string>
+    <string name="title_activity_meta_edit">Edit metadata</string>
+    <string name="title_activity_rules">Renaming rules</string>
 
     <!-- API29 migration / library refresh screen -->
     <string name="api29_migration_title">Hentoid v12\nFile management update</string>
@@ -79,7 +85,7 @@
     <string name="menu_edit_confirm">Confirm editing</string>
     <string name="menu_edit_cancel">Cancel editing</string>
     <string name="menu_edit_warning_custom">New custom ordering will overwrite the previous one.</string>
-    <string name="menu_order">Order books</string>
+    <string name="menu_sort_filter">Sort and filter</string>
     <string name="menu_delete_single">Delete</string>
     <string name="menu_change_group">Move to group…</string>
     <string name="menu_open_folder">Open containing folder</string>
@@ -93,7 +99,7 @@
     <string name="menu_share_title">Book URL</string>
     <string name="menu_archive">Archive</string>
     <string name="menu_archive_help">Archive the book to a ZIP file</string>
-    <string name="search_hint">Title, artist, tag or book ID</string>
+    <string name="library_search_hint">Title, artist, tag or book ID</string>
     <string name="send_to">Share with:</string>
     <string name="open_settings">Open settings</string>
     <string name="app_settings">App settings</string>
@@ -633,6 +639,7 @@
     <string name="category_any">Any</string>
     <string name="exclude">Exclude</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> search</string>
+    <string name="searching_generic">Searching</string>
     <string name="search_prompt">Search <x:g id="search_prompt">%s</x:g></string>
     <!-- Used as a category on the search screen -->
     <string name="category_artist">Artist</string>
@@ -646,6 +653,7 @@
     <string name="category_category">Category</string>
     <string name="category_translator">Translator</string>
     <string name="category_publisher">Publisher</string>
+    <string name="category_undefined">Undefined</string>
     <!-- Used near items or in prompts (e.g. "Search artist"): Accusative case -->
     <string name="object_artist">Artist</string>
     <string name="object_tag">Tag</string>
@@ -658,6 +666,7 @@
     <string name="object_category">Category</string>
     <string name="object_translator">Translator</string>
     <string name="object_publisher">Publisher</string>
+    <string name="object_undefined">Undefined</string>
     <plurals name="search_button">
         <item quantity="one"><x:g example="1" id="count">%s</x:g> Result found</item>
         <item quantity="other"><x:g example="2" id="count">%s</x:g> Results found</item>
@@ -815,6 +824,21 @@
     <string name="duplicate_alert_download_book">Download book</string>
     <string name="duplicate_alert_download_pages">Download extra pages</string>
     <string name="duplicate_wait_index">Indexing…</string>
+
+    <!-- Metadata editor -->
+    <string name="meta_cover_multiple_warning">Cover cannot be changed for multiple books</string>
+    <string name="meta_cover_archive_warning">Cover cannot be changed for archives</string>
+    <string name="meta_choose_type">Choose a type for \'%s\'</string>
+    <string name="meta_replace_with">Replace with…</string>
+    <string name="meta_tag_all_selected">Tag all selected books</string>
+    <string name="meta_tag_all_selected_confirm">Tag all %d selected books with \'%s\' ?</string>
+    <string name="meta_rename_new_name">New name</string>
+    <string name="meta_rename_new_rule">Remember for future downloads</string>
+
+    <!-- Renaming rules editor -->
+    <string name="meta_rule_source">Source</string>
+    <string name="meta_rule_target">Target</string>
+    <string name="meta_rule_wildcard">If target has a wildcard, source must have a wildcard too</string>
 
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>

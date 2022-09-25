@@ -34,8 +34,8 @@
         <activity
             android:name=".activities.MissingWebViewActivity"
             android:exported="false"
-            android:noHistory="true"
-            android:label="@string/missing_web_view" />
+            android:label="@string/missing_web_view"
+            android:noHistory="true" />
         <activity
             android:name=".activities.SplashActivity"
             android:exported="true"
@@ -188,6 +188,14 @@
             android:name=".activities.PinPreferenceActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activities.MetadataEditActivity"
+            android:label="@string/title_activity_meta_edit"
+            tools:ignore="UnusedAttribute" />
+        <activity
+            android:name=".activities.RenamingRulesActivity"
+            android:label="@string/title_activity_rules"
+            tools:ignore="UnusedAttribute" />
         <activity
             android:name=".activities.IntentActivity"
             android:exported="true"

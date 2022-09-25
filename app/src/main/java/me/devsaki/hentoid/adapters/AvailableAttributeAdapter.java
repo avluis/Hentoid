@@ -16,7 +16,7 @@ import me.devsaki.hentoid.viewholders.AttributeViewHolder;
 
 /**
  * Adapter for the available attributes list displayed in the advanced search screen
- *
+ * <p>
  * Can only be removed when prerequisites are met : see comments in {@link me.devsaki.hentoid.fragments.SearchBottomSheetFragment}
  */
 public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeViewHolder> {
@@ -27,12 +27,11 @@ public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeVie
     private final List<Attribute> dataset = new ArrayList<>();
     private Runnable onScrollToEndListener = null;
     private View.OnClickListener onClickListener = null;
-    private boolean formatWithNamespace = false;
 
     @NonNull
     @Override
     public AttributeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chip_choice, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_badge, parent, false);
         return new AttributeViewHolder(view);
     }
 
@@ -44,16 +43,12 @@ public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeVie
         this.onClickListener = listener;
     }
 
-    public void setFormatWithNamespace(boolean formatWithNamespace) {
-        this.formatWithNamespace = formatWithNamespace;
-    }
-
     @Override
     public void onBindViewHolder(@NonNull AttributeViewHolder holder, int position) {
         if (position == getItemCount() - VISIBLE_THRESHOLD && onScrollToEndListener != null) {
             onScrollToEndListener.run();
         }
-        holder.bindTo(dataset.get(position), formatWithNamespace);
+        holder.bindTo(dataset.get(position));
         holder.itemView.setOnClickListener(onClickListener);
     }
 
@@ -62,13 +57,19 @@ public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeVie
         return dataset.size();
     }
 
-    public void add(List<Attribute> contents) {
-        dataset.addAll(contents);
+    public void add(List<Attribute> attrs) {
+        dataset.addAll(attrs);
         notifyDataSetChanged();
     }
 
     public void clear() {
         dataset.clear();
         notifyDataSetChanged();
+    }
+
+    public void remove(Attribute attribute) {
+        int index = dataset.indexOf(attribute);
+        dataset.remove(attribute);
+        notifyItemRemoved(index);
     }
 }

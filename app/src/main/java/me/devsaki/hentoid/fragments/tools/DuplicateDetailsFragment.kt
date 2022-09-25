@@ -195,7 +195,7 @@ class DuplicateDetailsFragment : Fragment(R.layout.fragment_duplicate_details),
             return
         }
 
-        if (!ContentHelper.openHentoidViewer(requireContext(), c, -1, null, false))
+        if (!ContentHelper.openReader(requireContext(), c, -1, null, false))
             ToastHelper.toast(R.string.err_no_content)
     }
 

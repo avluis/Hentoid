@@ -167,7 +167,7 @@
             android:textColor="@color/medium_gray"
             android:textSize="@dimen/caption"
             android:textStyle="bold"
-            app:drawableStartCompat="@drawable/ic_action_delete_forever"
+            app:drawableStartCompat="@drawable/ic_action_delete"
             app:drawableTint="@color/medium_gray"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/keep_delete"

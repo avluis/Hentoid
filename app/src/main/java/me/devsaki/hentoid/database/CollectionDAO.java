@@ -25,6 +25,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
@@ -208,6 +209,8 @@ public interface CollectionDAO {
 
     ImageFile selectImageFile(long id);
 
+    List<ImageFile> selectImageFiles(long[] ids);
+
     LiveData<List<ImageFile>> selectDownloadedImagesFromContentLive(long id);
 
     List<ImageFile> selectDownloadedImagesFromContent(long id);
@@ -238,6 +241,11 @@ public interface CollectionDAO {
 
     // ATTRIBUTES
 
+    long insertAttribute(@NonNull Attribute attr);
+
+    @Nullable
+    Attribute selectAttribute(long id);
+
     Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
@@ -245,6 +253,7 @@ public interface CollectionDAO {
             List<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             int page,
             int booksPerPage,
             int orderStyle);
@@ -301,6 +310,24 @@ public interface CollectionDAO {
     void insertSearchRecord(@NonNull SearchRecord record, int limit);
 
     void deleteAllSearchRecords();
+
+
+    // RENAMING RULES
+
+    @Nullable
+    RenamingRule selectRenamingRule(long id);
+
+    LiveData<List<RenamingRule>> selectRenamingRulesLive(@NonNull AttributeType type, String nameFilter);
+
+    List<RenamingRule> selectRenamingRules(@NonNull AttributeType type, String nameFilter);
+
+    long insertRenamingRule(@NonNull RenamingRule rule);
+
+    void insertRenamingRules(@NonNull List<RenamingRule> rules);
+
+    void deleteRenamingRules(List<Long> ids);
+
+    void deleteAllRenamingRules();
 
 
     // RESOURCES

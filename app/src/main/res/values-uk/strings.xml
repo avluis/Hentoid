@@ -84,7 +84,7 @@
     <string name="menu_edit_confirm">Підтвердити редагування</string>
     <string name="menu_edit_cancel">Скасувати редагування</string>
     <string name="menu_edit_warning_custom">Нове користувальницьке сортування замінить попереднє.</string>
-    <string name="menu_order">Сортувати книги</string>
+    <string name="menu_sort_filter">Сортувати книги</string>
     <string name="menu_delete_single">Видалити</string>
     <string name="menu_change_group">Перемістити до групи…</string>
     <string name="menu_open_folder">Відкрити батьківську папку</string>
@@ -98,7 +98,7 @@
     <string name="menu_archive">В архів</string>
     <string name="menu_archive_help">Заархівувати книгу в ZIP</string>
     <string name="menu_share_title">Лінк на книгу</string>
-    <string name="search_hint">Назва, художник, теґ чи ID книги</string>
+    <string name="library_search_hint">Назва, художник, теґ чи ID книги</string>
     <string name="send_to">Поділитися через:</string>
     <string name="open_settings">Налаштування</string>
     <string name="app_settings">Налаштування додатка</string>

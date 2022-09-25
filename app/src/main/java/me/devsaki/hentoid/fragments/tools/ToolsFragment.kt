@@ -13,12 +13,16 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.DuplicateDetectorActivity
+import me.devsaki.hentoid.activities.RenamingRulesActivity
 import me.devsaki.hentoid.core.clearAppCache
 import me.devsaki.hentoid.core.clearWebviewCache
 import me.devsaki.hentoid.core.startLocalActivity
 import me.devsaki.hentoid.core.withArguments
 import me.devsaki.hentoid.json.JsonSettings
-import me.devsaki.hentoid.util.*
+import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.JsonHelper
+import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
@@ -37,6 +41,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
     private val IMPORT_LIBRARY = "import_library"
     private val EXPORT_SETTINGS = "export_settings"
     private val IMPORT_SETTINGS = "import_settings"
+    private val ACCESS_RENAMING_RULES = "tools_renaming_rules"
     private val ACCESS_LATEST_LOGS = "tools_latest_logs"
     private val CLEAR_BROWSER_CACHE = "cache_browser"
     private val CLEAR_APP_CACHE = "cache_app"
@@ -93,15 +98,21 @@ class ToolsFragment : PreferenceFragmentCompat() {
             }
             CLEAR_BROWSER_CACHE -> {
                 context?.clearWebviewCache {
-                    ToastHelper.toast(if (it) R.string.tools_cache_browser_success else
-                        if (WebkitPackageHelper.getWebViewUpdating()) R.string.tools_cache_browser_updating_webview
-                        else R.string.tools_cache_browser_missing_webview)
+                    ToastHelper.toast(
+                        if (it) R.string.tools_cache_browser_success else
+                            if (WebkitPackageHelper.getWebViewUpdating()) R.string.tools_cache_browser_updating_webview
+                            else R.string.tools_cache_browser_missing_webview
+                    )
                 }
                 true
             }
             CLEAR_APP_CACHE -> {
                 context?.clearAppCache()
                 ToastHelper.toast(R.string.tools_cache_app_success)
+                true
+            }
+            ACCESS_RENAMING_RULES -> {
+                requireContext().startLocalActivity<RenamingRulesActivity>()
                 true
             }
             ACCESS_LATEST_LOGS -> {

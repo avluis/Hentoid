@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.Property;
-import io.objectbox.android.AndroidObjectBrowser;
+import io.objectbox.android.Admin;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import io.objectbox.query.QueryCondition;
@@ -55,6 +55,8 @@ import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
+import me.devsaki.hentoid.database.domains.RenamingRule;
+import me.devsaki.hentoid.database.domains.RenamingRule_;
 import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.ShuffleRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
@@ -65,11 +67,11 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
@@ -95,8 +97,8 @@ public class ObjectBoxDB {
         store = MyObjectBox.builder().androidContext(context.getApplicationContext()).maxSizeInKByte(Preferences.getMaxDbSizeKb()).build();
 
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
-            boolean started = new AndroidObjectBrowser(store).start(context.getApplicationContext());
-            Timber.i("ObjectBrowser started: %s", started);
+            boolean started = new Admin(store).start(context.getApplicationContext());
+            Timber.i("ObjectBox Admin started: %s", started);
         }
 
         // Pre-cache intensive search queries
@@ -427,7 +429,7 @@ public class ObjectBoxDB {
     }
 
     Set<String> selectAllMergedContentUrls(Site site) {
-        Query<Chapter> allChapterQ = store.boxFor(Chapter.class).query().startsWith(Chapter_.url,site.getUrl(), QueryBuilder.StringOrder.CASE_INSENSITIVE).build();
+        Query<Chapter> allChapterQ = store.boxFor(Chapter.class).query().startsWith(Chapter_.url, site.getUrl(), QueryBuilder.StringOrder.CASE_INSENSITIVE).build();
         return new HashSet<>(Stream.of(allChapterQ.property(Chapter_.url).findStrings()).toList());
     }
 
@@ -823,15 +825,6 @@ public class ObjectBoxDB {
         QueryBuilder<Content> qb = store.boxFor(Content.class).query();
         qb.link(Content_.groupItems).equal(GroupItem_.groupId, groupId);
         return qb.build().findIds();
-
-        // https://github.com/objectbox/objectbox-java/issues/1028
-        /*
-        return store.boxFor(GroupItem.class).query()
-                .equal(GroupItem_.groupId, groupId)
-                .build()
-                .property(GroupItem_.contentId)
-                .findLongs();
-         */
     }
 
     private long[] selectFilteredContent(List<Attribute> attrs) {
@@ -903,10 +896,6 @@ public class ObjectBoxDB {
         if (!attrs.isEmpty() && attrs.get(0).isExcluded()) {
             final QueryBuilder<Content> contentFromAttributesQueryBuilder1 = store.boxFor(Content.class).query();
             contentFromAttributesQueryBuilder1.in(Content_.status, libraryStatus);
-            /*
-            if (filterFavourites)
-                contentFromAttributesQueryBuilder1.equal(Content_.favourite, true);
-             */
             idsFull = Helper.getListFromPrimitiveArray(contentFromAttributesQueryBuilder1.build().findIds());
         }
 
@@ -949,14 +938,15 @@ public class ObjectBoxDB {
     }
 
     List<Attribute> selectAvailableSources() {
-        return selectAvailableSources(-1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY);
+        return selectAvailableSources(-1, null, ContentHelper.Location.ANY, ContentHelper.Type.ANY, false);
     }
 
     List<Attribute> selectAvailableSources(
             long groupId,
             List<Attribute> filter,
             @ContentHelper.Location int location,
-            @ContentHelper.Type int contentType
+            @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs
     ) {
         List<Attribute> result = new ArrayList<>();
 
@@ -974,7 +964,7 @@ public class ObjectBoxDB {
                 AttributeType attrType = entry.getKey();
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = entry.getValue();
-                    if (attrs != null && !attrs.isEmpty())
+                    if (attrs != null && !attrs.isEmpty() && !includeFreeAttrs)
                         qc = qc.and(Content_.id.oneOf(selectFilteredContent(attrs)));
                 }
             }
@@ -1032,18 +1022,30 @@ public class ObjectBoxDB {
         return qc.and(Content_.downloadDate.between(minDownloadDate, maxDownloadDate));
     }
 
+    long insertAttribute(@NonNull Attribute attr) {
+        return store.boxFor(Attribute.class).put(attr);
+    }
+
+    @Nullable
+    Attribute selectAttribute(long id) {
+        return store.boxFor(Attribute.class).get(id);
+    }
+
     private Query<Attribute> queryAvailableAttributes(
             @NonNull final AttributeType type,
             String filter,
-            long[] filteredContent) {
+            long[] filteredContent,
+            boolean includeFreeAttrs) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
             query.contains(Attribute_.name, filter.trim(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        if (filteredContent.length > 0)
-            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, libraryStatus);
-        else
-            query.link(Attribute_.contents).in(Content_.status, libraryStatus);
+        if (!includeFreeAttrs) {
+            if (filteredContent.length > 0)
+                query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, libraryStatus);
+            else
+                query.link(Attribute_.contents).in(Content_.status, libraryStatus);
+        }
 
         return query.build();
     }
@@ -1054,8 +1056,10 @@ public class ObjectBoxDB {
             List<Attribute> attributeFilter,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             String filter) {
-        return queryAvailableAttributes(type, filter, selectFilteredContent(groupId, attributeFilter, location, contentType)).count();
+        long[] filteredContent = (includeFreeAttrs ? new long[0] : selectFilteredContent(groupId, attributeFilter, location, contentType));
+        return queryAvailableAttributes(type, filter, filteredContent, includeFreeAttrs).count();
     }
 
     @SuppressWarnings("squid:S2184")
@@ -1066,19 +1070,20 @@ public class ObjectBoxDB {
             List<Attribute> attributeFilter,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             String filter,
             int sortOrder,
             int page,
             int itemsPerPage) {
-        long[] filteredContent = selectFilteredContent(groupId, attributeFilter, location, contentType);
-        if (filteredContent.length == 0 && attributeFilter != null && !attributeFilter.isEmpty())
+        long[] filteredContent = (includeFreeAttrs ? new long[0] : selectFilteredContent(groupId, attributeFilter, location, contentType));
+        if (filteredContent.length == 0 && attributeFilter != null && !attributeFilter.isEmpty() && !includeFreeAttrs)
             return Collections.emptyList();
         Set<Long> filteredContentAsSet = Helper.getSetFromPrimitiveArray(filteredContent);
         Set<Integer> libraryStatusAsSet = Helper.getSetFromPrimitiveArray(libraryStatus);
-        List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
+        List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent, includeFreeAttrs).find();
 
         // Compute attribute count for sorting
-        if (Preferences.getSearchAttributesCount()) {
+        if (Preferences.getSearchAttributesCount()) { // TODO get that call to Prefs out of there
             long count;
             for (Attribute a : result) {
                 // Only count the relevant Contents
@@ -1101,7 +1106,7 @@ public class ObjectBoxDB {
         // Apply paging on sorted items
         if (itemsPerPage > 0) {
             int start = (page - 1) * itemsPerPage;
-            s = s.limit(page * itemsPerPage).skip(start); // squid:S2184 here because int * int -> int (not long)
+            s = s.limit((long) page * itemsPerPage).skip(start);
         }
         return s.collect(toList());
     }
@@ -1334,6 +1339,10 @@ public class ObjectBoxDB {
         else return null;
     }
 
+    List<ImageFile> selectImageFiles(long[] id) {
+        return store.boxFor(ImageFile.class).get(id);
+    }
+
     Query<ImageFile> selectDownloadedImagesFromContentQ(long id) {
         QueryBuilder<ImageFile> builder = store.boxFor(ImageFile.class).query();
         builder.equal(ImageFile_.contentId, id);
@@ -1419,6 +1428,54 @@ public class ObjectBoxDB {
 
     void insertSearchRecords(@NonNull List<SearchRecord> records) {
         store.boxFor(SearchRecord.class).put(records);
+    }
+
+    // RENAMING RULES
+
+    @Nullable
+    RenamingRule selectRenamingRule(long id) {
+        return store.boxFor(RenamingRule.class).get(id);
+    }
+
+    Query<RenamingRule> selectRenamingRulesQ(@NonNull AttributeType type, @NonNull String nameFilter) {
+        QueryCondition<RenamingRule> qc = null;
+        QueryCondition<RenamingRule> nameQc = null;
+        if (!nameFilter.isEmpty())
+            nameQc = RenamingRule_.sourceName.contains(nameFilter, QueryBuilder.StringOrder.CASE_INSENSITIVE).or(RenamingRule_.sourceName.contains(nameFilter, QueryBuilder.StringOrder.CASE_INSENSITIVE));
+        if (!type.equals(AttributeType.UNDEFINED)) {
+            qc = RenamingRule_.attributeType.equal(type.getCode());
+            if (nameQc != null) qc = qc.and(nameQc);
+        }
+        if (null == qc) qc = nameQc;
+
+        QueryBuilder<RenamingRule> qb;
+        if (null == qc) qb = store.boxFor(RenamingRule.class).query();
+        else qb = store.boxFor(RenamingRule.class).query(qc);
+
+        Property<RenamingRule> sortField = (Preferences.Constant.ORDER_FIELD_SOURCE_NAME == Preferences.getRuleSortField()) ? RenamingRule_.sourceName : RenamingRule_.targetName;
+        if (Preferences.isRuleSortDesc()) {
+            qb.orderDesc(sortField);
+        } else {
+            qb.order(sortField);
+        }
+
+        return qb.build();
+    }
+
+    public long insertRenamingRule(@NonNull RenamingRule rule) {
+        return store.boxFor(RenamingRule.class).put(rule);
+    }
+
+    public void insertRenamingRules(@NonNull List<RenamingRule> rules) {
+        store.boxFor(RenamingRule.class).put(rules);
+    }
+
+    public void deleteRenamingRules(long[] ids) {
+        store.boxFor(RenamingRule.class).remove(ids);
+    }
+
+    public void deleteAllRenamingRules() {
+        store.boxFor(RenamingRule.class).removeAll();
     }
 
     // GROUPS
@@ -1673,12 +1730,6 @@ public class ObjectBoxDB {
                 .equal(Group_.grouping, Grouping.CUSTOM.getId()) // Custom group
                 .equal(Group_.subtype, 0); // Not the Ungrouped group (subtype 1)
         return customContentQB.build().findIds();
-        // See https://github.com/objectbox/objectbox-java/issues/1028
-        /*
-        QueryBuilder<GroupItem> customGContentQB = store.boxFor(GroupItem.class).query();
-        customGContentQB.link(GroupItem_.group).equal(Group_.grouping, Grouping.CUSTOM.getId());
-        return customGContentQB.build().property(GroupItem_.contentId).findLongs();
-         */
     }
 
     Set<Long> selectUngroupedContentIds() {

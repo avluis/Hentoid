@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
 import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.Transformation;
+import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -29,7 +30,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.databinding.IncludeReaderContentBottomPanelBinding;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
@@ -92,25 +92,25 @@ public class ReaderBottomContentFragment extends BottomSheetDialogFragment {
     }
 
     private void onContentChanged(Content content) {
-        ImageFile cover = content.getCover();
-        String thumbLocation = cover.getUsableUri();
+        String thumbLocation = content.getCover().getUsableUri();
         if (thumbLocation.isEmpty()) {
             binding.ivCover.setVisibility(View.INVISIBLE);
-            return;
+        } else {
+            binding.ivCover.setVisibility(View.VISIBLE);
+            if (thumbLocation.startsWith("http")) {
+                GlideUrl glideUrl = ContentHelper.bindOnlineCover(content, thumbLocation);
+                if (glideUrl != null) {
+                    Glide.with(binding.ivCover)
+                            .load(glideUrl)
+                            .apply(glideRequestOptions)
+                            .into(binding.ivCover);
+                }
+            } else
+                Glide.with(binding.ivCover)
+                        .load(Uri.parse(thumbLocation))
+                        .apply(glideRequestOptions)
+                        .into(binding.ivCover);
         }
-
-        binding.ivCover.setVisibility(View.VISIBLE);
-
-        if (thumbLocation.startsWith("http"))
-            Glide.with(binding.ivCover)
-                    .load(thumbLocation)
-                    .apply(glideRequestOptions)
-                    .into(binding.ivCover);
-        else
-            Glide.with(binding.ivCover)
-                    .load(Uri.parse(thumbLocation))
-                    .apply(glideRequestOptions)
-                    .into(binding.ivCover);
 
         binding.contentTitle.setText(content.getTitle());
         binding.contentArtist.setText(ContentHelper.formatArtistForDisplay(requireContext(), content));

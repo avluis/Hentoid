@@ -19,6 +19,7 @@ public abstract class Consts {
     public static final String QUEUE_JSON_FILE_NAME = "queue.json";
     public static final String BOOKMARKS_JSON_FILE_NAME = "bookmarks.json";
     public static final String GROUPS_JSON_FILE_NAME = "groups.json";
+    public static final String RENAMING_RULES_JSON_FILE_NAME = "rules.json";
 
     public static final String THUMB_FILE_NAME = "thumb";
     public static final String EXT_THUMB_FILE_PREFIX = "ext-thumb-";

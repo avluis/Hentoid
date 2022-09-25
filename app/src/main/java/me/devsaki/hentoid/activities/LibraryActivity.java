@@ -149,7 +149,7 @@ public class LibraryActivity extends BaseActivity {
 
     // === Selection toolbar
     private Toolbar selectionToolbar;
-    private MenuItem editNameMenu;
+    private MenuItem editMenu;
     private MenuItem deleteMenu;
     private MenuItem completedMenu;
     private MenuItem resetReadStatsMenu;
@@ -160,7 +160,7 @@ public class LibraryActivity extends BaseActivity {
     private MenuItem redownloadMenu;
     private MenuItem downloadStreamedMenu;
     private MenuItem streamMenu;
-    private MenuItem coverMenu;
+    private MenuItem groupCoverMenu;
     private MenuItem mergeMenu;
     private MenuItem splitMenu;
 
@@ -384,7 +384,7 @@ public class LibraryActivity extends BaseActivity {
                 try {
                     Content c = dao.selectContent(previouslyViewedContent);
                     if (c != null)
-                        ContentHelper.openHentoidViewer(this, c, previouslyViewedPage, contentSearchBundle, false);
+                        ContentHelper.openReader(this, c, previouslyViewedPage, contentSearchBundle, false);
                 } finally {
                     dao.cleanup();
                 }
@@ -493,7 +493,7 @@ public class LibraryActivity extends BaseActivity {
 
         actionSearchView = (SearchView) searchMenu.getActionView();
         actionSearchView.setIconifiedByDefault(true);
-        actionSearchView.setQueryHint(getString(R.string.search_hint));
+        actionSearchView.setQueryHint(getString(R.string.library_search_hint));
         // Change display when text query is typed
         actionSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -669,7 +669,7 @@ public class LibraryActivity extends BaseActivity {
         selectionToolbar.inflateMenu(R.menu.library_selection_menu);
         Helper.tryShowMenuIcons(this, selectionToolbar.getMenu());
 
-        editNameMenu = selectionToolbar.getMenu().findItem(R.id.action_edit_name);
+        editMenu = selectionToolbar.getMenu().findItem(R.id.action_edit);
         deleteMenu = selectionToolbar.getMenu().findItem(R.id.action_delete);
         completedMenu = selectionToolbar.getMenu().findItem(R.id.action_completed);
         resetReadStatsMenu = selectionToolbar.getMenu().findItem(R.id.action_reset_read);
@@ -680,7 +680,7 @@ public class LibraryActivity extends BaseActivity {
         redownloadMenu = selectionToolbar.getMenu().findItem(R.id.action_redownload);
         downloadStreamedMenu = selectionToolbar.getMenu().findItem(R.id.action_download);
         streamMenu = selectionToolbar.getMenu().findItem(R.id.action_stream);
-        coverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_cover);
+        groupCoverMenu = selectionToolbar.getMenu().findItem(R.id.action_set_group_cover);
         mergeMenu = selectionToolbar.getMenu().findItem(R.id.action_merge);
         splitMenu = selectionToolbar.getMenu().findItem(R.id.action_split);
     }
@@ -881,7 +881,7 @@ public class LibraryActivity extends BaseActivity {
         selectionToolbar.setTitle(getResources().getQuantityString(R.plurals.items_selected, (int) selectedTotalCount, (int) selectedTotalCount));
 
         if (isGroupDisplayed()) {
-            editNameMenu.setVisible(!isMultipleSelection && Preferences.getGroupingDisplay().canReorderGroups());
+            editMenu.setVisible(!isMultipleSelection && Preferences.getGroupingDisplay().canReorderGroups());
             deleteMenu.setVisible(true);
             shareMenu.setVisible(false);
             completedMenu.setVisible(false);
@@ -892,11 +892,11 @@ public class LibraryActivity extends BaseActivity {
             redownloadMenu.setVisible(false);
             downloadStreamedMenu.setVisible(false);
             streamMenu.setVisible(false);
-            coverMenu.setVisible(false);
+            groupCoverMenu.setVisible(false);
             mergeMenu.setVisible(false);
             splitMenu.setVisible(false);
         } else { // Flat view
-            editNameMenu.setVisible(!isMultipleSelection);
+            editMenu.setVisible(true);
             deleteMenu.setVisible(
                     ((selectedLocalCount > 0 || selectedStreamedCount > 0) && 0 == selectedExternalCount) || (selectedExternalCount > 0 && Preferences.isDeleteExternalLibrary())
             );
@@ -909,7 +909,7 @@ public class LibraryActivity extends BaseActivity {
             redownloadMenu.setVisible(selectedDownloadedCount > 0);
             downloadStreamedMenu.setVisible(selectedStreamedCount > 0);
             streamMenu.setVisible(selectedDownloadedCount > 0);
-            coverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
+            groupCoverMenu.setVisible(!isMultipleSelection && !Preferences.getGroupingDisplay().equals(Grouping.FLAT));
             mergeMenu.setVisible(
                     (selectedLocalCount > 1 && 0 == selectedStreamedCount && 0 == selectedExternalCount)
                             || (selectedStreamedCount > 1 && 0 == selectedLocalCount && 0 == selectedExternalCount)

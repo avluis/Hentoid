@@ -124,6 +124,7 @@ public class SearchViewModel extends ViewModel {
                         selectedAttributes.getValue(),
                         location,
                         contentType,
+                        false,
                         pageNum,
                         itemsPerPage,
                         attributeSortOrder

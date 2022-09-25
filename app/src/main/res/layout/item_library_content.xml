@@ -20,7 +20,7 @@
         android:clickable="true"
         android:focusable="true"
         android:padding="8dp"
-        android:src="@drawable/ic_action_delete_forever"
+        android:src="@drawable/ic_action_delete"
         app:tint="?colorSecondary"
         tools:ignore="ContentDescription" />
 

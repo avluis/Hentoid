@@ -58,7 +58,7 @@
     <item
         android:id="@+id/action_sort_filter"
         android:icon="@drawable/ic_action_sort"
-        android:title="@string/menu_order"
-        android:tooltipText="@string/menu_order"
+        android:title="@string/menu_sort_filter"
+        android:tooltipText="@string/menu_sort_filter"
         app:showAsAction="always" />
 </menu>

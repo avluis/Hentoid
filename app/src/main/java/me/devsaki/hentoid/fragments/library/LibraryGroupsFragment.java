@@ -74,7 +74,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.AppUpdatedEvent;
 import me.devsaki.hentoid.events.CommunicationEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.fragments.RatingDialogFragment;
 import me.devsaki.hentoid.ui.InputDialog;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -271,7 +270,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
     private boolean onSelectionToolbarItemClicked(@NonNull MenuItem menuItem) {
         boolean keepToolbar = false;
         switch (menuItem.getItemId()) {
-            case R.id.action_edit_name:
+            case R.id.action_edit:
                 editSelectedItemName();
                 break;
             case R.id.action_delete:
@@ -390,13 +389,13 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
 
                 if (!Preferences.getGroupingDisplay().canDeleteGroups()) {
                     // Delete books only
-                    powerMenuBuilder.addItem(new PowerMenuItem(getResources().getQuantityString(R.plurals.group_delete_selected_book, selectedContent.size(), selectedContent.size()), R.drawable.ic_action_delete_forever, 0));
+                    powerMenuBuilder.addItem(new PowerMenuItem(getResources().getQuantityString(R.plurals.group_delete_selected_book, selectedContent.size(), selectedContent.size()), R.drawable.ic_action_delete, 0));
                 } else {
                     // Delete group only
                     if (Preferences.getGroupingDisplay().canReorderGroups())
                         powerMenuBuilder.addItem(new PowerMenuItem(getResources().getQuantityString(R.plurals.group_delete_selected_group, selectedGroups.size()), R.drawable.ic_folder_delete, 1));
                     if (!selectedContent.isEmpty()) // Delete groups and books
-                        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getQuantityString(R.plurals.group_delete_selected_group_books, selectedGroups.size()), R.drawable.ic_action_delete_forever, 2));
+                        powerMenuBuilder.addItem(new PowerMenuItem(getResources().getQuantityString(R.plurals.group_delete_selected_group_books, selectedGroups.size()), R.drawable.ic_action_delete, 2));
                 }
                 powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.cancel), R.drawable.ic_close, 99));
                 PowerMenu powerMenu = powerMenuBuilder.build();
@@ -587,7 +586,7 @@ public class LibraryGroupsFragment extends Fragment implements ItemTouchCallback
             SimpleDragCallback dragSwipeCallback = new SimpleSwipeDragCallback(
                     this,
                     this,
-                    ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete_forever)).withSensitivity(10f).withSurfaceThreshold(0.75f);
+                    ContextCompat.getDrawable(requireContext(), R.drawable.ic_action_delete)).withSensitivity(10f).withSurfaceThreshold(0.75f);
             dragSwipeCallback.setNotifyAllDrops(true);
             dragSwipeCallback.setIsDragEnabled(false); // Despite its name, that's actually to disable drag on long tap
 

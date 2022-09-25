@@ -70,7 +70,7 @@
     <string name="menu_edit_confirm">編集を確認する</string>
     <string name="menu_edit_cancel">編集をキャンセルする</string>
     <string name="menu_edit_warning_custom">新しいカスタム注文は、以前の注文を上書きします。</string>
-    <string name="menu_order">注文書</string>
+    <string name="menu_sort_filter">注文書</string>
     <string name="menu_delete_single">消去</string>
     <string name="menu_change_group">グループに移動…</string>
     <string name="menu_open_folder">含まれているフォルダを開く</string>
@@ -84,7 +84,7 @@
     <string name="menu_share_title">書籍のURL</string>
     <string name="menu_archive">アーカイブ</string>
     <string name="menu_archive_help">書籍をZIPファイルにアーカイブする</string>
-    <string name="search_hint">タイトル、アーティスト、タグ、または本のID</string>
+    <string name="library_search_hint">タイトル、アーティスト、タグ、または本のID</string>
     <string name="send_to">共有する：</string>
     <string name="open_settings">設定を開く</string>
     <string name="app_settings">アプリの設定</string>

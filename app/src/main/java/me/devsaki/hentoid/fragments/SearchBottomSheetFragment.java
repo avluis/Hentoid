@@ -72,7 +72,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private TextView tagWaitMessage;
     // Search bar
     private SearchView tagSearchView;
-    // Container where all proposed attributes are loaded
+    // Container where all suggested attributes are loaded
     private AvailableAttributeAdapter attributeAdapter;
 
     private boolean clearOnSuccess; // Flag to clear the adapter on content reception
@@ -269,7 +269,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             else tagWaitMessage.setText(R.string.masterdata_no_result);
         } else {
             tagWaitPanel.setVisibility(View.GONE);
-            attributeAdapter.setFormatWithNamespace(selectedAttributeTypes.size() > 1);
             attributeAdapter.add(attrs);
         }
     }

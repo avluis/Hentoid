@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -152,6 +151,7 @@ public class Content implements Serializable {
     private String jsonUri;
     // Useful only during cleanup operations; no need to get it into the JSON
     private boolean isFlaggedForDeletion = false;
+    private long lastEditDate = 0;
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
@@ -906,12 +906,8 @@ public class Content implements Serializable {
         this.archiveLocationUri = archiveLocationUri;
     }
 
-    public List<GroupItem> getGroupItems(Grouping grouping) {
-        List<GroupItem> result = new ArrayList<>();
-        for (GroupItem gi : groupItems)
-            if (gi.group.getTarget().grouping.equals(grouping)) result.add(gi);
-
-        return result;
+    public List<GroupItem> getGroupItems(@NonNull Grouping grouping) {
+        return Stream.of(groupItems).filter(gi -> gi.group.getTarget().grouping.equals(grouping)).toList();
     }
 
     public int getReadPagesCount() {
@@ -960,6 +956,14 @@ public class Content implements Serializable {
 
     public void setManuallyMerged(boolean manuallyMerged) {
         this.manuallyMerged = manuallyMerged;
+    }
+
+    public long getLastEditDate() {
+        return lastEditDate;
+    }
+
+    public void setLastEditDate(long lastEditDate) {
+        this.lastEditDate = lastEditDate;
     }
 
     public boolean isUpdatedProperties() {
@@ -1015,12 +1019,12 @@ public class Content implements Serializable {
                 Objects.equals(getUrl(), content.getUrl()) &&
                 Objects.equals(getCoverImageUrl(), content.getCoverImageUrl()) &&
                 getSite() == content.getSite() &&
-                getTitle().equals(content.getTitle());
+                getLastEditDate() == content.getLastEditDate();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingDeleted(), getTitle());
+        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingDeleted(), getLastEditDate());
     }
 
     public long uniqueHash() {

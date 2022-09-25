@@ -25,7 +25,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/action_remove_chapters"
-        android:icon="@drawable/ic_action_delete_forever"
+        android:icon="@drawable/ic_action_delete"
         android:title="@string/gallery_clear_chapters"
         android:tooltipText="@string/gallery_clear_chapters"
         app:showAsAction="always" />

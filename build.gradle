@@ -8,12 +8,12 @@ buildscript {
         maven { url "https://dl.bintray.com/waynejo/maven" } // androidndkgif
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
-        classpath 'com.google.gms:google-services:4.3.10'
+        classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath 'com.google.gms:google-services:4.3.13'
         classpath 'io.objectbox:objectbox-gradle-plugin:3.3.1'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.21'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10'
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.8.1'
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.1'
         classpath "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:8.9.4"
 
         // NOTE: Do not place your application dependencies here; they belong

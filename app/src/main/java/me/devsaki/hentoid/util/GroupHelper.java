@@ -48,24 +48,24 @@ public final class GroupHelper {
     /**
      * Add the given Content to the given Group, and associate the latter with the given Attribute (if no prior association)
      *
-     * @param dao        DAO to be used
      * @param group      Group to add the given Content to, and to associate with the given Attribute
      * @param attribute  Attribute the given Group should be associated with, if it has no prior association
      * @param newContent Content to put in the given Group
+     * @param dao        DAO to be used
      */
-    public static void addContentToAttributeGroup(CollectionDAO dao, Group group, Attribute attribute, Content newContent) {
-        addContentsToAttributeGroup(dao, group, attribute, Stream.of(newContent).toList());
+    public static void addContentToAttributeGroup(@NonNull Group group, Attribute attribute, @NonNull Content newContent, @NonNull CollectionDAO dao) {
+        addContentsToAttributeGroup(group, attribute, Stream.of(newContent).toList(), dao);
     }
 
     /**
      * Add the given Contents to the given Group, and associate the latter with the given Attribute (if no prior association)
      *
-     * @param dao         DAO to be used
      * @param group       Group to add the given Content to, and to associate with the given Attribute
      * @param attribute   Attribute the given Group should be associated with, if it has no prior association
      * @param newContents List of Content to put in the given Group
+     * @param dao         DAO to be used
      */
-    public static void addContentsToAttributeGroup(CollectionDAO dao, Group group, Attribute attribute, List<Content> newContents) {
+    public static void addContentsToAttributeGroup(@NonNull Group group, Attribute attribute, @NonNull List<Content> newContents, @NonNull CollectionDAO dao) {
         int nbContents;
         // Create group if it doesn't exist
         if (0 == group.id) {
@@ -75,9 +75,11 @@ public final class GroupHelper {
         } else {
             nbContents = group.getItems().size();
         }
-        for (Content book : newContents) {
-            GroupItem item = new GroupItem(book, group, nbContents++);
-            dao.insertGroupItem(item);
+        for (Content content : newContents) {
+            if (!isContentLinkedToGroup(content, group)) {
+                GroupItem item = new GroupItem(content, group, nbContents++);
+                dao.insertGroupItem(item);
+            }
         }
     }
 
@@ -161,16 +163,16 @@ public final class GroupHelper {
      * Update the given Group's cover according to the removed Content ID
      * NB : This method does _not_ remove any Content from the given Group
      *
-     * @param g                 Group to update the cover from
+     * @param group             Group to update the cover from
      * @param contentIdToRemove Content ID removed from the given Group
      * @param dao               DAO to use
      */
-    private static void updateGroupCover(@NonNull final Group g, long contentIdToRemove, @NonNull CollectionDAO dao) {
-        List<Content> groupsContents = dao.selectContent(Helper.getPrimitiveArrayFromList(g.getContentIds()));
+    private static void updateGroupCover(@NonNull final Group group, long contentIdToRemove, @NonNull CollectionDAO dao) {
+        List<Content> groupsContents = dao.selectContent(Helper.getPrimitiveArrayFromList(group.getContentIds()));
 
         // Empty group cover if there's just one content inside
         if (1 == groupsContents.size() && groupsContents.get(0).getId() == contentIdToRemove) {
-            g.coverContent.setAndPutTarget(null);
+            group.coverContent.setAndPutTarget(null);
             return;
         }
 
@@ -179,9 +181,29 @@ public final class GroupHelper {
             if (c.getId() != contentIdToRemove) {
                 ImageFile cover = c.getCover();
                 if (cover.getId() > -1) {
-                    g.coverContent.setAndPutTarget(c);
+                    group.coverContent.setAndPutTarget(c);
                     return;
                 }
             }
+    }
+
+    /**
+     * Create a new group with the given name inside the Artists grouping
+     *
+     * @param name Name of the group to create
+     * @param dao  DAO to use
+     * @return Resulting group
+     */
+    public static Group addArtistToAttributesGroup(@NonNull String name, @NonNull CollectionDAO dao) {
+        Group artistGroup = new Group(Grouping.ARTIST, name, -1);
+        artistGroup.id = dao.insertGroup(artistGroup);
+        return artistGroup;
+    }
+
+    private static boolean isContentLinkedToGroup(@NonNull Content content, @NonNull Group group) {
+        for (GroupItem item : content.getGroupItems(group.grouping)) {
+            if (item.group.getTarget().equals(group)) return true;
+        }
+        return false;
     }
 }

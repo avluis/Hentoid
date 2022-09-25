@@ -30,7 +30,6 @@ import com.bumptech.glide.integration.webp.decoder.WebpDrawable;
 import com.bumptech.glide.integration.webp.decoder.WebpDrawableTransformation;
 import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.model.GlideUrl;
-import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.load.resource.bitmap.CenterInside;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.switchmaterial.SwitchMaterial;
@@ -42,14 +41,12 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
-import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.DuplicateItemBundle;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.DuplicateEntry;
-import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.ui.BlinkAnimation;
@@ -57,7 +54,6 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ThemeHelper;
-import me.devsaki.hentoid.util.network.HttpHelper;
 
 public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder> {
 
@@ -249,8 +245,7 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
         }
 
         private void attachCover(@NonNull final Content content) {
-            ImageFile cover = content.getCover();
-            String thumbLocation = cover.getUsableUri();
+            String thumbLocation = content.getCover().getUsableUri();
             if (thumbLocation.isEmpty()) {
                 ivCover.setVisibility(View.INVISIBLE);
                 return;
@@ -259,29 +254,13 @@ public class DuplicateItem extends AbstractItem<DuplicateItem.ContentViewHolder>
             ivCover.setVisibility(View.VISIBLE);
             // Use content's cookies to load image (useful for ExHentai when viewing queue screen)
             if (thumbLocation.startsWith("http")) {
-                String cookieStr = null;
-                String referer = null;
-
-                // Quickly skip JSON deserialization if there are no cookies in downloadParams
-                String downloadParamsStr = content.getDownloadParams();
-                if (downloadParamsStr != null && downloadParamsStr.contains(HttpHelper.HEADER_COOKIE_KEY)) {
-                    Map<String, String> downloadParams = ContentHelper.parseDownloadParams(downloadParamsStr);
-                    cookieStr = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
-                    referer = downloadParams.get(HttpHelper.HEADER_REFERER_KEY);
+                GlideUrl glideUrl = ContentHelper.bindOnlineCover(content, thumbLocation);
+                if (glideUrl != null) {
+                    Glide.with(ivCover)
+                            .load(glideUrl)
+                            .apply(glideRequestOptions)
+                            .into(ivCover);
                 }
-                if (null == cookieStr) cookieStr = HttpHelper.getCookies(content.getGalleryUrl());
-                if (null == referer) referer = content.getGalleryUrl();
-
-                LazyHeaders.Builder builder = new LazyHeaders.Builder()
-                        .addHeader(HttpHelper.HEADER_COOKIE_KEY, cookieStr)
-                        .addHeader(HttpHelper.HEADER_REFERER_KEY, referer)
-                        .addHeader(HttpHelper.HEADER_USER_AGENT, content.getSite().getUserAgent());
-
-                GlideUrl glideUrl = new GlideUrl(thumbLocation, builder.build());
-                Glide.with(ivCover)
-                        .load(glideUrl)
-                        .apply(glideRequestOptions)
-                        .into(ivCover);
             } else
                 Glide.with(ivCover)
                         .load(Uri.parse(thumbLocation))

@@ -40,6 +40,7 @@ import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteHistory;
@@ -51,6 +52,7 @@ import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.SearchHelper;
+import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
@@ -130,6 +132,17 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     @Override
+    public long insertAttribute(@NonNull Attribute attr) {
+        return db.insertAttribute(attr);
+    }
+
+    @Override
+    @Nullable
+    public Attribute selectAttribute(long id) {
+        return db.selectAttribute(id);
+    }
+
+    @Override
     public Single<SearchHelper.AttributeQueryResult> selectAttributeMasterDataPaged(
             @NonNull List<AttributeType> types,
             String filter,
@@ -137,11 +150,12 @@ public class ObjectBoxDAO implements CollectionDAO {
             List<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             int page,
             int booksPerPage,
             int orderStyle) {
         return Single
-                .fromCallable(() -> pagedAttributeSearch(types, filter, groupId, attrs, location, contentType, orderStyle, page, booksPerPage))
+                .fromCallable(() -> pagedAttributeSearch(types, filter, groupId, attrs, location, contentType, includeFreeAttrs, orderStyle, page, booksPerPage))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
@@ -298,7 +312,7 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectAllContentUrls(site.getCode());
     }
 
-    public Set<String> selectAllMergedUrls(@NonNull Site site){
+    public Set<String> selectAllMergedUrls(@NonNull Site site) {
         return db.selectAllMergedContentUrls(site);
     }
 
@@ -679,6 +693,10 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectImageFile(id);
     }
 
+    public List<ImageFile> selectImageFiles(long[] ids) {
+        return db.selectImageFiles(ids);
+    }
+
     public LiveData<List<ImageFile>> selectDownloadedImagesFromContentLive(long id) {
         return new ObjectBoxLiveData<>(db.selectDownloadedImagesFromContentQ(id));
     }
@@ -754,6 +772,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             List<Attribute> attrs,
             @ContentHelper.Location int location,
             @ContentHelper.Type int contentType,
+            boolean includeFreeAttrs,
             int sortOrder,
             int pageNum,
             int itemPerPage) {
@@ -762,13 +781,13 @@ public class ObjectBoxDAO implements CollectionDAO {
 
         if (!attrTypes.isEmpty()) {
             if (attrTypes.get(0).equals(AttributeType.SOURCE)) {
-                attributes.addAll(db.selectAvailableSources(groupId, attrs, location, contentType));
+                attributes.addAll(db.selectAvailableSources(groupId, attrs, location, contentType, includeFreeAttrs));
                 totalSelectedAttributes = attributes.size();
             } else {
                 for (AttributeType type : attrTypes) {
                     // TODO fix sorting when concatenating both lists
-                    attributes.addAll(db.selectAvailableAttributes(type, groupId, attrs, location, contentType, filter, sortOrder, pageNum, itemPerPage));
-                    totalSelectedAttributes += db.countAvailableAttributes(type, groupId, attrs, location, contentType, filter);
+                    attributes.addAll(db.selectAvailableAttributes(type, groupId, attrs, location, contentType, includeFreeAttrs, filter, sortOrder, pageNum, itemPerPage));
+                    totalSelectedAttributes += db.countAvailableAttributes(type, groupId, attrs, location, contentType, includeFreeAttrs, filter);
                 }
             }
         }
@@ -786,7 +805,7 @@ public class ObjectBoxDAO implements CollectionDAO {
             result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
         } else {
             result = db.countAvailableAttributesPerType(groupId, filter, location, contentType);
-            result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources(groupId, filter, location, contentType).size());
+            result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources(groupId, filter, location, contentType, false).size());
         }
 
         return result;
@@ -890,6 +909,39 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     public void deleteAllSearchRecords() {
         db.selectSearchRecordsQ().remove();
+    }
+
+
+    // RENAMING RULES
+
+    @Nullable
+    public RenamingRule selectRenamingRule(long id) {
+        return db.selectRenamingRule(id);
+    }
+
+    public LiveData<List<RenamingRule>> selectRenamingRulesLive(@NonNull AttributeType type, String nameFilter) {
+        return new ObjectBoxLiveData<>(db.selectRenamingRulesQ(type, StringHelper.protect(nameFilter)));
+    }
+
+    public List<RenamingRule> selectRenamingRules(@NonNull AttributeType type, String nameFilter) {
+        Query<RenamingRule> query = db.selectRenamingRulesQ(type, StringHelper.protect(nameFilter));
+        return query.find();
+    }
+
+    public long insertRenamingRule(@NonNull RenamingRule rule) {
+        return db.insertRenamingRule(rule);
+    }
+
+    public void insertRenamingRules(@NonNull List<RenamingRule> rules) {
+        db.insertRenamingRules(rules);
+    }
+
+    public void deleteRenamingRules(List<Long> ids) {
+        db.deleteRenamingRules(Helper.getPrimitiveArrayFromList(ids));
+    }
+
+    public void deleteAllRenamingRules() {
+        db.deleteAllRenamingRules();
     }
 
 

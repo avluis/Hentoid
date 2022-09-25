@@ -12,14 +12,14 @@
         android:tooltipText="@string/menu_mark_fav"
         app:showAsAction="always" />
     <item
-        android:id="@+id/action_set_cover"
+        android:id="@+id/action_set_group_cover"
         android:icon="@drawable/ic_action_make_cover"
         android:title="@string/viewer_make_cover"
         android:tooltipText="@string/viewer_make_cover"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_delete"
-        android:icon="@drawable/ic_action_delete_forever"
+        android:icon="@drawable/ic_action_delete"
         android:title="@string/menu_delete_single"
         android:tooltipText="@string/menu_delete_single"
         app:showAsAction="always" />

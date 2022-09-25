@@ -43,6 +43,11 @@
     <string name="tools_cache_app_success">App cache successfully cleared</string>
 
     <!-- Menu item -->
+    <string name="tools_renaming_rules_title">Attribute renaming rules</string>
+    <!-- Menu item description -->
+    <string name="tools_renaming_rules_summary">Manage attribute renaming rules</string>
+
+    <!-- Menu item -->
     <string name="tools_latest_logs_title">App logs</string>
     <!-- Menu item description -->
     <string name="tools_latest_logs_summary">View the app\'s latest logs</string>

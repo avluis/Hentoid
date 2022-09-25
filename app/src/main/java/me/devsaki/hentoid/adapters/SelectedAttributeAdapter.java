@@ -14,7 +14,7 @@ import me.devsaki.hentoid.viewholders.AttributeViewHolder;
 
 /**
  * Adapter for the selected attributes list displayed in the advanced search screen
- *
+ * <p>
  * Can only be removed when prerequisites are met : see comments in {@link me.devsaki.hentoid.fragments.SearchBottomSheetFragment}
  */
 public class SelectedAttributeAdapter extends ListAdapter<Attribute, AttributeViewHolder> {
@@ -33,13 +33,13 @@ public class SelectedAttributeAdapter extends ListAdapter<Attribute, AttributeVi
     @NonNull
     @Override
     public AttributeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chip_choice, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_badge, parent, false);
         return new AttributeViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull AttributeViewHolder holder, int position) {
-        holder.bindTo(getItem(position), true);
+        holder.bindTo(getItem(position));
         holder.itemView.setOnClickListener(onClickListener);
     }
 

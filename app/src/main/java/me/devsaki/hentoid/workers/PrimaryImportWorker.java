@@ -34,6 +34,7 @@ import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.Group;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.ErrorType;
@@ -236,7 +237,7 @@ public class PrimaryImportWorker extends BaseWorker {
             trace(Log.INFO, STEP_3_BOOKS, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", bookFolders.size() - nbFolders + "");
             eventComplete(STEP_3_BOOKS, bookFolders.size(), booksOK, booksKO, null);
 
-            // 4th pass : Import queue & bookmarks JSON
+            // 4th pass : Import queue, bookmarks and renaming rules JSON
             dao = new ObjectBoxDAO(context);
             try {
                 DocumentFile queueFile = explorer.findFile(context, rootFolder, Consts.QUEUE_JSON_FILE_NAME);
@@ -246,6 +247,10 @@ public class PrimaryImportWorker extends BaseWorker {
                 DocumentFile bookmarksFile = explorer.findFile(context, rootFolder, Consts.BOOKMARKS_JSON_FILE_NAME);
                 if (bookmarksFile != null) importBookmarks(context, bookmarksFile, dao, log);
                 else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No bookmarks file found");
+
+                DocumentFile rulesFile = explorer.findFile(context, rootFolder, Consts.RENAMING_RULES_JSON_FILE_NAME);
+                if (rulesFile != null) importRenamingRules(context, rulesFile, dao, log);
+                else trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "No renaming rules file found");
             } finally {
                 dao.cleanup();
             }
@@ -542,21 +547,6 @@ public class PrimaryImportWorker extends BaseWorker {
         }
     }
 
-    private void importBookmarks(@NonNull final Context context, @NonNull DocumentFile bookmarksFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
-        trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Bookmarks JSON found");
-        eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
-        JsonContentCollection contentCollection = deserialiseCollectionJson(context, bookmarksFile);
-        if (null != contentCollection) {
-            List<SiteBookmark> bookmarks = contentCollection.getBookmarks();
-            eventProgress(STEP_4_QUEUE_FINAL, bookmarks.size(), 0, 0);
-            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Bookmarks JSON deserialized : %s items detected", bookmarks.size() + "");
-            ImportHelper.importBookmarks(dao, bookmarks);
-            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import bookmarks succeeded");
-        } else {
-            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import bookmarks failed : JSON unreadable");
-        }
-    }
-
     private void importGroups(@NonNull final Context context, @NonNull DocumentFile groupsFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
         trace(Log.INFO, STEP_GROUPS, log, "Custom groups JSON found");
         eventProgress(STEP_GROUPS, -1, 0, 0);
@@ -580,6 +570,36 @@ public class PrimaryImportWorker extends BaseWorker {
             trace(Log.INFO, STEP_GROUPS, log, "Import custom groups succeeded");
         } else {
             trace(Log.INFO, STEP_GROUPS, log, "Import custom groups failed : Custom groups JSON unreadable");
+        }
+    }
+
+    private void importBookmarks(@NonNull final Context context, @NonNull DocumentFile bookmarksFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+        trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Bookmarks JSON found");
+        eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
+        JsonContentCollection contentCollection = deserialiseCollectionJson(context, bookmarksFile);
+        if (null != contentCollection) {
+            List<SiteBookmark> bookmarks = contentCollection.getBookmarks();
+            eventProgress(STEP_4_QUEUE_FINAL, bookmarks.size(), 0, 0);
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Bookmarks JSON deserialized : %s items detected", bookmarks.size() + "");
+            ImportHelper.importBookmarks(dao, bookmarks);
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import bookmarks succeeded");
+        } else {
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import bookmarks failed : JSON unreadable");
+        }
+    }
+
+    private void importRenamingRules(@NonNull final Context context, @NonNull DocumentFile rulesFile, @NonNull CollectionDAO dao, @NonNull List<LogHelper.LogEntry> log) {
+        trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Renaming rules JSON found");
+        eventProgress(STEP_4_QUEUE_FINAL, -1, 0, 0);
+        JsonContentCollection contentCollection = deserialiseCollectionJson(context, rulesFile);
+        if (null != contentCollection) {
+            List<RenamingRule> rules = contentCollection.getRenamingRules();
+            eventProgress(STEP_4_QUEUE_FINAL, rules.size(), 0, 0);
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Renaming rules JSON deserialized : %s items detected", rules.size() + "");
+            ImportHelper.importRenamingRules(dao, rules);
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import renaming rules succeeded");
+        } else {
+            trace(Log.INFO, STEP_4_QUEUE_FINAL, log, "Import renaming rules failed : JSON unreadable");
         }
     }
 

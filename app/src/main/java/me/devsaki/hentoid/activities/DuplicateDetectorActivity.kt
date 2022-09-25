@@ -41,7 +41,7 @@ class DuplicateDetectorActivity : BaseActivity() {
         }
 
         val vmFactory = ViewModelFactory(application)
-        viewModel = ViewModelProvider(this, vmFactory).get(DuplicateViewModel::class.java)
+        viewModel = ViewModelProvider(this, vmFactory)[DuplicateViewModel::class.java]
 
         if (!Preferences.getRecentVisibility()) {
             window.setFlags(

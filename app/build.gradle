@@ -106,7 +106,7 @@ dependencies {
      * TESTING
      */
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.mockito:mockito-core:4.5.1'
+    testImplementation 'org.mockito:mockito-core:4.6.1'
     testImplementation 'androidx.test:core:1.4.0'
     testImplementation 'io.kotlintest:kotlintest-assertions:3.4.2'
     testImplementation "androidx.arch.core:core-testing:2.1.0"
@@ -124,10 +124,10 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'com.google.android.material:material:1.6.0-rc01'
-    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'androidx.preference:preference:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.paging:paging-runtime:2.1.2'
-    implementation 'androidx.fragment:fragment-ktx:1.4.1'
+    implementation 'androidx.fragment:fragment-ktx:1.5.0'
     implementation "androidx.documentfile:documentfile:1.0.1"
     // <-- if documentfile is bumped, please examine FileExplorer for evolutions
     implementation "androidx.viewpager2:viewpager2:1.0.0"
@@ -136,7 +136,7 @@ dependencies {
     implementation "androidx.work:work-runtime-ktx:$android_work_version"
 
     // For ViewModel to work
-    def android_lifecycle_version = '2.4.1'
+    def android_lifecycle_version = '2.5.0'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-process:$android_lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata-ktx:$android_lifecycle_version"
@@ -187,10 +187,10 @@ dependencies {
     implementation 'com.github.AppIntro:AppIntro:6.1.0'
 
     // Tooltips
-    implementation 'com.github.skydoves:balloon:1.4.3'
+    implementation 'com.github.skydoves:balloon:1.4.7'
 
     // Dropdown lists
-    implementation 'com.github.skydoves:powerspinner:1.1.9'
+    implementation 'com.github.skydoves:powerspinner:1.2.3'
 
     // Popup menus with icons
     implementation 'com.github.skydoves:powermenu:2.2.0'
@@ -199,14 +199,17 @@ dependencies {
     implementation "com.github.skydoves:submarine:1.0.7"
 
     // Fast scroller
-    implementation 'me.zhanghai.android.fastscroll:library:1.1.7'
+    implementation 'me.zhanghai.android.fastscroll:library:1.1.8'
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
-    def auto_about_version = '8.9.4'
-    implementation "com.mikepenz:aboutlibraries-core:$auto_about_version"
-    implementation "com.mikepenz:aboutlibraries:$auto_about_version"
+    def about_version = '8.9.4'
+    implementation "com.mikepenz:aboutlibraries-core:$about_version"
+    implementation "com.mikepenz:aboutlibraries:$about_version"
+
+    // https://github.com/nekocode/Badge (for the tag editor)
+    implementation "com.github.nekocode:Badge:2.1"
 
 
     /**
@@ -232,7 +235,7 @@ dependencies {
     implementation "pl.droidsonroids.retrofit2:converter-jspoon:$jspoon_version"
 
     // JSOUP HTML parser: github.com/jhy/jsoup
-    implementation 'org.jsoup:jsoup:1.14.3'
+    implementation 'org.jsoup:jsoup:1.15.2'
 
     //    https://github.com/square/retrofit
     def retrofit_version = '2.9.0'
@@ -299,7 +302,7 @@ dependencies {
      * ANALYTICS
      */
     // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:27.1.0')
+    implementation platform('com.google.firebase:firebase-bom:30.3.1')
 
     // Crashlytics
     implementation 'com.google.firebase:firebase-crashlytics'
