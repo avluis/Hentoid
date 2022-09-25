@@ -99,7 +99,7 @@
     <string name="menu_share_title">Book URL</string>
     <string name="menu_archive">Archive</string>
     <string name="menu_archive_help">Archive the book to a ZIP file</string>
-    <string name="search_hint">Title, artist, tag or book ID</string>
+    <string name="library_search_hint">Title, artist, tag or book ID</string>
     <string name="send_to">Share with:</string>
     <string name="open_settings">Open settings</string>
     <string name="app_settings">App settings</string>

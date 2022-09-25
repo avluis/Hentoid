@@ -84,7 +84,7 @@
     <string name="menu_share_title">書籍のURL</string>
     <string name="menu_archive">アーカイブ</string>
     <string name="menu_archive_help">書籍をZIPファイルにアーカイブする</string>
-    <string name="search_hint">タイトル、アーティスト、タグ、または本のID</string>
+    <string name="library_search_hint">タイトル、アーティスト、タグ、または本のID</string>
     <string name="send_to">共有する：</string>
     <string name="open_settings">設定を開く</string>
     <string name="app_settings">アプリの設定</string>

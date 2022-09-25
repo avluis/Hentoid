@@ -323,7 +323,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
 
         mainSearchView = (SearchView) searchMenu.getActionView();
         mainSearchView.setIconifiedByDefault(true);
-        mainSearchView.setQueryHint(getString(R.string.search_hint));
+        mainSearchView.setQueryHint(getString(R.string.library_search_hint));
         // Change display when text query is typed
         mainSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

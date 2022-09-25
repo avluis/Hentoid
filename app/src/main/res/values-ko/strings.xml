@@ -84,7 +84,7 @@
     <string name="menu_share_title">작품 URL</string>
     <string name="menu_archive">보관</string>
     <string name="menu_archive_help">작품을 압축 파일로 보관합니다</string>
-    <string name="search_hint">제목, 작가, 태그 또는 작품 ID</string>
+    <string name="library_search_hint">제목, 작가, 태그 또는 작품 ID</string>
     <string name="send_to">다음과 공유:</string>
     <string name="open_settings">설정 열기</string>
     <string name="app_settings">앱 설정</string>

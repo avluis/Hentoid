@@ -99,7 +99,7 @@
     <string name="menu_archive">В архив</string>
     <string name="menu_archive_help">Заархивировать книгу в ZIP</string>
     <string name="menu_share_title">Ссылка на книгу</string>
-    <string name="search_hint">Название, художник, тэг или ID книги</string>
+    <string name="library_search_hint">Название, художник, тэг или ID книги</string>
     <string name="send_to">Поделиться через:</string>
     <string name="open_settings">Настройки</string>
     <string name="app_settings">Настройки приложения</string>

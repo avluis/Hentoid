@@ -84,7 +84,7 @@
     <string name="menu_share_title">Könyv URL</string>
     <string name="menu_archive">Archívum</string>
     <string name="menu_archive_help">Könyv becsomagolása ZIP fájl-ba</string>
-    <string name="search_hint">Cím, szerző, kategória vagy könyv ID</string>
+    <string name="library_search_hint">Cím, szerző, kategória vagy könyv ID</string>
     <string name="send_to">Megosztás ezzel:</string>
     <string name="open_settings">Beállítások megnyitása</string>
     <string name="app_settings">Alkalmazás beállítások</string>

@@ -493,7 +493,7 @@ public class LibraryActivity extends BaseActivity {
 
         actionSearchView = (SearchView) searchMenu.getActionView();
         actionSearchView.setIconifiedByDefault(true);
-        actionSearchView.setQueryHint(getString(R.string.search_hint));
+        actionSearchView.setQueryHint(getString(R.string.library_search_hint));
         // Change display when text query is typed
         actionSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override

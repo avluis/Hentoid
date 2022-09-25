@@ -84,7 +84,7 @@
     <string name="menu_share_title">URL del libro</string>
     <string name="menu_archive">Archivio</string>
     <string name="menu_archive_help">Archivia il libro in un file ZIP</string>
-    <string name="search_hint">Titolo, autore, tag o ID del libro</string>
+    <string name="library_search_hint">Titolo, autore, tag o ID del libro</string>
     <string name="send_to">Condividi con:</string>
     <string name="open_settings">Apri impostazioni</string>
     <string name="app_settings">Impostazioni app</string>

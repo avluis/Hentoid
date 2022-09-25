@@ -58,9 +58,13 @@ class RulesEditViewModel(
         return attributeTypeFilter
     }
 
-
     fun setAttributeType(attributeType: AttributeType) {
         attributeTypeFilter.value = attributeType
+        loadRules()
+    }
+
+    fun setQuery(data: String) {
+        query = data
         loadRules()
     }
 

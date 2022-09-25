@@ -1,8 +1,11 @@
 package me.devsaki.hentoid.activities
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.mikepenz.fastadapter.FastAdapter
@@ -35,12 +38,17 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
     private var binding: ActivityRulesBinding? = null
     private lateinit var topPanel: MetaEditRuleTopPanel
 
+    // Action view associated with search menu button
+    private lateinit var actionSearchView: SearchView
+
     // Rules
     private val itemAdapter = ItemAdapter<RuleItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
     private lateinit var selectExtension: SelectExtension<RuleItem>
 
     // == Vars
+    // Used to ignore native calls to onQueryTextChange
+    private var invalidateNextQueryTextChange: Boolean = false
     private var queryFilter = ""
     private var attributeTypeFilter = AttributeType.UNDEFINED
 
@@ -116,6 +124,50 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
             it.tagsFab.setOnClickListener {
                 MetaEditRuleDialogFragment.invoke(this, true, 0, attributeTypeFilter)
             }
+
+            val searchMenu = it.toolbar.menu.findItem(R.id.action_search)
+            searchMenu.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+                override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                    invalidateNextQueryTextChange = true
+
+                    // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
+                    if (queryFilter.isNotEmpty()) // Use of handler allows to set the value _after_ the UI has auto-cleared it
+                    // Without that handler the view displays with an empty value
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            invalidateNextQueryTextChange = true
+                            actionSearchView.setQuery(queryFilter, false)
+                        }, 100)
+                    return true
+                }
+
+                override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                    invalidateNextQueryTextChange = true
+                    return true
+                }
+            })
+
+            actionSearchView = searchMenu.actionView as SearchView
+            actionSearchView.setIconifiedByDefault(true)
+            // Change display when text query is typed
+            // Change display when text query is typed
+            actionSearchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(s: String): Boolean {
+                    queryFilter = s
+                    viewModel.setQuery(queryFilter)
+                    actionSearchView.clearFocus()
+                    return true
+                }
+
+                override fun onQueryTextChange(s: String): Boolean {
+                    if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
+                        invalidateNextQueryTextChange = false
+                    } else if (s.isEmpty()) {
+                        queryFilter = ""
+                        viewModel.setQuery(queryFilter)
+                    }
+                    return true
+                }
+            })
         }
         topPanel = MetaEditRuleTopPanel(this)
     }
@@ -168,7 +220,6 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
 
     private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
-//            R.id.action_search -> confirmEdit()
             R.id.action_sort_filter -> showSortFilterPanel()
             else -> return true
         }
