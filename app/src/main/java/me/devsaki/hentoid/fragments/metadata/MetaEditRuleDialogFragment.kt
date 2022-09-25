@@ -8,6 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentActivity
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
+import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.ObjectBoxDAO
 import me.devsaki.hentoid.database.domains.RenamingRule
@@ -179,21 +182,42 @@ class MetaEditRuleDialogFragment : DialogFragment() {
     }
 
     private fun onCreateClick() {
+        val sourceName = binding.sourceName.editText?.text.toString()
+        val targetName = binding.targetName.editText?.text.toString()
+        if (!checkConsistency(sourceName, targetName)) return
+
         parent?.onCreateRule(
             attributeTypes[binding.attributeType.selectedIndex],
-            binding.sourceName.editText?.text.toString(),
-            binding.targetName.editText?.text.toString()
+            sourceName,
+            targetName
         )
         dismissAllowingStateLoss()
     }
 
     private fun onEditClick() {
+        val sourceName = binding.sourceName.editText?.text.toString()
+        val targetName = binding.targetName.editText?.text.toString()
+        if (!checkConsistency(sourceName, targetName)) return
+
         parent?.onEditRule(
             ruleId,
-            binding.sourceName.editText?.text.toString(),
-            binding.targetName.editText?.text.toString()
+            sourceName,
+            targetName
         )
         dismissAllowingStateLoss()
+    }
+
+    private fun checkConsistency(sourceName: String, targetName: String): Boolean {
+        if (targetName.contains('*') && !sourceName.contains('*')) {
+            val snack = Snackbar.make(
+                binding.root,
+                R.string.meta_rule_wildcard,
+                BaseTransientBottomBar.LENGTH_SHORT
+            )
+            snack.show()
+            return false
+        }
+        return true
     }
 
     private fun onRemoveClick() {

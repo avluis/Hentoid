@@ -834,6 +834,7 @@
     <!-- Renaming rules editor -->
     <string name="meta_rule_source">Source</string>
     <string name="meta_rule_target">Target</string>
+    <string name="meta_rule_wildcard">If target has a wildcard, source must have a wildcard too</string>
 
     <!-- Generic delete & purge -->
     <string name="notif_archive_title">Content archival</string>
