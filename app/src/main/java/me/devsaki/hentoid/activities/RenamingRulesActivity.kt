@@ -241,12 +241,23 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
             .setPositiveButton(
                 R.string.ok
             ) { _, _ ->
+                leaveSelectionMode()
                 viewModel.removeRules(selectedItems.map { i -> i.rule.id })
             }
             .setNegativeButton(R.string.cancel, null)
             .create().show()
     }
 
+    // TODO doc
+    private fun leaveSelectionMode() {
+        selectExtension.selectOnLongClick = true
+        // Warning : next line makes FastAdapter cycle through all items,
+        // which has a side effect of calling TiledPageList.onPagePlaceholderInserted,
+        // flagging the end of the list as being the last displayed position
+        val selection = selectExtension.selections.toMutableSet()
+        if (selection.isNotEmpty()) selectExtension.deselect(selection)
+        binding?.selectionToolbar?.visibility = View.GONE
+    }
 
     /**
      * Callback for attribute item click

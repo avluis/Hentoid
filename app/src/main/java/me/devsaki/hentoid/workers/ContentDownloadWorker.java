@@ -48,11 +48,14 @@ import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.database.domains.RenamingRule;
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -738,7 +741,7 @@ public class ContentDownloadWorker extends BaseWorker {
                     content.setDownloadCompletionDate(Instant.now().toEpochMilli());
                     content.setStatus(StatusContent.DOWNLOADED);
 
-                    // Delete the duplicate book that was meant to be replaced
+                    // Delete the duplicate book that was meant to be replaced, if any
                     if (!content.getContentToReplace().isNull()) {
                         Content contentToReplace = content.getContentToReplace().getTarget();
                         if (contentToReplace != null) {
@@ -750,6 +753,8 @@ public class ContentDownloadWorker extends BaseWorker {
                             }
                         }
                     }
+
+                    applyRenamingRules(content);
                 } else {
                     content.setStatus(StatusContent.ERROR);
                 }
@@ -1284,5 +1289,35 @@ public class ContentDownloadWorker extends BaseWorker {
         else Timber.w(context.getString(R.string.queue_json_failed));
 
         notificationManager.notify(new DownloadErrorNotification(content));
+    }
+
+    private void applyRenamingRules(@NonNull Content content) {
+        List<Attribute> newAttrs = new ArrayList<>();
+        List<RenamingRule> rules = dao.selectRenamingRules(AttributeType.UNDEFINED, "");
+        for (RenamingRule rule : rules) rule.computeParts();
+
+        for (Attribute attr : content.getAttributes()) newAttrs.add(applyRenamingRule(attr, rules));
+
+        content.putAttributes(newAttrs);
+    }
+
+    private Attribute applyRenamingRule(@NonNull Attribute attr, @NonNull List<RenamingRule> rules) {
+        Attribute result = attr;
+        for (RenamingRule rule : rules) {
+            if (attr.getType().equals(rule.getAttributeType())) {
+                String newName = processNewName(attr.getName(), rule);
+                if (newName != null) {
+                    result = new Attribute(attr.getType(), newName);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
+    @Nullable
+    private String processNewName(@NonNull String attrName, @NonNull RenamingRule rule) {
+        if (rule.doesMatchSourceName(attrName)) return rule.getTargetName(attrName);
+        else return null;
     }
 }

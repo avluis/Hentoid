@@ -28,10 +28,10 @@ class MetaEditRuleDialogFragment : DialogFragment() {
     private val binding get() = _binding!!
 
     // === VARIABLES
+    private lateinit var attrType: AttributeType
     private var parent: Parent? = null
     private var isCreateMode: Boolean = false
     private var ruleId: Long = 0
-    private var attrType: AttributeType? = null
     private val attributeTypes = ArrayList<AttributeType>()
 
 
@@ -41,9 +41,8 @@ class MetaEditRuleDialogFragment : DialogFragment() {
         isCreateMode = requireArguments().getBoolean(KEY_MODE_CREATE)
         ruleId = requireArguments().getLong(KEY_RULE_ID)
         val attrTypeCode = requireArguments().getInt(KEY_ATTR_TYPE_CODE, 99)
-        attrType = AttributeType.searchByCode(attrTypeCode)
+        attrType = AttributeType.searchByCode(attrTypeCode)!!
 
-        //parent = parentFragment as Parent
         parent = activity as Parent
     }
 
@@ -181,7 +180,7 @@ class MetaEditRuleDialogFragment : DialogFragment() {
 
     private fun onCreateClick() {
         parent?.onCreateRule(
-            if (null == attrType) attributeTypes[binding.attributeType.selectedIndex] else attrType!!,
+            attributeTypes[binding.attributeType.selectedIndex],
             binding.sourceName.editText?.text.toString(),
             binding.targetName.editText?.text.toString()
         )
