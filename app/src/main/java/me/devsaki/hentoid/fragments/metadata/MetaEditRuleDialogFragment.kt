@@ -41,7 +41,7 @@ class MetaEditRuleDialogFragment : DialogFragment() {
         isCreateMode = requireArguments().getBoolean(KEY_MODE_CREATE)
         ruleId = requireArguments().getLong(KEY_RULE_ID)
         val attrTypeCode = requireArguments().getInt(KEY_ATTR_TYPE_CODE, 99)
-        if (attrTypeCode < 99) attrType = AttributeType.searchByCode(attrTypeCode)
+        attrType = AttributeType.searchByCode(attrTypeCode)
 
         //parent = parentFragment as Parent
         parent = activity as Parent
@@ -66,20 +66,22 @@ class MetaEditRuleDialogFragment : DialogFragment() {
         super.onViewCreated(rootView, savedInstanceState)
 
         if (isCreateMode) {
-            if (null == attrType) { // No defined attribute type
-                attributeTypes.addAll(
-                    listOf(
-                        AttributeType.ARTIST,
-                        AttributeType.CIRCLE,
-                        AttributeType.SERIE,
-                        AttributeType.TAG,
-                        AttributeType.CHARACTER,
-                        AttributeType.LANGUAGE
-                    )
+            attributeTypes.addAll(
+                listOf(
+                    AttributeType.ARTIST,
+                    AttributeType.CIRCLE,
+                    AttributeType.SERIE,
+                    AttributeType.TAG,
+                    AttributeType.CHARACTER,
+                    AttributeType.LANGUAGE
                 )
-                binding.attributeType.setIsFocusable(true)
-                binding.attributeType.lifecycleOwner = viewLifecycleOwner
-                binding.attributeType.setItems(attributeTypes.map { a -> resources.getString(a.displayName) })
+            )
+            binding.attributeType.let {
+                it.setIsFocusable(true)
+                it.lifecycleOwner = viewLifecycleOwner
+                it.setItems(attributeTypes.map { a -> resources.getString(a.displayName) })
+                if (attrType != AttributeType.UNDEFINED)
+                    it.selectItemByIndex(attributeTypes.indexOf(attrType))
             }
         } else {
             val rule = loadRule()

@@ -26,7 +26,6 @@ import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewholders.RuleItem
 import me.devsaki.hentoid.viewmodels.RulesEditViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
-import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper
 
 
 class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent {
@@ -121,10 +120,6 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
             it.toolbar.setOnMenuItemClickListener(this::onToolbarItemClicked)
             it.selectionToolbar.setOnMenuItemClickListener(this::onSelectionToolbarItemClicked)
 
-            it.tagsFab.setOnClickListener {
-                MetaEditRuleDialogFragment.invoke(this, true, 0, attributeTypeFilter)
-            }
-
             val searchMenu = it.toolbar.menu.findItem(R.id.action_search)
             searchMenu.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
                 override fun onMenuItemActionExpand(item: MenuItem): Boolean {
@@ -176,32 +171,28 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
         binding?.let { it ->
             // Rules list init
             it.list.adapter = fastAdapter
-            selectExtension = fastAdapter.requireOrCreateExtension()
-            selectExtension.let { se ->
-                se.isSelectable = true
-                se.multiSelect = true
-                se.selectOnLongClick = true
-                se.selectWithItemUpdate = true
-                se.selectionListener = object : ISelectionListener<RuleItem> {
-                    override fun onSelectionChanged(item: RuleItem, selected: Boolean) {
-                        onSelectionChanged()
-                    }
-                }
-                val helper = FastAdapterPreClickSelectHelper(se)
-                fastAdapter.onPreClickListener =
-                    { v: View?, adapter: IAdapter<RuleItem>?, item: RuleItem, position: Int? ->
-                        helper.onPreClickListener(v, adapter, item, position)
-                    }
-                fastAdapter.onPreLongClickListener =
-                    { v: View?, adapter: IAdapter<RuleItem>?, item: RuleItem, position: Int? ->
-                        helper.onPreClickListener(v, adapter, item, position)
-                    }
+            // New rule FAB
+            it.tagsFab.setOnClickListener {
+                MetaEditRuleDialogFragment.invoke(this, true, 0, attributeTypeFilter)
             }
-            fastAdapter.onClickListener =
-                { _: View?, _: IAdapter<RuleItem>, i: RuleItem, _: Int ->
-                    onItemClick(i)
-                }
+
         }
+        selectExtension = fastAdapter.requireOrCreateExtension()
+        selectExtension.let { se ->
+            se.isSelectable = true
+            se.multiSelect = true
+            se.selectOnLongClick = true
+            se.selectWithItemUpdate = true
+            se.selectionListener = object : ISelectionListener<RuleItem> {
+                override fun onSelectionChanged(item: RuleItem, selected: Boolean) {
+                    onSelectionChanged()
+                }
+            }
+        }
+        fastAdapter.onClickListener =
+            { _: View?, _: IAdapter<RuleItem>, i: RuleItem, _: Int ->
+                onItemClick(i)
+            }
     }
 
     /**
