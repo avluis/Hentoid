@@ -278,6 +278,11 @@ class MetadataEditViewModel(
     private fun doRenameAttribute(newName: String, id: Long, createRule: Boolean) {
         val attr = dao.selectAttribute(id) ?: return
 
+        // Update displayed attributes
+        val newAttrs = ArrayList<Attribute>()
+        if (contentAttributes.value != null) newAttrs.addAll(contentAttributes.value!!) // Create new instance to make ListAdapter.submitList happy
+        newAttrs.remove(attr)
+
         // Persist rule
         if (createRule) {
             val newRule = RenamingRule(attr.type, attr.name, newName)
@@ -293,6 +298,9 @@ class MetadataEditViewModel(
         attr.displayName = newName
         dao.insertAttribute(attr)
 
+        newAttrs.add(attr)
+        contentAttributes.postValue(newAttrs)
+
         // Update corresponding group if needed
         val group = attr.linkedGroup
         if (group != null) {
@@ -301,16 +309,17 @@ class MetadataEditViewModel(
             GroupHelper.updateGroupsJson(getApplication(), dao)
         }
 
-        // Update the 'author' pre-calculated field for all related books if needed
-        if (attr.type.equals(AttributeType.ARTIST) || attr.type.equals(AttributeType.CIRCLE)) {
-            val contents = attr.contents
-            if (contents != null && !contents.isEmpty()) {
-                contents.forEach {
-                    it.lastEditDate = Instant.now().toEpochMilli()
+        // Mark all related books for update
+        val contents = attr.contents
+        if (contents != null && !contents.isEmpty()) {
+            contents.forEach {
+                // Update the 'author' pre-calculated field for all related books if needed
+                if (attr.type.equals(AttributeType.ARTIST) || attr.type.equals(AttributeType.CIRCLE)) {
                     it.author = ContentHelper.formatBookAuthor(it)
-                    dao.insertContent(it)
                     ContentHelper.persistJson(getApplication(), it)
                 }
+                it.lastEditDate = Instant.now().toEpochMilli()
+                dao.insertContent(it)
             }
         }
     }

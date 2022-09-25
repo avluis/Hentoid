@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat
 import cn.nekocode.badge.BadgeDrawable
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.items.AbstractItem
-import com.mikepenz.fastadapter.ui.utils.StringHolder
 import me.devsaki.hentoid.R
 import me.devsaki.hentoid.activities.bundles.AttributeItemBundle
 import me.devsaki.hentoid.database.domains.Attribute
@@ -17,14 +16,10 @@ import me.devsaki.hentoid.database.domains.Attribute
 class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
     AbstractItem<AttributeItem.ViewHolder>() {
 
-    var name: StringHolder? = null
-
     init {
-        name = StringHolder(attribute.displayName)
         tag = attribute
         identifier = attribute.uniqueHash()
     }
-
 
     override val type: Int get() = R.id.attribute
 
@@ -66,7 +61,7 @@ class AttributeItem(val attribute: Attribute, val showCount: Boolean) :
             val badgeType =
                 if (!attribute.isNew && (0 == attribute.count || !showCount)) BadgeDrawable.TYPE_ONLY_ONE_TEXT else BadgeDrawable.TYPE_WITH_TWO_TEXT_COMPLEMENTARY
             val text2 =
-                if (attribute.count > 0) attribute.count.toString() else if (attribute.isNew) "+" else "";
+                if (attribute.count > 0) attribute.count.toString() else if (attribute.isNew) "+" else ""
             val badgeDrawable = BadgeDrawable.Builder()
                 .type(badgeType)
                 .badgeColor(ContextCompat.getColor(context, attribute.type.color))

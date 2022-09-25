@@ -97,7 +97,9 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                 oldItem: AttributeItem,
                 newItem: AttributeItem
             ): Boolean {
-                return (oldItem.attribute == newItem.attribute) && (oldItem.attribute.count == newItem.attribute.count)
+                return (oldItem.attribute == newItem.attribute)
+                        && (oldItem.attribute.count == newItem.attribute.count)
+                        && (oldItem.attribute.name.equals(newItem.attribute.name, true))
             }
 
             override fun getChangePayload(
@@ -112,7 +114,7 @@ class MetadataEditActivity : BaseActivity(), GalleyPickerDialogFragment.Parent,
                 if (oldAttr.count != newAttr.count) {
                     diffBundleBuilder.count = newAttr.count
                 }
-                if (oldAttr.name != newAttr.name) {
+                if (!oldAttr.name.equals(newAttr.name, true)) {
                     diffBundleBuilder.name = newAttr.name
                 }
                 return if (diffBundleBuilder.isEmpty) null else diffBundleBuilder.bundle
