@@ -1,0 +1,257 @@
+package me.devsaki.hentoid.fragments.tools
+
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.PopupWindow
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.core.view.ViewCompat
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelProvider
+import androidx.work.WorkManager
+import me.devsaki.hentoid.R
+import me.devsaki.hentoid.activities.DuplicateDetectorActivity
+import me.devsaki.hentoid.core.isFinishing
+import me.devsaki.hentoid.databinding.IncludeDuplicateControlsBinding
+import me.devsaki.hentoid.events.ProcessEvent
+import me.devsaki.hentoid.ui.BlinkAnimation
+import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.viewmodels.DuplicateViewModel
+import me.devsaki.hentoid.viewmodels.ViewModelFactory
+import me.devsaki.hentoid.workers.DuplicateDetectorWorker
+
+
+class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecycleObserver {
+
+    // Core UI
+    private lateinit var binding: IncludeDuplicateControlsBinding
+    private lateinit var menuView: View
+    private lateinit var menuWindow: PopupWindow
+
+    // Core vars
+    private lateinit var lifecycleOwner: LifecycleOwner
+    private var isShowing: Boolean = false
+
+    // Custom vars
+    private val viewModel: DuplicateViewModel
+
+
+    init {
+        setLifecycleOwnerFromContext(activity)
+        initFrame(activity)
+        initUI(activity)
+
+        val vmFactory = ViewModelFactory(activity.application)
+        viewModel = ViewModelProvider(activity, vmFactory)[DuplicateViewModel::class.java]
+    }
+
+    private fun setLifecycleOwnerFromContext(context: Context) {
+        if (context is LifecycleOwner) {
+            setLifecycleOwner(context as LifecycleOwner)
+        }
+    }
+
+    private fun setLifecycleOwner(lifecycleOwner: LifecycleOwner) {
+        lifecycleOwner.lifecycle.addObserver(this)
+        this.lifecycleOwner = lifecycleOwner
+    }
+
+    override fun onDestroy(owner: LifecycleOwner) {
+        dismiss()
+        lifecycleOwner.lifecycle.removeObserver(this)
+    }
+
+    private fun initFrame(activity: DuplicateDetectorActivity) {
+        binding = IncludeDuplicateControlsBinding.inflate(
+            LayoutInflater.from(activity),
+            activity.window.decorView as ViewGroup,
+            false
+        )
+        menuView = binding.root
+        menuWindow = PopupWindow(
+            menuView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT
+        )
+        // Outside click auto-dismisses the menu
+        menuWindow.isFocusable = true
+        menuWindow.setOnDismissListener { dismiss() }
+    }
+
+    fun showAsDropDown(anchor: View) {
+        if (!isShowing
+            && ViewCompat.isAttachedToWindow(anchor)
+            && !anchor.context.isFinishing()
+        ) {
+            updateUI(anchor.context)
+            isShowing = true
+            menuWindow.showAsDropDown(anchor)
+        } else {
+            dismiss()
+        }
+    }
+
+    fun isVisible(): Boolean {
+        return isShowing
+    }
+
+    fun dismiss() {
+        if (isShowing) {
+            menuWindow.dismiss()
+            isShowing = false
+        }
+    }
+
+    private fun initUI(context: Context) {
+        binding.scanFab.setOnClickListener {
+            this.onScanClick()
+        }
+        binding.stopFab.setOnClickListener {
+            this.onStopClick()
+        }
+
+        binding.useTitle.setOnCheckedChangeListener { _, _ -> onMainCriteriaChanged() }
+        binding.useCover.setOnCheckedChangeListener { _, _ -> onMainCriteriaChanged() }
+
+        binding.useTitle.isChecked = Preferences.isDuplicateUseTitle()
+        binding.useCover.isChecked = Preferences.isDuplicateUseCover()
+        binding.useArtist.isChecked = Preferences.isDuplicateUseArtist()
+        binding.useSameLanguage.isChecked = Preferences.isDuplicateUseSameLanguage()
+        binding.ignoreChapters.isChecked = Preferences.isDuplicateIgnoreChapters()
+        binding.useSensitivity.setItems(R.array.duplicate_use_sensitivities)
+        binding.useSensitivity.selectItemByIndex(Preferences.getDuplicateSensitivity())
+        updateUI(context)
+    }
+
+    private fun updateUI(context: Context) {
+        if (DuplicateDetectorWorker.isRunning(context)) {
+            binding.scanFab.visibility = View.INVISIBLE
+            binding.stopFab.visibility = View.VISIBLE
+            // TODO simplify that
+            val coverControlsVisibility =
+                if (binding.useCover.isChecked) View.VISIBLE else View.GONE
+            binding.indexPicturesTxt.visibility = coverControlsVisibility
+            binding.indexPicturesPb.visibility = coverControlsVisibility
+            binding.indexPicturesPbTxt.visibility = View.GONE
+            binding.detectBooksTxt.visibility = View.VISIBLE
+            binding.detectBooksPb.visibility = View.VISIBLE
+            binding.detectBooksPbTxt.visibility = View.GONE
+        } else {
+            binding.scanFab.visibility = View.VISIBLE
+            binding.stopFab.visibility = View.INVISIBLE
+            binding.indexPicturesTxt.visibility = View.GONE
+            binding.indexPicturesPb.visibility = View.GONE
+            binding.indexPicturesPbTxt.visibility = View.GONE
+            binding.detectBooksTxt.visibility = View.GONE
+            binding.detectBooksPb.visibility = View.GONE
+            binding.detectBooksPbTxt.visibility = View.GONE
+        }
+    }
+
+    private fun onScanClick() {
+        Preferences.setDuplicateUseTitle(binding.useTitle.isChecked)
+        Preferences.setDuplicateUseCover(binding.useCover.isChecked)
+        Preferences.setDuplicateUseArtist(binding.useArtist.isChecked)
+        Preferences.setDuplicateUseSameLanguage(binding.useSameLanguage.isChecked)
+        Preferences.setDuplicateIgnoreChapters(binding.ignoreChapters.isChecked)
+        Preferences.setDuplicateSensitivity(binding.useSensitivity.selectedIndex)
+
+        activateScanUi()
+
+        viewModel.setFirstUse(false)
+        viewModel.scanForDuplicates(
+            binding.useTitle.isChecked,
+            binding.useCover.isChecked,
+            binding.useArtist.isChecked,
+            binding.useSameLanguage.isChecked,
+            binding.ignoreChapters.isChecked,
+            binding.useSensitivity.selectedIndex
+        )
+    }
+
+    private fun activateScanUi() {
+        binding.scanFab.visibility = View.INVISIBLE
+        binding.stopFab.visibility = View.VISIBLE
+
+        binding.useTitle.isEnabled = false
+        binding.useCover.isEnabled = false
+        binding.useArtist.isEnabled = false
+        binding.useSameLanguage.isEnabled = false
+        binding.ignoreChapters.isEnabled = false
+        binding.useSensitivity.isEnabled = false
+
+        val coverControlsVisibility =
+            if (binding.useCover.isChecked) View.VISIBLE else View.GONE
+        binding.indexPicturesTxt.visibility = coverControlsVisibility
+        binding.indexPicturesPb.progress = 0
+        binding.indexPicturesPb.visibility = coverControlsVisibility
+        binding.detectBooksTxt.visibility = View.VISIBLE
+        binding.detectBooksPb.progress = 0
+        binding.detectBooksPb.visibility = View.VISIBLE
+    }
+
+    private fun disableScanUi() {
+        binding.scanFab.visibility = View.VISIBLE
+        binding.stopFab.visibility = View.INVISIBLE
+
+        binding.useTitle.isEnabled = true
+        binding.useCover.isEnabled = true
+        binding.useArtist.isEnabled = true
+        binding.useSameLanguage.isEnabled = true
+        binding.ignoreChapters.isEnabled = true
+        binding.useSensitivity.isEnabled = true
+
+        binding.indexPicturesTxt.visibility = View.GONE
+        binding.indexPicturesPb.visibility = View.GONE
+        binding.indexPicturesPbTxt.visibility = View.GONE
+        binding.detectBooksTxt.visibility = View.GONE
+        binding.detectBooksPb.visibility = View.GONE
+        binding.detectBooksPbTxt.visibility = View.GONE
+    }
+
+    private fun onMainCriteriaChanged() {
+        binding.scanFab.isEnabled =
+            (binding.useTitle.isChecked || binding.useCover.isChecked)
+    }
+
+    private fun onStopClick() {
+        WorkManager.getInstance(binding.stopFab.context)
+            .cancelUniqueWork(R.id.duplicate_detector_service.toString())
+    }
+
+    fun onProcessEvent(event: ProcessEvent) {
+        if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
+
+        val progressBar: ProgressBar =
+            if (DuplicateDetectorWorker.STEP_COVER_INDEX == event.step) binding.indexPicturesPb else binding.detectBooksPb
+        val progressBarTxt: TextView =
+            if (DuplicateDetectorWorker.STEP_COVER_INDEX == event.step) binding.indexPicturesPbTxt else binding.detectBooksPbTxt
+
+        if (DuplicateDetectorWorker.STEP_COVER_INDEX == event.step) {
+            if (null == binding.detectBooksPbTxt.animation) {
+                binding.detectBooksPbTxt.startAnimation(BlinkAnimation(750, 20))
+                binding.detectBooksPbTxt.text =
+                    binding.detectBooksPbTxt.context.resources.getText(R.string.duplicate_wait_index)
+                binding.detectBooksPbTxt.visibility = View.VISIBLE
+            }
+        } else {
+            binding.detectBooksPbTxt.clearAnimation()
+        }
+
+        progressBar.max = event.elementsTotal
+        progressBar.progress = event.elementsOK + event.elementsKO
+        progressBarTxt.text = String.format("%d / %d", progressBar.progress, progressBar.max)
+        progressBarTxt.visibility = View.VISIBLE
+
+        if (ProcessEvent.EventType.COMPLETE == event.eventType && DuplicateDetectorWorker.STEP_DUPLICATES == event.step) {
+            disableScanUi()
+        } else if (binding.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
+                binding.scanFab.context
+            )
+        ) {
+            activateScanUi()
+        }
+    }
+}

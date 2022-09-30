@@ -6,13 +6,10 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
-import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.WorkManager
 import com.mikepenz.fastadapter.FastAdapter
 import com.mikepenz.fastadapter.IAdapter
 import com.mikepenz.fastadapter.adapters.ItemAdapter
@@ -24,14 +21,11 @@ import me.devsaki.hentoid.databinding.FragmentDuplicateMainBinding
 import me.devsaki.hentoid.events.CommunicationEvent
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.events.ServiceDestroyedEvent
-import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.viewholders.DuplicateItem
 import me.devsaki.hentoid.viewmodels.DuplicateViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker
-import me.devsaki.hentoid.workers.DuplicateDetectorWorker.STEP_COVER_INDEX
 import me.devsaki.hentoid.workers.DuplicateDetectorWorker.STEP_DUPLICATES
 import me.zhanghai.android.fastscroll.FastScrollerBuilder
 import org.greenrobot.eventbus.EventBus
@@ -53,6 +47,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     // UI
     private val itemAdapter = ItemAdapter<DuplicateItem>()
     private val fastAdapter = FastAdapter.with(itemAdapter)
+    private lateinit var topPanel: DuplicateMainTopPanel
 
     // VARS
     private var enabled = true
@@ -103,23 +98,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         fastAdapter.onClickListener =
             { _: View?, _: IAdapter<DuplicateItem>, i: DuplicateItem, _: Int -> onItemClick(i) }
 
-        binding.controls.scanFab.setOnClickListener {
-            this.onScanClick()
-        }
-        binding.controls.stopFab.setOnClickListener {
-            this.onStopClick()
-        }
-
-        binding.controls.useTitle.setOnCheckedChangeListener { _, _ -> onMainCriteriaChanged() }
-        binding.controls.useCover.setOnCheckedChangeListener { _, _ -> onMainCriteriaChanged() }
-
-        binding.controls.useTitle.isChecked = Preferences.isDuplicateUseTitle()
-        binding.controls.useCover.isChecked = Preferences.isDuplicateUseCover()
-        binding.controls.useArtist.isChecked = Preferences.isDuplicateUseArtist()
-        binding.controls.useSameLanguage.isChecked = Preferences.isDuplicateUseSameLanguage()
-        binding.controls.ignoreChapters.isChecked = Preferences.isDuplicateIgnoreChapters()
-        binding.controls.useSensitivity.setItems(R.array.duplicate_use_sensitivities)
-        binding.controls.useSensitivity.selectItemByIndex(Preferences.getDuplicateSensitivity())
+        topPanel = DuplicateMainTopPanel(activity.get()!!)
 
         val vmFactory = ViewModelFactory(requireActivity().application)
         viewModel = ViewModelProvider(requireActivity(), vmFactory)[DuplicateViewModel::class.java]
@@ -144,118 +123,9 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
 
     private fun onToolbarItemClicked(menuItem: MenuItem): Boolean {
         when (menuItem.itemId) {
-            R.id.action_settings -> setSettingsPanelVisibility()
+            R.id.action_settings -> topPanel.showAsDropDown(activity.get()!!.getToolbarView())
         }
         return true
-    }
-
-    private fun setSettingsPanelVisibility(visibility: Boolean? = null) {
-        var result = View.VISIBLE
-        if (null == visibility) { // Toggle
-            if (View.VISIBLE == binding.controls.root.visibility) result = View.GONE
-        } else { // Force visibility
-            if (!visibility) result = View.GONE
-        }
-
-        if (result == View.VISIBLE) {
-            if (DuplicateDetectorWorker.isRunning(requireContext())) {
-                binding.controls.scanFab.visibility = View.INVISIBLE
-                binding.controls.stopFab.visibility = View.VISIBLE
-                // TODO simplify that
-                val coverControlsVisibility =
-                    if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
-                binding.controls.indexPicturesTxt.visibility = coverControlsVisibility
-                binding.controls.indexPicturesPb.visibility = coverControlsVisibility
-                binding.controls.indexPicturesPbTxt.visibility = View.GONE
-                binding.controls.detectBooksTxt.visibility = View.VISIBLE
-                binding.controls.detectBooksPb.visibility = View.VISIBLE
-                binding.controls.detectBooksPbTxt.visibility = View.GONE
-            } else {
-                binding.controls.scanFab.visibility = View.VISIBLE
-                binding.controls.stopFab.visibility = View.INVISIBLE
-                binding.controls.indexPicturesTxt.visibility = View.GONE
-                binding.controls.indexPicturesPb.visibility = View.GONE
-                binding.controls.indexPicturesPbTxt.visibility = View.GONE
-                binding.controls.detectBooksTxt.visibility = View.GONE
-                binding.controls.detectBooksPb.visibility = View.GONE
-                binding.controls.detectBooksPbTxt.visibility = View.GONE
-            }
-        }
-        binding.controls.root.visibility = result
-    }
-
-    private fun onScanClick() {
-        Preferences.setDuplicateUseTitle(binding.controls.useTitle.isChecked)
-        Preferences.setDuplicateUseCover(binding.controls.useCover.isChecked)
-        Preferences.setDuplicateUseArtist(binding.controls.useArtist.isChecked)
-        Preferences.setDuplicateUseSameLanguage(binding.controls.useSameLanguage.isChecked)
-        Preferences.setDuplicateIgnoreChapters(binding.controls.ignoreChapters.isChecked)
-        Preferences.setDuplicateSensitivity(binding.controls.useSensitivity.selectedIndex)
-
-        activateScanUi()
-
-        viewModel.setFirstUse(false)
-        viewModel.scanForDuplicates(
-            binding.controls.useTitle.isChecked,
-            binding.controls.useCover.isChecked,
-            binding.controls.useArtist.isChecked,
-            binding.controls.useSameLanguage.isChecked,
-            binding.controls.ignoreChapters.isChecked,
-            binding.controls.useSensitivity.selectedIndex
-        )
-    }
-
-    private fun activateScanUi() {
-        binding.controls.scanFab.visibility = View.INVISIBLE
-        binding.controls.stopFab.visibility = View.VISIBLE
-
-        binding.controls.useTitle.isEnabled = false
-        binding.controls.useCover.isEnabled = false
-        binding.controls.useArtist.isEnabled = false
-        binding.controls.useSameLanguage.isEnabled = false
-        binding.controls.ignoreChapters.isEnabled = false
-        binding.controls.useSensitivity.isEnabled = false
-
-        val coverControlsVisibility =
-            if (binding.controls.useCover.isChecked) View.VISIBLE else View.GONE
-        binding.controls.indexPicturesTxt.visibility = coverControlsVisibility
-        binding.controls.indexPicturesPb.progress = 0
-        binding.controls.indexPicturesPb.visibility = coverControlsVisibility
-        binding.controls.detectBooksTxt.visibility = View.VISIBLE
-        binding.controls.detectBooksPb.progress = 0
-        binding.controls.detectBooksPb.visibility = View.VISIBLE
-
-        binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
-    }
-
-    private fun disableScanUi() {
-        binding.controls.scanFab.visibility = View.VISIBLE
-        binding.controls.stopFab.visibility = View.INVISIBLE
-
-        binding.controls.useTitle.isEnabled = true
-        binding.controls.useCover.isEnabled = true
-        binding.controls.useArtist.isEnabled = true
-        binding.controls.useSameLanguage.isEnabled = true
-        binding.controls.ignoreChapters.isEnabled = true
-        binding.controls.useSensitivity.isEnabled = true
-
-        binding.controls.indexPicturesTxt.visibility = View.GONE
-        binding.controls.indexPicturesPb.visibility = View.GONE
-        binding.controls.indexPicturesPbTxt.visibility = View.GONE
-        binding.controls.detectBooksTxt.visibility = View.GONE
-        binding.controls.detectBooksPb.visibility = View.GONE
-        binding.controls.detectBooksPbTxt.visibility = View.GONE
-    }
-
-    private fun onMainCriteriaChanged() {
-        binding.controls.scanFab.isEnabled =
-            (binding.controls.useTitle.isChecked || binding.controls.useCover.isChecked)
-    }
-
-    private fun onStopClick() {
-        WorkManager.getInstance(requireContext())
-            .cancelUniqueWork(R.id.duplicate_detector_service.toString())
-        binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
     }
 
     @Synchronized
@@ -305,36 +175,23 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     fun onProcessEvent(event: ProcessEvent) {
         if (event.processId != R.id.duplicate_index && event.processId != R.id.duplicate_detect) return
 
-        val progressBar: ProgressBar =
-            if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPb else binding.controls.detectBooksPb
-        val progressBarTxt: TextView =
-            if (STEP_COVER_INDEX == event.step) binding.controls.indexPicturesPbTxt else binding.controls.detectBooksPbTxt
+        topPanel.onProcessEvent(event)
 
-        if (STEP_COVER_INDEX == event.step) {
-            if (null == binding.controls.detectBooksPbTxt.animation) {
-                binding.controls.detectBooksPbTxt.startAnimation(BlinkAnimation(750, 20))
-                binding.controls.detectBooksPbTxt.text =
-                    resources.getText(R.string.duplicate_wait_index)
-                binding.controls.detectBooksPbTxt.visibility = View.VISIBLE
-            }
-        } else {
-            binding.controls.detectBooksPbTxt.clearAnimation()
-        }
-
-        progressBar.max = event.elementsTotal
-        progressBar.progress = event.elementsOK + event.elementsKO
-        progressBarTxt.text = String.format("%d / %d", progressBar.progress, progressBar.max)
-        progressBarTxt.visibility = View.VISIBLE
         if (ProcessEvent.EventType.COMPLETE == event.eventType && STEP_DUPLICATES == event.step) {
-            disableScanUi()
-            setSettingsPanelVisibility(false)
+            topPanel.dismiss()
             ToastHelper.toast(requireContext(), R.string.duplicate_notif_complete_title)
-        } else if (binding.controls.scanFab.visibility == View.VISIBLE && DuplicateDetectorWorker.isRunning(
+        } else if (topPanel.isVisible() && DuplicateDetectorWorker.isRunning(
                 requireContext()
             )
         ) {
-            activateScanUi()
+            binding.emptyTxt.text = context?.getText(R.string.duplicate_processing)
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onProcessEvent(event: ServiceDestroyedEvent) {
+        if (event.service != R.id.duplicate_detector_service) return
+        binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_first_use)
     }
 
     /**
@@ -364,7 +221,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
     fun onServiceDestroyedEvent(event: ServiceDestroyedEvent) {
         if (event.service == R.id.duplicate_detector_service) {
             // TODO find a way to display the "try again" message when the service doesn't stop normally
-            disableScanUi()
+            topPanel.dismiss()
             if (0 == itemAdapter.adapterItemCount)
                 binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
         }

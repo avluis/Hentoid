@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities
 
 import android.os.Bundle
+import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
@@ -167,6 +168,10 @@ class DuplicateDetectorActivity : BaseActivity() {
                                 || (externalCount > 1 && 0 == localCount && 0 == streamedCount)
                         )
                 )
+    }
+
+    fun getToolbarView() : View {
+        return binding!!.toolbar
     }
 
     private fun initSelectionToolbar() {

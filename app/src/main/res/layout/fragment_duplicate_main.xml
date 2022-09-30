@@ -32,10 +32,4 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <include
-        android:id="@+id/controls"
-        android:clickable="true"
-        android:focusable="true"
-        layout="@layout/include_duplicate_controls" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

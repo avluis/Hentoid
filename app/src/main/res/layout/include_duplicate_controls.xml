@@ -7,10 +7,7 @@
     android:background="@color/dark_gray"
     android:clickable="true"
     android:focusable="true"
-    android:padding="16dp"
-    android:visibility="gone"
-    app:layout_constraintTop_toTopOf="parent"
-    tools:visibility="visible">
+    android:padding="16dp">
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline_middle"
