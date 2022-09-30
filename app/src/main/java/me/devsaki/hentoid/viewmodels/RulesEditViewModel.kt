@@ -13,6 +13,8 @@ import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
+import me.devsaki.hentoid.util.ContentHelper
+import me.devsaki.hentoid.util.Helper
 import timber.log.Timber
 
 
@@ -25,7 +27,6 @@ class RulesEditViewModel(
     private val compositeDisposable = CompositeDisposable()
     private var actionDisposable = Disposables.empty()
     private var filterDisposable = Disposables.empty()
-    private var leaveDisposable = Disposables.empty()
 
     // VARS
     private var query = ""
@@ -86,6 +87,7 @@ class RulesEditViewModel(
 
     private fun doCreateRule(type: AttributeType, source: String, target: String) {
         dao.insertRenamingRule(RenamingRule(type, source, target))
+        Helper.updateRenamingRulesJson(getApplication<Application>().applicationContext, dao)
     }
 
     fun editRule(id: Long, source: String, target: String) {
@@ -102,6 +104,7 @@ class RulesEditViewModel(
         existingRule.sourceName = source
         existingRule.targetName = target
         dao.insertRenamingRule(existingRule)
+        Helper.updateRenamingRulesJson(getApplication<Application>().applicationContext, dao)
     }
 
     fun removeRules(itemIds: List<Long>) {
@@ -115,5 +118,6 @@ class RulesEditViewModel(
 
     private fun doRemoveRules(itemIds: List<Long>) {
         dao.deleteRenamingRules(itemIds)
+        Helper.updateRenamingRulesJson(getApplication<Application>().applicationContext, dao)
     }
 }
