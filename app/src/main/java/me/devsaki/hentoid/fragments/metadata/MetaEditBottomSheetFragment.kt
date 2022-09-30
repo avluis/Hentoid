@@ -336,6 +336,12 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
         }
     }
 
+    override fun onNewAttributeSelected(name: String, type: AttributeType) {
+        val attr = viewModel.createAssignNewAttribute(name, type)
+        attributeAdapter.remove(attr)
+        searchMasterData(name)
+    }
+
     companion object {
         fun invoke(
             context: Context,
@@ -347,21 +353,15 @@ class MetaEditBottomSheetFragment : BottomSheetDialogFragment(),
             builder.excludeMode = excludeSelected
             builder.idToReplace = idToReplace
 
-            val metaEditBottomSheetFragment = MetaEditBottomSheetFragment()
-            metaEditBottomSheetFragment.arguments = builder.bundle
+            val bottomSheetFragment = MetaEditBottomSheetFragment()
+            bottomSheetFragment.arguments = builder.bundle
             ThemeHelper.setStyle(
                 context,
-                metaEditBottomSheetFragment,
+                bottomSheetFragment,
                 DialogFragment.STYLE_NORMAL,
                 R.style.Theme_Light_BottomSheetDialog
             )
-            metaEditBottomSheetFragment.show(fragmentManager, "metaEditBottomSheetFragment")
+            bottomSheetFragment.show(fragmentManager, "metaEditBottomSheetFragment")
         }
-    }
-
-    override fun onNewAttributeSelected(name: String, type: AttributeType) {
-        val attr = viewModel.createAssignNewAttribute(name, type)
-        attributeAdapter.remove(attr)
-        searchMasterData(name)
     }
 }

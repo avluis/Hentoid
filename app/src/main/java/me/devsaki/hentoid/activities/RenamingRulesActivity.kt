@@ -21,7 +21,7 @@ import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.databinding.ActivityRulesBinding
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.fragments.metadata.MetaEditRuleDialogFragment
-import me.devsaki.hentoid.fragments.metadata.MetaEditRuleTopPanel
+import me.devsaki.hentoid.fragments.metadata.RuleBottomPanelFragment
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.viewholders.RuleItem
 import me.devsaki.hentoid.viewmodels.RulesEditViewModel
@@ -35,7 +35,7 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
 
     // == UI
     private var binding: ActivityRulesBinding? = null
-    private lateinit var topPanel: MetaEditRuleTopPanel
+    private lateinit var bottomPanel: RuleBottomPanelFragment
 
     // Action view associated with search menu button
     private lateinit var actionSearchView: SearchView
@@ -164,7 +164,6 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
                 }
             })
         }
-        topPanel = MetaEditRuleTopPanel(this)
     }
 
     private fun bindInteractions() {
@@ -226,7 +225,10 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
     }
 
     private fun showSortFilterPanel() {
-        topPanel.showAsDropDown(binding!!.toolbar)
+        RuleBottomPanelFragment.invoke(
+            this,
+            supportFragmentManager
+        )
     }
 
     private fun deleteSelectedItems() {
