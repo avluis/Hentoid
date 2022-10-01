@@ -222,6 +222,7 @@ class DuplicateMainFragment : Fragment(R.layout.fragment_duplicate_main) {
         if (event.service == R.id.duplicate_detector_service) {
             // TODO find a way to display the "try again" message when the service doesn't stop normally
             topPanel.dismiss()
+            topPanel.onServiceDestroyedEvent()
             if (0 == itemAdapter.adapterItemCount)
                 binding.emptyTxt.text = context?.getText(R.string.duplicate_empty_no_result)
         }

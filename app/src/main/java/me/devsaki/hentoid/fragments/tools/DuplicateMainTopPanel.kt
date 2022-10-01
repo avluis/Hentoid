@@ -254,4 +254,8 @@ class DuplicateMainTopPanel(activity: DuplicateDetectorActivity) : DefaultLifecy
             activateScanUi()
         }
     }
+
+    fun onServiceDestroyedEvent() {
+        disableScanUi()
+    }
 }
