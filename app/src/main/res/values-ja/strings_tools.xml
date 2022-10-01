@@ -20,6 +20,8 @@
     <string name="tools_cache_browser_updating_webview">WebViewは現在更新されています、まだキャッシュをクリアできません</string>
 <string name="tools_cache_app">アプリのキャッシュをクリア</string>
 <string name="tools_cache_app_success">アプリのキャッシュが正常にクリアされました</string>
+<string name="tools_renaming_rules_title">属性の名前変更規則</string>
+<string name="tools_renaming_rules_summary">属性の名前変更規則を管理する</string>
 <string name="tools_latest_logs_title">アプリのログ</string>
 <string name="tools_latest_logs_summary">アプリの最新ログを見る</string>
 <string name="tools_import_empty_books_intro">画像フォルダが検出されない場合…</string>

@@ -41,6 +41,9 @@
     <string name="empty">空</string>
     <string name="none">無し</string>
     <string name="disabled_generic">無効</string>
+    <string name="create_generic">作成</string>
+    <string name="edit_generic">編集</string>
+    <string name="remove_generic">削除する</string>
 <string name="title_activity_api29_migration">API29の移行</string>
     <string name="title_activity_downloads">ライブラリー</string>
     <string name="title_activity_queue">キュー</string>
@@ -48,6 +51,8 @@
     <string name="title_activity_about">Hentoidについて</string>
     <string name="title_activity_app_lock">アプリをロック</string>
     <string name="title_activity_search">高度な検索</string>
+    <string name="title_activity_meta_edit">メタデータの編集</string>
+    <string name="title_activity_rules">名前の変更規則</string>
 <string name="api29_migration_title">Hentoid v12\nファイル管理の更新</string>
     <string name="api29_migration_subtitle">Hentoidがコレクションを更新しています。\n数分かかる場合があります。</string>
     <string name="api29_migration_location">現在のHentoidフォルダの場所\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
@@ -70,7 +75,7 @@
     <string name="menu_edit_confirm">編集を確認する</string>
     <string name="menu_edit_cancel">編集をキャンセルする</string>
     <string name="menu_edit_warning_custom">新しいカスタム注文は、以前の注文を上書きします。</string>
-    <string name="menu_sort_filter">注文書</string>
+    <string name="menu_sort_filter">並べ替えとフィルタリング</string>
     <string name="menu_delete_single">消去</string>
     <string name="menu_change_group">グループに移動…</string>
     <string name="menu_open_folder">含まれているフォルダを開く</string>
@@ -171,6 +176,7 @@
         <item quantity="one"><x:g example="1" id="downloads">%d</x:g>有効なダウンロードが見つかりました</item>
         <item quantity="other"><x:g example="2" id="downloads">%d</x:g>有効なダウンロードが見つかりました</item>
     </plurals>
+    <string name="import_streamed">ストリーミング ブックとしてインポート</string>
     <string name="importing_downloads">ダウンロードのインポート…</string>
 <string name="work_series">シリーズ：<x:g example="original" id="series">%s</x:g></string>
     <string name="work_artist">作者：<x:g example="hayao miyazaki" id="artist">%s</x:g></string>
@@ -570,6 +576,7 @@
 <string name="category_any">どれか</string>
     <string name="exclude">除外する</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g>探す</string>
+    <string name="searching_generic">検索中</string>
     <string name="search_prompt">探す<x:g id="search_prompt">%s</x:g></string>
 <string name="category_artist">作家</string>
     <string name="category_tag">タグ</string>
@@ -582,6 +589,7 @@
     <string name="category_category">カテゴリー</string>
     <string name="category_translator">翻訳者</string>
     <string name="category_publisher">出版社</string>
+    <string name="category_undefined">未定義</string>
 <string name="object_artist">作家</string>
     <string name="object_tag">タグ</string>
     <string name="object_character">キャラクター</string>
@@ -593,6 +601,7 @@
     <string name="object_category">カテゴリー</string>
     <string name="object_translator">翻訳者</string>
     <string name="object_publisher">出版社</string>
+    <string name="object_undefined">未定義</string>
     <plurals name="search_button">
         <item quantity="one"><x:g example="1" id="count">%s</x:g>結果が見つかりました</item>
         <item quantity="other"><x:g example="2" id="count">%s</x:g>結果が見つかりました</item>
@@ -718,6 +727,10 @@
     </plurals>
     <string name="duplicate_empty_first_use">表示するものがありません-新しい重複検索を実行します</string>
     <string name="duplicate_processing">重複の検出…</string>
+    <plurals name="duplicate_main_title">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g>残りのアイテム</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g>残りのアイテム</item>
+    </plurals>
     <plurals name="duplicate_detail_title">
         <item quantity="one"><x:g example="1" id="number">%d</x:g>複製</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g>重複</item>
@@ -735,6 +748,17 @@
     <string name="duplicate_alert_download_book">本をダウンロード</string>
     <string name="duplicate_alert_download_pages">追加のページをダウンロード</string>
     <string name="duplicate_wait_index">索引付け…</string>
+<string name="meta_cover_multiple_warning">複数冊の表紙は変更できません</string>
+    <string name="meta_cover_archive_warning">アーカイブの表紙は変更できません</string>
+    <string name="meta_choose_type">\'%s\' のタイプを選択してください</string>
+    <string name="meta_replace_with">と置換する…</string>
+    <string name="meta_tag_all_selected">選択したすべての本にタグを付ける</string>
+    <string name="meta_tag_all_selected_confirm">すべてにタグを付ける%dで選んだ本 \'%s\' ?</string>
+    <string name="meta_rename_new_name">新しい名前</string>
+    <string name="meta_rename_new_rule">今後のダウンロードのために覚えておく</string>
+<string name="meta_rule_source">ソース</string>
+    <string name="meta_rule_target">ターゲット</string>
+    <string name="meta_rule_wildcard">ターゲットにワイルドカードがある場合、ソースにもワイルドカードが必要です</string>
 <string name="notif_archive_title">コンテンツのアーカイブ</string>
     <string name="notif_delete_title">コンテンツの削除</string>
     <string name="notif_delete_complete">削除が完了しました</string>

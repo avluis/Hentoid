@@ -83,6 +83,9 @@
     <string name="pref_browser_mark_downloaded_title">다운로드 된 작품 표시</string>
     <string name="pref_browser_mark_downloaded_off">다운로드 된 작품에 아무런 표시가 나타나지 않습니다</string>
     <string name="pref_browser_mark_downloaded_on">다운로드 된 작품에 구분 가능한 표시가 생깁니다\n주의: 모든 사이트에서 작동하지는 않습니다</string>
+    <string name="pref_browser_mark_merged_title">병합된 작품 표시</string>
+    <string name="pref_browser_mark_merged_off">병합된 작품에 아무런 표시가 나타나지 않습니다</string>
+    <string name="pref_browser_mark_merged_on">병합된 작품에 구분 가능한 표시가 생깁니다\n주의: 모든 사이트에서 작동하지는 않습니다</string>
     <string name="pref_browser_visuals">화면</string>
     <string name="pref_browser_augmented_title">브라우저 향상</string>
     <string name="pref_browser_augmented_off">기본 브라우저를 사용합니다</string>
@@ -135,7 +138,7 @@
     <string name="pref_analytics_preference_summary_on">추적 분석이 활성화됨.\nHentoid를 개선하는데 도움을 주셔서 감사합니다!</string>
 <string name="pref_screen_updates">업데이트</string>
     <string name="pref_check_updates_manual_title">업데이트 수동 확인</string>
-    <string name="pref_check_updates_manual_summary">지금 업데이트를 수동으로 확인합니다</string>
+    <string name="pref_check_updates_manual_summary">업데이트를 수동으로 확인합니다</string>
     <string name="pref_check_updates_manual_checking">업데이트 확인중...</string>
     <string name="pref_check_updates_manual_no_new">업데이트 없음 - 이미 최신 버전을 사용중입니다</string>
     <string name="pref_check_updates_manual_no_connection">업데이트를 확인할 수 없습니다. 연결을 확인하고 나중에 다시 시도해주세요</string>

@@ -20,6 +20,8 @@
     <string name="tools_cache_browser_updating_webview">Webview jelenleg frissítés alatt áll, emiatt még a cache-t nem lehet törölni</string>
 <string name="tools_cache_app">Alkalmazás gyorsítótárának törlése</string>
 <string name="tools_cache_app_success">Alkalmazás gyorsítótára sikeresen törölve</string>
+<string name="tools_renaming_rules_title">Attribútum átnevezési szabályok</string>
+<string name="tools_renaming_rules_summary">Attribútum átnevezési szabályok kezelése</string>
 <string name="tools_latest_logs_title">Alkalmazás naplók</string>
 <string name="tools_latest_logs_summary">Alkalmazás legfrissebb naplóinak megtekintése</string>
 <string name="tools_import_empty_books_intro">Ha nem észlelhető képekkel teli mappa</string>

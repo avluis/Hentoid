@@ -20,6 +20,8 @@
     <string name="tools_cache_browser_updating_webview">WebView를 업데이트 중입니다, 아직 캐시 삭제가 불가능합니다</string>
 <string name="tools_cache_app">앱 캐시 삭제</string>
 <string name="tools_cache_app_success">앱 캐시가 성공적으로 삭제되었습니다</string>
+<string name="tools_renaming_rules_title">속성 자동 변경 규칙</string>
+<string name="tools_renaming_rules_summary">다운로드 한 작품의 속성을 자동 변경하는 규칙을 관리합니다</string>
 <string name="tools_latest_logs_title">앱 로그</string>
 <string name="tools_latest_logs_summary">가장 최근에 생성된 로그를 봅니다</string>
 <string name="tools_import_empty_books_intro">만약 이미지 폴더를 찾지 못한다면...</string>

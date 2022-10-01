@@ -41,6 +41,9 @@
     <string name="empty">üres</string>
     <string name="none">Egyik sem</string>
     <string name="disabled_generic">Letiltva</string>
+    <string name="create_generic">Létrehozás</string>
+    <string name="edit_generic">Módosítás</string>
+    <string name="remove_generic">Törlés</string>
 <string name="title_activity_api29_migration">API 29 migráció</string>
     <string name="title_activity_downloads">Könyvtár</string>
     <string name="title_activity_queue">Várólista</string>
@@ -48,6 +51,8 @@
     <string name="title_activity_about">Névjegy</string>
     <string name="title_activity_app_lock">Alkalmazás Zárolása</string>
     <string name="title_activity_search">Haladó keresés</string>
+    <string name="title_activity_meta_edit">Metaadat módosítása</string>
+    <string name="title_activity_rules">Átnevezési szabályok</string>
 <string name="api29_migration_title">Hentoid v12\nFájlkezelő frissítés</string>
     <string name="api29_migration_subtitle">Hentoid elkezdte frissíteni az Ön gyűjteményét!\Ez pár percet igénybe vehet.</string>
     <string name="api29_migration_location">A jelenlegi Hentoid mappa helye\n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
@@ -70,7 +75,7 @@
     <string name="menu_edit_confirm">Módosítás elfogadása</string>
     <string name="menu_edit_cancel">Módosítás elvetése</string>
     <string name="menu_edit_warning_custom">Az új rendezési séma felülfogja írni az előzőt.</string>
-    <string name="menu_sort_filter">Könyvek rendezése</string>
+    <string name="menu_sort_filter">Rendezés és szűrés</string>
     <string name="menu_delete_single">Törlés</string>
     <string name="menu_change_group">Csoporthoz hozzárendelés...</string>
     <string name="menu_open_folder">Tartalmazó mappa megnyitása</string>
@@ -171,6 +176,7 @@
         <item quantity="one"><x:g example="1" id="downloads">%d</x:g> érvényes letöltés található</item>
         <item quantity="other"><x:g example="2" id="downloads">%d</x:g> érvényes letöltések találhatóak</item>
     </plurals>
+    <string name="import_streamed">Importálás streamelt könyvekként</string>
     <string name="importing_downloads">Letöltések importálása</string>
 <string name="work_series">Sorozat: <x:g example="original" id="series">%s</x:g></string>
     <string name="work_artist">Szerző: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>
@@ -570,6 +576,7 @@
 <string name="category_any">Minden</string>
     <string name="exclude">Kizárás</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> keresés</string>
+    <string name="searching_generic">Keresés</string>
     <string name="search_prompt">Keresés <x:g id="search_prompt">%s</x:g></string>
 <string name="category_artist">Szerző</string>
     <string name="category_tag">Tag</string>
@@ -582,6 +589,7 @@
     <string name="category_category">Kategória</string>
     <string name="category_translator">Fordító</string>
     <string name="category_publisher">Feltöltő</string>
+    <string name="category_undefined">Definiálatlan</string>
 <string name="object_artist">Szerző</string>
     <string name="object_tag">Tag</string>
     <string name="object_character">Karakter</string>
@@ -593,6 +601,7 @@
     <string name="object_category">Kategória</string>
     <string name="object_translator">Fordító</string>
     <string name="object_publisher">Feltöltő</string>
+    <string name="object_undefined">Definiálatlan</string>
     <plurals name="search_button">
         <item quantity="one"><x:g example="1" id="count">%s</x:g> Eredmény találva</item>
         <item quantity="other"><x:g example="2" id="count">%s</x:g> Eredmények találva</item>
@@ -718,6 +727,10 @@
     </plurals>
     <string name="duplicate_empty_first_use">Semmi sem jeleníthető meg - Új duplikátum keresés futtatása</string>
     <string name="duplicate_processing">Duplikátumok felderítése...</string>
+    <plurals name="duplicate_main_title">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> elem baloldalt</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> elemek baloldalt</item>
+    </plurals>
     <plurals name="duplicate_detail_title">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> duplikátum</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> duplikátumok</item>
@@ -735,6 +748,17 @@
     <string name="duplicate_alert_download_book">Könyv letöltése</string>
     <string name="duplicate_alert_download_pages">Extra oldalak letöltése</string>
     <string name="duplicate_wait_index">Indexelés...</string>
+<string name="meta_cover_multiple_warning">A borítókép nem változtatható több könyv esetében</string>
+    <string name="meta_cover_archive_warning">A borítókép nem módosítható archívumokhoz</string>
+    <string name="meta_choose_type">Válasszon egy típust a \'%s\'</string>
+    <string name="meta_replace_with">Helyettesítse...</string>
+    <string name="meta_tag_all_selected">Az összes kiválasztott könyv címkézése</string>
+    <string name="meta_tag_all_selected_confirm">Az összes %d kiválasztott könyv megjelölése \'%s\' ?</string>
+    <string name="meta_rename_new_name">Új név</string>
+    <string name="meta_rename_new_rule">A későbbi letöltésekhez jegyezze meg</string>
+<string name="meta_rule_source">Forrás</string>
+    <string name="meta_rule_target">Célpont</string>
+    <string name="meta_rule_wildcard">Ha a célpontnak van wildcardja, akkor a forrásnak is kell lennie egy wildcardnak.</string>
 <string name="notif_archive_title">Tartalom archiválása</string>
     <string name="notif_delete_title">Tartalom törlése</string>
     <string name="notif_delete_complete">A törlés sikeres</string>
@@ -748,7 +772,7 @@
     <string name="title_startup_progress">Kezdjük...</string>
     <string name="title_startup_complete">Indítás befejezve</string>
 <string name="missing_web_view_title">A WebView nincsen feltelepítve vagy le van tiltva</string>
-    <string name="missing_web_view">Hentoid nem találta az Android beépített webes megjelenítőjét az alkalmazásokhoz. \nEnélkül nem tudsz böngészni a források között, nem tudsz könyveket letölteni; tényleg nem tudsz sok mindent csinálni, amihez internetre van szükséged.\n\nValószínűleg valóban telepítve van az Ön rendszerén, de le van tiltva: kérjük, lépjen be a következő helyre <b>Beállítások</b> &gt; <b>Alkalmazások</b> &gt; <b>Letiltott alkalmazások</b> és engedélyezze a <b>Android System WebView</b> alkalmazást.\n\nHa nem találod meg ezt az alkalmazást, akkor kérlek rakd fel az eszközödre a <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Áruház</a></b>-ról.</string>
+    <string name="missing_web_view">Hentoid nem találta az Android beépített webes megjelenítőjét az alkalmazásokhoz. \nEnélkül nem tudsz böngészni a források között, nem tudsz könyveket letölteni; tényleg nem tudsz sok mindent csinálni, amihez internetre van szükséged.\n\nValószínűleg valóban telepítve van az Ön rendszerén, de le van tiltva: kérjük, lépjen be a következő helyre b>Beállítások</b> &gt; <b>Alkalmazások</b> &gt; <b>Letiltott alkalmazások</b> és engedélyezze a <b>Android System WebView</b> alkalmazást.\n\nHa nem találod meg ezt az alkalmazást, akkor kérlek rakd fel az eszközödre a <b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview">Play Áruház</a></b>-ról.</string>
     <string name="missing_web_view_library">Visszalépés a könyvtárba</string>
 <string name="group_today">Ma</string>
     <string name="group_7">Az elmúlt 7 napban</string>

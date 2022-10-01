@@ -83,6 +83,9 @@
     <string name="pref_browser_mark_downloaded_title">Letöltött könyvek jelölése</string>
     <string name="pref_browser_mark_downloaded_off">A letöltött könyvek nem rendelkeznek különleges megjelenítéssel</string>
     <string name="pref_browser_mark_downloaded_on">A letöltött könyvek megjelölve\nNB: nem működik minden webhelyen</string>
+    <string name="pref_browser_mark_merged_title">Összevont könyvek megjelölése</string>
+    <string name="pref_browser_mark_merged_off">Az összevont könyvek nem rendelkeznek sajátos megjelenítéssel</string>
+    <string name="pref_browser_mark_merged_on">Az egyesített könyvek meg vannak jelölve\nNB: nem működik minden webhelyen</string>
     <string name="pref_browser_visuals">Vizuális</string>
     <string name="pref_browser_augmented_title">Augmentált böngésző</string>
     <string name="pref_browser_augmented_off">Vanilla viselkedés használata</string>

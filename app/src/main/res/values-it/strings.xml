@@ -41,6 +41,9 @@
     <string name="empty">vuoto</string>
     <string name="none">Nessuno</string>
     <string name="disabled_generic">Disabilitato</string>
+    <string name="create_generic">Crea</string>
+    <string name="edit_generic">Modifica</string>
+    <string name="remove_generic">Rimuovi</string>
 <string name="title_activity_api29_migration">Migrazione API 29</string>
     <string name="title_activity_downloads">Libreria</string>
     <string name="title_activity_queue">Coda</string>
@@ -48,6 +51,8 @@
     <string name="title_activity_about">Informazioni</string>
     <string name="title_activity_app_lock">Blocco app</string>
     <string name="title_activity_search">Ricerca avanzata</string>
+    <string name="title_activity_meta_edit">Modifica metadata</string>
+    <string name="title_activity_rules">Rinomina regole</string>
 <string name="api29_migration_title">Hentoid v12 \nAggiornamento gestione file</string>
     <string name="api29_migration_subtitle">Hentoid sta aggiornando la tua raccolta. \nPotrebbero essere necessari alcuni minuti.</string>
     <string name="api29_migration_location">L\'attuale posizione della cartelle di Hentoid è \n<x:g example="/storage/emulated/0/Hentoid" id="path">%s</x:g></string>
@@ -70,7 +75,7 @@
     <string name="menu_edit_confirm">Conferma modifica</string>
     <string name="menu_edit_cancel">Annulla modifica</string>
     <string name="menu_edit_warning_custom">Il nuovo ordine personalizzato che stai per creare sovrascriverà quello precedente.</string>
-    <string name="menu_sort_filter">Ordina libri</string>
+    <string name="menu_sort_filter">Ordina e filtra</string>
     <string name="menu_delete_single">Elimina</string>
     <string name="menu_change_group">Passa al gruppo…</string>
     <string name="menu_open_folder">Apri la cartella contenente</string>
@@ -171,6 +176,7 @@
         <item quantity="one"><x:g example="1" id="downloads">%d</x:g> download valido trovato</item>
         <item quantity="other"><x:g example="2" id="downloads">%d</x:g> download validi trovati</item>
     </plurals>
+    <string name="import_streamed">Importa come libro streammato</string>
     <string name="importing_downloads">Importando downloads...</string>
 <string name="work_series">Serie: <x:g example="original" id="series">%s</x:g></string>
     <string name="work_artist">Artista: <x:g example="hayao miyazaki" id="artist">%s</x:g></string>
@@ -570,6 +576,7 @@
 <string name="category_any">Qualsiasi</string>
     <string name="exclude">Escludi</string>
     <string name="search_category"><x:g example="Language" id="search_category">%s</x:g> cerca</string>
+    <string name="searching_generic">Cercando</string>
     <string name="search_prompt">Cerca <x:g id="search_prompt">%s</x:g></string>
 <string name="category_artist">Artista</string>
     <string name="category_tag">Tag</string>
@@ -582,6 +589,7 @@
     <string name="category_category">Categoria</string>
     <string name="category_translator">Traduttore</string>
     <string name="category_publisher">Editore</string>
+    <string name="category_undefined">Indefinito</string>
 <string name="object_artist">Artista</string>
     <string name="object_tag">Tag</string>
     <string name="object_character">Personaggio</string>
@@ -593,6 +601,7 @@
     <string name="object_category">Categoria</string>
     <string name="object_translator">Traduttore</string>
     <string name="object_publisher">Editore</string>
+    <string name="object_undefined">Indefinito</string>
     <plurals name="search_button">
         <item quantity="one"><x:g example="1" id="count">%s</x:g> Risultato trovato</item>
         <item quantity="other"><x:g example="2" id="count">%s</x:g> Risultati trovati</item>
@@ -718,6 +727,10 @@
     </plurals>
     <string name="duplicate_empty_first_use">Niente da visualizzare - Esegui una nuova ricerca di duplicati</string>
     <string name="duplicate_processing">Rilevando duplicati…</string>
+    <plurals name="duplicate_main_title">
+        <item quantity="one"><x:g example="1" id="number">%d</x:g> oggetto rimanente</item>
+        <item quantity="other"><x:g example="2" id="number">%d</x:g> oggetti rimanenti</item>
+    </plurals>
     <plurals name="duplicate_detail_title">
         <item quantity="one"><x:g example="1" id="number">%d</x:g> duplicato</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g> duplicati</item>
@@ -735,6 +748,17 @@
     <string name="duplicate_alert_download_book">Scarica libro</string>
     <string name="duplicate_alert_download_pages">Scarica pagine extra</string>
     <string name="duplicate_wait_index">Indicizzazione…</string>
+<string name="meta_cover_multiple_warning">La copertina non può essere cambiata per più libri</string>
+    <string name="meta_cover_archive_warning">La copertina non può essere cambiata per gli archivi</string>
+    <string name="meta_choose_type">Scegli un tipo per \"%s\"</string>
+    <string name="meta_replace_with">Rimpiazza con...</string>
+    <string name="meta_tag_all_selected">Segna tutti i libri selezionati</string>
+    <string name="meta_tag_all_selected_confirm">Segnare tutti i %d libri selezionati con \"%s\"?</string>
+    <string name="meta_rename_new_name">Nuovo nome</string>
+    <string name="meta_rename_new_rule">Ricorda per futuri downloads</string>
+<string name="meta_rule_source">Fonte</string>
+    <string name="meta_rule_target">Obiettivo</string>
+    <string name="meta_rule_wildcard">Se l\'obiettivo ha un jolly, anche la fonte deve avere un jolly</string>
 <string name="notif_archive_title">Archiviazione dei contenuti</string>
     <string name="notif_delete_title">Eliminazione del contenuto</string>
     <string name="notif_delete_complete">Eliminazione completata</string>

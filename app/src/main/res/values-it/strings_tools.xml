@@ -20,6 +20,8 @@
     <string name="tools_cache_browser_updating_webview">WebView si sta aggiornando, ancora impossibile pulire la cache</string>
 <string name="tools_cache_app">Cancella la cache dell\'app</string>
 <string name="tools_cache_app_success">Cache dell\'app cancellata con successo</string>
+<string name="tools_renaming_rules_title">Attribuisci regole alla rinominazione</string>
+<string name="tools_renaming_rules_summary">Gestisci attributi regole della rinominazione</string>
 <string name="tools_latest_logs_title">Logs dell\'app</string>
 <string name="tools_latest_logs_summary">Visualizza gli ultimi log dell\'app</string>
 <string name="tools_import_empty_books_intro">Se nessuna cartella delle immagini è rilevata...</string>
