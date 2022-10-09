@@ -33,7 +33,7 @@ public class Hentai2ReadContent extends BaseContentParser {
 
     @Selector(value = "div.img-container img[src*=cover]")
     private Element cover;
-    @Selector(value = "span[property^=name]")
+    @Selector(value = "span[itemprop^=name]")
     private List<Element> title;
     @Selector("ul.list li")
     private List<Element> properties;
@@ -84,8 +84,8 @@ public class Hentai2ReadContent extends BaseContentParser {
     public Content updateGallery(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
         if (cover != null)
             content.setCoverImageUrl(ParseHelper.getImgSrc(cover));
-        if (!title.isEmpty()) {
-            String titleStr = title.get(title.size() - 1).text();
+        if (title != null && !title.isEmpty()) {
+            String titleStr = title.get(title.size() - 1).text(); // Last span is the title
             content.setTitle(!titleStr.isEmpty() ? StringHelper.removeNonPrintableChars(titleStr) : "");
         } else content.setTitle(NO_TITLE);
         content.setUniqueSiteId(uniqueId);
