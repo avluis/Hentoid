@@ -35,7 +35,6 @@ class RenamingRulesActivity : BaseActivity(), MetaEditRuleDialogFragment.Parent 
 
     // == UI
     private var binding: ActivityRulesBinding? = null
-    private lateinit var bottomPanel: RuleBottomPanelFragment
 
     // Action view associated with search menu button
     private lateinit var actionSearchView: SearchView
