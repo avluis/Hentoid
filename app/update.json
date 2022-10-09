@@ -1,6 +1,6 @@
 {
-  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.16.9/hentoid1169-576.apk",
-  "versionCode": "576",
+  "updateURL": "https://github.com/avluis/Hentoid/releases/download/v1.16.10/hentoid11610-585.apk",
+  "versionCode": "585",
   "updateURL.beta": "https://github.com/avluis/Hentoid/releases/download/test1/v415.apk",
   "versionCode.beta": "100",
   "sourceAlerts":[
@@ -10,6 +10,7 @@
 	  {"sourceName":"MUSES", "status":"RED", "fixedByBuild":"233" },
 	  {"sourceName":"NHENTAI", "status":"ORANGE", "fixedByBuild":"233" },
 	  {"sourceName":"HENTAI2READ", "status":"ORANGE", "fixedByBuild":"236"},
+	  {"sourceName":"HENTAI2READ", "status":"RED", "fixedByBuild":"585"},
 	  {"sourceName":"EHENTAI", "status":"ORANGE", "fixedByBuild":"244"},
 	  {"sourceName":"ASMHENTAI", "status":"RED", "fixedByBuild":"255"},
 	  {"sourceName":"PORNCOMIX", "status":"RED", "fixedByBuild":"257"},
