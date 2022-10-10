@@ -291,6 +291,9 @@ public class LibraryContentFragment extends Fragment implements
             if (!oldItem.getTitle().equals(newItem.getTitle())) {
                 diffBundleBuilder.setTitle(newItem.getTitle());
             }
+            if (oldItem.getDownloadMode() != newItem.getDownloadMode()) {
+                diffBundleBuilder.setDownloadMode(newItem.getDownloadMode());
+            }
 
             if (diffBundleBuilder.isEmpty()) return null;
             else return diffBundleBuilder.getBundle();

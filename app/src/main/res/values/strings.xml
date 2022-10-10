@@ -183,6 +183,9 @@
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">Download failed</string>
     <string name="download_notif_failed_details">Cannot download <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: unable to create folder <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Please check your Hentoid folder and retry downloading using the \'!\' button.</string>
+    <string name="menu_change_dl_mode">Change download mode</string>
+    <string name="mode_dl">Picture download</string>
+    <string name="mode_stream">Streaming</string>
 
     <!-- Import downloads -->
     <string name="import_downloads_title">Import downloads</string>

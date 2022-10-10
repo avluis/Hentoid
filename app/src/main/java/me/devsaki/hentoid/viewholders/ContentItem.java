@@ -331,6 +331,8 @@ public class ContentItem extends AbstractItem<ContentItem.ContentViewHolder> imp
                 if (stringValue != null) item.content.getCover().setFileUri(stringValue);
                 stringValue = bundleParser.getTitle();
                 if (stringValue != null) item.content.setTitle(stringValue);
+                intValue = bundleParser.getDownloadMode();
+                if (intValue != null) item.content.setDownloadMode(intValue);
             }
             debugStr = "objectBox ID=" + item.content.getId() + "; site ID=" + item.content.getUniqueSiteId() + "; hashCode=" + item.content.hashCode();
 

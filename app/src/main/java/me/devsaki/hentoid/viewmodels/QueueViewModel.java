@@ -37,6 +37,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
@@ -355,5 +356,37 @@ public class QueueViewModel extends AndroidViewModel {
 
     public void setContentToShowFirst(long hash) {
         contentHashToShowFirst.setValue(hash);
+    }
+
+    public void setDownloadMode(List<Long> contentIds, int downloadMode) {
+        compositeDisposable.add(
+                Observable.fromIterable(contentIds)
+                        .observeOn(Schedulers.io())
+                        .map(id -> doSetDownloadMode(id, downloadMode))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                v -> {
+                                    // Updated through LiveData
+                                },
+                                Timber::w
+                        )
+        );
+    }
+
+    public Content doSetDownloadMode(Long contentId, int downloadMode) {
+        Helper.assertNonUiThread();
+
+        // Check if given content still exists in DB
+        Content theContent = dao.selectContent(contentId);
+        if (theContent != null && !theContent.isBeingDeleted()) {
+            theContent.setDownloadMode(downloadMode);
+            // Persist in it DB
+            dao.insertContent(theContent);
+            // Update queue JSON
+            ContentHelper.updateQueueJson(getApplication(), dao);
+            // Force display by updating queue
+            dao.updateQueue(dao.selectQueue());
+        }
+        return theContent;
     }
 }

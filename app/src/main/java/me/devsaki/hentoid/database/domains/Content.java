@@ -1019,12 +1019,13 @@ public class Content implements Serializable {
                 Objects.equals(getUrl(), content.getUrl()) &&
                 Objects.equals(getCoverImageUrl(), content.getCoverImageUrl()) &&
                 getSite() == content.getSite() &&
+                getDownloadMode() == content.getDownloadMode() &&
                 getLastEditDate() == content.getLastEditDate();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingDeleted(), getLastEditDate());
+        return Objects.hash(getUrl(), getCoverImageUrl(), getDownloadDate(), getSize(), getSite(), isFavourite(), getRating(), isCompleted(), getLastReadDate(), isBeingDeleted(), getDownloadMode(), getLastEditDate());
     }
 
     public long uniqueHash() {

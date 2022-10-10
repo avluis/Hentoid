@@ -22,6 +22,12 @@
         android:tooltipText="@string/menu_redownload_scratch"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_change_mode"
+        android:icon="@drawable/ic_action_download_stream"
+        android:title="@string/menu_change_dl_mode"
+        android:tooltipText="@string/menu_change_dl_mode"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_select_queue_cancel"
         android:icon="@drawable/ic_action_delete"
         android:title="@string/cancel"

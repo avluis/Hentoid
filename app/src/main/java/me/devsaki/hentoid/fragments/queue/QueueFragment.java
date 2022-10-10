@@ -2,6 +2,8 @@ package me.devsaki.hentoid.fragments.queue;
 
 import static androidx.core.view.ViewCompat.requireViewById;
 
+import static me.devsaki.hentoid.fragments.library.LibraryContentFragment.CONTENT_ITEM_DIFF_CALLBACK;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +25,8 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -34,6 +38,7 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
+import com.mikepenz.fastadapter.diff.DiffCallback;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
@@ -51,6 +56,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -61,6 +67,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -98,7 +105,7 @@ import timber.log.Timber;
 /**
  * Presents the list of works currently downloading to the user.
  */
-public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
+public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback, DownloadModeDialogFragment.Parent {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -720,7 +727,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Update displayed books
         List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, !query.isEmpty(), touchHelper, this::onCancelSwipedBook)).withoutNulls().distinct().toList();
         if (newSearch) itemAdapter.setNewList(contentItems, false);
-        else FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems);
+        else FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK); //FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems);
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
         updateControlBar();
 
@@ -1024,6 +1031,9 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 askRedownloadSelectedScratch();
                 keepToolbar = true;
                 break;
+            case R.id.action_change_mode:
+                DownloadModeDialogFragment.Companion.invoke(this);
+                break;
             case R.id.action_select_all:
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
                 int count = 0;
@@ -1116,5 +1126,24 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                         })
                 .create()
                 .show();
+    }
+
+    public void leaveSelectionMode() {
+        selectExtension.setSelectOnLongClick(true);
+        // Warning : next line makes FastAdapter cycle through all items,
+        // which has a side effect of calling TiledPageList.onPagePlaceholderInserted,
+        // flagging the end of the list as being the last displayed position
+        Set<Integer> selection = selectExtension.getSelections();
+        if (!selection.isEmpty()) selectExtension.deselect(selection);
+        selectionToolbar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onNewModeSelected(int downloadMode) {
+        Set<Integer> selection = selectExtension.getSelections();
+        List<Long> selectedContentIds = Stream.of(selection).map(pos -> itemAdapter.getAdapterItem(pos).getContent()).map(Content::getId).toList();
+        if (!selection.isEmpty()) selectExtension.deselect(selection);
+        selectionToolbar.setVisibility(View.GONE);
+        viewModel.setDownloadMode(selectedContentIds, downloadMode);
     }
 }

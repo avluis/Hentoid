@@ -1173,30 +1173,6 @@ public class LibraryViewModel extends AndroidViewModel {
         dao.shuffleContent();
     }
 
-    public void renameContent(@NonNull Content content, @NonNull String title) {
-        compositeDisposable.add(
-                Completable.fromRunnable(() -> doRenameContent(content, title))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                () -> {
-                                    // Updated through LiveData
-                                },
-                                Timber::e
-                        )
-        );
-    }
-
-    private void doRenameContent(@NonNull Content content, @NonNull String title) {
-        Helper.assertNonUiThread();
-        Content dbContent = dao.selectContent(content.getId()); // Instanciate a new Content from DB to avoid updating the UI reference
-        if (dbContent != null) {
-            dbContent.setTitle(title);
-            ContentHelper.persistJson(getApplication(), dbContent);
-            dao.insertContent(dbContent);
-        }
-    }
-
     public void mergeContents(
             @NonNull List<Content> contentList,
             @NonNull String newTitle,

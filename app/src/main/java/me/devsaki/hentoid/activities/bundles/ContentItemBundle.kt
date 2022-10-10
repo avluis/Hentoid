@@ -28,5 +28,7 @@ class ContentItemBundle(val bundle: Bundle = Bundle()) {
 
     var title by bundle.string()
 
+    var downloadMode by bundle.int()
+
     val isEmpty get() = bundle.isEmpty
 }
