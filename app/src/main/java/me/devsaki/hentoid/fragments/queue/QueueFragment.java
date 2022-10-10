@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments.queue;
 
 import static androidx.core.view.ViewCompat.requireViewById;
-
 import static me.devsaki.hentoid.fragments.library.LibraryContentFragment.CONTENT_ITEM_DIFF_CALLBACK;
 
 import android.annotation.SuppressLint;
@@ -25,8 +24,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -38,7 +35,6 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.adapters.ItemAdapter;
-import com.mikepenz.fastadapter.diff.DiffCallback;
 import com.mikepenz.fastadapter.diff.FastAdapterDiffUtil;
 import com.mikepenz.fastadapter.drag.ItemTouchCallback;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
@@ -56,7 +52,6 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -67,7 +62,6 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.activities.bundles.ContentItemBundle;
 import me.devsaki.hentoid.activities.bundles.PrefsBundle;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
@@ -81,15 +75,15 @@ import me.devsaki.hentoid.fragments.tools.DownloadsImportDialogFragment;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Debouncer;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.file.PermissionHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.ToastHelper;
 import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.file.PermissionHelper;
 import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.viewholders.ContentItem;
@@ -727,7 +721,8 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         // Update displayed books
         List<ContentItem> contentItems = Stream.of(result).map(c -> new ContentItem(c, !query.isEmpty(), touchHelper, this::onCancelSwipedBook)).withoutNulls().distinct().toList();
         if (newSearch) itemAdapter.setNewList(contentItems, false);
-        else FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK); //FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems);
+        else
+            FastAdapterDiffUtil.INSTANCE.set(itemAdapter, contentItems, CONTENT_ITEM_DIFF_CALLBACK);
         new Handler(Looper.getMainLooper()).postDelayed(this::differEndCallback, 150);
         updateControlBar();
 
