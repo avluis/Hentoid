@@ -59,6 +59,11 @@ class DuplicateDetectorActivity : BaseActivity() {
         initSelectionToolbar()
     }
 
+    override fun onPause() {
+        super.onPause()
+        viewModel.allDuplicates.removeObservers(this)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         binding = null
