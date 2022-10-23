@@ -713,16 +713,19 @@ public class ReaderViewModel extends AndroidViewModel {
      * @param successCallback Callback to be called on success
      */
     public void toggleContentFavourite(@NonNull Consumer<Boolean> successCallback) {
-        Content c = getContent().getValue();
-        if (null == c) return;
-        boolean newState = !c.isFavourite();
+        Content theContent = getContent().getValue();
+        if (null == theContent) return;
+        boolean newState = !theContent.isFavourite();
 
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doToggleContentFavourite(c))
+                Single.fromCallable(() -> doToggleContentFavourite(theContent))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                () -> successCallback.accept(newState),
+                                c -> {
+                                    content.postValue(c);
+                                    successCallback.accept(newState);
+                                },
                                 Timber::e
                         )
         );
@@ -733,7 +736,7 @@ public class ReaderViewModel extends AndroidViewModel {
      *
      * @param content content whose flag to toggle
      */
-    private void doToggleContentFavourite(@NonNull final Content content) {
+    private Content doToggleContentFavourite(@NonNull final Content content) {
         Helper.assertNonUiThread();
 
         content.setFavourite(!content.isFavourite());
@@ -743,6 +746,8 @@ public class ReaderViewModel extends AndroidViewModel {
 
         // Persist new values in JSON
         ContentHelper.persistJson(getApplication().getApplicationContext(), content);
+
+        return content;
     }
 
     // TODO doc
