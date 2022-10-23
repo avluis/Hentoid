@@ -64,7 +64,7 @@
         android:clickable="true"
         android:focusable="true"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_fav_toggle"
+        android:src="@drawable/ic_fav_bottom_half"
         android:tooltipText="@string/fav_help"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_next_book_btn"
