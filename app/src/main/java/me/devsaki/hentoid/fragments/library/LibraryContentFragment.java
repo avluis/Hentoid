@@ -1287,7 +1287,7 @@ public class LibraryContentFragment extends Fragment implements
      * @param result Current library according to active filters
      */
     private void onLibraryChanged(PagedList<Content> result) {
-        Timber.i(">> Library changed ! Size=%s", result.size());
+        Timber.i(">> Library changed ! Size=%s enabled=%s", result.size(), enabled);
         if (!enabled && !Preferences.getGroupingDisplay().equals(Grouping.FLAT)) return;
 
         activity.get().updateTitle(result.size(), totalContentCount);
@@ -1342,7 +1342,7 @@ public class LibraryContentFragment extends Fragment implements
         }
 
         // Go back to groups view if there are no books to display (use case : remove the last books from the currently viewed group)
-        if (result.isEmpty() && Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()))
+        if (result.isEmpty() && !isSearchQueryActive() && Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()))
             activity.get().goBackToGroups();
 
         newSearch = false;
