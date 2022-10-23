@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments.reader;
 
-import static androidx.core.view.ViewCompat.requireViewById;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static me.devsaki.hentoid.util.image.ImageHelper.tintBitmap;
 
@@ -16,8 +15,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,10 +41,11 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.bundles.ReaderActivityBundle;
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.databinding.IncludeReaderImageBottomPanelBinding;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ThemeHelper;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.viewmodels.ReaderViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import timber.log.Timber;
@@ -59,15 +57,7 @@ public class ReaderBottomImageFragment extends BottomSheetDialogFragment {
     private ReaderViewModel viewModel;
 
     // UI
-    private View rootView;
-    private ImageView imgThumb;
-    private TextView imgPath;
-    private TextView imgStats;
-
-    private ImageView favoriteButton;
-    private ImageView copyButton;
-    private ImageView shareButton;
-    private ImageView deleteButton;
+    private IncludeReaderImageBottomPanelBinding binding = null;
 
     // Variables
     private int imageIndex = -1;
@@ -119,30 +109,25 @@ public class ReaderBottomImageFragment extends BottomSheetDialogFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.include_reader_image_bottom_panel, container, false);
+        binding = IncludeReaderImageBottomPanelBinding.inflate(inflater, container, false);
 
-        imgThumb = requireViewById(rootView, R.id.ivThumb);
-        imgPath = requireViewById(rootView, R.id.image_path);
-        imgStats = requireViewById(rootView, R.id.image_stats);
+        binding.imgActionFavourite.setOnClickListener(v -> onFavouriteClick());
+        binding.imgActionCopy.setOnClickListener(v -> onCopyClick());
+        binding.imgActionShare.setOnClickListener(v -> onShareClick());
+        binding.imgActionDelete.setOnClickListener(v -> onDeleteClick());
 
-        favoriteButton = requireViewById(rootView, R.id.img_action_favourite);
-        favoriteButton.setOnClickListener(v -> onFavouriteClick());
-
-        copyButton = requireViewById(rootView, R.id.img_action_copy);
-        copyButton.setOnClickListener(v -> onCopyClick());
-
-        shareButton = requireViewById(rootView, R.id.img_action_share);
-        shareButton.setOnClickListener(v -> onShareClick());
-
-        deleteButton = requireViewById(rootView, R.id.img_action_delete);
-        deleteButton.setOnClickListener(v -> onDeleteClick());
-
-        return rootView;
+        return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         viewModel.getViewerImages().observe(getViewLifecycleOwner(), this::onImagesChanged);
+    }
+
+    @Override
+    public void onDestroyView() {
+        binding = null;
+        super.onDestroyView();
     }
 
 
@@ -169,7 +154,7 @@ public class ReaderBottomImageFragment extends BottomSheetDialogFragment {
         } else {
             filePath = FileHelper.getFullPathFromUri(requireContext(), Uri.parse(image.getFileUri()));
         }
-        imgPath.setText(filePath);
+        binding.imagePath.setText(filePath);
 
         boolean imageExists = FileHelper.fileExists(requireContext(), Uri.parse(image.getFileUri()));
         if (imageExists) {
@@ -181,28 +166,28 @@ public class ReaderBottomImageFragment extends BottomSheetDialogFragment {
                 long size = FileHelper.fileSizeFromUri(requireContext(), Uri.parse(image.getFileUri()));
                 sizeStr = FileHelper.formatHumanReadableSize(size, getResources());
             }
-            imgStats.setText(getResources().getString(R.string.viewer_img_details, dimensions.x, dimensions.y, scale * 100, sizeStr));
-            Glide.with(imgThumb)
+            binding.imageStats.setText(getResources().getString(R.string.viewer_img_details, dimensions.x, dimensions.y, scale * 100, sizeStr));
+            Glide.with(binding.ivThumb)
                     .load(Uri.parse(image.getFileUri()))
                     .apply(glideRequestOptions)
-                    .into(imgThumb);
+                    .into(binding.ivThumb);
         } else {
-            imgStats.setText(R.string.image_not_found);
-            favoriteButton.setImageTintList(ColorStateList.valueOf(grayColor));
-            favoriteButton.setEnabled(false);
-            copyButton.setImageTintList(ColorStateList.valueOf(grayColor));
-            copyButton.setEnabled(false);
-            shareButton.setImageTintList(ColorStateList.valueOf(grayColor));
-            shareButton.setEnabled(false);
+            binding.imageStats.setText(R.string.image_not_found);
+            binding.imgActionFavourite.setImageTintList(ColorStateList.valueOf(grayColor));
+            binding.imgActionFavourite.setEnabled(false);
+            binding.imgActionCopy.setImageTintList(ColorStateList.valueOf(grayColor));
+            binding.imgActionCopy.setEnabled(false);
+            binding.imgActionShare.setImageTintList(ColorStateList.valueOf(grayColor));
+            binding.imgActionShare.setEnabled(false);
         }
 
         // Don't allow deleting the image if it is archived
         if (isArchive) {
-            deleteButton.setImageTintList(ColorStateList.valueOf(grayColor));
-            deleteButton.setEnabled(false);
+            binding.imgActionDelete.setImageTintList(ColorStateList.valueOf(grayColor));
+            binding.imgActionDelete.setEnabled(false);
         } else {
-            deleteButton.setImageTintList(null);
-            deleteButton.setEnabled(true);
+            binding.imgActionDelete.setImageTintList(null);
+            binding.imgActionDelete.setEnabled(true);
         }
 
         updateFavouriteDisplay(image.isFavourite());
@@ -230,9 +215,9 @@ public class ReaderBottomImageFragment extends BottomSheetDialogFragment {
      */
     private void updateFavouriteDisplay(boolean isFavourited) {
         if (isFavourited)
-            favoriteButton.setImageResource(R.drawable.ic_fav_full);
+            binding.imgActionFavourite.setImageResource(R.drawable.ic_fav_full);
         else
-            favoriteButton.setImageResource(R.drawable.ic_fav_empty);
+            binding.imgActionFavourite.setImageResource(R.drawable.ic_fav_empty);
     }
 
     /**
@@ -250,11 +235,11 @@ public class ReaderBottomImageFragment extends BottomSheetDialogFragment {
                 }
             }
 
-            Snackbar.make(rootView, R.string.copy_download_folder_success, LENGTH_LONG)
+            Snackbar.make(binding.getRoot(), R.string.copy_download_folder_success, LENGTH_LONG)
                     .setAction(R.string.open_folder, v -> FileHelper.openFile(requireContext(), FileHelper.getDownloadsFolder()))
                     .show();
         } catch (IOException | IllegalArgumentException e) {
-            Snackbar.make(rootView, R.string.copy_download_folder_fail, LENGTH_LONG).show();
+            Snackbar.make(binding.getRoot(), R.string.copy_download_folder_fail, LENGTH_LONG).show();
         }
     }
 
@@ -317,7 +302,7 @@ public class ReaderBottomImageFragment extends BottomSheetDialogFragment {
         if (t instanceof ContentNotProcessedException) {
             ContentNotProcessedException e = (ContentNotProcessedException) t;
             String message = (null == e.getMessage()) ? getResources().getString(R.string.file_removal_failed) : e.getMessage();
-            Snackbar.make(rootView, message, BaseTransientBottomBar.LENGTH_LONG).show();
+            Snackbar.make(binding.getRoot(), message, BaseTransientBottomBar.LENGTH_LONG).show();
         }
     }
 }
