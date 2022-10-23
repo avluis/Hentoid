@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,6 +45,10 @@ public class ReaderBottomContentFragment extends BottomSheetDialogFragment {
 
     // UI
     private IncludeReaderContentBottomPanelBinding binding = null;
+    private final ImageView[] stars = new ImageView[5];
+
+    // VAR
+    private int currentRating = -1;
 
 
     static {
@@ -77,6 +82,19 @@ public class ReaderBottomContentFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = IncludeReaderContentBottomPanelBinding.inflate(inflater, container, false);
+
+        stars[0] = binding.rating1;
+        stars[1] = binding.rating2;
+        stars[2] = binding.rating3;
+        stars[3] = binding.rating4;
+        stars[4] = binding.rating5;
+
+        binding.imgActionFavourite.setOnClickListener(v -> onFavouriteClick());
+        for (int i = 0; i < 5; i++) {
+            final int rating = i;
+            stars[i].setOnClickListener(v -> setRating(rating + 1));
+        }
+
         return binding.getRoot();
     }
 
@@ -115,6 +133,9 @@ public class ReaderBottomContentFragment extends BottomSheetDialogFragment {
         binding.contentTitle.setText(content.getTitle());
         binding.contentArtist.setText(ContentHelper.formatArtistForDisplay(requireContext(), content));
 
+        updateFavouriteDisplay(content.isFavourite());
+        updateRatingDisplay(content.getRating());
+
         String tagTxt = ContentHelper.formatTagsForDisplay(content);
         if (tagTxt.isEmpty()) {
             binding.contentTags.setVisibility(View.GONE);
@@ -122,5 +143,27 @@ public class ReaderBottomContentFragment extends BottomSheetDialogFragment {
             binding.contentTags.setVisibility(View.VISIBLE);
             binding.contentTags.setText(tagTxt);
         }
+    }
+
+    private void updateFavouriteDisplay(boolean isFavourited) {
+        if (isFavourited)
+            binding.imgActionFavourite.setImageResource(R.drawable.ic_fav_full);
+        else
+            binding.imgActionFavourite.setImageResource(R.drawable.ic_fav_empty);
+    }
+
+    private void updateRatingDisplay(int rating) {
+        currentRating = rating;
+        for (int i = 5; i > 0; i--)
+            stars[i - 1].setImageResource(i <= rating ? R.drawable.ic_star_full : R.drawable.ic_star_empty);
+    }
+
+    private void setRating(int rating) {
+        final int targetRating = (currentRating == rating) ? 0 : rating;
+        viewModel.setContentRating(targetRating, this::updateRatingDisplay);
+    }
+
+    private void onFavouriteClick() {
+        viewModel.toggleContentFavourite(this::updateFavouriteDisplay);
     }
 }

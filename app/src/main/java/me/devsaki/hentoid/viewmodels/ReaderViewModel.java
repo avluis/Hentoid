@@ -745,6 +745,35 @@ public class ReaderViewModel extends AndroidViewModel {
         ContentHelper.persistJson(getApplication().getApplicationContext(), content);
     }
 
+    // TODO doc
+    public void setContentRating(int rating, @NonNull Consumer<Integer> successCallback) {
+        Content targetContent = dao.selectContent(loadedContentId);
+        if (null == targetContent) return;
+
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doSetContentRating(targetContent, rating))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                () -> successCallback.accept(rating),
+                                Timber::e
+                        )
+        );
+    }
+
+    // TODO doc
+    private void doSetContentRating(@NonNull Content content, int rating) {
+        Helper.assertNonUiThread();
+
+        content.setRating(rating);
+
+        // Persist in DB
+        dao.insertContent(content);
+
+        // Persist new values in JSON
+        ContentHelper.persistJson(getApplication().getApplicationContext(), content);
+    }
+
     /**
      * Delete the current Content
      *
