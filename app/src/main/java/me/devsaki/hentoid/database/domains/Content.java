@@ -53,6 +53,7 @@ import me.devsaki.hentoid.activities.sources.NhentaiActivity;
 import me.devsaki.hentoid.activities.sources.PixivActivity;
 import me.devsaki.hentoid.activities.sources.PorncomixActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
+import me.devsaki.hentoid.activities.sources.SimplyActivity;
 import me.devsaki.hentoid.activities.sources.ToonilyActivity;
 import me.devsaki.hentoid.activities.sources.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -278,6 +279,7 @@ public class Content implements Serializable {
             case MANHWA:
             case MULTPORN:
             case TOONILY:
+            case SIMPLY:
                 return url.replace(site.getUrl(), "");
             case EHENTAI:
             case EXHENTAI:
@@ -326,6 +328,7 @@ public class Content implements Serializable {
             case IMHENTAI:
             case ALLPORNCOMIC:
             case MULTPORN:
+            case SIMPLY:
                 paths = url.split("/");
                 return paths[paths.length - 1];
             case DOUJINS:
@@ -395,6 +398,8 @@ public class Content implements Serializable {
                 return Manhwa18Activity.class;
             case MULTPORN:
                 return MultpornActivity.class;
+            case SIMPLY:
+                return SimplyActivity.class;
             default:
                 return BaseWebActivity.class;
         }

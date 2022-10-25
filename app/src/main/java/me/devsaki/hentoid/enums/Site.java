@@ -42,6 +42,7 @@ public enum Site {
     PIXIV(24, "Pixiv", "https://www.pixiv.net/", R.drawable.ic_site_pixiv),
     MANHWA18(25, "Manhwa18", "https://manhwa18.com/", R.drawable.ic_site_manhwa18),
     MULTPORN(26, "Multporn", "https://multporn.net/", R.drawable.ic_site_multporn),
+    SIMPLY(27, "Simply Hentai", "https://www.simply-hentai.com/", R.drawable.ic_site_simply),
     NONE(98, "none", "", R.drawable.ic_attribute_source), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_site_panda); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
@@ -160,7 +161,9 @@ public enum Site {
         return parallelDownloadCap;
     }
 
-    public int getBookCardDepth() { return bookCardDepth; }
+    public int getBookCardDepth() {
+        return bookCardDepth;
+    }
 
     public boolean isVisible() {
         for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;

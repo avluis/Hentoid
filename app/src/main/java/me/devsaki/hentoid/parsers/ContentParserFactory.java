@@ -24,6 +24,7 @@ import me.devsaki.hentoid.parsers.content.NhentaiContent;
 import me.devsaki.hentoid.parsers.content.PixivContent;
 import me.devsaki.hentoid.parsers.content.PorncomixContent;
 import me.devsaki.hentoid.parsers.content.PururinContent;
+import me.devsaki.hentoid.parsers.content.SimplyContent;
 import me.devsaki.hentoid.parsers.content.ToonilyContent;
 import me.devsaki.hentoid.parsers.content.TsuminoContent;
 import me.devsaki.hentoid.parsers.images.ASMHentaiParser;
@@ -48,6 +49,7 @@ import me.devsaki.hentoid.parsers.images.NhentaiParser;
 import me.devsaki.hentoid.parsers.images.PixivParser;
 import me.devsaki.hentoid.parsers.images.PorncomixParser;
 import me.devsaki.hentoid.parsers.images.PururinParser;
+import me.devsaki.hentoid.parsers.images.SimplyParser;
 import me.devsaki.hentoid.parsers.images.ToonilyParser;
 import me.devsaki.hentoid.parsers.images.TsuminoParser;
 
@@ -110,6 +112,8 @@ public class ContentParserFactory {
                 return Manhwa18Content.class;
             case MULTPORN:
                 return MultpornContent.class;
+            case SIMPLY:
+                return SimplyContent.class;
             default:
                 return DummyContent.class;
         }
@@ -166,6 +170,8 @@ public class ContentParserFactory {
                 return new Manhwa18Parser();
             case MULTPORN:
                 return new MultpornParser();
+            case SIMPLY:
+                return new SimplyParser();
             default:
                 return new DummyParser();
         }

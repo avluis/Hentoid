@@ -118,6 +118,9 @@
             android:name=".activities.sources.MultpornActivity"
             android:configChanges="orientation|screenSize" />
         <activity
+            android:name=".activities.sources.SimplyActivity"
+            android:configChanges="orientation|screenSize" />
+        <activity
             android:name=".activities.LibraryActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -529,6 +532,17 @@
 
                 <data
                     android:host="multporn.net"
+                    android:pathPattern="/..*/..*"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="www.simply-hentai.com"
                     android:pathPattern="/..*/..*"
                     android:scheme="https" />
             </intent-filter>
