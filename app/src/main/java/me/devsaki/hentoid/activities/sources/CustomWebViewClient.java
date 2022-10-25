@@ -410,7 +410,6 @@ class CustomWebViewClient extends WebViewClient {
         activity.onPageFinished(isResultsPage(StringHelper.protect(url)), isGalleryPage(url));
     }
 
-
     /**
      * Note : this method is called by a non-UI thread
      */

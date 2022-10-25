@@ -218,6 +218,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private UpdateInfo.SourceAlert alert;
     // Handler for fetch interceptor
     protected BiConsumer<String, String> fetchHandler = null;
+    protected BiConsumer<String, String> xhrHandler = null;
     protected String jsInterceptorScript = null;
     protected String customCss = null;
 
@@ -542,6 +543,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         if (fetchHandler != null)
             webView.addJavascriptInterface(new FetchHandler(fetchHandler), "fetchHandler");
+        if (xhrHandler != null)
+            webView.addJavascriptInterface(new XhrHandler(xhrHandler), "xhrHandler");
     }
 
     private void initSwipeLayout() {
@@ -616,6 +619,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         // Activate fetch handler
         if (fetchHandler != null) {
             if (null == jsInterceptorScript) jsInterceptorScript = getJsScript("fetch_override.js");
+            webView.loadUrl(jsInterceptorScript);
+        }
+        // Activate XHR handler
+        if (xhrHandler != null) {
+            if (null == jsInterceptorScript) jsInterceptorScript = getJsScript("xhr_override.js");
             webView.loadUrl(jsInterceptorScript);
         }
 
@@ -1483,7 +1491,25 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         @JavascriptInterface
         @SuppressWarnings("unused")
         public void onFetchCall(String url, String body) {
-            Timber.d("AJAX Begin %s : %s", url, body);
+            Timber.d("fetch Begin %s : %s", url, body);
+            handler.accept(url, body);
+        }
+    }
+
+    // References :
+    // https://medium.com/@madmuc/intercept-all-network-traffic-in-webkit-on-android-9c56c9262c85
+    public static class XhrHandler {
+
+        private final BiConsumer<String, String> handler;
+
+        public XhrHandler(BiConsumer<String, String> handler) {
+            this.handler = handler;
+        }
+
+        @JavascriptInterface
+        @SuppressWarnings("unused")
+        public void onXhrCall(String method, String url, String body) {
+            Timber.d("XHR Begin %s : %s", url, body);
             handler.accept(url, body);
         }
     }
