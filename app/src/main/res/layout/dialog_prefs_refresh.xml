@@ -9,28 +9,17 @@
     android:padding="16dp">
 
     <TextView
-        android:id="@+id/refresh_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="@string/refresh_title"
-        android:textAlignment="center"
-        android:textSize="@dimen/text_header_6"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
         android:id="@+id/refresh_caption"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:paddingBottom="16dp"
         android:singleLine="false"
         android:text="@string/refresh_caption"
         android:textAlignment="center"
         android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/refresh_title" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <RadioGroup
         android:id="@+id/refresh_location"
@@ -44,26 +33,26 @@
             android:id="@+id/refresh_location_internal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/text_body_1"
             android:checked="true"
             android:text="@string/refresh_location_internal"
-            android:textColor="?colorOnSurface" />
+            android:textColor="?colorOnSurface"
+            android:textSize="@dimen/text_body_1" />
 
         <RadioButton
             android:id="@+id/refresh_location_external"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="@dimen/text_body_1"
             android:text="@string/refresh_location_external"
-            android:textColor="?colorOnSurface" />
+            android:textColor="?colorOnSurface"
+            android:textSize="@dimen/text_body_1" />
     </RadioGroup>
 
     <View
         android:id="@+id/refresh_divider"
+        android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginTop="2dp"
         android:background="?colorSecondary"
-        android:layout_width="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/refresh_location" />
@@ -154,20 +143,17 @@
         android:visibility="visible"
         app:constraint_referenced_ids="refresh_options, refresh_options_rename, refresh_options_remove, refresh_options_remove_1, refresh_options_remove_or_1, refresh_options_remove_2" />
 
-    <TextView
-        android:id="@+id/refresh_ok"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_button"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
         android:layout_marginTop="8dp"
-        android:background="?attr/colorSecondary"
-        android:minWidth="0dp"
-        android:minHeight="0dp"
-        android:paddingStart="24dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="24dp"
-        android:paddingBottom="8dp"
-        android:text="@android:string/ok"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:text="@string/refresh_title"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_cache"
+        app:iconTint="?colorSecondary"
         app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

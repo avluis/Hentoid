@@ -145,7 +145,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
             if (!Preferences.getExternalLibraryUri().isEmpty())
                 locationGroup.setVisibility(View.VISIBLE);
 
-            View okBtn = requireViewById(rootView, R.id.refresh_ok);
+            View okBtn = requireViewById(rootView, R.id.action_button);
             okBtn.setOnClickListener(v -> launchRefreshImport(externalChk.isChecked(), renameChk.isChecked(), removePlaceholdersChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked()));
         } else { // Show import progress layout immediately
             showImportProgressLayout(chooseFolder, externalLibrary);
