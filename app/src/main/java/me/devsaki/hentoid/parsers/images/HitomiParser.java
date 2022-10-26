@@ -2,11 +2,11 @@ package me.devsaki.hentoid.parsers.images;
 
 import android.os.Handler;
 import android.os.Looper;
-import androidx.core.util.Pair;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,11 +24,11 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.json.sources.HitomiGalleryInfo;
 import me.devsaki.hentoid.parsers.ParseHelper;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.views.HitomiBackgroundWebView;
 import okhttp3.Response;
@@ -51,8 +51,6 @@ public class HitomiParser extends BaseImageListParser {
         Map<String, String> downloadParams = new HashMap<>();
         downloadParams.put(HttpHelper.HEADER_REFERER_KEY, pageUrl);
         String downloadParamsStr = JsonHelper.serializeToJson(downloadParams, JsonHelper.MAP_STRINGS);
-
-        List<ImageFile> result = new ArrayList<>();
 
         String galleryJsonUrl = "https://ltn.hitomi.la/galleries/" + onlineContent.getUniqueSiteId() + ".js";
 
@@ -88,12 +86,13 @@ public class HitomiParser extends BaseImageListParser {
         do {
             Helper.pause(1000);
         } while (!done.get() && !processHalted.get() && remainingIterations-- > 0);
-        if (processHalted.get()) return result;
+        if (processHalted.get()) throw new EmptyResultException("Unable to detect pages (empty result)");
 
         String jsResult = imagesStr.get();
         if (null == jsResult || jsResult.isEmpty())
             throw new EmptyResultException("Unable to detect pages (empty result)");
 
+        List<ImageFile> result = new ArrayList<>();
         jsResult = jsResult.replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
         List<String> imageUrls = JsonHelper.jsonToObject(jsResult, JsonHelper.LIST_STRINGS);
         if (imageUrls != null && !imageUrls.isEmpty()) {
