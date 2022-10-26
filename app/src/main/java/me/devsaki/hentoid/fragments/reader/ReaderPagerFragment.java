@@ -174,6 +174,7 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
 
         onUpdateSwipeToFling();
         onUpdatePageNumDisplay();
+        onUpdateSwipeToTurn();
 
         // Top bar controls
         Helper.tryShowMenuIcons(requireActivity(), binding.controlsOverlay.viewerPagerToolbar.getMenu());
@@ -904,6 +905,9 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
             case Preferences.Key.VIEWER_DISPLAY_PAGENUM:
                 onUpdatePageNumDisplay();
                 break;
+            case Preferences.Key.VIEWER_PAGE_TURN_SWIPE:
+                onUpdateSwipeToTurn();
+                break;
             default:
                 // Other changes aren't handled here
         }
@@ -925,6 +929,11 @@ public class ReaderPagerFragment extends Fragment implements ReaderBrowseModeDia
     private void onUpdateSwipeToFling() {
         int flingFactor = Preferences.isViewerSwipeToFling() ? 75 : 0;
         pageSnapWidget.setFlingSensitivity(flingFactor / 100f);
+    }
+
+    private void onUpdateSwipeToTurn() {
+        if (Preferences.isViewerSwipeToTurn()) scrollListener.enableScroll();
+        else scrollListener.disableScroll();
     }
 
     /**

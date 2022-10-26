@@ -6,8 +6,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.function.IntConsumer;
 
-import me.devsaki.hentoid.util.Preferences;
-
 public final class ScrollPositionListener extends RecyclerView.OnScrollListener {
 
     private final IntConsumer onPositionChangeListener;
@@ -56,7 +54,7 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
     @Override
     public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
         super.onScrollStateChanged(recyclerView, newState);
-        if (!Preferences.isViewerSwipeToTurn() || !isScrollEnabled) {
+        if (!isScrollEnabled) {
             recyclerView.stopScroll();
             return;
         }

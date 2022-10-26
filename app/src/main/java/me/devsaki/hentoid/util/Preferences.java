@@ -942,7 +942,7 @@ public final class Preferences {
         static final String VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         public static final String VIEWER_CONTINUOUS = "pref_viewer_continuous";
         static final String VIEWER_INVERT_VOLUME_ROCKER = "pref_viewer_invert_volume_rocker";
-        static final String VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
+        public static final String VIEWER_PAGE_TURN_SWIPE = "pref_viewer_page_turn_swipe";
         static final String VIEWER_PAGE_TURN_TAP = "pref_viewer_page_turn_tap";
         static final String VIEWER_PAGE_TURN_TAP_2X = "pref_viewer_page_turn_tap_2x";
         static final String VIEWER_PAGE_TURN_VOLUME = "pref_viewer_page_turn_volume";
