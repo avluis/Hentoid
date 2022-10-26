@@ -153,7 +153,7 @@ public final class ReaderPrefsDialogFragment extends DialogFragment {
             requireContext().startActivity(intent);
         });
 
-        View okBtn = rootView.findViewById(R.id.book_prefs_ok_btn);
+        View okBtn = rootView.findViewById(R.id.action_button);
         okBtn.setOnClickListener(v -> {
             Map<String, String> newPrefs = new HashMap<>();
             if (renderSpin.getSelectedIndex() > 0)
