@@ -28,6 +28,10 @@ public class QueueRecord {
         this.content = content;
     }
 
+    public long getContentId() {
+        return content.getTargetId();
+    }
+
     public int getRank() {
         return rank;
     }
