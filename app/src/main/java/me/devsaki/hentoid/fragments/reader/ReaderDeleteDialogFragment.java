@@ -70,7 +70,7 @@ public final class ReaderDeleteDialogFragment extends DialogFragment {
 
         if (!isDeletePageAllowed) pageBtn.setEnabled(false);
 
-        View okBtn = rootView.findViewById(R.id.book_delete_ok_btn);
+        View okBtn = rootView.findViewById(R.id.action_button);
         okBtn.setOnClickListener(v -> {
             if (!pageBtn.isChecked() && !bookBtn.isChecked()) return;
             Preferences.setViewerDeleteAskMode(spin.getSelectedIndex());

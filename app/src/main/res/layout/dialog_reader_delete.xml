@@ -7,18 +7,6 @@
     android:clipToPadding="false"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:text="@string/menu_delete_single"
-        android:textAlignment="center"
-        android:textSize="@dimen/text_header_6"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <com.skydoves.powerspinner.PowerSpinnerView
         android:id="@+id/book_prefs_delete_spin"
         android:layout_width="match_parent"
@@ -28,7 +16,7 @@
         android:gravity="center_vertical"
         android:padding="8dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintTop_toTopOf="parent"
         app:spinner_arrow_gravity="end"
         app:spinner_arrow_padding="8dp"
         app:spinner_arrow_tint="@color/white_opacity_66"
@@ -60,22 +48,17 @@
             android:textColor="?colorOnSurface" />
     </RadioGroup>
 
-    <TextView
-        android:id="@+id/book_delete_ok_btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="?colorSecondary"
-        android:clickable="true"
-        android:focusable="true"
-        android:gravity="center"
-        android:paddingStart="16dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="8dp"
-        android:text="@string/confirm"
-        android:textAllCaps="true"
-        app:layout_constraintEnd_toEndOf="parent"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/action_button"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_marginTop="8dp"
+        android:text="@string/menu_delete_single"
+        android:textColor="?colorSecondary"
+        android:textSize="@dimen/text_body_1"
+        app:icon="@drawable/ic_action_delete"
+        app:iconTint="?colorSecondary"
         app:layout_constraintTop_toBottomOf="@id/delete_mode" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
