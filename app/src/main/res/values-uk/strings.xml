@@ -86,7 +86,7 @@
     <string name="menu_edit_warning_custom">Нове користувальницьке сортування замінить попереднє.</string>
     <string name="menu_sort_filter">Сортувати книги</string>
     <string name="menu_delete_single">Видалити</string>
-    <string name="menu_change_group">Перемістити до групи…</string>
+    <string name="menu_change_group">Перемістити до групи</string>
     <string name="menu_open_folder">Відкрити батьківську папку</string>
     <string name="menu_redownload">Завантажити знову</string>
     <string name="menu_redownload_scratch">Завантажити з нуля</string>

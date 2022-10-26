@@ -77,7 +77,7 @@
     <string name="menu_edit_warning_custom">新しいカスタム注文は、以前の注文を上書きします。</string>
     <string name="menu_sort_filter">並べ替えとフィルタリング</string>
     <string name="menu_delete_single">消去</string>
-    <string name="menu_change_group">グループに移動…</string>
+    <string name="menu_change_group">グループに移動</string>
     <string name="menu_open_folder">含まれているフォルダを開く</string>
     <string name="menu_redownload">再ダウンロード</string>
     <string name="menu_redownload_scratch">ゼロから再ダウンロード</string>

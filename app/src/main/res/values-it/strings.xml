@@ -77,7 +77,7 @@
     <string name="menu_edit_warning_custom">Il nuovo ordine personalizzato che stai per creare sovrascriverà quello precedente.</string>
     <string name="menu_sort_filter">Ordina e filtra</string>
     <string name="menu_delete_single">Elimina</string>
-    <string name="menu_change_group">Passa al gruppo…</string>
+    <string name="menu_change_group">Passa al gruppo</string>
     <string name="menu_open_folder">Apri la cartella contenente</string>
     <string name="menu_redownload">Scarica di nuovo</string>
     <string name="menu_redownload_scratch">Scarica di nuovo da zero</string>

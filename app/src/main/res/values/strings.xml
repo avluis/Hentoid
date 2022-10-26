@@ -87,7 +87,7 @@
     <string name="menu_edit_warning_custom">New custom ordering will overwrite the previous one.</string>
     <string name="menu_sort_filter">Sort and filter</string>
     <string name="menu_delete_single">Delete</string>
-    <string name="menu_change_group">Move to group…</string>
+    <string name="menu_change_group">Move to group</string>
     <string name="menu_open_folder">Open containing folder</string>
     <string name="menu_redownload">Redownload</string>
     <string name="menu_redownload_scratch">Redownload from scratch</string>

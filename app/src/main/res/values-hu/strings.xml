@@ -77,7 +77,7 @@
     <string name="menu_edit_warning_custom">Az új rendezési séma felülfogja írni az előzőt.</string>
     <string name="menu_sort_filter">Rendezés és szűrés</string>
     <string name="menu_delete_single">Törlés</string>
-    <string name="menu_change_group">Csoporthoz hozzárendelés...</string>
+    <string name="menu_change_group">Csoporthoz hozzárendelés</string>
     <string name="menu_open_folder">Tartalmazó mappa megnyitása</string>
     <string name="menu_redownload">Újbóli letöltés</string>
     <string name="menu_redownload_scratch">Újbóli letöltés a nulláról</string>

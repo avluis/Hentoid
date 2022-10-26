@@ -112,7 +112,7 @@ public class ChangeGroupDialogFragment extends DialogFragment {
                 detachRadio.setOnCheckedChangeListener((v, b) -> onDetachRadioSelect(b));
 
                 // Item click listener
-                rootView.findViewById(R.id.change_ok_btn).setOnClickListener(v -> onOkClick());
+                rootView.findViewById(R.id.action_button).setOnClickListener(v -> onOkClick());
             } finally {
                 dao.cleanup();
             }
