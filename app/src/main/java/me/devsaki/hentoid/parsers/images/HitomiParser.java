@@ -91,7 +91,7 @@ public class HitomiParser extends BaseImageListParser {
         if (processHalted.get()) return result;
 
         String jsResult = imagesStr.get();
-        if (null == jsResult)
+        if (null == jsResult || jsResult.isEmpty())
             throw new EmptyResultException("Unable to detect pages (empty result)");
 
         jsResult = jsResult.replace("\"[", "[").replace("]\"", "]").replace("\\\"", "\"");
