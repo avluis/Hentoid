@@ -430,12 +430,12 @@ public class ObjectBoxDAO implements CollectionDAO {
 
     @Override
     public List<Group> selectGroups(int grouping) {
-        return db.selectGroupsQ(grouping, null, 0, false, -1, false, 0).find();
+        return db.selectGroupsQ(grouping, null, 0, false, -1, false, -1).find();
     }
 
     @Override
     public List<Group> selectGroups(int grouping, int subType) {
-        return db.selectGroupsQ(grouping, null, 0, false, subType, false, 0).find();
+        return db.selectGroupsQ(grouping, null, 0, false, subType, false, -1).find();
     }
 
     @Override

@@ -61,7 +61,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
         setQuery("")
         setArtistGroupVisibility(Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS)
         setFilterFavourites(false)
-        setFilterRating(0)
+        setFilterRating(-1)
     }
 
     fun getGroups(): LiveData<List<Group>> {
@@ -84,7 +84,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
             values.sortDesc,
             Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS,
             false,
-            0
+            -1
         )
     }
 
@@ -92,7 +92,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
 
         var filterFavourites by bundle.boolean(default = false)
 
-        var filterRating by bundle.int(default = 0)
+        var filterRating by bundle.int(default = -1)
 
         var artistGroupVisibility by bundle.int(default = Preferences.getArtistGroupVisibility())
 
@@ -108,7 +108,7 @@ class GroupSearchManager(val dao: CollectionDAO) {
             return query.isNotEmpty()
                     || artistGroupVisibility != Preferences.Constant.ARTIST_GROUP_VISIBILITY_ARTISTS_GROUPS
                     || filterFavourites
-                    || filterRating > 0
+                    || filterRating > -1
         }
     }
 }
