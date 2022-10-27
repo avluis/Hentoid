@@ -107,7 +107,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
         setFilterBookCompleted(false)
         setFilterBookNotCompleted(false)
         setFilterPageFavourites(false)
-        setFilterRating(0)
+        setFilterRating(-1)
         setLocation(0)
         setContentType(0)
     }
@@ -191,7 +191,7 @@ class ContentSearchManager(val dao: CollectionDAO) {
                     || filterBookFavourites
                     || filterBookCompleted
                     || filterBookNotCompleted
-                    || filterRating > 0
+                    || filterRating > -1
                     || filterPageFavourites
         }
     }
