@@ -1511,14 +1511,24 @@ public class LibraryContentFragment extends Fragment implements
 
     public void mergeContents(@NonNull List<Content> contentList, @NonNull String newTitle, boolean deleteAfterMerging) {
         leaveSelectionMode();
-        viewModel.mergeContents(contentList, newTitle, deleteAfterMerging, () -> ToastHelper.toast(R.string.merge_success));
+        viewModel.mergeContents(contentList, newTitle, deleteAfterMerging, this::onMergeSuccess);
         ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.merge_progress), R.plurals.page);
+    }
+
+    private void onMergeSuccess() {
+        ToastHelper.toast(R.string.merge_success);
+        refreshIfNeeded();
     }
 
     public void splitContent(@NonNull Content content, @NonNull List<Chapter> chapters) {
         leaveSelectionMode();
-        viewModel.splitContent(content, chapters, () -> ToastHelper.toast(R.string.split_success));
+        viewModel.splitContent(content, chapters, this::onSplitSuccess);
         ProgressDialogFragment.invoke(getParentFragmentManager(), getResources().getString(R.string.split_progress), R.plurals.page);
+    }
+
+    private void onSplitSuccess() {
+        ToastHelper.toast(R.string.split_success);
+        refreshIfNeeded();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -1537,10 +1547,10 @@ public class LibraryContentFragment extends Fragment implements
     /**
      * Force a new search :
      * - when the book sort order is custom (in that case, LiveData can't do its job because of https://github.com/objectbox/objectbox-java/issues/141)
-     * - when the current grouping is custom (because the app needs to refresh the display when moving books out of the currently displayed group)
+     * - when the current grouping is not flat (because the app needs to refresh the display when moving books out of/into the currently displayed group)
      */
     private void refreshIfNeeded() {
-        if (Grouping.CUSTOM.equals(Preferences.getGroupingDisplay()) || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
+        if (!Grouping.FLAT.equals(Preferences.getGroupingDisplay()) || Preferences.getContentSortField() == Preferences.Constant.ORDER_FIELD_CUSTOM)
             viewModel.searchContent();
     }
 
@@ -1633,7 +1643,7 @@ public class LibraryContentFragment extends Fragment implements
         }
         Content content = item.getContent();
         if (content != null)
-            viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false, null);
+            viewModel.deleteItems(Stream.of(content).toList(), Collections.emptyList(), false, this::refreshIfNeeded);
     }
 
     /**
