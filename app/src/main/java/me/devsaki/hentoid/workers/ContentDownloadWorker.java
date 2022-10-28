@@ -678,6 +678,11 @@ public class ContentDownloadWorker extends BaseWorker {
             int nbImages = (int) Stream.of(images).filter(i -> !i.isCover()).count(); // Don't count the cover
 
             boolean hasError = false;
+            // Set error state if no image has been detected at all
+            if (0 == content.getQtyPages() && 0 == nbImages) {
+                logErrorRecord(contentId, ErrorType.PARSING, content.getGalleryUrl(), "pages", "The book has no pages");
+                hasError = true;
+            }
             // Set error state if less pages than initially detected - More than 10% difference in number of pages
             if (content.getQtyPages() > 0 && nbImages < content.getQtyPages() && Math.abs(nbImages - content.getQtyPages()) > content.getQtyPages() * 0.1) {
                 String errorMsg = String.format("The number of images found (%s) does not match the book's number of pages (%s)", nbImages, content.getQtyPages());
@@ -688,7 +693,6 @@ public class ContentDownloadWorker extends BaseWorker {
             // NB : this should not happen theoretically
             long nbDownloadedPages = content.getNbDownloadedPages();
             if (nbDownloadedPages < content.getQtyPages()) {
-                Timber.i(">> downloaded vs. qty KO %s vs %s", nbDownloadedPages, content.getQtyPages());
                 String errorMsg = String.format("The number of downloaded images (%s) does not match the book's number of pages (%s)", nbDownloadedPages, content.getQtyPages());
                 logErrorRecord(contentId, ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
                 hasError = true;
@@ -753,7 +757,6 @@ public class ContentDownloadWorker extends BaseWorker {
                             }
                         }
                     }
-
                     applyRenamingRules(content);
                 } else {
                     content.setStatus(StatusContent.ERROR);
