@@ -705,7 +705,7 @@ public class Content implements Serializable {
 
     private long getDownloadedPagesSize() {
         if (imageFiles != null) {
-            Long result = Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL || i.getStatus() == StatusContent.ONLINE)).collect(Collectors.summingLong(ImageFile::getSize));
+            Long result = Stream.of(imageFiles).filter(i -> (i.getStatus() == StatusContent.DOWNLOADED || i.getStatus() == StatusContent.EXTERNAL)).collect(Collectors.summingLong(ImageFile::getSize));
             if (result != null) return result;
         }
         return 0;
