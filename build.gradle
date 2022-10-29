@@ -9,7 +9,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:7.3.1'
-        classpath 'com.google.gms:google-services:4.3.13'
+        classpath 'com.google.gms:google-services:4.3.14'
         classpath 'io.objectbox:objectbox-gradle-plugin:3.4.0'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20'
         classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3'
