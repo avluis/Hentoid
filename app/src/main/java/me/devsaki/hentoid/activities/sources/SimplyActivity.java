@@ -129,7 +129,9 @@ public class SimplyActivity extends BaseWebActivity {
         }
 
         public WebResourceResponse shouldInterceptRequest(WebResourceRequest request) {
-            return webClient.shouldInterceptRequest(webView, request);
+            if (webClient != null)
+                return webClient.shouldInterceptRequest(webView, request);
+            else return null;
         }
     }
 
