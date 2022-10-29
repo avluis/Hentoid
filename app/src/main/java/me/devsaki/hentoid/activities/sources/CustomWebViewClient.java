@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
 
 import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiFunction;
 
 import org.jsoup.Jsoup;
@@ -39,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -788,6 +790,10 @@ class CustomWebViewClient extends WebViewClient {
                 Map<String, Pair<Element, Element>> elements = new HashMap<>();
 
                 for (Element link : plainLinks) {
+                    if (!site.getBookCardExcludedParentClasses().isEmpty()) {
+                        boolean isForbidden = Stream.of(link.parents()).anyMatch(e -> containsForbiddenClass(site, e.classNames()));
+                        if (isForbidden) continue;
+                    }
                     String aHref = simplifyUrl(link.attr("href"));
                     if (!aHref.isEmpty() && !elements.containsKey(aHref)) // We only process the first match - usually the cover
                         elements.put(aHref, new Pair<>(link, null));
@@ -797,6 +803,11 @@ class CustomWebViewClient extends WebViewClient {
                     Element parent = linkedImage.parent();
                     while (parent != null && !parent.is("a")) parent = parent.parent();
                     if (null == parent) break;
+
+                    if (!site.getBookCardExcludedParentClasses().isEmpty()) {
+                        boolean isForbidden = Stream.of(parent.parents()).anyMatch(e -> containsForbiddenClass(site, e.classNames()));
+                        if (isForbidden) continue;
+                    }
 
                     String aHref = simplifyUrl(parent.attr("href"));
                     Pair<Element, Element> elt = elements.get(aHref);
@@ -844,6 +855,11 @@ class CustomWebViewClient extends WebViewClient {
             Timber.e(e);
             return null;
         }
+    }
+
+    private boolean containsForbiddenClass(@NonNull Site s, @NonNull Set<String> classNames) {
+        Set<String> forbiddenElements = s.getBookCardExcludedParentClasses();
+        return Stream.of(classNames).anyMatch(forbiddenElements::contains);
     }
 
     interface CustomWebActivity {

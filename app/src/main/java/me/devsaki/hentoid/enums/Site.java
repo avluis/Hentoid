@@ -3,6 +3,9 @@ package me.devsaki.hentoid.enums;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.json.core.JsonSiteSettings;
@@ -66,12 +69,15 @@ public enum Site {
     private boolean useMobileAgent = true;
     private boolean useHentoidAgent = false;
     private boolean useWebviewAgent = true;
+    // Download behaviour control
     private boolean hasBackupURLs = false;
     private boolean hasCoverBasedPageUpdates = false;
     private boolean useCloudflare = false;
     private int requestsCapPerSecond = -1;
     private int parallelDownloadCap = 0;
+    // Controls for "Mark downloaded/merged" in browser
     private int bookCardDepth = 2;
+    private Set<String> bookCardExcludedParentClasses = new HashSet<>();
 
     Site(int code,
          String description,
@@ -165,6 +171,10 @@ public enum Site {
         return bookCardDepth;
     }
 
+    public Set<String> getBookCardExcludedParentClasses() {
+        return bookCardExcludedParentClasses;
+    }
+
     public boolean isVisible() {
         for (Site s : INVISIBLE_SITES) if (s.equals(this)) return false;
         return true;
@@ -199,6 +209,8 @@ public enum Site {
             requestsCapPerSecond = jsonSite.requestsCapPerSecond;
         if (jsonSite.bookCardDepth != null)
             bookCardDepth = jsonSite.bookCardDepth;
+        if (jsonSite.bookCardExcludedParentClasses != null)
+            bookCardExcludedParentClasses = new HashSet<>(jsonSite.bookCardExcludedParentClasses);
     }
 
     public static class SiteConverter implements PropertyConverter<Site, Long> {

@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.json.core;
 
+import java.util.List;
 import java.util.Map;
 
 public class JsonSiteSettings {
@@ -16,5 +17,6 @@ public class JsonSiteSettings {
         public Integer parallelDownloadCap = null;
         public Integer requestsCapPerSecond = null;
         public Integer bookCardDepth = null;
+        public List<String> bookCardExcludedParentClasses = null;
     }
 }

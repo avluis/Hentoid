@@ -44,7 +44,8 @@
       "parallelDownloadCap": 2
     },
     "PURURIN": {
-      "bookCardDepth": 1
+      "bookCardDepth": 1,
+      "bookCardExcludedParentClasses": ["breadcrumb"]
     }
   }
 }
