@@ -25,9 +25,6 @@ public class SimplyActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "simply-hentai.com";
     public static final String[] GALLERY_FILTER = {"simply-hentai.com/[%\\w\\-]+/[%\\w\\-]+$", "api.simply-hentai.com/v3/[%\\w\\-]+/[%\\w\\-]+$"};
-    //private static final String[] JS_WHITELIST = {DOMAIN_FILTER + "/cdn", DOMAIN_FILTER + "/wp"};
-    //private static final String[] JS_CONTENT_BLACKLIST = {"var exoloader;", "popunder"};
-    //private static final String[] AD_ELEMENTS = {"iframe", ".c-ads"};
 
 
     Site getStartSite() {
@@ -38,12 +35,6 @@ public class SimplyActivity extends BaseWebActivity {
     protected CustomWebViewClient createWebClient() {
         SimplyViewClient client = new SimplyViewClient(getStartSite(), GALLERY_FILTER, this, webView);
         client.restrictTo(DOMAIN_FILTER);
-        //client.addRemovableElements(AD_ELEMENTS);
-        //client.adBlocker.addToJsUrlWhitelist(JS_WHITELIST);
-        //for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
-
-        //xhrHandler = client::onXhrCall;
-
         return client;
     }
 
@@ -60,30 +51,18 @@ public class SimplyActivity extends BaseWebActivity {
                 swClient = new SimplyViewSwClient(this, webView);
                 swController.setServiceWorkerClient(swClient);
             }
-
         }
 
         @Override
         void destroy() {
-
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                 if (swClient != null) {
                     swClient.destroy();
                     swClient = null;
                 }
             }
-
             super.destroy();
         }
-
-        /*
-        public void onXhrCall(String url, String body) {
-            if (!isGalleryPage(url)) return;
-            Timber.i("XHR %s %s", url, body);
-            parseResponse(url, null, true, false);
-        }
-         */
-
 
         @Override
         protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> requestHeaders, boolean analyzeForDownload, boolean quickDownload) {
@@ -134,6 +113,4 @@ public class SimplyActivity extends BaseWebActivity {
             else return null;
         }
     }
-
-
 }
