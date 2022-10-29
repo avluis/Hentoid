@@ -158,7 +158,7 @@ dependencies {
     // Animated WEBP support -> https://github.com/zjupure/GlideWebpDecoder
     def webp_glide_version = '4.13.2'
     // webpdecoder
-    implementation "com.github.zjupure:webpdecoder:2.0.$webp_glide_version"
+    implementation "com.github.zjupure:webpdecoder:2.2.4.13.2"
 
     // Animated PNG (apng) support -> https://github.com/penfeizhou/APNG4Android
     implementation 'com.github.penfeizhou.android.animation:apng:2.24.0'
