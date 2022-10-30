@@ -227,6 +227,24 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isBrowserMode() {
+        int result = sharedPreferences.getInt(Key.BROWSER_MODE, 0);
+        return 0 != result;
+    }
+
+    // For exclusive use during the intro wizard
+    public static Boolean getBrowserMode() {
+        int result = sharedPreferences.getInt(Key.BROWSER_MODE, -1);
+        if (-1 == result) return null;
+        else return 0 != result;
+    }
+
+    public static void setBrowserMode(boolean value) {
+        sharedPreferences.edit()
+                .putInt(Key.BROWSER_MODE, value ? 1 : 0)
+                .apply();
+    }
+
     public static boolean isImportQueueEmptyBooks() {
         return getBoolPref(Key.IMPORT_QUEUE_EMPTY, Default.IMPORT_QUEUE_EMPTY);
     }
@@ -882,6 +900,7 @@ public final class Preferences {
             throw new IllegalStateException("Utility class");
         }
 
+        public static final String BROWSER_MODE = "browser_mode";
         public static final String ANALYTICS_PREFERENCE = "pref_analytics_preference";
         public static final String APP_LOCK = "pref_app_lock";
         public static final String APP_PREVIEW = "pref_app_preview";

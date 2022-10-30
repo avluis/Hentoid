@@ -1,40 +1,17 @@
 package me.devsaki.hentoid.fragments.intro;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.Settings;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.github.appintro.SlidePolicy;
-import com.google.android.material.snackbar.Snackbar;
+public class PermissionIntroFragment extends Fragment /*implements SlidePolicy*/ {
 
-import me.devsaki.hentoid.BuildConfig;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.IntroActivity;
-import me.devsaki.hentoid.util.file.PermissionHelper;
-
-import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
-
-public class PermissionIntroFragment extends Fragment implements SlidePolicy {
-
-    private IntroActivity parentActivity;
+    /*
+    private IntroActivity_ parentActivity;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (context instanceof IntroActivity) {
-            parentActivity = (IntroActivity) context;
+        if (context instanceof IntroActivity_) {
+            parentActivity = (IntroActivity_) context;
         }
     }
 
@@ -98,4 +75,6 @@ public class PermissionIntroFragment extends Fragment implements SlidePolicy {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, uri);
         startActivity(intent);
     }
+
+     */
 }

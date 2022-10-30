@@ -36,7 +36,7 @@ public class SourcesIntroFragment extends Fragment {
         itemAdapter.add(items);
 
         FastAdapter<SiteItem> fastAdapter = FastAdapter.with(itemAdapter);
-        RecyclerView recyclerView = view.findViewById(R.id.intro6_list);
+        RecyclerView recyclerView = view.findViewById(R.id.list);
         recyclerView.setAdapter(fastAdapter);
 
         return view;

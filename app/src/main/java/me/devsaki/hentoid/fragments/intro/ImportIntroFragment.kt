@@ -15,15 +15,15 @@ import com.google.android.material.snackbar.Snackbar
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.IntroActivity
+import me.devsaki.hentoid.activities.IntroActivity_
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
 import me.devsaki.hentoid.databinding.IntroSlide04Binding
 import me.devsaki.hentoid.events.ProcessEvent
 import me.devsaki.hentoid.ui.BlinkAnimation
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.ImportHelper
 import me.devsaki.hentoid.util.ImportHelper.setAndScanHentoidFolder
 import me.devsaki.hentoid.util.Preferences
+import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.workers.PrimaryImportWorker
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -98,6 +98,11 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
         mergedBinding.importStep1Button.visibility = View.VISIBLE
 
         binding.skipBtn.setOnClickListener { askSkip() }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.root.visibility = if (Preferences.getBrowserMode()) View.INVISIBLE else View.VISIBLE
     }
 
     private fun onFolderPickerResult(resultCode: Int, treeUri: Uri?) {
@@ -280,7 +285,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     }
 
     private fun nextStep() {
-        val parentActivity = requireActivity() as IntroActivity
+        val parentActivity = requireActivity() as IntroActivity_
         parentActivity.nextStep()
         binding.skipBtn.visibility = View.VISIBLE
         isDone = true

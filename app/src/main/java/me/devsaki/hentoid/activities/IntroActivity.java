@@ -20,8 +20,8 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.fragments.intro.EndIntroFragment;
 import me.devsaki.hentoid.fragments.intro.ImportIntroFragment;
-import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment;
-import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment;
+import me.devsaki.hentoid.fragments.intro.PermissionIntroFragment_;
+import me.devsaki.hentoid.fragments.intro.SourcesIntroFragment_;
 import me.devsaki.hentoid.fragments.intro.ThemeIntroFragment;
 import me.devsaki.hentoid.fragments.intro.WelcomeIntroFragment;
 import me.devsaki.hentoid.util.Preferences;
@@ -42,11 +42,11 @@ public class IntroActivity extends AppIntro2 {
 
         addSlide(new WelcomeIntroFragment());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            addSlide(new PermissionIntroFragment());
+            addSlide(new PermissionIntroFragment_());
         }
         addSlide(new ImportIntroFragment());
         addSlide(new ThemeIntroFragment());
-        addSlide(new SourcesIntroFragment());
+        addSlide(new SourcesIntroFragment_());
         addSlide(new EndIntroFragment());
 
         setTitle(R.string.app_name);
@@ -63,8 +63,8 @@ public class IntroActivity extends AppIntro2 {
     @Override
     public void onSlideChanged(@Nullable Fragment oldFragment, @Nullable Fragment newFragment) {
         super.onSlideChanged(oldFragment, newFragment);
-        if (oldFragment instanceof SourcesIntroFragment)
-            setSourcePrefs(((SourcesIntroFragment) oldFragment).getSelection());
+        if (oldFragment instanceof SourcesIntroFragment_)
+            setSourcePrefs(((SourcesIntroFragment_) oldFragment).getSelection());
 
         boolean canProgress = !(newFragment instanceof ImportIntroFragment);
         setSwipeLock(!canProgress);

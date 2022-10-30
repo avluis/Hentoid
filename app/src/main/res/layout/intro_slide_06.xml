@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".activities.IntroActivity">
+    tools:context=".activities.IntroActivity_">
 
     <TextView
         android:layout_width="wrap_content"
@@ -32,17 +32,17 @@
         android:textSize="16sp" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/intro6_list"
+        android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
         android:clipToPadding="false"
+        android:fadeScrollbars="false"
         android:paddingStart="@dimen/default_cardview_margin"
         android:paddingTop="@dimen/default_cardview_margin"
         android:paddingEnd="@dimen/default_cardview_margin"
         android:scrollbarAlwaysDrawVerticalTrack="true"
         android:scrollbars="vertical"
-        android:fadeScrollbars="false"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="2"
         tools:listitem="@layout/item_drawer_edit" />
