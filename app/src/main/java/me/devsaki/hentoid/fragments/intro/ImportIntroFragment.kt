@@ -15,7 +15,7 @@ import com.google.android.material.snackbar.Snackbar
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.IntroActivity_
+import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IncludeImportStepsBinding
 import me.devsaki.hentoid.databinding.IntroSlide04Binding
 import me.devsaki.hentoid.events.ProcessEvent
@@ -285,7 +285,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
     }
 
     private fun nextStep() {
-        val parentActivity = requireActivity() as IntroActivity_
+        val parentActivity = requireActivity() as IntroActivity
         parentActivity.nextStep()
         binding.skipBtn.visibility = View.VISIBLE
         isDone = true

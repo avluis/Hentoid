@@ -7,7 +7,7 @@
     android:layout_weight="10"
     android:orientation="vertical"
     android:visibility="invisible"
-    tools:context=".activities.IntroActivity_"
+    tools:context=".activities.IntroActivity"
     tools:visibility="visible">
 
     <TextView

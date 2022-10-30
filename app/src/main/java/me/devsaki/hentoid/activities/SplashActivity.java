@@ -62,7 +62,7 @@ public class SplashActivity extends BaseActivity {
 
         Timber.d("Splash / Startup flow initiated");
         if (Preferences.isFirstRun()) { // Go to intro wizard if it's a first run
-            goToActivity(new Intent(this, IntroActivity_.class));
+            goToActivity(new Intent(this, IntroActivity.class));
         } else if (hasToMigrateAPI29()) { // Go to API29 migration if the app has to migrate
             goToAPI29MigrationActivity();
         } else { // Go to the library screen

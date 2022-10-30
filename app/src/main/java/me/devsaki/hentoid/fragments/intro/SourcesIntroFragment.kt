@@ -12,7 +12,7 @@ import me.devsaki.hentoid.databinding.IntroSlide06Binding
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.viewholders.SiteItem
 
-class SourcesIntroFragment_ : Fragment(R.layout.intro_slide_06) {
+class SourcesIntroFragment : Fragment(R.layout.intro_slide_06) {
     private var _binding: IntroSlide06Binding? = null
     private val binding get() = _binding!!
 

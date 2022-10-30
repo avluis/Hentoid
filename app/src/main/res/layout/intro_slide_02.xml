@@ -8,7 +8,7 @@
     android:layout_weight="10"
     android:orientation="vertical"
     android:padding="16dp"
-    tools:context=".activities.IntroActivity_">
+    tools:context=".activities.IntroActivity">
 
     <TextView
         android:layout_width="wrap_content"

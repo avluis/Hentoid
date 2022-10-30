@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.IntroActivity_
+import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IntroSlide05Binding
 import me.devsaki.hentoid.util.Preferences
 
@@ -30,7 +30,7 @@ class ThemeIntroFragment : Fragment(R.layout.intro_slide_05) {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val parentActivity = context as IntroActivity_
+        val parentActivity = context as IntroActivity
         binding.intro5Light.setOnClickListener { parentActivity.setThemePrefs(Preferences.Constant.COLOR_THEME_LIGHT) }
         binding.intro5Dark.setOnClickListener { parentActivity.setThemePrefs(Preferences.Constant.COLOR_THEME_DARK) }
         binding.intro5Black.setOnClickListener { parentActivity.setThemePrefs(Preferences.Constant.COLOR_THEME_BLACK) }

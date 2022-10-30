@@ -46,7 +46,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.IntroActivity_"
+            android:name=".activities.IntroActivity"
             android:label="@string/app_intro" />
         <activity
             android:name=".activities.Api29MigrationActivity"

@@ -22,18 +22,18 @@ import me.devsaki.hentoid.util.ThemeHelper
  * Presents required permissions, then calls the proper activity to:
  * Set storage directory and library import
  */
-class IntroActivity_ : AppIntro2() {
+class IntroActivity : AppIntro2() {
     private var autoEndHandler: Handler? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addSlide(WelcomeIntroFragment())
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            addSlide(PermissionIntroFragment_())
+            addSlide(PermissionIntroFragment())
         }
         addSlide(ImportIntroFragment())
         addSlide(ThemeIntroFragment())
-        addSlide(SourcesIntroFragment_())
+        addSlide(SourcesIntroFragment())
         addSlide(EndIntroFragment())
         setTitle(R.string.app_name)
         isWizardMode = true // Replaces skip button with back button
@@ -48,14 +48,14 @@ class IntroActivity_ : AppIntro2() {
 
     override fun onSlideChanged(oldFragment: Fragment?, newFragment: Fragment?) {
         super.onSlideChanged(oldFragment, newFragment)
-        if (oldFragment is SourcesIntroFragment_) setSourcePrefs(oldFragment.getSelection())
+        if (oldFragment is SourcesIntroFragment) setSourcePrefs(oldFragment.getSelection())
 
         setSwipeLock(true) // Is set to false in AppIntroBase.onRequestPermissionsResult :facepalm:
 
         if (newFragment is ImportIntroFragment) {
             // Skip Import fragment when in browser mode
             if (Preferences.isBrowserMode()) {
-                if (oldFragment is PermissionIntroFragment_) {
+                if (oldFragment is PermissionIntroFragment) {
                     lifecycleScope.launch {
                         delay(75)
                         goToNextSlide(false)

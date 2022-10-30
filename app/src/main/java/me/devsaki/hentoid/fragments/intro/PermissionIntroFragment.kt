@@ -15,14 +15,14 @@ import com.github.appintro.SlidePolicy
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.devsaki.hentoid.R
-import me.devsaki.hentoid.activities.IntroActivity_
+import me.devsaki.hentoid.activities.IntroActivity
 import me.devsaki.hentoid.databinding.IntroSlide02Binding
 import me.devsaki.hentoid.util.Preferences
 
-class PermissionIntroFragment_ :
+class PermissionIntroFragment :
     Fragment(R.layout.intro_slide_02), SlidePolicy {
 
-    private lateinit var parentActivity: IntroActivity_
+    private lateinit var parentActivity: IntroActivity
     private var _binding: IntroSlide02Binding? = null
     private val binding get() = _binding!!
 
@@ -56,7 +56,7 @@ class PermissionIntroFragment_ :
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        if (context is IntroActivity_) {
+        if (context is IntroActivity) {
             parentActivity = context
         }
     }
