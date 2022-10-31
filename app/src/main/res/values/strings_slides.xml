@@ -4,10 +4,10 @@
     <string name="slide_01_text">Hentoid is a Doujinshi\n&amp; H-Manga archiving app.</string>
     <!-- Permissions -->
     <string name="slide_02_header">Permissions</string>
-    <string name="slide_02_browser_mode_title">Browser only</string>
-    <string name="slide_02_browser_mode_description">The app won\'t ask for storage permissions but won\'t be able to download any book nor to manage your library.</string>
-    <string name="slide_02_library_mode_title">Library management</string>
-    <string name="slide_02_library_mode_description">The full Hentoid experience :-)</string>
+    <string name="slide_02_browser_mode_title">Browse only</string>
+    <string name="slide_02_browser_mode_description">Use the app to browse websites.\n\nYou won\'t be able to download any book nor to manage your library.\n\nNo permissions needed.</string>
+    <string name="slide_02_library_mode_title">Browse &amp; Download</string>
+    <string name="slide_02_library_mode_description">Use the app to download and to manage your library.\n\nStorage access permissions are needed.</string>
     <!-- Library import -->
     <string name="slide_04_header">Library</string>
     <string name="slide_04_text">Hentoid requires a dedicated folder for storing your media.</string>

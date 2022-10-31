@@ -75,8 +75,7 @@ class PermissionIntroFragment :
             binding.descTxt.setText(if (binding.modeBrowser.isChecked) R.string.slide_02_browser_mode_description else R.string.slide_02_library_mode_description)
         }
 
-        val browserMode = Preferences.getBrowserMode()
-        if (browserMode != null) binding.modeSelect.check(if (browserMode) R.id.mode_browser else R.id.mode_library)
+        binding.modeSelect.check(if (Preferences.isBrowserMode()) R.id.mode_browser else R.id.mode_library)
 
         return binding.root
     }

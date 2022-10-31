@@ -228,20 +228,12 @@ public final class Preferences {
     }
 
     public static boolean isBrowserMode() {
-        int result = sharedPreferences.getInt(Key.BROWSER_MODE, 0);
-        return 0 != result;
-    }
-
-    // For exclusive use during the intro wizard
-    public static Boolean getBrowserMode() {
-        int result = sharedPreferences.getInt(Key.BROWSER_MODE, -1);
-        if (-1 == result) return null;
-        else return 0 != result;
+        return getBoolPref(Key.BROWSER_MODE, false);
     }
 
     public static void setBrowserMode(boolean value) {
         sharedPreferences.edit()
-                .putInt(Key.BROWSER_MODE, value ? 1 : 0)
+                .putBoolean(Key.BROWSER_MODE, value)
                 .apply();
     }
 
