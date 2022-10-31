@@ -21,10 +21,10 @@ import kotlin.math.min
 /**
  * Manager class for image download queue (Volley)
  */
-class RequestQueueManager_ private constructor(
+class RequestQueueManager private constructor(
     context: Context,
-    val onSuccess: BiConsumer<RequestOrder_, Uri>,
-    val onError: BiConsumer<RequestOrder_, RequestOrder_.NetworkError>
+    val onSuccess: BiConsumer<RequestOrder, Uri>?,
+    val onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>?
 ) {
     var mRequestQueue: RequestQueue? = null
 
@@ -42,10 +42,10 @@ class RequestQueueManager_ private constructor(
     private val waitDisposable = CompositeDisposable()
 
     // Requests waiting to be executed
-    private val waitingRequestQueue = LinkedList<RequestOrder_>()
+    private val waitingRequestQueue = LinkedList<RequestOrder>()
 
     // Requests being currently executed
-    private val currentRequests: MutableSet<RequestOrder_> = HashSet()
+    private val currentRequests: MutableSet<RequestOrder> = HashSet()
 
     // Measurement of the number of requests per second
     private val previousRequestsTimestamps: Queue<Long> = LinkedList()
@@ -229,7 +229,7 @@ class RequestQueueManager_ private constructor(
      *
      * @param order Request to add to the queue
      */
-    fun queueRequest(order: RequestOrder_) {
+    fun queueRequest(order: RequestOrder) {
         val now = Instant.now().toEpochMilli()
         if (getAllowedNewRequests(now) > 0) executeRequest(order, now) else {
             synchronized(waitingRequestQueue) {
@@ -323,7 +323,7 @@ class RequestQueueManager_ private constructor(
      * @param order Request order to execute
      * @param now   Timestamp to record the execution for
      */
-    private fun executeRequest(order: RequestOrder_, now: Long = Instant.now().toEpochMilli()) {
+    private fun executeRequest(order: RequestOrder, now: Long = Instant.now().toEpochMilli()) {
         synchronized(currentRequests) { currentRequests.add(order) }
 //        mRequestQueue!!.add(InputStreamVolleyRequest<Any>(order))
         mRequestQueue?.executeRequest(order)
@@ -345,7 +345,7 @@ class RequestQueueManager_ private constructor(
      *
      * @param request Completed request
      */
-    private fun onRequestSuccess(request: RequestOrder_, resultFileUri: Uri) {
+    private fun onRequestSuccess(request: RequestOrder, resultFileUri: Uri) {
         // No lost requests when force-restarting the queue
         if (!popIgnorableErrors()) {
             synchronized(currentRequests) {
@@ -368,11 +368,11 @@ class RequestQueueManager_ private constructor(
         } else { // No more requests to add
             waitDisposable.clear()
         }
-        onSuccess.accept(request, resultFileUri)
+        onSuccess?.accept(request, resultFileUri)
     }
 
-    private fun onRequestError(req: RequestOrder_, err: RequestOrder_.NetworkError) {
-        onError.accept(req, err)
+    private fun onRequestError(req: RequestOrder, err: RequestOrder.NetworkError) {
+        onError?.accept(req, err)
     }
 
     fun setNbRequestsPerSecond(value: Int) {
@@ -405,7 +405,7 @@ class RequestQueueManager_ private constructor(
 
     companion object {
         @Volatile
-        private var mInstance: RequestQueueManager_? = null
+        private var mInstance: RequestQueueManager? = null
         private const val CONNECT_TIMEOUT_MS = 4000
         private const val IO_TIMEOUT_MS = 15000
 
@@ -418,16 +418,16 @@ class RequestQueueManager_ private constructor(
         @Synchronized
         fun getInstance(
             context: Context,
-            onSuccess: BiConsumer<RequestOrder_, Uri>,
-            onError: BiConsumer<RequestOrder_, RequestOrder_.NetworkError>
-        ): RequestQueueManager_? {
+            onSuccess: BiConsumer<RequestOrder, Uri>?,
+            onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>?
+        ): RequestQueueManager {
             if (mInstance == null) {
-                synchronized(RequestQueueManager_::class.java) {
+                synchronized(RequestQueueManager::class.java) {
                     if (mInstance == null) mInstance =
-                        RequestQueueManager_(context, onSuccess, onError)
+                        RequestQueueManager(context, onSuccess, onError)
                 }
             }
-            return mInstance
+            return mInstance!!
         }
 
         /**

@@ -68,8 +68,8 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.download.DownloadHelper;
-import me.devsaki.hentoid.util.download.RequestOrder_;
-import me.devsaki.hentoid.util.download.RequestQueueManager_;
+import me.devsaki.hentoid.util.download.RequestOrder;
+import me.devsaki.hentoid.util.download.RequestQueueManager;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.exception.CaptchaException;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
@@ -108,7 +108,7 @@ public class ContentDownloadWorker extends BaseWorker {
     private boolean isCloudFlareBlocked;
 
     private final NotificationManager userActionNotificationManager;
-    private final RequestQueueManager_ requestQueueManager;
+    private final RequestQueueManager requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Download speed calculator
@@ -123,7 +123,7 @@ public class ContentDownloadWorker extends BaseWorker {
         EventBus.getDefault().register(this);
         dao = new ObjectBoxDAO(context);
 
-        requestQueueManager = RequestQueueManager_.Companion.getInstance(context, this::onRequestSuccess, this::onRequestError);
+        requestQueueManager = RequestQueueManager.Companion.getInstance(context, this::onRequestSuccess, this::onRequestError);
         userActionNotificationManager = new NotificationManager(context, R.id.user_action_notification);
     }
 
@@ -859,7 +859,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
     }
 
-    private RequestOrder_ buildImageDownloadRequest(
+    private RequestOrder buildImageDownloadRequest(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
             @NonNull final Content content) {
@@ -873,8 +873,8 @@ public class ContentDownloadWorker extends BaseWorker {
         // TODO
         final String backupUrlFinal = HttpHelper.fixUrl(img.getBackupUrl(), site.getUrl());
 
-        return new RequestOrder_(
-                RequestOrder_.HttpMethod.GET,
+        return new RequestOrder(
+                RequestOrder.HttpMethod.GET,
                 imageUrl,
                 requestHeaders,
                 site,
@@ -889,7 +889,7 @@ public class ContentDownloadWorker extends BaseWorker {
         );
     }
 
-    private void onRequestSuccess(RequestOrder_ request, Uri fileUri) {
+    private void onRequestSuccess(RequestOrder request, Uri fileUri) {
         ImageFile img = request.getImg();
         DocumentFile imgFile = FileHelper.getFileFromSingleUriString(getApplicationContext(), fileUri.toString());
         if (imgFile != null) {
@@ -926,7 +926,7 @@ public class ContentDownloadWorker extends BaseWorker {
          */
     }
 
-    private void onRequestError(RequestOrder_ request, RequestOrder_.NetworkError error) {
+    private void onRequestError(RequestOrder request, RequestOrder.NetworkError error) {
 
         // If the queue is being reset, ignore the error
         if (requestQueueManager.hasRemainingIgnorableErrors()) return;
@@ -945,17 +945,17 @@ public class ContentDownloadWorker extends BaseWorker {
         String message = error.getMessage() + (img.isBackup() ? " (from backup URL)" : "");
         String cause = "";
 
-        if (error.getType() == RequestOrder_.NetworkErrorType.TIMEOUT) {
+        if (error.getType() == RequestOrder.NetworkErrorType.TIMEOUT) {
             cause = "Timeout";
-        } else if (error.getType() == RequestOrder_.NetworkErrorType.NO_CONNECTION) {
+        } else if (error.getType() == RequestOrder.NetworkErrorType.NO_CONNECTION) {
             cause = "No connection";
-        } else if (error.getType() == RequestOrder_.NetworkErrorType.AUTH_FAILURE) { // 403's fall in this category
+        } else if (error.getType() == RequestOrder.NetworkErrorType.AUTH_FAILURE) { // 403's fall in this category
             cause = "Auth failure";
-        } else if (error.getType() == RequestOrder_.NetworkErrorType.SERVER_ERROR) { // 404's fall in this category
+        } else if (error.getType() == RequestOrder.NetworkErrorType.SERVER_ERROR) { // 404's fall in this category
             cause = "Server error";
-        } else if (error.getType() == RequestOrder_.NetworkErrorType.NETWORK_ERROR) {
+        } else if (error.getType() == RequestOrder.NetworkErrorType.NETWORK_ERROR) {
             cause = "Network error";
-        } else if (error.getType() == RequestOrder_.NetworkErrorType.PARSE_ERROR) {
+        } else if (error.getType() == RequestOrder.NetworkErrorType.PARSE_ERROR) {
             cause = "Network parse error";
         }
 

@@ -21,11 +21,11 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 class RequestQueue(
-    private val successHandler: BiConsumer<RequestOrder_, Uri>,
-    private val errorHandler: BiConsumer<RequestOrder_, RequestOrder_.NetworkError>
+    private val successHandler: BiConsumer<RequestOrder, Uri>,
+    private val errorHandler: BiConsumer<RequestOrder, RequestOrder.NetworkError>
 ) {
     var active: Boolean = false
-    private val downloadsQueue: Queue<RequestOrder_> = ConcurrentLinkedQueue()
+    private val downloadsQueue: Queue<RequestOrder> = ConcurrentLinkedQueue()
     private val downloadDisposables = CompositeDisposable()
 
     fun start() {
@@ -42,7 +42,7 @@ class RequestQueue(
         active = false
     }
 
-    fun executeRequest(requestOrder: RequestOrder_) {
+    fun executeRequest(requestOrder: RequestOrder) {
         downloadsQueue.add(requestOrder)
 
         val single = Single.fromCallable {
@@ -74,14 +74,14 @@ class RequestQueue(
         )
     }
 
-    private fun handleError(order_: RequestOrder_, t: Throwable) {
+    private fun handleError(order_: RequestOrder, t: Throwable) {
         var statusCode = 0
-        var errorCode = RequestOrder_.NetworkErrorType.NETWORK_ERROR
+        var errorCode = RequestOrder.NetworkErrorType.NETWORK_ERROR
         if (t is DownloadInterruptedException) errorCode =
-            RequestOrder_.NetworkErrorType.INTERRUPTED
+            RequestOrder.NetworkErrorType.INTERRUPTED
         if (t is NetworkingException) statusCode = t.statusCode
 
-        val error = RequestOrder_.NetworkError(
+        val error = RequestOrder.NetworkError(
             statusCode,
             StringHelper.protect(t.message),
             errorCode

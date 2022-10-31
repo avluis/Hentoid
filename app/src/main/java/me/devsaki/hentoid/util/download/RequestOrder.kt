@@ -6,7 +6,7 @@ import me.devsaki.hentoid.enums.Site
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class RequestOrder_(
+class RequestOrder(
     val method: HttpMethod,
     val url: String,
     val headers: Map<String, String>,
@@ -24,7 +24,7 @@ class RequestOrder_(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || javaClass != other.javaClass) return false
-        val req = other as RequestOrder_
+        val req = other as RequestOrder
         return url == req.url && method == req.method
     }
 
