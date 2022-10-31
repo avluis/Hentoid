@@ -603,7 +603,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
                 Timber.d("Inactivity detected ====> restarting request queue");
-                requestQueueManager.resetRequestQueue(getApplicationContext(), false);
+                requestQueueManager.resetRequestQueue(false);
             }
 
             double estimateBookSizeMB = -1;
@@ -1050,6 +1050,7 @@ public class ContentDownloadWorker extends BaseWorker {
                         Uri.fromFile(ugoiraCacheFolder),
                         targetFileName,
                         ArchiveHelper.ZIP_MIME_TYPE,
+                        true,
                         downloadInterrupted,
                         null
                 );

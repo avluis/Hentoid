@@ -268,7 +268,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             launch(Dispatchers.Default) {
                 // Reset connection pool used by the downloader (includes an OkHttp instance reset)
                 RequestQueueManager.getInstance(requireContext(), null, null)
-                    .resetRequestQueue(requireContext(), true)
+                    .resetRequestQueue(true)
                 // Reset all retrofit clients
                 GithubServer.init()
                 EHentaiServer.init()

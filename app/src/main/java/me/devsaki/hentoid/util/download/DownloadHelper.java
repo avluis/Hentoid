@@ -68,6 +68,7 @@ public class DownloadHelper {
             @NonNull Uri targetFolderUri,
             @NonNull String targetFileName,
             String forceMimeType,
+            boolean fast,
             @NonNull final AtomicBoolean interruptDownload,
             Consumer<Float> notifyProgress) throws
             IOException, UnsupportedContentException, DownloadInterruptedException {
@@ -76,7 +77,9 @@ public class DownloadHelper {
             throw new DownloadInterruptedException("Download interrupted");
 
         Timber.d("DOWNLOADING %d %s", resourceId, url);
-        Response response = HttpHelper.getOnlineResourceFast(url, requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
+        Response response = fast ?
+                HttpHelper.getOnlineResourceFast(url, requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent()) :
+                HttpHelper.getOnlineResourceDownloader(url, requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         Timber.d("DOWNLOADING %d - RESPONSE %s", resourceId, response.code());
         if (response.code() >= 300)
             throw new NetworkingException(response.code(), "Network error " + response.code(), null);

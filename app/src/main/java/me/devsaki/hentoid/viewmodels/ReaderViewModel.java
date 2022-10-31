@@ -1327,6 +1327,7 @@ public class ReaderViewModel extends AndroidViewModel {
                                 Uri.fromFile(targetFolder),
                                 targetFileName,
                                 null,
+                                true,
                                 stopDownload,
                                 f -> notifyDownloadProgress(f, pageIndex)
                         );
@@ -1386,6 +1387,7 @@ public class ReaderViewModel extends AndroidViewModel {
                     Uri.fromFile(targetFolder),
                     targetFileName,
                     null,
+                    true,
                     interruptDownload,
                     f -> notifyDownloadProgress(f, pageIndex)
             );
@@ -1403,6 +1405,7 @@ public class ReaderViewModel extends AndroidViewModel {
                 Uri.fromFile(targetFolder),
                 targetFileName,
                 null,
+                true,
                 interruptDownload,
                 f -> notifyDownloadProgress(f, pageIndex)
         );

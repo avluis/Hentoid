@@ -140,6 +140,16 @@ public class HttpHelper {
         return OkHttpClientSingleton.getInstance(2000, 10000, followRedirects).newCall(request).execute();
     }
 
+    public static Response getOnlineResourceDownloader(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent) throws IOException {
+        return getOnlineResourceFast(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent, true);
+    }
+
+    public static Response getOnlineResourceDownloader(@NonNull String url, @Nullable List<Pair<String, String>> headers, boolean useMobileAgent, boolean useHentoidAgent, boolean useWebviewAgent, boolean followRedirects) throws IOException {
+        Request.Builder requestBuilder = buildRequest(url, headers, useMobileAgent, useHentoidAgent, useWebviewAgent);
+        Request request = requestBuilder.get().build();
+        return OkHttpClientSingleton.getInstance(4000, 15000, followRedirects).newCall(request).execute();
+    }
+
     /**
      * Read a resource from the given URL with HTTP POST, using the given headers and agent
      *

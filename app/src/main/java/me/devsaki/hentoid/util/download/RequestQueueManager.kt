@@ -19,11 +19,8 @@ import kotlin.math.ceil
 import kotlin.math.min
 
 /**
- * Manager class for image download queue (Volley)
+ * Manager class for image download queue
  */
-private const val CONNECT_TIMEOUT_MS = 4000
-private const val IO_TIMEOUT_MS = 15000
-
 class RequestQueueManager private constructor(
     context: Context,
     private val onSuccess: BiConsumer<RequestOrder, Uri>?,
@@ -61,29 +58,14 @@ class RequestQueueManager private constructor(
         downloadThreadCount = getPreferredThreadCount(context)
         val crashlytics = FirebaseCrashlytics.getInstance()
         crashlytics.setCustomKey("Download thread count", downloadThreadCount)
-        init(context, downloadThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, true, false)
+        init(downloadThreadCount, cancelQueue = true, resetOkHttp = false)
     }
 
     /**
-     * Initialize the Volley request queue
-     *
-     * @param ctx              Context to use
-     * @param connectTimeoutMs Connect timeout to use (ms)
-     * @param ioTimeoutMs      I/O timeout to use (ms)
+     * Initialize the request queue
      */
-    private fun init(
-        ctx: Context,
-        connectTimeoutMs: Int,
-        ioTimeoutMs: Int
-    ) { // This is the safest code, as it relies on standard Volley interface
+    private fun init() {
         if (mRequestQueue == null) {
-            /*
-            mRequestQueue = Volley.newRequestQueue(
-                ctx.applicationContext,
-                VolleyOkHttp3Stack(connectTimeoutMs, ioTimeoutMs)
-            )
-            mRequestQueue!!.addRequestEventListener(this)
-             */
             mRequestQueue = RequestQueue(this::onRequestSuccess, this::onRequestError)
         }
     }
@@ -91,18 +73,12 @@ class RequestQueueManager private constructor(
     /**
      * Initialize the Volley request queue using the given number of parallel downloads
      *
-     * @param ctx              Context to use
      * @param nbDlThreads      Number of parallel downloads to use; -1 to use automated recommendation
-     * @param connectTimeoutMs Connect timeout to use (ms)
-     * @param ioTimeoutMs      I/O timeout to use (ms)
      * @param cancelQueue      True if queued requests should be canceled; false if it should be kept intact
      * @param resetOkHttp      If true, also reset the underlying OkHttp connections
      */
     private fun init(
-        ctx: Context,
         nbDlThreads: Int,
-        connectTimeoutMs: Int,
-        ioTimeoutMs: Int,
         cancelQueue: Boolean,
         resetOkHttp: Boolean
     ) {
@@ -144,17 +120,16 @@ class RequestQueueManager private constructor(
         downloadThreadCap = nbDlThreads
         downloadThreadCount = nbDlThreads
         if (-1 == downloadThreadCap) downloadThreadCount = getPreferredThreadCount(ctx)
-        init(ctx, downloadThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, cancelQueue, false)
+        init(downloadThreadCount, cancelQueue, false)
     }
 
     /**
      * Reset the entire queue
      *
-     * @param ctx         Context to use
      * @param resetOkHttp If true, also reset the underlying OkHttp connections
      */
-    fun resetRequestQueue(ctx: Context, resetOkHttp: Boolean) {
-        init(ctx, downloadThreadCount, CONNECT_TIMEOUT_MS, IO_TIMEOUT_MS, false, resetOkHttp)
+    fun resetRequestQueue(resetOkHttp: Boolean) {
+        init(downloadThreadCount, false, resetOkHttp)
         // Requeue interrupted requests
         synchronized(currentRequests) {
             Timber.d("resetRequestQueue :: Requeuing %d requests", currentRequests.size)

@@ -131,6 +131,7 @@ class RequestQueue(
             targetFolder.uri,
             targetFileNameNoExt,
             null,
+            false,
             killSwitch
         ) { f: Float? ->
             /*
