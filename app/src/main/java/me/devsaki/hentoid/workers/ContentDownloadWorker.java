@@ -11,14 +11,6 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.work.Data;
 import androidx.work.WorkerParameters;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkError;
-import com.android.volley.NoConnectionError;
-import com.android.volley.ParseError;
-import com.android.volley.Request;
-import com.android.volley.ServerError;
-import com.android.volley.TimeoutError;
-import com.android.volley.VolleyError;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 
@@ -29,7 +21,6 @@ import org.threeten.bp.Instant;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -77,8 +68,8 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.download.DownloadHelper;
-import me.devsaki.hentoid.util.download.RequestOrder;
-import me.devsaki.hentoid.util.download.RequestQueueManager;
+import me.devsaki.hentoid.util.download.RequestOrder_;
+import me.devsaki.hentoid.util.download.RequestQueueManager_;
 import me.devsaki.hentoid.util.exception.AccountException;
 import me.devsaki.hentoid.util.exception.CaptchaException;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
@@ -117,7 +108,7 @@ public class ContentDownloadWorker extends BaseWorker {
     private boolean isCloudFlareBlocked;
 
     private final NotificationManager userActionNotificationManager;
-    private final RequestQueueManager requestQueueManager;
+    private final RequestQueueManager_ requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Download speed calculator
@@ -132,7 +123,7 @@ public class ContentDownloadWorker extends BaseWorker {
         EventBus.getDefault().register(this);
         dao = new ObjectBoxDAO(context);
 
-        requestQueueManager = RequestQueueManager.getInstance(context);
+        requestQueueManager = RequestQueueManager_.Companion.getInstance(context, this::onRequestSuccess, this::onRequestError);
         userActionNotificationManager = new NotificationManager(context, R.id.user_action_notification);
     }
 
@@ -612,7 +603,6 @@ public class ContentDownloadWorker extends BaseWorker {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
                 Timber.d("Inactivity detected ====> restarting request queue");
-                //requestQueueManager.restartRequestQueue();
                 requestQueueManager.resetRequestQueue(getApplicationContext(), false);
             }
 
@@ -711,7 +701,6 @@ public class ContentDownloadWorker extends BaseWorker {
             if (dir != null) {
                 // Auto-retry when error pages are remaining and conditions are met
                 // NB : Differences between expected and detected pages (see block above) can't be solved by retrying - it's a parsing issue
-                // TODO - test to make sure the service's thread continues to run in such a scenario
                 if (pagesKO > 0 && Preferences.isDlRetriesActive()
                         && content.getNumberDownloadRetries() < Preferences.getDlRetriesNumber()) {
                     double freeSpaceRatio = new FileHelper.MemoryUsageFigures(getApplicationContext(), dir).getFreeUsageRatio100();
@@ -820,7 +809,14 @@ public class ContentDownloadWorker extends BaseWorker {
         }
     }
 
-    // TODO doc
+    /**
+     * Parse the given ImageFile's page URL for the image and save it to the given folder
+     *
+     * @param img     Image to parse
+     * @param dir     Folder to save the resulting image to
+     * @param content Correponding content
+     * @throws LimitReachedException in case the download limit of the site is reached
+     */
     @SuppressLint("TimberArgCount")
     private void parsePageforImage(
             @NonNull final ImageFile img,
@@ -863,7 +859,7 @@ public class ContentDownloadWorker extends BaseWorker {
         }
     }
 
-    private RequestOrder buildImageDownloadRequest(
+    private RequestOrder_ buildImageDownloadRequest(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
             @NonNull final Content content) {
@@ -874,33 +870,41 @@ public class ContentDownloadWorker extends BaseWorker {
         // Apply image download parameters
         Map<String, String> requestHeaders = getRequestHeaders(imageUrl, img.getDownloadParams());
 
+        // TODO
         final String backupUrlFinal = HttpHelper.fixUrl(img.getBackupUrl(), site.getUrl());
 
-        return new RequestOrder(
-                Request.Method.GET,
+        return new RequestOrder_(
+                RequestOrder_.HttpMethod.GET,
                 imageUrl,
                 requestHeaders,
-                site.useHentoidAgent(),
-                site.useWebviewAgent(),
+                site,
+                dir,
+                img.getName(),
+                img.getOrder(),
+                backupUrlFinal,
+                img/*,
                 result -> onImageRequestSuccess(result, img, dir, backupUrlFinal, requestHeaders),
-                error -> onRequestError(error, content, img, dir, backupUrlFinal, requestHeaders));
+                error -> onRequestError(error, content, img, dir, backupUrlFinal, requestHeaders)
+                */
+        );
     }
 
-    private void onImageRequestSuccess(
-            Map.Entry<byte[], Map<String, String>> result,
-            @NonNull ImageFile img,
-            @NonNull DocumentFile dir,
-            @NonNull String backupUrl,
-            @NonNull Map<String, String> requestHeaders) {
+    private void onRequestSuccess(RequestOrder_ request, Uri fileUri) {
+        ImageFile img = request.getImg();
+        DocumentFile imgFile = FileHelper.getFileFromSingleUriString(getApplicationContext(), fileUri.toString());
+        if (imgFile != null) {
+            img.setSize(imgFile.length());
+            img.setMimeType(imgFile.getType());
+            updateImageProperties(img, true, fileUri.toString());
+        } else {
+            Timber.i("I/O error - Image %s not saved in dir %s", img.getUrl(), request.getTargetDir().getUri().getPath());
+            updateImageProperties(img, false, "");
+            logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), "Picture " + img.getName(), "Save failed in dir " + request.getTargetDir().getUri().getPath());
+        }
+        /*
         try {
-            if (result != null) {
-                DocumentFile imgFile = processAndSaveImage(img, dir, result.getValue().get(HttpHelper.HEADER_CONTENT_TYPE), result.getKey());
-                if (imgFile != null)
-                    updateImageProperties(img, true, imgFile.getUri().toString());
-            } else {
-                updateImageProperties(img, false, "");
-                logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "No picture (result is null)");
-            }
+            DocumentFile imgFile = processDownloadedImage(request.getImg(), fileUri);
+            if (imgFile != null) updateImageProperties(request.getImg(), true, imgFile.getUri().toString());
         } catch (UnsupportedContentException e) {
             Timber.i(e);
             if (!backupUrl.isEmpty() && !img.isBackup())
@@ -919,59 +923,57 @@ public class ContentDownloadWorker extends BaseWorker {
             updateImageProperties(img, false, "");
             logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), "Picture " + img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
         }
+         */
     }
 
-    private void onRequestError(
-            VolleyError error,
-            @NonNull Content content,
-            @NonNull ImageFile img,
-            @NonNull DocumentFile dir,
-            @NonNull String backupUrl,
-            @NonNull Map<String, String> requestHeaders) {
+    private void onRequestError(RequestOrder_ request, RequestOrder_.NetworkError error) {
 
         // If the queue is being reset, ignore the error
         if (requestQueueManager.hasRemainingIgnorableErrors()) return;
 
+        ImageFile img = request.getImg();
+        long contentId = img.getContentId();
+
         // Try with the backup URL, if it exists and if the current image isn't a backup itself
-        if (!img.isBackup() && !backupUrl.isEmpty()) {
-            tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);
+        if (!img.isBackup() && !request.getBackupUrl().isEmpty()) {
+            tryUsingBackupUrl(img, request.getTargetDir(), request.getBackupUrl(), request.getHeaders());
             return;
         }
 
         // If no backup, then process the error
-        int statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode : -1;
+        int statusCode = error.getStatusCode();
         String message = error.getMessage() + (img.isBackup() ? " (from backup URL)" : "");
         String cause = "";
 
-        if (error instanceof TimeoutError) {
+        if (error.getType() == RequestOrder_.NetworkErrorType.TIMEOUT) {
             cause = "Timeout";
-        } else if (error instanceof NoConnectionError) {
+        } else if (error.getType() == RequestOrder_.NetworkErrorType.NO_CONNECTION) {
             cause = "No connection";
-        } else if (error instanceof AuthFailureError) { // 403's fall in this category
+        } else if (error.getType() == RequestOrder_.NetworkErrorType.AUTH_FAILURE) { // 403's fall in this category
             cause = "Auth failure";
-        } else if (error instanceof ServerError) { // 404's fall in this category
+        } else if (error.getType() == RequestOrder_.NetworkErrorType.SERVER_ERROR) { // 404's fall in this category
             cause = "Server error";
-        } else if (error instanceof NetworkError) {
+        } else if (error.getType() == RequestOrder_.NetworkErrorType.NETWORK_ERROR) {
             cause = "Network error";
-        } else if (error instanceof ParseError) {
+        } else if (error.getType() == RequestOrder_.NetworkErrorType.PARSE_ERROR) {
             cause = "Network parse error";
         }
 
-        Timber.d(error);
+        Timber.d(message + " " + cause);
 
         updateImageProperties(img, false, "");
-        logErrorRecord(content.getId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
+        logErrorRecord(contentId, ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
         // Handle cloudflare blocks
-        if (content.getSite().isUseCloudflare() && 503 == statusCode && !isCloudFlareBlocked) {
+        if (request.getSite().isUseCloudflare() && 503 == statusCode && !isCloudFlareBlocked) {
             isCloudFlareBlocked = true; // prevent associated events & notifs to be fired more than once
             EventBus.getDefault().post(DownloadEvent.fromPauseMotive(DownloadEvent.Motive.STALE_CREDENTIALS));
-            dao.clearDownloadParams(content.getId());
+            dao.clearDownloadParams(contentId);
 
             final String cfCookie = StringHelper.protect(HttpHelper.parseCookies(HttpHelper.getCookies(img.getUrl())).get(Consts.CLOUDFLARE_COOKIE));
-            userActionNotificationManager.notify(new UserActionNotification(content.getSite(), cfCookie));
+            userActionNotificationManager.notify(new UserActionNotification(request.getSite(), cfCookie));
 
             if (HentoidApp.isInForeground())
-                EventBus.getDefault().post(new DownloadReviveEvent(content.getSite(), cfCookie));
+                EventBus.getDefault().post(new DownloadReviveEvent(request.getSite(), cfCookie));
         }
     }
 
@@ -988,6 +990,7 @@ public class ContentDownloadWorker extends BaseWorker {
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
         Chapter chp = img.getLinkedChapter();
 
+        // TODO
         // per Volley behaviour, this method is called on the UI thread
         // -> need to create a new thread to do a network call
         compositeDisposable.add(
@@ -1019,7 +1022,14 @@ public class ContentDownloadWorker extends BaseWorker {
         } else Timber.w("Failed to parse backup URL");
     }
 
-    // TODO doc
+    /**
+     * Download and unzip the given Ugoira to the given folder as an animated GIF file
+     * NB : Ugoiuras are Pixiv's own animated pictures
+     *
+     * @param img  Link to the Ugoira file
+     * @param dir  Folder to save the picture to
+     * @param site Correponding site
+     */
     private void downloadAndUnzipUgoira(
             @NonNull final ImageFile img,
             @NonNull final DocumentFile dir,
@@ -1032,12 +1042,12 @@ public class ContentDownloadWorker extends BaseWorker {
             String targetFileName = img.getName();
             try {
                 // == Download archive
-                ImmutablePair<File, String> result = DownloadHelper.downloadToFile(
+                ImmutablePair<Uri, String> result = DownloadHelper.downloadToFile(
                         site,
                         img.getUrl(),
                         img.getOrder(),
                         HttpHelper.webkitRequestHeadersToOkHttpHeaders(getRequestHeaders(img.getUrl(), img.getDownloadParams()), img.getUrl()),
-                        ugoiraCacheFolder,
+                        Uri.fromFile(ugoiraCacheFolder),
                         targetFileName,
                         ArchiveHelper.ZIP_MIME_TYPE,
                         downloadInterrupted,
@@ -1047,7 +1057,7 @@ public class ContentDownloadWorker extends BaseWorker {
                 // == Extract all frames
                 ArchiveHelper.extractArchiveEntries(
                         getApplicationContext(),
-                        Uri.fromFile(result.left),
+                        result.left,
                         ugoiraCacheFolder,
                         null, // Extract everything; keep original names
                         downloadInterrupted,
@@ -1252,7 +1262,13 @@ public class ContentDownloadWorker extends BaseWorker {
         }
     }
 
-    // TODO doc
+    /**
+     * Get the HTTP request headers from the given download parameters for the given URL
+     *
+     * @param url               URL to use
+     * @param downloadParamsStr Download parameters to extract the headers from
+     * @return HTTP request headers
+     */
     private Map<String, String> getRequestHeaders(@NonNull final String url, @NonNull final String downloadParamsStr) {
         Map<String, String> result = new HashMap<>();
         String cookieStr = null;

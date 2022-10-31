@@ -1301,7 +1301,7 @@ public class ReaderViewModel extends AndroidViewModel {
                     List<Pair<String, String>> headers = new ArrayList<>();
                     headers.add(new Pair<>(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl())); // Useful for Hitomi and Toonily
 
-                    ImmutablePair<File, String> result;
+                    ImmutablePair<Uri, String> result;
                     if (img.needsPageParsing()) {
                         // Get cookies from the app jar
                         String cookieStr = HttpHelper.getCookies(img.getPageUrl());
@@ -1324,14 +1324,14 @@ public class ReaderViewModel extends AndroidViewModel {
                                 img.getUrl(),
                                 pageIndex,
                                 headers,
-                                targetFolder,
+                                Uri.fromFile(targetFolder),
                                 targetFileName,
                                 null,
                                 stopDownload,
                                 f -> notifyDownloadProgress(f, pageIndex)
                         );
                     }
-                    targetFile = result.left;
+                    targetFile = new File(result.left.getPath());
                     mimeType = result.right;
                 } else { // Image is already there
                     targetFile = existing[0];
@@ -1363,13 +1363,13 @@ public class ReaderViewModel extends AndroidViewModel {
      * - Right : Detected mime-type of the downloades resource
      * @throws UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException in case something horrible happens
      */
-    private ImmutablePair<File, String> downloadPictureFromPage(@NonNull Content content,
-                                                                @NonNull ImageFile img,
-                                                                int pageIndex,
-                                                                List<Pair<String, String>> requestHeaders,
-                                                                @NonNull File targetFolder,
-                                                                @NonNull String targetFileName,
-                                                                @NonNull final AtomicBoolean interruptDownload) throws
+    private ImmutablePair<Uri, String> downloadPictureFromPage(@NonNull Content content,
+                                                               @NonNull ImageFile img,
+                                                               int pageIndex,
+                                                               List<Pair<String, String>> requestHeaders,
+                                                               @NonNull File targetFolder,
+                                                               @NonNull String targetFileName,
+                                                               @NonNull final AtomicBoolean interruptDownload) throws
             UnsupportedContentException, IOException, LimitReachedException, EmptyResultException, DownloadInterruptedException {
         Site site = content.getSite();
         String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), site.getUrl());
@@ -1383,7 +1383,7 @@ public class ReaderViewModel extends AndroidViewModel {
                     img.getUrl(),
                     pageIndex,
                     requestHeaders,
-                    targetFolder,
+                    Uri.fromFile(targetFolder),
                     targetFileName,
                     null,
                     interruptDownload,
@@ -1400,7 +1400,7 @@ public class ReaderViewModel extends AndroidViewModel {
                 img.getUrl(),
                 pageIndex,
                 requestHeaders,
-                targetFolder,
+                Uri.fromFile(targetFolder),
                 targetFileName,
                 null,
                 interruptDownload,

@@ -265,6 +265,10 @@ public class ImageFile {
         return this;
     }
 
+    public long getContentId() {
+        return this.content.getTargetId();
+    }
+
     public ImageFile setContentId(long contentId) {
         this.content.setTargetId(contentId);
         return this;

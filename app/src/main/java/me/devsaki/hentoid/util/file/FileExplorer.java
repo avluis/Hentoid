@@ -184,7 +184,7 @@ public class FileExplorer implements Closeable {
      * @param listFiles   true if matching files have to be listed in the results
      * @return List of documents inside the given folder, matching the given criteria
      */
-    List<DocumentFile> listDocumentFiles(
+    public List<DocumentFile> listDocumentFiles(
             @NonNull final Context context,
             @NonNull final DocumentFile parent,
             final FileHelper.NameFilter nameFilter,

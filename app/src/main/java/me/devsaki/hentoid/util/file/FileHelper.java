@@ -315,7 +315,6 @@ public class FileHelper {
      * @return New OutputStream opened on the given file
      * @throws IOException In case something horrible happens during I/O
      */
-    @Nullable
     public static OutputStream getOutputStream(@NonNull final Context context, @NonNull final Uri fileUri) throws IOException {
         if (ContentResolver.SCHEME_FILE.equals(fileUri.getScheme())) {
             String path = fileUri.getPath();
@@ -325,7 +324,7 @@ public class FileHelper {
             DocumentFile doc = FileHelper.getFileFromSingleUriString(context, fileUri.toString());
             if (doc != null) return getOutputStream(context, doc);
         }
-        return null;
+        throw new IOException("Couldn't find document for Uri : " + fileUri);
     }
 
     /**
@@ -393,7 +392,7 @@ public class FileHelper {
         // Look for it first
         DocumentFile file = findFile(context, folder, displayName);
         if (null == file) { // Create it
-            if (null == mimeType) mimeType = DEFAULT_MIME_TYPE;
+            if (null == mimeType || mimeType.isEmpty()) mimeType = DEFAULT_MIME_TYPE;
             return folder.createFile(mimeType, displayName);
         } else return file;
     }
@@ -655,13 +654,11 @@ public class FileHelper {
 
         try (InputStream input = new ByteArrayInputStream(binaryData)) {
             OutputStream out = FileHelper.getOutputStream(context, uri);
-            if (out != null) {
-                try (BufferedOutputStream output = new BufferedOutputStream(out)) {
-                    while ((count = input.read(buffer)) != -1) {
-                        output.write(buffer, 0, count);
-                    }
-                    output.flush();
+            try (BufferedOutputStream output = new BufferedOutputStream(out)) {
+                while ((count = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, count);
                 }
+                output.flush();
             }
         }
     }
