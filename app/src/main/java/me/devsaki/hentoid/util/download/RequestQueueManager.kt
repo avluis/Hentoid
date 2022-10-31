@@ -21,12 +21,15 @@ import kotlin.math.min
 /**
  * Manager class for image download queue (Volley)
  */
+private const val CONNECT_TIMEOUT_MS = 4000
+private const val IO_TIMEOUT_MS = 15000
+
 class RequestQueueManager private constructor(
     context: Context,
-    val onSuccess: BiConsumer<RequestOrder, Uri>?,
-    val onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>?
+    private val onSuccess: BiConsumer<RequestOrder, Uri>?,
+    private val onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>?
 ) {
-    var mRequestQueue: RequestQueue? = null
+    private var mRequestQueue: RequestQueue? = null
 
     // Maximum number of allowed parallel download threads (-1 = not capped)
     var downloadThreadCap = -1
@@ -161,37 +164,9 @@ class RequestQueueManager private constructor(
     }
 
     /**
-     * Restart the current request queue (cancel, then re-execute all pending requests)
-     */
-    fun restartRequestQueue() {
-        /*
-        if (mRequestQueue != null) {
-            mRequestQueue!!.removeRequestEventListener(this) // Prevent interrupted requests from messing with downloads
-            mRequestQueue!!.cancelAll { request: Request<*>? -> true }
-            mRequestQueue!!.addRequestEventListener(this)
-            synchronized(currentRequests) {
-                // Requeue interrupted requests
-                for (order in currentRequests) executeRequest(order)
-            }
-            refill()
-        }
-         */
-
-        mRequestQueue?.stop()
-        mRequestQueue?.start()
-
-        synchronized(currentRequests) {
-            // Requeue interrupted requests
-            for (order in currentRequests) executeRequest(order)
-        }
-        refill()
-    }
-
-    /**
      * Cancel the app's request queue : cancel all requests remaining in the queue
      */
     fun cancelQueue() {
-//        mRequestQueue!!.cancelAll { request: Request<*>? -> true }
         mRequestQueue?.stop()
         synchronized(waitingRequestQueue) { waitingRequestQueue.clear() }
         synchronized(currentRequests) { currentRequests.clear() }
@@ -199,30 +174,6 @@ class RequestQueueManager private constructor(
         waitDisposable.clear()
         Timber.d("RequestQueue ::: canceled")
     }
-/*
-    // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
-    private fun createRequestQueue(
-        ctx: Context,
-        nbDlThreads: Int,
-        connectTimeoutMs: Int,
-        ioTimeoutMs: Int
-    ): RequestQueue {
-        val network = BasicNetwork(VolleyOkHttp3Stack(connectTimeoutMs, ioTimeoutMs))
-        val cacheSupplier: DiskBasedCache.FileSupplier = object : DiskBasedCache.FileSupplier {
-            private var cacheDir: File? = null
-            override fun get(): File {
-                if (cacheDir == null) {
-                    cacheDir = File(
-                        ctx.cacheDir,
-                        "volley"
-                    ) // NB : this is dirty, as this value is supposed to be private in Volley.java
-                }
-                return cacheDir
-            }
-        }
-        return RequestQueue(DiskBasedCache(cacheSupplier), network, nbDlThreads)
-    }
- */
 
     /**
      * Add a request to the app's queue
@@ -395,19 +346,52 @@ class RequestQueueManager private constructor(
         } else false
     }
 
-    /*
-    override fun onRequestEvent(request: Request<*>, event: Int) {
-        if (event == RequestQueue.RequestEvent.REQUEST_FINISHED) {
-            onRequestFinished(request) // https://github.com/google/volley/issues/403
-        }
-    }
+    /**
+     * Return the number of parallel downloads (download thread count) chosen by the user
+     *
+     * @param context Context to use
+     * @return Number of parallel downloads (download thread count) chosen by the user
      */
+    private fun getPreferredThreadCount(context: Context): Int {
+        var result = Preferences.getDownloadThreadCount()
+        if (result == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
+            result = getSuggestedThreadCount(context)
+        }
+        return result
+    }
+
+    /**
+     * Return the automatic download thread count calculated from the device's memory capacity
+     *
+     * @param context Context to use
+     * @return automatic download thread count calculated from the device's memory capacity
+     */
+    private fun getSuggestedThreadCount(context: Context): Int {
+        val threshold = 64
+        val maxThreads = 4
+        val memoryClass = getMemoryClass(context)
+        val crashlytics = FirebaseCrashlytics.getInstance()
+        crashlytics.setCustomKey("Memory class", memoryClass)
+        if (memoryClass == 0) return maxThreads
+        val threadCount = ceil(memoryClass.toDouble() / threshold.toDouble()).toInt()
+        return min(threadCount, maxThreads)
+    }
+
+    /**
+     * Return the device's per-app memory capacity
+     *
+     * @param context Context to use
+     * @return Device's per-app memory capacity
+     */
+    private fun getMemoryClass(context: Context): Int {
+        val activityManager =
+            context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        return activityManager.memoryClass
+    }
 
     companion object {
         @Volatile
-        private var mInstance: RequestQueueManager? = null
-        private const val CONNECT_TIMEOUT_MS = 4000
-        private const val IO_TIMEOUT_MS = 15000
+        private var instance: RequestQueueManager? = null
 
         /**
          * Get the instance of the RequestQueueManager singleton
@@ -415,62 +399,13 @@ class RequestQueueManager private constructor(
          * @param context Context to use
          * @return Instance of the RequestQueueManager singleton
          */
-        @Synchronized
         fun getInstance(
             context: Context,
             onSuccess: BiConsumer<RequestOrder, Uri>?,
             onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>?
-        ): RequestQueueManager {
-            if (mInstance == null) {
-                synchronized(RequestQueueManager::class.java) {
-                    if (mInstance == null) mInstance =
-                        RequestQueueManager(context, onSuccess, onError)
-                }
+        ): RequestQueueManager =
+            instance ?: synchronized(this) {
+                instance ?: RequestQueueManager(context, onSuccess, onError).also { instance = it }
             }
-            return mInstance!!
-        }
-
-        /**
-         * Return the number of parallel downloads (download thread count) chosen by the user
-         *
-         * @param context Context to use
-         * @return Number of parallel downloads (download thread count) chosen by the user
-         */
-        private fun getPreferredThreadCount(context: Context): Int {
-            var result = Preferences.getDownloadThreadCount()
-            if (result == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
-                result = getSuggestedThreadCount(context)
-            }
-            return result
-        }
-
-        /**
-         * Return the automatic download thread count calculated from the device's memory capacity
-         *
-         * @param context Context to use
-         * @return automatic download thread count calculated from the device's memory capacity
-         */
-        private fun getSuggestedThreadCount(context: Context): Int {
-            val threshold = 64
-            val maxThreads = 4
-            val memoryClass = getMemoryClass(context)
-            val crashlytics = FirebaseCrashlytics.getInstance()
-            crashlytics.setCustomKey("Memory class", memoryClass)
-            if (memoryClass == 0) return maxThreads
-            val threadCount = ceil(memoryClass.toDouble() / threshold.toDouble()).toInt()
-            return min(threadCount, maxThreads)
-        }
-
-        /**
-         * Return the device's per-app memory capacity
-         *
-         * @param context Context to use
-         * @return Device's per-app memory capacity
-         */
-        private fun getMemoryClass(context: Context): Int {
-            val activityManager =
-                context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            return activityManager.memoryClass
-        }
     }
 }
