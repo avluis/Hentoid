@@ -284,6 +284,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         bottomAlertCloseButton.setOnClickListener(this::onBottomAlertCloseClick);
 
         downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
+        if (Preferences.isBrowserMode()) downloadIcon = R.drawable.ic_forbidden_disabled;
         actionMenu.setIcon(downloadIcon);
 
         displayTopAlertBanner();
@@ -466,9 +467,9 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         super.onDestroy();
     }
 
-    // Validate permissions
-    // TODO find something better than that
+    // Make sure permissions are set at resume time; if not, warn the user
     private void checkPermissions() {
+        if (Preferences.isBrowserMode()) return;
         if (!PermissionHelper.requestExternalStorageReadWritePermission(this, RQST_STORAGE_PERMISSION))
             ToastHelper.toast(R.string.web_storage_permission_denied);
     }
@@ -562,6 +563,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     private void onLongTap(@NonNull Integer x, @NonNull Integer y) {
+        if (Preferences.isBrowserMode()) return;
         WebView.HitTestResult result = webView.getHitTestResult();
 
         final String url;
@@ -634,7 +636,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         // Display download button tooltip if a book page has been reached
-        if (isGalleryPage) showTooltip(R.string.help_web_download, false);
+        if (isGalleryPage && !Preferences.isBrowserMode())
+            showTooltip(R.string.help_web_download, false);
         // Update bookmark button
         if (isBookmarkable) {
             List<SiteBookmark> bookmarks = dao.selectBookmarks(getStartSite());
@@ -852,6 +855,12 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
      * @param mode Mode to switch to
      */
     private void setActionMode(@ActionMode int mode) {
+        if (Preferences.isBrowserMode() && binding != null) {
+            actionMenu.setIcon(R.drawable.ic_forbidden_disabled);
+            actionMenu.setEnabled(false);
+            return;
+        }
+
         @DrawableRes int resId = R.drawable.ic_info;
         if (ActionMode.DOWNLOAD == mode || ActionMode.DOWNLOAD_PLUS == mode) {
             resId = downloadIcon;
@@ -1155,6 +1164,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         parseResponseDisposable.clear();
         if (processContentDisposable != null)
             processContentDisposable.dispose(); // Cancel whichever process was happening before
+        if (Preferences.isBrowserMode()) return;
+
         processContentDisposable = Single.fromCallable(() -> processContent(result, quickDownload))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

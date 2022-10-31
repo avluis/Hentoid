@@ -356,19 +356,7 @@ public class LibraryActivity extends BaseActivity {
         if (Preferences.isFirstRunProcessComplete())
             TooltipHelper.showTooltip(this, R.string.help_search, ArrowOrientation.TOP, toolbar, this);
 
-        // Display permissions alert if required
-        if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) {
-            alertTxt.setText(R.string.permissions_lost);
-            alertFixBtn.setOnClickListener(v -> fixPermissions());
-            alertTxt.setVisibility(View.VISIBLE);
-            alertIcon.setVisibility(View.VISIBLE);
-            alertFixBtn.setVisibility(View.VISIBLE);
-        } else if (isLowOnSpace()) { // Else display low space alert
-            alertTxt.setText(R.string.low_memory);
-            alertTxt.setVisibility(View.VISIBLE);
-            alertIcon.setVisibility(View.VISIBLE);
-            alertFixBtn.setVisibility(View.GONE);
-        }
+        updateAlertBanner();
     }
 
     @Override
@@ -437,6 +425,31 @@ public class LibraryActivity extends BaseActivity {
         viewPager.setAdapter(pagerAdapter);
 
         updateDisplay(Preferences.getGroupingDisplay().getId());
+    }
+
+    private void updateAlertBanner() {
+        // Remind user that the app is in browser mode
+        if (Preferences.isBrowserMode()) {
+            alertTxt.setText(R.string.alert_browser_mode);
+            alertTxt.setVisibility(View.VISIBLE);
+            alertIcon.setVisibility(View.GONE);
+            alertFixBtn.setVisibility(View.GONE);
+        } else if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) { // Warn about permissions being lost
+            alertTxt.setText(R.string.permissions_lost);
+            alertFixBtn.setOnClickListener(v -> fixPermissions());
+            alertTxt.setVisibility(View.VISIBLE);
+            alertIcon.setVisibility(View.VISIBLE);
+            alertFixBtn.setVisibility(View.VISIBLE);
+        } else if (isLowOnSpace()) { // Display low space alert
+            alertTxt.setText(R.string.low_memory);
+            alertTxt.setVisibility(View.VISIBLE);
+            alertIcon.setVisibility(View.VISIBLE);
+            alertFixBtn.setVisibility(View.GONE);
+        } else {
+            alertTxt.setVisibility(View.GONE);
+            alertIcon.setVisibility(View.GONE);
+            alertFixBtn.setVisibility(View.GONE);
+        }
     }
 
     private void updateDisplay(int targetGroupingId) {
@@ -705,6 +718,9 @@ public class LibraryActivity extends BaseActivity {
                 updateDisplay(Grouping.FLAT.getId());
                 viewModel.setGrouping(Grouping.FLAT.getId());
                 break;
+            case Preferences.Key.BROWSER_MODE:
+                updateAlertBanner();
+                break;
             default:
                 // Nothing to handle there
         }
@@ -769,7 +785,8 @@ public class LibraryActivity extends BaseActivity {
     }
 
     private void fixPermissions() {
-        PermissionHelper.requestExternalStorageReadWritePermission(this, PermissionHelper.RQST_STORAGE_PERMISSION);
+        if (PermissionHelper.requestExternalStorageReadWritePermission(this, PermissionHelper.RQST_STORAGE_PERMISSION))
+            updateAlertBanner();
     }
 
     private boolean isLowOnSpace() {

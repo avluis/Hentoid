@@ -104,8 +104,9 @@
     <string name="open_settings">Open settings</string>
     <string name="app_settings">App settings</string>
     <string name="book_settings">Book settings</string>
-    <string name="permissions_lost">File permissions have been lost</string>
+    <string name="alert_browser_mode">Browser mode active : no storage access</string>
     <string name="low_memory">Your device is low on storage!</string>
+    <string name="permissions_lost">File permissions have been lost</string>
     <string name="fix_permissions">Fix</string>
     <string name="view_queue">View queue</string>
     <string name="clear_search_history">Clear search history</string>

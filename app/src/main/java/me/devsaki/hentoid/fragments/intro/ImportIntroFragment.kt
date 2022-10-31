@@ -102,7 +102,7 @@ class ImportIntroFragment : Fragment(R.layout.intro_slide_04) {
 
     override fun onResume() {
         super.onResume()
-        binding.root.visibility = if (Preferences.getBrowserMode()) View.INVISIBLE else View.VISIBLE
+        binding.root.visibility = if (Preferences.isBrowserMode()) View.INVISIBLE else View.VISIBLE
     }
 
     private fun onFolderPickerResult(resultCode: Int, treeUri: Uri?) {

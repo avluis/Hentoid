@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.preferences;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static me.devsaki.hentoid.util.file.PermissionHelper.RQST_STORAGE_PERMISSION;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,10 +40,11 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.events.ServiceDestroyedEvent;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.ImportHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
+import me.devsaki.hentoid.util.file.PermissionHelper;
 import me.devsaki.hentoid.workers.PrimaryImportWorker;
 import timber.log.Timber;
 
@@ -257,13 +259,20 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
         if (askFolder) {
             step1FolderButton.setVisibility(View.VISIBLE);
-            step1FolderButton.setOnClickListener(v -> pickFolder.launch(0));
-            pickFolder.launch(0); // Ask right away, there's no reason why the user should click again
+            step1FolderButton.setOnClickListener(v -> pickFolder());
+            pickFolder(); // Ask right away, there's no reason why the user should click again
         } else {
             ((TextView) rootView.findViewById(R.id.import_step1_folder)).setText(FileHelper.getFullPathFromTreeUri(requireContext(), Uri.parse(Preferences.getStorageUri())));
             rootView.findViewById(R.id.import_step1_check).setVisibility(View.VISIBLE);
             rootView.findViewById(R.id.import_step2).setVisibility(View.VISIBLE);
             step2progress.setIndeterminate(true);
+        }
+    }
+
+    private void pickFolder() {
+        if (PermissionHelper.requestExternalStorageReadWritePermission(requireActivity(), RQST_STORAGE_PERMISSION)) { // Make sure permissions are set
+            Preferences.setBrowserMode(false);
+            pickFolder.launch(0); // Run folder picker
         }
     }
 

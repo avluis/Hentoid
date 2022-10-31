@@ -36,11 +36,11 @@ import me.devsaki.hentoid.retrofit.sources.EHentaiServer
 import me.devsaki.hentoid.retrofit.sources.LusciousServer
 import me.devsaki.hentoid.retrofit.sources.PixivServer
 import me.devsaki.hentoid.services.UpdateCheckService
-import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
 import me.devsaki.hentoid.util.download.RequestQueueManager
+import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
 import me.devsaki.hentoid.viewmodels.PreferencesViewModel
 import me.devsaki.hentoid.viewmodels.ViewModelFactory
@@ -124,7 +124,9 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
             Preferences.Key.EXTERNAL_LIBRARY -> {
-                if (ExternalImportWorker.isRunning(requireContext())) {
+                if (Preferences.isBrowserMode()) {
+                    ToastHelper.toast(R.string.pref_import_browser_mode)
+                } else if (ExternalImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
                     LibRefreshDialogFragment.invoke(parentFragmentManager, false, true, true)
@@ -156,7 +158,9 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
             Preferences.Key.REFRESH_LIBRARY -> {
-                if (PrimaryImportWorker.isRunning(requireContext())) {
+                if (Preferences.isBrowserMode()) {
+                    ToastHelper.toast(R.string.pref_import_browser_mode)
+                } else if (PrimaryImportWorker.isRunning(requireContext())) {
                     ToastHelper.toast(R.string.pref_import_running)
                 } else {
                     LibRefreshDialogFragment.invoke(parentFragmentManager, true, false, false)
@@ -181,7 +185,9 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
             Preferences.Key.MEMORY_USAGE -> {
-                MemoryUsageDialogFragment.invoke(parentFragmentManager)
+                if (!Preferences.isBrowserMode()) MemoryUsageDialogFragment.invoke(
+                    parentFragmentManager
+                )
                 true
             }
             Preferences.Key.APP_LOCK -> {
