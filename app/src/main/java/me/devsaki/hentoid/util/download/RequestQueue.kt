@@ -114,6 +114,14 @@ class RequestQueue(
     ): Optional<ImmutableTriple<Int, Uri, String>> {
         Helper.assertNonUiThread()
 
+        val requestHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url);
+        requestHeaders.add(
+            androidx.core.util.Pair(
+                "Accept",
+                "image/jpeg,image/png,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*"
+            )
+        ) // Required to pass through cloudflare filtering on some sites
+
         // Initiate download
         val result: ImmutablePair<Uri, String> = DownloadHelper.downloadToFile(
             site,
