@@ -84,7 +84,7 @@ public class HitomiActivity extends BaseWebActivity {
                 else return sendRequest(request);
             }
 
-            return super.shouldInterceptRequest(view, request);
+           return super.shouldInterceptRequest(view, request);
         }
 
         @Override
