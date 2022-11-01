@@ -479,7 +479,7 @@ class CustomWebViewClient extends WebViewClient {
                 ResponseBody body = response.body();
                 if (null == body) throw new IOException("Empty body");
                 return HttpHelper.okHttpResponseToWebkitResponse(response, body.byteStream());
-            } catch (IOException e) {
+            } catch (IOException | IllegalStateException e) {
                 Timber.i(e);
             }
         }
@@ -632,7 +632,7 @@ class CustomWebViewClient extends WebViewClient {
             return result;
         } catch (MalformedURLException e) {
             Timber.e(e, "Malformed URL : %s", urlStr);
-        } catch (IOException e) {
+        } catch (IOException | IllegalStateException e) {
             Timber.e(e);
         }
         return null;
