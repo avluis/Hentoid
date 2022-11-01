@@ -5,7 +5,7 @@ import androidx.documentfile.provider.DocumentFile
 import com.annimon.stream.Optional
 import com.annimon.stream.function.BiConsumer
 import io.reactivex.Single
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Helper
@@ -27,7 +27,7 @@ class RequestQueue(
 ) {
     var active: Boolean = false
     private val downloadsQueue: Queue<RequestOrder> = ConcurrentLinkedQueue()
-    private val downloadDisposables = CompositeDisposable()
+    private val downloadDisposables = HashMap<RequestOrder, Disposable>()
 
     fun start() {
         active = true
@@ -35,11 +35,12 @@ class RequestQueue(
 
     fun stop() {
         while (downloadsQueue.size > 0) {
-            val requestOrder = downloadsQueue.poll()
-            requestOrder?.killSwitch?.set(true)
-            Timber.d("Aborting download request %s", requestOrder?.url)
+            downloadsQueue.poll()?.let {
+                it.killSwitch.set(true)
+                downloadDisposables.remove(it)?.dispose()
+                Timber.d("Aborting download request %s", it.url)
+            }
         }
-        downloadDisposables.clear()
         active = false
     }
 
@@ -58,19 +59,17 @@ class RequestQueue(
             )
         }
 
-        downloadDisposables.add(
+        downloadDisposables[requestOrder] =
             single.subscribeOn(Schedulers.io()) // Download on a thread from the I/O pool
                 .observeOn(Schedulers.io()) // Process and store to DB on a thread from the I/O pool too
                 .subscribe(
                     { res -> handleSuccess(requestOrder, res) })
                 { t -> handleError(requestOrder, t) }
-        )
     }
 
     private fun handleComplete(requestOrder: RequestOrder) {
         downloadsQueue.remove(requestOrder)
-        // Clear disposables when there's nothing more to download
-        if (downloadsQueue.isEmpty()) downloadDisposables.clear()
+        downloadDisposables.remove(requestOrder)?.dispose()
     }
 
     private fun handleSuccess(

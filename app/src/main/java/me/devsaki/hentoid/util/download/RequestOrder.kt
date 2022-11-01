@@ -15,9 +15,7 @@ class RequestOrder(
     val fileName: String,
     val pageIndex: Int,
     val backupUrl: String,
-    val img: ImageFile/*,
-    val parseListener: Consumer<Map<String, String>>,
-    val errorListener: Consumer<NetworkError>*/
+    val img: ImageFile
 ) {
     val killSwitch: AtomicBoolean = AtomicBoolean(false)
 
