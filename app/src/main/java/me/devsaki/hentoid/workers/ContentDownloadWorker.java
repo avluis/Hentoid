@@ -914,6 +914,9 @@ public class ContentDownloadWorker extends BaseWorker {
         String message = error.getMessage() + (img.isBackup() ? " (from backup URL)" : "");
         String cause = "Network error";
 
+        if (error.getType() == RequestOrder.NetworkErrorType.FILE_IO) cause = "File I/O";
+        else if (error.getType() == RequestOrder.NetworkErrorType.PARSE) cause = "Parsing";
+
         Timber.d(message + " " + cause);
 
         updateImageProperties(img, false, "");

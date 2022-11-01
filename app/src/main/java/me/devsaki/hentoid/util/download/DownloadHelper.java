@@ -105,7 +105,7 @@ public class DownloadHelper {
                 if (interruptDownload.get()) break;
                 processed += len;
                 // Read mime-type on the fly if not forced
-                if (0 == iteration) {
+                if (0 == iteration++) {
                     if (mimeType.isEmpty()) {
                         mimeType = ImageHelper.getMimeTypeFromPictureBinary(buffer);
                         if (mimeType.isEmpty() || mimeType.endsWith("/*")) {
@@ -117,7 +117,7 @@ public class DownloadHelper {
                     out = FileHelper.getOutputStream(HentoidApp.getInstance(), targetFileUri);
                 }
 
-                if (notifyProgress != null && 0 == ++iteration % 50) // Notify every 200KB
+                if (notifyProgress != null && 0 == iteration % 50) // Notify every 200KB
                     notifyProgress.accept((processed * 100f) / size);
                 out.write(buffer, 0, len);
             }
@@ -137,8 +137,13 @@ public class DownloadHelper {
     }
 
     private static Uri createFile(@NonNull Uri targetFolderUri, @NonNull String targetFileName, @NonNull String mimeType) throws IOException {
-        int dotPosition = targetFileName.length() - targetFileName.lastIndexOf('.');
-        String targetFileNameFinal = (dotPosition < 6) ? targetFileName : targetFileName + "." + FileHelper.getExtensionFromMimeType(mimeType);
+        String targetFileNameFinal = targetFileName + "." + FileHelper.getExtensionFromMimeType(mimeType);
+        // Keep the extension if the target file name is provided with one
+        int dotOffset = targetFileName.lastIndexOf('.');
+        if (dotOffset > -1) {
+            int extLength = targetFileName.length() - targetFileName.lastIndexOf('.') - 1;
+            if (extLength < 5) targetFileNameFinal = targetFileName;
+        }
         if (ContentResolver.SCHEME_FILE.equals(targetFolderUri.getScheme())) {
             String path = targetFolderUri.getPath();
             if (path != null) {

@@ -35,7 +35,7 @@ class RequestOrder(
     }
 
     enum class NetworkErrorType {
-        INTERRUPTED, NETWORK_ERROR, PARSE
+        INTERRUPTED, NETWORK_ERROR, PARSE, FILE_IO
     }
 
     data class NetworkError(

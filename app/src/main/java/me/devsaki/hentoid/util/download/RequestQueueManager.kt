@@ -71,25 +71,10 @@ class RequestQueueManager private constructor(
         if (cancelQueue) cancelQueue()
         else if (resetOkHttp || resetActiveRequests) mRequestQueue?.stop()
 
-        /*
-        if (mRequestQueue != null) {
-            mRequestQueue!!.removeRequestEventListener(this)
-            if (cancelQueue) cancelQueue()
-            mRequestQueue!!.stop()
-            mRequestQueue = null
-        }
-         */
-
         if (resetOkHttp) OkHttpClientSingleton.reset()
 
         mRequestQueue = RequestQueue(this::onRequestSuccess, this::onRequestError)
         mRequestQueue?.start()
-
-        /*
-        mRequestQueue = createRequestQueue(ctx, nbDlThreads, connectTimeoutMs, ioTimeoutMs)
-        mRequestQueue!!.addRequestEventListener(this)
-        mRequestQueue!!.start()
-         */
     }
 
     /**

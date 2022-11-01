@@ -17,6 +17,7 @@ import me.devsaki.hentoid.util.network.HttpHelper
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.commons.lang3.tuple.ImmutableTriple
 import timber.log.Timber
+import java.io.FileNotFoundException
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -96,12 +97,16 @@ class RequestQueue(
         var statusCode = 0
         var errorCode = RequestOrder.NetworkErrorType.NETWORK_ERROR
         val message = StringHelper.protect(t.message)
+
+        // Classify error messages
         // May happen when resetting OkHttp while some requests are still active
         if (t is java.lang.IllegalStateException && message.contains("cache is closed"))
             errorCode = RequestOrder.NetworkErrorType.INTERRUPTED
         // Purposeful interruption (e.g. pause button or auto-restart)
         if (t is DownloadInterruptedException) errorCode = RequestOrder.NetworkErrorType.INTERRUPTED
         if (t is ParseException) errorCode = RequestOrder.NetworkErrorType.PARSE
+        if (t is FileNotFoundException) errorCode = RequestOrder.NetworkErrorType.FILE_IO
+        if (message.contains("create file")) errorCode = RequestOrder.NetworkErrorType.FILE_IO
         if (t is NetworkingException) statusCode = t.statusCode
 
         val error = RequestOrder.NetworkError(
