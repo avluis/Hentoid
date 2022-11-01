@@ -116,7 +116,7 @@ class RequestQueue(
      *
      * @param pageIndex    Index of the picture to download
      * @param targetFolder Folder to download to
-     * @param stopDownload Switch to interrupt the download
+     * @param killSwitch   Switch to interrupt the download
      * @return Optional triple with
      * - The page index
      * - The Uri of the downloaded file
@@ -136,7 +136,7 @@ class RequestQueue(
     ): Optional<ImmutableTriple<Int, Uri, String>> {
         Helper.assertNonUiThread()
 
-        val requestHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url);
+        val requestHeaders = HttpHelper.webkitRequestHeadersToOkHttpHeaders(headers, url)
         requestHeaders.add(
             androidx.core.util.Pair(
                 "Accept",
@@ -154,12 +154,9 @@ class RequestQueue(
             targetFileNameNoExt,
             null,
             false,
-            killSwitch
-        ) { f: Float? ->
-            /*
-            TODO notify
-             */
-        }
+            killSwitch,
+            null
+        )
 
         val targetFileUri = result.left
         val mimeType = result.right
