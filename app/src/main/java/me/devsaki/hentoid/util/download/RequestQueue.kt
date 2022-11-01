@@ -18,6 +18,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.commons.lang3.tuple.ImmutableTriple
 import timber.log.Timber
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -27,7 +28,7 @@ class RequestQueue(
 ) {
     var active: Boolean = false
     private val downloadsQueue: Queue<RequestOrder> = ConcurrentLinkedQueue()
-    private val downloadDisposables = HashMap<RequestOrder, Disposable>()
+    private val downloadDisposables = ConcurrentHashMap<RequestOrder, Disposable>()
 
     fun start() {
         active = true
