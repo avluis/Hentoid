@@ -14,7 +14,6 @@ import me.devsaki.hentoid.util.network.OkHttpClientSingleton
 import org.threeten.bp.Instant
 import timber.log.Timber
 import java.util.*
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.ceil
 import kotlin.math.min
 
@@ -50,41 +49,27 @@ class RequestQueueManager private constructor(
     // Measurement of the number of requests per second
     private val previousRequestsTimestamps: Queue<Long> = LinkedList()
 
-    // True if the queue is being initialized
-    private val ignorableErrors = AtomicInteger(0)
-
 
     init {
         downloadThreadCount = getPreferredThreadCount(context)
         val crashlytics = FirebaseCrashlytics.getInstance()
         crashlytics.setCustomKey("Download thread count", downloadThreadCount)
-        init(downloadThreadCount, cancelQueue = true, resetOkHttp = false)
+        init(resetActiveRequests = false, cancelQueue = true)
     }
 
     /**
      * Initialize the request queue
-     */
-    private fun init() {
-        if (mRequestQueue == null) {
-            mRequestQueue = RequestQueue(this::onRequestSuccess, this::onRequestError)
-        }
-    }
-
-    /**
-     * Initialize the Volley request queue using the given number of parallel downloads
      *
-     * @param nbDlThreads      Number of parallel downloads to use; -1 to use automated recommendation
-     * @param cancelQueue      True if queued requests should be canceled; false if it should be kept intact
-     * @param resetOkHttp      If true, also reset the underlying OkHttp connections
+     * @param cancelQueue     True if queued requests should be canceled; false if it should be kept intact
+     * @param resetOkHttp     If true, also reset the underlying OkHttp connections
      */
     private fun init(
-        nbDlThreads: Int,
+        resetActiveRequests: Boolean,
         cancelQueue: Boolean,
-        resetOkHttp: Boolean
+        resetOkHttp: Boolean = false
     ) {
-        Timber.d("Init using %d Dl threads", nbDlThreads)
-
         if (cancelQueue) cancelQueue()
+        else if (resetOkHttp || resetActiveRequests) mRequestQueue?.stop()
 
         /*
         if (mRequestQueue != null) {
@@ -94,10 +79,8 @@ class RequestQueueManager private constructor(
             mRequestQueue = null
         }
          */
-        if (resetOkHttp) {
-            ignorableErrors.set(nbActiveRequests)
-            OkHttpClientSingleton.reset()
-        }
+
+        if (resetOkHttp) OkHttpClientSingleton.reset()
 
         mRequestQueue = RequestQueue(this::onRequestSuccess, this::onRequestError)
         mRequestQueue?.start()
@@ -110,7 +93,7 @@ class RequestQueueManager private constructor(
     }
 
     /**
-     * Initialize the Volley request queue using the given number of parallel downloads
+     * Initialize the request queue
      *
      * @param ctx         Context to use
      * @param nbDlThreads Number of parallel downloads to use; -1 to use automated recommendation
@@ -120,7 +103,7 @@ class RequestQueueManager private constructor(
         downloadThreadCap = nbDlThreads
         downloadThreadCount = nbDlThreads
         if (-1 == downloadThreadCap) downloadThreadCount = getPreferredThreadCount(ctx)
-        init(downloadThreadCount, cancelQueue, false)
+        init(false, cancelQueue)
     }
 
     /**
@@ -129,7 +112,7 @@ class RequestQueueManager private constructor(
      * @param resetOkHttp If true, also reset the underlying OkHttp connections
      */
     fun resetRequestQueue(resetOkHttp: Boolean) {
-        init(downloadThreadCount, false, resetOkHttp)
+        init(true, cancelQueue = false, resetOkHttp = resetOkHttp)
         // Requeue interrupted requests
         synchronized(currentRequests) {
             Timber.d("resetRequestQueue :: Requeuing %d requests", currentRequests.size)
@@ -145,7 +128,6 @@ class RequestQueueManager private constructor(
         mRequestQueue?.stop()
         synchronized(waitingRequestQueue) { waitingRequestQueue.clear() }
         synchronized(currentRequests) { currentRequests.clear() }
-        ignorableErrors.set(0)
         waitDisposable.clear()
         Timber.d("RequestQueue ::: canceled")
     }
@@ -251,7 +233,6 @@ class RequestQueueManager private constructor(
      */
     private fun executeRequest(order: RequestOrder, now: Long = Instant.now().toEpochMilli()) {
         synchronized(currentRequests) { currentRequests.add(order) }
-//        mRequestQueue!!.add(InputStreamVolleyRequest<Any>(order))
         mRequestQueue?.executeRequest(order)
         if (nbRequestsPerSecond > -1) {
             synchronized(previousRequestsTimestamps) { previousRequestsTimestamps.add(now) }
@@ -271,34 +252,35 @@ class RequestQueueManager private constructor(
      *
      * @param request Completed request
      */
-    private fun onRequestSuccess(request: RequestOrder, resultFileUri: Uri) {
-        // No lost requests when force-restarting the queue
-        if (!popIgnorableErrors()) {
-            synchronized(currentRequests) {
-                currentRequests.remove(request)
-                Timber.v(
-                    "Global requests queue ::: request removed for host %s - current total %s",
-                    Uri.parse(request.url).host,
-                    nbActiveRequests
-                )
-            }
-        } else {
+    private fun onRequestCompleted(request: RequestOrder) {
+        synchronized(currentRequests) {
+            currentRequests.remove(request)
             Timber.v(
-                "Global requests queue ::: no request removed for host %s due to ignorable errors - current total %s",
+                "Global requests queue ::: request removed for host %s - current total %s",
                 Uri.parse(request.url).host,
                 nbActiveRequests
             )
         }
+
         if (!waitingRequestQueue.isEmpty()) {
             refill()
         } else { // No more requests to add
             waitDisposable.clear()
         }
+    }
+
+    private fun onRequestSuccess(request: RequestOrder, resultFileUri: Uri) {
+        onRequestCompleted(request)
         onSuccess?.accept(request, resultFileUri)
     }
 
-    private fun onRequestError(req: RequestOrder, err: RequestOrder.NetworkError) {
-        onError?.accept(req, err)
+    private fun onRequestError(request: RequestOrder, err: RequestOrder.NetworkError) {
+        onRequestCompleted(request)
+        // Don't propagate interruptions
+        if (err.type != RequestOrder.NetworkErrorType.INTERRUPTED)
+            onError?.accept(request, err)
+        else
+            Timber.d("Downloader : Interruption detected for %s : %s", request.url, err.message)
     }
 
     fun setNbRequestsPerSecond(value: Int) {
@@ -309,17 +291,6 @@ class RequestQueueManager private constructor(
         get() {
             synchronized(currentRequests) { return currentRequests.size }
         }
-
-    fun hasRemainingIgnorableErrors(): Boolean {
-        return ignorableErrors.get() > 0
-    }
-
-    private fun popIgnorableErrors(): Boolean {
-        return if (ignorableErrors.get() > 0) {
-            ignorableErrors.getAndDecrement()
-            true
-        } else false
-    }
 
     /**
      * Return the number of parallel downloads (download thread count) chosen by the user

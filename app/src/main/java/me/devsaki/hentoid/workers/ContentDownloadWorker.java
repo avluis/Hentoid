@@ -3,7 +3,6 @@ package me.devsaki.hentoid.workers;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
-import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
@@ -31,7 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Nullable;
 
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
@@ -75,8 +73,8 @@ import me.devsaki.hentoid.util.exception.CaptchaException;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
 import me.devsaki.hentoid.util.exception.LimitReachedException;
+import me.devsaki.hentoid.util.exception.ParseException;
 import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
-import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
@@ -538,7 +536,7 @@ public class ContentDownloadWorker extends BaseWorker {
     /**
      * Watch download progress
      * <p>
-     * NB : download pause is managed at the Volley queue level (see RequestQueueManager.pauseQueue / startQueue)
+     * NB : download pause is managed at the Request queue level (see RequestQueueManager.pauseQueue / startQueue)
      *
      * @param content Content to watch (1st book of the download queue)
      */
@@ -602,7 +600,7 @@ public class ContentDownloadWorker extends BaseWorker {
             if (nbDeltaLowNetwork > IDLE_THRESHOLD && nbDeltaZeroPages > IDLE_THRESHOLD) {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
-                Timber.d("Inactivity detected ====> restarting request queue");
+                Timber.d("Inactivity detected ====> estarting request queue");
                 requestQueueManager.resetRequestQueue(false);
             }
 
@@ -870,7 +868,6 @@ public class ContentDownloadWorker extends BaseWorker {
         // Apply image download parameters
         Map<String, String> requestHeaders = getRequestHeaders(imageUrl, img.getDownloadParams());
 
-        // TODO
         final String backupUrlFinal = HttpHelper.fixUrl(img.getBackupUrl(), site.getUrl());
 
         return new RequestOrder(
@@ -882,13 +879,11 @@ public class ContentDownloadWorker extends BaseWorker {
                 img.getName(),
                 img.getOrder(),
                 backupUrlFinal,
-                img/*,
-                result -> onImageRequestSuccess(result, img, dir, backupUrlFinal, requestHeaders),
-                error -> onRequestError(error, content, img, dir, backupUrlFinal, requestHeaders)
-                */
+                img
         );
     }
 
+    // This is run on the I/O thread pool spawned by the downloader
     private void onRequestSuccess(RequestOrder request, Uri fileUri) {
         ImageFile img = request.getImg();
         DocumentFile imgFile = FileHelper.getFileFromSingleUriString(getApplicationContext(), fileUri.toString());
@@ -901,36 +896,10 @@ public class ContentDownloadWorker extends BaseWorker {
             updateImageProperties(img, false, "");
             logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), "Picture " + img.getName(), "Save failed in dir " + request.getTargetDir().getUri().getPath());
         }
-        /*
-        try {
-            DocumentFile imgFile = processDownloadedImage(request.getImg(), fileUri);
-            if (imgFile != null) updateImageProperties(request.getImg(), true, imgFile.getUri().toString());
-        } catch (UnsupportedContentException e) {
-            Timber.i(e);
-            if (!backupUrl.isEmpty() && !img.isBackup())
-                tryUsingBackupUrl(img, dir, backupUrl, requestHeaders);
-            else {
-                Timber.d("No backup URL found - aborting this image");
-                updateImageProperties(img, false, "");
-                logErrorRecord(img.getContent().getTargetId(), ErrorType.UNDEFINED, img.getUrl(), "Picture " + img.getName(), e.getMessage());
-            }
-        } catch (InvalidParameterException e) {
-            Timber.i(e, "Processing error - Image %s not processed properly", img.getUrl());
-            updateImageProperties(img, false, "");
-            logErrorRecord(img.getContent().getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), "Picture " + img.getName(), "Download params : " + img.getDownloadParams());
-        } catch (IOException | IllegalArgumentException e) {
-            Timber.i(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getUri());
-            updateImageProperties(img, false, "");
-            logErrorRecord(img.getContent().getTargetId(), ErrorType.IO, img.getUrl(), "Picture " + img.getName(), "Save failed in dir " + dir.getUri() + " " + e.getMessage());
-        }
-         */
     }
 
+    // This is run on the I/O thread pool spawned by the downloader
     private void onRequestError(RequestOrder request, RequestOrder.NetworkError error) {
-
-        // If the queue is being reset, ignore the error
-        if (requestQueueManager.hasRemainingIgnorableErrors()) return;
-
         ImageFile img = request.getImg();
         long contentId = img.getContentId();
 
@@ -943,21 +912,7 @@ public class ContentDownloadWorker extends BaseWorker {
         // If no backup, then process the error
         int statusCode = error.getStatusCode();
         String message = error.getMessage() + (img.isBackup() ? " (from backup URL)" : "");
-        String cause = "";
-
-        if (error.getType() == RequestOrder.NetworkErrorType.TIMEOUT) {
-            cause = "Timeout";
-        } else if (error.getType() == RequestOrder.NetworkErrorType.NO_CONNECTION) {
-            cause = "No connection";
-        } else if (error.getType() == RequestOrder.NetworkErrorType.AUTH_FAILURE) { // 403's fall in this category
-            cause = "Auth failure";
-        } else if (error.getType() == RequestOrder.NetworkErrorType.SERVER_ERROR) { // 404's fall in this category
-            cause = "Server error";
-        } else if (error.getType() == RequestOrder.NetworkErrorType.NETWORK_ERROR) {
-            cause = "Network error";
-        } else if (error.getType() == RequestOrder.NetworkErrorType.PARSE_ERROR) {
-            cause = "Network parse error";
-        }
+        String cause = "Network error";
 
         Timber.d(message + " " + cause);
 
@@ -990,36 +945,29 @@ public class ContentDownloadWorker extends BaseWorker {
         ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(site);
         Chapter chp = img.getLinkedChapter();
 
-        // TODO
-        // per Volley behaviour, this method is called on the UI thread
-        // -> need to create a new thread to do a network call
-        compositeDisposable.add(
-                Single.fromCallable(() -> parser.parseBackupUrl(backupUrl, requestHeaders, img.getOrder(), content.getQtyPages(), chp))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.computation())
-                        .subscribe(
-                                imageFile -> processBackupImage(imageFile.orElse(null), img, dir, content),
-                                throwable ->
-                                {
-                                    updateImageProperties(img, false, "");
-                                    logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + throwable.getMessage());
-                                    Timber.e(throwable, "Error processing backup image.");
-                                }
-                        )
-        );
+        try {
+            Optional<ImageFile> backupImg = parser.parseBackupUrl(backupUrl, requestHeaders, img.getOrder(), content.getQtyPages(), chp);
+            processBackupImage(backupImg.orElse(null), img, dir, content);
+        } catch (Exception e) {
+            updateImageProperties(img, false, "");
+            logErrorRecord(img.getContent().getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), "Cannot process backup image : message=" + e.getMessage());
+            Timber.e(e, "Error processing backup image.");
+        }
     }
 
     private void processBackupImage(ImageFile backupImage,
                                     @NonNull ImageFile originalImage,
                                     @NonNull DocumentFile dir,
-                                    Content content) {
+                                    Content content) throws ParseException {
         if (backupImage != null) {
             Timber.i("Backup URL contains image @ %s; queuing", backupImage.getUrl());
             originalImage.setUrl(backupImage.getUrl()); // Replace original image URL by backup image URL
             originalImage.setBackup(true); // Indicates the image is from a backup (for display in error logs)
             dao.insertImageFile(originalImage);
             requestQueueManager.queueRequest(buildImageDownloadRequest(originalImage, dir, content));
-        } else Timber.w("Failed to parse backup URL");
+        } else {
+            throw new ParseException("Failed to parse backup URL");
+        }
     }
 
     /**
@@ -1120,101 +1068,6 @@ public class ContentDownloadWorker extends BaseWorker {
     }
 
     /**
-     * Create the given file in the given destination folder, and write binary data to it
-     *
-     * @param img           ImageFile that is being processed
-     * @param dir           Destination folder
-     * @param contentType   Content type of the image (because some sources don't serve images with extensions)
-     * @param binaryContent Binary content of the image
-     * @throws IOException IOException if image cannot be saved at given location
-     */
-    @Nullable
-    private DocumentFile processAndSaveImage(@NonNull ImageFile img,
-                                             @NonNull DocumentFile dir,
-                                             @Nullable String contentType,
-                                             byte[] binaryContent) throws IOException, UnsupportedContentException {
-
-        if (!dir.exists()) {
-            // NB : Should not raise an exception here because that's what happens when some previously queued downloads are completed
-            // after a queued book has been manually deleted (and its folder with it)
-            Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getUri().toString());
-            return null;
-        }
-
-        img.setSize((null == binaryContent) ? 0 : binaryContent.length);
-
-        // Determine the extension of the file
-        String fileExt = null;
-        String mimeType = null;
-
-        // Check for picture validity if it's < 1KB (might be plain text or HTML if things have gone wrong... or a small GIF! )
-        if (img.getSize() < 1024 && binaryContent != null) {
-            mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
-            if (mimeType.isEmpty() || mimeType.equals(ImageHelper.MIME_IMAGE_GENERIC)) {
-                Timber.i("Small non-image data received from %s", img.getUrl());
-                throw new UnsupportedContentException(String.format("Small non-image data received from %s - data not processed", img.getUrl()));
-            }
-            fileExt = FileHelper.getExtensionFromMimeType(mimeType);
-        }
-
-        // Use the Content-type contained in the HTTP headers of the response
-        if (null != contentType) {
-            mimeType = HttpHelper.cleanContentType(contentType).first;
-            // Ignore neutral binary content-type
-            if (!contentType.equalsIgnoreCase(FileHelper.DEFAULT_MIME_TYPE)) {
-                fileExt = FileHelper.getExtensionFromMimeType(contentType);
-                Timber.v("Using content-type %s to determine file extension -> %s", contentType, fileExt);
-            }
-        }
-        // Content-type has not been useful to determine the extension => See if the URL contains an extension
-        if (null == fileExt || fileExt.isEmpty() || fileExt.equalsIgnoreCase("bin")) {
-            fileExt = HttpHelper.getExtensionFromUri(img.getUrl());
-            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExt);
-            Timber.v("Using url to determine file extension (content-type was %s) for %s -> %s", contentType, img.getUrl(), fileExt);
-        }
-        // No extension detected in the URL => Read binary header of the file to detect known formats
-        // If PNG, peek into the file to see if it is an animated PNG or not (no other way to do that)
-        if (binaryContent != null && (fileExt.isEmpty() || fileExt.equals("png"))) {
-            mimeType = ImageHelper.getMimeTypeFromPictureBinary(binaryContent);
-            fileExt = FileHelper.getExtensionFromMimeType(mimeType);
-            Timber.v("Reading headers to determine file extension for %s -> %s (from detected mime-type %s)", img.getUrl(), fileExt, mimeType);
-        }
-        // If all else fails, fall back to jpg as default
-        if (null == fileExt || fileExt.isEmpty()) {
-            fileExt = "jpg";
-            mimeType = ImageHelper.MIME_IMAGE_JPEG;
-            Timber.d("Using default extension for %s -> %s", img.getUrl(), fileExt);
-        }
-        if (null == mimeType) mimeType = ImageHelper.MIME_IMAGE_GENERIC;
-        img.setMimeType(mimeType);
-
-        if (!ImageHelper.isImageExtensionSupported(fileExt))
-            throw new UnsupportedContentException(String.format("Unsupported extension %s for %s - data not processed", fileExt, img.getUrl()));
-
-        return saveImage(dir, img.getName() + "." + fileExt, mimeType, binaryContent);
-    }
-
-    /**
-     * Create the given file in the given destination folder, and write binary data to it
-     *
-     * @param dir           Destination folder
-     * @param fileName      Name of the file to write (with the extension)
-     * @param binaryContent Binary content of the image
-     * @throws IOException IOException if image cannot be saved at given location
-     */
-    private DocumentFile saveImage(
-            @NonNull DocumentFile dir,
-            @NonNull String fileName,
-            @NonNull String mimeType,
-            byte[] binaryContent) throws IOException {
-        DocumentFile file = FileHelper.findOrCreateDocumentFile(getApplicationContext(), dir, mimeType, fileName);
-        if (null == file)
-            throw new IOException(String.format("Failed to create document %s under %s", fileName, dir.getUri().toString()));
-        FileHelper.saveBinary(getApplicationContext(), file.getUri(), binaryContent);
-        return file;
-    }
-
-    /**
      * Update given image properties in DB
      *
      * @param img     Image to update
@@ -1257,7 +1110,11 @@ public class ContentDownloadWorker extends BaseWorker {
                 downloadInterrupted.set(true);
                 // Tracking Event (Download Skipped)
                 HentoidApp.trackDownloadEvent("Skipped");
-                break;
+            case DownloadEvent.Type.EV_COMPLETE:
+            case DownloadEvent.Type.EV_INTERRUPT_CONTENT:
+            case DownloadEvent.Type.EV_PREPARATION:
+            case DownloadEvent.Type.EV_PROGRESS:
+            case DownloadEvent.Type.EV_UNPAUSE:
             default:
                 // Other events aren't handled here
         }

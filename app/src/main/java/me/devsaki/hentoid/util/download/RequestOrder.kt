@@ -15,7 +15,7 @@ class RequestOrder(
     val fileName: String,
     val pageIndex: Int,
     val backupUrl: String,
-    val img : ImageFile/*,
+    val img: ImageFile/*,
     val parseListener: Consumer<Map<String, String>>,
     val errorListener: Consumer<NetworkError>*/
 ) {
@@ -37,7 +37,7 @@ class RequestOrder(
     }
 
     enum class NetworkErrorType {
-        INTERRUPTED, TIMEOUT, NO_CONNECTION, AUTH_FAILURE, SERVER_ERROR, NETWORK_ERROR, PARSE_ERROR
+        INTERRUPTED, NETWORK_ERROR, PARSE
     }
 
     data class NetworkError(

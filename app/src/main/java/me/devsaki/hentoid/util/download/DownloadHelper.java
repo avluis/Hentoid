@@ -71,7 +71,7 @@ public class DownloadHelper {
             boolean fast,
             @NonNull final AtomicBoolean interruptDownload,
             Consumer<Float> notifyProgress) throws
-            IOException, UnsupportedContentException, DownloadInterruptedException {
+            IOException, UnsupportedContentException, DownloadInterruptedException, IllegalStateException {
 
         if (interruptDownload.get())
             throw new DownloadInterruptedException("Download interrupted");

@@ -12,6 +12,7 @@ import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
+import me.devsaki.hentoid.util.exception.ParseException
 import me.devsaki.hentoid.util.network.HttpHelper
 import org.apache.commons.lang3.tuple.ImmutablePair
 import org.apache.commons.lang3.tuple.ImmutableTriple
@@ -36,7 +37,7 @@ class RequestQueue(
         while (downloadsQueue.size > 0) {
             val requestOrder = downloadsQueue.poll()
             requestOrder?.killSwitch?.set(true)
-            Timber.d("Aborting a download")
+            Timber.d("Aborting download request %s", requestOrder?.url)
         }
         downloadDisposables.clear()
         active = false
@@ -58,35 +59,57 @@ class RequestQueue(
         }
 
         downloadDisposables.add(
-            single.subscribeOn(Schedulers.io()) // Download on an IO thread
-                .observeOn(Schedulers.io()) // Process and store to DB on an IO thread too
+            single.subscribeOn(Schedulers.io()) // Download on a thread from the I/O pool
+                .observeOn(Schedulers.io()) // Process and store to DB on a thread from the I/O pool too
                 .subscribe(
-                    { resultOpt: Optional<ImmutableTriple<Int, Uri, String>> ->
-                        if (resultOpt.isEmpty) { // Nothing to download
-                            Timber.d("NO IMAGE FOUND AT INDEX %d", requestOrder.pageIndex)
-                            return@subscribe
-                        }
-                        successHandler.accept(
-                            requestOrder,
-                            resultOpt.get().middle
-                        ) // TODO transmit mime type
-                    }) { t: Throwable -> handleError(requestOrder, t) }
+                    { res -> handleSuccess(requestOrder, res) })
+                { t -> handleError(requestOrder, t) }
         )
     }
 
-    private fun handleError(order_: RequestOrder, t: Throwable) {
+    private fun handleComplete(requestOrder: RequestOrder) {
+        downloadsQueue.remove(requestOrder)
+        // Clear disposables when there's nothing more to download
+        if (downloadsQueue.isEmpty()) downloadDisposables.clear()
+    }
+
+    private fun handleSuccess(
+        requestOrder: RequestOrder,
+        resultOpt: Optional<ImmutableTriple<Int, Uri, String>>
+    ) {
+        // Nothing to download => this is actually an error
+        if (resultOpt.isEmpty) {
+            handleError(requestOrder, ParseException("No image found"))
+            return
+        }
+
+        handleComplete(requestOrder)
+        successHandler.accept(
+            requestOrder,
+            resultOpt.get().middle
+        )
+    }
+
+    private fun handleError(requestOrder: RequestOrder, t: Throwable) {
+        handleComplete(requestOrder)
+
         var statusCode = 0
         var errorCode = RequestOrder.NetworkErrorType.NETWORK_ERROR
-        if (t is DownloadInterruptedException) errorCode =
-            RequestOrder.NetworkErrorType.INTERRUPTED
+        val message = StringHelper.protect(t.message)
+        // May happen when resetting OkHttp while some requests are still active
+        if (t is java.lang.IllegalStateException && message.contains("cache is closed"))
+            errorCode = RequestOrder.NetworkErrorType.INTERRUPTED
+        // Purposeful interruption (e.g. pause button or auto-restart)
+        if (t is DownloadInterruptedException) errorCode = RequestOrder.NetworkErrorType.INTERRUPTED
+        if (t is ParseException) errorCode = RequestOrder.NetworkErrorType.PARSE
         if (t is NetworkingException) statusCode = t.statusCode
 
         val error = RequestOrder.NetworkError(
             statusCode,
-            StringHelper.protect(t.message),
+            message,
             errorCode
         )
-        errorHandler.accept(order_, error)
+        errorHandler.accept(requestOrder, error)
     }
 
     /**
