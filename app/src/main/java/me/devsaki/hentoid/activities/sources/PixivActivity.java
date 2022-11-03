@@ -72,6 +72,9 @@ public class PixivActivity extends BaseWebActivity {
                             Site.PIXIV.useMobileAgent(), Site.PIXIV.useHentoidAgent(), Site.PIXIV.useWebviewAgent()
                     );
 
+                    // Scram if the response is a redirection or an error
+                    if (response.code() >= 300) return null;
+
                     // Scram if the response is empty
                     ResponseBody body = response.body();
                     if (null == body) throw new IOException("Empty body");
