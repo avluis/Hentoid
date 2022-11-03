@@ -209,6 +209,16 @@ public class ObjectBoxDB {
         store.boxFor(Content.class).put(contentList);
     }
 
+    void updateContentDeleteFlag(long contentId, boolean flag) {
+        store.runInTx(() -> {
+            Content c = store.boxFor(Content.class).get(contentId);
+            if (c != null) {
+                c.setIsBeingDeleted(flag);
+                store.boxFor(Content.class).put(c);
+            }
+        });
+    }
+
     List<Content> selectContentByStatus(StatusContent status) {
         return selectContentByStatusCodes(new int[]{status.getCode()});
     }
