@@ -647,7 +647,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     public void deleteAllQueuedBooks() {
         Timber.i("Cleaning up queue");
         db.deleteContentById(db.selectAllQueueBooksQ().findIds());
-        db.deleteQueue();
+        db.deleteQueueRecords();
     }
 
     public void insertImageFile(@NonNull ImageFile img) {
@@ -830,11 +830,15 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public void deleteQueue(@NonNull Content content) {
-        db.deleteQueue(content);
+        db.deleteQueueRecords(content);
     }
 
     public void deleteQueue(int index) {
-        db.deleteQueue(index);
+        db.deleteQueueRecords(index);
+    }
+
+    public void deleteQueueRecordsCore() {
+        db.deleteQueueRecords();
     }
 
     public SiteHistory selectHistory(@NonNull Site s) {

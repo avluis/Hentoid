@@ -234,6 +234,8 @@ public interface CollectionDAO {
 
     void updateQueue(@NonNull List<QueueRecord> queue);
 
+    void deleteQueueRecordsCore();
+
     void deleteQueue(@NonNull Content content);
 
     void deleteQueue(int index);

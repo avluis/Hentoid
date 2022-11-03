@@ -42,6 +42,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     private final boolean contentPurgeKeepCovers;
     private final long[] groupIds;
     private final long[] queueIds;
+    private final boolean isDeleteAllQueueRecords;
     private final int deleteMax;
     private final boolean isDeleteGroupsOnly;
 
@@ -62,6 +63,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         contentPurgeKeepCovers = inputData.getContentPurgeKeepCovers();
         groupIds = inputData.getGroupIds();
         queueIds = inputData.getQueueIds();
+        isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords();
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly();
 
         dao = new ObjectBoxDAO(context);
@@ -99,7 +101,11 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         if (contentIds.length > 0) removeContentList(contentIds);
         if (contentPurgeIds.length > 0) purgeContentList(contentPurgeIds, contentPurgeKeepCovers);
         if (groupIds.length > 0) removeGroups(groupIds, isDeleteGroupsOnly);
+
+        // Remove Contents and associated QueueRecords
         if (queueIds.length > 0) removeQueue(queueIds);
+        // If asked, make sure all QueueRecords are removed including dead ones
+        if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore();
 
         progressDone();
     }
