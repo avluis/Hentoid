@@ -42,6 +42,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     private final boolean contentPurgeKeepCovers;
     private final long[] groupIds;
     private final long[] queueIds;
+    private final boolean isDeleteAllQueueRecords;
     private final int deleteMax;
     private final boolean isDeleteGroupsOnly;
 
@@ -62,6 +63,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         contentPurgeKeepCovers = inputData.getContentPurgeKeepCovers();
         groupIds = inputData.getGroupIds();
         queueIds = inputData.getQueueIds();
+        isDeleteAllQueueRecords = inputData.isDeleteAllQueueRecords();
         isDeleteGroupsOnly = inputData.isDeleteGroupsOnly();
 
         dao = new ObjectBoxDAO(context);
@@ -99,7 +101,11 @@ public abstract class BaseDeleteWorker extends BaseWorker {
         if (contentIds.length > 0) removeContentList(contentIds);
         if (contentPurgeIds.length > 0) purgeContentList(contentPurgeIds, contentPurgeKeepCovers);
         if (groupIds.length > 0) removeGroups(groupIds, isDeleteGroupsOnly);
+
+        // Remove Contents and associated QueueRecords
         if (queueIds.length > 0) removeQueue(queueIds);
+        // If asked, make sure all QueueRecords are removed including dead ones
+        if (isDeleteAllQueueRecords) dao.deleteQueueRecordsCore();
 
         progressDone();
     }
@@ -113,8 +119,7 @@ public abstract class BaseDeleteWorker extends BaseWorker {
             int maxIndex = Math.min((i + 1) * 50, ids.length);
             // Flag the content as "being deleted" (triggers blink animation; lock operations)
             for (int id = minIndex; id < maxIndex; id++) {
-                Content c = dao.selectContent(ids[id]);
-                if (c != null) flagContentDelete(c, true);
+                if (ids[id] > 0) dao.updateContentDeleteFlag(ids[id], true);
                 if (isStopped()) break;
             }
             // Delete it
@@ -147,25 +152,24 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     }
 
     private void purgeContentList(long[] ids, boolean keepCovers) {
-        List<Content> contents = dao.selectContent(ids);
-
         // Flag the content as "being deleted" (triggers blink animation; lock operations)
-        for (Content c : contents) flagContentDelete(c, true);
+        for (long id : ids) dao.updateContentDeleteFlag(id, true);
 
         // Purge them
-        for (Content c : contents) {
-            purgeContent(c, keepCovers);
-            flagContentDelete(c, false);
+        for (long id : ids) {
+            Content c = dao.selectContent(id);
+            if (c != null) purgeContentFiles(c, keepCovers);
+            dao.updateContentDeleteFlag(id, false);
             if (isStopped()) break;
         }
     }
 
     /**
-     * Purge the given content
+     * Purge files from the given content
      *
      * @param content Content to be purged
      */
-    private void purgeContent(@NonNull final Content content, boolean keepCovers) {
+    private void purgeContentFiles(@NonNull final Content content, boolean keepCovers) {
         progressItem(content, true);
         try {
             ContentHelper.purgeFiles(getApplicationContext(), content, false, keepCovers);
@@ -269,16 +273,5 @@ public abstract class BaseDeleteWorker extends BaseWorker {
     private void progressDone() {
         notificationManager.notify(new DeleteCompleteNotification(deleteMax, nbError > 0));
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, deleteProgress, nbError, deleteMax));
-    }
-
-    /**
-     * Set the "being deleted" flag of the given content
-     *
-     * @param content Content whose flag to set
-     * @param flag    Value of the flag to be set
-     */
-    public void flagContentDelete(@NonNull final Content content, boolean flag) {
-        content.setIsBeingDeleted(flag);
-        dao.insertContentCore(content);
     }
 }

@@ -209,6 +209,16 @@ public class ObjectBoxDB {
         store.boxFor(Content.class).put(contentList);
     }
 
+    void updateContentDeleteFlag(long contentId, boolean flag) {
+        store.runInTx(() -> {
+            Content c = store.boxFor(Content.class).get(contentId);
+            if (c != null) {
+                c.setIsBeingDeleted(flag);
+                store.boxFor(Content.class).put(c);
+            }
+        });
+    }
+
     List<Content> selectContentByStatus(StatusContent status) {
         return selectContentByStatusCodes(new int[]{status.getCode()});
     }
@@ -384,19 +394,19 @@ public class ObjectBoxDB {
         queueRecordBox.put(queue);
     }
 
-    void deleteQueue(@NonNull Content content) {
-        deleteQueue(content.getId());
+    void deleteQueueRecords(@NonNull Content content) {
+        deleteQueueRecords(content.getId());
     }
 
-    void deleteQueue(int queueIndex) {
+    void deleteQueueRecords(int queueIndex) {
         store.boxFor(QueueRecord.class).remove(selectQueueRecordsQ(null).find().get(queueIndex).id);
     }
 
-    void deleteQueue() {
+    void deleteQueueRecords() {
         store.boxFor(QueueRecord.class).removeAll();
     }
 
-    private void deleteQueue(long contentId) {
+    private void deleteQueueRecords(long contentId) {
         Box<QueueRecord> queueRecordBox = store.boxFor(QueueRecord.class);
         QueueRecord record = queueRecordBox.query().equal(QueueRecord_.contentId, contentId).build().findFirst();
 

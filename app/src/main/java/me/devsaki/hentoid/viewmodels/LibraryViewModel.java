@@ -64,9 +64,7 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
-import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.ContentHelper;
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -76,6 +74,8 @@ import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.exception.ContentNotProcessedException;
 import me.devsaki.hentoid.util.exception.EmptyResultException;
+import me.devsaki.hentoid.util.file.ArchiveHelper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.widget.ContentSearchManager;
@@ -648,7 +648,7 @@ public class LibraryViewModel extends AndroidViewModel {
         }
 
         // Flag the content as "being deleted" (triggers blink animation)
-        for (Content c : contentList) flagContentDelete(c, true);
+        for (Content c : contentList) dao.updateContentDeleteFlag(c.getId(), true);
 
         StatusContent targetImageStatus = reparseImages ? StatusContent.ERROR : null;
         AtomicInteger errorCount = new AtomicInteger(0);
@@ -699,7 +699,7 @@ public class LibraryViewModel extends AndroidViewModel {
         }
 
         // Flag the content as "being deleted" (triggers blink animation)
-        for (Content c : contentList) flagContentDelete(c, true);
+        for (Content c : contentList) dao.updateContentDeleteFlag(c.getId(), true);
 
         AtomicInteger nbErrors = new AtomicInteger(0);
         compositeDisposable.add(
@@ -711,7 +711,8 @@ public class LibraryViewModel extends AndroidViewModel {
                                 Timber.d("Pages unreachable; reparsing content");
                                 // Reparse content itself
                                 Pair<Content, Optional<Content>> newContent = ContentHelper.reparseFromScratch(c);
-                                if (newContent.getRight().isEmpty()) flagContentDelete(c, false);
+                                if (newContent.getRight().isEmpty())
+                                    dao.updateContentDeleteFlag(c.getId(), false);
                                 return newContent.getRight();
                             }
                             return Optional.of(c);
@@ -753,7 +754,7 @@ public class LibraryViewModel extends AndroidViewModel {
         }
 
         // Flag the content as "being deleted" (triggers blink animation)
-        for (Content c : contentList) flagContentDelete(c, true);
+        for (Content c : contentList) dao.updateContentDeleteFlag(c.getId(), true);
 
         compositeDisposable.add(
                 Observable.fromIterable(contentList)
@@ -766,7 +767,7 @@ public class LibraryViewModel extends AndroidViewModel {
                                 // Reparse content itself
                                 Pair<Content, Optional<Content>> newContent = ContentHelper.reparseFromScratch(c);
                                 if (newContent.getRight().isEmpty()) {
-                                    flagContentDelete(c, false);
+                                    dao.updateContentDeleteFlag(c.getId(), false);
                                     return newContent.getRight();
                                 } else {
                                     Content reparsedContent = newContent.getRight().get();
@@ -813,17 +814,6 @@ public class LibraryViewModel extends AndroidViewModel {
                                 onError::accept
                         )
         );
-    }
-
-    /**
-     * Set the "being deleted" flag of the given content
-     *
-     * @param content Content whose flag to set
-     * @param flag    Value of the flag to be set
-     */
-    public void flagContentDelete(@NonNull final Content content, boolean flag) {
-        content.setIsBeingDeleted(flag);
-        dao.insertContent(content);
     }
 
     /**
@@ -1181,7 +1171,8 @@ public class LibraryViewModel extends AndroidViewModel {
         if (contentList.isEmpty()) return;
 
         // Flag the content as "being deleted" (triggers blink animation)
-        if (deleteAfterMerging) for (Content c : contentList) flagContentDelete(c, true);
+        if (deleteAfterMerging)
+            for (Content c : contentList) dao.updateContentDeleteFlag(c.getId(), true);
 
         compositeDisposable.add(
                 Single.fromCallable(() -> {
@@ -1201,7 +1192,8 @@ public class LibraryViewModel extends AndroidViewModel {
                                 t -> {
                                     Timber.e(t);
                                     if (deleteAfterMerging)
-                                        for (Content c : contentList) flagContentDelete(c, false);
+                                        for (Content c : contentList)
+                                            dao.updateContentDeleteFlag(c.getId(), false);
                                 }
                         )
         );

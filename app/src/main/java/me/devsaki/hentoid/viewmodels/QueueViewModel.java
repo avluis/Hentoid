@@ -252,7 +252,7 @@ public class QueueViewModel extends AndroidViewModel {
     public void remove(@NonNull List<Content> contentList) {
         DeleteData.Builder builder = new DeleteData.Builder();
         if (!contentList.isEmpty())
-            builder.setQueueIds(Stream.of(contentList).map(Content::getId).toList());
+            builder.setQueueIds(Stream.of(contentList).map(Content::getId).filter(id -> id > 0).toList());
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());
@@ -273,12 +273,13 @@ public class QueueViewModel extends AndroidViewModel {
     public void cancelAll() {
         List<QueueRecord> localQueue = dao.selectQueue();
         if (localQueue.isEmpty()) return;
-        List<Long> contentIdList = Stream.of(localQueue).map(qr -> qr.getContent().getTargetId()).toList();
+        List<Long> contentIdList = Stream.of(localQueue).map(qr -> qr.getContent().getTargetId()).filter(id -> id > 0).toList();
 
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.Type.EV_PAUSE));
 
         DeleteData.Builder builder = new DeleteData.Builder();
         if (!contentIdList.isEmpty()) builder.setQueueIds(contentIdList);
+        builder.setDeleteAllQueueRecords(true);
 
         WorkManager workManager = WorkManager.getInstance(getApplication());
         workManager.enqueue(new OneTimeWorkRequest.Builder(DeleteWorker.class).setInputData(builder.getData()).build());

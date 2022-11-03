@@ -68,6 +68,8 @@ public interface CollectionDAO {
 
     void updateContentStatus(@NonNull final StatusContent updateFrom, @NonNull final StatusContent updateTo);
 
+    void updateContentDeleteFlag(long contentId, boolean flag);
+
     void deleteContent(@NonNull final Content content);
 
     List<ErrorRecord> selectErrorRecordByContentId(long contentId);
@@ -233,6 +235,8 @@ public interface CollectionDAO {
     void addContentToQueue(@NonNull final Content content, StatusContent targetImageStatus, @ContentHelper.QueuePosition int position, long replacedContentId, boolean isQueueActive);
 
     void updateQueue(@NonNull List<QueueRecord> queue);
+
+    void deleteQueueRecordsCore();
 
     void deleteQueue(@NonNull Content content);
 

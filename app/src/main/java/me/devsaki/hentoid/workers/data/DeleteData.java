@@ -20,6 +20,7 @@ public class DeleteData {
     private static final String KEY_CONTENT_PURGE_KEEPCOVERS = "contentPurgeKeepCovers";
     private static final String KEY_GROUP_IDS = "groupIds";
     private static final String KEY_QUEUE_IDS = "queueIds";
+    private static final String KEY_DELETE_ALL_QUEUE_RECORDS = "deleteAllQueueRecords";
     private static final String KEY_DELETE_GROUPS_ONLY = "deleteGroupsOnly";
     private static final String KEY_DELETE_ALL_CONTENT_EXCEPT_FAVS = "deleteAllContentExceptFavs";
 
@@ -49,6 +50,10 @@ public class DeleteData {
 
         public void setQueueIds(List<Long> value) {
             builder.putLongArray(KEY_QUEUE_IDS, Helper.getPrimitiveArrayFromList(value));
+        }
+
+        public void setDeleteAllQueueRecords(boolean value) {
+            builder.putBoolean(KEY_DELETE_ALL_QUEUE_RECORDS, value);
         }
 
         public void setDeleteGroupsOnly(boolean value) {
@@ -98,6 +103,10 @@ public class DeleteData {
             long[] storedValue = data.getLongArray(KEY_QUEUE_IDS);
             if (null != storedValue) return storedValue;
             else return new long[]{};
+        }
+
+        public boolean isDeleteAllQueueRecords() {
+            return data.getBoolean(KEY_DELETE_ALL_QUEUE_RECORDS, false);
         }
 
         public boolean isDeleteGroupsOnly() {
