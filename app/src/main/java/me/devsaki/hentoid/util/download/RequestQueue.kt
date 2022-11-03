@@ -128,7 +128,6 @@ class RequestQueue(
      * - The Uri of the downloaded file
      * - The Mime-type of the downloaded file
      *
-     *
      * The return value is empty if the download fails
      */
     private fun downloadPic(
