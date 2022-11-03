@@ -1000,6 +1000,7 @@ public class ContentDownloadWorker extends BaseWorker {
                         ArchiveHelper.ZIP_MIME_TYPE,
                         true,
                         downloadInterrupted,
+                        -1,
                         null
                 );
 

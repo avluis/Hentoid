@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util.download;
 
+import static me.devsaki.hentoid.util.file.FileHelper.FILE_IO_BUFFER_SIZE;
+
 import android.content.ContentResolver;
 import android.net.Uri;
 
@@ -23,12 +25,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import me.devsaki.hentoid.core.HentoidApp;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException;
 import me.devsaki.hentoid.util.exception.NetworkingException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
+import me.devsaki.hentoid.util.network.DownloadSpeedCalculator_;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -60,6 +64,7 @@ public class DownloadHelper {
      * - Right : Detected mime-type of the downloaded resource
      * @throws IOException,UnsupportedContentException,DownloadInterruptedException if anything goes wrong
      */
+    // TODO update doc
     public static ImmutablePair<Uri, String> downloadToFile(
             @NonNull Site site,
             @NonNull String url,
@@ -70,8 +75,10 @@ public class DownloadHelper {
             String forceMimeType,
             boolean failFast,
             @NonNull final AtomicBoolean interruptDownload,
+            int dlSpeedLimit,
             Consumer<Float> notifyProgress) throws
             IOException, UnsupportedContentException, DownloadInterruptedException, IllegalStateException {
+        Helper.assertNonUiThread();
 
         if (interruptDownload.get())
             throw new DownloadInterruptedException("Download interrupted");
@@ -94,7 +101,10 @@ public class DownloadHelper {
         String mimeType = StringHelper.protect(forceMimeType);
 
         Timber.d("WRITING DOWNLOAD %d TO %s/%s (size %.2f KB)", resourceId, targetFolderUri.getPath(), targetFileName, size / 1024.0);
-        byte[] buffer = new byte[FileHelper.FILE_IO_BUFFER_SIZE];
+        byte[] buffer = new byte[FILE_IO_BUFFER_SIZE];
+        int notificationResolution = 500 * 1024 / FILE_IO_BUFFER_SIZE; // Notify every 500 KB
+        int speedLimiterResolution = 100 * 1024 / FILE_IO_BUFFER_SIZE; // Test download speed every 100 KB
+
         int len;
         long processed = 0;
         int iteration = 0;
@@ -117,9 +127,15 @@ public class DownloadHelper {
                     out = FileHelper.getOutputStream(HentoidApp.getInstance(), targetFileUri);
                 }
 
-                if (notifyProgress != null && 0 == iteration % 50) // Notify every 200KB
-                    notifyProgress.accept((processed * 100f) / size);
                 out.write(buffer, 0, len);
+
+                if (0 == iteration % speedLimiterResolution) {
+                    if (notifyProgress != null && 0 == iteration % notificationResolution)
+                        notifyProgress.accept((processed * 100f) / size);
+                    if (dlSpeedLimit > -1 && DownloadSpeedCalculator_.INSTANCE.getAvgSpeedKbps() > dlSpeedLimit) {
+                        Helper.pause(500); // TODO maths !
+                    }
+                }
             }
             if (!interruptDownload.get()) {
                 if (notifyProgress != null) notifyProgress.accept(100f);

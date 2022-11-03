@@ -9,6 +9,7 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.enums.Site
 import me.devsaki.hentoid.util.Helper
+import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.StringHelper
 import me.devsaki.hentoid.util.exception.DownloadInterruptedException
 import me.devsaki.hentoid.util.exception.NetworkingException
@@ -49,6 +50,8 @@ class RequestQueue(
     fun executeRequest(requestOrder: RequestOrder) {
         downloadsQueue.add(requestOrder)
 
+        val dlSpeedLimit = getPrefsSpeedCap()
+
         val single = Single.fromCallable {
             downloadPic(
                 requestOrder.site,
@@ -57,7 +60,8 @@ class RequestQueue(
                 requestOrder.targetDir,
                 requestOrder.fileName,
                 requestOrder.pageIndex,
-                requestOrder.killSwitch
+                requestOrder.killSwitch,
+                dlSpeedLimit
             )
         }
 
@@ -137,7 +141,8 @@ class RequestQueue(
         targetFolder: DocumentFile,
         targetFileNameNoExt: String,
         pageIndex: Int,
-        killSwitch: AtomicBoolean
+        killSwitch: AtomicBoolean,
+        dlSpeedLimit : Int
     ): Optional<ImmutableTriple<Int, Uri, String>> {
         Helper.assertNonUiThread()
 
@@ -160,6 +165,7 @@ class RequestQueue(
             null,
             false,
             killSwitch,
+            dlSpeedLimit,
             null
         )
 
@@ -173,5 +179,15 @@ class RequestQueue(
                 mimeType
             )
         )
+    }
+
+    private fun getPrefsSpeedCap(): Int {
+        return when (Preferences.getDlSpeedCap()) {
+            Preferences.Constant.DL_SPEED_CAP_100 -> 100
+            Preferences.Constant.DL_SPEED_CAP_200 -> 200
+            Preferences.Constant.DL_SPEED_CAP_400 -> 400
+            Preferences.Constant.DL_SPEED_CAP_800 -> 800
+            else -> -1
+        }
     }
 }
