@@ -676,6 +676,10 @@ public final class Preferences {
         return getIntPref(Key.DL_RETRIES_MEM_LIMIT, Default.DL_RETRIES_MEM_LIMIT);
     }
 
+    public static int getDlSpeedCap() {
+        return getIntPref(Key.DL_SPEED_CAP, Default.DL_SPEED_CAP);
+    }
+
     public static List<String> getBlockedTags() {
         return Stream.of(sharedPreferences.getString(Key.DL_BLOCKED_TAGS, "").split(",")).map(String::trim).filterNot(String::isEmpty).toList();
     }
@@ -979,6 +983,7 @@ public final class Preferences {
         static final String DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
+        static final String DL_SPEED_CAP = "dl_speed_cap";
         static final String DL_BLOCKED_TAGS = "pref_dl_blocked_tags";
         static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
         public static final String DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
@@ -1087,6 +1092,7 @@ public final class Preferences {
         static final boolean DL_RETRIES_ACTIVE = false;
         static final int DL_RETRIES_NUMBER = 3;
         static final int DL_RETRIES_MEM_LIMIT = 100;
+        static final int DL_SPEED_CAP = Constant.DL_SPEED_CAP_NONE;
         static final int DL_BLOCKED_TAGS_BEHAVIOUR = Constant.DL_TAG_BLOCKING_BEHAVIOUR_DONT_QUEUE;
         static final boolean CHECK_UPDATES = true;
         // Default menu in v1.9.x
@@ -1160,6 +1166,12 @@ public final class Preferences {
 
         public static final int DL_ACTION_DL_PAGES = 0;
         public static final int DL_ACTION_STREAM = 1;
+
+        public static final int DL_SPEED_CAP_NONE = -1;
+        public static final int DL_SPEED_CAP_100 = 0;
+        public static final int DL_SPEED_CAP_200 = 1;
+        public static final int DL_SPEED_CAP_400 = 2;
+        public static final int DL_SPEED_CAP_800 = 3;
 
         static final int TRUNCATE_FOLDER_100 = 100;
 

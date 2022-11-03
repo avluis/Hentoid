@@ -78,7 +78,7 @@ import me.devsaki.hentoid.util.exception.PreparationInterruptedException;
 import me.devsaki.hentoid.util.file.ArchiveHelper;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
-import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
+import me.devsaki.hentoid.util.network.DownloadSpeedCalculator_;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.NetworkHelper;
 import me.devsaki.hentoid.util.notification.Notification;
@@ -108,9 +108,6 @@ public class ContentDownloadWorker extends BaseWorker {
     private final NotificationManager userActionNotificationManager;
     private final RequestQueueManager requestQueueManager;
     protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
-
-    // Download speed calculator
-    private final DownloadSpeedCalculator downloadSpeedCalculator = new DownloadSpeedCalculator();
 
 
     public ContentDownloadWorker(
@@ -589,8 +586,8 @@ public class ContentDownloadWorker extends BaseWorker {
                 nbDeltaLowNetwork++; // LOW_NETWORK_THRESHOLD KBps threshold once download has started
             else nbDeltaLowNetwork = 0;
             networkBytes = networkBytesNow;
-            downloadSpeedCalculator.addSampleNow(networkBytes);
-            int avgSpeedKbps = (int) downloadSpeedCalculator.getAvgSpeedKbps();
+            DownloadSpeedCalculator_.INSTANCE.addSampleNow(networkBytes);
+            int avgSpeedKbps = (int) DownloadSpeedCalculator_.INSTANCE.getAvgSpeedKbps();
 
             Timber.d("deltaPages: %d / deltaNetworkBytes: %s", deltaPages, FileHelper.formatHumanReadableSize(deltaNetworkBytes, getApplicationContext().getResources()));
             Timber.d("nbDeltaZeroPages: %d / nbDeltaLowNetwork: %d", nbDeltaZeroPages, nbDeltaLowNetwork);

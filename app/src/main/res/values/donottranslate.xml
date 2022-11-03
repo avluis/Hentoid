@@ -135,6 +135,20 @@
         <item>8</item>
         <item>10</item>
     </string-array>
+    <string-array name="pref_dl_speed_cap_entries" translatable="false">
+        <item>@string/pref_dl_speed_cap_entries_1</item>
+        <item>@string/pref_dl_speed_cap_entries_2</item>
+        <item>@string/pref_dl_speed_cap_entries_3</item>
+        <item>@string/pref_dl_speed_cap_entries_4</item>
+        <item>@string/pref_dl_speed_cap_entries_5</item>
+    </string-array>
+    <string-array name="pref_dl_speed_cap_values" translatable="false">
+        <item>-1</item>
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
     <string-array name="pref_folder_naming_content_entries" translatable="false">
         <item>@string/pref_folder_naming_content_entries_1</item>
         <item>@string/pref_folder_naming_content_entries_2</item>
@@ -441,6 +455,7 @@
     <string name="pref_dl_retries_mem_limit_default" translatable="false">100</string>
     <string name="pref_dl_blocked_tags_behaviour_default" translatable="false">0</string>
     <string name="pref_dl_threads_quantity_default" translatable="false">0</string>
+    <string name="pref_dl_speed_cap_default" translatable="false">-1</string>
     <!-- Strings: Settings: Privacy -->
     <string name="pref_app_preview_default" translatable="false">false</string>
     <string name="pref_analytics_preference_default" translatable="false">true</string>

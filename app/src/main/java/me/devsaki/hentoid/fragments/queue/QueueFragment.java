@@ -53,12 +53,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
@@ -84,8 +80,7 @@ import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.file.PermissionHelper;
-import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
-import me.devsaki.hentoid.util.network.NetworkHelper;
+import me.devsaki.hentoid.util.network.DownloadSpeedCalculator_;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
@@ -130,9 +125,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
     private final FastAdapter<ContentItem> fastAdapter = FastAdapter.with(itemAdapter);
     private SelectExtension<ContentItem> selectExtension;
     private ItemTouchHelper touchHelper;
-
-    // Download speed calculator
-    private final DownloadSpeedCalculator downloadSpeedCalculator = new DownloadSpeedCalculator();
 
     // State
     private boolean isPreparingDownload = false;
@@ -257,15 +249,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         initToolbar();
         initSelectionToolbar();
         attachButtons(fastAdapter);
-
-        // Network usage display refresh
-        compositeDisposable.add(Observable.timer(1, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.computation())
-                .repeat()
-                .observeOn(Schedulers.computation())
-                .map(v -> NetworkHelper.getIncomingNetworkUsage(requireContext()))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::updateNetworkUsage));
 
         addCustomBackControl();
 
@@ -674,7 +657,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     message.append(" ").append(getResources().getQuantityString(R.plurals.queue_bottom_bar_errors, pagesKO, pagesKO));
                 if (numberRetries > 0)
                     message.append(" ").append(getResources().getString(R.string.queue_bottom_bar_retry, numberRetries, Preferences.getDlRetriesNumber()));
-                int avgSpeedKbps = (int) downloadSpeedCalculator.getAvgSpeedKbps();
+                int avgSpeedKbps = (int) DownloadSpeedCalculator_.INSTANCE.getAvgSpeedKbps();
                 if (avgSpeedKbps > 0)
                     message.append(" @ ").append(getResources().getString(R.string.queue_bottom_bar_speed, avgSpeedKbps));
 
@@ -982,10 +965,6 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         intent.putExtras(prefsBundle.getBundle());
 
         requireContext().startActivity(intent);
-    }
-
-    private void updateNetworkUsage(long bytesReceived) {
-        downloadSpeedCalculator.addSampleNow(bytesReceived);
     }
 
     private void initSelectionToolbar() {

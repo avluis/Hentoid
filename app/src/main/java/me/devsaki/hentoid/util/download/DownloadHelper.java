@@ -68,7 +68,7 @@ public class DownloadHelper {
             @NonNull Uri targetFolderUri,
             @NonNull String targetFileName,
             String forceMimeType,
-            boolean fast,
+            boolean failFast,
             @NonNull final AtomicBoolean interruptDownload,
             Consumer<Float> notifyProgress) throws
             IOException, UnsupportedContentException, DownloadInterruptedException, IllegalStateException {
@@ -77,7 +77,7 @@ public class DownloadHelper {
             throw new DownloadInterruptedException("Download interrupted");
 
         Timber.d("DOWNLOADING %d %s", resourceId, url);
-        Response response = fast ?
+        Response response = failFast ?
                 HttpHelper.getOnlineResourceFast(url, requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent()) :
                 HttpHelper.getOnlineResourceDownloader(url, requestHeaders, site.useMobileAgent(), site.useHentoidAgent(), site.useWebviewAgent());
         Timber.d("DOWNLOADING %d - RESPONSE %s", resourceId, response.code());
