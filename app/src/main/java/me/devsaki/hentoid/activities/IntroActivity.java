@@ -41,7 +41,8 @@ public class IntroActivity extends AppIntro2 {
         super.onCreate(savedInstanceState);
 
         addSlide(new WelcomeIntroFragment());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             addSlide(new PermissionIntroFragment());
         }
         addSlide(new ImportIntroFragment());

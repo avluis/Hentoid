@@ -17,6 +17,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -357,7 +358,8 @@ public class LibraryActivity extends BaseActivity {
             TooltipHelper.showTooltip(this, R.string.help_search, ArrowOrientation.TOP, toolbar, this);
 
         // Display permissions alert if required
-        if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) {
+        if (!PermissionHelper.checkExternalStorageReadWritePermission(this) &&
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             alertTxt.setText(R.string.permissions_lost);
             alertFixBtn.setOnClickListener(v -> fixPermissions());
             alertTxt.setVisibility(View.VISIBLE);

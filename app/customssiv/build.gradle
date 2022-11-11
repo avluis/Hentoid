@@ -4,7 +4,7 @@ apply plugin: 'kotlin-kapt'
 
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
     compileOptions {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -15,7 +15,7 @@ android {
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 32
+        targetSdkVersion 33
 
         renderscriptTargetApi 21
         renderscriptSupportModeEnabled false

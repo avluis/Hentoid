@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities;
 import static me.devsaki.hentoid.util.file.PermissionHelper.RQST_STORAGE_PERMISSION;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.WindowManager;
@@ -68,7 +69,8 @@ public class ReaderActivity extends BaseActivity {
             else viewModel.loadContentFromId(contentId, pageNumber);
         }
 
-        if (!PermissionHelper.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION)) {
+        if (!PermissionHelper.requestExternalStorageReadPermission(this, RQST_STORAGE_PERMISSION) &&
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             ToastHelper.toast(R.string.storage_permission_denied);
             return;
         }

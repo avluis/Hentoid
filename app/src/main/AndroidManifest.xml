@@ -30,6 +30,7 @@
         android:supportsRtl="false"
         android:theme="@style/Theme.Light"
         android:usesCleartextTraffic="true"
+        android:localeConfig="@xml/locales_config"
         tools:replace="android:allowBackup, android:supportsRtl, android:extractNativeLibs">
         <activity
             android:name=".activities.MissingWebViewActivity"
