@@ -92,7 +92,6 @@ android {
         informational 'ExtraTranslation'
     }
     namespace 'me.devsaki.hentoid'
-    buildToolsVersion '33.0.0'
 }
 
 dependencies {
