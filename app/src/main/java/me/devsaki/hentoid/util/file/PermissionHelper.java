@@ -1,12 +1,13 @@
 package me.devsaki.hentoid.util.file;
 
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+
 import android.Manifest;
 import android.app.Activity;
+import android.os.Build;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
-import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 public class PermissionHelper {
 
@@ -38,7 +39,7 @@ public class PermissionHelper {
     }
 
     public static boolean requestExternalStorageReadWritePermission(Activity activity, int permissionRequestCode) {
-        if (checkExternalStorageReadWritePermission(activity))
+        if (checkExternalStorageReadWritePermission(activity) | Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             return true;
         else {
             ActivityCompat.requestPermissions(activity, new String[]{

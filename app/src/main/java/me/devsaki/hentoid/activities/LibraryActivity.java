@@ -17,6 +17,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -434,7 +435,8 @@ public class LibraryActivity extends BaseActivity {
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.GONE);
             alertFixBtn.setVisibility(View.GONE);
-        } else if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) { // Warn about permissions being lost
+        } else if (!PermissionHelper.checkExternalStorageReadWritePermission(this) &&
+                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) { // Warn about permissions being lost
             alertTxt.setText(R.string.permissions_lost);
             alertFixBtn.setOnClickListener(v -> fixPermissions());
             alertTxt.setVisibility(View.VISIBLE);
