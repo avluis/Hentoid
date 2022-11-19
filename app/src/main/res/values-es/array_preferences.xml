@@ -3,9 +3,9 @@
 <string name="pref_library_display_entries_1">Lista (Predeterminado)</string>
     <string name="pref_library_display_entries_2">Cuadrícula</string>
 <string name="pref_memory_alert_entries_1">Sin alerta</string>
-    <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">cuando este 90% ocupado</string>
-    <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">cuando este 95% ocupado</string>
-    <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">cuando este 98% ocupado</string>
+    <string name="pref_memory_alert_entries_2" tools:ignore="StringFormatInvalid">cuando este ocupado al 90%</string>
+    <string name="pref_memory_alert_entries_3" tools:ignore="StringFormatInvalid">cuando este ocupado al 95%</string>
+    <string name="pref_memory_alert_entries_4" tools:ignore="StringFormatInvalid">cuando este ocupado al 98%</string>
 <string name="pref_browser_quick_dl_threshold_entries_1" tools:ignore="MissingTranslation">500 ms</string>
     <string name="pref_browser_quick_dl_threshold_entries_2" tools:ignore="MissingTranslation">1 s</string>
     <string name="pref_browser_quick_dl_threshold_entries_3">1.5 segundos (Predeterminado)</string>
@@ -42,7 +42,7 @@
 <string name="pref_attribute_list_order_entries_1">Alfabéticamente</string>
     <string name="pref_attribute_list_order_entries_2">Por número de elementos (Los más usados primero)</string>
 <string name="pref_dl_retries_mem_limit_entries_4">Ninguno</string>
-<string name="pref_dl_blocked_tags_behaviour_entries_1">No agregar a la cola</string>
+<string name="pref_dl_blocked_tags_behaviour_entries_1">No agregar a la cola de descargas</string>
     <string name="pref_dl_blocked_tags_behaviour_entries_2">Agregar a la cola de descargas con errores</string>
 <string name="pref_viewer_browse_mode_entries_1">De izquierda a derecha</string>
     <string name="pref_viewer_browse_mode_entries_2">De derecha a izquierda</string>
@@ -61,12 +61,12 @@
     <string name="pref_viewer_slideshow_delay_entries_4" tools:ignore="MissingTranslation">4 segundos</string>
     <string name="pref_viewer_slideshow_delay_entries_5" tools:ignore="MissingTranslation">8 segundos</string>
     <string name="pref_viewer_slideshow_delay_entries_6" tools:ignore="MissingTranslation">16 segundos</string>
-<string name="pref_viewer_slideshow_delay_entries_vertical_1">Súper lento</string>
+<string name="pref_viewer_slideshow_delay_entries_vertical_1">Muy lento</string>
     <string name="pref_viewer_slideshow_delay_entries_vertical_2">Lento</string>
     <string name="pref_viewer_slideshow_delay_entries_vertical_3">Normal (Predeterminado)</string>
     <string name="pref_viewer_slideshow_delay_entries_vertical_4">Deprisa</string>
     <string name="pref_viewer_slideshow_delay_entries_vertical_5">Rápido</string>
-    <string name="pref_viewer_slideshow_delay_entries_vertical_6">Súper rápido</string>
+    <string name="pref_viewer_slideshow_delay_entries_vertical_6">Muy rápido</string>
 <string name="pref_viewer_display_mode_entries_1">Ajustar a la pantalla (Predeterminado)</string>
     <string name="pref_viewer_display_mode_entries_2">Rellenar la pantalla (Proporcionadamente)</string>
     <string name="pref_viewer_display_mode_entries_3">Rellenar pantalla (Estirar)</string>
