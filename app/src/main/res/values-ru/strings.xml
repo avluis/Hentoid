@@ -285,7 +285,6 @@
         <item quantity="few">Импорт закладок (<x:g id="number" example="2">%d</x:g> элемента)</item>
         <item quantity="many">Импорт закладок (<x:g id="number" example="5">%d</x:g> элементов)</item>
     </plurals>
-    <string name="import_warning">Если папок с изображениями не обнаружится, импортированные книги будут отображены как пустые загрузки.\nВам придётся загрузить их в Очередь &gt; Ошибки.</string>
     <string name="import_run">ЗАПУСТИТЬ ИМПОРТ</string>
     <plurals name="import_result_books">
         <item quantity="one"><x:g id="number" example="1">%d</x:g> книга успешно импортирована</item>

@@ -3,7 +3,6 @@
     <string name="slide_01_header">Hentoid에 온 것을 환영합니다!</string>
     <string name="slide_01_text">Hentoid는 동인지\n&amp; H-망가 보관 앱입니다.</string>
     <string name="slide_02_header">권한</string>
-    <string name="slide_02_text">장치에 파일을 저장하려면 권한을 요청해야 합니다.</string>
     <string name="slide_04_header">라이브러리</string>
     <string name="slide_04_text">Hentoid는 미디어를 저장하기 위한 전용 폴더가 필요합니다.</string>
 <string name="slide_04_skip">넘기기</string>
