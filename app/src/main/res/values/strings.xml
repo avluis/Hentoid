@@ -835,7 +835,7 @@
     <string name="meta_choose_type">Choose a type for \'%s\'</string>
     <string name="meta_replace_with">Replace with…</string>
     <string name="meta_tag_all_selected">Tag all selected books</string>
-    <string name="meta_tag_all_selected_confirm">Tag all %d selected books with \'%s\' ?</string>
+    <string name="meta_tag_all_selected_confirm">Tag all %1$d selected books with \'%2$s\' ?</string>
     <string name="meta_rename_new_name">New name</string>
     <string name="meta_rename_new_rule">Remember for future downloads</string>
 
