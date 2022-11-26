@@ -3,7 +3,6 @@
     <string name="slide_01_header">Bem-vindo ao Hentoid!</string>
     <string name="slide_01_text">Hentoid é um aplicativo de arquivamento Doujinshi\n&amp; H-Manga.</string>
     <string name="slide_02_header">Permissões</string>
-    <string name="slide_02_text">Precisamos pedir sua permissão para armazenar arquivos em seu dispositivo.</string>
     <string name="slide_04_header">Biblioteca</string>
     <string name="slide_04_text">Hentoid requer uma pasta dedicada para armazenar sua mídia.</string>
 <string name="slide_04_skip">Pular</string>

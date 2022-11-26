@@ -3,7 +3,6 @@
     <string name="slide_01_header">¡Bienvenido a Hentoid!</string>
     <string name="slide_01_text">Hentoid es una aplicación para archivar Doujinshi y manga Hentai.</string>
     <string name="slide_02_header">Permisos</string>
-    <string name="slide_02_text">Necesitamos de tu permiso para que se pueda almacenar archivos en tu dispositivo.</string>
     <string name="slide_04_header">Librería</string>
     <string name="slide_04_text">Hentoid requiere una carpeta dedicada para almacenar tus archivos.</string>
 <string name="slide_04_skip">Omitir</string>

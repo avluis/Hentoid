@@ -3,7 +3,6 @@
     <string name="slide_01_header">Hentoidへようこそ！</string>
     <string name="slide_01_text">Hentoidは同人誌\n＆amp; H-Mangaのアーカイブアプリです</string>
     <string name="slide_02_header">権限</string>
-    <string name="slide_02_text">続けるにはデバイスにファイルを保存する許可を求める必要があります。</string>
     <string name="slide_04_header">ライブラリー</string>
     <string name="slide_04_text">Hentoidには、メディアを保存するための専用フォルダーが必要です。</string>
 <string name="slide_04_skip">スキップ</string>

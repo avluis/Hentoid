@@ -28,7 +28,9 @@ class IntroActivity : AppIntro2() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         addSlide(WelcomeIntroFragment())
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+        ) {
             addSlide(PermissionIntroFragment())
         }
         addSlide(ImportIntroFragment())

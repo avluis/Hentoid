@@ -1,3 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <string-array name="splash_quotes" tools:ignore="InconsistentArrays">
+        <item>arte en una aplicación</item>
+        <item>¿El libro de siempre?</item>
+        <item>app de entrenamiento a una mano</item>
+        <item>5 minutos de brazo</item>
+        <item>Manuela es tu mejor amiga</item>
+        <item>aplicación abierta, igual que la bragueta</item>
+        <item>consejo: revisa tus alrededores</item>
+        <item>sé gentil, senpai~~</item>
+        <item>cambia de pareja</item>
+        <item>hoy toca brazo</item>
+        <item>apunta arriba</item>
+        <item>daño por salpicadura</item>
+        <item>MESSIRVE</item>
+        <item>ahorcando el ganso</item>
+        <item>saltarín :3</item>
+        <item>DETRÁS DE TI</item>
+        <item>NO TE PAJEES CONMIGO, BAKA</item>
+        <item>Cargando Puerco</item>
+        <item>Papiii...</item>
+        <item>Arriba y abajo, hasta que salga</item>
+        <item>BUENARDO</item>
+        <item>¿Estás viendo porno solo, en serio?</item>
+        <item>Invita a unos amigos ;3</item>
+        <item>Pide una novia, ah, espera…</item>
+        <item>El tiempo de carga más rápido</item>
+        <item>¡LOS LIBROS SON MÁS DE 8,000!</item>
+        <item>Sorpresa, ¡ES UN TRAPO! </item>
+        <item>Disparo de larga distancia</item>
+        <item>Erectus</item>
+        <item>El niño paja</item>
+        <item>Esto se va a poner feo</item>
+        <item>Cómo le haría un buen brrrrrr</item>
+        <item>Miren esos magumbos</item>
+        <item>Viscoso pero sabroso</item>
+        <item>En tiempos de guerra, cualquier hoyo es trinchera</item>
+        <item>¿Ir a por todas?</item>
+        <item>ADVERTENCIA: NEPE COCHINO</item>
+        <item>¿Eh? ¿Ese es un pene?</item>
+        <item>Puaj, aleja eso</item>
+        <item>menuda aplicación</item>
+        <item>lubrícalo, viejo</item>
+        <item>https://youtu.be/dQw4w9WgXcQ</item>
+        <item>tremendo perro</item>
+        <item>Lecturas cristianas</item>
+        <item>Soy malo para empujar</item>
+        <item>Espera, ¿no es manga?</item>
+        <item>Eres un diablillo</item>
+        <item>¿No dijo que había almejas al vapor? </item>
+        <item>¿Está preparado para un almuerzo inolvidable?</item>
+    </string-array>
 </resources>

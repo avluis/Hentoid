@@ -20,6 +20,8 @@
     <string name="tools_cache_browser_updating_webview">WebView esta siendo actualizado en este momento, todavía no se puede limpiar la memoria caché</string>
 <string name="tools_cache_app">Eliminar caché de la aplicación</string>
 <string name="tools_cache_app_success">La caché de la aplicación se ha borrado con éxito</string>
+<string name="tools_renaming_rules_title">Reglas para renombrar propiedades</string>
+<string name="tools_renaming_rules_summary">Administrar reglas para renombrar propiedades</string>
 <string name="tools_latest_logs_title">Registros de la aplicación</string>
 <string name="tools_latest_logs_summary">Revisar los últimos registros de la aplicación</string>
 <string name="tools_import_empty_books_intro">Si una carpeta de imágenes no se detecta...</string>
