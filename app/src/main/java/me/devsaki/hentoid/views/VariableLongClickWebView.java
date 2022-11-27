@@ -1,9 +1,13 @@
 package me.devsaki.hentoid.views;
 
+import static androidx.core.view.inputmethod.EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING;
+
 import android.content.Context;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.webkit.WebView;
 
 import com.annimon.stream.function.BiConsumer;
@@ -76,5 +80,12 @@ public class VariableLongClickWebView extends WebView {
         }
 
         return super.onTouchEvent(event);
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo info) {
+        InputConnection connection = super.onCreateInputConnection(info);
+        info.imeOptions |= IME_FLAG_NO_PERSONALIZED_LEARNING;
+        return connection;
     }
 }
