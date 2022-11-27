@@ -4,7 +4,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair
 import org.threeten.bp.Instant
 import java.util.*
 
-object DownloadSpeedCalculator_ {
+object DownloadSpeedCalculator {
     private const val MAX_SAMPLES_SIZE = 5
     private val samples: Queue<ImmutablePair<Long, Long>> = LinkedList()
 

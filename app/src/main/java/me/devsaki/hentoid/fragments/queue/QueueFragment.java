@@ -80,7 +80,7 @@ import me.devsaki.hentoid.util.TooltipHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.file.PermissionHelper;
-import me.devsaki.hentoid.util.network.DownloadSpeedCalculator_;
+import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.viewholders.ContentItem;
 import me.devsaki.hentoid.viewholders.IDraggableViewHolder;
 import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
@@ -657,7 +657,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                     message.append(" ").append(getResources().getQuantityString(R.plurals.queue_bottom_bar_errors, pagesKO, pagesKO));
                 if (numberRetries > 0)
                     message.append(" ").append(getResources().getString(R.string.queue_bottom_bar_retry, numberRetries, Preferences.getDlRetriesNumber()));
-                int avgSpeedKbps = (int) DownloadSpeedCalculator_.INSTANCE.getAvgSpeedKbps();
+                int avgSpeedKbps = (int) DownloadSpeedCalculator.INSTANCE.getAvgSpeedKbps();
                 if (avgSpeedKbps > 0)
                     message.append(" @ ").append(getResources().getString(R.string.queue_bottom_bar_speed, avgSpeedKbps));
 

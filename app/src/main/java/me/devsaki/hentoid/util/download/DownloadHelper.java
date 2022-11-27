@@ -30,7 +30,7 @@ import me.devsaki.hentoid.util.exception.NetworkingException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
-import me.devsaki.hentoid.util.network.DownloadSpeedCalculator_;
+import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -133,8 +133,8 @@ public class DownloadHelper {
                 if (0 == iteration % speedLimiterResolution) {
                     if (notifyProgress != null && 0 == iteration % notificationResolution)
                         notifyProgress.accept((processed * 100f) / size);
-                    if (dlSpeedLimit > -1 && DownloadSpeedCalculator_.INSTANCE.getAvgSpeedKbps() > dlSpeedLimit * SPEED_LIMITER_THRESHOLD) {
-                        Helper.pause(250); // TODO maths !
+                    if (dlSpeedLimit > -1 && DownloadSpeedCalculator.INSTANCE.getAvgSpeedKbps() > dlSpeedLimit * SPEED_LIMITER_THRESHOLD) {
+                        Helper.pause(250);
                     }
                 }
             }
