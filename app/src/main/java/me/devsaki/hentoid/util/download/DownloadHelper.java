@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.util.download;
 
-import static me.devsaki.hentoid.util.file.FileHelper.FILE_IO_BUFFER_SIZE;
-
 import android.content.ContentResolver;
 import android.net.Uri;
 
@@ -46,6 +44,8 @@ public class DownloadHelper {
     private DownloadHelper() {
         throw new IllegalStateException("Utility class");
     }
+
+    private static final int DL_IO_BUFFER_SIZE = 25 * 1024;
 
     /**
      * Download the given resource to the given disk location
@@ -101,9 +101,10 @@ public class DownloadHelper {
         String mimeType = StringHelper.protect(forceMimeType);
 
         Timber.d("WRITING DOWNLOAD %d TO %s/%s (size %.2f KB)", resourceId, targetFolderUri.getPath(), targetFileName, size / 1024.0);
-        byte[] buffer = new byte[FILE_IO_BUFFER_SIZE];
-        int notificationResolution = 500 * 1024 / FILE_IO_BUFFER_SIZE; // Notify every 500 KB
-        int speedLimiterResolution = 100 * 1024 / FILE_IO_BUFFER_SIZE; // Test download speed every 100 KB
+        byte[] buffer = new byte[DL_IO_BUFFER_SIZE];
+        final int notificationResolution = 250 * 1024 / DL_IO_BUFFER_SIZE; // Notify every 250 KB
+        final int speedLimiterResolution = 50 * 1024 / DL_IO_BUFFER_SIZE; // Test download speed every 50 KB
+        final double SPEED_LIMITER_THRESHOLD = 0.8;
 
         int len;
         long processed = 0;
@@ -132,8 +133,8 @@ public class DownloadHelper {
                 if (0 == iteration % speedLimiterResolution) {
                     if (notifyProgress != null && 0 == iteration % notificationResolution)
                         notifyProgress.accept((processed * 100f) / size);
-                    if (dlSpeedLimit > -1 && DownloadSpeedCalculator_.INSTANCE.getAvgSpeedKbps() > dlSpeedLimit) {
-                        Helper.pause(500); // TODO maths !
+                    if (dlSpeedLimit > -1 && DownloadSpeedCalculator_.INSTANCE.getAvgSpeedKbps() > dlSpeedLimit * SPEED_LIMITER_THRESHOLD) {
+                        Helper.pause(250); // TODO maths !
                     }
                 }
             }

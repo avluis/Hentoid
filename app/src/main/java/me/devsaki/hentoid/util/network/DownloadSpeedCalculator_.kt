@@ -5,7 +5,7 @@ import org.threeten.bp.Instant
 import java.util.*
 
 object DownloadSpeedCalculator_ {
-    private val MAX_SAMPLES_SIZE = 5
+    private const val MAX_SAMPLES_SIZE = 5
     private val samples: Queue<ImmutablePair<Long, Long>> = LinkedList()
 
     private var avgSpeedBps = 0f

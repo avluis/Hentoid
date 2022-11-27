@@ -626,7 +626,7 @@ public class ContentDownloadWorker extends BaseWorker {
             }
 
             // We're polling the DB because we can't observe LiveData from a background service
-            Helper.pause(1000);
+            Helper.pause(500);
         }
         while (!isDone && !downloadInterrupted.get() && !contentQueueManager.isQueuePaused());
 
