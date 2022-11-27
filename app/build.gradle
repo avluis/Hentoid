@@ -239,6 +239,9 @@ dependencies {
     implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
 
+    // Download speed limit
+    implementation "org.isomorphism:token-bucket:1.6"
+
     /**
      * UTILS
      */
@@ -293,6 +296,8 @@ dependencies {
 
     // Sentence similarity detection
     implementation 'info.debatty:java-string-similarity:2.0.0'
+
+    implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
 
 
     /**

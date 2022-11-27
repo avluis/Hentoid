@@ -1329,7 +1329,6 @@ public class ReaderViewModel extends AndroidViewModel {
                                 null,
                                 true,
                                 stopDownload,
-                                -1,
                                 f -> notifyDownloadProgress(f, pageIndex)
                         );
                     }
@@ -1390,7 +1389,6 @@ public class ReaderViewModel extends AndroidViewModel {
                     null,
                     true,
                     interruptDownload,
-                    -1,
                     f -> notifyDownloadProgress(f, pageIndex)
             );
         } catch (IOException e) {
@@ -1409,7 +1407,6 @@ public class ReaderViewModel extends AndroidViewModel {
                 null,
                 true,
                 interruptDownload,
-                -1,
                 f -> notifyDownloadProgress(f, pageIndex)
         );
     }

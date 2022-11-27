@@ -30,7 +30,6 @@ import me.devsaki.hentoid.util.exception.NetworkingException;
 import me.devsaki.hentoid.util.exception.UnsupportedContentException;
 import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.image.ImageHelper;
-import me.devsaki.hentoid.util.network.DownloadSpeedCalculator;
 import me.devsaki.hentoid.util.network.HttpHelper;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -45,7 +44,7 @@ public class DownloadHelper {
         throw new IllegalStateException("Utility class");
     }
 
-    private static final int DL_IO_BUFFER_SIZE = 25 * 1024;
+    static final int DL_IO_BUFFER_SIZE_B = 50 * 1024; // NB : Actual size of read bytes may be smaller
 
     /**
      * Download the given resource to the given disk location
@@ -75,7 +74,6 @@ public class DownloadHelper {
             String forceMimeType,
             boolean failFast,
             @NonNull final AtomicBoolean interruptDownload,
-            int dlSpeedLimit,
             Consumer<Float> notifyProgress) throws
             IOException, UnsupportedContentException, DownloadInterruptedException, IllegalStateException {
         Helper.assertNonUiThread();
@@ -101,10 +99,8 @@ public class DownloadHelper {
         String mimeType = StringHelper.protect(forceMimeType);
 
         Timber.d("WRITING DOWNLOAD %d TO %s/%s (size %.2f KB)", resourceId, targetFolderUri.getPath(), targetFileName, size / 1024.0);
-        byte[] buffer = new byte[DL_IO_BUFFER_SIZE];
-        final int notificationResolution = 250 * 1024 / DL_IO_BUFFER_SIZE; // Notify every 250 KB
-        final int speedLimiterResolution = 50 * 1024 / DL_IO_BUFFER_SIZE; // Test download speed every 50 KB
-        final double SPEED_LIMITER_THRESHOLD = 0.8;
+        byte[] buffer = new byte[DL_IO_BUFFER_SIZE_B];
+        final int notificationResolution = 250 * 1024 / DL_IO_BUFFER_SIZE_B; // Notify every 250 KB
 
         int len;
         long processed = 0;
@@ -130,13 +126,10 @@ public class DownloadHelper {
 
                 out.write(buffer, 0, len);
 
-                if (0 == iteration % speedLimiterResolution) {
-                    if (notifyProgress != null && 0 == iteration % notificationResolution)
-                        notifyProgress.accept((processed * 100f) / size);
-                    if (dlSpeedLimit > -1 && DownloadSpeedCalculator.INSTANCE.getAvgSpeedKbps() > dlSpeedLimit * SPEED_LIMITER_THRESHOLD) {
-                        Helper.pause(250);
-                    }
-                }
+                if (notifyProgress != null && 0 == iteration % notificationResolution)
+                    notifyProgress.accept((processed * 100f) / size);
+
+                DownloadSpeedLimiter.INSTANCE.take(len);
             }
             if (!interruptDownload.get()) {
                 if (notifyProgress != null) notifyProgress.accept(100f);

@@ -538,6 +538,7 @@ public class ContentDownloadWorker extends BaseWorker {
      * @param content Content to watch (1st book of the download queue)
      */
     private void watchProgress(@NonNull Content content) {
+        final int REFRESH_DELAY_MS = 500;
         boolean isDone;
         int pagesOK = 0;
         int pagesKO = 0;
@@ -582,7 +583,7 @@ public class ContentDownloadWorker extends BaseWorker {
             // Download speed and size estimation
             long networkBytesNow = NetworkHelper.getIncomingNetworkUsage(getApplicationContext());
             deltaNetworkBytes = networkBytesNow - networkBytes;
-            if (deltaNetworkBytes < 1024 * LOW_NETWORK_THRESHOLD && firstPageDownloaded)
+            if (deltaNetworkBytes < (1024 * LOW_NETWORK_THRESHOLD * REFRESH_DELAY_MS / 1000f) && firstPageDownloaded)
                 nbDeltaLowNetwork++; // LOW_NETWORK_THRESHOLD KBps threshold once download has started
             else nbDeltaLowNetwork = 0;
             networkBytes = networkBytesNow;
@@ -594,10 +595,10 @@ public class ContentDownloadWorker extends BaseWorker {
 
             // Restart request queue when the queue has idled for too long
             // Idle = very low download speed _AND_ no new pages downloaded
-            if (nbDeltaLowNetwork > IDLE_THRESHOLD && nbDeltaZeroPages > IDLE_THRESHOLD) {
+            if (nbDeltaLowNetwork > IDLE_THRESHOLD * 1000f / REFRESH_DELAY_MS && nbDeltaZeroPages > IDLE_THRESHOLD * 1000f / REFRESH_DELAY_MS) {
                 nbDeltaLowNetwork = 0;
                 nbDeltaZeroPages = 0;
-                Timber.d("Inactivity detected ====> estarting request queue");
+                Timber.d("Inactivity detected ====> restarting request queue");
                 requestQueueManager.resetRequestQueue(false);
             }
 
@@ -626,7 +627,7 @@ public class ContentDownloadWorker extends BaseWorker {
             }
 
             // We're polling the DB because we can't observe LiveData from a background service
-            Helper.pause(500);
+            Helper.pause(REFRESH_DELAY_MS);
         }
         while (!isDone && !downloadInterrupted.get() && !contentQueueManager.isQueuePaused());
 
@@ -1000,7 +1001,6 @@ public class ContentDownloadWorker extends BaseWorker {
                         ArchiveHelper.ZIP_MIME_TYPE,
                         true,
                         downloadInterrupted,
-                        -1,
                         null
                 );
 

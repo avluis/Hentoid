@@ -983,7 +983,7 @@ public final class Preferences {
         static final String DL_RETRIES_ACTIVE = "pref_dl_retries_active";
         static final String DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
-        static final String DL_SPEED_CAP = "dl_speed_cap";
+        public static final String DL_SPEED_CAP = "dl_speed_cap";
         static final String DL_BLOCKED_TAGS = "pref_dl_blocked_tags";
         static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
         public static final String DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";

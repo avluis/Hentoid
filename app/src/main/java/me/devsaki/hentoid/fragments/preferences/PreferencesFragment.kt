@@ -39,6 +39,7 @@ import me.devsaki.hentoid.services.UpdateCheckService
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.ThemeHelper
 import me.devsaki.hentoid.util.ToastHelper
+import me.devsaki.hentoid.util.download.DownloadSpeedLimiter
 import me.devsaki.hentoid.util.download.RequestQueueManager
 import me.devsaki.hentoid.util.file.FileHelper
 import me.devsaki.hentoid.util.network.WebkitPackageHelper
@@ -196,6 +197,10 @@ class PreferencesFragment : PreferenceFragmentCompat(),
             }
             Preferences.Key.CHECK_UPDATE_MANUAL -> {
                 onCheckUpdatePrefClick()
+                true
+            }
+            Preferences.Key.DL_SPEED_CAP -> {
+                DownloadSpeedLimiter.setSpeedLimitKbps(getPrefsSpeedCapKbps())
                 true
             }
             Preferences.Key.BROWSER_CLEAR_COOKIES -> {
@@ -367,5 +372,15 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                         .create()
                         .show()
                 }
+    }
+
+    private fun getPrefsSpeedCapKbps(): Int {
+        return when (Preferences.getDlSpeedCap()) {
+            Preferences.Constant.DL_SPEED_CAP_100 -> 100
+            Preferences.Constant.DL_SPEED_CAP_200 -> 200
+            Preferences.Constant.DL_SPEED_CAP_400 -> 400
+            Preferences.Constant.DL_SPEED_CAP_800 -> 800
+            else -> -1
+        }
     }
 }
