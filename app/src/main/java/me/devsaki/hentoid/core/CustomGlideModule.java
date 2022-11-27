@@ -23,11 +23,11 @@ import okhttp3.OkHttpClient;
 public final class CustomGlideModule extends AppGlideModule {
 
     @Override
-    public void registerComponents(@NonNull Context context, Glide glide, @NonNull Registry registry) {
+    public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
         OkHttpClient client = OkHttpClientSingleton.getInstance();
 
         OkHttpUrlLoader.Factory factory = new OkHttpUrlLoader.Factory(client);
 
-        glide.getRegistry().replace(GlideUrl.class, InputStream.class, factory);
+        registry.replace(GlideUrl.class, InputStream.class, factory);
     }
 }
