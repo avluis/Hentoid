@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.queue;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static androidx.core.view.inputmethod.EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING;
 import static me.devsaki.hentoid.fragments.library.LibraryContentFragment.CONTENT_ITEM_DIFF_CALLBACK;
 
 import android.annotation.SuppressLint;
@@ -306,6 +307,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         });
 
         mainSearchView = (SearchView) searchMenu.getActionView();
+        mainSearchView.setImeOptions(IME_FLAG_NO_PERSONALIZED_LEARNING);
         mainSearchView.setIconifiedByDefault(true);
         mainSearchView.setQueryHint(getString(R.string.library_search_hint));
         // Change display when text query is typed

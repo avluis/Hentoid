@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.ui;
 
+import static androidx.core.view.inputmethod.EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING;
+
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
@@ -65,6 +67,7 @@ public class InputDialog {
         EditText input = new EditText(context);
         if (text != null) input.setText(text);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setImeOptions(IME_FLAG_NO_PERSONALIZED_LEARNING);
 
         DialogInterface.OnClickListener onOk = (dialog, whichButton) -> {
             if (input.getText().length() > 0)

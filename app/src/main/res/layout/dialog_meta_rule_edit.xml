@@ -40,7 +40,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:imeOptions="actionDone"
+            android:imeOptions="actionDone|flagNoPersonalizedLearning"
             android:inputType="text"
             android:lines="1"
             android:maxLines="1"
@@ -68,7 +68,7 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:imeOptions="actionDone"
+            android:imeOptions="actionDone|flagNoPersonalizedLearning"
             android:inputType="text"
             android:lines="1"
             android:maxLines="1"

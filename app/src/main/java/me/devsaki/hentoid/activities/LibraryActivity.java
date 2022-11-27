@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import static androidx.core.view.inputmethod.EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING;
 import static com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_ADVANCED_SEARCH;
 import static me.devsaki.hentoid.events.CommunicationEvent.EV_CLOSED;
@@ -507,6 +508,7 @@ public class LibraryActivity extends BaseActivity {
         sortMenu = toolbar.getMenu().findItem(R.id.action_sort_filter);
 
         actionSearchView = (SearchView) searchMenu.getActionView();
+        actionSearchView.setImeOptions(IME_FLAG_NO_PERSONALIZED_LEARNING);
         actionSearchView.setIconifiedByDefault(true);
         actionSearchView.setQueryHint(getString(R.string.library_search_hint));
         // Change display when text query is typed
