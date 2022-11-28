@@ -88,6 +88,7 @@ import me.devsaki.hentoid.viewholders.ISwipeableViewHolder;
 import me.devsaki.hentoid.viewmodels.QueueViewModel;
 import me.devsaki.hentoid.viewmodels.ViewModelFactory;
 import me.devsaki.hentoid.views.CircularProgressView;
+import me.devsaki.hentoid.widget.DownloadModeMenu;
 import me.devsaki.hentoid.widget.FastAdapterPreClickSelectHelper;
 import me.zhanghai.android.fastscroll.FastScrollerBuilder;
 import timber.log.Timber;
@@ -95,7 +96,7 @@ import timber.log.Timber;
 /**
  * Presents the list of works currently downloading to the user.
  */
-public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback, DownloadModeDialogFragment.Parent {
+public class QueueFragment extends Fragment implements ItemTouchCallback, SimpleSwipeDrawerCallback.ItemSwipeCallback {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
@@ -1008,7 +1009,13 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                 keepToolbar = true;
                 break;
             case R.id.action_change_mode:
-                DownloadModeDialogFragment.Companion.invoke(this);
+                DownloadModeMenu.Companion.show(
+                        requireContext(),
+                        recyclerView,
+                        requireActivity(),
+                        (position, item) -> onNewModeSelected(position),
+                        this::leaveSelectionMode
+                );
                 break;
             case R.id.action_select_all:
                 // Make certain _everything_ is properly selected (selectExtension.select() as doesn't get everything the 1st time it's called)
@@ -1023,6 +1030,24 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         if (!keepToolbar) selectionToolbar.setVisibility(View.GONE);
 
         return true;
+    }
+
+    public void leaveSelectionMode() {
+        selectExtension.setSelectOnLongClick(true);
+        // Warning : next line makes FastAdapter cycle through all items,
+        // which has a side effect of calling TiledPageList.onPagePlaceholderInserted,
+        // flagging the end of the list as being the last displayed position
+        Set<Integer> selection = selectExtension.getSelections();
+        if (!selection.isEmpty()) selectExtension.deselect(selection);
+        selectionToolbar.setVisibility(View.GONE);
+    }
+
+    private void onNewModeSelected(int downloadMode) {
+        Set<Integer> selection = selectExtension.getSelections();
+        List<Long> selectedContentIds = Stream.of(selection).map(pos -> itemAdapter.getAdapterItem(pos).getContent()).map(Content::getId).toList();
+        if (!selection.isEmpty()) selectExtension.deselect(selection);
+        selectionToolbar.setVisibility(View.GONE);
+        viewModel.setDownloadMode(selectedContentIds, downloadMode);
     }
 
     private void updateSelectionToolbar(long selectedCount) {
@@ -1102,24 +1127,5 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
                         })
                 .create()
                 .show();
-    }
-
-    public void leaveSelectionMode() {
-        selectExtension.setSelectOnLongClick(true);
-        // Warning : next line makes FastAdapter cycle through all items,
-        // which has a side effect of calling TiledPageList.onPagePlaceholderInserted,
-        // flagging the end of the list as being the last displayed position
-        Set<Integer> selection = selectExtension.getSelections();
-        if (!selection.isEmpty()) selectExtension.deselect(selection);
-        selectionToolbar.setVisibility(View.GONE);
-    }
-
-    @Override
-    public void onNewModeSelected(int downloadMode) {
-        Set<Integer> selection = selectExtension.getSelections();
-        List<Long> selectedContentIds = Stream.of(selection).map(pos -> itemAdapter.getAdapterItem(pos).getContent()).map(Content::getId).toList();
-        if (!selection.isEmpty()) selectExtension.deselect(selection);
-        selectionToolbar.setVisibility(View.GONE);
-        viewModel.setDownloadMode(selectedContentIds, downloadMode);
     }
 }

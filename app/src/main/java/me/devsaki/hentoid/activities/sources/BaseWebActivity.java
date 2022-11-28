@@ -93,7 +93,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
-import me.devsaki.hentoid.fragments.queue.DownloadModeDialogFragment;
 import me.devsaki.hentoid.fragments.web.BookmarksDialogFragment;
 import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment;
 import me.devsaki.hentoid.json.core.UpdateInfo;
@@ -124,7 +123,7 @@ import timber.log.Timber;
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-public abstract class BaseWebActivity extends BaseActivity implements CustomWebViewClient.CustomWebActivity, BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent, DownloadModeDialogFragment.Parent {
+public abstract class BaseWebActivity extends BaseActivity implements CustomWebViewClient.CustomWebActivity, BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {
 
     @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.VIEW_QUEUE, ActionMode.READ})
     @Retention(RetentionPolicy.SOURCE)
@@ -1003,16 +1002,6 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     private void askDlMode(Consumer<Content.DownloadMode> handler) {
-
-    }
-
-    @Override
-    public void onNewModeSelected(int downloadMode) {
-
-    }
-
-    @Override
-    public void leaveSelectionMode() {
 
     }
 
