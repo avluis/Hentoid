@@ -44,6 +44,7 @@ class AddQueueMenu {
                 .setTextTypeface(Typeface.DEFAULT)
                 .setMenuColor(ContextCompat.getColor(context, R.color.dark_gray))
                 .setTextSize(Helper.dimensAsDp(context, R.dimen.text_subtitle_1))
+                .setWidth(res.getDimension(R.dimen.popup_menu_width).toInt())
                 .setAutoDismiss(true)
                 .build()
             powerMenu.onMenuItemClickListener = listener

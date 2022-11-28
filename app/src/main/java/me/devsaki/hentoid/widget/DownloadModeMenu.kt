@@ -23,14 +23,14 @@ class DownloadModeMenu {
             val powerMenu = PowerMenu.Builder(context)
                 .addItem(
                     PowerMenuItem(
-                        res.getString(R.string.queue_add_top),
+                        res.getString(R.string.pref_viewer_dl_action_entries_1),
                         R.drawable.ic_action_download,
                         false
                     )
                 )
                 .addItem(
                     PowerMenuItem(
-                        res.getString(R.string.queue_add_bottom),
+                        res.getString(R.string.pref_viewer_dl_action_entries_2),
                         R.drawable.ic_action_download_stream,
                         false
                     )
@@ -42,6 +42,7 @@ class DownloadModeMenu {
                 .setTextTypeface(Typeface.DEFAULT)
                 .setMenuColor(ContextCompat.getColor(context, R.color.dark_gray))
                 .setTextSize(Helper.dimensAsDp(context, R.dimen.text_subtitle_1))
+                .setWidth(res.getDimension(R.dimen.popup_menu_width).toInt())
                 .setAutoDismiss(true)
                 .build()
             powerMenu.onMenuItemClickListener = listener
