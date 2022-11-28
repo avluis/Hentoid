@@ -760,10 +760,14 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectContentUniversalQ(ContentSearchManager.ContentSearchBundle searchBundle) {
+        return selectContentUniversalQ(searchBundle, libraryStatus);
+    }
+
+    Query<Content> selectContentUniversalQ(ContentSearchManager.ContentSearchBundle searchBundle, int[] status) {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
         // querying Content and attributes have to be done separately
-        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(searchBundle, libraryStatus);
-        return selectContentUniversalContentQ(searchBundle, contentAttrSubQuery.findIds(), libraryStatus);
+        Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(searchBundle, status);
+        return selectContentUniversalContentQ(searchBundle, contentAttrSubQuery.findIds(), status);
     }
 
     long[] selectContentUniversalByGroupItem(ContentSearchManager.ContentSearchBundle searchBundle) {

@@ -181,9 +181,11 @@ public interface CollectionDAO {
     LiveData<PagedList<Content>> searchBooksUniversal(ContentSearchManager.ContentSearchBundle searchBundle);
 
 
-    LiveData<List<Content>> selectErrorContent();
+    LiveData<List<Content>> selectErrorContentLive();
 
-    List<Content> selectErrorContentList();
+    LiveData<List<Content>> selectErrorContentLive(String query);
+
+    List<Content> selectErrorContent();
 
 
     LiveData<Integer> countBooks(

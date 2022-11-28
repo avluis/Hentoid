@@ -274,7 +274,7 @@ public final class ContentHelper {
     public static boolean updateQueueJson(@NonNull Context context, @NonNull CollectionDAO dao) {
         Helper.assertNonUiThread();
         List<QueueRecord> queue = dao.selectQueue();
-        List<Content> errors = dao.selectErrorContentList();
+        List<Content> errors = dao.selectErrorContent();
 
         // Save current queue (to be able to restore it in case the app gets uninstalled)
         List<Content> queuedContent = Stream.of(queue).map(qr -> qr.getContent().getTarget()).withoutNulls().toList();

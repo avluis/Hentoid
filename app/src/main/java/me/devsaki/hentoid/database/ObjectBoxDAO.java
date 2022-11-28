@@ -176,11 +176,18 @@ public class ObjectBoxDAO implements CollectionDAO {
         return db.selectChapters(contentId);
     }
 
-    public LiveData<List<Content>> selectErrorContent() {
+    public LiveData<List<Content>> selectErrorContentLive() {
         return new ObjectBoxLiveData<>(db.selectErrorContentQ());
     }
 
-    public List<Content> selectErrorContentList() {
+    public LiveData<List<Content>> selectErrorContentLive(String query) {
+        ContentSearchManager.ContentSearchBundle bundle = new ContentSearchManager.ContentSearchBundle();
+        bundle.setQuery(query);
+        bundle.setSortField(Preferences.Constant.ORDER_FIELD_DOWNLOAD_PROCESSING_DATE);
+        return new ObjectBoxLiveData<>(db.selectContentUniversalQ(bundle, new int[]{StatusContent.ERROR.getCode()}));
+    }
+
+    public List<Content> selectErrorContent() {
         return db.selectErrorContentQ().find();
     }
 

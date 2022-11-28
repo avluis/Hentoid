@@ -71,7 +71,6 @@ public class QueueActivity extends BaseActivity {
 
     private Toolbar toolbar;
     private Toolbar selectionToolbar;
-    private MenuItem searchMenu;
     private MenuItem errorStatsMenu;
     private MenuItem invertQueueMenu;
     private MenuItem cancelAllMenu;
@@ -101,7 +100,6 @@ public class QueueActivity extends BaseActivity {
 
         selectionToolbar = findViewById(R.id.queue_selection_toolbar);
 
-        searchMenu = toolbar.getMenu().findItem(R.id.action_search);
         errorStatsMenu = toolbar.getMenu().findItem(R.id.action_error_stats);
         invertQueueMenu = toolbar.getMenu().findItem(R.id.action_invert_queue);
         importDownloadsMenu = toolbar.getMenu().findItem(R.id.action_import_downloads);
@@ -183,7 +181,6 @@ public class QueueActivity extends BaseActivity {
 
     private void onTabSelected(int position) {
         // Update permanent toolbar
-        searchMenu.setVisible(0 == position);
         invertQueueMenu.setVisible(0 == position);
         importDownloadsMenu.setVisible(0 == position);
         cancelAllMenu.setVisible(0 == position);

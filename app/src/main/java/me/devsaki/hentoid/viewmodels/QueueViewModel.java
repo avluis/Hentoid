@@ -115,7 +115,7 @@ public class QueueViewModel extends AndroidViewModel {
         queue.addSource(currentQueueSource, queue::setValue);
         // Errors
         if (currentErrorsSource != null) errors.removeSource(currentErrorsSource);
-        currentErrorsSource = dao.selectErrorContent();
+        currentErrorsSource = dao.selectErrorContentLive();
         errors.addSource(currentErrorsSource, errors::setValue);
         newSearch.setValue(true);
     }
@@ -124,6 +124,14 @@ public class QueueViewModel extends AndroidViewModel {
         if (currentQueueSource != null) queue.removeSource(currentQueueSource);
         currentQueueSource = dao.selectQueueLive(query);
         queue.addSource(currentQueueSource, queue::setValue);
+        newSearch.setValue(true);
+    }
+
+    public void searchErrorContentUniversal(String query) {
+        if (currentErrorsSource != null) errors.removeSource(currentErrorsSource);
+        if (null == query || query.isEmpty()) currentErrorsSource = dao.selectErrorContentLive();
+        else currentErrorsSource = dao.selectErrorContentLive(query);
+        errors.addSource(currentErrorsSource, errors::setValue);
         newSearch.setValue(true);
     }
 
@@ -243,7 +251,7 @@ public class QueueViewModel extends AndroidViewModel {
     }
 
     public void removeAll() {
-        List<Content> errorsLocal = dao.selectErrorContentList();
+        List<Content> errorsLocal = dao.selectErrorContent();
         if (errorsLocal.isEmpty()) return;
 
         remove(errorsLocal);

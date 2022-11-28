@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.fragments.queue;
 
 import static androidx.core.view.ViewCompat.requireViewById;
+import static androidx.core.view.inputmethod.EditorInfoCompat.IME_FLAG_NO_PERSONALIZED_LEARNING;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -77,6 +79,7 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     private WeakReference<QueueActivity> activity;
 
     // === UI
+    private SearchView mainSearchView;  // Action view associated with search menu button
     private LinearLayoutManager llm;
     private RecyclerView recyclerView;
     private Toolbar selectionToolbar;
@@ -96,6 +99,12 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
     private Debouncer<Integer> listRefreshDebouncer;
     // Indicate if the fragment is currently canceling all items
     private boolean isDeletingAll = false;
+
+    // Current text search query
+    private String query = "";
+
+    // Used to ignore native calls to onQueryTextChange
+    private boolean invalidateNextQueryTextChange = false;
 
 
     @Override
@@ -233,6 +242,60 @@ public class ErrorsFragment extends Fragment implements ItemTouchCallback, Error
 
     private void initToolbar() {
         QueueActivity queueActivity = activity.get();
+
+        MenuItem searchMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_search);
+        searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                invalidateNextQueryTextChange = true;
+
+                // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
+                if (!query.isEmpty())
+                    // Use of handler allows to set the value _after_ the UI has auto-cleared it
+                    // Without that handler the view displays with an empty value
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        invalidateNextQueryTextChange = true;
+                        mainSearchView.setQuery(query, false);
+                    }, 100);
+
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                invalidateNextQueryTextChange = true;
+                return true;
+            }
+        });
+
+        mainSearchView = (SearchView) searchMenu.getActionView();
+        mainSearchView.setImeOptions(IME_FLAG_NO_PERSONALIZED_LEARNING);
+        mainSearchView.setIconifiedByDefault(true);
+        mainSearchView.setQueryHint(getString(R.string.library_search_hint));
+        // Change display when text query is typed
+        mainSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                query = s;
+                viewModel.searchErrorContentUniversal(query);
+                mainSearchView.clearFocus();
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
+                    invalidateNextQueryTextChange = false;
+                } else if (s.isEmpty()) {
+                    query = "";
+                    viewModel.searchErrorContentUniversal(query);
+                }
+
+                return true;
+            }
+        });
+
         MenuItem redownloadAllMenu = queueActivity.getToolbar().getMenu().findItem(R.id.action_redownload_all);
         redownloadAllMenu.setOnMenuItemClickListener(item -> {
             onRedownloadAllClick();
