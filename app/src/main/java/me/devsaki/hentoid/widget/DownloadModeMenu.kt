@@ -17,7 +17,7 @@ class DownloadModeMenu {
             anchor: View,
             lifecycle: LifecycleOwner,
             listener: OnMenuItemClickListener<PowerMenuItem?>,
-            dismissListener: OnDismissedListener
+            dismissListener: OnDismissedListener?
         ) {
             val res = context.resources
             val powerMenu = PowerMenu.Builder(context)

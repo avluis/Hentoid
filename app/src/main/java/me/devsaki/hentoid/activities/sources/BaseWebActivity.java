@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities.sources;
 
+import static me.devsaki.hentoid.util.Preferences.Constant.DL_ACTION_ASK;
 import static me.devsaki.hentoid.util.Preferences.Constant.QUEUE_NEW_DOWNLOADS_POSITION_ASK;
 import static me.devsaki.hentoid.util.file.PermissionHelper.RQST_STORAGE_PERMISSION;
 
@@ -39,7 +40,6 @@ import androidx.core.util.Pair;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiConsumer;
-import com.annimon.stream.function.Consumer;
 import com.google.android.material.badge.BadgeDrawable;
 import com.skydoves.balloon.ArrowOrientation;
 
@@ -114,6 +114,7 @@ import me.devsaki.hentoid.util.network.HttpHelper;
 import me.devsaki.hentoid.util.network.WebkitPackageHelper;
 import me.devsaki.hentoid.views.NestedScrollWebView;
 import me.devsaki.hentoid.widget.AddQueueMenu;
+import me.devsaki.hentoid.widget.DownloadModeMenu;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
@@ -284,7 +285,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         View bottomAlertCloseButton = findViewById(R.id.bottom_alert_close_btn);
         bottomAlertCloseButton.setOnClickListener(this::onBottomAlertCloseClick);
 
-        downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
+        downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.STREAM) ? R.drawable.selector_download_stream_action : R.drawable.selector_download_action;
         if (Preferences.isBrowserMode()) downloadIcon = R.drawable.ic_forbidden_disabled;
         actionMenu.setIcon(downloadIcon);
 
@@ -964,7 +965,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
             currentContent.setStatus(StatusContent.SAVED);
             dao.insertContent(currentContent);
-        }
+        } // isDownloadPlus
 
         // Check if the tag blocker applies here
         List<String> blockedTagsLocal = ContentHelper.getBlockedTags(currentContent);
@@ -986,7 +987,23 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
 
         // No reason to block or ignore -> actually add to the queue
-        if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK)
+        if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK && Preferences.getBrowserDlAction() == DL_ACTION_ASK) {
+            AddQueueMenu.Companion.show(
+                    this,
+                    webView,
+                    this,
+                    (position1, item1) -> DownloadModeMenu.Companion.show(
+                            this,
+                            webView,
+                            this,
+                            (position2, item2) -> addToQueue(
+                                    (0 == position1) ? ContentHelper.QueuePosition.TOP : ContentHelper.QueuePosition.BOTTOM,
+                                    (0 == position2) ? Content.DownloadMode.DOWNLOAD : Content.DownloadMode.STREAM,
+                                    isReplaceDuplicate
+                            ), null
+                    )
+            );
+        } else if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
             AddQueueMenu.Companion.show(
                     this,
                     webView,
@@ -997,12 +1014,20 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                             isReplaceDuplicate
                     )
             );
-        else
+        } else if (Preferences.getBrowserDlAction() == DL_ACTION_ASK) {
+            DownloadModeMenu.Companion.show(
+                    this,
+                    webView,
+                    this,
+                    (position, item) -> addToQueue(
+                            Preferences.getQueueNewDownloadPosition(),
+                            (0 == position) ? Content.DownloadMode.DOWNLOAD : Content.DownloadMode.STREAM,
+                            isReplaceDuplicate
+                    ), null
+            );
+        } else {
             addToQueue(Preferences.getQueueNewDownloadPosition(), Preferences.getBrowserDlAction(), isReplaceDuplicate);
-    }
-
-    private void askDlMode(Consumer<Content.DownloadMode> handler) {
-
+        }
     }
 
     /**
