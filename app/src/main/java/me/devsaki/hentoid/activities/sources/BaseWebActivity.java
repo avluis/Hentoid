@@ -39,6 +39,7 @@ import androidx.core.util.Pair;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BiConsumer;
+import com.annimon.stream.function.Consumer;
 import com.google.android.material.badge.BadgeDrawable;
 import com.skydoves.balloon.ArrowOrientation;
 
@@ -92,6 +93,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.events.UpdateEvent;
+import me.devsaki.hentoid.fragments.queue.DownloadModeDialogFragment;
 import me.devsaki.hentoid.fragments.web.BookmarksDialogFragment;
 import me.devsaki.hentoid.fragments.web.DuplicateDialogFragment;
 import me.devsaki.hentoid.json.core.UpdateInfo;
@@ -122,7 +124,7 @@ import timber.log.Timber;
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-public abstract class BaseWebActivity extends BaseActivity implements CustomWebViewClient.CustomWebActivity, BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent {
+public abstract class BaseWebActivity extends BaseActivity implements CustomWebViewClient.CustomWebActivity, BookmarksDialogFragment.Parent, DuplicateDialogFragment.Parent, DownloadModeDialogFragment.Parent {
 
     @IntDef({ActionMode.DOWNLOAD, ActionMode.DOWNLOAD_PLUS, ActionMode.VIEW_QUEUE, ActionMode.READ})
     @Retention(RetentionPolicy.SOURCE)
@@ -986,7 +988,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         // No reason to block or ignore -> actually add to the queue
         if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK)
-            AddQueueMenu.show(
+            AddQueueMenu.Companion.show(
                     this,
                     webView,
                     this,
@@ -998,6 +1000,20 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             );
         else
             addToQueue(Preferences.getQueueNewDownloadPosition(), Preferences.getBrowserDlAction(), isReplaceDuplicate);
+    }
+
+    private void askDlMode(Consumer<Content.DownloadMode> handler) {
+
+    }
+
+    @Override
+    public void onNewModeSelected(int downloadMode) {
+
+    }
+
+    @Override
+    public void leaveSelectionMode() {
+
     }
 
     /**
@@ -1438,7 +1454,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         boolean reload = false;
         if (Preferences.Key.BROWSER_DL_ACTION.equals(key)) {
-            downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.DOWNLOAD) ? R.drawable.selector_download_action : R.drawable.selector_download_stream_action;
+            downloadIcon = (Preferences.getBrowserDlAction() == Content.DownloadMode.STREAM) ? R.drawable.selector_download_stream_action : R.drawable.selector_download_action;
             setActionMode(actionButtonMode);
         } else if (Preferences.Key.BROWSER_MARK_DOWNLOADED.equals(key)) {
             customCss = null;

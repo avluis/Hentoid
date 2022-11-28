@@ -56,6 +56,7 @@
     <!-- Choice for "Download action" setting -->
     <string name="pref_viewer_dl_action_entries_1">Download all pages</string>
     <string name="pref_viewer_dl_action_entries_2">Stream the pages while reading</string>
+    <string name="pref_viewer_dl_action_entries_3">Ask everytime</string>
     <!-- Choice for "Sort order of displayed metadata" setting -->
     <string name="pref_attribute_list_order_entries_1">Alphabetical</string>
     <string name="pref_attribute_list_order_entries_2">Item count (most used first)</string>

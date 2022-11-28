@@ -190,10 +190,12 @@
     <string-array name="pref_viewer_dl_action_entries" translatable="false">
         <item>@string/pref_viewer_dl_action_entries_1</item>
         <item>@string/pref_viewer_dl_action_entries_2</item>
+        <item>@string/pref_viewer_dl_action_entries_3</item>
     </string-array>
     <string-array name="pref_viewer_dl_action_values" translatable="false">
         <item>0</item>
         <item>1</item>
+        <item>2</item>
     </string-array>
     <string-array name="pref_attribute_list_order_entries" translatable="false">
         <item>@string/pref_attribute_list_order_entries_1</item>

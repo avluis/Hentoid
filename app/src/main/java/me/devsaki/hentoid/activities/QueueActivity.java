@@ -263,7 +263,7 @@ public class QueueActivity extends BaseActivity {
      */
     public void redownloadContent(@NonNull final List<Content> contentList, boolean reparseContent, boolean reparseImages) {
         if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
-            AddQueueMenu.show(this, tabLayout, this, (position, item) ->
+            AddQueueMenu.Companion.show(this, tabLayout, this, (position, item) ->
                     redownloadContent(contentList, reparseContent, reparseImages, (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM)
             );
         } else

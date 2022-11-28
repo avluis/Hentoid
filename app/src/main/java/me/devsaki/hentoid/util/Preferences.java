@@ -1166,6 +1166,7 @@ public final class Preferences {
 
         public static final int DL_ACTION_DL_PAGES = 0;
         public static final int DL_ACTION_STREAM = 1;
+        public static final int DL_ACTION_ASK = 2;
 
         public static final int DL_SPEED_CAP_NONE = -1;
         public static final int DL_SPEED_CAP_100 = 0;

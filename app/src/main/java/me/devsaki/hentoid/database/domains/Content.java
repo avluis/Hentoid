@@ -79,11 +79,12 @@ public class Content implements Serializable {
 
     // == Used with the downloadMode attribute
 
-    @IntDef({DownloadMode.DOWNLOAD, DownloadMode.STREAM})
+    @IntDef({DownloadMode.DOWNLOAD, DownloadMode.STREAM, DownloadMode.ASK})
     @Retention(RetentionPolicy.SOURCE)
     public @interface DownloadMode {
         int DOWNLOAD = Preferences.Constant.DL_ACTION_DL_PAGES; // Download images
         int STREAM = Preferences.Constant.DL_ACTION_STREAM; // Saves the book for on-demande viewing
+        int ASK = Preferences.Constant.DL_ACTION_ASK; // Saves the book for on-demande viewing
     }
 
 

@@ -1425,7 +1425,7 @@ public class LibraryContentFragment extends Fragment implements
 
     private void redownloadFromScratch(@NonNull final List<Content> contentList) {
         if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
-            AddQueueMenu.show(activity.get(), recyclerView, this, (position, item) ->
+            AddQueueMenu.Companion.show(activity.get(), recyclerView, this, (position, item) ->
                     redownloadFromScratch(contentList, (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM)
             );
         } else
@@ -1449,7 +1449,7 @@ public class LibraryContentFragment extends Fragment implements
 
     private void download(@NonNull final List<Content> contentList, @NonNull Consumer<Throwable> onError) {
         if (Preferences.getQueueNewDownloadPosition() == QUEUE_NEW_DOWNLOADS_POSITION_ASK) {
-            AddQueueMenu.show(activity.get(), recyclerView, this, (position, item) ->
+            AddQueueMenu.Companion.show(activity.get(), recyclerView, this, (position, item) ->
                     download(contentList, (0 == position) ? QUEUE_NEW_DOWNLOADS_POSITION_TOP : QUEUE_NEW_DOWNLOADS_POSITION_BOTTOM, onError)
             );
         } else
