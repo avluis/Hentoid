@@ -776,7 +776,7 @@
     <string name="title_startup_progress">Iniciando…</string>
     <string name="title_startup_complete">Inicialización completa</string>
 <string name="missing_web_view_title">La WebView no está instalada o está desactivada</string>
-    <string name="missing_web_view">Hentoid no ha podido encontrar el visor web integrado de Android para las aplicaciones.\nSin este no se puede navegar por las fuentes, volver a descargar libros, etc…; realmente no se puede hacer mucho que requiera internet.\n\nLo más probable es que sí esté instalada en tu sistema, pero deshabilitada: dirígete a <b>Configuración</b> &gt; <b>Aplicaciones</b> &gt; <b>Aplicaciones Deshabilitadas</b> y habilita <b>Android System WebView</b>.\n\nSi no encuentras la aplicación, instálala desde Google Play:<b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview"</a></b>.</string>
+    <string name="missing_web_view">Hentoid no ha podido encontrar el visor web integrado de Android para las aplicaciones.\nSin este no se puede navegar por las fuentes, volver a descargar libros, etc…; realmente no se puede hacer mucho que requiera internet.\n\nLo más probable es que sí esté instalada en tu sistema, pero deshabilitada: dirígete a <b>Configuración</b> &gt; <b>Aplicaciones</b> &gt; <b>Aplicaciones Deshabilitadas</b> y habilita <b>Android System WebView</b>.\n\nSi no encuentras la aplicación, instálala desde Google Play:<b><a href="https://play.google.com/store/apps/details?id=com.google.android.webview"/></b>.</string>
     <string name="missing_web_view_library">Volver a la biblioteca</string>
 <string name="group_today">Hoy</string>
     <string name="group_7">Últimos 7 días</string>
