@@ -82,6 +82,8 @@ public class SearchContentIdDialogFragment extends DialogFragment {
                 if (!foundSitesList.contains(Site.IMHENTAI.getCode())) sites.add(Site.IMHENTAI);
                 if (!foundSitesList.contains(Site.PIXIV.getCode())) sites.add(Site.PIXIV);
                 if (!foundSitesList.contains(Site.MULTPORN.getCode())) sites.add(Site.MULTPORN);
+                if (!foundSitesList.contains(Site.HDPORNCOMICS.getCode()))
+                    sites.add(Site.HDPORNCOMICS);
             }
             ItemAdapter<TextItem<Site>> itemAdapter = new ItemAdapter<>();
             itemAdapter.set(Stream.of(sites).map(s -> new TextItem<>(s.getDescription(), s, true)).toList());

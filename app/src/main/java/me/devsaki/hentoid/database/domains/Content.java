@@ -39,6 +39,7 @@ import me.devsaki.hentoid.activities.sources.DoujinsActivity;
 import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.ExHentaiActivity;
 import me.devsaki.hentoid.activities.sources.HbrowseActivity;
+import me.devsaki.hentoid.activities.sources.HdPornComicsActivity;
 import me.devsaki.hentoid.activities.sources.Hentai2ReadActivity;
 import me.devsaki.hentoid.activities.sources.HentaifoxActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
@@ -239,11 +240,11 @@ public class Content implements Serializable {
     }
 
     public String getUniqueSiteId() {
-        return this.uniqueSiteId;
+        return uniqueSiteId;
     }
 
     public void populateUniqueSiteId() {
-        this.uniqueSiteId = computeUniqueSiteId();
+        if (null == uniqueSiteId || uniqueSiteId.isEmpty()) uniqueSiteId = computeUniqueSiteId();
     }
 
     public void setUniqueSiteId(@NonNull String uniqueSiteId) {
@@ -281,6 +282,7 @@ public class Content implements Serializable {
             case MULTPORN:
             case TOONILY:
             case SIMPLY:
+            case HDPORNCOMICS:
                 return url.replace(site.getUrl(), "");
             case EHENTAI:
             case EXHENTAI:
@@ -401,6 +403,8 @@ public class Content implements Serializable {
                 return MultpornActivity.class;
             case SIMPLY:
                 return SimplyActivity.class;
+            case HDPORNCOMICS:
+                return HdPornComicsActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -494,6 +498,8 @@ public class Content implements Serializable {
                 return site.getUrl() + "artworks/" + id;
             case MULTPORN:
                 return site.getUrl() + "node/" + id;
+            case HDPORNCOMICS:
+                return site.getUrl() + "?p=" + id;
             default:
                 return site.getUrl();
         }

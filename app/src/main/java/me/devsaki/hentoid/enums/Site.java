@@ -46,6 +46,7 @@ public enum Site {
     MANHWA18(25, "Manhwa18", "https://manhwa18.com/", R.drawable.ic_site_manhwa18),
     MULTPORN(26, "Multporn", "https://multporn.net/", R.drawable.ic_site_multporn),
     SIMPLY(27, "Simply Hentai", "https://www.simply-hentai.com/", R.drawable.ic_site_simply),
+    HDPORNCOMICS(28, "HD Porn Comics", "https://hdporncomics.com/", R.drawable.ic_site_hdporncomics),
     NONE(98, "none", "", R.drawable.ic_attribute_source), // External library; fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", R.drawable.ic_site_panda); // Safe-for-work/wife/gf option; not used anymore and kept here for retrocompatibility
 
