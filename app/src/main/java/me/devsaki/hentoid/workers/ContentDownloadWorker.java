@@ -41,11 +41,13 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Chapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.GroupItem;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.ErrorType;
+import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -60,6 +62,7 @@ import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.images.ImageListParser;
 import me.devsaki.hentoid.util.ContentHelper;
+import me.devsaki.hentoid.util.GroupHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -730,18 +733,6 @@ public class ContentDownloadWorker extends BaseWorker {
                     content.setDownloadCompletionDate(Instant.now().toEpochMilli());
                     content.setStatus(StatusContent.DOWNLOADED);
 
-                    // Delete the duplicate book that was meant to be replaced, if any
-                    if (!content.getContentToReplace().isNull()) {
-                        Content contentToReplace = content.getContentToReplace().getTarget();
-                        if (contentToReplace != null) {
-                            EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.REMOVE_DUPLICATE));
-                            try {
-                                ContentHelper.removeContent(getApplicationContext(), dao, contentToReplace);
-                            } catch (ContentNotProcessedException e) {
-                                Timber.w(e);
-                            }
-                        }
-                    }
                     applyRenamingRules(content);
                 } else {
                     content.setStatus(StatusContent.ERROR);
@@ -761,6 +752,27 @@ public class ContentDownloadWorker extends BaseWorker {
                     Timber.e(e, "I/O Error saving JSON: %s", title);
                 }
                 ContentHelper.addContent(getApplicationContext(), dao, content);
+
+                // Delete the duplicate book that was meant to be replaced, if any
+                if (!content.getContentToReplace().isNull()) {
+                    Content contentToReplace = content.getContentToReplace().getTarget();
+                    if (contentToReplace != null) {
+                        // Keep that content's custom group and order if needed
+                        List<GroupItem> groupItems = contentToReplace.getGroupItems(Grouping.CUSTOM);
+                        if (!groupItems.isEmpty()) {
+                            for (GroupItem gi : groupItems) {
+                                GroupHelper.moveContentToCustomGroup(content, gi.group.getTarget(), gi.order, dao);
+                            }
+                        }
+
+                        EventBus.getDefault().post(DownloadEvent.fromPreparationStep(DownloadEvent.Step.REMOVE_DUPLICATE));
+                        try {
+                            ContentHelper.removeContent(getApplicationContext(), dao, contentToReplace);
+                        } catch (ContentNotProcessedException e) {
+                            Timber.w(e);
+                        }
+                    }
+                }
 
                 Timber.i("Content download finished: %s [%s]", title, contentId);
 
