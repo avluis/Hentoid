@@ -1155,7 +1155,15 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                 }
                 // Look for duplicates
                 try {
-                    ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(this, onlineContent, pHash, dao);
+                    ImmutablePair<Content, Float> duplicateResult = ContentHelper.findDuplicate(
+                            this,
+                            onlineContent,
+                            Preferences.isDuplicateBrowserUseTitle(),
+                            Preferences.isDuplicateBrowserUseArtist(),
+                            Preferences.isDuplicateBrowserUseSameLanguage(),
+                            Preferences.isDuplicateBrowserUseCover(),
+                            pHash,
+                            dao);
                     if (duplicateResult != null) {
                         duplicateId = duplicateResult.left.getId();
                         duplicateSimilarity = duplicateResult.right;

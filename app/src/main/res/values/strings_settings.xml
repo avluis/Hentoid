@@ -80,9 +80,14 @@
     <string name="pref_browser_nhentai_invisible_blacklist_on">Nhentai-blacklisted books are invisible</string>
     <string name="pref_browser_quick_dl_threshold_title">Quick download long press threshold</string>
     <string name="pref_browser_quick_dl_threshold_summary">Hold down for this duration to start quick downloading\nCurrent: <x:g example="1 s" id="time">%s</x:g></string>
+    <string name="pref_browser_duplicate_detector">Duplicate detector</string>
     <string name="pref_browser_duplicate_ask_title">Duplicates checking</string>
     <string name="pref_browser_duplicate_ask_off">No: always download</string>
     <string name="pref_browser_duplicate_ask_on">Yes: ask before downloading</string>
+    <string name="pref_browser_duplicate_use_title_title">Use title</string>
+    <string name="pref_browser_duplicate_use_artist_title">Use artist</string>
+    <string name="pref_browser_duplicate_use_language_title">Use language</string>
+    <string name="pref_browser_duplicate_use_cover_title">Use cover</string>
     <string name="pref_browser_duplicate_try_pages_title">Try finding extra pages on potential duplicates\?</string>
     <string name="pref_browser_duplicate_try_pages_off">Only try finding extra pages on the original book</string>
     <string name="pref_browser_duplicate_try_pages_on">Try finding extra pages on potential duplicates</string>

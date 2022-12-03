@@ -1485,10 +1485,14 @@ public final class ContentHelper {
     /**
      * Find the best match for the given Content inside the library and queue
      *
-     * @param context Context to use
-     * @param content Content to find the duplicate for
-     * @param pHash   Cover perceptual hash to use as an override for the given Content's cover hash; Long.MIN_VALUE not to override
-     * @param dao     DAO to use
+     * @param context     Context to use
+     * @param content     Content to find the duplicate for
+     * @param useTitle    Use title as a duplicate criteria
+     * @param useArtist   Use artist as a duplicate criteria
+     * @param useLanguage Use language as a duplicate criteria
+     * @param useCover    Use cover picture perceptual hash as a duplicate criteria
+     * @param pHash       Cover picture perceptual hash to use as an override for the given Content's cover hash; Long.MIN_VALUE not to override
+     * @param dao         DAO to use
      * @return Pair containing
      * - left side : Best match for the given Content inside the library and queue
      * - Right side : Similarity score (between 0 and 1; 1=100%)
@@ -1497,6 +1501,10 @@ public final class ContentHelper {
     public static ImmutablePair<Content, Float> findDuplicate(
             @NonNull final Context context,
             @NonNull final Content content,
+            boolean useTitle,
+            boolean useArtist,
+            boolean useLanguage,
+            boolean useCover,
             long pHash,
             @NonNull final CollectionDAO dao) {
         // First find good rough candidates by searching for the longest word in the title
@@ -1509,6 +1517,8 @@ public final class ContentHelper {
         List<Content> roughCandidates = dao.searchTitlesWith(longestWord.get(), contentStatuses);
         if (roughCandidates.isEmpty()) return null;
 
+        if (!useCover) pHash = Long.MIN_VALUE;
+
         // Compute cover hashes for selected candidates
         for (Content c : roughCandidates)
             if (0 == c.getCover().getImageHash()) computeAndSaveCoverHash(context, c, dao);
@@ -1516,11 +1526,10 @@ public final class ContentHelper {
         // Refine by running the actual duplicate detection algorithm against the rough candidates
         List<DuplicateEntry> entries = new ArrayList<>();
         StringSimilarity cosine = new Cosine();
-        // TODO make useLanguage a setting ?
-        DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, true, true, false, pHash);
-        List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, true, true, false, Long.MIN_VALUE)).toList();
+        DuplicateHelper.DuplicateCandidate reference = new DuplicateHelper.DuplicateCandidate(content, useTitle, useArtist, useLanguage, useCover, pHash);
+        List<DuplicateHelper.DuplicateCandidate> candidates = Stream.of(roughCandidates).map(c -> new DuplicateHelper.DuplicateCandidate(c, useTitle, useArtist, useLanguage, useCover, Long.MIN_VALUE)).toList();
         for (DuplicateHelper.DuplicateCandidate candidate : candidates) {
-            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, true, true, true, false, true, 2, cosine);
+            DuplicateEntry entry = DuplicateHelper.Companion.processContent(reference, candidate, useTitle, useCover, useArtist, useLanguage, true, 2, cosine);
             if (entry != null) entries.add(entry);
         }
         // Sort by similarity and size (unfortunately, Comparator.comparing is API24...)

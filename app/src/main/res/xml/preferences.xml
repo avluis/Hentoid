@@ -219,12 +219,38 @@
                 android:summaryOn="@string/pref_browser_resume_last_on"
                 android:title="@string/pref_browser_resume_last_title"
                 app:iconSpaceReserved="false" />
+        </PreferenceCategory>
+        <PreferenceCategory
+            android:title="@string/pref_browser_duplicate_detector"
+            app:iconSpaceReserved="false">
             <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_duplicate_ask_default"
                 android:key="download_duplicate_ask"
-                android:summaryOff="@string/pref_browser_duplicate_ask_off"
-                android:summaryOn="@string/pref_browser_duplicate_ask_on"
                 android:title="@string/pref_browser_duplicate_ask_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_duplicate_use_title_default"
+                android:dependency="download_duplicate_ask"
+                android:key="duplicate_browser_use_title"
+                android:title="@string/pref_browser_duplicate_use_title_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_duplicate_use_artist_default"
+                android:dependency="download_duplicate_ask"
+                android:key="duplicate_browser_use_artist"
+                android:title="@string/pref_browser_duplicate_use_artist_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_duplicate_use_language_default"
+                android:dependency="download_duplicate_ask"
+                android:key="duplicate_browser_use_same_language"
+                android:title="@string/pref_browser_duplicate_use_language_title"
+                app:iconSpaceReserved="false" />
+            <CheckBoxPreference
+                android:defaultValue="@string/pref_browser_duplicate_use_cover_default"
+                android:dependency="download_duplicate_ask"
+                android:key="duplicate_browser_use_cover"
+                android:title="@string/pref_browser_duplicate_use_cover_title"
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_duplicate_try_pages_default"

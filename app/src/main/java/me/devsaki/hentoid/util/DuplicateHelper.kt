@@ -310,11 +310,12 @@ class DuplicateHelper {
         useTitle: Boolean,
         useArtist: Boolean,
         useLanguage: Boolean,
+        useCover: Boolean,
         forceCoverHash: Long = Long.MIN_VALUE
     ) {
         val id = content.id
         val coverHash =
-            if (Long.MIN_VALUE == forceCoverHash) content.cover.imageHash else forceCoverHash
+            if (!useCover) Long.MIN_VALUE else if (Long.MIN_VALUE == forceCoverHash) content.cover.imageHash else forceCoverHash
         val size = content.size
         val titleCleanup = (if (useTitle) StringHelper.cleanup(content.title) else "")!!
         val titleNoDigits = if (useTitle) sanitizeTitle(titleCleanup) else ""
