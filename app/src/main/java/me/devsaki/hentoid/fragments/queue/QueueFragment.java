@@ -1098,7 +1098,7 @@ public class QueueFragment extends Fragment implements ItemTouchCallback, Simple
         List<Content> contents = new ArrayList<>();
         for (ContentItem ci : selectedItems) {
             Content c = ci.getContent();
-            if (null == c) continue;
+            if (null == c || c.isBeingDeleted()) continue; // Don't redownload if the content is being purged
             contents.add(c);
         }
 
