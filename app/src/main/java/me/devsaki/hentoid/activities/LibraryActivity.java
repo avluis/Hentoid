@@ -642,8 +642,15 @@ public class LibraryActivity extends BaseActivity {
                         viewModel.searchContent(getQuery(), getAdvSearchCriteria(), searchUri);
                     }
                 } else { // Clear history
-                    viewModel.clearSearchHistory();
-//                    powerMenu.dismiss();
+                    MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
+                    builder.setMessage(getResources().getString(R.string.clear_search_history_confirm))
+                            .setPositiveButton(R.string.yes,
+                                    (dialog, which) -> viewModel.clearSearchHistory()
+                            )
+                            .setNegativeButton(R.string.no,
+                                    (dialog, which) -> {
+                                    })
+                            .create().show();
                 }
             });
 

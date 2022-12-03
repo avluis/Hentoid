@@ -507,6 +507,7 @@
     </plurals>
     <string name="group_delete_nothing">Nothing to delete - check "Allow deleting external content" to change that</string>
     <string name="clear_rating">Clear rating</string>
+    <string name="clear_search_history_confirm">Clear search history?</string>
 
     <!-- Merge & split -->
     <string name="merge_merge">Merge</string>
