@@ -575,12 +575,11 @@ public class ReaderViewModel extends AndroidViewModel {
         }
         int completedThresholdPosition = Math.round(completedThresholdRatio * nbReadablePages);
 
-        int collectionIndex = viewerIndex + (-1 == thumbIndex ? 0 : thumbIndex) + 1;
+        int collectionIndex = viewerIndex + (-1 == thumbIndex || thumbIndex > viewerIndex ? 0 : 1);
+        final int indexToSet = (collectionIndex >= nbReadablePages) ? 0 : collectionIndex;
+
         boolean updateReads = (readPageNumbers.size() >= readThresholdPosition || theContent.getReads() > 0);
         boolean markAsComplete = (readPageNumbers.size() >= completedThresholdPosition);
-
-        // Reset the memorized page index if it represents the last page
-        int indexToSet = (collectionIndex >= nbReadablePages) ? 0 : collectionIndex;
 
         leaveDisposable =
                 Completable.fromRunnable(() -> doLeaveBook(theContent.getId(), indexToSet, updateReads, markAsComplete))
