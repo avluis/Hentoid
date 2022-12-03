@@ -77,7 +77,7 @@
     <string name="menu_edit_warning_custom">새 지정 주문은 이전 주문을 덮어씁니다.</string>
     <string name="menu_sort_filter">정렬 &amp; 필터</string>
     <string name="menu_delete_single">삭제</string>
-    <string name="menu_change_group">그룹으로 이동</string>
+    <string name="menu_change_group">그룹으로 옮기기</string>
     <string name="menu_open_folder">다운로드 된 폴더 열기</string>
     <string name="menu_redownload">다시 다운로드</string>
     <string name="menu_redownload_scratch">처음부터 다시 다운로드</string>
@@ -94,8 +94,9 @@
     <string name="open_settings">설정 열기</string>
     <string name="app_settings">앱 설정</string>
     <string name="book_settings">작품 설정</string>
-    <string name="permissions_lost">파일 권한이 </string>
+    <string name="alert_browser_mode">탐색 모드 활성화: 저장공간 권한 없음</string>
     <string name="low_memory">기기에 저장 공간이 얼마 남지 않았습니다!</string>
+    <string name="permissions_lost">파일 권한이 </string>
     <string name="fix_permissions">수정</string>
     <string name="view_queue">대기열 보기</string>
     <string name="clear_search_history">검색 기록 삭제</string>
@@ -171,6 +172,9 @@
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">다운로드 실패</string>
     <string name="download_notif_failed_details"><x:g example="Cool H-Manga" id="book_name">%1$s</x:g> 다운로드 불가능: <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g> 폴더를 생성할 수 없습니다. Hentoid 폴더를 확인하고 다시 시도하려면 \'!\' 버튼을 누르세요.</string>
+    <string name="menu_change_dl_mode">다운로드 모드 변경</string>
+    <string name="mode_dl">이미지 다운로드</string>
+    <string name="mode_stream">스트리밍</string>
 <string name="import_downloads_title">다운로드 불러오기</string>
     <plurals name="import_downloads_found">
         <item quantity="one">유효한 다운로드 <x:g example="1" id="downloads">%d</x:g>개 발견</item>
@@ -466,6 +470,7 @@
     </plurals>
     <string name="group_delete_nothing">삭제할 항목이 없습니다 - 변경하려면 \"외부 컨텐츠 삭제 허용\"을 선택하십시오.</string>
     <string name="clear_rating">평점 삭제</string>
+    <string name="clear_search_history_confirm">검색 기록 삭제?</string>
 <string name="merge_merge">병합</string>
     <string name="merge_progress">작품 병합 중...</string>
     <string name="split_progress">작품 분리 중...</string>
@@ -753,7 +758,7 @@
     <string name="meta_choose_type">유형 선택 - \'%s\'</string>
     <string name="meta_replace_with">다음으로 변경</string>
     <string name="meta_tag_all_selected">선택된 모든 작품에 태그 추가</string>
-    <string name="meta_tag_all_selected_confirm">선택된 %d개 작품에 \'%s\' 태그를 추가하시겠습니까?</string>
+    <string name="meta_tag_all_selected_confirm">선택된 %1$d개 작품에 \'%2$s\' 태그를 추가하시겠습니까?</string>
     <string name="meta_rename_new_name">새로운 이름</string>
     <string name="meta_rename_new_rule">다운로드 시 자동 변경을 위해 저장</string>
 <string name="meta_rule_source">대상</string>
