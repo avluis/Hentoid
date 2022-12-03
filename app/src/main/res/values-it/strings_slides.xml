@@ -2,10 +2,14 @@
 <resources>
     <string name="slide_01_header">Benvenuto su Hentoid!</string>
     <string name="slide_01_text">Hentoid è un app di archiviazione per\n&amp; Doujinshi e H-manga.</string>
-    <string name="slide_02_header">Permessi</string>
-    <string name="slide_04_header">Libreria</string>
+<string name="slide_02_header">Permessi</string>
+    <string name="slide_02_browser_mode_title">Solo browser</string>
+    <string name="slide_02_browser_mode_description">Utilizza l\'app per navigare nei siti. \n\Non potrai scaricare nessun libro nè gestire la tua libreria.\n\Nessun permesso necessario.</string>
+    <string name="slide_02_library_mode_title">Naviga &amp; Download</string>
+    <string name="slide_02_library_mode_description">Usa l\'app per scaricare e gestire la tua libreria.\n\Permesso memoria necessario.</string>
+<string name="slide_04_header">Libreria</string>
     <string name="slide_04_text">Hentoid richiede una cartella dedicata per salvare i vostri media.</string>
-<string name="slide_04_skip">Salta</string>
+    <string name="slide_04_skip">Salta</string>
 <string name="slide_04_skip_title">Saltare\?</string>
     <string name="slide_04_skip_msg">Non potrai scaricare se salti questo passaggio.\nPer scaricare, dovrai impostare la cartella di download tramite le impostazioni dell\'app.</string>
     <string name="slide_05_header">Tema</string>
