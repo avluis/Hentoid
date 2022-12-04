@@ -1169,7 +1169,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
                         duplicateSimilarity = duplicateResult.right;
                         // Content ID of the duplicate candidate of the currently viewed Content
                         boolean duplicateSameSite = duplicateResult.left.getSite().equals(onlineContent.getSite());
-                        // Same site and similar => download by default, but look for extra pics just in case
+                        // Same site and similar => enable download button by default, but look for extra pics just in case
                         if (duplicateSameSite && Preferences.isDownloadPlusDuplicateTry() && !quickDownload)
                             searchForExtraImages(duplicateResult.left, onlineContent);
                     }
