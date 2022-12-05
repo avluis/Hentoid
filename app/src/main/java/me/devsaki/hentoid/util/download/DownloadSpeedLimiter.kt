@@ -9,12 +9,12 @@ object DownloadSpeedLimiter {
     var bucket: TokenBucket? = null
 
     fun setSpeedLimitKbps(value: Int) {
-        if (value < 0) bucket = null
-
-        bucket = TokenBuckets.builder()
-            .withCapacity(round(value * 1.1 * 1000).toLong())
-            .withFixedIntervalRefillStrategy(value * 1000L, 1, TimeUnit.SECONDS)
-            .build()
+        bucket = if (value <= 0) null
+        else
+            TokenBuckets.builder()
+                .withCapacity(round(value * 1.1 * 1000).toLong())
+                .withFixedIntervalRefillStrategy(value * 1000L, 1, TimeUnit.SECONDS)
+                .build()
     }
 
     fun take(bytes: Long): Boolean {
