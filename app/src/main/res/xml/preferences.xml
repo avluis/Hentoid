@@ -254,6 +254,7 @@
                 app:iconSpaceReserved="false" />
             <CheckBoxPreference
                 android:defaultValue="@string/pref_browser_duplicate_try_pages_default"
+                android:dependency="download_duplicate_ask"
                 android:key="download_plus_duplicate_try"
                 android:summaryOff="@string/pref_browser_duplicate_try_pages_off"
                 android:summaryOn="@string/pref_browser_duplicate_try_pages_on"
