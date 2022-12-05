@@ -47,7 +47,7 @@ public class HdPornComicsContent extends BaseContentParser {
             int equalIndex = shortlink.lastIndexOf('=');
             if (equalIndex > -1) content.setUniqueSiteId(shortlink.substring(equalIndex + 1));
         }
-        content.setUploadDate(Helper.parseDateToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")); // e.g. 2021-08-08T20:53:49+00:00
+        content.setUploadDate(Helper.parseDatetimeToEpoch(uploadDate, "yyyy-MM-dd'T'HH:mm:ssXXX")); // e.g. 2021-08-08T20:53:49+00:00
 
         String coverUrl = ParseHelper.getImgSrc(cover);
         content.setCoverImageUrl(coverUrl);
