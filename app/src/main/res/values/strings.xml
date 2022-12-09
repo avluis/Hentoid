@@ -856,6 +856,11 @@
     <string name="notif_delete_fail">Deletion failed</string>
     <string name="notif_delete_fail_details">At least one book failed to be deleted</string>
 
+    <!-- Update Json service -->
+    <string name="notif_json_title">JSON update</string>
+    <string name="notif_json_progress">JSON update in progress</string>
+    <string name="notif_json_complete">Update complete</string>
+
     <!-- Startup -->
     <string name="title_startup">Startup</string>
     <string name="title_startup_progress">Starting…</string>

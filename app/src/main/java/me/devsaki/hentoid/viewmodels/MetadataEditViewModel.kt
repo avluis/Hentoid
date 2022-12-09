@@ -4,12 +4,16 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.annimon.stream.Stream
 import io.reactivex.Completable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
 import io.reactivex.schedulers.Schedulers
+import me.devsaki.hentoid.R
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
@@ -21,6 +25,8 @@ import me.devsaki.hentoid.util.GroupHelper
 import me.devsaki.hentoid.util.Helper
 import me.devsaki.hentoid.util.Preferences
 import me.devsaki.hentoid.util.SearchHelper.AttributeQueryResult
+import me.devsaki.hentoid.workers.UpdateJsonWorker
+import me.devsaki.hentoid.workers.data.UpdateJsonData
 import org.threeten.bp.Instant
 import timber.log.Timber
 
@@ -252,13 +258,17 @@ class MetadataEditViewModel(
             ) { t: Throwable? -> Timber.e(t) }
     }
 
-    // TODO make that blocking else it gets murdered by the activity stopping
     private fun doSaveContent() {
+        // Update DB
         contentList.value?.forEach {
             it.lastEditDate = Instant.now().toEpochMilli()
             it.author = ContentHelper.formatBookAuthor(it)
             // Assign Content to each artist/circle group
-            GroupHelper.removeContentFromGrouping(me.devsaki.hentoid.enums.Grouping.ARTIST, it, dao) // Saves content to DAO
+            GroupHelper.removeContentFromGrouping(
+                me.devsaki.hentoid.enums.Grouping.ARTIST,
+                it,
+                dao
+            ) // Saves content to DAO
             var artistFound = false
             it.attributes.forEach { attr ->
                 if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
@@ -272,9 +282,21 @@ class MetadataEditViewModel(
                 val item = GroupItem(it, group, -1)
                 dao.insertGroupItem(item)
             }
-            ContentHelper.persistJson(getApplication(), it)
         }
-        GroupHelper.updateGroupsJson(getApplication(), dao)
+
+        // Save all JSONs
+        val builder = UpdateJsonData.Builder()
+        builder.setContentIds(Helper.getPrimitiveArrayFromList(contentList.value?.map { c -> c.id }))
+        builder.setUpdateGroups(true)
+
+        val workManager = WorkManager.getInstance(getApplication())
+        workManager.enqueueUniqueWork(
+            R.id.udpate_json_service.toString(),
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
+            OneTimeWorkRequestBuilder<UpdateJsonWorker>()
+                .setInputData(builder.data)
+                .build()
+        )
     }
 
     fun renameAttribute(newName: String, id: Long, createRule: Boolean) {

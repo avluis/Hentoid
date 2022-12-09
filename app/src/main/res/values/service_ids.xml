@@ -7,6 +7,7 @@
     <item name="external_import_service" type="id" />
     <item name="metadata_import_service" type="id" />
     <item name="downloads_import_service" type="id" />
+    <item name="udpate_json_service" type="id" />
     <item name="delete_service_delete" type="id" />
     <item name="delete_service_purge" type="id" />
     <item name="duplicate_detector_service" type="id" />

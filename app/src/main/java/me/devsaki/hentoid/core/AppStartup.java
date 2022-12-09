@@ -44,6 +44,7 @@ import me.devsaki.hentoid.notification.delete.DeleteNotificationChannel;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
 import me.devsaki.hentoid.notification.startup.StartupNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
+import me.devsaki.hentoid.notification.updateJson.UpdateJsonNotificationChannel;
 import me.devsaki.hentoid.receiver.PlugEventsReceiver;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.util.file.FileHelper;
@@ -187,6 +188,7 @@ public class AppStartup {
             DownloadNotificationChannel.init(context);
             UserActionNotificationChannel.init(context);
             DeleteNotificationChannel.init(context);
+            UpdateJsonNotificationChannel.init(context);
             // Clears all previous notifications
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             if (manager != null) manager.cancelAll();

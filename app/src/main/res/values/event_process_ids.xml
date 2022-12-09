@@ -11,4 +11,5 @@
     <item name="duplicate_detect" type="id" />
     <item name="viewer_load" type="id" />
     <item name="viewer_page_download" type="id" />
+    <item name="update_json" type="id" />
 </resources>
