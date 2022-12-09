@@ -182,6 +182,10 @@ public class LibraryActivity extends BaseActivity {
     // ======== INNER VARIABLES
     // Used to ignore native calls to onQueryTextChange
     private boolean invalidateNextQueryTextChange = false;
+    // TODO
+    private boolean preventShowSearchHistoryNextExpand = false;
+    // TODO
+    private PowerMenu searchHistory = null;
     // Current text search query; one per tab
     private final List<String> query = Arrays.asList("", "");
     // Current metadata search query; one per tab
@@ -471,7 +475,8 @@ public class LibraryActivity extends BaseActivity {
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                showSearchSubBar(true, null, true);
+                showSearchSubBar(true, null, !preventShowSearchHistoryNextExpand);
+                preventShowSearchHistoryNextExpand = false;
                 invalidateNextQueryTextChange = true;
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
@@ -626,8 +631,8 @@ public class LibraryActivity extends BaseActivity {
                 powerMenuBuilder.addItem(new PowerMenuItem(searchRecords.get(i).getLabel(), R.drawable.ic_clock, false, searchRecords.get(i)));
             powerMenuBuilder.addItem(new PowerMenuItem(getResources().getString(R.string.clear_search_history), false));
 
-            PowerMenu powerMenu = powerMenuBuilder.build();
-            powerMenu.setOnMenuItemClickListener((position, item) -> {
+            searchHistory = powerMenuBuilder.build();
+            searchHistory.setOnMenuItemClickListener((position, item) -> {
                 if (item.getTag() != null) { // Tap on search record
                     SearchRecord record = (SearchRecord) item.getTag();
                     Uri searchUri = Uri.parse(record.getSearchString());
@@ -654,9 +659,9 @@ public class LibraryActivity extends BaseActivity {
                 }
             });
 
-            powerMenu.setIconColor(ContextCompat.getColor(this, R.color.white_opacity_87));
-            powerMenu.showAsDropDown(searchSubBar);
-        }
+            searchHistory.setIconColor(ContextCompat.getColor(this, R.color.white_opacity_87));
+            searchHistory.showAsDropDown(searchSubBar);
+        } else if (!showSearchHistory && searchHistory != null) searchHistory.dismiss();
     }
 
     public void hideSearchSubBar() {
@@ -683,6 +688,7 @@ public class LibraryActivity extends BaseActivity {
 
     public void expandSearchMenu() {
         if (searchMenu != null && !searchMenu.isActionViewExpanded()) {
+            preventShowSearchHistoryNextExpand = true;
             searchMenu.expandActionView();
         }
     }
