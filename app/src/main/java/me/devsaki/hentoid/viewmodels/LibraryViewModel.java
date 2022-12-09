@@ -82,7 +82,9 @@ import me.devsaki.hentoid.widget.ContentSearchManager;
 import me.devsaki.hentoid.widget.GroupSearchManager;
 import me.devsaki.hentoid.workers.DeleteWorker;
 import me.devsaki.hentoid.workers.PurgeWorker;
+import me.devsaki.hentoid.workers.UpdateJsonWorker;
 import me.devsaki.hentoid.workers.data.DeleteData;
+import me.devsaki.hentoid.workers.data.UpdateJsonData;
 import timber.log.Timber;
 
 
@@ -1025,7 +1027,20 @@ public class LibraryViewModel extends AndroidViewModel {
                             .observeOn(Schedulers.io())
                             .doOnComplete(() -> {
                                 refreshCustomGroupingAvailable();
-                                GroupHelper.updateGroupsJson(getApplication(), dao);
+
+                                // Update all JSONs of the books inside the renamed group so that they refer to the correct name
+                                UpdateJsonData.Builder builder = new UpdateJsonData.Builder();
+                                builder.setContentIds(Helper.getPrimitiveArrayFromList(group.getContentIds()));
+                                builder.setUpdateGroups(true);
+
+                                WorkManager workManager = WorkManager.getInstance(getApplication());
+                                workManager.enqueueUniqueWork(
+                                        Integer.toString(R.id.udpate_json_service),
+                                        ExistingWorkPolicy.APPEND_OR_REPLACE,
+                                        new OneTimeWorkRequest.Builder(UpdateJsonWorker.class)
+                                                .setInputData(builder.getData())
+                                                .build()
+                                );
                             })
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(
