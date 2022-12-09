@@ -10,6 +10,7 @@ import com.annimon.stream.Stream;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -172,7 +173,8 @@ public final class GroupHelper {
      * @param dao               DAO to use
      */
     private static void updateGroupCover(@NonNull final Group group, long contentIdToRemove, @NonNull CollectionDAO dao) {
-        List<Content> groupsContents = dao.selectContent(Helper.getPrimitiveArrayFromList(group.getContentIds()));
+        List<Long> contentIds = group.getContentIds();
+        List<Content> groupsContents = dao.selectContent(Helper.getPrimitiveArrayFromList(contentIds));
 
         // Empty group cover if there's just one content inside
         if (1 == groupsContents.size() && groupsContents.get(0).getId() == contentIdToRemove) {
@@ -209,5 +211,29 @@ public final class GroupHelper {
             if (item.group.getTarget().equals(group)) return true;
         }
         return false;
+    }
+
+    // TODO
+    public static void removeContentFromGrouping(@NonNull Grouping grouping, @NonNull Content content, @NonNull CollectionDAO dao) {
+        List<GroupItem> toRemove = new ArrayList<>();
+        List<Group> needCoverUpdate = new ArrayList<>();
+        for (GroupItem gi : content.groupItems) {
+            if (gi.group.getTarget().grouping.equals(grouping)) {
+                toRemove.add(gi);
+                if (gi.getGroup().coverContent.getTargetId() == content.getId())
+                    needCoverUpdate.add(gi.getGroup());
+            }
+        }
+
+        // If applicable, remove Group cover
+        if (!needCoverUpdate.isEmpty())
+            for (Group g : needCoverUpdate) updateGroupCover(g, content.getId(), dao);
+
+        // Remove content from grouping
+        content.groupItems.removeAll(toRemove);
+        dao.insertContentCore(content);
+
+        // Remove GroupItems from the DB
+        dao.deleteGroupItems(Stream.of(toRemove).map(gi -> gi.id).toList());
     }
 }

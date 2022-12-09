@@ -13,6 +13,7 @@ import io.reactivex.schedulers.Schedulers
 import me.devsaki.hentoid.database.CollectionDAO
 import me.devsaki.hentoid.database.domains.Attribute
 import me.devsaki.hentoid.database.domains.Content
+import me.devsaki.hentoid.database.domains.GroupItem
 import me.devsaki.hentoid.database.domains.RenamingRule
 import me.devsaki.hentoid.enums.AttributeType
 import me.devsaki.hentoid.util.ContentHelper
@@ -251,15 +252,25 @@ class MetadataEditViewModel(
             ) { t: Throwable? -> Timber.e(t) }
     }
 
+    // TODO make that blocking else it gets murdered by the activity stopping
     private fun doSaveContent() {
         contentList.value?.forEach {
             it.lastEditDate = Instant.now().toEpochMilli()
             it.author = ContentHelper.formatBookAuthor(it)
-            dao.insertContent(it)
             // Assign Content to each artist/circle group
+            GroupHelper.removeContentFromGrouping(me.devsaki.hentoid.enums.Grouping.ARTIST, it, dao) // Saves content to DAO
+            var artistFound = false
             it.attributes.forEach { attr ->
-                if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE)
+                if (attr.type == AttributeType.ARTIST || attr.type == AttributeType.CIRCLE) {
                     GroupHelper.addContentToAttributeGroup(attr.group.target, attr, it, dao)
+                    artistFound = true
+                }
+            }
+            if (!artistFound) {
+                // Add to the "no artist" group if no artist has been found
+                val group = GroupHelper.getOrCreateNoArtistGroup(getApplication(), dao)
+                val item = GroupItem(it, group, -1)
+                dao.insertGroupItem(item)
             }
             ContentHelper.persistJson(getApplication(), it)
         }
