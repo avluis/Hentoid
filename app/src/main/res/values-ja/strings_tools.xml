@@ -11,7 +11,7 @@
 <string name="tools_export_settings_summary">設定をJSONファイルに書き出す</string>
 <string name="tools_import_settings_title">インポートの設定</string>
 <string name="tools_import_settings_summary">エクスポートされた設定をJSONファイルから復元する</string>
-<string name="tools_duplicate_detector_title">複製検出器</string>
+<string name="tools_duplicate_detector_title">重複検出器</string>
 <string name="tools_duplicate_detector_summary">重複する書籍の確認と削除</string>
 <string name="tools_screen_cache">キャッシュの管理</string>
 <string name="tools_cache_browser">ブラウザのキャッシュをクリア</string>

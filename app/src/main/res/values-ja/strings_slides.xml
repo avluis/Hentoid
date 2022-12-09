@@ -2,10 +2,14 @@
 <resources>
     <string name="slide_01_header">Hentoidへようこそ！</string>
     <string name="slide_01_text">Hentoidは同人誌\n＆amp; H-Mangaのアーカイブアプリです</string>
-    <string name="slide_02_header">権限</string>
-    <string name="slide_04_header">ライブラリー</string>
+<string name="slide_02_header">権限</string>
+    <string name="slide_02_browser_mode_title">閲覧のみ</string>
+    <string name="slide_02_browser_mode_description">アプリを使ってWebサイトを閲覧します。\n\n書籍をダウンロードしたり、ライブラリを管理したりすることはできません。\n\n権限は必要ありません。</string>
+    <string name="slide_02_library_mode_title">ブラウズ &amp; ダウンロード</string>
+    <string name="slide_02_library_mode_description">アプリを使用してライブラリをダウンロードおよび管理します。\in\ストレージへのアクセス許可が必要です。</string>
+<string name="slide_04_header">ライブラリー</string>
     <string name="slide_04_text">Hentoidには、メディアを保存するための専用フォルダーが必要です。</string>
-<string name="slide_04_skip">スキップ</string>
+    <string name="slide_04_skip">スキップ</string>
 <string name="slide_04_skip_title">本当にスキップしますか？</string>
     <string name="slide_04_skip_msg">この手順をスキップすると、ダウンロードできなくなります。\ダウンロードするには、アプリの設定でダウンロードフォルダを設定する必要があります。</string>
     <string name="slide_05_header">テーマを選択</string>

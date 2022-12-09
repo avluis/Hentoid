@@ -37,6 +37,7 @@
     <string name="pref_folder_naming_content_title">Nomi delle cartelle</string>
     <string name="pref_folder_naming_content_summary">Denominazione cartella libro:\n<x:g example="Name - ID" id="convention">%s</x:g></string>
     <string name="pref_import_running">L\'importazione è già in corso</string>
+    <string name="pref_import_browser_mode">L\'app è in modalità browser</string>
     <string name="prefs_ask_detach_external_library">Sei sicuro di voler staccare la libreria esterna\?</string>
     <string name="prefs_external_library_detached">Libreria esterna staccata</string>
     <string name="pref_folder_trunc_title">Riduci il nome della cartella</string>
@@ -74,9 +75,14 @@
     <string name="pref_browser_nhentai_invisible_blacklist_on">I libri della lista nera di NHentai sono invisibili</string>
     <string name="pref_browser_quick_dl_threshold_title">Soglia di pressione lunga per il download rapido</string>
     <string name="pref_browser_quick_dl_threshold_summary">Tieni premuto per questo periodo per iniziare un download rapido\nAdesso: <x:g example="1 s" id="time">%s</x:g></string>
+    <string name="pref_browser_duplicate_detector">Rilevatore duplicati</string>
     <string name="pref_browser_duplicate_ask_title">Controllo dei duplicati</string>
     <string name="pref_browser_duplicate_ask_off">No: scarica sempre</string>
     <string name="pref_browser_duplicate_ask_on">Sì: chiedi prima di scaricare</string>
+    <string name="pref_browser_duplicate_use_title_title">Usa titolo</string>
+    <string name="pref_browser_duplicate_use_artist_title">Usa artista</string>
+    <string name="pref_browser_duplicate_use_language_title">Usa lingua</string>
+    <string name="pref_browser_duplicate_use_cover_title">Usa copertina</string>
     <string name="pref_browser_duplicate_try_pages_title">Provare a trovare pagine extra su potenziali duplicati\?</string>
     <string name="pref_browser_duplicate_try_pages_off">Prova solo a trovare pagine extra sul libro originale</string>
     <string name="pref_browser_duplicate_try_pages_on">Prova a trovare pagine extra su potenziali duplicati</string>
@@ -126,6 +132,7 @@
     <string name="pref_dl_blocked_tags_behaviour_title">Comportamento blocco</string>
     <string name="pref_dl_threads_quantity_title">Numero di download paralleli</string>
     <string name="pref_dl_threads_quantity_summary">Numero di immagini scaricate contemporaneamente\nAdesso: <x:g example="5" id="number">%s</x:g></string>
+    <string name="pref_dl_speed_cap_title">Limite velocità download</string>
 <string name="pref_screen_privacy">Privacy</string>
     <string name="pref_app_preview_title">Anteprima dell\'app nelle app recenti</string>
     <string name="pref_app_preview_summary_off">Anteprima dell\'app in app recenti disabilitata. \nAbilita se hai bisogno di fare uno screenshot.</string>

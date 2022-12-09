@@ -730,7 +730,7 @@
         <item quantity="one"><x:g example="1" id="number">%d</x:g>개 중복 탐지됨</item>
         <item quantity="other"><x:g example="2" id="number">%d</x:g>개 중복 탐지됨</item>
     </plurals>
-    <string name="duplicate_empty_first_use">표시 항목 없음 - 새로운 중복 탐지기 실행</string>
+    <string name="duplicate_empty_first_use">항목 없음</string>
     <string name="duplicate_processing">중복 작품 탐지 중...</string>
     <plurals name="duplicate_main_title">
         <item quantity="one"><x:g example="1" id="number">%d</x:g>개 항목 남음</item>

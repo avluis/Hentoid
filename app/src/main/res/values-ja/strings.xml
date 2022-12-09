@@ -94,8 +94,9 @@
     <string name="open_settings">設定を開く</string>
     <string name="app_settings">アプリの設定</string>
     <string name="book_settings">ブックの設定</string>
-    <string name="permissions_lost">ファイルのアクセス許可が失われました</string>
+    <string name="alert_browser_mode">ブラウザモードが有効: ストレージへのアクセスなし</string>
     <string name="low_memory">お使いのデバイスのストレージが不足しています！</string>
+    <string name="permissions_lost">ファイルのアクセス許可が失われました</string>
     <string name="fix_permissions">修正</string>
     <string name="view_queue">キューを表示</string>
     <string name="clear_search_history">検索履歴をクリア</string>
@@ -171,6 +172,9 @@
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g>メガバイト＠<x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">ダウンロードに失敗しました</string>
     <string name="download_notif_failed_details">ダウンロードできません<x:g example="Cool H-Manga" id="book_name">%1$s</x:g>：フォルダを作成できません<x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>。 Hentoidフォルダを確認し、「！」を使用してダウンロードを再試行してください</string>
+    <string name="menu_change_dl_mode">ダウンロードモードの変更</string>
+    <string name="mode_dl">画像のダウンロード</string>
+    <string name="mode_stream">ストリーミング</string>
 <string name="import_downloads_title">ダウンロードのインポート</string>
     <plurals name="import_downloads_found">
         <item quantity="one"><x:g example="1" id="downloads">%d</x:g>有効なダウンロードが見つかりました</item>
@@ -466,6 +470,7 @@
     </plurals>
     <string name="group_delete_nothing">削除するものはありません - 「外部コンテンツの削除を許可する」を確認してそれを変更します</string>
     <string name="clear_rating">明確な評価</string>
+    <string name="clear_search_history_confirm">検索履歴をクリアしますか？</string>
 <string name="merge_merge">マージ</string>
     <string name="merge_progress">本をマージする…</string>
     <string name="split_progress">分割本…</string>
@@ -693,7 +698,7 @@
     <string name="update_success">更新に成功しました！</string>
     <string name="starting_download">ダウンロードの開始</string>
 <string name="title_activity_drawer_edit">編集メニュー</string>
-<string name="title_activity_duplicate_detector">複製検出器</string>
+<string name="title_activity_duplicate_detector">重複検出器</string>
     <string name="duplicate_use_title">タイトル</string>
     <string name="duplicate_use_cover">表紙</string>
     <string name="duplicate_use_artist">作家</string>
@@ -753,7 +758,7 @@
     <string name="meta_choose_type">\'%s\' のタイプを選択してください</string>
     <string name="meta_replace_with">と置換する…</string>
     <string name="meta_tag_all_selected">選択したすべての本にタグを付ける</string>
-    <string name="meta_tag_all_selected_confirm">すべてにタグを付ける%dで選んだ本 \'%s\' ?</string>
+    <string name="meta_tag_all_selected_confirm">すべてにタグを付ける%1$dで選んだ本 \'%2$s\'?</string>
     <string name="meta_rename_new_name">新しい名前</string>
     <string name="meta_rename_new_rule">今後のダウンロードのために覚えておく</string>
 <string name="meta_rule_source">ソース</string>
