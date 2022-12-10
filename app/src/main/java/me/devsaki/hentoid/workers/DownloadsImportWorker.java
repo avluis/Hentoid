@@ -124,7 +124,7 @@ public class DownloadsImportWorker extends BaseWorker {
             for (String s : downloads) {
                 String galleryUrl = s;
                 if (StringHelper.isNumeric(galleryUrl))
-                    galleryUrl = Content.getGalleryUrlFromId(Site.NHENTAI, galleryUrl);
+                    galleryUrl = Content.getGalleryUrlFromId(Site.NHENTAI, galleryUrl); // We assume any launch code is Nhentai's
                 importGallery(galleryUrl, queuePosition, importAsStreamed, false);
             }
         } catch (InterruptedException ie) {
