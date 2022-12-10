@@ -54,7 +54,7 @@ public class SimplyContent extends BaseContentParser {
         } else content.setTitle(NO_TITLE);
 
         if (ulDateContainer != null)
-            content.setUploadDate(Helper.parseDateToEpoch(ulDateContainer.ownText(), "MM/dd/yyyy")); // e.g. 10/23/2022
+            content.setUploadDate(Helper.parseDateToEpoch(ulDateContainer.ownText(), "MM/d/yyyy")); // e.g. 10/23/2022, 12/8/2022
 
         AttributeMap attributes = new AttributeMap();
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languageTags, false, Site.SIMPLY);
