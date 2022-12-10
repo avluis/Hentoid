@@ -1302,17 +1302,19 @@ public class ReaderViewModel extends AndroidViewModel {
 
                     ImmutablePair<Uri, String> result;
                     if (img.needsPageParsing()) {
+                        String pageUrl = HttpHelper.fixUrl(img.getPageUrl(), content.getSite().getUrl());
                         // Get cookies from the app jar
-                        String cookieStr = HttpHelper.getCookies(img.getPageUrl());
+                        String cookieStr = HttpHelper.getCookies(pageUrl);
                         // If nothing found, peek from the site
                         if (cookieStr.isEmpty())
-                            cookieStr = HttpHelper.peekCookies(img.getPageUrl());
+                            cookieStr = HttpHelper.peekCookies(pageUrl);
                         if (!cookieStr.isEmpty())
                             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                         result = downloadPictureFromPage(content, img, pageIndex, headers, targetFolder, targetFileName, stopDownload);
                     } else {
+                        String imgUrl = HttpHelper.fixUrl(img.getUrl(), content.getSite().getUrl());
                         // Get cookies from the app jar
-                        String cookieStr = HttpHelper.getCookies(img.getUrl());
+                        String cookieStr = HttpHelper.getCookies(imgUrl);
                         // If nothing found, peek from the site
                         if (cookieStr.isEmpty())
                             cookieStr = HttpHelper.peekCookies(content.getGalleryUrl());
@@ -1320,7 +1322,7 @@ public class ReaderViewModel extends AndroidViewModel {
                             headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookieStr));
                         result = DownloadHelper.downloadToFile(
                                 content.getSite(),
-                                img.getUrl(),
+                                imgUrl,
                                 pageIndex,
                                 headers,
                                 Uri.fromFile(targetFolder),

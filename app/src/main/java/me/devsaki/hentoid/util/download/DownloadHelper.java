@@ -50,7 +50,7 @@ public class DownloadHelper {
      * Download the given resource to the given disk location
      *
      * @param site              Site to use params for
-     * @param url               URL to download from
+     * @param rawUrl            URL to download from
      * @param resourceId        ID of the corresponding resource (for logging purposes only)
      * @param requestHeaders    HTTP request headers to use
      * @param targetFolderUri   Uri of the folder where to save the downloaded resource
@@ -66,7 +66,7 @@ public class DownloadHelper {
     // TODO update doc
     public static ImmutablePair<Uri, String> downloadToFile(
             @NonNull Site site,
-            @NonNull String url,
+            @NonNull String rawUrl,
             int resourceId,
             List<Pair<String, String>> requestHeaders,
             @NonNull Uri targetFolderUri,
@@ -77,6 +77,7 @@ public class DownloadHelper {
             Consumer<Float> notifyProgress) throws
             IOException, UnsupportedContentException, DownloadInterruptedException, IllegalStateException {
         Helper.assertNonUiThread();
+        String url = HttpHelper.fixUrl(rawUrl, site.getUrl());
 
         if (interruptDownload.get())
             throw new DownloadInterruptedException("Download interrupted");
