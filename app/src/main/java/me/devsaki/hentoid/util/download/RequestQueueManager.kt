@@ -22,8 +22,8 @@ import kotlin.math.min
  */
 class RequestQueueManager private constructor(
     context: Context,
-    private val onSuccess: BiConsumer<RequestOrder, Uri>?,
-    private val onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>?
+    private val onSuccess: BiConsumer<RequestOrder, Uri>,
+    private val onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>
 ) {
     private var mRequestQueue: RequestQueue? = null
 
@@ -256,14 +256,14 @@ class RequestQueueManager private constructor(
 
     private fun onRequestSuccess(request: RequestOrder, resultFileUri: Uri) {
         onRequestCompleted(request)
-        onSuccess?.accept(request, resultFileUri)
+        onSuccess.accept(request, resultFileUri)
     }
 
     private fun onRequestError(request: RequestOrder, err: RequestOrder.NetworkError) {
         onRequestCompleted(request)
         // Don't propagate interruptions
         if (err.type != RequestOrder.NetworkErrorType.INTERRUPTED)
-            onError?.accept(request, err)
+            onError.accept(request, err)
         else
             Timber.d("Downloader : Interruption detected for %s : %s", request.url, err.message)
     }
@@ -332,11 +332,17 @@ class RequestQueueManager private constructor(
          */
         fun getInstance(
             context: Context,
-            onSuccess: BiConsumer<RequestOrder, Uri>?,
-            onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>?
+            onSuccess: BiConsumer<RequestOrder, Uri>,
+            onError: BiConsumer<RequestOrder, RequestOrder.NetworkError>
         ): RequestQueueManager =
             instance ?: synchronized(this) {
                 instance ?: RequestQueueManager(context, onSuccess, onError).also { instance = it }
             }
+
+        fun getInstance(): RequestQueueManager? {
+            synchronized(this) {
+                return instance
+            }
+        }
     }
 }
