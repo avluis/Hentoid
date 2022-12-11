@@ -455,24 +455,29 @@ public class ContentDownloadWorker extends BaseWorker {
                 requestQueueManager.queueRequest(buildImageDownloadRequest(cover, dir, content));
             }
         } else { // Regular downloads
-
+            ImageFile cover = null;
             // Queue image download requests
             for (ImageFile img : images) {
                 if (img.getStatus().equals(StatusContent.SAVED)) {
-
                     enrichImageDownloadParams(img, content);
 
                     // Set the 1st image of the list as a backup in case the cover URL is stale (might happen when restarting old downloads)
-                    if (img.isCover() && images.size() > 1)
+                    if (img.isCover() && images.size() > 1) {
                         img.setBackupUrl(images.get(1).getUrl());
+                        cover = img;
+                    }
 
                     if (img.needsPageParsing()) pagesToParse.add(img);
                     else if (img.getDownloadParams().contains(ContentHelper.KEY_DL_PARAMS_UGOIRA_FRAMES))
                         ugoirasToDownload.add(img);
-                    else
+                    else if (!img.isCover())
                         requestQueueManager.queueRequest(buildImageDownloadRequest(img, dir, content));
                 }
             }
+
+            // Download cover last, to avoid being blocked by the server when downloading cover and page 1 back to back when they are the same resource
+            if (cover != null)
+                requestQueueManager.queueRequest(buildImageDownloadRequest(cover, dir, content));
 
             // Parse pages for images
             if (!pagesToParse.isEmpty()) {
