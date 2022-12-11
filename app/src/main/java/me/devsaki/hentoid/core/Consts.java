@@ -38,4 +38,5 @@ public abstract class Consts {
     public static final String URL_GITHUB_WIKI = "https://github.com/AVnetWS/Hentoid/wiki";
     public static final String URL_DISCORD = "https://discord.gg/QEZ3qk9";
     public static final String URL_REDDIT = "https://www.reddit.com/r/Hentoid/";
+    public static final String URL_WIKI_TRANSFER = "https://github.com/avluis/Hentoid/wiki/Transferring-your-collection-between-devices";
 }

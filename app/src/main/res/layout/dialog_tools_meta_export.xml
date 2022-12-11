@@ -10,7 +10,7 @@
 
     <TextView
         android:id="@+id/export_title"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
         android:text="@string/export_title"
@@ -20,13 +20,126 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/export_question_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/export_question"
+        android:textSize="@dimen/text_subtitle_1"
+        app:layout_constraintTop_toBottomOf="@id/export_title" />
+
+    <RadioGroup
+        android:id="@+id/export_question"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_question_txt">
+
+        <RadioButton
+            android:id="@+id/export_question_yes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingEnd="8dp"
+            android:text="@string/yes"
+            android:textColor="?colorOnSurface"
+            android:textSize="@dimen/text_body_1" />
+
+        <RadioButton
+            android:id="@+id/export_question_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/no"
+            android:textColor="?colorOnSurface"
+            android:textSize="@dimen/text_body_1" />
+    </RadioGroup>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="2dp"
+        android:background="?colorSecondary"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/export_question" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/export_group_yes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="export_answer_yes, answer_img, export_wiki_link"
+        tools:visibility="visible" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/export_group_no"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:constraint_referenced_ids="export_file_help2_text, warning_img"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/export_answer_yes"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@color/white_opacity_25"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingStart="64dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="8dp"
+        android:text="@string/export_answer_yes"
+        android:textColor="@color/white_opacity_87"
+        android:textStyle="italic"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/answer_img"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:adjustViewBounds="true"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_nuclear"
+        app:layout_constraintBottom_toBottomOf="@id/export_answer_yes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/export_answer_yes"
+        app:tint="@color/white_opacity_87"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/export_wiki_link"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="26dp"
+        android:background="@color/white_opacity_25"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:text="@string/export_transfer_tutorial"
+        android:textColor="@color/white_opacity_87"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/answer_img"
+        tools:visibility="visible" />
+
     <CheckBox
         android:id="@+id/export_file_library_chk"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_title"
+        app:layout_constraintTop_toBottomOf="@id/export_wiki_link"
         tools:text="Export library (235 books)"
         tools:visibility="visible" />
 
@@ -75,40 +188,6 @@
         tools:visibility="visible" />
 
     <TextView
-        android:id="@+id/export_file_help1_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="@color/white_opacity_25"
-        android:clickable="true"
-        android:focusable="true"
-        android:paddingStart="64dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="8dp"
-        android:text="@string/export_warning1"
-        android:textColor="@color/white_opacity_87"
-        android:textStyle="italic"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_file_bookmarks_chk" />
-
-    <ImageView
-        android:id="@+id/info_img"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:adjustViewBounds="true"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_info"
-        app:layout_constraintBottom_toBottomOf="@id/export_file_help1_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/export_file_help1_text"
-        app:tint="@color/white_opacity_87"
-        tools:ignore="ContentDescription" />
-
-    <TextView
         android:id="@+id/export_file_help2_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -123,7 +202,7 @@
         android:textStyle="italic"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/export_file_help1_text" />
+        app:layout_constraintTop_toBottomOf="@id/export_file_bookmarks_chk" />
 
     <ImageView
         android:id="@+id/warning_img"

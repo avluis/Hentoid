@@ -388,8 +388,6 @@
     <string name="empty_string" translatable="false" />
     <!-- Strings: Main: TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
-    <!-- Strings: Main: Export metadata -->
-    <string name="export_faq_url" translatable="false">https://github.com/avluis/Hentoid/wiki/FAQ#Lib-2</string>
     <!-- Strings: Main: Import Activity -->
     <!-- for logging only -->
     <string name="enabled" translatable="false">ENABLED</string>
