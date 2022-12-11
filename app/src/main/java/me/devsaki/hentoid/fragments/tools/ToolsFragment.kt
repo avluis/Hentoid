@@ -81,7 +81,7 @@ class ToolsFragment : PreferenceFragmentCompat() {
                 true
             }
             EXPORT_LIBRARY -> {
-                MetaExportDialogFragment_.invoke(parentFragmentManager)
+                MetaExportDialogFragment.invoke(parentFragmentManager)
                 true
             }
             IMPORT_LIBRARY -> {

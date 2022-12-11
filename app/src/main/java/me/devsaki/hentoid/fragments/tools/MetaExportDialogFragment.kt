@@ -39,7 +39,7 @@ import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 
-class MetaExportDialogFragment_ : DialogFragment(R.layout.dialog_tools_meta_export) {
+class MetaExportDialogFragment : DialogFragment(R.layout.dialog_tools_meta_export) {
 
     // == UI
     private var binding: DialogToolsMetaExportBinding? = null
@@ -316,7 +316,7 @@ class MetaExportDialogFragment_ : DialogFragment(R.layout.dialog_tools_meta_expo
 
     companion object {
         fun invoke(fragmentManager: FragmentManager) {
-            val fragment = MetaExportDialogFragment_()
+            val fragment = MetaExportDialogFragment()
             fragment.show(fragmentManager, null)
         }
     }
