@@ -59,6 +59,7 @@ import me.devsaki.hentoid.database.domains.RenamingRule;
 import me.devsaki.hentoid.database.domains.RenamingRule_;
 import me.devsaki.hentoid.database.domains.SearchRecord;
 import me.devsaki.hentoid.database.domains.ShuffleRecord;
+import me.devsaki.hentoid.database.domains.ShuffleRecord_;
 import me.devsaki.hentoid.database.domains.SiteBookmark;
 import me.devsaki.hentoid.database.domains.SiteBookmark_;
 import me.devsaki.hentoid.database.domains.SiteHistory;
@@ -655,7 +656,7 @@ public class ObjectBoxDB {
                 }
             }
         }
-        return Helper.getPrimitiveArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
+        return query.build().property(GroupItem_.contentId).findLongs();
     }
 
     private Query<Content> selectContentUniversalAttributesQ(
@@ -755,7 +756,7 @@ public class ObjectBoxDB {
         if (searchBundle.getGroupId() > 0)
             contentQuery.in(Content_.id, selectFilteredContent(searchBundle.getGroupId()));
 
-        return Helper.getPrimitiveArrayFromList(Stream.of(query.build().find()).map(gi -> gi.content.getTargetId()).toList());
+        return query.build().property(GroupItem_.contentId).findLongs();
     }
 
     Query<Content> selectContentUniversalQ(ContentSearchManager.ContentSearchBundle searchBundle) {
@@ -777,7 +778,7 @@ public class ObjectBoxDB {
     }
 
     List<Long> getShuffledIds() {
-        return Stream.of(store.boxFor(ShuffleRecord.class).getAll()).map(ShuffleRecord::getContentId).toList();
+        return Helper.getListFromPrimitiveArray(store.boxFor(ShuffleRecord.class).query().build().property(ShuffleRecord_.contentId).findLongs());
     }
 
     void shuffleContentIds() {
