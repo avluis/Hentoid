@@ -98,6 +98,7 @@ public class DatabaseMaintenance {
             List<Content> contents = db.selectContentByStatus(StatusContent.PAUSED);
             List<Content> queueContents = db.selectQueueContents();
             contents.removeAll(queueContents);
+            Timber.i("Moving back isolated items to queue : %s books detected", contents.size());
             if (!contents.isEmpty()) {
                 int queueMaxPos = (int) db.selectMaxQueueOrder();
                 int max = contents.size();
