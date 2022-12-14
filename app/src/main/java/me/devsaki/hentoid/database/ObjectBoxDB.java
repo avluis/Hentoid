@@ -171,7 +171,7 @@ public class ObjectBoxDB {
         return store.callInTxNoException(() -> {
             // Master data management managed manually
             // Ensure all known attributes are replaced by their ID before being inserted
-            // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
+            // Watch https://github.com/objectbox/objectbox-java/issues/1023 for a lighter solution based on @Unique annotation
             Attribute dbAttr;
             Attribute inputAttr;
             if (attributes != null) {
@@ -429,9 +429,17 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).get(id);
     }
 
+    private long[] selectContentIdsByChapterUrl(@NonNull String url) {
+        return store.boxFor(Chapter.class).query(
+                Chapter_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Chapter_.url.equal(url, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+        ).build().property(Chapter_.contentId).findLongs();
+    }
+
     @Nullable
     Content selectContentBySourceAndUrl(@NonNull Site site, @NonNull String contentUrl, @NonNull String coverUrlStart) {
-        QueryCondition<Content> urlCondition = Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
+        QueryCondition<Content> contentUrlCondition = Content_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.url.equal(contentUrl, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
+        QueryCondition<Content> chapterUrlCondition = Content_.id.oneOf(selectContentIdsByChapterUrl(contentUrl));
+        QueryCondition<Content> urlCondition = contentUrlCondition.or(chapterUrlCondition);
         if (!coverUrlStart.isEmpty()) {
             QueryCondition<Content> coverCondition = Content_.coverImageUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.coverImageUrl.equal(coverUrlStart, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
             return store.boxFor(Content.class).query(urlCondition.or(coverCondition)).build().findFirst();
@@ -764,14 +772,14 @@ public class ObjectBoxDB {
     }
 
     Query<Content> selectContentUniversalQ(ContentSearchManager.ContentSearchBundle searchBundle, int[] status) {
-        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
+        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497)
         // querying Content and attributes have to be done separately
         Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(searchBundle, status);
         return selectContentUniversalContentQ(searchBundle, contentAttrSubQuery.findIds(), status);
     }
 
     long[] selectContentUniversalByGroupItem(ContentSearchManager.ContentSearchBundle searchBundle) {
-        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
+        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497)
         // querying Content and attributes have to be done separately
         Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(searchBundle, libraryStatus);
         return selectContentUniversalContentByGroupItem(searchBundle, contentAttrSubQuery.findIds());
@@ -825,7 +833,7 @@ public class ObjectBoxDB {
             ContentSearchManager.ContentSearchBundle searchBundle,
             int[] statuses) {
         long[] result;
-        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/201)
+        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497)
         // querying Content and attributes have to be done separately
         Query<Content> contentAttrSubQuery = selectContentUniversalAttributesQ(searchBundle, statuses);
         Query<Content> query = selectContentUniversalContentQ(searchBundle, contentAttrSubQuery.findIds(), statuses);
