@@ -431,7 +431,7 @@ public class ObjectBoxDB {
 
     private long[] selectContentIdsByChapterUrl(@NonNull String url) {
         return store.boxFor(Chapter.class).query(
-                Chapter_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Chapter_.url.equal(url, QueryBuilder.StringOrder.CASE_INSENSITIVE))
+                Chapter_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Chapter_.url.endsWith(url, QueryBuilder.StringOrder.CASE_INSENSITIVE))
         ).build().property(Chapter_.contentId).findLongs();
     }
 
@@ -442,8 +442,9 @@ public class ObjectBoxDB {
         QueryCondition<Content> urlCondition = contentUrlCondition.or(chapterUrlCondition);
         if (!coverUrlStart.isEmpty()) {
             QueryCondition<Content> coverCondition = Content_.coverImageUrl.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Content_.coverImageUrl.equal(coverUrlStart, QueryBuilder.StringOrder.CASE_INSENSITIVE)).and(Content_.site.equal(site.getCode()));
-            return store.boxFor(Content.class).query(urlCondition.or(coverCondition)).build().findFirst();
-        } else return store.boxFor(Content.class).query(urlCondition).build().findFirst();
+            return store.boxFor(Content.class).query(urlCondition.or(coverCondition)).order(Content_.id).build().findFirst();
+        } else
+            return store.boxFor(Content.class).query(urlCondition).order(Content_.id).build().findFirst();
     }
 
     Set<String> selectAllContentUrls(int siteCode) {
