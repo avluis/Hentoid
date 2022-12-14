@@ -86,10 +86,13 @@
         <com.google.android.material.textfield.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="top|start"
             android:imeOptions="actionDone|flagNoPersonalizedLearning"
-            android:inputType="text"
-            android:lines="1"
-            android:maxLines="1" />
+            android:inputType="textMultiLine"
+            android:lines="2"
+            android:maxLines="3"
+            android:scrollbars="vertical"
+            android:scrollHorizontally="false" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
