@@ -113,6 +113,8 @@ public class Content implements Serializable {
     public ToMany<GroupItem> groupItems;
     @Backlink(to = "content")
     private ToMany<Chapter> chapters;
+    @Backlink(to = "content")
+    private ToMany<QueueRecord> queueRecords;
     @Index
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
@@ -951,6 +953,11 @@ public class Content implements Serializable {
 
     public void clearChapters() {
         this.chapters.clear();
+    }
+
+    @Nullable
+    public ToMany<QueueRecord> getQueueRecords() {
+        return queueRecords;
     }
 
     public int getDownloadMode() {

@@ -254,10 +254,10 @@ public class ObjectBoxDB {
 
     Query<Content> selectAllQueueBooksQ() {
         // Strong check to make sure selected books are _actually_ part of the queue (i.e. attached to a QueueRecord)
-        long[] queuedBooks = store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.contentId).findLongs();
-        QueryCondition<Content> queueQC = Content_.status.oneOf(ContentHelper.getQueueStatuses()).and(Content_.id.oneOf(queuedBooks));
-        QueryCondition<Content> errorQC = Content_.status.equal(StatusContent.ERROR.getCode());
-        return store.boxFor(Content.class).query(queueQC.or(errorQC)).build();
+        return store.boxFor(Content.class).query()
+                .in(Content_.status, ContentHelper.getQueueStatuses())
+                .filter(c -> (StatusContent.ERROR == c.getStatus() || (c.getQueueRecords() != null && !c.getQueueRecords().isEmpty())))
+                .build();
     }
 
     Query<Content> selectAllFlaggedBooksQ() {
