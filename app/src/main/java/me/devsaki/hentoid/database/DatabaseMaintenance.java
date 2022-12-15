@@ -4,6 +4,9 @@ import android.content.Context;
 import android.content.res.Resources;
 
 import androidx.annotation.NonNull;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
@@ -31,6 +34,8 @@ import me.devsaki.hentoid.enums.Grouping;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.ContentHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.workers.UpdateJsonWorker;
+import me.devsaki.hentoid.workers.data.UpdateJsonData;
 import timber.log.Timber;
 
 public class DatabaseMaintenance {
@@ -64,6 +69,7 @@ public class DatabaseMaintenance {
         result.add(createObservableFrom(context, DatabaseMaintenance::clearTempContent));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanBookmarksOneShot));
         result.add(createObservableFrom(context, DatabaseMaintenance::cleanOrphanAttributes));
+        result.add(createObservableFrom(context, DatabaseMaintenance::refreshJsonForSecondDownloadDate));
         return result;
     }
 
@@ -503,6 +509,36 @@ public class DatabaseMaintenance {
             Timber.i("Cleaning orphan attributes : start");
             db.cleanupOrphanAttributes();
             Timber.i("Cleaning orphan attributes : done");
+        } finally {
+            db.closeThreadResources();
+            emitter.onComplete();
+        }
+    }
+
+    private static void refreshJsonForSecondDownloadDate(@NonNull final Context context, ObservableEmitter<Float> emitter) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        try {
+            // Refresh JSONs to persist missing downloadCompletionDates
+            if (!Preferences.isRefreshJson1Complete()) {
+                Timber.i("Refresh Json for second download date : start");
+                long[] contentToRefresh = db.selectContentIdsWithUpdatableJson();
+                Timber.i("Refresh Json for second download date : %d books detected", contentToRefresh.length);
+                if (contentToRefresh.length > 0) {
+                    UpdateJsonData.Builder builder = new UpdateJsonData.Builder();
+                    builder.setUpdateMissingDlDate(true); // Setting all book IDs might break the data size limit for large collections
+
+                    WorkManager workManager = WorkManager.getInstance(context);
+                    workManager.enqueueUniqueWork(
+                            Integer.toString(R.id.udpate_json_service),
+                            ExistingWorkPolicy.APPEND_OR_REPLACE,
+                            new OneTimeWorkRequest.Builder(UpdateJsonWorker.class)
+                                    .setInputData(builder.getData())
+                                    .build()
+                    );
+                }
+                Timber.i("Refresh Json for second download date : done");
+                Preferences.setIsRefreshJson1Complete(true);
+            }
         } finally {
             db.closeThreadResources();
             emitter.onComplete();

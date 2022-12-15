@@ -975,4 +975,9 @@ public class ObjectBoxDAO implements CollectionDAO {
     public long countOldStoredContent() {
         return db.selectOldStoredContentQ().count();
     }
+
+    @Override
+    public long[] selectContentIdsWithUpdatableJson() {
+        return db.selectContentIdsWithUpdatableJson();
+    }
 }

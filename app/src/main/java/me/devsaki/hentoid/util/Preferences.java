@@ -154,6 +154,7 @@ public final class Preferences {
         result.remove(Key.SD_STORAGE_URI);
         result.remove(Key.EXTERNAL_LIBRARY_URI);
         result.remove(Key.LAST_KNOWN_APP_VERSION_CODE);
+        result.remove(Key.REFRESH_JSON_1_DONE);
 
         return result;
     }
@@ -206,6 +207,16 @@ public final class Preferences {
     public static void setIsFirstRunProcessComplete(boolean isFirstRunProcessComplete) {
         sharedPreferences.edit()
                 .putBoolean(Key.WELCOME_DONE, isFirstRunProcessComplete)
+                .apply();
+    }
+
+    public static boolean isRefreshJson1Complete() {
+        return sharedPreferences.getBoolean(Key.REFRESH_JSON_1_DONE, false);
+    }
+
+    public static void setIsRefreshJson1Complete(boolean value) {
+        sharedPreferences.edit()
+                .putBoolean(Key.REFRESH_JSON_1_DONE, value)
                 .apply();
     }
 
@@ -921,6 +932,7 @@ public final class Preferences {
         public static final String REFRESH_LIBRARY = "pref_refresh_bookshelf";
         public static final String DELETE_ALL_EXCEPT_FAVS = "pref_delete_all_except_favs";
         static final String WELCOME_DONE = "pref_welcome_done";
+        static final String REFRESH_JSON_1_DONE = "refresh_json_1_done";
         static final String VERSION_KEY = "prefs_version";
         public static final String FORCE_ENGLISH = "force_english";
         public static final String LIBRARY_DISPLAY = "pref_library_display";

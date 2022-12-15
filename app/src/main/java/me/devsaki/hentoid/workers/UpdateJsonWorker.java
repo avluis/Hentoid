@@ -68,8 +68,12 @@ public class UpdateJsonWorker extends BaseWorker {
     void getToWork(@NonNull Data input) {
         UpdateJsonData.Parser data = new UpdateJsonData.Parser(getInputData());
         long[] contentIds = data.getContentIds();
+
+        if (data.getUpdateMissingDlDate())
+            contentIds = dao.selectContentIdsWithUpdatableJson();
+
         if (null == contentIds) {
-            Timber.w("Expected contentIds");
+            Timber.w("Expected contentIds or selectContentIdsWithUpdatableJson");
             return;
         }
 

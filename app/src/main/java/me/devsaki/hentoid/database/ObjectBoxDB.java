@@ -1768,4 +1768,10 @@ public class ObjectBoxDB {
         allContent.removeAll(Helper.getSetFromPrimitiveArray(selectCustomGroupedContent()));
         return allContent;
     }
+
+    long[] selectContentIdsWithUpdatableJson() {
+        QueryCondition<Content> contentCondition = Content_.jsonUri.endsWith(".json").and(Content_.downloadCompletionDate.greater(0));
+        QueryBuilder<Content> allContentQ = store.boxFor(Content.class).query(contentCondition).filter(c -> c.getDownloadCompletionDate() != c.getDownloadDate());
+        return allContentQ.build().findIds();
+    }
 }

@@ -15,6 +15,7 @@ import me.devsaki.hentoid.workers.PrimaryImportWorker;
  */
 public class UpdateJsonData {
     private static final String KEY_IDS = "content_ids";
+    private static final String KEY_UPDATE_MISSING_DL_DATE = "update_missing_dl_date";
     private static final String KEY_UPDATE_GROUPS = "update_groups";
 
     private UpdateJsonData() {
@@ -31,6 +32,10 @@ public class UpdateJsonData {
 
         public void setUpdateGroups(boolean data) {
             builder.putBoolean(KEY_UPDATE_GROUPS, data);
+        }
+
+        public void setUpdateMissingDlDate(boolean data) {
+            builder.putBoolean(KEY_UPDATE_MISSING_DL_DATE, data);
         }
 
         public Data getData() {
@@ -53,6 +58,10 @@ public class UpdateJsonData {
 
         public boolean getUpdateGroups() {
             return data.getBoolean(KEY_UPDATE_GROUPS, false);
+        }
+
+        public boolean getUpdateMissingDlDate() {
+            return data.getBoolean(KEY_UPDATE_MISSING_DL_DATE, false);
         }
     }
 }
