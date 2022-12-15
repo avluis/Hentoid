@@ -694,9 +694,10 @@ public class ContentDownloadWorker extends BaseWorker {
 
             // If additional pages have been downloaded (e.g. new chapters on existing book),
             // update the book's number of pages and download date
+            long now = Instant.now().toEpochMilli();
             if (nbImages > content.getQtyPages()) {
                 content.setQtyPages(nbImages);
-                content.setDownloadDate(Instant.now().toEpochMilli());
+                content.setDownloadDate(now);
             }
 
             if (content.getStorageUri().isEmpty()) return;
@@ -730,12 +731,12 @@ public class ContentDownloadWorker extends BaseWorker {
                 ContentHelper.computeAndSaveCoverHash(getApplicationContext(), content, dao);
 
                 // Mark content as downloaded (download processing date; if none set before)
-                if (0 == content.getDownloadDate())
-                    content.setDownloadDate(Instant.now().toEpochMilli());
+
+                if (0 == content.getDownloadDate()) content.setDownloadDate(now);
 
                 if (0 == pagesKO && !hasError) {
                     content.setDownloadParams("");
-                    content.setDownloadCompletionDate(Instant.now().toEpochMilli());
+                    content.setDownloadCompletionDate(now);
                     content.setStatus(StatusContent.DOWNLOADED);
 
                     applyRenamingRules(content);
