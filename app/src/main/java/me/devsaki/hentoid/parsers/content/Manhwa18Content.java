@@ -36,7 +36,7 @@ public class Manhwa18Content extends BaseContentParser {
     @Selector(value = ".series-information a[href*=genre]")
     private List<Element> tags;
 
-    @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
+    @Selector(value = "meta[property=og:title]", attr = "content", defValue = "")
     private String chapterTitle;
     @Selector(value = "#chapter-content img")
     private List<Element> chapterImgs;
