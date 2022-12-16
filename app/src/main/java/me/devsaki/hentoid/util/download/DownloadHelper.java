@@ -125,12 +125,14 @@ public class DownloadHelper {
                     out = FileHelper.getOutputStream(HentoidApp.getInstance(), targetFileUri);
                 }
 
-                out.write(buffer, 0, len);
+                if (len > 0) {
+                    out.write(buffer, 0, len);
 
-                if (notifyProgress != null && 0 == iteration % notificationResolution)
-                    notifyProgress.accept((processed * 100f) / size);
+                    if (notifyProgress != null && 0 == iteration % notificationResolution)
+                        notifyProgress.accept((processed * 100f) / size);
 
-                DownloadSpeedLimiter.INSTANCE.take(len);
+                    DownloadSpeedLimiter.INSTANCE.take(len);
+                }
             }
             if (!interruptDownload.get()) {
                 if (notifyProgress != null) notifyProgress.accept(100f);
@@ -141,6 +143,8 @@ public class DownloadHelper {
                 }
                 return new ImmutablePair<>(targetFileUri, mimeType);
             }
+        } finally {
+            body.close();
         }
         // Remove the remaining file chunk if download has been interrupted
         if (targetFileUri != null) FileHelper.removeFile(HentoidApp.getInstance(), targetFileUri);
