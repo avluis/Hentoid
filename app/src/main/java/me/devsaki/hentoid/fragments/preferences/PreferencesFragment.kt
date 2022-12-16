@@ -200,7 +200,7 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                 true
             }
             Preferences.Key.DL_SPEED_CAP -> {
-                DownloadSpeedLimiter.setSpeedLimitKbps(getPrefsSpeedCapKbps())
+                DownloadSpeedLimiter.setSpeedLimitKbps(Preferences.getDlSpeedCap())
                 true
             }
             Preferences.Key.BROWSER_CLEAR_COOKIES -> {
@@ -371,15 +371,5 @@ class PreferencesFragment : PreferenceFragmentCompat(),
                         .create()
                         .show()
                 }
-    }
-
-    private fun getPrefsSpeedCapKbps(): Int {
-        return when (Preferences.getDlSpeedCap()) {
-            Preferences.Constant.DL_SPEED_CAP_100 -> 100
-            Preferences.Constant.DL_SPEED_CAP_200 -> 200
-            Preferences.Constant.DL_SPEED_CAP_400 -> 400
-            Preferences.Constant.DL_SPEED_CAP_800 -> 800
-            else -> -1
-        }
     }
 }

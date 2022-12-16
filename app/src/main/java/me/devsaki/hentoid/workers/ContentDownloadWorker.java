@@ -69,6 +69,7 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.StringHelper;
 import me.devsaki.hentoid.util.download.ContentQueueManager;
 import me.devsaki.hentoid.util.download.DownloadHelper;
+import me.devsaki.hentoid.util.download.DownloadSpeedLimiter;
 import me.devsaki.hentoid.util.download.RequestOrder;
 import me.devsaki.hentoid.util.download.RequestQueueManager;
 import me.devsaki.hentoid.util.exception.AccountException;
@@ -123,6 +124,7 @@ public class ContentDownloadWorker extends BaseWorker {
 
         requestQueueManager = RequestQueueManager.Companion.getInstance(context, this::onRequestSuccess, this::onRequestError);
         userActionNotificationManager = new NotificationManager(context, R.id.user_action_notification);
+        DownloadSpeedLimiter.INSTANCE.setSpeedLimitKbps(DownloadSpeedLimiter.INSTANCE.prefsSpeedCapToKbps(Preferences.getDlSpeedCap()));
     }
 
     @Override
