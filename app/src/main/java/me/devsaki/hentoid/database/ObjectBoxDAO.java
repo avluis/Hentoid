@@ -409,7 +409,7 @@ public class ObjectBoxDAO implements CollectionDAO {
     }
 
     public long countAllQueueBooks() {
-        return db.selectAllQueueBooksQ().count();
+        return db.selectAllQueueBooksQ().findIds().length; // Count doesn't work here because selectAllQueueBooksQ uses a filter
     }
 
     public LiveData<Integer> countAllQueueBooksLive() {
