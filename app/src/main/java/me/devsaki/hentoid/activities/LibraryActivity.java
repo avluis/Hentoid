@@ -18,7 +18,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -440,15 +439,20 @@ public class LibraryActivity extends BaseActivity {
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.GONE);
             alertFixBtn.setVisibility(View.GONE);
-        } else if (!PermissionHelper.checkExternalStorageReadWritePermission(this) &&
-                Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) { // Warn about permissions being lost
-            alertTxt.setText(R.string.permissions_lost);
-            alertFixBtn.setOnClickListener(v -> fixPermissions());
+        } else if (!PermissionHelper.checkExternalStorageReadWritePermission(this)) { // Warn about permissions being lost
+            alertTxt.setText(R.string.alert_permissions_lost);
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.VISIBLE);
+            alertFixBtn.setOnClickListener(v -> fixPermissions());
+            alertFixBtn.setVisibility(View.VISIBLE);
+        } else if (!PermissionHelper.checkNotificationPermission(this)) { // Warn about notiftications not being enabled
+            alertTxt.setText(R.string.alert_notifications);
+            alertTxt.setVisibility(View.VISIBLE);
+            alertIcon.setVisibility(View.VISIBLE);
+            alertFixBtn.setOnClickListener(v -> fixNotifications());
             alertFixBtn.setVisibility(View.VISIBLE);
         } else if (isLowOnSpace()) { // Display low space alert
-            alertTxt.setText(R.string.low_memory);
+            alertTxt.setText(R.string.alert_low_memory);
             alertTxt.setVisibility(View.VISIBLE);
             alertIcon.setVisibility(View.VISIBLE);
             alertFixBtn.setVisibility(View.GONE);
@@ -806,6 +810,11 @@ public class LibraryActivity extends BaseActivity {
             updateAlertBanner();
     }
 
+    private void fixNotifications() {
+        if (PermissionHelper.requestNotificationPermission(this, PermissionHelper.RQST_NOTIFICATION_PERMISSION))
+            updateAlertBanner();
+    }
+
     private boolean isLowOnSpace() {
         DocumentFile rootFolder = FileHelper.getFolderFromTreeUriString(this, Preferences.getStorageUri());
         if (null == rootFolder) return false;
@@ -815,16 +824,22 @@ public class LibraryActivity extends BaseActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode != PermissionHelper.RQST_STORAGE_PERMISSION) return;
-        if (permissions.length < 2) return;
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (grantResults.length == 0) return;
-        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            alertTxt.setVisibility(View.GONE);
-            alertIcon.setVisibility(View.GONE);
-            alertFixBtn.setVisibility(View.GONE);
-        } // Don't show rationales here; the alert still displayed on screen should be enough
+        if (PermissionHelper.RQST_STORAGE_PERMISSION == requestCode) {
+            if (permissions.length < 2) return;
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                alertTxt.setVisibility(View.GONE);
+                alertIcon.setVisibility(View.GONE);
+                alertFixBtn.setVisibility(View.GONE);
+            } // Don't show rationales here; the alert still displayed on screen should be enough
+        } else if (PermissionHelper.RQST_NOTIFICATION_PERMISSION == requestCode) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                alertTxt.setVisibility(View.GONE);
+                alertIcon.setVisibility(View.GONE);
+                alertFixBtn.setVisibility(View.GONE);
+            } // Don't show rationales here; the alert still displayed on screen should be enough
+        }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 

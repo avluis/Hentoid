@@ -17,7 +17,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <!-- Required to install update packages when targeting API 29 or higher -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
-
+    <!-- Required to fire notifications when targeting API 33 or higher -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:name=".core.HentoidApp"

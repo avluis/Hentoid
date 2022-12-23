@@ -95,8 +95,8 @@
     <string name="app_settings">Impostazioni app</string>
     <string name="book_settings">Impostazioni libro</string>
     <string name="alert_browser_mode">Modalità browser attiva: nessun accesso alla memoria</string>
-    <string name="low_memory">Il tuo dispositivo ha poca memoria!</string>
-    <string name="permissions_lost">I permessi per i file sono stati persi</string>
+    <string name="alert_low_memory">Il tuo dispositivo ha poca memoria!</string>
+    <string name="alert_permissions_lost">I permessi per i file sono stati persi</string>
     <string name="fix_permissions">Aggiusta</string>
     <string name="view_queue">Visualizza coda</string>
     <string name="clear_search_history">Pulisci cronologia ricerca</string>

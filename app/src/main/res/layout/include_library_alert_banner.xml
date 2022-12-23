@@ -14,7 +14,7 @@
         android:paddingTop="8dp"
         android:paddingEnd="64dp"
         android:paddingBottom="8dp"
-        android:text="@string/permissions_lost"
+        android:text="@string/alert_permissions_lost"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/advanced_search_background"
         tools:visibility="visible" />

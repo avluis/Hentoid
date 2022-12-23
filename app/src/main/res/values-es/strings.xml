@@ -95,8 +95,8 @@
     <string name="app_settings">Configuración de la aplicación </string>
     <string name="book_settings">Configuración del libro</string>
     <string name="alert_browser_mode">Modo navegador activo: sin acceso a almacenamiento</string>
-    <string name="low_memory">¡Queda poco espacio de almacenamiento!</string>
-    <string name="permissions_lost">Se han perdido los permisos de almacenamiento</string>
+    <string name="alert_low_memory">¡Queda poco espacio de almacenamiento!</string>
+    <string name="alert_permissions_lost">Se han perdido los permisos de almacenamiento</string>
     <string name="fix_permissions">Reparar</string>
     <string name="view_queue">Ver cola de descargas</string>
     <string name="clear_search_history">Limpiar historial de búsqueda</string>
