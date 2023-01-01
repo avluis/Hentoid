@@ -2,10 +2,14 @@
 <resources>
     <string name="slide_01_header">Üdvözlünk a Hentoid alkalmazásban!</string>
     <string name="slide_01_text">A Hentoid az egy Doujinshi\n&amp; Hentai Manga archiváló alkalmazás.</string>
-    <string name="slide_02_header">Engedélyek</string>
-    <string name="slide_04_header">Könyvtár</string>
+<string name="slide_02_header">Engedélyek</string>
+    <string name="slide_02_browser_mode_title">Csak böngészés</string>
+    <string name="slide_02_browser_mode_description">Az alkalmazás használata weboldalak böngészésére.\n\nNem tudsz majd letölteni egyetlen könyvet sem, és a könyvtáradat sem tudod majd kezelni.\n\nNincsen szükség engedélyekre.</string>
+    <string name="slide_02_library_mode_title">Böngészés &amp; Letöltés</string>
+    <string name="slide_02_library_mode_description">Az alkalmazás használata a letöltésekhez és a könyvtár kezeléséhez.\n\nTárhelyhez szükséges engedélyek szükségesek</string>
+<string name="slide_04_header">Könyvtár</string>
     <string name="slide_04_text">A Hentoid alkalmazásnak szüksége van egy dedikált mappára, a médiáid eltárolásához.</string>
-<string name="slide_04_skip">Átugrás</string>
+    <string name="slide_04_skip">Átugrás</string>
 <string name="slide_04_skip_title">Átugrás\?</string>
     <string name="slide_04_skip_msg">Nem fogsz tudni letölteni, hogyha kihagyod ezt a lépést.\nAhhoz hogy letudj tölteni, be kell állítanod a letöltési mappát az alkalmazás beállításában.</string>
     <string name="slide_05_header">Téma</string>

@@ -28,6 +28,11 @@
 <string name="pref_dl_threads_quantity_entries_1">Automatikus (alapértelmezett)</string>
     <string name="pref_dl_threads_quantity_entries_2">2 (lassú kapcsolat esetén)</string>
     <string name="pref_dl_threads_quantity_entries_6">10 (gyors internet; felsőkategóriás telefon esetében)</string>
+<string name="pref_dl_speed_cap_entries_1">Semmi (alapértelmezett)</string>
+    <string name="pref_dl_speed_cap_entries_2">100 KBps</string>
+    <string name="pref_dl_speed_cap_entries_3">200 KBps</string>
+    <string name="pref_dl_speed_cap_entries_4">400 KBps</string>
+    <string name="pref_dl_speed_cap_entries_5">800 KBps</string>
 <string name="pref_folder_naming_content_entries_1" tools:ignore="MissingTranslation">ID</string>
     <string name="pref_folder_naming_content_entries_2">Cím - ID</string>
     <string name="pref_folder_naming_content_entries_3">Szerző - Cím - ID</string>
@@ -39,6 +44,7 @@
     <string name="pref_folder_trunc_content_entries_5">120 karaker</string>
 <string name="pref_viewer_dl_action_entries_1">Összes oldal letöltése</string>
     <string name="pref_viewer_dl_action_entries_2">Oldalak streamelése olvasás közben</string>
+    <string name="pref_viewer_dl_action_entries_3">Kérdezd meg minden alkalommal</string>
 <string name="pref_attribute_list_order_entries_1">Betűrendben</string>
     <string name="pref_attribute_list_order_entries_2">Tételek száma (a leggyakrabban használtaké az első)</string>
 <string name="pref_dl_retries_mem_limit_entries_4">Egyik sem</string>

@@ -37,6 +37,7 @@
     <string name="pref_folder_naming_content_title">Mappa nevek</string>
     <string name="pref_folder_naming_content_summary">A könyvmappa elnevezési konvenciója:\n<x:g example="Name - ID" id="convention">%s</x:g></string>
     <string name="pref_import_running">Az importálás már folyamatban van</string>
+    <string name="pref_import_browser_mode">Alkalmazás jelenleg böngészési módban van</string>
     <string name="prefs_ask_detach_external_library">A külső könyvtár lecsatolása\?</string>
     <string name="prefs_external_library_detached">A külső könyvtár lecsatolva</string>
     <string name="pref_folder_trunc_title">Mappa nevének csonkítása</string>
@@ -74,9 +75,14 @@
     <string name="pref_browser_nhentai_invisible_blacklist_on">A Nhentai-feketelistán szereplő könyvek láthatatlanok</string>
     <string name="pref_browser_quick_dl_threshold_title">Gyors letöltés, hosszú küszöbű lenyomás esetén*</string>
     <string name="pref_browser_quick_dl_threshold_summary">Tartsa nyomva ennyi ideig a gyors letöltés elindításához\Jelenleg:<x:g example="1 s" id="time">%s</x:g></string>
+    <string name="pref_browser_duplicate_detector">Duplikátum detektor</string>
     <string name="pref_browser_duplicate_ask_title">Duplikátumok ellenőrzése</string>
     <string name="pref_browser_duplicate_ask_off">Nem: mindig töltse le</string>
     <string name="pref_browser_duplicate_ask_on">Ige: kérdezze meg letöltés előtt</string>
+    <string name="pref_browser_duplicate_use_title_title">Cím használata</string>
+    <string name="pref_browser_duplicate_use_artist_title">Művész használata</string>
+    <string name="pref_browser_duplicate_use_language_title">Nyelv használata</string>
+    <string name="pref_browser_duplicate_use_cover_title">Borító használata</string>
     <string name="pref_browser_duplicate_try_pages_title">Próbáljon meg plusz oldalakat találni a potenciális duplikátumokon\?</string>
     <string name="pref_browser_duplicate_try_pages_off">Csak próbáljon meg plusz oldalakat találni az eredeti könyvben</string>
     <string name="pref_browser_duplicate_try_pages_on">Próbáljon meg plusz oldalakat találni a potenciális duplikátumokon</string>
@@ -126,6 +132,7 @@
     <string name="pref_dl_blocked_tags_behaviour_title">Blokkoló viselkedés</string>
     <string name="pref_dl_threads_quantity_title">Párhuzamos letöltések száma</string>
     <string name="pref_dl_threads_quantity_summary">A letöltött képek száma egyidejűleg\nJelenleg: <x:g example="5" id="number">%s</x:g></string>
+    <string name="pref_dl_speed_cap_title">Letöltési sebesség limit</string>
 <string name="pref_screen_privacy">Adatvédelem</string>
     <string name="pref_app_preview_title">Alkalmazás előnézet a Legutóbbi alkalmazásokon</string>
     <string name="pref_app_preview_summary_off">Alkalmazás előnézet a Legutóbbi alkalmazásokban letiltva \Engedélyezhető, ha képernyőképet szeretne készíteni</string>

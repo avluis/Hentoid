@@ -268,6 +268,8 @@
     <string name="dialog_prompt">フォルダを選択</string>
     <string name="importing_metadata">メタデータのインポート…</string>
 <string name="export_title">メタデータをエクスポート</string>
+
+
     <plurals name="export_file_library">
         <item quantity="one">ライブラリのエクスポート(<x:g example="1" id="number">%d</x:g> 本)</item>
         <item quantity="other">ライブラリのエクスポート (<x:g example="2" id="number">%d</x:g> 本)</item>
@@ -773,6 +775,8 @@
     </plurals>
     <string name="notif_delete_fail">削除に失敗しました</string>
     <string name="notif_delete_fail_details">少なくとも1冊の本を削除できませんでした</string>
+
+
 <string name="title_startup">スタートアップ</string>
     <string name="title_startup_progress">起動…</string>
     <string name="title_startup_complete">起動が完了しました</string>

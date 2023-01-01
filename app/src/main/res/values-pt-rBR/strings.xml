@@ -18,8 +18,13 @@
 
     <string name="empty">vazio</string>
 
+
+
+
+
     <string name="title_activity_downloads">Biblioteca</string>
     <string name="title_activity_preferences">Configurações</string>
+
 
 
 
@@ -147,7 +152,9 @@
 
 
 
+
     <string name="category_source">Fonte</string>
+
 
 
 
@@ -163,6 +170,7 @@
 
 
 
+<string name="meta_rule_source">Fonte</string>
 <string name="group_today">Hoje</string>
 
 

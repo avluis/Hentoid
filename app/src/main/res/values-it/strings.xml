@@ -268,6 +268,8 @@
     <string name="dialog_prompt">Scegli una cartella</string>
     <string name="importing_metadata">Importando metadata...</string>
 <string name="export_title">Esporta metadata</string>
+
+
     <plurals name="export_file_library">
         <item quantity="one">Esporta libreria (<x:g example="1" id="number">%d</x:g> libro)</item>
         <item quantity="other">Esporta libreria (<x:g example="2" id="number">%d</x:g> libri)</item>
@@ -773,6 +775,8 @@
     </plurals>
     <string name="notif_delete_fail">Cancellazione fallita</string>
     <string name="notif_delete_fail_details">Almeno un libro non è stato cancellato</string>
+
+
 <string name="title_startup">Avvio</string>
     <string name="title_startup_progress">Avviando…</string>
     <string name="title_startup_complete">Avvio completato</string>

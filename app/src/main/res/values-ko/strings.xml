@@ -268,6 +268,8 @@
     <string name="dialog_prompt">폴더 선택</string>
     <string name="importing_metadata">메타데이터 불러오는 중...</string>
 <string name="export_title">메타데이터 내보내기</string>
+
+
     <plurals name="export_file_library">
         <item quantity="one">라이브러리 내보내기 (<x:g example="1" id="number">%d</x:g> 작품)</item>
         <item quantity="other">라이브러리 내보내기 (<x:g example="2" id="number">%d</x:g> 작품)</item>
@@ -773,6 +775,8 @@
     </plurals>
     <string name="notif_delete_fail">삭제 실패</string>
     <string name="notif_delete_fail_details">하나 이상의 책을 삭제하지 못했습니다</string>
+
+
 <string name="title_startup">시작</string>
     <string name="title_startup_progress">시작 중...</string>
     <string name="title_startup_complete">시작 완료</string>

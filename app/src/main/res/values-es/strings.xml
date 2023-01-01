@@ -268,6 +268,8 @@
     <string name="dialog_prompt">Elegir Carpeta</string>
     <string name="importing_metadata">Importando metadatos…</string>
 <string name="export_title">Exportar metadatos</string>
+
+
     <plurals name="export_file_library">
         <item quantity="one">Exportar biblioteca (<x:g example="1" id="number">%d</x:g> libro)</item>
         <item quantity="other">Exportar biblioteca (<x:g example="2" id="number">%d</x:g> libros)</item>
@@ -772,6 +774,8 @@
     </plurals>
     <string name="notif_delete_fail">Eliminación fallida</string>
     <string name="notif_delete_fail_details">Al menos un libro no pudo ser eliminado</string>
+
+
 <string name="title_startup">Inicio</string>
     <string name="title_startup_progress">Iniciando…</string>
     <string name="title_startup_complete">Inicialización completa</string>

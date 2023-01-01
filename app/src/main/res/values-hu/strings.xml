@@ -77,7 +77,7 @@
     <string name="menu_edit_warning_custom">Az új rendezési séma felülfogja írni az előzőt.</string>
     <string name="menu_sort_filter">Rendezés és szűrés</string>
     <string name="menu_delete_single">Törlés</string>
-    <string name="menu_change_group">Csoporthoz hozzárendelés</string>
+    <string name="menu_change_group">Mozgatás csoportba</string>
     <string name="menu_open_folder">Tartalmazó mappa megnyitása</string>
     <string name="menu_redownload">Újbóli letöltés</string>
     <string name="menu_redownload_scratch">Újbóli letöltés a nulláról</string>
@@ -94,8 +94,9 @@
     <string name="open_settings">Beállítások megnyitása</string>
     <string name="app_settings">Alkalmazás beállítások</string>
     <string name="book_settings">Könyv beállítások</string>
-    <string name="alert_permissions_lost">A fájljogosultságok elvesztek</string>
+    <string name="alert_browser_mode">Böngészési mód aktív : nincs hozzáférés a tárhelyhez</string>
     <string name="alert_low_memory">Kevés a hely az eszközödön!</string>
+    <string name="alert_permissions_lost">A fájljogosultságok elvesztek</string>
     <string name="fix_permissions">Javítás</string>
     <string name="view_queue">Várólista megtekintése</string>
     <string name="clear_search_history">Keresési előzmény törlése</string>
@@ -171,6 +172,9 @@
     <string name="download_notif_speed" tools:ignore="MissingTranslation"><x:g example="3.88" id="size_dled">%1$d</x:g><x:g example="/14.56" id="formatted_estimated_total">%2$s</x:g> MB @ <x:g example="102.4" id="speed_kbps">%3$d</x:g> KBps</string>
     <string name="download_notif_failed">A letöltés sikertelen</string>
     <string name="download_notif_failed_details">Nem lehet letölteni <x:g example="Cool H-Manga" id="book_name">%1$s</x:g>: nem lehet létrehozni a mappát <x:g example="/storage/emulated/0/Hentoid/nhentai/coolhmanga" id="path">%2$s</x:g>. Kérjük ellenőrizze a Hentoid mappát és próbálja meg újból letölteni azt a \'!\' gomb segítségével.</string>
+    <string name="menu_change_dl_mode">Letöltési mód megváltoztatása</string>
+    <string name="mode_dl">Kép letöltése</string>
+    <string name="mode_stream">Streaming</string>
 <string name="import_downloads_title">Letöltések importálása</string>
     <plurals name="import_downloads_found">
         <item quantity="one"><x:g example="1" id="downloads">%d</x:g> érvényes letöltés található</item>
@@ -264,6 +268,8 @@
     <string name="dialog_prompt">Mappa kiválasztása</string>
     <string name="importing_metadata">Metaadatok importálása...</string>
 <string name="export_title">Metaadat exportálása</string>
+
+
     <plurals name="export_file_library">
         <item quantity="one">Könyvtár exportálása (<x:g example="1" id="number">%d</x:g> könyv)</item>
         <item quantity="other">Könyvtár exportálása (<x:g example="2" id="number">%d</x:g> könyvek)</item>
@@ -466,6 +472,7 @@
     </plurals>
     <string name="group_delete_nothing">Nincs mit törölni - ellenőrizze a \"Külső tartalom törlésének engedélyezése\" lehetőséget, hogy ez törölhető lehessen</string>
     <string name="clear_rating">Értékelés törlése</string>
+    <string name="clear_search_history_confirm">Keresési előzmény törlése?</string>
 <string name="merge_merge">Egyesítés</string>
     <string name="merge_progress">Könyvek egyesítése...</string>
     <string name="split_progress">Könyvek szétválasztása...</string>
@@ -753,7 +760,7 @@
     <string name="meta_choose_type">Válasszon egy típust a \'%s\'</string>
     <string name="meta_replace_with">Helyettesítse...</string>
     <string name="meta_tag_all_selected">Az összes kiválasztott könyv címkézése</string>
-    <string name="meta_tag_all_selected_confirm">Az összes %d kiválasztott könyv megjelölése \'%s\' ?</string>
+    <string name="meta_tag_all_selected_confirm">Az összes %1$d kiválasztott könyv megjelölése \'%2$s\'?</string>
     <string name="meta_rename_new_name">Új név</string>
     <string name="meta_rename_new_rule">A későbbi letöltésekhez jegyezze meg</string>
 <string name="meta_rule_source">Forrás</string>
@@ -768,6 +775,8 @@
     </plurals>
     <string name="notif_delete_fail">A törlés sikertelen</string>
     <string name="notif_delete_fail_details">Legalább egy könyvet nem sikerült törölni</string>
+
+
 <string name="title_startup">Indítás</string>
     <string name="title_startup_progress">Kezdjük...</string>
     <string name="title_startup_complete">Indítás befejezve</string>

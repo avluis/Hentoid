@@ -19,6 +19,7 @@
 
 <string name="tools_cache_app">Limpar cache do aplicativo</string>
 <string name="tools_cache_app_success">O cache do aplicativo foi limpo com sucesso</string>
+
 <string name="tools_latest_logs_title">Registros do aplicativo</string>
 <string name="tools_latest_logs_summary">Ver os registros mais recentes do aplicativo</string>
 </resources>
