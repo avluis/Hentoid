@@ -433,7 +433,12 @@ public class ObjectBoxDB {
     }
 
     Set<String> selectAllContentUrls(int siteCode) {
-        Query<Content> allContentQ = store.boxFor(Content.class).query().equal(Content_.site, siteCode).in(Content_.status, libraryStatus).build();
+        Query<Content> allContentQ = store.boxFor(Content.class).query()
+                .equal(Content_.site, siteCode)
+                .in(Content_.status, libraryStatus)
+                .notNull(Content_.url)
+                .notEqual(Content_.url, "", QueryBuilder.StringOrder.CASE_INSENSITIVE)
+                .build();
         return new HashSet<>(Stream.of(allContentQ.property(Content_.url).findStrings()).toList());
     }
 
