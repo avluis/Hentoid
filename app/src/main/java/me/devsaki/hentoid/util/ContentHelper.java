@@ -1110,12 +1110,12 @@ public final class ContentHelper {
      */
     public static List<String> getBlockedTags(@NonNull final Content content) {
         List<String> result = Collections.emptyList();
-        if (!Preferences.getBlockedTags().isEmpty()) {
+        if (!Preferences.getBlockedTags(Preferences.Key.DL_BLOCKED_TAGS).isEmpty()) {
             List<String> tags = Stream.of(content.getAttributes())
                     .filter(a -> a.getType().equals(AttributeType.TAG) || a.getType().equals(AttributeType.LANGUAGE))
                     .map(Attribute::getName)
                     .toList();
-            for (String blocked : Preferences.getBlockedTags())
+            for (String blocked : Preferences.getBlockedTags(Preferences.Key.DL_BLOCKED_TAGS))
                 for (String tag : tags)
                     if (blocked.equalsIgnoreCase(tag) || StringHelper.isPresentAsWord(blocked, tag)) {
                         if (result.isEmpty()) result = new ArrayList<>();

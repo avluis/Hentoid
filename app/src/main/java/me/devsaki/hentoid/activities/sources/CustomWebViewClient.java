@@ -91,6 +91,8 @@ class CustomWebViewClient extends WebViewClient {
     private final byte[] checkmark;
     // this is for merged books
     private final byte[] mergedMark;
+    // this is for books with blocked tags;
+    private final byte[] blockedMark;
 
     // Site for the session
     protected final Site site;
@@ -119,6 +121,7 @@ class CustomWebViewClient extends WebViewClient {
     // Faster access to Preferences settings
     private final AtomicBoolean markDownloaded = new AtomicBoolean(Preferences.isBrowserMarkDownloaded());
     private final AtomicBoolean markMerged = new AtomicBoolean((Preferences.isBrowserMarkMerged()));
+    private final AtomicBoolean markBlockedTags = new AtomicBoolean((Preferences.isBrowserMarkBlockedTags()));
     private final AtomicBoolean dnsOverHttpsEnabled = new AtomicBoolean(Preferences.getDnsOverHttps() > -1);
 
     // Disposable to be used for punctual operations
@@ -161,6 +164,13 @@ class CustomWebViewClient extends WebViewClient {
         mergedMark = ImageHelper.BitmapToWebp(
                 ImageHelper.tintBitmap(
                         ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_action_merge),
+                        HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
+                )
+        );
+
+        blockedMark = ImageHelper.BitmapToWebp(
+                ImageHelper.tintBitmap(
+                        ImageHelper.getBitmapFromVectorDrawable(HentoidApp.getInstance(), R.drawable.ic_forbidden),
                         HentoidApp.getInstance().getResources().getColor(R.color.secondary_light)
                 )
         );
@@ -448,13 +458,15 @@ class CustomWebViewClient extends WebViewClient {
             return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(checkmark));
         } else if (isMarkMerged() && url.contains("hentoid-mergedmark")) {
             return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(mergedMark));
+        } else if (url.contains("hentoid-blockedmark")) {
+            return new WebResourceResponse(ImageHelper.MIME_IMAGE_WEBP, "utf-8", new ByteArrayInputStream(blockedMark));
         } else {
             if (isGalleryPage(url)) return parseResponse(url, headers, true, false);
             else if (BuildConfig.DEBUG) Timber.v("WebView : not gallery %s", url);
 
             // If we're here to remove "dirty elements" or mark downloaded books, we only do it
             // on HTML resources (URLs without extension) from the source's main domain
-            if ((removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || !activity.getCustomCss().isEmpty())
+            if ((removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !activity.getCustomCss().isEmpty())
                     && (HttpHelper.getExtensionFromUri(url).isEmpty() || HttpHelper.getExtensionFromUri(url).equalsIgnoreCase("html"))) {
                 String host = Uri.parse(url).getHost();
                 if (host != null && !isHostNotInRestrictedDomains(host))
@@ -584,8 +596,8 @@ class CustomWebViewClient extends WebViewClient {
 
                 // Remove dirty elements from HTML resources
                 String customCss = activity.getCustomCss();
-                if (removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || !customCss.isEmpty()) {
-                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, hideableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls());
+                if (removableElements != null || hideableElements != null || jsContentBlacklist != null || isMarkDownloaded() || isMarkMerged() || isMarkBlockedTags() || !customCss.isEmpty()) {
+                    browserStream = ProcessHtml(browserStream, urlStr, customCss, removableElements, hideableElements, jsContentBlacklist, activity.getAllSiteUrls(), activity.getAllMergedBooksUrls(), activity.getPrefBlockedTags());
                     if (null == browserStream) return null;
                 }
 
@@ -688,6 +700,14 @@ class CustomWebViewClient extends WebViewClient {
         markMerged.set(value);
     }
 
+    boolean isMarkBlockedTags() {
+        return markBlockedTags.get();
+    }
+
+    void setMarkBlockedTags(boolean value) {
+        markBlockedTags.set(value);
+    }
+
     void setDnsOverHttpsEnabled(boolean value) {
         dnsOverHttpsEnabled.set(value);
     }
@@ -725,6 +745,7 @@ class CustomWebViewClient extends WebViewClient {
      * @param jsContentBlacklist Blacklisted elements to detect script tags to remove
      * @param siteUrls           Urls of the covers or links to visually mark as downloaded
      * @param mergedSiteUrls     Urls of the covers or links to visually mark as merged
+     * @param blockedTags        Tags of the preference-browser-blocked tag option to visually mark as blocked
      * @return Stream containing the HTML document stripped from the elements to remove
      */
     @Nullable
@@ -736,7 +757,8 @@ class CustomWebViewClient extends WebViewClient {
             @Nullable List<String> hideableElements,
             @Nullable List<String> jsContentBlacklist,
             @Nullable List<String> siteUrls,
-            @Nullable List<String> mergedSiteUrls) {
+            @Nullable List<String> mergedSiteUrls,
+            @Nullable List<String> blockedTags) {
         try {
             Document doc = Jsoup.parse(stream, null, baseUri);
 
@@ -849,6 +871,51 @@ class CustomWebViewClient extends WebViewClient {
                 }
             }
 
+            // Mark books with blocked tags
+            if (blockedTags != null && !blockedTags.isEmpty()) {
+                Elements plainLinks = doc.select("a");
+
+                // Key= plain link ("a")
+                // Value = simplified HREF
+                Map<Element, String> elements = new HashMap<>();
+
+                for (Element link : plainLinks) {
+                    if (!site.getBookCardExcludedParentClasses().isEmpty()) {
+                        boolean isForbidden = Stream.of(link.parents()).anyMatch(e -> containsForbiddenClass(site, e.classNames()));
+                        if (isForbidden) continue;
+                    }
+                    String aHref = simplifyUrl(link.attr("href"));
+                    elements.put(link, aHref);
+                }
+
+                for (Map.Entry<Element, String> entry : elements.entrySet()) {
+                    if (site.getGalleryHeight() != -1) {
+                        for (String blockedTag : blockedTags) {
+                            if (entry.getValue().contains(".tag.") || entry.getValue().contains(".category.")) {
+                                String tag = null;
+                                if (entry.getKey().childNodeSize() != 0)
+                                    tag = entry.getKey().childNode(0).toString();
+                                if (tag == null)
+                                    break;
+                                if (blockedTag.equalsIgnoreCase(tag) || StringHelper.isPresentAsWord(blockedTag, tag)) {
+                                    Element imgParent = entry.getKey();
+                                    for (int i = 0; i <= site.getGalleryHeight(); i++) {
+                                        if (imgParent.parent() != null)
+                                            imgParent = imgParent.parent();
+                                    }
+                                    Elements imgs = imgParent.getAllElements().select("img");
+                                    for (Element img : imgs) {
+                                        if (img.parent() != null)
+                                            img.parent().addClass("watermarked-blocked");
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             return new ByteArrayInputStream(doc.toString().getBytes(StandardCharsets.UTF_8));
         } catch (
                 IOException e) {
@@ -895,6 +962,8 @@ class CustomWebViewClient extends WebViewClient {
         List<String> getAllSiteUrls();
 
         List<String> getAllMergedBooksUrls();
+
+        List<String> getPrefBlockedTags();
 
         String getCustomCss();
     }

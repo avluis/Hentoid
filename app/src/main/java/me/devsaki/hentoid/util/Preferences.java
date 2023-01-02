@@ -432,7 +432,11 @@ public final class Preferences {
     }
 
     public static boolean isBrowserMarkMerged() {
-        return sharedPreferences.getBoolean(Key.BROWSER_MARK_MERGED, Default.BROWSER_MARK_DOWNLOADED);
+        return sharedPreferences.getBoolean(Key.BROWSER_MARK_MERGED, Default.BROWSER_MARK_MERGED);
+    }
+
+    public static boolean isBrowserMarkBlockedTags() {
+        return sharedPreferences.getBoolean(Key.BROWSER_MARK_BLOCKED, Default.BROWSER_MARK_BLOCKED);
     }
 
     public static int getBrowserDlAction() {
@@ -691,8 +695,8 @@ public final class Preferences {
         return getIntPref(Key.DL_SPEED_CAP, Default.DL_SPEED_CAP);
     }
 
-    public static List<String> getBlockedTags() {
-        return Stream.of(sharedPreferences.getString(Key.DL_BLOCKED_TAGS, "").split(",")).map(String::trim).filterNot(String::isEmpty).toList();
+    public static List<String> getBlockedTags(String source) {
+        return Stream.of(sharedPreferences.getString(source, "").split(",")).map(String::trim).filterNot(String::isEmpty).toList();
     }
 
     public static int getTagBlockingBehaviour() {
@@ -965,6 +969,8 @@ public final class Preferences {
         static final String BROWSER_AUGMENTED = "pref_browser_augmented";
         public static final String BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded";
         public static final String BROWSER_MARK_MERGED = "browser_mark_merged";
+        public static final String BROWSER_MARK_BLOCKED = "browser_mark_blocked";
+        public static final String BROWSER_MARK_BLOCKED_LIST = "browser_mark_blocked_list";
         public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
         public static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
         public static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";
@@ -1079,6 +1085,8 @@ public final class Preferences {
         static final boolean BROWSER_RESUME_LAST = false;
         static final boolean BROWSER_AUGMENTED = true;
         static final boolean BROWSER_MARK_DOWNLOADED = false;
+        static final boolean BROWSER_MARK_MERGED = false;
+        static final boolean BROWSER_MARK_BLOCKED = false;
         static final int BROWSER_DL_ACTION = Constant.DL_ACTION_DL_PAGES;
         static final boolean BROWSER_QUICK_DL = true;
         static final int BROWSER_QUICK_DL_THRESHOLD = 1500; // 1.5s

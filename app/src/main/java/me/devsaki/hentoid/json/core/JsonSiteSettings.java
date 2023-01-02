@@ -18,5 +18,6 @@ public class JsonSiteSettings {
         public Integer requestsCapPerSecond = null;
         public Integer bookCardDepth = null;
         public List<String> bookCardExcludedParentClasses = null;
+        public Integer galleryHeight = null;
     }
 }
