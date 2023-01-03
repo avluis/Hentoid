@@ -666,9 +666,14 @@ public final class ContentHelper {
         // Remove current cover from the set
         for (int i = 0; i < images.size(); i++)
             if (images.get(i).isCover()) {
-                images.remove(i);
+                if (images.get(i).isReadable())
+                    images.get(i).setIsCover(false);
+                else
+                    images.remove(i);
                 break;
             }
+
+        dao.insertImageFiles(images);
 
         // Duplicate given picture and set it as a cover
         ImageFile cover = ImageFile.newCover(newCover.getUrl(), newCover.getStatus()).setFileUri(newCover.getFileUri()).setMimeType(newCover.getMimeType());
