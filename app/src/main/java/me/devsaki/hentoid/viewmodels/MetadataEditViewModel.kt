@@ -7,8 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.annimon.stream.Stream
 import io.reactivex.Completable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposables
@@ -109,18 +109,20 @@ class MetadataEditViewModel(
     }
 
     fun setCover(order: Int) {
-        val content = contentList.value?.get(0)
-        if (content != null) {
-            content.imageFiles?.forEach {
-                if (it.order == order) {
-                    it.setIsCover(true)
-                    content.coverImageUrl = it.url
-                } else {
-                    it.setIsCover(false)
-                }
-            }
-            contentList.postValue(Stream.of(content).toList())
-        }
+        val content = contentList.value?.get(0) ?: return
+        val imageFiles = content.imageFiles ?: return
+
+        val img = imageFiles.find { it.order == order }
+        if (img != null)
+            compositeDisposable.add(
+                Single.fromCallable { ContentHelper.setContentCover(img, dao, getApplication()) }
+                    .subscribeOn(Schedulers.io())
+                    .subscribe({
+                        val newContent = dao.selectContent(content.id)
+                        if (newContent != null) contentList.postValue(mutableListOf(newContent))
+                    }
+                    ) { t: Throwable? -> Timber.e(t) }
+            )
     }
 
     /**
