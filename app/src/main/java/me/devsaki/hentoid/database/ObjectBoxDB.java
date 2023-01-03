@@ -417,6 +417,7 @@ public class ObjectBoxDB {
     }
 
     private long[] selectContentIdsByChapterUrl(@NonNull String url) {
+        if (url.isEmpty()) return new long[]{};
         return store.boxFor(Chapter.class).query(Chapter_.url.notEqual("", QueryBuilder.StringOrder.CASE_INSENSITIVE).and(Chapter_.url.endsWith(url, QueryBuilder.StringOrder.CASE_INSENSITIVE))).build().property(Chapter_.contentId).findLongs();
     }
 

@@ -29,6 +29,7 @@ import me.devsaki.hentoid.core.Consts;
 import me.devsaki.hentoid.database.CollectionDAO;
 import me.devsaki.hentoid.database.ObjectBoxDAO;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ProcessEvent;
 import me.devsaki.hentoid.json.JsonContent;
@@ -143,7 +144,7 @@ public class ExternalImportWorker extends BaseWorker {
                 Content existingDuplicate = dao.selectContentByStorageUri(content.getStorageUri(), false);
 
                 // The very same book may also exist in the DB under a different folder,
-                if (null == existingDuplicate) {
+                if (null == existingDuplicate && !content.getUrl().trim().isEmpty() && content.getSite() != Site.NONE) {
                     existingDuplicate = dao.selectContentBySourceAndUrl(content.getSite(), content.getUrl(), "");
                     // Ignore the duplicate if it is queued; we do prefer to import a full book
                     if (existingDuplicate != null) {
