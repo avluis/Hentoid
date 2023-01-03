@@ -1699,6 +1699,7 @@ public final class ContentHelper {
         mergedContent.setCoverImageUrl(firstContent.getCoverImageUrl());
         mergedContent.setUploadDate(firstContent.getUploadDate());
         mergedContent.setDownloadDate(Instant.now().toEpochMilli());
+        mergedContent.setDownloadCompletionDate(Instant.now().toEpochMilli());
         mergedContent.setStatus(firstContent.getStatus());
         mergedContent.setFavourite(firstContent.isFavourite());
         mergedContent.setRating(firstContent.getRating());
