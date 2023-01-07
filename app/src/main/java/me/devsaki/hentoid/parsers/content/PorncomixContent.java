@@ -2,6 +2,8 @@ package me.devsaki.hentoid.parsers.content;
 
 import androidx.annotation.NonNull;
 
+import com.squareup.moshi.JsonDataException;
+
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
@@ -60,7 +62,7 @@ public class PorncomixContent extends BaseContentParser {
                 String publishDate = galleryMeta.getDatePublished(); // e.g. 2021-01-27T15:20:38+00:00
                 if (!publishDate.isEmpty())
                     content.setUploadDate(Helper.parseDatetimeToEpoch(publishDate, "yyyy-MM-dd'T'HH:mm:ssXXX"));
-            } catch (IOException e) {
+            } catch (IOException | JsonDataException e) {
                 Timber.i(e);
             }
         }

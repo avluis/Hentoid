@@ -4,7 +4,7 @@ import me.devsaki.hentoid.enums.Site;
 
 public class PorncomixActivity extends BaseWebActivity {
 
-    private static final String[] DOMAIN_FILTER = {"www.porncomixonline.net", "www.porncomixonline.com", "porncomicszone.net", "porncomixinfo.com", "porncomixinfo.net", "bestporncomix.com"};
+    private static final String[] DOMAIN_FILTER = {"www.porncomixonline.net", "www.porncomixonline.com", "porncomicszone.net", "porncomixinfo.com", "porncomixinfo.net", "bestporncomix.com", "gedecomix.com"};
     private static final String[] GALLERY_FILTER = {
             "//www.porncomixonline.(com|net)/(?!m-comic)([\\w\\-]+)/[\\w\\-]+/$",
             "//www.porncomixonline.(com|net)/m-comic/[\\w\\-]+/[\\w\\-]+$",
@@ -15,7 +15,8 @@ public class PorncomixActivity extends BaseWebActivity {
             "//porncomicszone.net/[0-9]+/[\\w\\-]+/[0-9]+/$",
             "//porncomixinfo.(com|net)/manga-comics/[\\w\\-]+/[\\w\\-]+/$",
             "//porncomixinfo.(com|net)/chapter/[\\w\\-]+/[\\w\\-]+/$",
-            "//bestporncomix.com/gallery/[\\w\\-]+/$"
+            "//bestporncomix.com/gallery/[\\w\\-]+/$",
+            "//gedecomix.com/porncomic/[\\w\\-]+/[\\w\\-]+/$",
     };
     private static final String[] JS_CONTENT_BLACKLIST = {"ai_process_ip_addresses", "adblocksucks", "adblock-proxy-super-secret"};
     private static final String[] REMOVABLE_ELEMENTS = {"iframe[name^='spot']"};

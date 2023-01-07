@@ -31,7 +31,8 @@ public class PorncomixParser extends BaseImageListParser {
             throw new ParseException("Document unreachable : " + content.getGalleryUrl());
 
         List<String> result = parseComixImages(content, doc);
-        if (result.isEmpty()) result = parseXxxToonImages(content, doc);
+        if (result.isEmpty()) result = parseXxxToonImages(doc);
+        if (result.isEmpty()) result = parseGedeComixImages(doc);
 
         return result;
     }
@@ -62,10 +63,17 @@ public class PorncomixParser extends BaseImageListParser {
         return result;
     }
 
-    public List<String> parseXxxToonImages(@NonNull Content content, @NonNull Document doc) throws Exception {
+    public List<String> parseXxxToonImages(@NonNull Document doc) {
         List<Element> pages = doc.select("figure.msnry_items a");
         if (pages.isEmpty()) return Collections.emptyList();
 
         return Stream.of(pages).map(e -> e.attr("href")).withoutNulls().distinct().toList();
+    }
+
+    public List<String> parseGedeComixImages(@NonNull Document doc) {
+        List<Element> pages = doc.select(".reading-content img");
+        if (pages.isEmpty()) return Collections.emptyList();
+
+        return Stream.of(pages).map(ParseHelper::getImgSrc).withoutNulls().distinct().toList();
     }
 }
