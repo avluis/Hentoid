@@ -40,24 +40,8 @@ public class PorncomixContent extends BaseContentParser {
     private List<Element> zoneTags;
     @Selector(value = ".video-tags a[href*='tag']")
     private List<Element> bestTags;
-
-    /*
-    @Selector(value = "#single-pager")
-    private Element mangaThumbsContainer;
-    @Selector(value = "#dgwt-jg-2")
-    private Element galleryThumbsContainer; // same for zone
-    @Selector(value = "#gallery-2")
-    private Element bestThumbsContainer;
-     */
-
-    @Selector(value = ".reading-content script")
-    private Element mangaPagesContainer;
-    @Selector(value = "#dgwt-jg-2 a")
-    private List<Element> galleryPages; // same for zone
-    @Selector(value = ".unite-gallery img")
-    private List<Element> galleryPages2;
-    @Selector(value = "#gallery-2 a")
-    private List<Element> bestPages;
+    @Selector(value = ".post-tag a[href*='label']")
+    private List<Element> xxxToonsTags;
 
 
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
@@ -87,12 +71,6 @@ public class PorncomixContent extends BaseContentParser {
             artist = titleParts[0].trim();
         }
 
-        /*
-        if (mangaThumbsContainer != null) result.setQtyPages(mangaThumbsContainer.childNodeSize());
-        else if (galleryThumbsContainer != null) result.setQtyPages(galleryThumbsContainer.childNodeSize());
-        else if (bestThumbsContainer != null) result.setQtyPages(bestThumbsContainer.childNodeSize());
-         */
-
         AttributeMap attributes = new AttributeMap();
         attributes.add(new Attribute(AttributeType.ARTIST, artist, artist, Site.PORNCOMIX));
         if (mangaTags != null && !mangaTags.isEmpty())
@@ -103,6 +81,8 @@ public class PorncomixContent extends BaseContentParser {
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, zoneTags, false, Site.PORNCOMIX);
         else if (bestTags != null && !bestTags.isEmpty())
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, false, Site.PORNCOMIX);
+        else if (xxxToonsTags != null && !xxxToonsTags.isEmpty())
+            ParseHelper.parseAttributes(attributes, AttributeType.TAG, xxxToonsTags, false, Site.PORNCOMIX);
         content.putAttributes(attributes);
 
         if (updateImages) {

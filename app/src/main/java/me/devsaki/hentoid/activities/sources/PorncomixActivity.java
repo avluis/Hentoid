@@ -9,6 +9,7 @@ public class PorncomixActivity extends BaseWebActivity {
             "//www.porncomixonline.(com|net)/(?!m-comic)([\\w\\-]+)/[\\w\\-]+/$",
             "//www.porncomixonline.(com|net)/m-comic/[\\w\\-]+/[\\w\\-]+$",
             "//www.porncomixonline.(com|net)/m-comic/[\\w\\-]+/[\\w\\-]+/$",
+            "//www.porncomixonline.(com|net)/xxxtoons/(?!page)[\\w\\-]+/[\\w\\-]+$",
             "//www.porncomixonline.com/(?!m-comic)([\\w\\-]+)/[\\w\\-]+/$",
             "//www.porncomixonline.com/m-comic/[\\w\\-]+/[\\w\\-]+$",
             "//porncomicszone.net/[0-9]+/[\\w\\-]+/[0-9]+/$",
@@ -16,7 +17,8 @@ public class PorncomixActivity extends BaseWebActivity {
             "//porncomixinfo.(com|net)/chapter/[\\w\\-]+/[\\w\\-]+/$",
             "//bestporncomix.com/gallery/[\\w\\-]+/$"
     };
-    private static final String[] DIRTY_ELEMENTS = {"iframe[name^='spot']"};
+    private static final String[] JS_CONTENT_BLACKLIST = {"ai_process_ip_addresses", "adblocksucks", "adblock-proxy-super-secret"};
+    private static final String[] REMOVABLE_ELEMENTS = {"iframe[name^='spot']"};
 
     Site getStartSite() {
         return Site.PORNCOMIX;
@@ -26,7 +28,10 @@ public class PorncomixActivity extends BaseWebActivity {
     protected CustomWebViewClient createWebClient() {
         CustomWebViewClient client = new CustomWebViewClient(getStartSite(), GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
-        client.addRemovableElements(DIRTY_ELEMENTS);
+        client.addRemovableElements(REMOVABLE_ELEMENTS);
+        client.addJavascriptBlacklist(JS_CONTENT_BLACKLIST);
+        client.adBlocker.addToJsUrlWhitelist(DOMAIN_FILTER);
+        for (String s : JS_CONTENT_BLACKLIST) client.adBlocker.addJsContentBlacklist(s);
         return client;
     }
 }
