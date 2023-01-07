@@ -1379,7 +1379,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     }
 
     private void updatePrefBlockedTags() {
-        prefBlockedTags = Preferences.getBlockedTags(Preferences.Key.BROWSER_MARK_BLOCKED_LIST);
+        prefBlockedTags = Preferences.getBlockedTags();
     }
 
     private void clearPrefBlockedTags(){
@@ -1512,7 +1512,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             else
                 clearPrefBlockedTags();
             reload = true;
-        } else if (Preferences.Key.BROWSER_MARK_BLOCKED_LIST.equals(key)) {
+        } else if (Preferences.Key.DL_BLOCKED_TAGS.equals(key)) {
             updatePrefBlockedTags();
             reload = true;
         } else if (Preferences.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST.equals(key)) {

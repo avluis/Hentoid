@@ -294,7 +294,7 @@
                 app:iconSpaceReserved="false" />
             <EditTextPreference
                 android:dependency="browser_mark_blocked"
-                android:key="browser_mark_blocked_list"
+                android:key="pref_dl_blocked_tags"
                 android:summary="@string/pref_browser_blocked_tags_summary"
                 android:title="@string/pref_browser_blocked_tags_title"
                 app:iconSpaceReserved="false" />

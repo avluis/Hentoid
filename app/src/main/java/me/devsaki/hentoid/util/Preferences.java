@@ -695,8 +695,8 @@ public final class Preferences {
         return getIntPref(Key.DL_SPEED_CAP, Default.DL_SPEED_CAP);
     }
 
-    public static List<String> getBlockedTags(String source) {
-        return Stream.of(sharedPreferences.getString(source, "").split(",")).map(String::trim).filterNot(String::isEmpty).toList();
+    public static List<String> getBlockedTags() {
+        return Stream.of(sharedPreferences.getString(Key.DL_BLOCKED_TAGS, "").split(",")).map(String::trim).filterNot(String::isEmpty).toList();
     }
 
     public static int getTagBlockingBehaviour() {
@@ -970,7 +970,6 @@ public final class Preferences {
         public static final String BROWSER_MARK_DOWNLOADED = "browser_mark_downloaded";
         public static final String BROWSER_MARK_MERGED = "browser_mark_merged";
         public static final String BROWSER_MARK_BLOCKED = "browser_mark_blocked";
-        public static final String BROWSER_MARK_BLOCKED_LIST = "browser_mark_blocked_list";
         public static final String BROWSER_DL_ACTION = "pref_browser_dl_action";
         public static final String BROWSER_QUICK_DL = "pref_browser_quick_dl";
         public static final String BROWSER_QUICK_DL_THRESHOLD = "pref_browser_quick_dl_threshold";
@@ -1018,7 +1017,7 @@ public final class Preferences {
         static final String DL_RETRIES_NUMBER = "pref_dl_retries_number";
         static final String DL_RETRIES_MEM_LIMIT = "pref_dl_retries_mem_limit";
         public static final String DL_SPEED_CAP = "dl_speed_cap";
-        static final String DL_BLOCKED_TAGS = "pref_dl_blocked_tags";
+        public static final String DL_BLOCKED_TAGS = "pref_dl_blocked_tags";
         static final String DL_BLOCKED_TAG_BEHAVIOUR = "pref_dl_blocked_tags_behaviour";
         public static final String DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         public static final String ACTIVE_SITES = "active_sites";
