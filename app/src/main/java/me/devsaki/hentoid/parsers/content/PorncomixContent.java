@@ -44,6 +44,8 @@ public class PorncomixContent extends BaseContentParser {
     private List<Element> bestTags;
     @Selector(value = ".post-tag a[href*='label']")
     private List<Element> xxxToonsTags;
+    @Selector(value = ".tagcloud a[href*='type']")
+    private List<Element> allPornComixTags;
 
 
     public Content update(@NonNull final Content content, @Nonnull String url, boolean updateImages) {
@@ -85,6 +87,8 @@ public class PorncomixContent extends BaseContentParser {
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, bestTags, false, Site.PORNCOMIX);
         else if (xxxToonsTags != null && !xxxToonsTags.isEmpty())
             ParseHelper.parseAttributes(attributes, AttributeType.TAG, xxxToonsTags, false, Site.PORNCOMIX);
+        else if (allPornComixTags != null && !allPornComixTags.isEmpty())
+            ParseHelper.parseAttributes(attributes, AttributeType.TAG, allPornComixTags, false, Site.PORNCOMIX);
         content.putAttributes(attributes);
 
         if (updateImages) {

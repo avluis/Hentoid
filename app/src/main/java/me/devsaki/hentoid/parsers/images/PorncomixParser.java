@@ -33,6 +33,7 @@ public class PorncomixParser extends BaseImageListParser {
         List<String> result = parseComixImages(content, doc);
         if (result.isEmpty()) result = parseXxxToonImages(doc);
         if (result.isEmpty()) result = parseGedeComixImages(doc);
+        if (result.isEmpty()) result = parseAllPornComixImages(doc);
 
         return result;
     }
@@ -75,5 +76,12 @@ public class PorncomixParser extends BaseImageListParser {
         if (pages.isEmpty()) return Collections.emptyList();
 
         return Stream.of(pages).map(ParseHelper::getImgSrc).withoutNulls().distinct().toList();
+    }
+
+    public List<String> parseAllPornComixImages(@NonNull Document doc) {
+        List<Element> pages = doc.select("#jig1 a");
+        if (pages.isEmpty()) return Collections.emptyList();
+
+        return Stream.of(pages).map(e -> e.attr("href")).withoutNulls().distinct().toList();
     }
 }
