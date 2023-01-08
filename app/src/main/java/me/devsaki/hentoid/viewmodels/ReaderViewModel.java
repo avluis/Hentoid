@@ -1597,6 +1597,9 @@ public class ReaderViewModel extends AndroidViewModel {
 
         // Save chapters
         dao.insertChapters(updatedChapters);
+
+        Content finalContent = dao.selectContent(contentId);
+        if (finalContent != null) ContentHelper.persistJson(getApplication(), finalContent);
     }
 
     /**
@@ -1808,6 +1811,9 @@ public class ReaderViewModel extends AndroidViewModel {
         }
 
         dao.insertImageFiles(images);
+
+        Content finalContent = dao.selectContent(contentId);
+        if (finalContent != null) ContentHelper.persistJson(getApplication(), finalContent);
 
         EventBus.getDefault().post(new ProcessEvent(ProcessEvent.EventType.COMPLETE, R.id.generic_progress, 0, nbImages, 0, nbImages));
 
