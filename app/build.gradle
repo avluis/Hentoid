@@ -164,7 +164,7 @@ dependencies {
     implementation 'com.github.penfeizhou.android.animation:apng:2.24.0'
 
     // Animated GIF creator -> https://github.com/waynejo/android-ndk-gif
-    implementation 'com.waynejo:androidndkgif:0.3.3'
+    implementation 'io.github.waynejo:androidndkgif:1.0.1'
 
     /**
      * UI
