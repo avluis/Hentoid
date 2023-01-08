@@ -29,8 +29,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import me.devsaki.hentoid.util.file.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.file.FileHelper;
 import timber.log.Timber;
 
 /**
@@ -295,7 +295,7 @@ public final class ImageHelper {
                     if (null == b) continue;
 
                     try {
-                        gifEncoder.encodeFrame(b, 100);
+                        gifEncoder.encodeFrame(b, frame.right);
                     } finally {
                         b.recycle();
                     }
