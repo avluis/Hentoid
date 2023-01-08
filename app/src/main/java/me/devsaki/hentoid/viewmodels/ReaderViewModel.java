@@ -1714,7 +1714,7 @@ public class ReaderViewModel extends AndroidViewModel {
 
         if (oldIndex < 0 || oldIndex >= chapters.size()) return;
 
-        // Don't take the last chapter into acconut if it doesn't exist (means the user has moved the item below "no chapter")
+        // Don't take the last chapter into account if it doesn't exist (means the user has moved the item below "no chapter")
         if (newIndex >= chapters.size()) newIndex = chapters.size() - 1;
 
         // Move the item
