@@ -10,7 +10,7 @@ ___
 
 [![](https://discordapp.com/api/guilds/173995475098271746/embed.png?style=banner2)](https://discord.gg/QEZ3qk9)
 
-![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome.png)
+![](https://github.com/avluis/Hentoid/blob/master/wiki-img/welcome_2023.png)
 
 ###### [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/en-flag.svg) English](https://github.com/avluis/Hentoid/tree/master/README.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/ru-flag.svg) Русский](https://github.com/avluis/Hentoid/tree/master/README-ru.md) | [![](https://github.com/avluis/Hentoid/blob/master/wiki-img/uk-flag.svg) Українська](https://github.com/avluis/Hentoid/tree/master/README-uk.md)
 
