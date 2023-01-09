@@ -15,6 +15,7 @@ import me.devsaki.hentoid.workers.PrimaryImportWorker;
 public class PrimaryImportData {
     private static final String KEY_REFRESH_RENAME = "rename";
     private static final String KEY_REFRESH_REMOVE_PLACEHOLDERS = "removePlaceholders";
+    private static final String KEY_REFRESH_RENUMBER_PAGES = "renumberPages";
     private static final String KEY_REFRESH_CLEAN_NO_JSON = "cleanNoJson";
     private static final String KEY_REFRESH_CLEAN_NO_IMAGES = "cleanNoImages";
     private static final String KEY_IMPORT_GROUPS = "importGroups";
@@ -33,6 +34,10 @@ public class PrimaryImportData {
 
         public void setRefreshRemovePlaceholders(boolean data) {
             builder.putBoolean(KEY_REFRESH_REMOVE_PLACEHOLDERS, data);
+        }
+
+        public void setRenumberPages(boolean data) {
+            builder.putBoolean(KEY_REFRESH_RENUMBER_PAGES, data);
         }
 
         public void setRefreshCleanNoJson(boolean refresh) {
@@ -66,6 +71,10 @@ public class PrimaryImportData {
 
         public boolean getRefreshRemovePlaceholders() {
             return data.getBoolean(KEY_REFRESH_REMOVE_PLACEHOLDERS, false);
+        }
+
+        public boolean getRefreshRenumberPages() {
+            return data.getBoolean(KEY_REFRESH_RENUMBER_PAGES, false);
         }
 
         public boolean getRefreshCleanNoJson() {

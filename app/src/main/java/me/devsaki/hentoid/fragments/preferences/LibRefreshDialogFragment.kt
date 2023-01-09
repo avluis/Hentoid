@@ -127,6 +127,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
                         it.refreshLocationExternal.isChecked,
                         it.refreshOptionsRename.isChecked,
                         it.refreshOptionsRemovePlaceholders.isChecked,
+                        it.refreshOptionsRenumberPages.isChecked,
                         it.refreshOptionsRemove1.isChecked,
                         it.refreshOptionsRemove2.isChecked
                     )
@@ -150,6 +151,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
         isExternal: Boolean,
         rename: Boolean,
         removePlaceholders: Boolean,
+        renumberPages: Boolean,
         cleanAbsent: Boolean,
         cleanNoImages: Boolean
     ) {
@@ -188,6 +190,7 @@ class LibRefreshDialogFragment : DialogFragment(R.layout.dialog_prefs_refresh) {
             val options = ImportOptions()
             options.rename = rename
             options.removePlaceholders = removePlaceholders
+            options.renumberPages = renumberPages
             options.cleanNoJson = cleanAbsent
             options.cleanNoImages = cleanNoImages
             options.importGroups = false
