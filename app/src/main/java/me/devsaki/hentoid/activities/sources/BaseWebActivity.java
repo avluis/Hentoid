@@ -208,6 +208,8 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     private final List<String> downloadedBooksUrls = new ArrayList<>();
     // List of URLs of merged books for the current site
     private final List<String> mergedBooksUrls = new ArrayList<>();
+    // List of tags of Preference-browser-blocked tags
+    private List<String> prefBlockedTags = new ArrayList<>();
 
     // === OTHER VARIABLES
     // Indicates which mode the download button is in
@@ -248,6 +250,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
 
         if (Preferences.isBrowserMarkDownloaded()) updateDownloadedBooksUrls();
         if (Preferences.isBrowserMarkMerged()) updateMergedBooksUrls();
+        if (Preferences.isBrowserMarkBlockedTags()) updatePrefBlockedTags();
 
         if (getStartSite() == null) {
             Timber.w("Site is null!");
@@ -1377,6 +1380,14 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         }
     }
 
+    private void updatePrefBlockedTags() {
+        prefBlockedTags = Preferences.getBlockedTags();
+    }
+
+    private void clearPrefBlockedTags(){
+        prefBlockedTags.clear();
+    }
+
     /**
      * Listener for the events of the download engine
      * Used to switch the action button to Read when the download of the currently viewed is completed
@@ -1469,6 +1480,11 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
         return new ArrayList<>(mergedBooksUrls);
     }
 
+    @Override
+    public List<String> getPrefBlockedTags() {
+        return new ArrayList<>(prefBlockedTags);
+    }
+
     /**
      * Listener for preference changes (from the settings dialog)
      *
@@ -1489,6 +1505,17 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
             customCss = null;
             webClient.setMarkMerged(Preferences.isBrowserMarkMerged());
             if (webClient.isMarkMerged()) updateMergedBooksUrls();
+            reload = true;
+        } else if (Preferences.Key.BROWSER_MARK_BLOCKED.equals(key)) {
+            customCss = null;
+            webClient.setMarkBlockedTags(Preferences.isBrowserMarkBlockedTags());
+            if (webClient.isMarkBlockedTags())
+                updatePrefBlockedTags();
+            else
+                clearPrefBlockedTags();
+            reload = true;
+        } else if (Preferences.Key.DL_BLOCKED_TAGS.equals(key)) {
+            updatePrefBlockedTags();
             reload = true;
         } else if (Preferences.Key.BROWSER_NHENTAI_INVISIBLE_BLACKLIST.equals(key)) {
             customCss = null;
@@ -1517,7 +1544,7 @@ public abstract class BaseWebActivity extends BaseActivity implements CustomWebV
     public String getCustomCss() {
         if (null == customCss) {
             StringBuilder sb = new StringBuilder();
-            if (Preferences.isBrowserMarkDownloaded() || Preferences.isBrowserMarkMerged())
+            if (Preferences.isBrowserMarkDownloaded() || Preferences.isBrowserMarkMerged() || Preferences.isBrowserMarkBlockedTags())
                 FileHelper.getAssetAsString(getAssets(), "downloaded.css", sb);
             if (getStartSite().equals(Site.NHENTAI) && Preferences.isBrowserNhentaiInvisibleBlacklist())
                 FileHelper.getAssetAsString(getAssets(), "nhentai_invisible_blacklist.css", sb);

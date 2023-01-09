@@ -45,3 +45,27 @@
   background-repeat: no-repeat;
   z-index:11;
 }
+
+/* Custom styles to mark books with blocked tags*/
+.watermarked-blocked {
+
+}
+
+.watermarked-blocked img {
+  filter: grayscale(100%) opacity(0%);
+}
+
+.watermarked-blocked:after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-image: url("https://bogus.com/hentoid-blockedmark.webp");
+  background-size: 75px 75px;
+  background-position: 50% 50%;
+  background-repeat: no-repeat;
+  z-index:auto;
+}
